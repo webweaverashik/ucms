@@ -6,7 +6,7 @@ use App\Http\Controllers\AuthController;
 
 
 Route::get('/', function() {
-    return view('welcome');
+    return view('home');
 });
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

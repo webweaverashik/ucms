@@ -1,4 +1,5 @@
-<nav class="layout-navbar container-fluid navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme" id="layout-navbar">
+<nav class="layout-navbar container-fluid navbar-detached navbar navbar-expand-xl align-items-center bg-navbar-theme"
+    id="layout-navbar">
     <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
         <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
             <i class="icon-base ti tabler-menu-2 icon-md"></i>
@@ -473,10 +474,17 @@
                     </li>
                     <li>
                         <div class="d-grid px-2 pt-2 pb-1">
-                            <a class="btn btn-sm btn-danger d-flex" href="auth-login-cover.html" target="_blank">
-                                <small class="align-middle">Logout</small>
-                                <i class="icon-base ti tabler-logout ms-2 icon-14px"></i>
-                            </a>
+                            <form action="{{ route('logout') }}" method="POST">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-danger d-flex w-100">
+                                    <small class="align-middle">Logout</small>
+                                    <i class="icon-base ti tabler-logout ms-2 icon-14px"></i>
+                                </button>
+                                {{-- <a class="btn btn-sm btn-danger d-flex" href="auth-login-cover.html" target="_blank">
+                                    <small class="align-middle">Logout</small>
+                                    <i class="icon-base ti tabler-logout ms-2 icon-14px"></i>
+                                </a> --}}
+                            </form>
                         </div>
                     </li>
                 </ul>
