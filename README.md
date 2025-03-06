@@ -1,7 +1,7 @@
 # 🎓 Unique Coaching Management System (UCMS)
 *A Complete Solution for Managing Coaching Centers Efficiently*
 
-![UCMS Banner](https://scontent.fdac31-2.fna.fbcdn.net/v/t39.30808-6/480108574_1024583979717464_4542928628394930376_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=cc71e4&_nc_ohc=VkeSXFqswrgQ7kNvgFMbtM-&_nc_oc=AdjT2pmI_66TEjiMnJvJXxjlhgLihLdA-ejaNHSDiJ_x01X424DJGnA8YIBF8tGeN08&_nc_zt=23&_nc_ht=scontent.fdac31-2.fna&_nc_gid=AZzbO-hGt2VJyRBJa9L5Ibx&oh=00_AYDzOomTdX_5QjjUV2S0Rn85Nm0lyhasTa4w36lzqBoLag&oe=67C7AA49) <!-- Replace with actual banner image URL -->
+![UCMS Banner](https://scontent.fjsr12-1.fna.fbcdn.net/v/t39.30808-6/480108574_1024583979717464_4542928628394930376_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=cc71e4&_nc_ohc=Mhq4enPKx1gQ7kNvgHiOs0a&_nc_oc=AdiYMo1bCjLVDVSyeGcqz7oa9_ropU3sQBQmBibwgeOQqQL_KLhz18OdbBrp3dOW7PM&_nc_zt=23&_nc_ht=scontent.fjsr12-1.fna&_nc_gid=Aa50tAXd8RztuNZlB5BSq2j&oh=00_AYBSfRc5rnxmvgs1w2LtspjDz_ngn3nqCbLELY_8f42jag&oe=67CF22C9) <!-- Replace with actual banner image URL -->
 
 ## 📖 About UCMS
 **Unique Coaching Management System (UCMS)** is an **all-in-one coaching center management solution** designed to streamline **student admissions, fee collection, attendance tracking, notes/sheets distribution, teacher scheduling, and role-based access control**.  
