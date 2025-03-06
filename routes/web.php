@@ -12,26 +12,29 @@ Route::get('/', function() {
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
 
+    // Only allow POST method for actual logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    // Handle GET /logout: Redirect back if logged in
+    Route::get('/logout', function () {
+        return redirect()->back();
+    })->name('logout.get');
 });
 
-Route::middleware('isLoggedIn')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
-
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-});
+// Handle GET /logout for logged-out users (redirect to login)
+Route::get('/logout', function () {
+    return redirect()->route('login');
+})->name('logout.get');
 
 
 
 
-
+// Testing mail server
 Route::get('/send-test-email', function () {
     Mail::raw('This is a test email from Laravel 12!', function ($message) {
         $message->to('ashik.ane.doict@gmail.com')
