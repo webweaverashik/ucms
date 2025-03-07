@@ -19,7 +19,8 @@
         <!-- /Search -->
 
         <ul class="navbar-nav flex-row align-items-center ms-md-auto">
-            <li class="nav-item dropdown-language dropdown">
+            <!-- Language -->
+            {{-- <li class="nav-item dropdown-language dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow btn btn-icon btn-text-secondary rounded-pill"
                     href="javascript:void(0);" data-bs-toggle="dropdown">
                     <i class="icon-base ti tabler-language icon-22px text-heading"></i>
@@ -50,7 +51,7 @@
                         </a>
                     </li>
                 </ul>
-            </li>
+            </li> --}}
             <!--/ Language -->
 
             <!-- Style Switcher -->
@@ -86,7 +87,7 @@
             <!-- / Style Switcher-->
 
             <!-- Quick links  -->
-            <li class="nav-item dropdown-shortcuts navbar-dropdown dropdown">
+            {{-- <li class="nav-item dropdown-shortcuts navbar-dropdown dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow btn btn-icon btn-text-secondary rounded-pill"
                     href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside"
                     aria-expanded="false">
@@ -171,7 +172,7 @@
                         </div>
                     </div>
                 </div>
-            </li>
+            </li> --}}
             <!-- Quick links -->
 
             <!-- Notification -->
@@ -408,7 +409,7 @@
             </li>
             <!--/ Notification -->
 
-            <!-- User -->
+            <!-- User Profile -->
             <li class="nav-item navbar-dropdown dropdown-user dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);"
                     data-bs-toggle="dropdown">
@@ -427,7 +428,7 @@
                                 </div>
                                 <div class="flex-grow-1">
                                     <h6 class="mb-0">{{ auth()->user()->full_name }}</h6>
-                                    <small class="text-body-secondary">Admin</small>
+                                    <small class="text-body-secondary">{{ auth()->user()->branch->branch_name ?? 'Admin' }}</small>
                                 </div>
                             </div>
                         </a>
@@ -480,16 +481,12 @@
                                     <small class="align-middle">Logout</small>
                                     <i class="icon-base ti tabler-logout ms-2 icon-14px"></i>
                                 </button>
-                                {{-- <a class="btn btn-sm btn-danger d-flex" href="auth-login-cover.html" target="_blank">
-                                    <small class="align-middle">Logout</small>
-                                    <i class="icon-base ti tabler-logout ms-2 icon-14px"></i>
-                                </a> --}}
                             </form>
                         </div>
                     </li>
                 </ul>
             </li>
-            <!--/ User -->
+            <!--/ User Profile -->
         </ul>
     </div>
 </nav>

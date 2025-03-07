@@ -9,18 +9,17 @@
 <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css') }}" />
 <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css') }}" />
 <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/flag-icons.css') }}" />
-<link rel="stylesheet" href="{{ asset('assets/vendor/libs/notyf/notyf.css') }}" />
 @endpush
 
 @push('page-css')
-<link rel="stylesheet" href="{{ asset('assets/vendor/css/pages/cards-advance.css') }}" />
+{{-- <link rel="stylesheet" href="{{ asset('assets/vendor/css/pages/cards-advance.css') }}" /> --}}
 @endpush
 
 
 
 @section('content')
 <div class="container-fluid flex-grow-1 container-p-y">
-    <div class="row g-6">
+    {{-- <div class="row g-6">
         <!-- Website Analytics -->
         <div class="col-xl-6 col">
             <div class="swiper-container swiper-container-horizontal swiper swiper-card-advance-bg"
@@ -889,21 +888,20 @@
             </div>
         </div>
         <!--/ Projects table -->
-    </div>
+    </div> --}}
 </div>
 @endsection
 
 
 
 @push('vendor-js')
-<script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
+{{-- <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
 <script src="{{ asset('assets/vendor/libs/swiper/swiper.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js') }}"></script>
-<script src="{{ asset('assets/vendor/libs/notyf/notyf.js') }}"></script>
+<script src="{{ asset('assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js') }}"></script> --}}
 @endpush
 
 @push('page-js')
-<script src="{{ asset('assets/js/dashboards-analytics.js') }}"></script>
+{{-- <script src="{{ asset('assets/js/dashboards-analytics.js') }}"></script> --}}
 
 @if (session('success'))
     <script>
@@ -917,5 +915,33 @@
         });
     </script>
 @endif
+
+@if (session('message'))
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const notyf = new Notyf({
+                duration: 3000, // Notification duration in milliseconds
+                position: { x: 'right', y: 'top' }, // Position on screen
+                types: [
+                    {
+                        type: 'warning',
+                        background: 'orange',
+                        icon: {
+                            className: 'ti tabler-alert-circle',
+                            tagName: 'i'
+                        },
+                    }
+                ]
+            });
+
+            notyf.open({
+                type: 'warning',
+                message: "{{ session('message') }}"
+            });
+        });
+    </script>
+@endif
+
+
 
 @endpush

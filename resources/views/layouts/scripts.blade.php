@@ -15,15 +15,17 @@
 
     <script src="{{ asset('assets/vendor/libs/hammer/hammer.js') }}"></script>
 
-    <script src="{{ asset('assets/vendor/libs/i18n/i18n.js') }}"></script>
-
+    
+    
+    {{-- <script src="{{ asset('assets/vendor/libs/i18n/i18n.js') }}"></script> <!--Translation plugin--> --}}
+    
     <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
-
+    
     <!-- endbuild -->
-
+    
     <!-- Vendors JS -->
     @stack('vendor-js')
-
+    <script src="{{ asset('assets/vendor/libs/notyf/notyf.js') }}"></script>
 
     <!-- Main JS -->
 

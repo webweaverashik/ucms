@@ -12,7 +12,7 @@ class IsLoggedIn
     public function handle(Request $request, Closure $next): Response
     {
         if (!Auth::check()) {
-            return redirect('/login')->with('error', 'You must be logged in to access this page.');
+            return redirect()->route('login')->with('error', 'Please, login first.');
         }
 
         return $next($request);

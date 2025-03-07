@@ -5,7 +5,8 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
     <title>Login - UCMS</title>
 
@@ -17,23 +18,28 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&ampdisplay=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&ampdisplay=swap"
+        rel="stylesheet" />
 
     <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/iconify-icons.css') }}" />
 
+    
+    
     <!-- Core CSS -->
     <!-- build:css assets/vendor/css/theme.css  -->
-
+    
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/node-waves/node-waves.css') }}" />
-
+    
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/pickr/pickr-themes.css') }}" />
-
+    
     <link rel="stylesheet" href="{{ asset('assets/vendor/css/core.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/demo.css') }}" />
-
+    
     <!-- Vendors CSS -->
-
+    
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/notyf/notyf.css') }}" />
 
     <!-- endbuild -->
 
@@ -87,26 +93,30 @@
                                         </svg>
                                     </span>
                                 </span> --}}
-                                <img src="{{ asset('assets/img/branding/logo.png') }}" alt="" class="app-brand-logo w-px-40">
+                                <img src="{{ asset('assets/img/branding/logo.png') }}" alt=""
+                                    class="app-brand-logo w-px-40">
                                 <span class="app-brand-text demo text-heading fw-bold">UCMS</span>
                             </a>
                         </div>
                         <!-- /Logo -->
-                        <h4 class="mb-1">Welcome to UCMS! 👋</h4>
-                        <p class="mb-6">Please sign-in to your account and start the adventure</p>
+                        <h4 class="mb-1 text-center">Welcome to UCMS! 👋</h4>
+                        <p class="mb-6 text-center">Please sign-in to your account.</p>
 
                         <form id="formAuthentication" class="mb-4" action="{{ route('login') }}" method="POST">
-                          @csrf
+                            @csrf
                             <div class="mb-6 form-control-validation">
                                 <label for="email" class="form-label">Email or UserID</label>
-                                <input type="text" class="form-control" id="email" name="email" placeholder="Enter your email or username" autofocus />
+                                <input type="text" class="form-control" id="email" name="email"
+                                    placeholder="Enter your email or username" autofocus />
                             </div>
                             <div class="mb-6 form-password-toggle form-control-validation">
                                 <label class="form-label" for="password">Password</label>
                                 <div class="input-group input-group-merge">
-                                    <input type="password" id="password" class="form-control" name="password" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="password" />
+                                    <input type="password" id="password" class="form-control" name="password"
+                                        placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                                        aria-describedby="password" />
                                     <span class="input-group-text cursor-pointer">
-                                      <i class="icon-base ti tabler-eye-off"></i>
+                                        <i class="icon-base ti tabler-eye-off"></i>
                                     </span>
                                 </div>
                             </div>
@@ -126,12 +136,12 @@
                             </div>
                         </form>
 
-                        <p class="text-center">
+                        {{-- <p class="text-center">
                             <span>Don't have an account?</span>
                             <a href="auth-register-basic.html">
                                 <span>Contact your branch manager.</span>
                             </a>
-                        </p>
+                        </p> --}}
 
                         {{-- <div class="divider my-6">
                             <div class="divider-text">or</div>
@@ -180,16 +190,19 @@
 
     <script src="{{ asset('assets/vendor/libs/hammer/hammer.js') }}"></script>
 
-    <script src="{{ asset('assets/vendor/libs/i18n/i18n.js') }}"></script>
+    {{-- <script src="{{ asset('assets/vendor/libs/i18n/i18n.js') }}"></script> <!-- Language Plugin --> --}}
 
     <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
 
+    
+    
     <!-- endbuild -->
-
+    
     <!-- Vendors JS -->
     <script src="{{ asset('assets/vendor/libs/@form-validation/popular.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/@form-validation/bootstrap5.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/@form-validation/auto-focus.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/notyf/notyf.js') }}"></script>
 
     <!-- Main JS -->
 
@@ -197,6 +210,41 @@
 
     <!-- Page JS -->
     <script src="{{ asset('assets/js/pages-auth.js') }}"></script>
+
+
+    @if (session('success'))
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                const notyf = new Notyf({
+                    duration: 3000,
+                    position: {
+                        x: 'right',
+                        y: 'top'
+                    },
+                });
+
+                notyf.success("{{ session('success') }}"); // Correct way to insert message
+            });
+        </script>
+    @endif
+
+    @if (session('error'))
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                const notyf = new Notyf({
+                    duration: 3000,
+                    position: {
+                        x: 'right',
+                        y: 'top'
+                    },
+                });
+
+                notyf.error("{{ session('error') }}"); // ✅ Properly escapes session message
+            });
+        </script>
+    @endif
+
+
 </body>
 
 </html>
