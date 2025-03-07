@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
     {
         // Sample Super Admin User
         User::create([
-            'full_name' => 'Ashfaq',
+            'full_name' => 'Ashfaq Kayes',
             'email' => 'admin@uniquecoachingbd.com',
             'mobile_number' => '01700000000',
             'password' => Hash::make('admin123'),

@@ -67,8 +67,8 @@
                     <div class="card-body">
                         <!-- Logo -->
                         <div class="app-brand justify-content-center mb-6">
-                            <a href="index.html" class="app-brand-link">
-                                <span class="app-brand-logo demo">
+                            <a href="{{ route('login') }}" class="app-brand-link">
+                                {{-- <span class="app-brand-logo demo">
                                     <span class="text-primary">
                                         <svg width="32" height="22" viewBox="0 0 32 22" fill="none"
                                             xmlns="http://www.w3.org/2000/svg">
@@ -86,8 +86,9 @@
                                                 fill="currentColor" />
                                         </svg>
                                     </span>
-                                </span>
-                                <span class="app-brand-text demo text-heading fw-bold">Vuexy</span>
+                                </span> --}}
+                                <img src="{{ asset('assets/img/branding/logo.png') }}" alt="" class="app-brand-logo w-px-40">
+                                <span class="app-brand-text demo text-heading fw-bold">UCMS</span>
                             </a>
                         </div>
                         <!-- /Logo -->
@@ -97,7 +98,7 @@
                         <form id="formAuthentication" class="mb-4" action="{{ route('login') }}" method="POST">
                           @csrf
                             <div class="mb-6 form-control-validation">
-                                <label for="email" class="form-label">Email or Username</label>
+                                <label for="email" class="form-label">Email or UserID</label>
                                 <input type="text" class="form-control" id="email" name="email" placeholder="Enter your email or username" autofocus />
                             </div>
                             <div class="mb-6 form-password-toggle form-control-validation">
@@ -115,7 +116,7 @@
                                         <input class="form-check-input" type="checkbox" id="remember-me" />
                                         <label class="form-check-label" for="remember-me"> Remember Me </label>
                                     </div>
-                                    <a href="auth-forgot-password-basic.html">
+                                    <a href="#">
                                         <p class="mb-0">Forgot Password?</p>
                                     </a>
                                 </div>
@@ -126,13 +127,13 @@
                         </form>
 
                         <p class="text-center">
-                            <span>New on our platform?</span>
+                            <span>Don't have an account?</span>
                             <a href="auth-register-basic.html">
-                                <span>Create an account</span>
+                                <span>Contact your branch manager.</span>
                             </a>
                         </p>
 
-                        <div class="divider my-6">
+                        {{-- <div class="divider my-6">
                             <div class="divider-text">or</div>
                         </div>
 
@@ -152,7 +153,7 @@
                             <a href="javascript:;" class="btn btn-icon rounded-circle btn-text-google-plus">
                                 <i class="icon-base ti tabler-brand-google-filled icon-20px"></i>
                             </a>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
                 <!-- /Login -->

@@ -7,7 +7,7 @@
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title>Unique Coaching BD</title>
+    <title>Unique Coaching</title>
 
     <meta name="description" content="" />
 
@@ -74,8 +74,8 @@
                         <i class="icon-base ti tabler-menu-2 icon-lg align-middle text-heading fw-medium"></i>
                     </button>
                     <!-- Mobile menu toggle: End-->
-                    <a href="landing-page.html" class="app-brand-link">
-                        <span class="app-brand-logo demo">
+                    <a href="{{ url('/') }}" class="app-brand-link">
+                        {{-- <span class="app-brand-logo demo">
                             <span class="text-primary">
                                 <svg width="32" height="22" viewBox="0 0 32 22" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
@@ -93,8 +93,9 @@
                                         fill="currentColor" />
                                 </svg>
                             </span>
-                        </span>
-                        <span class="app-brand-text demo menu-text fw-bold ms-2 ps-1">Vuexy</span>
+                        </span> --}}
+                        <img src="{{ asset('assets/img/branding/logo.png') }}" alt="" class="app-brand-logo w-px-40">
+                        <span class="app-brand-text demo menu-text fw-bold ms-2 ps-1">Unique Coaching</span>
                     </a>
                 </div>
                 <!-- Menu logo wrapper: End -->
@@ -378,10 +379,18 @@
 
                     <!-- navbar button: Start -->
                     <li>
-                        <a href="{{ route('login') }}" class="btn btn-primary">
-                            <span class="tf-icons icon-base ti tabler-login scaleX-n1-rtl me-md-1"></span>
-                            <span class="d-none d-md-block">Login</span>
-                        </a>
+                        @auth
+                            <a href="{{ route('dashboard') }}" class="btn btn-primary">
+                                <span class="tf-icons icon-base ti tabler-login scaleX-n1-rtl me-md-1"></span>
+                                <span class="d-none d-md-block">Dashboard</span>
+                            </a>
+                        @else
+                            <a href="{{ route('login') }}" class="btn btn-primary">
+                                <span class="tf-icons icon-base ti tabler-login scaleX-n1-rtl me-md-1"></span>
+                                <span class="d-none d-md-block">Login</span>
+                            </a>
+                        @endauth
+                            
                     </li>
                     <!-- navbar button: End -->
                 </ul>
@@ -1673,13 +1682,9 @@
             <div
                 class="container d-flex flex-wrap justify-content-between flex-md-row flex-column text-center text-md-start">
                 <div class="mb-2 mb-md-0">
-                    <span class="footer-bottom-text">©
-                        <script>
-                            document.write(new Date().getFullYear());
-                        </script>
-                    </span>
-                    <a href="https://pixinvent.com" target="_blank" class="fw-medium text-white">Pixinvent,</a>
-                    <span class="footer-bottom-text"> Made with ❤️ for a better web.</span>
+                    <span class="footer-bottom-text">{{ date('Y') }} ©</span>
+                    <span class="footer-bottom-text"> Developed by </span>
+                    <a href="https://facebook.com/webweaverashik" target="_blank" class="fw-medium text-white">Ashikur Rahman</a>
                 </div>
                 <div>
                     <a href="https://github.com/pixinvent" class="me-1 text-white" target="_blank">

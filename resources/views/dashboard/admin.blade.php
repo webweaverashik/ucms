@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css') }}" />
 <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css') }}" />
 <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/flag-icons.css') }}" />
+<link rel="stylesheet" href="{{ asset('assets/vendor/libs/notyf/notyf.css') }}" />
 @endpush
 
 @push('page-css')
@@ -898,8 +899,23 @@
 <script src="{{ asset('assets/vendor/libs/apex-charts/apexcharts.js') }}"></script>
 <script src="{{ asset('assets/vendor/libs/swiper/swiper.js') }}"></script>
 <script src="{{ asset('assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js') }}"></script>
+<script src="{{ asset('assets/vendor/libs/notyf/notyf.js') }}"></script>
 @endpush
 
 @push('page-js')
 <script src="{{ asset('assets/js/dashboards-analytics.js') }}"></script>
+
+@if (session('success'))
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const notyf = new Notyf({
+                duration: 3000,
+                position: { x: 'right', y: 'top' },
+            });
+
+            notyf.success("{{ session('success') }}"); // Correct way to insert message
+        });
+    </script>
+@endif
+
 @endpush

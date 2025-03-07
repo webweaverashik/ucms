@@ -3,8 +3,7 @@
         <div
             class="footer-container d-flex align-items-center justify-content-between py-4 flex-md-row flex-column">
             <div class="text-body">
-                {{ date('Y') }} © <a href="https://facebook.com/webweaverashik" target="_blank"
-                    class="footer-link">Ashikur Rahman</a>
+                {{ date('Y') }} © <a href="https://facebook.com/webweaverashik" target="_blank" class="footer-link">Ashikur Rahman</a>
             </div>
             <div class="d-none d-lg-inline-block">
                 <a href="https://themeforest.net/licenses/standard" class="footer-link me-4"

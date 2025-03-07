@@ -6,7 +6,7 @@ use App\Http\Controllers\AuthController;
 
 
 Route::get('/', function() {
-    return view('home');
+    return view('home.index');
 });
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -14,7 +14,7 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('/dashboard', function () {
-        return view('dashboard');
+        return view('dashboard.admin');
     })->name('dashboard');
 
     // Only allow POST method for actual logout
