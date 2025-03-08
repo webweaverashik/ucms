@@ -39,7 +39,7 @@
     <!-- Vendors CSS -->
     
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
-    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/notyf/notyf.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/toastr/toastr.min.css') }}" />
 
     <!-- endbuild -->
 
@@ -202,7 +202,7 @@
     <script src="{{ asset('assets/vendor/libs/@form-validation/popular.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/@form-validation/bootstrap5.js') }}"></script>
     <script src="{{ asset('assets/vendor/libs/@form-validation/auto-focus.js') }}"></script>
-    <script src="{{ asset('assets/vendor/libs/notyf/notyf.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/toastr/toastr.min.js') }}"></script>
 
     <!-- Main JS -->
 
@@ -212,37 +212,7 @@
     <script src="{{ asset('assets/js/pages-auth.js') }}"></script>
 
 
-    @if (session('success'))
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                const notyf = new Notyf({
-                    duration: 3000,
-                    position: {
-                        x: 'right',
-                        y: 'top'
-                    },
-                });
-
-                notyf.success("{{ session('success') }}"); // Correct way to insert message
-            });
-        </script>
-    @endif
-
-    @if (session('error'))
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                const notyf = new Notyf({
-                    duration: 3000,
-                    position: {
-                        x: 'right',
-                        y: 'top'
-                    },
-                });
-
-                notyf.error("{{ session('error') }}"); // ✅ Properly escapes session message
-            });
-        </script>
-    @endif
+    @include('layouts.toastr')
 
 
 </body>

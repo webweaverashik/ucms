@@ -903,46 +903,4 @@
 @push('page-js')
 {{-- <script src="{{ asset('assets/js/dashboards-analytics.js') }}"></script> --}}
 
-@if (session('success'))
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const notyf = new Notyf({
-                duration: 3000,
-                position: { x: 'right', y: 'top' },
-            });
-
-            notyf.success("{{ session('success') }}"); // Correct way to insert message
-        });
-    </script>
-@endif
-
-@if (session('message'))
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const notyf = new Notyf({
-                duration: 3000, // Notification duration in milliseconds
-                position: { x: 'right', y: 'top' }, // Position on screen
-                types: [
-                    {
-                        type: 'warning',
-                        background: 'orange',
-                        icon: {
-                            className: 'material-icons',
-                            tagName: 'i',
-                            text: 'face',
-                        },
-                    }
-                ]
-            });
-
-            notyf.open({
-                type: 'warning',
-                message: "{{ session('message') }}"
-            });
-        });
-    </script>
-@endif
-
-
-
 @endpush

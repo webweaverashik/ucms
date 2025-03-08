@@ -16,7 +16,6 @@
 
     <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/iconify-icons.css') }}" />
     {{-- <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/fontawesome.css') }}" /> --}}
-    {{-- <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/line-awesome-1.3.0/css/line-awesome.min.css') }}" /> --}}
     {{-- <link rel= "stylesheet" href= "https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css" > --}}
     
     <!-- Core CSS -->
@@ -33,6 +32,9 @@
     
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/notyf/notyf.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/toastr/toastr.min.css') }}" />
+
+    
 
     <!-- endbuild -->
 

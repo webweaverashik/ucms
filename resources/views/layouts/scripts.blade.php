@@ -17,7 +17,8 @@
 
     
     
-    <script src="{{ asset('assets/vendor/libs/i18n/i18n.js') }}"></script> <!--Translation plugin-->
+    
+    {{-- <script src="{{ asset('assets/vendor/libs/i18n/i18n.js') }}"></script> <!--Translation plugin--> --}}
     
     <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
     
@@ -25,7 +26,7 @@
     
     <!-- Vendors JS -->
     @stack('vendor-js')
-    <script src="{{ asset('assets/vendor/libs/notyf/notyf.js') }}"></script>
+    <script src="{{ asset('assets/vendor/libs/toastr/toastr.min.js') }}"></script>
 
     <!-- Main JS -->
 

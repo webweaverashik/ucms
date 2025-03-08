@@ -48,6 +48,8 @@
     <!-- / Layout wrapper -->
 
     @include('layouts.scripts')
+    @include('layouts.toastr')
+
 </body>
 
 </html>

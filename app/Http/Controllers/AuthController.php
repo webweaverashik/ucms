@@ -14,9 +14,9 @@ class AuthController extends Controller
     public function showLogin()
     {
         if (Auth::check()) {
-            return redirect()->route('dashboard')->with('message', 'You are already logged in.');
+            return redirect()->route('dashboard')->with('warning', 'You are already logged in.');
         }
-        return view('auth.login')->with('message', 'Please login');
+        return view('auth.login')->with('warning', 'Please login first.');
     }
 
     // Handle login
@@ -31,7 +31,7 @@ class AuthController extends Controller
             return redirect()->route('dashboard')->with('success', 'Login successful');
         }
 
-        return back()->withErrors(['email' => 'Invalid credentials.']);
+        return back()->with('error', 'Invalid Credentials');
     }
 
     // Logout
