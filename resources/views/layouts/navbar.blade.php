@@ -436,31 +436,24 @@
                     </li>
                     <li>
                         <a class="dropdown-item" href="#">
-                            <i class="icon-base ti tabler-user me-3 icon-md"></i><span class="align-middle">My
-                                Profile</span>
+                            <i class="icon-base ti tabler-user me-3 icon-md"></i><span class="align-middle">My Profile</span>
                         </a>
                     </li>
                     <li>
                         <a class="dropdown-item" href="#">
-                            <i class="icon-base ti tabler-spy me-3 icon-md"></i><span class="align-middle">Login
-                                Activity</span>
+                            <i class="icon-base ti tabler-spy me-3 icon-md"></i><span class="align-middle">Login Activity</span>
                         </a>
                     </li>
-                    <li>
-                        <a class="dropdown-item" href="#">
-                            <i class="icon-base ti tabler-settings me-3 icon-md"></i><span class="align-middle">Settings</span>
-                        </a>
-                    </li>
-                    <li>
+                    {{-- <li>
                         <div class="dropdown-divider my-1 mx-n2"></div>
-                    </li>
+                    </li> --}}
                     <li>
                         <div class="d-grid px-2 pt-2 pb-1">
                             <form action="{{ route('logout') }}" method="POST">
                                 @csrf
-                                <button type="submit" class="btn btn-sm btn-danger d-flex w-100">
-                                    <small class="align-middle">Logout</small>
-                                    <i class="icon-base ti tabler-logout ms-2 icon-14px"></i>
+                                <button type="submit" class="btn btn-danger d-flex w-100">
+                                    <span class="align-middle">Logout</span>
+                                    <i class="icon-base ti tabler-logout ms-2 icon-md"></i>
                                 </button>
                             </form>
                         </div>

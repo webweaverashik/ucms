@@ -111,7 +111,7 @@
         <!-- fee menu start -->
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon icon-base ti tabler-currency-taka"></i>
+                <i class="menu-icon icon-base ti tabler-user-dollar"></i>
                 <div data-i18n="Fee">Fee</div>
             </a>
             <ul class="menu-sub">
@@ -226,7 +226,7 @@
         <!-- Payment menu start -->
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon icon-base ti tabler-coin-taka"></i>
+                <i class="menu-icon icon-base ti tabler-cash-register"></i>
                 <div data-i18n="Payment">Payment</div>
             </a>
             <ul class="menu-sub">
@@ -253,7 +253,7 @@
         <!-- Teachers menu start -->
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon icon-base ti tabler-school"></i>
+                <i class="menu-icon icon-base ti tabler-user-scan"></i>
                 <div data-i18n="Teachers">Teachers</div>
             </a>
             <ul class="menu-sub">
@@ -274,7 +274,7 @@
         <!-- salary menu start -->
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon icon-base ti tabler-school"></i>
+                <i class="menu-icon icon-base ti tabler-calendar-dollar"></i>
                 <div data-i18n="Salary">Salary</div>
             </a>
             <ul class="menu-sub">
