@@ -32,7 +32,6 @@
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base ti tabler-users-group"></i>
-                {{-- <i class="menu-icon fa-solid fa-graduation-cap"></i> --}}
                 <div data-i18n="Student Info">Student Info</div>
             </a>
             <ul class="menu-sub">
@@ -43,12 +42,17 @@
                 </li>
                 <li class="menu-item">
                     <a href="#" class="menu-link">
-                        <div data-i18n="Guardians">Guardians</div>
+                        <div data-i18n="Subject Assign">Subject Assign</div>
                     </a>
                 </li>
                 <li class="menu-item">
                     <a href="#" class="menu-link">
                         <div data-i18n="Promote Students">Promote Students</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#" class="menu-link">
+                        <div data-i18n="Transfer Student">Transfer Student</div>
                     </a>
                 </li>
             </ul>
@@ -59,6 +63,7 @@
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon icon-base ti tabler-school"></i>
+
                 <div data-i18n="Admission">Admission</div>
             </a>
             <ul class="menu-sub">
@@ -69,7 +74,7 @@
                 </li>
                 <li class="menu-item">
                     <a href="#" class="menu-link">
-                        <div data-i18n="Fee Allocation">Fee Allocation</div>
+                        <div data-i18n="Pending Approval">Pending Approval</div>
                     </a>
                 </li>
             </ul>
@@ -79,8 +84,9 @@
         <!-- academic menu start -->
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon icon-base ti tabler-building-bank"></i>
-                <div data-i18n="Academic Info">Academic Info</div>
+                <i class="menu-icon icon-base ti tabler-vocabulary"></i>
+
+                <div data-i18n="Academic">Academic</div>
             </a>
             <ul class="menu-sub">
                 <li class="menu-item">
@@ -102,27 +108,94 @@
         </li>
         <!-- academic menu end -->
 
-        <!-- sheet menu start -->
+        <!-- fee menu start -->
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon icon-base ti tabler-books"></i>
-                <div data-i18n="Academic Info">Notes &amp; Sheet</div>
+                <i class="menu-icon icon-base ti tabler-currency-taka"></i>
+                <div data-i18n="Fee">Fee</div>
             </a>
             <ul class="menu-sub">
                 <li class="menu-item">
                     <a href="#" class="menu-link">
-                        <div data-i18n="Class">All Sheets</div>
+                        <div data-i18n="Tuition Fee">Tuition Fee</div>
                     </a>
                 </li>
                 <li class="menu-item">
                     <a href="#" class="menu-link">
-                        <div data-i18n="Shifts">Sheet Distribution</div>
+                        <div data-i18n="Sheet Fee">Sheet Fee</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <!-- fee menu end -->
+
+        <!-- sheet menu start -->
+        <li class="menu-item">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon icon-base ti tabler-school"></i>
+                <div data-i18n="Sheets">Notes &amp; Sheet</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item">
+                    <a href="#" class="menu-link">
+                        <div data-i18n="All Sheets">All Sheets</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#" class="menu-link">
+                        <div data-i18n="Sheet Distribution">Sheet Distribution</div>
                     </a>
                 </li>
             </ul>
         </li>
         <!-- sheet menu end -->
 
+        <!-- Guardians & Siblings Module -->
+        <li class="menu-header small">
+            <span class="menu-header-text" data-i18n="Guardians & Siblings">Guardians &amp; Siblings</span>
+        </li>
+
+        <!-- guardins menu start -->
+        <li class="menu-item">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon icon-base ti tabler-friends"></i>
+                <div data-i18n="Guardians">Guardians</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item">
+                    <a href="#" class="menu-link">
+                        <div data-i18n="All Guardians">All Guardians</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#" class="menu-link">
+                        <div data-i18n="Add New">Add New</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <!-- guardins menu end -->
+
+        <!-- siblings menu start -->
+        <li class="menu-item">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon icon-base ti tabler-heart-handshake"></i>
+                <div data-i18n="Siblings">Siblings</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item">
+                    <a href="#" class="menu-link">
+                        <div data-i18n="All Siblings">All Siblings</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#" class="menu-link">
+                        <div data-i18n="Add New">Add New</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <!-- siblings menu end -->
 
         <!-- Payment & Invoice Module -->
         <li class="menu-header small">
@@ -132,7 +205,7 @@
         <!-- Invoice menu start -->
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon icon-base ti tabler-file-invoice"></i>
+                <i class="menu-icon icon-base ti tabler-notes"></i>
                 <div data-i18n="Invoice">Invoice</div>
             </a>
             <ul class="menu-sub">
@@ -153,7 +226,7 @@
         <!-- Payment menu start -->
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon icon-base ti tabler-receipt-dollar"></i>
+                <i class="menu-icon icon-base ti tabler-coin-taka"></i>
                 <div data-i18n="Payment">Payment</div>
             </a>
             <ul class="menu-sub">
@@ -170,6 +243,125 @@
             </ul>
         </li>
         <!-- Payment menu end -->
+
+
+        <!-- Teacher Salary Module -->
+        <li class="menu-header small">
+            <span class="menu-header-text" data-i18n="Teacher Info">Teacher &amp; Info</span>
+        </li>
+
+        <!-- Teachers menu start -->
+        <li class="menu-item">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon icon-base ti tabler-school"></i>
+                <div data-i18n="Teachers">Teachers</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item">
+                    <a href="#" class="menu-link">
+                        <div data-i18n="All Teachers">All Teachers</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#" class="menu-link">
+                        <div data-i18n="Add New">Add New</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <!-- Teachers menu end -->
+
+        <!-- salary menu start -->
+        <li class="menu-item">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon icon-base ti tabler-school"></i>
+                <div data-i18n="Salary">Salary</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item">
+                    <a href="#" class="menu-link">
+                        <div data-i18n="Salary Satements">Salary Satements</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#" class="menu-link">
+                        <div data-i18n="Prepare New">Prepare New</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <!-- salary menu end -->
+
+
+        <!-- Others Module -->
+        <li class="menu-header small">
+            <span class="menu-header-text" data-i18n="Settings & Reporting">Settings &amp; Reporting</span>
+        </li>
+
+        <!-- report menu start -->
+        <li class="menu-item">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon icon-base ti tabler-report"></i>
+                <div data-i18n="Reports">Reports</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item">
+                    <a href="#" class="menu-link">
+                        <div data-i18n="Salary Satements">Salary Satements</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#" class="menu-link">
+                        <div data-i18n="Prepare New">Prepare New</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <!-- report menu end -->
+
+        <!-- users menu start -->
+        <li class="menu-item">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon icon-base ti tabler-users"></i>
+                <div data-i18n="Users">Users</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item">
+                    <a href="#" class="menu-link">
+                        <div data-i18n="All Users">All Users</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#" class="menu-link">
+                        <div data-i18n="Roles & Permissions">Roles &amp; Permissions</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <!-- users menu end -->
+
+        <!-- settings menu start -->
+        <li class="menu-item">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class= "menu-icon icon-base ti tabler-settings"></i>
+                <div data-i18n="Settings">Settings</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item">
+                    <a href="#" class="menu-link">
+                        <div data-i18n="SMS Settings">SMS Settings</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#" class="menu-link">
+                        <div data-i18n="System Settings">System Settings</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <!-- settings menu end -->
+
+
     </ul>
 </aside>
 

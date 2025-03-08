@@ -87,7 +87,7 @@
             <!-- / Style Switcher-->
 
             <!-- Quick links  -->
-            {{-- <li class="nav-item dropdown-shortcuts navbar-dropdown dropdown">
+            <li class="nav-item dropdown-shortcuts navbar-dropdown dropdown">
                 <a class="nav-link dropdown-toggle hide-arrow btn btn-icon btn-text-secondary rounded-pill"
                     href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside"
                     aria-expanded="false">
@@ -150,7 +150,7 @@
                                 <span class="dropdown-shortcuts-icon rounded-circle mb-3">
                                     <i class="icon-base ti tabler-settings icon-26px text-heading"></i>
                                 </span>
-                                <a href="pages-account-settings-account.html" class="stretched-link">Setting</a>
+                                <a href="#" class="stretched-link">Setting</a>
                                 <small>Account Settings</small>
                             </div>
                         </div>
@@ -172,7 +172,7 @@
                         </div>
                     </div>
                 </div>
-            </li> --}}
+            </li>
             <!-- Quick links -->
 
             <!-- Notification -->
@@ -203,13 +203,13 @@
                                 <div class="d-flex">
                                     <div class="flex-shrink-0 me-3">
                                         <div class="avatar">
-                                            <img src="assets/img/avatars/1.png" alt class="rounded-circle" />
+                                            <img src="../../assets/img/avatars/1.png" alt class="rounded-circle" />
                                         </div>
                                     </div>
                                     <div class="flex-grow-1">
                                         <h6 class="small mb-1">Congratulation Lettie 🎉</h6>
-                                        <small class="mb-1 d-block text-body">Won the monthly best
-                                            seller gold badge</small>
+                                        <small class="mb-1 d-block text-body">Won the monthly best seller gold
+                                            badge</small>
                                         <small class="text-body-secondary">1h ago</small>
                                     </div>
                                     <div class="flex-shrink-0 dropdown-notifications-actions">
@@ -229,8 +229,7 @@
                                     </div>
                                     <div class="flex-grow-1">
                                         <h6 class="mb-1 small">Charles Franklin</h6>
-                                        <small class="mb-1 d-block text-body">Accepted your
-                                            connection</small>
+                                        <small class="mb-1 d-block text-body">Accepted your connection</small>
                                         <small class="text-body-secondary">12hr ago</small>
                                     </div>
                                     <div class="flex-shrink-0 dropdown-notifications-actions">
@@ -246,13 +245,12 @@
                                 <div class="d-flex">
                                     <div class="flex-shrink-0 me-3">
                                         <div class="avatar">
-                                            <img src="assets/img/avatars/2.png" alt class="rounded-circle" />
+                                            <img src="../../assets/img/avatars/2.png" alt class="rounded-circle" />
                                         </div>
                                     </div>
                                     <div class="flex-grow-1">
                                         <h6 class="mb-1 small">New Message ✉️</h6>
-                                        <small class="mb-1 d-block text-body">You have new message
-                                            from Natalie</small>
+                                        <small class="mb-1 d-block text-body">You have new message from Natalie</small>
                                         <small class="text-body-secondary">1h ago</small>
                                     </div>
                                     <div class="flex-shrink-0 dropdown-notifications-actions">
@@ -273,8 +271,7 @@
                                     </div>
                                     <div class="flex-grow-1">
                                         <h6 class="mb-1 small">Whoo! You have new order 🛒</h6>
-                                        <small class="mb-1 d-block text-body">ACME Inc. made new order
-                                            $1,154</small>
+                                        <small class="mb-1 d-block text-body">ACME Inc. made new order $1,154</small>
                                         <small class="text-body-secondary">1 day ago</small>
                                     </div>
                                     <div class="flex-shrink-0 dropdown-notifications-actions">
@@ -290,13 +287,13 @@
                                 <div class="d-flex">
                                     <div class="flex-shrink-0 me-3">
                                         <div class="avatar">
-                                            <img src="assets/img/avatars/9.png" alt class="rounded-circle" />
+                                            <img src="../../assets/img/avatars/9.png" alt class="rounded-circle" />
                                         </div>
                                     </div>
                                     <div class="flex-grow-1">
                                         <h6 class="mb-1 small">Application has been approved 🚀</h6>
-                                        <small class="mb-1 d-block text-body">Your ABC project
-                                            application has been approved.</small>
+                                        <small class="mb-1 d-block text-body">Your ABC project application has been
+                                            approved.</small>
                                         <small class="text-body-secondary">2 days ago</small>
                                     </div>
                                     <div class="flex-shrink-0 dropdown-notifications-actions">
@@ -318,8 +315,8 @@
                                     </div>
                                     <div class="flex-grow-1">
                                         <h6 class="mb-1 small">Monthly report is generated</h6>
-                                        <small class="mb-1 d-block text-body">July monthly financial
-                                            report is generated </small>
+                                        <small class="mb-1 d-block text-body">July monthly financial report is
+                                            generated </small>
                                         <small class="text-body-secondary">3 days ago</small>
                                     </div>
                                     <div class="flex-shrink-0 dropdown-notifications-actions">
@@ -335,13 +332,12 @@
                                 <div class="d-flex">
                                     <div class="flex-shrink-0 me-3">
                                         <div class="avatar">
-                                            <img src="assets/img/avatars/5.png" alt class="rounded-circle" />
+                                            <img src="../../assets/img/avatars/5.png" alt class="rounded-circle" />
                                         </div>
                                     </div>
                                     <div class="flex-grow-1">
                                         <h6 class="mb-1 small">Send connection request</h6>
-                                        <small class="mb-1 d-block text-body">Peter sent you
-                                            connection request</small>
+                                        <small class="mb-1 d-block text-body">Peter sent you connection request</small>
                                         <small class="text-body-secondary">4 days ago</small>
                                     </div>
                                     <div class="flex-shrink-0 dropdown-notifications-actions">
@@ -356,13 +352,12 @@
                                 <div class="d-flex">
                                     <div class="flex-shrink-0 me-3">
                                         <div class="avatar">
-                                            <img src="assets/img/avatars/6.png" alt class="rounded-circle" />
+                                            <img src="../../assets/img/avatars/6.png" alt class="rounded-circle" />
                                         </div>
                                     </div>
                                     <div class="flex-grow-1">
                                         <h6 class="mb-1 small">New message from Jane</h6>
-                                        <small class="mb-1 d-block text-body">Your have new message
-                                            from Jane</small>
+                                        <small class="mb-1 d-block text-body">Your have new message from Jane</small>
                                         <small class="text-body-secondary">5 days ago</small>
                                     </div>
                                     <div class="flex-shrink-0 dropdown-notifications-actions">
@@ -384,8 +379,8 @@
                                     </div>
                                     <div class="flex-grow-1">
                                         <h6 class="mb-1 small">CPU is running high</h6>
-                                        <small class="mb-1 d-block text-body">CPU Utilization Percent
-                                            is currently at 88.63%,</small>
+                                        <small class="mb-1 d-block text-body">CPU Utilization Percent is currently at
+                                            88.63%,</small>
                                         <small class="text-body-secondary">5 days ago</small>
                                     </div>
                                     <div class="flex-shrink-0 dropdown-notifications-actions">
@@ -414,21 +409,24 @@
                 <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);"
                     data-bs-toggle="dropdown">
                     <div class="avatar avatar-online">
-                        <img src="{{ asset(auth()->user()->photo_url ?? 'assets/img/avatars/dummy.png') }}" alt class="rounded-circle" />
+                        <img src="{{ asset(auth()->user()->photo_url ?? 'assets/img/avatars/dummy.png') }}" alt
+                            class="rounded-circle" />
                     </div>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li>
-                        <a class="dropdown-item mt-0" href="pages-account-settings-account.html">
+                        <a class="dropdown-item mt-0" href="#">
                             <div class="d-flex align-items-center">
                                 <div class="flex-shrink-0 me-2">
                                     <div class="avatar avatar-online">
-                                        <img src="{{ asset(auth()->user()->photo_url ?? 'assets/img/avatars/dummy.png') }}" alt class="rounded-circle" />
+                                        <img src="{{ asset(auth()->user()->photo_url ?? 'assets/img/avatars/dummy.png') }}"
+                                            alt class="rounded-circle" />
                                     </div>
                                 </div>
                                 <div class="flex-grow-1">
                                     <h6 class="mb-0">{{ auth()->user()->full_name }}</h6>
-                                    <small class="text-body-secondary">{{ auth()->user()->branch->branch_name ?? 'Admin' }}</small>
+                                    <small
+                                        class="text-body-secondary">{{ auth()->user()->branch->branch_name ?? 'Admin' }}</small>
                                 </div>
                             </div>
                         </a>
@@ -437,41 +435,24 @@
                         <div class="dropdown-divider my-1 mx-n2"></div>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="pages-profile-user.html">
+                        <a class="dropdown-item" href="#">
                             <i class="icon-base ti tabler-user me-3 icon-md"></i><span class="align-middle">My
                                 Profile</span>
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="pages-account-settings-account.html">
-                            <i class="icon-base ti tabler-settings me-3 icon-md"></i><span
-                                class="align-middle">Settings</span>
+                        <a class="dropdown-item" href="#">
+                            <i class="icon-base ti tabler-spy me-3 icon-md"></i><span class="align-middle">Login
+                                Activity</span>
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="pages-account-settings-billing.html">
-                            <span class="d-flex align-items-center align-middle">
-                                <i class="flex-shrink-0 icon-base ti tabler-file-dollar me-3 icon-md"></i><span
-                                    class="flex-grow-1 align-middle">Billing</span>
-                                <span
-                                    class="flex-shrink-0 badge bg-danger d-flex align-items-center justify-content-center">4</span>
-                            </span>
+                        <a class="dropdown-item" href="#">
+                            <i class="icon-base ti tabler-settings me-3 icon-md"></i><span class="align-middle">Settings</span>
                         </a>
                     </li>
                     <li>
                         <div class="dropdown-divider my-1 mx-n2"></div>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="pages-pricing.html">
-                            <i class="icon-base ti tabler-currency-dollar me-3 icon-md"></i><span
-                                class="align-middle">Pricing</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="pages-faq.html">
-                            <i class="icon-base ti tabler-question-mark me-3 icon-md"></i><span
-                                class="align-middle">FAQ</span>
-                        </a>
                     </li>
                     <li>
                         <div class="d-grid px-2 pt-2 pb-1">

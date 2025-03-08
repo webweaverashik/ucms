@@ -4,7 +4,7 @@
 
     <title>@yield('title', 'Dashboard') - UCMS</title>
 
-    <meta name="description" content="" />
+    <meta name="description" content="Unique Coaching Management System (UCMS)" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
@@ -16,7 +16,8 @@
 
     <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/iconify-icons.css') }}" />
     {{-- <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/fontawesome.css') }}" /> --}}
-    
+    {{-- <link rel="stylesheet" href="{{ asset('assets/vendor/fonts/line-awesome-1.3.0/css/line-awesome.min.css') }}" /> --}}
+    {{-- <link rel= "stylesheet" href= "https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css" > --}}
     
     <!-- Core CSS -->
     <!-- build:css assets/vendor/css/theme.css  -->
@@ -45,7 +46,7 @@
     <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
 
     <!--? Template customizer: To hide customizer set displayCustomizer value false in config.js.  -->
-    {{-- <script src="{{ asset('assets/vendor/js/template-customizer.js') }}"></script> --}}
+    <script src="{{ asset('assets/vendor/js/template-customizer.js') }}"></script>
 
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
 

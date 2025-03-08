@@ -17,7 +17,7 @@
 
     
     
-    {{-- <script src="{{ asset('assets/vendor/libs/i18n/i18n.js') }}"></script> <!--Translation plugin--> --}}
+    <script src="{{ asset('assets/vendor/libs/i18n/i18n.js') }}"></script> <!--Translation plugin-->
     
     <script src="{{ asset('assets/vendor/js/menu.js') }}"></script>
     

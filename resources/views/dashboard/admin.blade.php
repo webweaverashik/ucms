@@ -4,11 +4,11 @@
 
 
 @push('vendor-css')
-<link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
+{{-- <link rel="stylesheet" href="{{ asset('assets/vendor/libs/apex-charts/apex-charts.css') }}" />
 <link rel="stylesheet" href="{{ asset('assets/vendor/libs/swiper/swiper.css') }}" />
 <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css') }}" />
 <link rel="stylesheet" href="{{ asset('assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css') }}" />
-<link rel="stylesheet" href="{{ asset('assets/vendor/fonts/flag-icons.css') }}" />
+<link rel="stylesheet" href="{{ asset('assets/vendor/fonts/flag-icons.css') }}" /> --}}
 @endpush
 
 @push('page-css')
@@ -927,8 +927,9 @@
                         type: 'warning',
                         background: 'orange',
                         icon: {
-                            className: 'ti tabler-alert-circle',
-                            tagName: 'i'
+                            className: 'material-icons',
+                            tagName: 'i',
+                            text: 'face',
                         },
                     }
                 ]

@@ -71,7 +71,7 @@ window.templateName = document.documentElement.getAttribute('data-template');
 
 if (typeof TemplateCustomizer !== 'undefined') {
   window.templateCustomizer = new TemplateCustomizer({
-    displayCustomizer: true,
+    displayCustomizer: false,
     lang: localStorage.getItem('templateCustomizer-' + templateName + '--Lang') || 'en', // Set default language here
     // defaultPrimaryColor: '#D11BB4',
     // defaultSkin: 1,
@@ -85,15 +85,15 @@ if (typeof TemplateCustomizer !== 'undefined') {
     // defaultFooterFixed: false,
     // defaultShowDropdownOnHover: false,
     controls: [
-      'color',
-      'theme',
-      'skins',
-      'semiDark',
-      'layoutCollapsed',
-      'layoutNavbarOptions',
-      'headerType',
-      'contentLayout',
-      'rtl'
+      // 'color',
+      // 'theme',
+      // 'skins',
+      // 'semiDark',
+      // 'layoutCollapsed',
+      // 'layoutNavbarOptions',
+      // 'headerType',
+      // 'contentLayout',
+      // 'rtl'
     ]
   });
 }
