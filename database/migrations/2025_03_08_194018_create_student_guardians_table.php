@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('student_guardians', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
-            $table->foreignId('guardian_id')->constrained('guardians')->cascadeOnDelete();
+            $table->foreignId('student_id');
+            $table->foreignId('guardian_id');
             $table->string('relationship');
             $table->boolean('is_primary')->default(false);
             $table->timestamps();

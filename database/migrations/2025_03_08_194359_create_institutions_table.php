@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('eiin_number')->unique();
             $table->enum('type', ['school', 'college']);
             $table->softDeletes();
-            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('deleted_by')->nullable();
             $table->timestamps();
         });
     }

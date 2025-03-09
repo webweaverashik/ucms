@@ -11,13 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('mobile_numbers', function (Blueprint $table) {
+        Schema::create('subjects_taken', function (Blueprint $table) {
             $table->id();
-            $table->string('mobile_number', 11);
-            $table->enum('number_type', ['home', 'sms', 'whatsapp']);
             $table->foreignId('student_id');
-            $table->softDeletes();
-            $table->foreignId('deleted_by')->nullable();
+            $table->foreignId('subject_id');
+            $table->boolean('is_4th_subject')->default(false); // 1 = 4th Subject, 0 = Main Subject
             $table->timestamps();
         });
     }
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mobile_numbers');
+        Schema::dropIfExists('subjects_taken');
     }
 };

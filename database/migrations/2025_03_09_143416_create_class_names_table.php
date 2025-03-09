@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('mobile_numbers', function (Blueprint $table) {
+        Schema::create('class_names', function (Blueprint $table) {
             $table->id();
-            $table->string('mobile_number', 11);
-            $table->enum('number_type', ['home', 'sms', 'whatsapp']);
-            $table->foreignId('student_id');
-            $table->softDeletes();
+            $table->string('name'); // Class levels (IV, V, IX, HSC)
+            $table->foreignId('branch_id');
+            $table->softDeletes(); // Enables soft delete feature
             $table->foreignId('deleted_by')->nullable();
             $table->timestamps();
         });
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mobile_numbers');
+        Schema::dropIfExists('class_names');
     }
 };

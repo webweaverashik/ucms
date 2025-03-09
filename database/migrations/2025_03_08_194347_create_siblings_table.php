@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('full_name');
             $table->string('class');
-            $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('student_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('institution_id');
+            $table->foreignId('student_id');
             $table->softDeletes();
-            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('deleted_by')->nullable();
             $table->timestamps();
         });
     }

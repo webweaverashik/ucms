@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('student_activations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('student_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('student_id');
             $table->enum('active_status', ['active', 'inactive'])->default('active');
             $table->text('reason')->nullable();
-            $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('created_by');
             $table->timestamps();
         });
     }
