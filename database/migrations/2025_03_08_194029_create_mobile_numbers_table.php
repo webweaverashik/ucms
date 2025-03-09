@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('mobile_numbers', function (Blueprint $table) {
             $table->id();
+            $table->string('mobile_number', 11);
+            $table->enum('number_type', ['home', 'sms', 'whatsapp']);
+            $table->foreignId('student_id')->constrained()->cascadeOnDelete();
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }

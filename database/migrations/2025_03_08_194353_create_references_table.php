@@ -13,7 +13,12 @@ return new class extends Migration
     {
         Schema::create('references', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('referer_id'); // Can be a student or a teacher
+            $table->enum('referer_type', ['student', 'teacher']);
             $table->timestamps();
+
+            // Index for faster lookup
+            $table->index(['referer_id', 'referer_type']);
         });
     }
 

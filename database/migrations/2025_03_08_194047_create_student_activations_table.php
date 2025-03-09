@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('student_siblings', function (Blueprint $table) {
+        Schema::create('student_activations', function (Blueprint $table) {
             $table->id();
-            $table->string('full_name');
-            $table->string('class');
-            $table->foreignId('institution_id')->constrained()->cascadeOnDelete();
             $table->foreignId('student_id')->constrained()->cascadeOnDelete();
-            $table->softDeletes();
-            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->enum('active_status', ['active', 'inactive'])->default('active');
+            $table->text('reason')->nullable();
+            $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }
@@ -28,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('siblings');
+        Schema::dropIfExists('student_activations');
     }
 };

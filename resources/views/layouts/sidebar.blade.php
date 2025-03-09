@@ -77,6 +77,11 @@
                         <div data-i18n="Pending Approval">Pending Approval</div>
                     </a>
                 </li>
+                <li class="menu-item">
+                    <a href="#" class="menu-link">
+                        <div data-i18n="Tuition Fee">Tuition Fee</div>
+                    </a>
+                </li>
             </ul>
         </li>
         <!-- admission menu end -->
@@ -108,27 +113,6 @@
         </li>
         <!-- academic menu end -->
 
-        <!-- fee menu start -->
-        <li class="menu-item">
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon icon-base ti tabler-user-dollar"></i>
-                <div data-i18n="Fee">Fee</div>
-            </a>
-            <ul class="menu-sub">
-                <li class="menu-item">
-                    <a href="#" class="menu-link">
-                        <div data-i18n="Tuition Fee">Tuition Fee</div>
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="#" class="menu-link">
-                        <div data-i18n="Sheet Fee">Sheet Fee</div>
-                    </a>
-                </li>
-            </ul>
-        </li>
-        <!-- fee menu end -->
-
         <!-- sheet menu start -->
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -144,6 +128,11 @@
                 <li class="menu-item">
                     <a href="#" class="menu-link">
                         <div data-i18n="Sheet Distribution">Sheet Distribution</div>
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#" class="menu-link">
+                        <div data-i18n="Sheet Fee">Sheet Fee</div>
                     </a>
                 </li>
             </ul>

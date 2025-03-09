@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('institutions', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->string('eiin_number')->unique();
+            $table->enum('type', ['school', 'college']);
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }

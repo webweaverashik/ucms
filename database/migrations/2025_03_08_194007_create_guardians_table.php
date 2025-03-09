@@ -13,7 +13,15 @@ return new class extends Migration
     {
         Schema::create('guardians', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->string('mobile_number', 11);
+            $table->enum('gender', ['male', 'female']);
+            $table->text('address')->nullable();
+            $table->foreignId('created_by')->constrained('users')->cascadeOnDelete(); 
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
+
         });
     }
 
