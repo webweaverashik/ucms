@@ -11,9 +11,8 @@ class Reference extends Model
 
     protected $fillable = ['referer_id', 'referer_type'];
 
-    /**
-     * Get the referer model (student or teacher).
-     */
+    
+    // Get the referer model (student or teacher).
     public function referer()
     {
         return $this->morphTo();
