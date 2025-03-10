@@ -9,12 +9,7 @@ class StudentGuardian extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'student_id',
-        'guardian_id',
-        'relationship',
-        'is_primary',
-    ];
+    protected $fillable = ['student_id', 'guardian_id', 'relationship', 'is_primary'];
 
     /**
      * Get the student associated with this guardian.
@@ -32,4 +27,3 @@ class StudentGuardian extends Model
         return $this->belongsTo(Guardian::class);
     }
 }
-

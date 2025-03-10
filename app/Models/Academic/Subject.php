@@ -11,13 +11,7 @@ class Subject extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = [
-        'subject_name',
-        'academic_group',
-        'is_mandatory',
-        'class_id',
-        'deleted_by',
-    ];
+    protected $fillable = ['subject_name', 'academic_group', 'is_mandatory', 'class_id', 'deleted_by'];
 
     public function class()
     {
@@ -26,8 +20,6 @@ class Subject extends Model
 
     public function students()
     {
-        return $this->belongsToMany(Student::class, 'subjects_taken', 'subject_id', 'student_id')
-            ->withPivot('is_4th_subject')
-            ->withTimestamps();
+        return $this->belongsToMany(Student::class, 'subjects_taken', 'subject_id', 'student_id')->withPivot('is_4th_subject')->withTimestamps();
     }
 }

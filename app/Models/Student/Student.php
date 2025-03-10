@@ -8,11 +8,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Academic\ClassName;
 use App\Models\Academic\Institution;
 use App\Models\Branch;
-use App\Models\Student\StudentActivation;
-use App\Models\Student\StudentGuardian;
-use App\Models\Student\Reference;
-use App\Models\Student\MobileNumber;
-use App\Models\Student\Sibling;
 
 class Student extends Model
 {

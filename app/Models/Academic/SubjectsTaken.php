@@ -10,11 +10,7 @@ class SubjectsTaken extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'student_id',
-        'subject_id',
-        'is_4th_subject',
-    ];
+    protected $fillable = ['student_id', 'subject_id', 'is_4th_subject'];
 
     // Get all students who have taken this subject
     public function student()

@@ -2,7 +2,6 @@
 
 namespace App\Models\Student;
 
-use App\Models\Student\Student;
 use App\Models\Academic\Institution;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
