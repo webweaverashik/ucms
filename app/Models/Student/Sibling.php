@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Models\Student;
+
+use App\Models\Student\Student;
+use App\Models\Academic\Institution;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+class Sibling extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    protected $table = 'student_siblings';
+
+    protected $fillable = ['full_name', 'class', 'institution_id', 'student_id', 'deleted_by'];
+
+    // Define relationships
+    public function student()
+    {
+        return $this->belongsTo(Student::class, 'student_id');
+    }
+
+    public function institution()
+    {
+        return $this->belongsTo(Institution::class, 'institution_id');
+    }
+}
