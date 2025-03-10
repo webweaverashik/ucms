@@ -2,12 +2,14 @@
 
 namespace App\Models\Student;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Branch;
+use App\Models\Sheets\SheetTaken;
 use App\Models\Academic\ClassName;
 use App\Models\Academic\Institution;
-use App\Models\Branch;
+use App\Models\Academic\SubjectTaken;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Student extends Model
 {
@@ -73,5 +75,17 @@ class Student extends Model
     public function siblings()
     {
         return $this->hasMany(Sibling::class);
+    }
+
+    // Get all subjects taken by the student:
+    public function subjectsTaken() 
+    {
+        return $this->hasMany(SubjectTaken::class);
+    }
+
+    // Get all the sheets taken by the student
+    public function sheetsTaken() 
+    {
+        return $this->hasMany(SheetTaken::class);
     }
 }
