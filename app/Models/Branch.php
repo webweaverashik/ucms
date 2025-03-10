@@ -21,7 +21,7 @@ class Branch extends Model
     // Get all the students in the branch
     public function students()
     {
-        return $this->hasMany(Student::class, 'branch_id');
+        return $this->hasMany(Student::class);
     }
 
     // Get all the teachers in the branch
@@ -33,6 +33,6 @@ class Branch extends Model
     // Get all the classes in the branch
     public function classes()
     {
-        return $this->hasMany(ClassName::class, 'branch_id');
+        return $this->hasMany(ClassName::class);
     }
 }
