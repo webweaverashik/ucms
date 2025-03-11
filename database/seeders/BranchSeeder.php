@@ -9,6 +9,6 @@ class BranchSeeder extends Seeder
 {
     public function run(): void
     {
-        Branch::factory()->count(2)->create(); // Creates 2 branches
+        Branch::factory()->count(2)->create(); // Randomly create a new branch
     }
 }

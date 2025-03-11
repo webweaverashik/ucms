@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ClassNameFactory extends Factory
 {
+
+    // ------- This factory is not being used ---------
+
     protected $model = ClassName::class;
 
     public function definition(): array

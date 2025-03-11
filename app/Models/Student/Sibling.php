@@ -11,7 +11,7 @@ class Sibling extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'student_siblings';
+    protected $table = 'siblings';
 
     protected $fillable = ['full_name', 'class', 'institution_id', 'student_id', 'deleted_by'];
 

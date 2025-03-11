@@ -11,7 +11,7 @@ class Branch extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['branch_name', 'address', 'phone_number'];
+    protected $fillable = ['branch_name', 'branch_prefix', 'address', 'phone_number'];
 
     /**
      * Get all the users in the branch

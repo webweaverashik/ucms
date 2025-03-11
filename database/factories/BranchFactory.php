@@ -13,11 +13,18 @@ class BranchFactory extends Factory
     {
         // List of predefined branch names
         $branch_names = ['Khilgaon', 'Goran'];
+        static $index = 0; // Use a static variable to track the index
+
+        $branch_name = $branch_names[$index % count($branch_names)]; // Get branch name serially
+        $branch_prefix = substr($branch_name, 0, 1);
+
+        $index++; // Increment the index for the next call
 
         return [
-            'branch_name' => $this->faker->randomElement($branch_names), // Randomly pick between Khilgaon or Goran
-            'address' => $this->faker->address, // Use a real BD address
-            'phone_number' => '01' . $this->faker->numberBetween(100000000, 999999999), // Valid BD 11-digit phone number
+            'branch_name' => $branch_name,
+            'branch_prefix' => $branch_prefix,
+            'address' => $this->faker->address,
+            'phone_number' => '01' . $this->faker->numberBetween(100000000, 999999999),
         ];
     }
 }
