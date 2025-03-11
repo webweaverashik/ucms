@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('shifts', function (Blueprint $table) {
             $table->id();
             $table->string('name'); // Morning/Evening
+            $table->foreignId('branch_id'); // Morning/Evening
             $table->softDeletes(); // Enables soft delete feature
             $table->foreignId('deleted_by')->nullable();
             $table->timestamps();

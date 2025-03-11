@@ -11,7 +11,7 @@ class Shift extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'deleted_by'];
+    protected $fillable = ['name', 'branch_id', 'deleted_by'];
 
     /**
      * Get all students assigned to this shift.
