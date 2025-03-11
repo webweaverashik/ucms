@@ -13,6 +13,11 @@ class StudentSeeder extends Seeder
      */
     public function run(): void
     {
-        Student::factory()->count(50)->create(); // Create 50 students
+        // In your StudentSeeder, before creating students:
+        $faker = \Faker\Factory::create();
+        $faker->unique(true); // Reset the unique generator
+
+        // Then, create your students using the factory
+        Student::factory()->count(30)->create(); // Or whatever number
     }
 }
