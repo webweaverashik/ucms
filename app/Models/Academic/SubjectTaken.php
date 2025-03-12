@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class SubjectTaken extends Model
 {
     use HasFactory;
+    
+    protected $table = 'subjects_taken';
 
     protected $fillable = ['student_id', 'subject_id', 'is_4th_subject'];
 
