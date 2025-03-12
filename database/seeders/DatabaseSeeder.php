@@ -14,6 +14,7 @@ use Database\Seeders\Student\ReferenceSeeder;
 use Database\Seeders\Academic\ClassNameSeeder;
 use Database\Seeders\Academic\InstitutionSeeder;
 use Database\Seeders\Student\MobileNumberSeeder;
+use Database\Seeders\Student\StudentGuardianSeeder;
 use Database\Seeders\Student\StudentActivationSeeder;
 
 class DatabaseSeeder extends Seeder
@@ -35,6 +36,7 @@ class DatabaseSeeder extends Seeder
             GuardianSeeder::class,
             MobileNumberSeeder::class,
             SiblingSeeder::class,
+            StudentGuardianSeeder::class,
             // StudentActivationSeeder::class, // will be called by StudentFactory
         ]);
     }
