@@ -31,7 +31,7 @@
     <!-- Vendors CSS -->
     
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css') }}" />
-    <link rel="stylesheet" href="{{ asset('assets/vendor/libs/notyf/notyf.css') }}" />
+    {{-- <link rel="stylesheet" href="{{ asset('assets/vendor/libs/notyf/notyf.css') }}" /> --}}
     <link rel="stylesheet" href="{{ asset('assets/vendor/libs/toastr/toastr.min.css') }}" />
 
     

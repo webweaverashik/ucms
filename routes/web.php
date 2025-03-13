@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Student\StudentController;
 
 
 Route::get('/', function() {
@@ -24,6 +25,11 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('/logout', function () {
         return redirect()->back();
     })->name('logout.get');
+
+    // Student resource controller routes
+    Route::resource('students', StudentController::class);
+    Route::get('/api/students', [StudentController::class, 'getStudents']);
+
 });
 
 // Handle GET /logout for logged-out users (redirect to login)

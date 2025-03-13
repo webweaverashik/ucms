@@ -15,13 +15,19 @@ class Student extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['student_unique_id', 'branch_id', 'full_name', 'date_of_birth', 'gender', 'class_id', 'academic_group', 'shift', 'institution_roll', 'institution_id', 'religion', 'home_address', 'email', 'password', 'reference_id', 'student_activation_id', 'photo_url', 'remarks', 'deleted_by'];
+    protected $fillable = ['student_unique_id', 'branch_id', 'full_name', 'date_of_birth', 'gender', 'class_id', 'academic_group', 'shift_id', 'institution_roll', 'institution_id', 'religion', 'home_address', 'email', 'password', 'reference_id', 'student_activation_id', 'photo_url', 'remarks', 'deleted_by'];
 
     protected $hidden = ['password'];
 
     protected $casts = [
         'date_of_birth' => 'date',
     ];
+    
+    // Get the branch of the student:
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
 
     // Get the current academic class of this student
     public function class()
@@ -33,12 +39,6 @@ class Student extends Model
     public function institution()
     {
         return $this->belongsTo(Institution::class, 'institution_id');
-    }
-
-    // Get the branch of the student:
-    public function branch()
-    {
-        return $this->belongsTo(Branch::class, 'branch_id');
     }
 
     // Get the latest activation status of this student:
@@ -57,6 +57,15 @@ class Student extends Model
     public function guardians()
     {
         return $this->hasMany(StudentGuardian::class);
+    }
+
+    // Get the primary guardian
+    public function primaryGuardian()
+    {
+        return $this->belongsToMany(Guardian::class, 'student_guardians')
+            ->wherePivot('is_primary', true) // ✅ Filter only primary guardian
+            ->withPivot('relationship', 'is_primary')
+            ->withTimestamps();
     }
 
     // Get the student's reference:
@@ -78,13 +87,13 @@ class Student extends Model
     }
 
     // Get all subjects taken by the student:
-    public function subjectsTaken() 
+    public function subjectsTaken()
     {
         return $this->hasMany(SubjectTaken::class);
     }
 
     // Get all the sheets taken by the student
-    public function sheetsTaken() 
+    public function sheetsTaken()
     {
         return $this->hasMany(SheetTaken::class);
     }

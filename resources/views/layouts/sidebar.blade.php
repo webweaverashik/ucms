@@ -36,7 +36,7 @@
             </a>
             <ul class="menu-sub">
                 <li class="menu-item">
-                    <a href="#" class="menu-link">
+                    <a href="{{ route('students.index') }}" class="menu-link">
                         <div data-i18n="All Students">All Students</div>
                     </a>
                 </li>
@@ -89,7 +89,7 @@
         <!-- academic menu start -->
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon icon-base ti tabler-vocabulary"></i>
+                <i class="menu-icon icon-base ti tabler-book"></i>
 
                 <div data-i18n="Academic">Academic</div>
             </a>
@@ -194,7 +194,7 @@
         <!-- Invoice menu start -->
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon icon-base ti tabler-notes"></i>
+                <i class="menu-icon icon-base ti tabler-file-dollar"></i>
                 <div data-i18n="Invoice">Invoice</div>
             </a>
             <ul class="menu-sub">
