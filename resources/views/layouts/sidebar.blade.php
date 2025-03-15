@@ -4,19 +4,19 @@
         <!-- Dark Logo-->
         <a href="index.html" class="logo logo-dark">
             <span class="logo-sm">
-                <img src="assets/images/logo-sm.png" alt="" height="22">
+                <img src="assets/images/logo.png" alt="" height="22">
             </span>
             <span class="logo-lg">
-                <img src="assets/images/logo-dark.png" alt="" height="17">
+                <img src="assets/images/logo.png" alt="" height="17">
             </span>
         </a>
         <!-- Light Logo-->
         <a href="index.html" class="logo logo-light">
             <span class="logo-sm">
-                <img src="assets/images/logo-sm.png" alt="" height="22">
+                <img src="assets/images/logo.png" alt="" height="25">
             </span>
             <span class="logo-lg">
-                <img src="assets/images/logo-light.png" alt="" height="17">
+                <img src="assets/images/logo.png" alt="" height="50">
             </span>
         </a>
         <button type="button" class="btn btn-sm p-0 fs-20 header-item float-end btn-vertical-sm-hover"
@@ -33,42 +33,10 @@
             <ul class="navbar-nav" id="navbar-nav">
                 <li class="menu-title"><span data-key="t-menu">Menu</span></li>
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="#sidebarDashboards" data-bs-toggle="collapse" role="button"
-                        aria-expanded="false" aria-controls="sidebarDashboards">
-                        <i class="mdi mdi-speedometer"></i> <span data-key="t-dashboards">Dashboards</span>
+                    <a class="nav-link menu-link active" href="{{ route('dashboard') }}">
+                        <i class="mdi mdi-view-dashboard-outline"></i> <span data-key="t-dashboard">Dashboard</span>
                     </a>
-                    <div class="collapse menu-dropdown" id="sidebarDashboards">
-                        <ul class="nav nav-sm flex-column">
-                            <li class="nav-item">
-                                <a href="dashboard-analytics.html" class="nav-link" data-key="t-analytics">
-                                    Analytics </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="dashboard-crm.html" class="nav-link" data-key="t-crm"> CRM </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="index.html" class="nav-link" data-key="t-ecommerce"> Ecommerce </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="dashboard-crypto.html" class="nav-link" data-key="t-crypto"> Crypto
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="dashboard-projects.html" class="nav-link" data-key="t-projects">
-                                    Projects </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="dashboard-nft.html" class="nav-link" data-key="t-nft"> NFT</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="dashboard-job.html" class="nav-link" data-key="t-job">Job</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="dashboard-blog.html" class="nav-link"><span data-key="t-blog">Blog</span> <span
-                                        class="badge bg-success" data-key="t-new">New</span></a>
-                            </li>
-                        </ul>
-                    </div>
+                </li>
                 </li> <!-- end Dashboard Menu -->
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarApps" data-bs-toggle="collapse" role="button"
@@ -110,8 +78,8 @@
                                                 Mailbox </a>
                                         </li>
                                         <li class="nav-item">
-                                            <a href="#sidebaremailTemplates" class="nav-link"
-                                                data-bs-toggle="collapse" role="button" aria-expanded="false"
+                                            <a href="#sidebaremailTemplates" class="nav-link" data-bs-toggle="collapse"
+                                                role="button" aria-expanded="false"
                                                 aria-controls="sidebaremailTemplates" data-key="t-email-templates">
                                                 Email Templates
                                             </a>
