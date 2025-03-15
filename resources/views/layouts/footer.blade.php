@@ -1,11 +1,13 @@
-<footer class="content-footer footer bg-footer-theme">
+<footer class="footer">
     <div class="container-fluid">
-        <div class="footer-container d-flex align-items-center justify-content-between py-4 flex-md-row flex-column">
-            <div class="text-body">
-                {{ date('Y') }} © <a href="https://ashikur-rahman.com" target="_blank" class="footer-link">Ashikur Rahman</a>
+        <div class="row">
+            <div class="col-sm-6">
+                {{ date('Y') }} © <a href="https://ashikur-rahman.com" target="_blank" class="footer-link">UCMS</a>
             </div>
-            <div class="d-none d-lg-inline-block fw-bold">
-                v1.0.1
+            <div class="col-sm-6">
+                <div class="text-sm-end d-none d-sm-block fw-bold">
+                    v1.0.5
+                </div>
             </div>
         </div>
     </div>

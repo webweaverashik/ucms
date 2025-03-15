@@ -28,8 +28,6 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
 
     // Student resource controller routes
     Route::resource('students', StudentController::class);
-    Route::get('/api/students', [StudentController::class, 'getStudents']);
-
 });
 
 // Handle GET /logout for logged-out users (redirect to login)
