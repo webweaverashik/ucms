@@ -7,3 +7,5 @@
      <script src="{{ asset('assets/js/plugins.js') }}"></script>
 
      @stack('page-js')
+     <!-- App js -->
+     <script src="{{ asset('assets/js/app.js') }}"></script>

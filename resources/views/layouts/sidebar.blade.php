@@ -53,7 +53,7 @@
                     <div class="collapse menu-dropdown" id="sidebarStudentInfo">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('students.index') }}" class="nav-link" data-key="t-all-students">All
+                                <a href="{{ route('students.index') }}" class="nav-link" data-key="All Students">All
                                     Students</a>
                             </li>
                             <li class="nav-item">
@@ -81,7 +81,7 @@
                     <div class="collapse menu-dropdown" id="sidebarAdmission">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="{{ route('students.create') }}" class="nav-link" data-key="t-new-admission">New
+                                <a href="{{ route('students.create') }}" class="nav-link" data-key="New Admission">New
                                     Admission</a>
                             </li>
                             <li class="nav-item">
