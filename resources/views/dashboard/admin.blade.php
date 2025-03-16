@@ -45,4 +45,8 @@
 
     <!-- App js -->
     <script src="{{ asset('assets/js/app.js') }}"></script>
+
+    <script>
+        document.getElementById("dashboard_menu").classList.add("active");
+    </script>
 @endpush

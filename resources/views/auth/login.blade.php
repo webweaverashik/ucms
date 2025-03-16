@@ -81,15 +81,15 @@
                                         </div>
 
                                         <div class="mt-4">
-                                            <button class="btn btn-success w-100" type="submit">Sign In</button>
+                                            <button class="btn btn-primary w-100" type="submit">Sign In</button>
                                         </div>
 
-                                        <div class="mt-4 text-center">
+                                        {{-- Social login buttons --}}
+                                        {{-- <div class="mt-4 text-center">
                                             <div class="signin-other-title">
                                                 <h5 class="fs-13 mb-4 title">Sign In with</h5>
                                             </div>
                                             
-                                            {{-- Social login buttons --}}
                                             <div>
                                                 <button type="button"
                                                     class="btn btn-primary btn-icon waves-effect waves-light"><i
@@ -104,7 +104,7 @@
                                                     class="btn btn-info btn-icon waves-effect waves-light"><i
                                                         class="ri-twitter-fill fs-16"></i></button>
                                             </div>
-                                        </div>
+                                        </div> --}}
                                     </form>
                                 </div>
                             </div>
@@ -113,7 +113,7 @@
                         <!-- end card -->
 
                         <div class="mt-4 text-center">
-                            <p class="mb-0">Don't have an account ? <a href="auth-signup-basic.html"
+                            <p class="mb-0">Don't have an account ? <a href="#"
                                     class="fw-semibold text-primary text-decoration-underline"> Signup </a> </p>
                         </div>
 
@@ -131,9 +131,8 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="text-center">
-                            <p class="mb-0 text-muted">
-                                {{ date('Y') }} © <a href="https://ashikur-rahman.com" target="_blank"
-                                    class="footer-link">UCMS</a>
+                            <p class="mb-0">
+                                {{ date('Y') }} © <a href="https://ashikur-rahman.com" target="_blank" class="footer-link">UCMS</a>
                             </p>
                         </div>
                     </div>

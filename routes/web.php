@@ -3,7 +3,10 @@
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\Student\StudentController;
+use App\Http\Controllers\Teacher\TeacherController;
+use App\Http\Controllers\Student\GuardianController;
 
 
 Route::get('/', function() {
@@ -27,7 +30,10 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     })->name('logout.get');
 
     // Student resource controller routes
+    Route::resource('users', UserController::class);
     Route::resource('students', StudentController::class);
+    Route::resource('guardians', GuardianController::class);
+    Route::resource('teachers', TeacherController::class);
 });
 
 // Handle GET /logout for logged-out users (redirect to login)
