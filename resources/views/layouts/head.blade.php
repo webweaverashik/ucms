@@ -4,6 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta content="Unique Coaching Management System (UCMS)" name="description" />
     <meta content="Ashikur Rahman" name="author" />
+    <meta name="asset-url" content="{{ asset('') }}">
     <!-- App favicon -->
     <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
 

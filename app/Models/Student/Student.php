@@ -3,6 +3,7 @@
 namespace App\Models\Student;
 
 use App\Models\Branch;
+use App\Models\Academic\Shift;
 use App\Models\Sheets\SheetTaken;
 use App\Models\Academic\ClassName;
 use App\Models\Academic\Institution;
@@ -35,6 +36,12 @@ class Student extends Model
         return $this->belongsTo(ClassName::class, 'class_id');
     }
 
+    // Get the current shift of this student
+    public function shift()
+    {
+        return $this->belongsTo(Shift::class, 'shift_id');
+    }
+
     // Get the institution associated with this student
     public function institution()
     {
@@ -60,7 +67,7 @@ class Student extends Model
     }
 
     // Get the primary guardian
-    public function primaryGuardian()
+    public function primary_guardian()
     {
         return $this->belongsToMany(Guardian::class, 'student_guardians')
             ->wherePivot('is_primary', true) // ✅ Filter only primary guardian

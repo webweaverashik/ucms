@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Student;
 
 use Illuminate\Http\Request;
+use App\Models\Academic\Shift;
 use App\Models\Student\Student;
+use App\Models\Academic\ClassName;
 use App\Http\Controllers\Controller;
 
 class StudentController extends Controller
@@ -13,15 +15,21 @@ class StudentController extends Controller
      */
     public function index()
     {
-        // $students = Student::all();
-        $students = Student::whereHas('studentActivation', function ($query) {
+        // $students = Student::with('activations')->get();
+
+        $active_students = Student::whereHas('studentActivation', function ($query) {
             $query->where('active_status', 'active');
-            // })->with('studentActivation', 'class', 'branch', 'institution')->get();
         })->get();
 
-        // dd($students);
-        // return response()->json($students);
-        return view('students.index', compact('students'));
+        $inactive_students = Student::whereHas('studentActivation', function ($query) {
+            $query->where('active_status', 'inactive');
+        })->get();
+
+        $classnames = ClassName::all();
+        $shifts = Shift::all();
+        // return response()->json($classnames);
+
+        return view('students.index', compact('active_students', 'inactive_students', 'classnames', 'shifts'));
     }
 
     /**
