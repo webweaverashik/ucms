@@ -18,6 +18,6 @@ class StudentSeeder extends Seeder
         $faker->unique(true); // Reset the unique generator
 
         // Then, create your students using the factory
-        Student::factory()->count(30)->create(); // Or whatever number
+        Student::factory()->count(100)->create(); // Or whatever number
     }
 }

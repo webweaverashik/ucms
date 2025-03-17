@@ -23,7 +23,7 @@ class Student extends Model
     protected $casts = [
         'date_of_birth' => 'date',
     ];
-    
+
     // Get the branch of the student:
     public function branch()
     {
@@ -63,16 +63,7 @@ class Student extends Model
     // Get all guardians of a student:
     public function guardians()
     {
-        return $this->hasMany(StudentGuardian::class);
-    }
-
-    // Get the primary guardian
-    public function primary_guardian()
-    {
-        return $this->belongsToMany(Guardian::class, 'student_guardians')
-            ->wherePivot('is_primary', true) // ✅ Filter only primary guardian
-            ->withPivot('relationship', 'is_primary')
-            ->withTimestamps();
+        return $this->hasMany(Guardian::class, 'student_id');
     }
 
     // Get the student's reference:

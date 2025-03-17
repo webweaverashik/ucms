@@ -4,7 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta content="Unique Coaching Management System (UCMS)" name="description" />
     <meta content="Ashikur Rahman" name="author" />
-    <meta name="asset-url" content="{{ asset('') }}">
+    {{-- <meta name="asset-url" content="{{ asset('') }}"> --}}
     <!-- App favicon -->
     <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
 
@@ -19,5 +19,5 @@
     <!-- App Css-->
     <link href="{{ asset('assets/css/app.min.css') }}" rel="stylesheet" type="text/css" />
     <!-- custom Css-->
-    <link href="{{ asset('assets/css/custom.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('assets/css/custom.min.css') }}" rel="stylesheet" type="text/css" />
 </head>

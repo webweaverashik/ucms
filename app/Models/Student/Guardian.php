@@ -2,29 +2,30 @@
 
 namespace App\Models\Student;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Guardian extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'mobile_number', 'gender', 'address', 'deleted_by'];
+    protected $fillable = ['name', 'mobile_number', 'gender', 'address', 'relationship', 'student_id', 'deleted_by'];
 
     /**
-     * Get the student guardians for this guardian.
+     * Get the student associated with this guardian.
      */
-    public function studentGuardians()
+    public function student()
     {
-        return $this->hasMany(StudentGuardian::class);
+        return $this->belongsTo(Student::class, 'student_id');
     }
 
     /**
-     * Get the students associated with this guardian.
+     * Get the user who deleted the guardian (if applicable).
      */
-    public function students()
+    public function deletedBy()
     {
-        return $this->belongsToMany(Student::class, 'student_guardians')->withPivot('relationship', 'is_primary')->withTimestamps();
+        return $this->belongsTo(User::class, 'deleted_by');
     }
 }

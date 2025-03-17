@@ -1,2 +1,11 @@
-
-/*# sourceMappingURL=custom.min.css.map */
+/*
+Template Name: UCMS - Coaching Management
+Author: Ashikur Rahman
+Website: https://ashikur-rahman.com/
+Contact: ashikgsc170@gmail.com
+File: Custom Css File
+*/
+.auth-one-bg {
+     background: url('../images/uc-banner.jpg') !important;
+     background-position: center;
+}

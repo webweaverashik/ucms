@@ -33,19 +33,6 @@
 
 
 @push('page-js')
-    <!-- apexcharts -->
-    <script src="{{ asset('assets/libs/apexcharts/apexcharts.min.js') }}"></script>
-
-    <!-- Vector map-->
-    <script src="{{ asset('assets/libs/jsvectormap/jsvectormap.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/jsvectormap/maps/world-merc.js') }}"></script>
-
-    <!-- Dashboard init -->
-    <script src="{{ asset('assets/js/pages/dashboard-analytics.init.js') }}"></script>
-
-    <!-- App js -->
-    <script src="{{ asset('assets/js/app.js') }}"></script>
-
     <script>
         document.getElementById("dashboard_menu").classList.add("active");
     </script>

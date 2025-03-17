@@ -2,16 +2,13 @@
 
 namespace Database\Seeders\Student;
 
-use Illuminate\Database\Seeder;
 use App\Models\Student\Guardian;
+use Illuminate\Database\Seeder;
 
 class GuardianSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    public function run()
     {
-        Guardian::factory(50)->create(); // Generates 50 guardians
+        Guardian::factory()->count(50)->create(); // ✅ Creates 50 random guardians
     }
 }

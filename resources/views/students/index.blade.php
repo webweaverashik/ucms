@@ -188,7 +188,8 @@
                                                     </div>
                                                 </th> --}}
                                                 <th>SL</th>
-                                                <th>Name & ID</th>
+                                                <th>Student Name</th>
+                                                <th>Gender</th>
                                                 <th>Branch</th>
                                                 <th>Class</th>
                                                 <th>Shift</th>
@@ -230,6 +231,13 @@
                                                         </div>
                                                         </a>
                                                     </td>
+                                                    <td>
+                                                        @if ($student->gender == 'male')
+                                                            <i class="las la-mars"></i> {{ ucfirst($student->gender) }}
+                                                        @elseif ($student->gender == 'female')
+                                                            <i class="las la-venus"></i> {{ ucfirst($student->gender) }}
+                                                        @endif
+                                                    </td>
                                                     <td>{{ $student->branch->branch_name }}</td>
                                                     <td>{{ $student->class->name }}</td>
                                                     <td>{{ $student->shift->name }}</td>
@@ -237,16 +245,10 @@
                                                         {{ $student->institution->eiin_number }})</td>
                                                     <td>
                                                         @foreach ($student->guardians as $guardian)
-                                                            <a
-                                                                href="{{ route('guardians.show', $guardian->guardian_id) }}">
-                                                                @if ($guardian->is_primary)
-                                                                    <span class="badge badge-label bg-primary"
-                                                                        title="Primary Guardian"><i
-                                                                            class="mdi mdi-circle-medium"></i>{{ $guardian->guardian->name }}</span>
-                                                                @else
-                                                                    <span
-                                                                        class="badge badge-label bg-info">{{ $guardian->guardian->name }}</span>
-                                                                @endif
+                                                            <a href="{{ route('guardians.show', $guardian->id) }}">
+
+                                                                <span
+                                                                    class="badge badge-label bg-info">{{ $guardian->name }}</span>
                                                             </a>
                                                             @if (!$loop->last)
                                                                 <br>
@@ -315,14 +317,15 @@
                                                     </div>
                                                 </th> --}}
                                                 <th>SL</th>
-                                                <th>Name & ID</th>
+                                                <th>Student Name</th>
+                                                <th>Gender</th>
                                                 <th>Branch</th>
                                                 <th>Class</th>
                                                 <th>Shift</th>
                                                 <th>Institution</th>
                                                 <th>Guardians</th>
                                                 <th>Fee</th>
-                                                <th>Phone No<br>(Home)</th>
+                                                <th>Contact No<br>(Home)</th>
                                                 <th>Status</th>
                                                 <th>Action</th>
                                             </tr>
@@ -357,6 +360,13 @@
                                                         </div>
                                                         </a>
                                                     </td>
+                                                    <td>
+                                                        @if ($student->gender == 'male')
+                                                            <i class="las la-mars"></i> {{ ucfirst($student->gender) }}
+                                                        @elseif ($student->gender == 'female')
+                                                            <i class="las la-venus"></i> {{ ucfirst($student->gender) }}
+                                                        @endif
+                                                    </td>
                                                     <td>{{ $student->branch->branch_name }}</td>
                                                     <td>{{ $student->class->name }}</td>
                                                     <td>{{ $student->shift->name }}</td>
@@ -364,16 +374,10 @@
                                                         {{ $student->institution->eiin_number }})</td>
                                                     <td>
                                                         @foreach ($student->guardians as $guardian)
-                                                            <a
-                                                                href="{{ route('guardians.show', $guardian->guardian_id) }}">
-                                                                @if ($guardian->is_primary)
-                                                                    <span class="badge badge-label bg-primary"
-                                                                        title="Primary Guardian"><i
-                                                                            class="mdi mdi-circle-medium"></i>{{ $guardian->guardian->name }}</span>
-                                                                @else
-                                                                    <span
-                                                                        class="badge badge-label bg-info">{{ $guardian->guardian->name }}</span>
-                                                                @endif
+                                                            <a href="{{ route('guardians.show', $guardian->id) }}">
+
+                                                                <span
+                                                                    class="badge badge-label bg-info">{{ $guardian->name }}</span>
                                                             </a>
                                                             @if (!$loop->last)
                                                                 <br>
@@ -437,10 +441,11 @@
 
 
 @push('page-js')
+    <!-- jQuery for datatables -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 
-    <!--datatable js-->
+    <!-- datatable js-->
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
