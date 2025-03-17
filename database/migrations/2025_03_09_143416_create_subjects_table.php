@@ -18,7 +18,6 @@ return new class extends Migration
             $table->boolean('is_mandatory')->default(false); // 1 = Auto-selected, 0 = Optional
             $table->foreignId('class_id');
             $table->softDeletes(); // Enables soft delete feature
-            $table->foreignId('deleted_by')->nullable();
             $table->timestamps();
         });
     }

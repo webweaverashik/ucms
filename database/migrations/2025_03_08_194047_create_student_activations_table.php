@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('student_id');
             $table->enum('active_status', ['active', 'inactive'])->default('active');
             $table->text('reason')->nullable();
-            $table->foreignId('created_by');
+            $table->foreignId('updated_by');
             $table->timestamps();
         });
     }

@@ -18,7 +18,6 @@ class SiblingFactory extends Factory
             'class' => 'Class ' . $this->faker->numberBetween(1, 12), // Random class name
             'institution_id' => Institution::inRandomOrder()->first()->id ?? Institution::factory(),
             'student_id' => Student::inRandomOrder()->first()->id ?? Student::factory(),
-            'deleted_by' => null, // Can be assigned later
         ];
     }
 }

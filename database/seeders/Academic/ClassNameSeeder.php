@@ -35,7 +35,6 @@ class ClassNameSeeder extends Seeder
                 'name' => $name,
                 'class_numeral' => $numeral,
                 'branch_id' => Branch::inRandomOrder()->first()->id ?? Branch::factory(), // Ensure BranchFactory exists or modify as needed
-                'deleted_by' => null,
             ]);
         }
     }

@@ -15,7 +15,6 @@ class ShiftFactory extends Factory
         return [
             'name' => $this->faker->randomElement(['Morning', 'Evening']),
             'branch_id' => Branch::inRandomOrder()->value('id') ?? Branch::factory()->create()->id,
-            'deleted_by' => null,
         ];
     }
 }

@@ -11,7 +11,7 @@ class Institution extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'eiin_number', 'type', 'deleted_by'];
+    protected $fillable = ['name', 'eiin_number', 'type'];
 
     /**
      * Get the students associated with the institution.

@@ -17,7 +17,6 @@ return new class extends Migration
             $table->enum('number_type', ['home', 'sms', 'whatsapp']);
             $table->foreignId('student_id');
             $table->softDeletes();
-            $table->foreignId('deleted_by')->nullable();
             $table->timestamps();
         });
     }

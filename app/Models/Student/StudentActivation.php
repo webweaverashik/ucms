@@ -10,7 +10,7 @@ class StudentActivation extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['student_id', 'active_status', 'reason', 'created_by'];
+    protected $fillable = ['student_id', 'active_status', 'reason', 'updated_by'];
 
     // Get the student of this activation record
     public function student()
@@ -18,9 +18,9 @@ class StudentActivation extends Model
         return $this->belongsTo(Student::class, 'student_id');
     }
 
-    // Get the user who created this activation record
-    public function createdBy()
+    // Get the user who updated this activation record
+    public function updatedBy()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(User::class, 'updated_by');
     }
 }

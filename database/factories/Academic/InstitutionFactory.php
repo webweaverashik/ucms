@@ -15,7 +15,6 @@ class InstitutionFactory extends Factory
             'name' => $this->faker->company, // Fake institution name
             'eiin_number' => $this->faker->unique()->numerify('######'), // Unique 6-digit EIIN number
             'type' => $this->faker->randomElement(['school', 'college']), // Randomize between 'school' and 'college'
-            'deleted_by' => null, // Assuming null for now, can be set as per requirements
         ];
     }
 }

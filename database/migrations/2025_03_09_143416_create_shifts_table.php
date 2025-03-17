@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('name'); // Morning/Evening
             $table->foreignId('branch_id'); // Morning/Evening
             $table->softDeletes(); // Enables soft delete feature
-            $table->foreignId('deleted_by')->nullable();
             $table->timestamps();
         });
     }

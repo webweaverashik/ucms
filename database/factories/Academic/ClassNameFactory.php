@@ -36,7 +36,6 @@ class ClassNameFactory extends Factory
             'name' => $name,
             'class_numeral' => $classes[$name],
             'branch_id' => 1, // Ensure BranchFactory exists
-            'deleted_by' => null,
         ];
     }
 }

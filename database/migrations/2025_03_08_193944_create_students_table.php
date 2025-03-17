@@ -28,7 +28,7 @@ return new class extends Migration
             $table->string('email')->unique()->nullable();
             $table->string('password');
             $table->foreignId('reference_id')->nullable();
-            $table->foreignId('student_activation_id')->nullable();
+            $table->foreignId('student_activation_id')->nullable(); // for setting approval status
             $table->string('photo_url')->nullable();
             $table->text('remarks')->nullable();
             $table->softDeletes(); // Enables soft delete feature

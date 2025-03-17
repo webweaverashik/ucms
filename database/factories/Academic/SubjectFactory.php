@@ -21,7 +21,6 @@ class SubjectFactory extends Factory
             'academic_group' => $this->faker->randomElement(['General', 'Science', 'Commerce', 'Arts']),
             'is_mandatory' => $this->faker->boolean(70), // 70% chance of being mandatory
             'class_id' => ClassName::inRandomOrder()->first()->id ?? ClassName::factory(),
-            'deleted_by' => null, // Can be assigned later
         ];
     }
 }

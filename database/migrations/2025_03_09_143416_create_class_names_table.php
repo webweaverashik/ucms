@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('class_numeral'); // Three => 03, Four => 04, helpful for student id generation
             $table->foreignId('branch_id');
             $table->softDeletes(); // Enables soft delete feature
-            $table->foreignId('deleted_by')->nullable();
             $table->timestamps();
         });
     }
