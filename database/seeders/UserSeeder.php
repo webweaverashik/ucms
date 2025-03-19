@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
     {
         // Sample Super Admin User
         User::create([
-            'full_name' => 'Ashfaq Kayes',
+            'name' => 'Ashfaq Kayes',
             'email' => 'admin@uniquecoachingbd.com',
             'mobile_number' => '01700000000',
             'password' => Hash::make('admin123'),
@@ -26,7 +26,7 @@ class UserSeeder extends Seeder
 
         // Sample Branch Manager
         User::create([
-            'full_name' => 'Ahamed Shakib',
+            'name' => 'Ahamed Shakib',
             'email' => 'manager@uniquecoachingbd.com',
             'mobile_number' => '01800000000',
             'password' => Hash::make('manager123'),
@@ -36,7 +36,7 @@ class UserSeeder extends Seeder
 
         // Sample Branch Accountant
         User::create([
-            'full_name' => 'Ramjan Shaikh',
+            'name' => 'Ramjan Shaikh',
             'email' => 'accountant@uniquecoachingbd.com',
             'mobile_number' => '01900000000',
             'password' => Hash::make('accountant123'),
