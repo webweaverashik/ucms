@@ -1,156 +1,290 @@
-<!doctype html>
-<html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg"
-    data-sidebar-image="none" data-preloader="disable">
+<!DOCTYPE html>
+<html lang="en">
+<!--begin::Head-->
 
-@section('title', 'Login')
+<head>
+    <base href="../../../" />
+    <title>Login - UCMS</title>
+    <meta charset="utf-8" />
+    <meta name="description" content="Unique Coaching Management System (UCMS) is an all-in-one solution for academic coaching centers, streamlining student admissions, attendance tracking, tuition and notes payment management, teacher scheduling, and sheet distribution. Designed for efficiency, UCMS ensures seamless operations with role-based access for Super Admins, Branch Managers, Accountants, Teachers, Guardians, and Students." />
+    <meta name="keywords" content="coaching management system, academic management software, student management system, tuition management system, coaching center software, attendance tracking, payment management, teacher scheduling, notes distribution, sheet distribution system, role-based access, education ERP, UCMS, coaching automation, student fee management, guardian portal, online coaching management, school management system" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Unique Coaching Management System (UCMS) - Complete Coaching Center Management Solution">
+    <meta property="og:url" content="https://ashikur-rahman.com" />
+    <meta property="og:site_name" content="UCMS by Ashikur Rahman" />
+    <link rel="canonical" href="https://ashikur-rahman.com" />
+    <link rel="shortcut icon" href="{{ asset('assets/media/logos/favicon.ico') }}" />
+    <!--begin::Fonts(mandatory for all pages)-->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
+    <!--end::Fonts-->
+    <!--begin::Global Stylesheets Bundle(mandatory for all pages)-->
+    <link href="{{ asset('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <!--end::Global Stylesheets Bundle-->
+    <script>
+        // Frame-busting to prevent site from being loaded within a frame without permission (click-jacking) if (window.top != window.self) { window.top.location.replace(window.self.location.href); }
+    </script>
+</head>
+<!--end::Head-->
+<!--begin::Body-->
 
-@include('layouts.head')
+<body id="kt_body" class="app-blank bgi-size-cover bgi-attachment-fixed bgi-position-center">
+    <!--begin::Theme mode setup on page load-->
+    @include('layouts.partials.theme-mode')
+    <!--end::Theme mode setup on page load-->
+    <!--begin::Root-->
+    <div class="d-flex flex-column flex-root" id="kt_app_root">
+        <!--begin::Page bg image-->
+        <style>
+            body {
+                background-image: url('assets/media/auth/bg10.jpeg');
+            }
 
-
-<body>
-
-    <div class="auth-page-wrapper pt-5">
-        <!-- auth page bg -->
-        <div class="auth-one-bg-position auth-one-bg" id="auth-particles">
-            <div class="bg-overlay"></div>
-
-            <div class="shape">
-                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink"
-                    viewBox="0 0 1440 120">
-                    <path d="M 0,36 C 144,53.6 432,123.2 720,124 C 1008,124.8 1296,56.8 1440,40L1440 140L0 140z"></path>
-                </svg>
-            </div>
-        </div>z
-
-        <!-- auth page content -->
-        <div class="auth-page-content">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="text-center mt-sm-5 mb-4 text-white-50">
-                            <div>
-                                <a href="{{ url('/') }}" class="d-inline-block auth-logo">
-                                    <img src="{{ asset('assets/images/logo.png') }}" alt="" height="100">
-                                </a>
-                            </div>
-                            <p class="mt-3 fs-15 fw-medium">Unique Coaching Management System (UCMS)</p>
-                        </div>
+            [data-bs-theme="dark"] body {
+                background-image: url('assets/media/auth/bg10-dark.jpeg');
+            }
+        </style>
+        <!--end::Page bg image-->
+        <!--begin::Authentication - Sign-in -->
+        <div class="d-flex flex-column flex-lg-row flex-column-fluid">
+            <!--begin::Aside-->
+            <div class="d-flex flex-lg-row-fluid">
+                <!--begin::Content-->
+                <div class="d-flex flex-column flex-center pb-0 pb-lg-10 p-10 w-100">
+                    <!--begin::Image-->
+                    <img class="theme-light-show mx-auto mw-100 w-150px w-lg-300px mb-10 mb-lg-20"
+                        src="{{ asset('assets/media/auth/agency.png') }}" alt="" />
+                    <img class="theme-dark-show mx-auto mw-100 w-150px w-lg-300px mb-10 mb-lg-20"
+                        src="{{ asset('assets/media/auth/agency-dark.png') }}" alt="" />
+                    <!--end::Image-->
+                    <!--begin::Title-->
+                    <h1 class="text-gray-800 fs-2qx fw-bold text-center mb-7">Fast, Efficient and Productive</h1>
+                    <!--end::Title-->
+                    <!--begin::Text-->
+                    <div class="text-gray-600 fs-base text-center fw-semibold">In this kind of post,
+                        <a href="#" class="opacity-75-hover text-primary me-1">the blogger</a>introduces a person
+                        they’ve interviewed
+                        <br />and provides some background information about
+                        <a href="#" class="opacity-75-hover text-primary me-1">the interviewee</a>and their
+                        <br />work following this is a transcript of the interview.
                     </div>
+                    <!--end::Text-->
                 </div>
-                <!-- end row -->
-
-                <div class="row justify-content-center">
-                    <div class="col-md-8 col-lg-6 col-xl-5">
-                        <div class="card mt-4">
-
-                            <div class="card-body p-4">
-                                <div class="text-center mt-2">
-                                    <h5 class="text-primary">Welcome Back !</h5>
-                                    <p class="text-muted">Sign in to continue to UCMS.</p>
-                                </div>
-                                <div class="p-2 mt-4">
-                                    <form action="{{ route('login') }}" method="POST">
-                                        @csrf
-                                        <div class="mb-3">
-                                            <label for="username" class="form-label">Email</label>
-                                            <input type="email" class="form-control" id="username"
-                                                placeholder="Enter email" name="email">
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <div class="float-end">
-                                                <a href="#" class="text-muted">Forgot
-                                                    password?</a>
-                                            </div>
-                                            <label class="form-label" for="password-input">Password</label>
-                                            <div class="position-relative auth-pass-inputgroup mb-3">
-                                                <input type="password" class="form-control pe-5 password-input"
-                                                    placeholder="Enter password" id="password-input" name="password">
-                                                <button
-                                                    class="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted shadow-none password-addon"
-                                                    type="button" id="password-addon"><i
-                                                        class="ri-eye-fill align-middle"></i></button>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value=""
-                                                id="auth-remember-check">
-                                            <label class="form-check-label" for="auth-remember-check">Remember
-                                                me</label>
-                                        </div>
-
-                                        <div class="mt-4">
-                                            <button class="btn btn-primary w-100" type="submit">Sign In</button>
-                                        </div>
-
-                                        {{-- Social login buttons --}}
-                                        {{-- <div class="mt-4 text-center">
-                                            <div class="signin-other-title">
-                                                <h5 class="fs-13 mb-4 title">Sign In with</h5>
-                                            </div>
-                                            
-                                            <div>
-                                                <button type="button"
-                                                    class="btn btn-primary btn-icon waves-effect waves-light"><i
-                                                        class="ri-facebook-fill fs-16"></i></button>
-                                                <button type="button"
-                                                    class="btn btn-danger btn-icon waves-effect waves-light"><i
-                                                        class="ri-google-fill fs-16"></i></button>
-                                                <button type="button"
-                                                    class="btn btn-dark btn-icon waves-effect waves-light"><i
-                                                        class="ri-github-fill fs-16"></i></button>
-                                                <button type="button"
-                                                    class="btn btn-info btn-icon waves-effect waves-light"><i
-                                                        class="ri-twitter-fill fs-16"></i></button>
-                                            </div>
-                                        </div> --}}
-                                    </form>
-                                </div>
-                            </div>
-                            <!-- end card body -->
-                        </div>
-                        <!-- end card -->
-
-                        <div class="mt-4 text-center">
-                            <p class="mb-0">Don't have an account ? <a href="#"
-                                    class="fw-semibold text-primary text-decoration-underline"> Signup </a> </p>
-                        </div>
-
-                    </div>
-                </div>
-                <!-- end row -->
+                <!--end::Content-->
             </div>
-            <!-- end container -->
+            <!--begin::Aside-->
+            <!--begin::Body-->
+            <div class="d-flex flex-column-fluid flex-lg-row-auto justify-content-center justify-content-lg-end p-12">
+                <!--begin::Wrapper-->
+                <div class="bg-body d-flex flex-column flex-center rounded-4 w-md-600px p-10">
+                    <!--begin::Content-->
+                    <div class="d-flex flex-center flex-column align-items-stretch h-lg-100 w-md-400px">
+                        <!--begin::Wrapper-->
+                        <div class="d-flex flex-center flex-column flex-column-fluid pb-15 pb-lg-20">
+                            <!--begin::Form-->
+                            {{-- <form class="form w-100" novalidate="novalidate" id="kt_sign_in_form" data-kt-redirect-url="index.html" action="#"> --}}
+                            <form class="form w-100" novalidate="novalidate" id="kt_sign_in_form" action="{{ route('login') }}" method="POST">
+                            @csrf
+                                <!--begin::Heading-->
+                                <div class="text-center mb-11">
+                                    <!--begin::Title-->
+                                    <h1 class="text-gray-900 fw-bolder mb-3">Sign In</h1>
+                                    <!--end::Title-->
+                                    <!--begin::Subtitle-->
+                                    <div class="text-gray-500 fw-semibold fs-6">Your Social Campaigns</div>
+                                    <!--end::Subtitle=-->
+                                </div>
+                                <!--begin::Heading-->
+                                <!--begin::Login options-->
+                                <div class="row g-3 mb-9">
+                                    <!--begin::Col-->
+                                    <div class="col-md-6">
+                                        <!--begin::Google link=-->
+                                        <a href="#"
+                                            class="btn btn-flex btn-outline btn-text-gray-700 btn-active-color-primary bg-state-light flex-center text-nowrap w-100">
+                                            <img alt="Logo" src="assets/media/svg/brand-logos/google-icon.svg"
+                                                class="h-15px me-3" />Sign in with Google</a>
+                                        <!--end::Google link=-->
+                                    </div>
+                                    <!--end::Col-->
+                                    <!--begin::Col-->
+                                    <div class="col-md-6">
+                                        <!--begin::Google link=-->
+                                        <a href="#"
+                                            class="btn btn-flex btn-outline btn-text-gray-700 btn-active-color-primary bg-state-light flex-center text-nowrap w-100">
+                                            <img alt="Logo" src="assets/media/svg/brand-logos/apple-black.svg"
+                                                class="theme-light-show h-15px me-3" />
+                                            <img alt="Logo" src="assets/media/svg/brand-logos/apple-black-dark.svg"
+                                                class="theme-dark-show h-15px me-3" />Sign in with Apple</a>
+                                        <!--end::Google link=-->
+                                    </div>
+                                    <!--end::Col-->
+                                </div>
+                                <!--end::Login options-->
+                                <!--begin::Separator-->
+                                <div class="separator separator-content my-14">
+                                    <span class="w-125px text-gray-500 fw-semibold fs-7">Or with email</span>
+                                </div>
+                                <!--end::Separator-->
+                                <!--begin::Input group=-->
+                                <div class="fv-row mb-8">
+                                    <!--begin::Email-->
+                                    <input type="text" placeholder="Email" name="email" autocomplete="off"
+                                        class="form-control bg-transparent" />
+                                    <!--end::Email-->
+                                </div>
+                                <!--end::Input group=-->
+                                <div class="fv-row mb-3">
+                                    <!--begin::Password-->
+                                    <input type="password" placeholder="Password" name="password" autocomplete="off"
+                                        class="form-control bg-transparent" />
+                                    <!--end::Password-->
+                                </div>
+                                <!--end::Input group=-->
+                                <!--begin::Wrapper-->
+                                <div class="d-flex flex-stack flex-wrap gap-3 fs-base fw-semibold mb-8">
+                                    <div></div>
+                                    <!--begin::Link-->
+                                    <a href="authentication/layouts/overlay/reset-password.html"
+                                        class="link-primary">Forgot Password ?</a>
+                                    <!--end::Link-->
+                                </div>
+                                <!--end::Wrapper-->
+                                <!--begin::Submit button-->
+                                <div class="d-grid mb-10">
+                                    <button type="submit" id="" class="btn btn-primary">
+                                        <!--begin::Indicator label-->
+                                        <span class="indicator-label">Sign In</span>
+                                        <!--end::Indicator label-->
+                                        <!--begin::Indicator progress-->
+                                        <span class="indicator-progress">Please wait...
+                                            <span
+                                                class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                                        <!--end::Indicator progress-->
+                                    </button>
+                                </div>
+                                <!--end::Submit button-->
+                                <!--begin::Sign up-->
+                                <div class="text-gray-500 text-center fw-semibold fs-6">Not a Member yet?
+                                    <a href="authentication/layouts/overlay/sign-up.html" class="link-primary">Sign
+                                        up</a>
+                                </div>
+                                <!--end::Sign up-->
+                            </form>
+                            <!--end::Form-->
+                        </div>
+                        <!--end::Wrapper-->
+                        <!--begin::Footer-->
+                        <div class="d-flex flex-stack">
+                            <!--begin::Languages-->
+                            <div class="me-10">
+                                <!--begin::Toggle-->
+                                <button
+                                    class="btn btn-flex btn-link btn-color-gray-700 btn-active-color-primary rotate fs-base"
+                                    data-kt-menu-trigger="click" data-kt-menu-placement="bottom-start"
+                                    data-kt-menu-offset="0px, 0px">
+                                    <img data-kt-element="current-lang-flag" class="w-20px h-20px rounded me-3"
+                                        src="assets/media/flags/united-states.svg" alt="" />
+                                    <span data-kt-element="current-lang-name" class="me-1">English</span>
+                                    <i class="ki-duotone ki-down fs-5 text-muted rotate-180 m-0"></i>
+                                </button>
+                                <!--end::Toggle-->
+                                <!--begin::Menu-->
+                                <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-semibold w-200px py-4 fs-7"
+                                    data-kt-menu="true" id="kt_auth_lang_menu">
+                                    <!--begin::Menu item-->
+                                    <div class="menu-item px-3">
+                                        <a href="#" class="menu-link d-flex px-5" data-kt-lang="English">
+                                            <span class="symbol symbol-20px me-4">
+                                                <img data-kt-element="lang-flag" class="rounded-1"
+                                                    src="assets/media/flags/united-states.svg" alt="" />
+                                            </span>
+                                            <span data-kt-element="lang-name">English</span>
+                                        </a>
+                                    </div>
+                                    <!--end::Menu item-->
+                                    <!--begin::Menu item-->
+                                    <div class="menu-item px-3">
+                                        <a href="#" class="menu-link d-flex px-5" data-kt-lang="Spanish">
+                                            <span class="symbol symbol-20px me-4">
+                                                <img data-kt-element="lang-flag" class="rounded-1"
+                                                    src="assets/media/flags/spain.svg" alt="" />
+                                            </span>
+                                            <span data-kt-element="lang-name">Spanish</span>
+                                        </a>
+                                    </div>
+                                    <!--end::Menu item-->
+                                    <!--begin::Menu item-->
+                                    <div class="menu-item px-3">
+                                        <a href="#" class="menu-link d-flex px-5" data-kt-lang="German">
+                                            <span class="symbol symbol-20px me-4">
+                                                <img data-kt-element="lang-flag" class="rounded-1"
+                                                    src="assets/media/flags/germany.svg" alt="" />
+                                            </span>
+                                            <span data-kt-element="lang-name">German</span>
+                                        </a>
+                                    </div>
+                                    <!--end::Menu item-->
+                                    <!--begin::Menu item-->
+                                    <div class="menu-item px-3">
+                                        <a href="#" class="menu-link d-flex px-5" data-kt-lang="Japanese">
+                                            <span class="symbol symbol-20px me-4">
+                                                <img data-kt-element="lang-flag" class="rounded-1"
+                                                    src="assets/media/flags/japan.svg" alt="" />
+                                            </span>
+                                            <span data-kt-element="lang-name">Japanese</span>
+                                        </a>
+                                    </div>
+                                    <!--end::Menu item-->
+                                    <!--begin::Menu item-->
+                                    <div class="menu-item px-3">
+                                        <a href="#" class="menu-link d-flex px-5" data-kt-lang="French">
+                                            <span class="symbol symbol-20px me-4">
+                                                <img data-kt-element="lang-flag" class="rounded-1"
+                                                    src="assets/media/flags/france.svg" alt="" />
+                                            </span>
+                                            <span data-kt-element="lang-name">French</span>
+                                        </a>
+                                    </div>
+                                    <!--end::Menu item-->
+                                </div>
+                                <!--end::Menu-->
+                            </div>
+                            <!--end::Languages-->
+                            <!--begin::Links-->
+                            <div class="d-flex fw-semibold text-primary fs-base gap-5">
+                                <a href="pages/team.html" target="_blank">Terms</a>
+                                <a href="pages/pricing/column.html" target="_blank">Plans</a>
+                                <a href="pages/contact.html" target="_blank">Contact Us</a>
+                            </div>
+                            <!--end::Links-->
+                        </div>
+                        <!--end::Footer-->
+                    </div>
+                    <!--end::Content-->
+                </div>
+                <!--end::Wrapper-->
+            </div>
+            <!--end::Body-->
         </div>
-        <!-- end auth page content -->
-
-        <!-- footer -->
-        <footer class="footer">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="text-center">
-                            <p class="mb-0">
-                                {{ date('Y') }} © <a href="https://ashikur-rahman.com" target="_blank" class="footer-link">UCMS</a>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </footer>
-        <!-- end Footer -->
+        <!--end::Authentication - Sign-in-->
     </div>
-    <!-- end auth-page-wrapper -->
-
-    @include('layouts.scripts')
-
-    <!-- particles js -->
-    <script src="{{ asset('assets/libs/particles.js/particles.js') }}"></script>
-    <!-- particles app js -->
-    <script src="{{ asset('assets/js/pages/particles.app.js') }}"></script>
-    <!-- password-addon init -->
-    <script src="{{ asset('assets/js/pages/password-addon.init.js') }}"></script>
+    <!--end::Root-->
+    <!--begin::Javascript-->
+    <script>
+        var hostUrl = "assets/";
+    </script>
+    <!--begin::Global Javascript Bundle(mandatory for all pages)-->
+    <script src="{{ asset('assets/plugins/global/plugins.bundle.js') }}"></script>
+    <script src="{{ asset('assets/js/scripts.bundle.js') }}"></script>
+    <!--end::Global Javascript Bundle-->
+    <!--begin::Custom Javascript(used for this page only)-->
+    {{-- <script src="{{ asset('assets/js/custom/authentication/sign-in/general.js') }}"></script> --}}
+    <!--end::Custom Javascript-->
+    <!--end::Javascript-->
 </body>
+<!--end::Body-->
 
 </html>

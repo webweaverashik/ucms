@@ -47,7 +47,7 @@
     <!--end::Drawers-->
     <!--begin::Scrolltop-->
     <div id="kt_scrolltop" class="scrolltop" data-kt-scrolltop="true">
-        <i class="ki-duotone ki-arrow-up">
+        <i class="ki-duotone ki-arrow-up">y
             <span class="path1"></span>
             <span class="path2"></span>
         </i>
@@ -61,11 +61,11 @@
         var hostUrl = "assets/";
     </script>
     <!--begin::Global Javascript Bundle(mandatory for all pages)-->
-    <script src="assets/plugins/global/plugins.bundle.js"></script>
-    <script src="assets/js/scripts.bundle.js"></script>
+    <script src="{{ asset('assets/plugins/global/plugins.bundle.js') }}"></script>
+    <script src="{{ asset('assets/js/scripts.bundle.js') }}"></script>
     <!--end::Global Javascript Bundle-->
     @stack('vendor-scripts')
-    @stack('custom-scripts')
+    @stack('page-scripts')
     <!--end::Javascript-->
 </body>
 <!--end::Body-->

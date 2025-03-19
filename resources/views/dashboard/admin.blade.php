@@ -22,5 +22,5 @@
 @push('vendor-scripts')
 @endpush
 
-@push('custom-scripts')
+@push('page-scripts')
 @endpush
