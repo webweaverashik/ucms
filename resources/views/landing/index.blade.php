@@ -1,1911 +1,1994 @@
-<!doctype html>
-<html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg"
-    data-sidebar-image="none" data-preloader="disable">
+<!DOCTYPE html>
+<html lang="en">
+<!--begin::Head-->
 
 <head>
-
+    <title>Metronic - The World's #1 Selling Tailwind CSS & Bootstrap Admin Template by KeenThemes</title>
     <meta charset="utf-8" />
-    <title>Home | Unique Coaching</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta content="Unique Coaching Management System (UCMS)" name="description" />
-    <meta content="Ashikur Rahman" name="author" />
-    <!-- App favicon -->
-    <link rel="shortcut icon" href="{{ asset('assets/images/favicon.ico') }}">
-
-    <!--Swiper slider css-->
-    <link href="{{ asset('assets/libs/swiper/swiper-bundle.min.css') }}" rel="stylesheet" type="text/css" />
-
-    <!-- Layout config Js -->
-    <script src="{{ asset('assets/js/layout.js') }}"></script>
-    <!-- Bootstrap Css -->
-    <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" />
-    <!-- Icons Css -->
-    <link href="{{ asset('assets/css/icons.min.css') }}" rel="stylesheet" type="text/css" />
-    <!-- App Css-->
-    <link href="{{ asset('assets/css/app.min.css') }}" rel="stylesheet" type="text/css" />
-    <!-- custom Css-->
-    <link href="{{ asset('assets/css/custom.css') }}" rel="stylesheet" type="text/css" />
-
-
+    <meta name="description"
+        content="The most advanced Tailwind CSS & Bootstrap 5 Admin Theme with 40 unique prebuilt layouts on Themeforest trusted by 100,000 beginners and professionals. Multi-demo, Dark Mode, RTL support and complete React, Angular, Vue, Asp.Net Core, Rails, Spring, Blazor, Django, Express.js, Node.js, Flask, Symfony & Laravel versions. Grab your copy now and get life-time updates for free." />
+    <meta name="keywords"
+        content="tailwind, tailwindcss, metronic, bootstrap, bootstrap 5, angular, VueJs, React, Asp.Net Core, Rails, Spring, Blazor, Django, Express.js, Node.js, Flask, Symfony & Laravel starter kits, admin themes, web design, figma, web development, free templates, free admin themes, bootstrap theme, bootstrap template, bootstrap dashboard, bootstrap dak mode, bootstrap button, bootstrap datepicker, bootstrap timepicker, fullcalendar, datatables, flaticon" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title"
+        content="Metronic - The World's #1 Selling Tailwind CSS & Bootstrap Admin Template by KeenThemes" />
+    <meta property="og:url" content="https://keenthemes.com/metronic" />
+    <meta property="og:site_name" content="Metronic by Keenthemes" />
+    <link rel="canonical" href="http://preview.keenthemes.comlanding.html" />
+    <link rel="shortcut icon" href="assets/media/logos/favicon.ico" />
+    <!--begin::Fonts(mandatory for all pages)-->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
+    <!--end::Fonts-->
+    <!--begin::Global Stylesheets Bundle(mandatory for all pages)-->
+    <link href="assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
+    <!--end::Global Stylesheets Bundle-->
+    <script>
+        // Frame-busting to prevent site from being loaded within a frame without permission (click-jacking) if (window.top != window.self) { window.top.location.replace(window.self.location.href); }
+    </script>
 </head>
+<!--end::Head-->
+<!--begin::Body-->
 
-<body data-bs-spy="scroll" data-bs-target="#navbar-example">
-
-    <!-- Begin page -->
-    <div class="layout-wrapper landing">
-        <nav class="navbar navbar-expand-lg navbar-landing fixed-top" id="navbar">
-            <div class="container">
-                <a class="navbar-brand" href="{{ url('/') }}">
-                    <img src="{{ asset('assets/images/logo.png') }}" class="card-logo card-logo-dark" alt="logo dark" height="50">
-                    <img src="{{ asset('assets/images/logo.png') }}" class="card-logo card-logo-light" alt="logo light" height="50">
-                </a>
-                <button class="navbar-toggler py-0 fs-20 text-body" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                    <i class="mdi mdi-menu"></i>
-                </button>
-
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav mx-auto mt-2 mt-lg-0" id="navbar-example">
-                        <li class="nav-item">
-                            <a class="nav-link fs-14 active" href="#hero">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link fs-14" href="#services">Services</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link fs-14" href="#features">Features</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link fs-14" href="#plans">Plans</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link fs-14" href="#reviews">Reviews</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link fs-14" href="#team">Team</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link fs-14" href="#contact">Contact</a>
-                        </li>
-                    </ul>
-
-                    <div class="">
-                        @auth
-                            <a href="{{ route('dashboard') }}" class="btn btn-primary">Dashboard<i
-                                    class="ri-login-box-line align-middle ms-1"></i></a>
-                        @else
-                            <a href="{{ route('login') }}" class="btn btn-primary">Sign in<i
-                                    class="ri-login-box-line align-middle ms-1"></i></a>
-                        @endauth
-                    </div>
-                </div>
-
-            </div>
-        </nav>
-        <!-- end navbar -->
-        <div class="vertical-overlay" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent.show"></div>
-
-        <!-- start hero section -->
-        <section class="section pb-0 hero-section" id="hero">
-            <div class="bg-overlay bg-overlay-pattern"></div>
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-lg-8 col-sm-10">
-                        <div class="text-center mt-lg-5 pt-5">
-                            <h1 class="display-6 fw-semibold mb-3 lh-base">The better way to manage your website with
-                                <span class="text-success">Velzon </span>
-                            </h1>
-                            <p class="lead text-muted lh-base">Velzon is a fully responsive, multipurpose and premium
-                                Bootstrap 5 Admin & Dashboard Template built in multiple frameworks.</p>
-
-                            <div class="d-flex gap-2 justify-content-center mt-4">
-                                <a href="auth-signup-basic.html" class="btn btn-primary">Get Started <i
-                                        class="ri-arrow-right-line align-middle ms-1"></i></a>
-                                <a href="pages-pricing.html" class="btn btn-danger">View Plans <i
-                                        class="ri-eye-line align-middle ms-1"></i></a>
+<body id="kt_body" data-bs-spy="scroll" data-bs-target="#kt_landing_menu" class="bg-body position-relative app-blank">
+    <!--begin::Theme mode setup on page load-->
+    <script>
+        var defaultThemeMode = "light";
+        var themeMode;
+        if (document.documentElement) {
+            if (document.documentElement.hasAttribute("data-bs-theme-mode")) {
+                themeMode = document.documentElement.getAttribute("data-bs-theme-mode");
+            } else {
+                if (localStorage.getItem("data-bs-theme") !== null) {
+                    themeMode = localStorage.getItem("data-bs-theme");
+                } else {
+                    themeMode = defaultThemeMode;
+                }
+            }
+            if (themeMode === "system") {
+                themeMode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+            }
+            document.documentElement.setAttribute("data-bs-theme", themeMode);
+        }
+    </script>
+    <!--end::Theme mode setup on page load-->
+    <!--begin::Root-->
+    <div class="d-flex flex-column flex-root" id="kt_app_root">
+        <!--begin::Header Section-->
+        <div class="mb-0" id="home">
+            <!--begin::Wrapper-->
+            <div class="bgi-no-repeat bgi-size-contain bgi-position-x-center bgi-position-y-bottom landing-dark-bg"
+                style="background-image: url(assets/media/svg/illustrations/landing.svg)">
+                <!--begin::Header-->
+                <div class="landing-header" data-kt-sticky="true" data-kt-sticky-name="landing-header"
+                    data-kt-sticky-offset="{default: '200px', lg: '300px'}">
+                    <!--begin::Container-->
+                    <div class="container">
+                        <!--begin::Wrapper-->
+                        <div class="d-flex align-items-center justify-content-between">
+                            <!--begin::Logo-->
+                            <div class="d-flex align-items-center flex-equal">
+                                <!--begin::Mobile menu toggle-->
+                                <button class="btn btn-icon btn-active-color-primary me-3 d-flex d-lg-none"
+                                    id="kt_landing_menu_toggle">
+                                    <i class="ki-duotone ki-abstract-14 fs-2hx">
+                                        <span class="path1"></span>
+                                        <span class="path2"></span>
+                                    </i>
+                                </button>
+                                <!--end::Mobile menu toggle-->
+                                <!--begin::Logo image-->
+                                <a href="landing.html">
+                                    <img alt="Logo" src="assets/media/logos/landing.svg"
+                                        class="logo-default h-25px h-lg-30px" />
+                                    <img alt="Logo" src="assets/media/logos/landing-dark.svg"
+                                        class="logo-sticky h-20px h-lg-25px" />
+                                </a>
+                                <!--end::Logo image-->
                             </div>
-                        </div>
-
-                        <div class="mt-4 mt-sm-5 pt-sm-5 mb-sm-n5 demo-carousel">
-                            <div class="demo-img-patten-top d-none d-sm-block">
-                                <img src="{{ asset('assets/images/landing/img-pattern.png') }}" class="d-block img-fluid"
-                                    alt="...">
-                            </div>
-                            <div class="demo-img-patten-bottom d-none d-sm-block">
-                                <img src="{{ asset('assets/images/landing/img-pattern.png') }}" class="d-block img-fluid"
-                                    alt="...">
-                            </div>
-                            <div class="carousel slide carousel-fade" data-bs-ride="carousel">
-                                <div class="carousel-inner shadow-lg p-2 bg-white rounded">
-                                    <div class="carousel-item active" data-bs-interval="2000">
-                                        <img src="{{ asset('assets/images/demos/default.png') }}" class="d-block w-100"
-                                            alt="...">
+                            <!--end::Logo-->
+                            <!--begin::Menu wrapper-->
+                            <div class="d-lg-block" id="kt_header_nav_wrapper">
+                                <div class="d-lg-block p-5 p-lg-0" data-kt-drawer="true"
+                                    data-kt-drawer-name="landing-menu"
+                                    data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true"
+                                    data-kt-drawer-width="200px" data-kt-drawer-direction="start"
+                                    data-kt-drawer-toggle="#kt_landing_menu_toggle" data-kt-swapper="true"
+                                    data-kt-swapper-mode="prepend"
+                                    data-kt-swapper-parent="{default: '#kt_body', lg: '#kt_header_nav_wrapper'}">
+                                    <!--begin::Menu-->
+                                    <div class="menu menu-column flex-nowrap menu-rounded menu-lg-row menu-title-gray-600 menu-state-title-primary nav nav-flush fs-5 fw-semibold"
+                                        id="kt_landing_menu">
+                                        <!--begin::Menu item-->
+                                        <div class="menu-item">
+                                            <!--begin::Menu link-->
+                                            <a class="menu-link nav-link active py-3 px-4 px-xxl-6" href="#kt_body"
+                                                data-kt-scroll-toggle="true" data-kt-drawer-dismiss="true">Home</a>
+                                            <!--end::Menu link-->
+                                        </div>
+                                        <!--end::Menu item-->
+                                        <!--begin::Menu item-->
+                                        <div class="menu-item">
+                                            <!--begin::Menu link-->
+                                            <a class="menu-link nav-link py-3 px-4 px-xxl-6" href="#how-it-works"
+                                                data-kt-scroll-toggle="true" data-kt-drawer-dismiss="true">How it
+                                                Works</a>
+                                            <!--end::Menu link-->
+                                        </div>
+                                        <!--end::Menu item-->
+                                        <!--begin::Menu item-->
+                                        <div class="menu-item">
+                                            <!--begin::Menu link-->
+                                            <a class="menu-link nav-link py-3 px-4 px-xxl-6" href="#achievements"
+                                                data-kt-scroll-toggle="true"
+                                                data-kt-drawer-dismiss="true">Achievements</a>
+                                            <!--end::Menu link-->
+                                        </div>
+                                        <!--end::Menu item-->
+                                        <!--begin::Menu item-->
+                                        <div class="menu-item">
+                                            <!--begin::Menu link-->
+                                            <a class="menu-link nav-link py-3 px-4 px-xxl-6" href="#team"
+                                                data-kt-scroll-toggle="true" data-kt-drawer-dismiss="true">Team</a>
+                                            <!--end::Menu link-->
+                                        </div>
+                                        <!--end::Menu item-->
+                                        <!--begin::Menu item-->
+                                        <div class="menu-item">
+                                            <!--begin::Menu link-->
+                                            <a class="menu-link nav-link py-3 px-4 px-xxl-6" href="#portfolio"
+                                                data-kt-scroll-toggle="true" data-kt-drawer-dismiss="true">Portfolio</a>
+                                            <!--end::Menu link-->
+                                        </div>
+                                        <!--end::Menu item-->
+                                        <!--begin::Menu item-->
+                                        <div class="menu-item">
+                                            <!--begin::Menu link-->
+                                            <a class="menu-link nav-link py-3 px-4 px-xxl-6" href="#pricing"
+                                                data-kt-scroll-toggle="true" data-kt-drawer-dismiss="true">Pricing</a>
+                                            <!--end::Menu link-->
+                                        </div>
+                                        <!--end::Menu item-->
                                     </div>
-                                    <div class="carousel-item" data-bs-interval="2000">
-                                        <img src="{{ asset('assets/images/demos/saas.png') }}" class="d-block w-100" alt="...">
-                                    </div>
-                                    <div class="carousel-item" data-bs-interval="2000">
-                                        <img src="{{ asset('assets/images/demos/material.png') }}" class="d-block w-100"
-                                            alt="...">
-                                    </div>
-                                    <div class="carousel-item" data-bs-interval="2000">
-                                        <img src="{{ asset('assets/images/demos/minimal.png') }}" class="d-block w-100"
-                                            alt="...">
-                                    </div>
-                                    <div class="carousel-item" data-bs-interval="2000">
-                                        <img src="{{ asset('assets/images/demos/creative.png') }}" class="d-block w-100"
-                                            alt="...">
-                                    </div>
-                                    <div class="carousel-item" data-bs-interval="2000">
-                                        <img src="{{ asset('assets/images/demos/modern.png') }}" class="d-block w-100"
-                                            alt="...">
-                                    </div>
-                                    <div class="carousel-item" data-bs-interval="2000">
-                                        <img src="{{ asset('assets/images/demos/interactive.png') }}" class="d-block w-100"
-                                            alt="...">
-                                    </div>
+                                    <!--end::Menu-->
                                 </div>
                             </div>
+                            <!--end::Menu wrapper-->
+                            <!--begin::Toolbar-->
+                            <div class="flex-equal text-end ms-1">
+                                @auth
+                                    <a href="{{ route('dashboard') }}" class="btn btn-primary">Dashboard</a>
+                                @else
+                                    <a href="{{ route('login') }}" class="btn btn-primary">Login</a>
+                                @endauth
+                            </div>
+                            <!--end::Toolbar-->
                         </div>
+                        <!--end::Wrapper-->
                     </div>
+                    <!--end::Container-->
                 </div>
-                <!-- end row -->
+                <!--end::Header-->
+                <!--begin::Landing hero-->
+                <div class="d-flex flex-column flex-center w-100 min-h-350px min-h-lg-500px px-9">
+                    <!--begin::Heading-->
+                    <div class="text-center mb-5 mb-lg-10 py-10 py-lg-20">
+                        <!--begin::Title-->
+                        <h1 class="text-white lh-base fw-bold fs-2x fs-lg-3x mb-15">Build An Outstanding Solutions
+                            <br />with
+                            <span
+                                style="background: linear-gradient(to right, #12CE5D 0%, #FFD80C 100%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;">
+                                <span id="kt_landing_hero_text">The Best Theme Ever</span>
+                            </span>
+                        </h1>
+                        <!--end::Title-->
+                        <!--begin::Action-->
+                        <a href="index.html" class="btn btn-primary">Try Metronic</a>
+                        <!--end::Action-->
+                    </div>
+                    <!--end::Heading-->
+                    <!--begin::Clients-->
+                    <div class="d-flex flex-center flex-wrap position-relative px-5">
+                        <!--begin::Client-->
+                        <div class="d-flex flex-center m-3 m-md-6" data-bs-toggle="tooltip" title="Fujifilm">
+                            <img src="assets/media/svg/brand-logos/fujifilm.svg" class="mh-30px mh-lg-40px"
+                                alt="" />
+                        </div>
+                        <!--end::Client-->
+                        <!--begin::Client-->
+                        <div class="d-flex flex-center m-3 m-md-6" data-bs-toggle="tooltip" title="Vodafone">
+                            <img src="assets/media/svg/brand-logos/vodafone.svg" class="mh-30px mh-lg-40px"
+                                alt="" />
+                        </div>
+                        <!--end::Client-->
+                        <!--begin::Client-->
+                        <div class="d-flex flex-center m-3 m-md-6" data-bs-toggle="tooltip"
+                            title="KPMG International">
+                            <img src="assets/media/svg/brand-logos/kpmg.svg" class="mh-30px mh-lg-40px"
+                                alt="" />
+                        </div>
+                        <!--end::Client-->
+                        <!--begin::Client-->
+                        <div class="d-flex flex-center m-3 m-md-6" data-bs-toggle="tooltip" title="Nasa">
+                            <img src="assets/media/svg/brand-logos/nasa.svg" class="mh-30px mh-lg-40px"
+                                alt="" />
+                        </div>
+                        <!--end::Client-->
+                        <!--begin::Client-->
+                        <div class="d-flex flex-center m-3 m-md-6" data-bs-toggle="tooltip" title="Aspnetzero">
+                            <img src="assets/media/svg/brand-logos/aspnetzero.svg" class="mh-30px mh-lg-40px"
+                                alt="" />
+                        </div>
+                        <!--end::Client-->
+                        <!--begin::Client-->
+                        <div class="d-flex flex-center m-3 m-md-6" data-bs-toggle="tooltip"
+                            title="AON - Empower Results">
+                            <img src="assets/media/svg/brand-logos/aon.svg" class="mh-30px mh-lg-40px"
+                                alt="" />
+                        </div>
+                        <!--end::Client-->
+                        <!--begin::Client-->
+                        <div class="d-flex flex-center m-3 m-md-6" data-bs-toggle="tooltip" title="Hewlett-Packard">
+                            <img src="assets/media/svg/brand-logos/hp-3.svg" class="mh-30px mh-lg-40px"
+                                alt="" />
+                        </div>
+                        <!--end::Client-->
+                        <!--begin::Client-->
+                        <div class="d-flex flex-center m-3 m-md-6" data-bs-toggle="tooltip" title="Truman">
+                            <img src="assets/media/svg/brand-logos/truman.svg" class="mh-30px mh-lg-40px"
+                                alt="" />
+                        </div>
+                        <!--end::Client-->
+                    </div>
+                    <!--end::Clients-->
+                </div>
+                <!--end::Landing hero-->
             </div>
-            <!-- end container -->
-            <div class="position-absolute start-0 end-0 bottom-0 hero-shape-svg">
-                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink"
-                    viewBox="0 0 1440 120">
-                    <g mask="url(&quot;#SvgjsMask1003&quot;)" fill="none">
-                        <path d="M 0,118 C 288,98.6 1152,40.4 1440,21L1440 140L0 140z">
-                        </path>
-                    </g>
+            <!--end::Wrapper-->
+            <!--begin::Curve bottom-->
+            <div class="landing-curve landing-dark-color mb-10 mb-lg-20">
+                <svg viewBox="15 12 1470 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M0 11C3.93573 11.3356 7.85984 11.6689 11.7725 12H1488.16C1492.1 11.6689 1496.04 11.3356 1500 11V12H1488.16C913.668 60.3476 586.282 60.6117 11.7725 12H0V11Z"
+                        fill="currentColor"></path>
                 </svg>
             </div>
-            <!-- end shape -->
-        </section>
-        <!-- end hero section -->
-
-        <!-- start client section -->
-        <div class="pt-5 mt-5">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-12">
-
-                        <div class="text-center mt-5">
-                            <h5 class="fs-20">Trusted <span class="text-primary text-decoration-underline">by</span>
-                                the world's best</h5>
-
-                            <!-- Swiper -->
-                            <div class="swiper trusted-client-slider mt-sm-5 mt-4 mb-sm-5 mb-4" dir="ltr">
-                                <div class="swiper-wrapper">
-                                    <div class="swiper-slide">
-                                        <div class="client-images">
-                                            <img src="{{ asset('assets/images/clients/amazon.svg') }}" alt="client-img"
-                                                class="mx-auto img-fluid d-block">
-                                        </div>
-                                    </div>
-                                    <div class="swiper-slide">
-                                        <div class="client-images">
-                                            <img src="{{ asset('assets/images/clients/walmart.svg') }}" alt="client-img"
-                                                class="mx-auto img-fluid d-block">
-                                        </div>
-                                    </div>
-                                    <div class="swiper-slide">
-                                        <div class="client-images">
-                                            <img src="{{ asset('assets/images/clients/lenovo.svg') }}" alt="client-img"
-                                                class="mx-auto img-fluid d-block">
-                                        </div>
-                                    </div>
-                                    <div class="swiper-slide">
-                                        <div class="client-images">
-                                            <img src="{{ asset('assets/images/clients/paypal.svg') }}" alt="client-img"
-                                                class="mx-auto img-fluid d-block">
-                                        </div>
-                                    </div>
-                                    <div class="swiper-slide">
-                                        <div class="client-images">
-                                            <img src="{{ asset('assets/images/clients/shopify.svg') }}" alt="client-img"
-                                                class="mx-auto img-fluid d-block">
-                                        </div>
-                                    </div>
-                                    <div class="swiper-slide">
-                                        <div class="client-images">
-                                            <img src="{{ asset('assets/images/clients/verizon.svg') }}" alt="client-img"
-                                                class="mx-auto img-fluid d-block">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-                <!-- end row -->
-            </div>
-            <!-- end container -->
+            <!--end::Curve bottom-->
         </div>
-        <!-- end client section -->
-
-        <!-- start services -->
-        <section class="section" id="services">
+        <!--end::Header Section-->
+        <!--begin::How It Works Section-->
+        <div class="mb-n10 mb-lg-n20 z-index-2">
+            <!--begin::Container-->
             <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-lg-8">
-                        <div class="text-center mb-5">
-                            <h1 class="mb-3 ff-secondary fw-semibold lh-base">A Digital web design studio creating
-                                modern & engaging online</h1>
-                            <p class="text-muted">To achieve this, it would be necessary to have uniform grammar,
-                                pronunciation and more common words. If several languages coalesce the grammar</p>
-                        </div>
+                <!--begin::Heading-->
+                <div class="text-center mb-17">
+                    <!--begin::Title-->
+                    <h3 class="fs-2hx text-gray-900 mb-5" id="how-it-works"
+                        data-kt-scroll-offset="{default: 100, lg: 150}">How it Works</h3>
+                    <!--end::Title-->
+                    <!--begin::Text-->
+                    <div class="fs-5 text-muted fw-bold">Save thousands to millions of bucks by using single tool
+                        <br />for different amazing and great useful admin
                     </div>
-                    <!-- end col -->
+                    <!--end::Text-->
                 </div>
-                <!-- end row -->
-
-                <div class="row g-3">
-                    <div class="col-lg-4">
-                        <div class="d-flex p-3">
-                            <div class="flex-shrink-0 me-3">
-                                <div class="avatar-sm icon-effect">
-                                    <div class="avatar-title bg-transparent text-success rounded-circle">
-                                        <i class="ri-pencil-ruler-2-line fs-36"></i>
-                                    </div>
-                                </div>
+                <!--end::Heading-->
+                <!--begin::Row-->
+                <div class="row w-100 gy-10 mb-md-20">
+                    <!--begin::Col-->
+                    <div class="col-md-4 px-5">
+                        <!--begin::Story-->
+                        <div class="text-center mb-10 mb-md-0">
+                            <!--begin::Illustration-->
+                            <img src="assets/media/illustrations/sketchy-1/2.png" class="mh-125px mb-9"
+                                alt="" />
+                            <!--end::Illustration-->
+                            <!--begin::Heading-->
+                            <div class="d-flex flex-center mb-5">
+                                <!--begin::Badge-->
+                                <span class="badge badge-circle badge-light-success fw-bold p-5 me-3 fs-3">1</span>
+                                <!--end::Badge-->
+                                <!--begin::Title-->
+                                <div class="fs-5 fs-lg-3 fw-bold text-gray-900">Jane Miller</div>
+                                <!--end::Title-->
                             </div>
-                            <div class="flex-grow-1">
-                                <h5 class="fs-18">Creative Design</h5>
-                                <p class="text-muted my-3 ff-secondary">The creative design includes designs that are
-                                    unique, effective and memorable.</p>
-                                <div>
-                                    <a href="#" class="fs-13 fw-medium">Learn More <i
-                                            class="ri-arrow-right-s-line align-bottom"></i></a>
-                                </div>
+                            <!--end::Heading-->
+                            <!--begin::Description-->
+                            <div class="fw-semibold fs-6 fs-lg-4 text-muted">Save thousands to millions of bucks
+                                <br />by using single tool for different
+                                <br />amazing and great
                             </div>
+                            <!--end::Description-->
                         </div>
+                        <!--end::Story-->
                     </div>
-                    <!-- end col -->
-                    <div class="col-lg-4">
-                        <div class="d-flex p-3">
-                            <div class="flex-shrink-0 me-3">
-                                <div class="avatar-sm icon-effect">
-                                    <div class="avatar-title bg-transparent text-success rounded-circle">
-                                        <i class="ri-palette-line fs-36"></i>
-                                    </div>
-                                </div>
+                    <!--end::Col-->
+                    <!--begin::Col-->
+                    <div class="col-md-4 px-5">
+                        <!--begin::Story-->
+                        <div class="text-center mb-10 mb-md-0">
+                            <!--begin::Illustration-->
+                            <img src="assets/media/illustrations/sketchy-1/8.png" class="mh-125px mb-9"
+                                alt="" />
+                            <!--end::Illustration-->
+                            <!--begin::Heading-->
+                            <div class="d-flex flex-center mb-5">
+                                <!--begin::Badge-->
+                                <span class="badge badge-circle badge-light-success fw-bold p-5 me-3 fs-3">2</span>
+                                <!--end::Badge-->
+                                <!--begin::Title-->
+                                <div class="fs-5 fs-lg-3 fw-bold text-gray-900">Setup Your App</div>
+                                <!--end::Title-->
                             </div>
-                            <div class="flex-grow-1">
-                                <h5 class="fs-18">Unlimited Colors</h5>
-                                <p class="text-muted my-3 ff-secondary">The collection of rules and guidelines which
-                                    designers use to communicate with users through appealing.</p>
-                                <div>
-                                    <a href="#" class="fs-13 fw-medium">Learn More <i
-                                            class="ri-arrow-right-s-line align-bottom"></i></a>
-                                </div>
+                            <!--end::Heading-->
+                            <!--begin::Description-->
+                            <div class="fw-semibold fs-6 fs-lg-4 text-muted">Save thousands to millions of bucks
+                                <br />by using single tool for different
+                                <br />amazing and great
                             </div>
+                            <!--end::Description-->
                         </div>
+                        <!--end::Story-->
                     </div>
-                    <!-- end col -->
-                    <div class="col-lg-4">
-                        <div class="d-flex p-3">
-                            <div class="flex-shrink-0 me-3">
-                                <div class="avatar-sm icon-effect">
-                                    <div class="avatar-title bg-transparent text-success rounded-circle">
-                                        <i class="ri-lightbulb-flash-line fs-36"></i>
-                                    </div>
-                                </div>
+                    <!--end::Col-->
+                    <!--begin::Col-->
+                    <div class="col-md-4 px-5">
+                        <!--begin::Story-->
+                        <div class="text-center mb-10 mb-md-0">
+                            <!--begin::Illustration-->
+                            <img src="assets/media/illustrations/sketchy-1/12.png" class="mh-125px mb-9"
+                                alt="" />
+                            <!--end::Illustration-->
+                            <!--begin::Heading-->
+                            <div class="d-flex flex-center mb-5">
+                                <!--begin::Badge-->
+                                <span class="badge badge-circle badge-light-success fw-bold p-5 me-3 fs-3">3</span>
+                                <!--end::Badge-->
+                                <!--begin::Title-->
+                                <div class="fs-5 fs-lg-3 fw-bold text-gray-900">Enjoy Nautica App</div>
+                                <!--end::Title-->
                             </div>
-                            <div class="flex-grow-1">
-                                <h5 class="fs-18">Strategy Solutions</h5>
-                                <p class="text-muted my-3 ff-secondary">Business development firm that provides
-                                    strategic planning, market research services and project.</p>
-                                <div>
-                                    <a href="#" class="fs-13 fw-medium">Learn More <i
-                                            class="ri-arrow-right-s-line align-bottom"></i></a>
-                                </div>
+                            <!--end::Heading-->
+                            <!--begin::Description-->
+                            <div class="fw-semibold fs-6 fs-lg-4 text-muted">Save thousands to millions of bucks
+                                <br />by using single tool for different
+                                <br />amazing and great
                             </div>
+                            <!--end::Description-->
                         </div>
+                        <!--end::Story-->
                     </div>
-                    <!-- end col -->
-                    <div class="col-lg-4">
-                        <div class="d-flex p-3">
-                            <div class="flex-shrink-0 me-3">
-                                <div class="avatar-sm icon-effect">
-                                    <div class="avatar-title bg-transparent text-success rounded-circle">
-                                        <i class="ri-customer-service-line fs-36"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex-grow-1">
-                                <h5 class="fs-18">Awesome Support</h5>
-                                <p class="text-muted my-3 ff-secondary">Awesome Support is the most versatile and
-                                    feature-rich support plugin for all version.</p>
-                                <div>
-                                    <a href="#" class="fs-13 fw-medium">Learn More <i
-                                            class="ri-arrow-right-s-line align-bottom"></i></a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- end col -->
-                    <div class="col-lg-4">
-                        <div class="d-flex p-3">
-                            <div class="flex-shrink-0 me-3">
-                                <div class="avatar-sm icon-effect">
-                                    <div class="avatar-title bg-transparent text-success rounded-circle">
-                                        <i class="ri-stack-line fs-36"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex-grow-1">
-                                <h5 class="fs-18">Truly Multipurpose</h5>
-                                <p class="text-muted my-3 ff-secondary">You usually get a broad range of options to
-                                    play with. This enables you to use a single theme across multiple.</p>
-                                <div>
-                                    <a href="#" class="fs-13 fw-medium">Learn More <i
-                                            class="ri-arrow-right-s-line align-bottom"></i></a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- end col -->
-                    <div class="col-lg-4">
-                        <div class="d-flex p-3">
-                            <div class="flex-shrink-0 me-3">
-                                <div class="avatar-sm icon-effect">
-                                    <div class="avatar-title bg-transparent text-success rounded-circle">
-                                        <i class="ri-settings-2-line fs-36"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex-grow-1">
-                                <h5 class="fs-18">Easy to customize</h5>
-                                <p class="text-muted my-3 ff-secondary">Personalise your own website, no matter what
-                                    theme and what customization options.</p>
-                                <div>
-                                    <a href="#" class="fs-13 fw-medium">Learn More <i
-                                            class="ri-arrow-right-s-line align-bottom"></i></a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- end col -->
-
-                    <div class="col-lg-4">
-                        <div class="d-flex p-3">
-                            <div class="flex-shrink-0 me-3">
-                                <div class="avatar-sm icon-effect">
-                                    <div class="avatar-title bg-transparent text-success rounded-circle">
-                                        <i class="ri-slideshow-line fs-36"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex-grow-1">
-                                <h5 class="fs-18">Responsive & Clean Design</h5>
-                                <p class="text-muted my-3 ff-secondary">Responsive design is a graphic user interface
-                                    (GUI) design approach used to create content.</p>
-                                <div>
-                                    <a href="#" class="fs-13 fw-medium">Learn More <i
-                                            class="ri-arrow-right-s-line align-bottom"></i></a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- end col -->
-                    <div class="col-lg-4">
-                        <div class="d-flex p-3">
-                            <div class="flex-shrink-0 me-3">
-                                <div class="avatar-sm icon-effect">
-                                    <div class="avatar-title bg-transparent text-success rounded-circle">
-                                        <i class="ri-google-fill fs-36"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex-grow-1">
-                                <h5 class="fs-18">Google Font Collection</h5>
-                                <p class="text-muted my-3 ff-secondary">Google Fonts is a collection of 915 fonts, all
-                                    available to use for free on your website.</p>
-                                <div>
-                                    <a href="#" class="fs-13 fw-medium">Learn More <i
-                                            class="ri-arrow-right-s-line align-bottom"></i></a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- end col -->
-                    <div class="col-lg-4">
-                        <div class="d-flex p-3">
-                            <div class="flex-shrink-0 me-3">
-                                <div class="avatar-sm icon-effect">
-                                    <div class="avatar-title bg-transparent text-success rounded-circle">
-                                        <i class="ri-briefcase-5-line fs-36"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="flex-grow-1">
-                                <h5 class="fs-18">Top Industry Specialists</h5>
-                                <p class="text-muted my-3 ff-secondary">An industrial specialist works with industrial
-                                    operations to ensure that manufacturing facilities work.</p>
-                                <div>
-                                    <a href="#" class="fs-13 fw-medium">Learn More <i
-                                            class="ri-arrow-right-s-line align-bottom"></i></a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- end col -->
+                    <!--end::Col-->
                 </div>
-                <!-- end row -->
+                <!--end::Row-->
+                <!--begin::Product slider-->
+                <div class="tns tns-default">
+                    <!--begin::Slider-->
+                    <div data-tns="true" data-tns-loop="true" data-tns-swipe-angle="false" data-tns-speed="2000"
+                        data-tns-autoplay="true" data-tns-autoplay-timeout="18000" data-tns-controls="true"
+                        data-tns-nav="false" data-tns-items="1" data-tns-center="false" data-tns-dots="false"
+                        data-tns-prev-button="#kt_team_slider_prev1" data-tns-next-button="#kt_team_slider_next1">
+                        <!--begin::Item-->
+                        <div class="text-center px-5 pt-5 pt-lg-10 px-lg-10">
+                            <img src="assets/media/preview/demos/demo1/light-ltr.png"
+                                class="card-rounded shadow mh-lg-650px mw-100" alt="" />
+                        </div>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <div class="text-center px-5 pt-5 pt-lg-10 px-lg-10">
+                            <img src="assets/media/preview/demos/demo2/light-ltr.png"
+                                class="card-rounded shadow mh-lg-650px mw-100" alt="" />
+                        </div>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <div class="text-center px-5 pt-5 pt-lg-10 px-lg-10">
+                            <img src="assets/media/preview/demos/demo4/light-ltr.png"
+                                class="card-rounded shadow mh-lg-650px mw-100" alt="" />
+                        </div>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <div class="text-center px-5 pt-5 pt-lg-10 px-lg-10">
+                            <img src="assets/media/preview/demos/demo5/light-ltr.png"
+                                class="card-rounded shadow mh-lg-650px mw-100" alt="" />
+                        </div>
+                        <!--end::Item-->
+                    </div>
+                    <!--end::Slider-->
+                    <!--begin::Slider button-->
+                    <button class="btn btn-icon btn-active-color-primary" id="kt_team_slider_prev1">
+                        <i class="ki-duotone ki-left fs-2x"></i>
+                    </button>
+                    <!--end::Slider button-->
+                    <!--begin::Slider button-->
+                    <button class="btn btn-icon btn-active-color-primary" id="kt_team_slider_next1">
+                        <i class="ki-duotone ki-right fs-2x"></i>
+                    </button>
+                    <!--end::Slider button-->
+                </div>
+                <!--end::Product slider-->
             </div>
-            <!-- end container -->
-        </section>
-        <!-- end services -->
-
-        <!-- start features -->
-        <section class="section bg-light py-5" id="features">
-            <div class="container">
-                <div class="row align-items-center gy-4">
-                    <div class="col-lg-6 col-sm-7 mx-auto">
-                        <div>
-                            <img src="{{ asset('assets/images/landing/features/img-1.png') }}" alt=""
-                                class="img-fluid mx-auto">
-                        </div>
-                    </div>
-                    <div class="col-lg-6">
-                        <div class="text-muted">
-                            <div class="avatar-sm icon-effect mb-4">
-                                <div class="avatar-title bg-transparent rounded-circle text-success h1">
-                                    <i class="ri-collage-line fs-36"></i>
-                                </div>
-                            </div>
-                            <h3 class="mb-3 fs-20">Huge collection of widgets</h3>
-                            <p class="mb-4 ff-secondary fs-16">Collection widgets specialize in displaying many
-                                elements of the same type, such as a collection of pictures from a collection of
-                                articles from a news app or a collection of messages from a communication app.</p>
-
-                            <div class="row pt-3">
-                                <div class="col-3">
-                                    <div class="text-center">
-                                        <h4>5</h4>
-                                        <p>Dashboards</p>
-                                    </div>
-                                </div>
-                                <div class="col-3">
-                                    <div class="text-center">
-                                        <h4>150+</h4>
-                                        <p>Pages</p>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="text-center">
-                                        <h4>7+</h4>
-                                        <p>Functional Apps</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- end col -->
-                </div>
-                <!-- end row -->
+            <!--end::Container-->
+        </div>
+        <!--end::How It Works Section-->
+        <!--begin::Statistics Section-->
+        <div class="mt-sm-n10">
+            <!--begin::Curve top-->
+            <div class="landing-curve landing-dark-color">
+                <svg viewBox="15 -1 1470 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M1 48C4.93573 47.6644 8.85984 47.3311 12.7725 47H1489.16C1493.1 47.3311 1497.04 47.6644 1501 48V47H1489.16C914.668 -1.34764 587.282 -1.61174 12.7725 47H1V48Z"
+                        fill="currentColor"></path>
+                </svg>
             </div>
-            <!-- end container -->
-        </section>
-        <!-- end features -->
-
-        <!-- start cta -->
-        <section class="py-5 bg-primary position-relative">
-            <div class="bg-overlay bg-overlay-pattern opacity-50"></div>
-            <div class="container">
-                <div class="row align-items-center gy-4">
-                    <div class="col-sm">
-                        <div>
-                            <h4 class="text-white mb-0 fw-semibold">Build your web App/SaaS with Velzon dashboard</h4>
+            <!--end::Curve top-->
+            <!--begin::Wrapper-->
+            <div class="pb-15 pt-18 landing-dark-bg">
+                <!--begin::Container-->
+                <div class="container">
+                    <!--begin::Heading-->
+                    <div class="text-center mt-15 mb-18" id="achievements"
+                        data-kt-scroll-offset="{default: 100, lg: 150}">
+                        <!--begin::Title-->
+                        <h3 class="fs-2hx text-white fw-bold mb-5">We Make Things Better</h3>
+                        <!--end::Title-->
+                        <!--begin::Description-->
+                        <div class="fs-5 text-gray-700 fw-bold">Save thousands to millions of bucks by using single
+                            tool
+                            <br />for different amazing and great useful admin
                         </div>
+                        <!--end::Description-->
                     </div>
-                    <!-- end col -->
-                    <div class="col-sm-auto">
-                        <div>
-                            <a href="https://1.envato.market/velzon-admin" target="_blank"
-                                class="btn bg-gradient btn-danger"><i
-                                    class="ri-shopping-cart-2-line align-middle me-1"></i> Buy Now</a>
+                    <!--end::Heading-->
+                    <!--begin::Statistics-->
+                    <div class="d-flex flex-center">
+                        <!--begin::Items-->
+                        <div class="d-flex flex-wrap flex-center justify-content-lg-between mb-15 mx-auto w-xl-900px">
+                            <!--begin::Item-->
+                            <div class="d-flex flex-column flex-center h-200px w-200px h-lg-250px w-lg-250px m-3 bgi-no-repeat bgi-position-center bgi-size-contain"
+                                style="background-image: url('assets/media/svg/misc/octagon.svg')">
+                                <!--begin::Symbol-->
+                                <i class="ki-duotone ki-element-11 fs-2tx text-white mb-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                    <span class="path4"></span>
+                                </i>
+                                <!--end::Symbol-->
+                                <!--begin::Info-->
+                                <div class="mb-0">
+                                    <!--begin::Value-->
+                                    <div class="fs-lg-2hx fs-2x fw-bold text-white d-flex flex-center">
+                                        <div class="min-w-70px" data-kt-countup="true" data-kt-countup-value="700"
+                                            data-kt-countup-suffix="+">0</div>
+                                    </div>
+                                    <!--end::Value-->
+                                    <!--begin::Label-->
+                                    <span class="text-gray-600 fw-semibold fs-5 lh-0">Known Companies</span>
+                                    <!--end::Label-->
+                                </div>
+                                <!--end::Info-->
+                            </div>
+                            <!--end::Item-->
+                            <!--begin::Item-->
+                            <div class="d-flex flex-column flex-center h-200px w-200px h-lg-250px w-lg-250px m-3 bgi-no-repeat bgi-position-center bgi-size-contain"
+                                style="background-image: url('assets/media/svg/misc/octagon.svg')">
+                                <!--begin::Symbol-->
+                                <i class="ki-duotone ki-chart-pie-4 fs-2tx text-white mb-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                </i>
+                                <!--end::Symbol-->
+                                <!--begin::Info-->
+                                <div class="mb-0">
+                                    <!--begin::Value-->
+                                    <div class="fs-lg-2hx fs-2x fw-bold text-white d-flex flex-center">
+                                        <div class="min-w-70px" data-kt-countup="true" data-kt-countup-value="80"
+                                            data-kt-countup-suffix="K+">0</div>
+                                    </div>
+                                    <!--end::Value-->
+                                    <!--begin::Label-->
+                                    <span class="text-gray-600 fw-semibold fs-5 lh-0">Statistic Reports</span>
+                                    <!--end::Label-->
+                                </div>
+                                <!--end::Info-->
+                            </div>
+                            <!--end::Item-->
+                            <!--begin::Item-->
+                            <div class="d-flex flex-column flex-center h-200px w-200px h-lg-250px w-lg-250px m-3 bgi-no-repeat bgi-position-center bgi-size-contain"
+                                style="background-image: url('assets/media/svg/misc/octagon.svg')">
+                                <!--begin::Symbol-->
+                                <i class="ki-duotone ki-basket fs-2tx text-white mb-3">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                    <span class="path3"></span>
+                                    <span class="path4"></span>
+                                </i>
+                                <!--end::Symbol-->
+                                <!--begin::Info-->
+                                <div class="mb-0">
+                                    <!--begin::Value-->
+                                    <div class="fs-lg-2hx fs-2x fw-bold text-white d-flex flex-center">
+                                        <div class="min-w-70px" data-kt-countup="true" data-kt-countup-value="35"
+                                            data-kt-countup-suffix="M+">0</div>
+                                    </div>
+                                    <!--end::Value-->
+                                    <!--begin::Label-->
+                                    <span class="text-gray-600 fw-semibold fs-5 lh-0">Secure Payments</span>
+                                    <!--end::Label-->
+                                </div>
+                                <!--end::Info-->
+                            </div>
+                            <!--end::Item-->
                         </div>
+                        <!--end::Items-->
                     </div>
-                    <!-- end col -->
+                    <!--end::Statistics-->
+                    <!--begin::Testimonial-->
+                    <div class="fs-2 fw-semibold text-muted text-center mb-3">
+                        <span class="fs-1 lh-1 text-gray-700">“</span>When you care about your topic, you’ll write
+                        about it in a
+                        <br />
+                        <span class="text-gray-700 me-1">more powerful</span>, emotionally expressive way
+                        <span class="fs-1 lh-1 text-gray-700">“</span>
+                    </div>
+                    <!--end::Testimonial-->
+                    <!--begin::Author-->
+                    <div class="fs-2 fw-semibold text-muted text-center">
+                        <a href="account/security.html" class="link-primary fs-4 fw-bold">Marcus Levy,</a>
+                        <span class="fs-4 fw-bold text-gray-600">KeenThemes CEO</span>
+                    </div>
+                    <!--end::Author-->
                 </div>
-                <!-- end row -->
+                <!--end::Container-->
             </div>
-            <!-- end container -->
-        </section>
-        <!-- end cta -->
-
-        <!-- start features -->
-        <section class="section">
-            <div class="container">
-                <div class="row align-items-center gy-4">
-                    <div class="col-lg-6 order-2 order-lg-1">
-                        <div class="text-muted">
-                            <h5 class="fs-12 text-uppercase text-success">Design</h5>
-                            <h4 class="mb-3">Well Designed Dashboards</h4>
-                            <p class="mb-4 ff-secondary">Quality Dashboards (QD) is a condition-specific, actionable
-                                web-based application for quality reporting and population management that is integrated
-                                into the Electronic Health Record (EHR).</p>
-
-                            <div class="row">
-                                <div class="col-sm-5">
-                                    <div class="vstack gap-2">
-                                        <div class="d-flex align-items-center">
-                                            <div class="flex-shrink-0 me-2">
-                                                <div class="avatar-xs icon-effect">
-                                                    <div
-                                                        class="avatar-title bg-transparent text-success rounded-circle h2">
-                                                        <i class="ri-check-fill"></i>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="flex-grow-1">
-                                                <h5 class="fs-14 mb-0">Ecommerce</h5>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex align-items-center">
-                                            <div class="flex-shrink-0 me-2">
-                                                <div class="avatar-xs icon-effect">
-                                                    <div
-                                                        class="avatar-title bg-transparent text-success rounded-circle h2">
-                                                        <i class="ri-check-fill"></i>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="flex-grow-1">
-                                                <h5 class="fs-14 mb-0">Analytics</h5>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex align-items-center">
-                                            <div class="flex-shrink-0 me-2">
-                                                <div class="avatar-xs icon-effect">
-                                                    <div
-                                                        class="avatar-title bg-transparent text-success rounded-circle h2">
-                                                        <i class="ri-check-fill"></i>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="flex-grow-1">
-                                                <h5 class="fs-14 mb-0">CRM</h5>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-sm-5">
-                                    <div class="vstack gap-2">
-                                        <div class="d-flex align-items-center">
-                                            <div class="flex-shrink-0 me-2">
-                                                <div class="avatar-xs icon-effect">
-                                                    <div
-                                                        class="avatar-title bg-transparent text-success rounded-circle h2">
-                                                        <i class="ri-check-fill"></i>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="flex-grow-1">
-                                                <h5 class="fs-14 mb-0">Crypto</h5>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex align-items-center">
-                                            <div class="flex-shrink-0 me-2">
-                                                <div class="avatar-xs icon-effect">
-                                                    <div
-                                                        class="avatar-title bg-transparent text-success rounded-circle h2">
-                                                        <i class="ri-check-fill"></i>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="flex-grow-1">
-                                                <h5 class="fs-14 mb-0">Projects</h5>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="mt-4">
-                                <a href="index.html" class="btn btn-primary">Learn More <i
-                                        class="ri-arrow-right-line align-middle ms-1"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- end col -->
-                    <div class="col-lg-6 col-sm-7 col-10 ms-auto order-1 order-lg-2">
-                        <div>
-                            <img src="{{ asset('assets/images/landing/features/img-2.png') }}" alt="" class="img-fluid">
-                        </div>
-                    </div>
-                </div>
-                <!-- end row -->
-
-                <div class="row align-items-center mt-5 pt-lg-5 gy-4">
-                    <div class="col-lg-6 col-sm-7 col-10 mx-auto">
-                        <div>
-                            <img src="{{ asset('assets/images/landing/features/img-3.png') }}" alt="" class="img-fluid">
-                        </div>
-                    </div>
-                    <div class="col-lg-6">
-                        <div class="text-muted ps-lg-5">
-                            <h5 class="fs-12 text-uppercase text-success">structure</h5>
-                            <h4 class="mb-3">Well Documented</h4>
-                            <p class="mb-4">used to describe something that is known about or known to be true
-                                because there are many documents that describe it, prove it, etc.</p>
-
-                            <div class="vstack gap-2">
-                                <div class="d-flex align-items-center">
-                                    <div class="flex-shrink-0 me-2">
-                                        <div class="avatar-xs icon-effect">
-                                            <div class="avatar-title bg-transparent text-success rounded-circle h2">
-                                                <i class="ri-check-fill"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <p class="mb-0">Dynamic Conetnt</p>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center">
-                                    <div class="flex-shrink-0 me-2">
-                                        <div class="avatar-xs icon-effect">
-                                            <div class="avatar-title bg-transparent text-success rounded-circle h2">
-                                                <i class="ri-check-fill"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <p class="mb-0">Setup plugin's information.</p>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center">
-                                    <div class="flex-shrink-0 me-2">
-                                        <div class="avatar-xs icon-effect">
-                                            <div class="avatar-title bg-transparent text-success rounded-circle h2">
-                                                <i class="ri-check-fill"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <p class="mb-0">Themes customization information</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- end col -->
-                </div>
-                <!-- end row -->
+            <!--end::Wrapper-->
+            <!--begin::Curve bottom-->
+            <div class="landing-curve landing-dark-color">
+                <svg viewBox="15 12 1470 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M0 11C3.93573 11.3356 7.85984 11.6689 11.7725 12H1488.16C1492.1 11.6689 1496.04 11.3356 1500 11V12H1488.16C913.668 60.3476 586.282 60.6117 11.7725 12H0V11Z"
+                        fill="currentColor"></path>
+                </svg>
             </div>
-            <!-- end container -->
-        </section>
-        <!-- end features -->
-
-        <!-- start plan -->
-        <section class="section bg-light" id="plans">
-            <div class="bg-overlay bg-overlay-pattern"></div>
+            <!--end::Curve bottom-->
+        </div>
+        <!--end::Statistics Section-->
+        <!--begin::Team Section-->
+        <div class="py-10 py-lg-20">
+            <!--begin::Container-->
             <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-lg-8">
-                        <div class="text-center mb-5">
-                            <h3 class="mb-3 fw-semibold">Choose the plan that's right for you</h3>
-                            <p class="text-muted mb-4">Simple pricing. No hidden fees. Advanced features for you
-                                business.</p>
-
-                            <div class="d-flex justify-content-center align-items-center">
-                                <div>
-                                    <h5 class="fs-14 mb-0">Month</h5>
-                                </div>
-                                <div class="form-check form-switch fs-20 ms-3 " onclick="check()">
-                                    <input class="form-check-input" type="checkbox" id="plan-switch">
-                                    <label class="form-check-label" for="plan-switch"></label>
-                                </div>
-                                <div>
-                                    <h5 class="fs-14 mb-0">Annual <span
-                                            class="badge bg-success-subtle text-success">Save 20%</span></h5>
-                                </div>
-                            </div>
-                        </div>
+                <!--begin::Heading-->
+                <div class="text-center mb-12">
+                    <!--begin::Title-->
+                    <h3 class="fs-2hx text-gray-900 mb-5" id="team"
+                        data-kt-scroll-offset="{default: 100, lg: 150}">Our Great Team</h3>
+                    <!--end::Title-->
+                    <!--begin::Sub-title-->
+                    <div class="fs-5 text-muted fw-bold">It’s no doubt that when a development takes longer to
+                        complete, additional costs to
+                        <br />integrate and test each extra feature creeps up and haunts most of us.
                     </div>
-                    <!-- end col -->
+                    <!--end::Sub-title=-->
                 </div>
-                <!-- end row -->
-
-                <div class="row gy-4">
-                    <div class="col-lg-4">
-                        <div class="card plan-box mb-0">
-                            <div class="card-body p-4 m-2">
-                                <div class="d-flex align-items-center">
-                                    <div class="flex-grow-1">
-                                        <h5 class="mb-1 fw-semibold">Basic Plan</h5>
-                                        <p class="text-muted mb-0">For Startup</p>
-                                    </div>
-                                    <div class="avatar-sm">
-                                        <div class="avatar-title bg-light rounded-circle text-primary">
-                                            <i class="ri-book-mark-line fs-20"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="py-4 text-center">
-                                    <h1 class="month"><sup><small>$</small></sup><span
-                                            class="ff-secondary fw-bold">19</span> <span
-                                            class="fs-13 text-muted">/Month</span></h1>
-                                    <h1 class="annual"><sup><small>$</small></sup><span
-                                            class="ff-secondary fw-bold">171</span> <span
-                                            class="fs-13 text-muted">/Year</span></h1>
-                                </div>
-
-                                <div>
-                                    <ul class="list-unstyled text-muted vstack gap-3 ff-secondary">
-                                        <li>
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 text-success me-1">
-                                                    <i class="ri-checkbox-circle-fill fs-15 align-middle"></i>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    Upto <b>3</b> Projects
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 text-success me-1">
-                                                    <i class="ri-checkbox-circle-fill fs-15 align-middle"></i>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    Upto <b>299</b> Customers
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 text-success me-1">
-                                                    <i class="ri-checkbox-circle-fill fs-15 align-middle"></i>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    Scalable Bandwidth
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 text-success me-1">
-                                                    <i class="ri-checkbox-circle-fill fs-15 align-middle"></i>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <b>5</b> FTP Login
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 text-danger me-1">
-                                                    <i class="ri-close-circle-fill fs-15 align-middle"></i>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <b>24/7</b> Support
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 text-danger me-1">
-                                                    <i class="ri-close-circle-fill fs-15 align-middle"></i>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <b>Unlimited</b> Storage
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 text-danger me-1">
-                                                    <i class="ri-close-circle-fill fs-15 align-middle"></i>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    Domain
-                                                </div>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                    <div class="mt-4">
-                                        <a href="javascript:void(0);" class="btn btn-soft-success w-100">Get
-                                            Started</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!--end col-->
-                    <div class="col-lg-4">
-                        <div class="card plan-box mb-0 ribbon-box right">
-                            <div class="card-body p-4 m-2">
-                                <div class="ribbon-two ribbon-two-danger"><span>Popular</span></div>
-                                <div class="d-flex align-items-center">
-                                    <div class="flex-grow-1">
-                                        <h5 class="mb-1 fw-semibold">Pro Business</h5>
-                                        <p class="text-muted mb-0">Professional plans</p>
-                                    </div>
-                                    <div class="avatar-sm">
-                                        <div class="avatar-title bg-light rounded-circle text-primary">
-                                            <i class="ri-medal-fill fs-20"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="py-4 text-center">
-                                    <h1 class="month"><sup><small>$</small></sup><span
-                                            class="ff-secondary fw-bold">29</span> <span
-                                            class="fs-13 text-muted">/Month</span></h1>
-                                    <h1 class="annual"><sup><small>$</small></sup><span
-                                            class="ff-secondary fw-bold">261</span> <span
-                                            class="fs-13 text-muted">/Year</span></h1>
-                                </div>
-
-                                <div>
-                                    <ul class="list-unstyled text-muted vstack gap-3 ff-secondary">
-                                        <li>
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 text-success me-1">
-                                                    <i class="ri-checkbox-circle-fill fs-15 align-middle"></i>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    Upto <b>15</b> Projects
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 text-success me-1">
-                                                    <i class="ri-checkbox-circle-fill fs-15 align-middle"></i>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <b>Unlimited</b> Customers
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 text-success me-1">
-                                                    <i class="ri-checkbox-circle-fill fs-15 align-middle"></i>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    Scalable Bandwidth
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 text-success me-1">
-                                                    <i class="ri-checkbox-circle-fill fs-15 align-middle"></i>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <b>12</b> FTP Login
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 text-success me-1">
-                                                    <i class="ri-checkbox-circle-fill fs-15 align-middle"></i>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <b>24/7</b> Support
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 text-danger me-1">
-                                                    <i class="ri-close-circle-fill fs-15 align-middle"></i>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <b>Unlimited</b> Storage
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 text-danger me-1">
-                                                    <i class="ri-close-circle-fill fs-15 align-middle"></i>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    Domain
-                                                </div>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                    <div class="mt-4">
-                                        <a href="javascript:void(0);" class="btn btn-soft-success w-100">Get
-                                            Started</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!--end col-->
-                    <div class="col-lg-4">
-                        <div class="card plan-box mb-0">
-                            <div class="card-body p-4 m-2">
-                                <div class="d-flex align-items-center">
-                                    <div class="flex-grow-1">
-                                        <h5 class="mb-1 fw-semibold">Platinum Plan</h5>
-                                        <p class="text-muted mb-0">Enterprise Businesses</p>
-                                    </div>
-                                    <div class="avatar-sm">
-                                        <div class="avatar-title bg-light rounded-circle text-primary">
-                                            <i class="ri-stack-fill fs-20"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="py-4 text-center">
-                                    <h1 class="month"><sup><small>$</small></sup><span
-                                            class="ff-secondary fw-bold">39</span> <span
-                                            class="fs-13 text-muted">/Month</span></h1>
-                                    <h1 class="annual"><sup><small>$</small></sup><span
-                                            class="ff-secondary fw-bold">351</span> <span
-                                            class="fs-13 text-muted">/Year</span></h1>
-                                </div>
-
-                                <div>
-                                    <ul class="list-unstyled text-muted vstack gap-3 ff-secondary">
-                                        <li>
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 text-success me-1">
-                                                    <i class="ri-checkbox-circle-fill fs-15 align-middle"></i>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <b>Unlimited</b> Projects
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 text-success me-1">
-                                                    <i class="ri-checkbox-circle-fill fs-15 align-middle"></i>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <b>Unlimited</b> Customers
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 text-success me-1">
-                                                    <i class="ri-checkbox-circle-fill fs-15 align-middle"></i>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    Scalable Bandwidth
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 text-success me-1">
-                                                    <i class="ri-checkbox-circle-fill fs-15 align-middle"></i>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <b>Unlimited</b> FTP Login
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 text-success me-1">
-                                                    <i class="ri-checkbox-circle-fill fs-15 align-middle"></i>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <b>24/7</b> Support
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 text-success me-1">
-                                                    <i class="ri-checkbox-circle-fill fs-15 align-middle"></i>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <b>Unlimited</b> Storage
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="d-flex">
-                                                <div class="flex-shrink-0 text-success me-1">
-                                                    <i class="ri-checkbox-circle-fill fs-15 align-middle"></i>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    Domain
-                                                </div>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                    <div class="mt-4">
-                                        <a href="javascript:void(0);" class="btn btn-soft-success w-100">Get
-                                            Started</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!--end col-->
-                </div>
-                <!--end row-->
-            </div>
-            <!-- end container -->
-        </section>
-        <!-- end plan -->
-
-        <!-- start faqs -->
-        <section class="section">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-lg-8">
-                        <div class="text-center mb-5">
-                            <h3 class="mb-3 fw-semibold">Frequently Asked Questions</h3>
-                            <p class="text-muted mb-4 ff-secondary">If you can not find answer to your question in our
-                                FAQ, you can always contact us or email us. We will answer you shortly!</p>
-
-                            <div class="hstack gap-2 justify-content-center">
-                                <button type="button" class="btn btn-primary btn-label rounded-pill"><i
-                                        class="ri-mail-line label-icon align-middle rounded-pill fs-16 me-2"></i> Email
-                                    Us</button>
-                                <button type="button" class="btn btn-info btn-label rounded-pill"><i
-                                        class="ri-twitter-line label-icon align-middle rounded-pill fs-16 me-2"></i>
-                                    Send Us Tweet</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- end row -->
-
-                <div class="row g-lg-5 g-4">
-                    <div class="col-lg-6">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="flex-shrink-0 me-1">
-                                <i class="ri-question-line fs-24 align-middle text-success me-1"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <h5 class="mb-0 fw-semibold">General Questions</h5>
-                            </div>
-                        </div>
-                        <div class="accordion custom-accordionwithicon custom-accordion-border accordion-border-box"
-                            id="genques-accordion">
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="genques-headingOne">
-                                    <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                        data-bs-target="#genques-collapseOne" aria-expanded="true"
-                                        aria-controls="genques-collapseOne">
-                                        What is the purpose of using themes ?
-                                    </button>
-                                </h2>
-                                <div id="genques-collapseOne" class="accordion-collapse collapse show"
-                                    aria-labelledby="genques-headingOne" data-bs-parent="#genques-accordion">
-                                    <div class="accordion-body ff-secondary">
-                                        A theme is a set of colors, fonts, effects, and more that can be applied to your
-                                        entire presentation to give it a
-                                        consistent, professional look. You've already been using a theme, even if you
-                                        didn't know it: the default Office theme, which consists.
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="genques-headingTwo">
-                                    <button class="accordion-button collapsed" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#genques-collapseTwo"
-                                        aria-expanded="false" aria-controls="genques-collapseTwo">
-                                        Can a theme have more than one theme?
-                                    </button>
-                                </h2>
-                                <div id="genques-collapseTwo" class="accordion-collapse collapse"
-                                    aria-labelledby="genques-headingTwo" data-bs-parent="#genques-accordion">
-                                    <div class="accordion-body ff-secondary">
-                                        A story can have as many themes as the reader can identify based on recurring
-                                        patterns and parallels within the story
-                                        itself. In looking at ways to separate themes into a hierarchy, we might find it
-                                        useful to follow the example of a single book.
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="genques-headingThree">
-                                    <button class="accordion-button collapsed" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#genques-collapseThree"
-                                        aria-expanded="false" aria-controls="genques-collapseThree">
-                                        What are theme features?
-                                    </button>
-                                </h2>
-                                <div id="genques-collapseThree" class="accordion-collapse collapse"
-                                    aria-labelledby="genques-headingThree" data-bs-parent="#genques-accordion">
-                                    <div class="accordion-body ff-secondary">
-                                        Theme features is a set of specific functionality that may be enabled by theme
-                                        authors. Themes must register each
-                                        individual Theme Feature that the author wishes to support. Theme support
-                                        functions should be called in the theme's functions.
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="genques-headingFour">
-                                    <button class="accordion-button collapsed" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#genques-collapseFour"
-                                        aria-expanded="false" aria-controls="genques-collapseFour">
-                                        What is simple theme?
-                                    </button>
-                                </h2>
-                                <div id="genques-collapseFour" class="accordion-collapse collapse"
-                                    aria-labelledby="genques-headingFour" data-bs-parent="#genques-accordion">
-                                    <div class="accordion-body ff-secondary">
-                                        Simple is a free WordPress theme, by Themify, built exactly what it is named
-                                        for: simplicity. Immediately upgrade the
-                                        quality of your WordPress site with the simple theme To use the built-in Chrome
-                                        theme editor.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!--end accordion-->
-
-                    </div>
-                    <!-- end col -->
-                    <div class="col-lg-6">
-                        <div class="d-flex align-items-center mb-2">
-                            <div class="flex-shrink-0 me-1">
-                                <i class="ri-shield-keyhole-line fs-24 align-middle text-success me-1"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <h5 class="mb-0 fw-semibold">Privacy &amp; Security</h5>
-                            </div>
-                        </div>
-
-                        <div class="accordion custom-accordionwithicon custom-accordion-border accordion-border-box"
-                            id="privacy-accordion">
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="privacy-headingOne">
-                                    <button class="accordion-button collapsed" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#privacy-collapseOne"
-                                        aria-expanded="false" aria-controls="privacy-collapseOne">
-                                        Does Word have night mode?
-                                    </button>
-                                </h2>
-                                <div id="privacy-collapseOne" class="accordion-collapse collapse"
-                                    aria-labelledby="privacy-headingOne" data-bs-parent="#privacy-accordion">
-                                    <div class="accordion-body ff-secondary">
-                                        You can run Microsoft Word in dark mode, which uses a dark color palette to help
-                                        reduce eye strain in low light
-                                        settings. You can choose to make the document white or black using the Switch
-                                        Modes button in the ribbon's View tab.
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="privacy-headingTwo">
-                                    <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                        data-bs-target="#privacy-collapseTwo" aria-expanded="true"
-                                        aria-controls="privacy-collapseTwo">
-                                        Is theme an opinion?
-                                    </button>
-                                </h2>
-                                <div id="privacy-collapseTwo" class="accordion-collapse collapse show"
-                                    aria-labelledby="privacy-headingTwo" data-bs-parent="#privacy-accordion">
-                                    <div class="accordion-body ff-secondary">
-                                        A theme is an opinion the author expresses on the subject, for instance, the
-                                        author's dissatisfaction with the narrow
-                                        confines of French bourgeois marriage during that period theme is an idea that a
-                                        writer repeats.
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="privacy-headingThree">
-                                    <button class="accordion-button collapsed" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#privacy-collapseThree"
-                                        aria-expanded="false" aria-controls="privacy-collapseThree">
-                                        How do you develop a theme?
-                                    </button>
-                                </h2>
-                                <div id="privacy-collapseThree" class="accordion-collapse collapse"
-                                    aria-labelledby="privacy-headingThree" data-bs-parent="#privacy-accordion">
-                                    <div class="accordion-body ff-secondary">
-                                        A short story, novella, or novel presents a narrative to its reader. Perhaps
-                                        that narrative involves mystery, terror,
-                                        romance, comedy, or all of the above. These works of fiction may also contain
-                                        memorable characters, vivid
-                                        world-building, literary devices.
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="privacy-headingFour">
-                                    <button class="accordion-button collapsed" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#privacy-collapseFour"
-                                        aria-expanded="false" aria-controls="privacy-collapseFour">
-                                        Do stories need themes?
-                                    </button>
-                                </h2>
-                                <div id="privacy-collapseFour" class="accordion-collapse collapse"
-                                    aria-labelledby="privacy-headingFour" data-bs-parent="#privacy-accordion">
-                                    <div class="accordion-body ff-secondary">
-                                        A story can have as many themes as the reader can identify based on recurring
-                                        patterns and parallels within the story
-                                        itself. In looking at ways to separate themes into a hierarchy, we might find it
-                                        useful to follow the example of a
-                                        single book.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!--end accordion-->
-                    </div>
-                    <!-- end col -->
-                </div>
-                <!-- end row -->
-            </div>
-            <!-- end container -->
-        </section>
-        <!-- end faqs -->
-
-        <!-- start review -->
-        <section class="section bg-primary" id="reviews">
-            <div class="bg-overlay bg-overlay-pattern"></div>
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-lg-10">
+                <!--end::Heading-->
+                <!--begin::Slider-->
+                <div class="tns tns-default" style="direction: ltr">
+                    <!--begin::Wrapper-->
+                    <div data-tns="true" data-tns-loop="true" data-tns-swipe-angle="false" data-tns-speed="2000"
+                        data-tns-autoplay="true" data-tns-autoplay-timeout="18000" data-tns-controls="true"
+                        data-tns-nav="false" data-tns-items="1" data-tns-center="false" data-tns-dots="false"
+                        data-tns-prev-button="#kt_team_slider_prev" data-tns-next-button="#kt_team_slider_next"
+                        data-tns-responsive="{1200: {items: 3}, 992: {items: 2}}">
+                        <!--begin::Item-->
                         <div class="text-center">
-                            <div>
-                                <i class="ri-double-quotes-l text-success display-3"></i>
+                            <!--begin::Photo-->
+                            <div class="octagon mx-auto mb-5 d-flex w-200px h-200px bgi-no-repeat bgi-size-contain bgi-position-center"
+                                style="background-image:url('assets/media/avatars/300-1.jpg')"></div>
+                            <!--end::Photo-->
+                            <!--begin::Person-->
+                            <div class="mb-0">
+                                <!--begin::Name-->
+                                <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-3">Paul Miles</a>
+                                <!--end::Name-->
+                                <!--begin::Position-->
+                                <div class="text-muted fs-6 fw-semibold mt-1">Development Lead</div>
+                                <!--begin::Position-->
                             </div>
-                            <h4 class="text-white mb-5"><span class="text-success">19k</span>+ Satisfied clients</h4>
-
-                            <!-- Swiper -->
-                            <div class="swiper client-review-swiper rounded" dir="ltr">
-                                <div class="swiper-wrapper">
-                                    <div class="swiper-slide">
-                                        <div class="row justify-content-center">
-                                            <div class="col-10">
-                                                <div class="text-white-50">
-                                                    <p class="fs-20 ff-secondary mb-4">" I am givng 5 stars. Theme is
-                                                        great and everyone one stuff everything in theme. Future request
-                                                        should not affect current state of theme. "</p>
-
-                                                    <div>
-                                                        <h5 class="text-white">gregoriusus</h5>
-                                                        <p>- Skote User</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- end slide -->
-                                    <div class="swiper-slide">
-                                        <div class="row justify-content-center">
-                                            <div class="col-10">
-                                                <div class="text-white-50">
-                                                    <p class="fs-20 ff-secondary mb-4">" Awesome support. Had few
-                                                        issues while setting up because of my device, the support team
-                                                        helped me fix them up in a day. Everything looks clean and good.
-                                                        Highly recommended! "</p>
-
-                                                    <div>
-                                                        <h5 class="text-white">GeekyGreenOwl</h5>
-                                                        <p>- Skote User</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- end slide -->
-                                    <div class="swiper-slide">
-                                        <div class="row justify-content-center">
-                                            <div class="col-10">
-                                                <div class="text-white-50">
-                                                    <p class="fs-20 ff-secondary mb-4">" Amazing template, Redux store
-                                                        and components is nicely designed. It's a great start point for
-                                                        an admin based project. Clean Code and good documentation.
-                                                        Template is completely in React and absolutely no usage of
-                                                        jQuery "</p>
-
-                                                    <div>
-                                                        <h5 class="text-white">sreeks456</h5>
-                                                        <p>- Veltrix User</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- end slide -->
-                                </div>
-                                <div class="swiper-button-next bg-white rounded-circle"></div>
-                                <div class="swiper-button-prev bg-white rounded-circle"></div>
-                                <div class="swiper-pagination position-relative mt-2"></div>
-                            </div>
-                            <!-- end slider -->
+                            <!--end::Person-->
                         </div>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <div class="text-center">
+                            <!--begin::Photo-->
+                            <div class="octagon mx-auto mb-5 d-flex w-200px h-200px bgi-no-repeat bgi-size-contain bgi-position-center"
+                                style="background-image:url('assets/media/avatars/300-2.jpg')"></div>
+                            <!--end::Photo-->
+                            <!--begin::Person-->
+                            <div class="mb-0">
+                                <!--begin::Name-->
+                                <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-3">Melisa
+                                    Marcus</a>
+                                <!--end::Name-->
+                                <!--begin::Position-->
+                                <div class="text-muted fs-6 fw-semibold mt-1">Creative Director</div>
+                                <!--begin::Position-->
+                            </div>
+                            <!--end::Person-->
+                        </div>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <div class="text-center">
+                            <!--begin::Photo-->
+                            <div class="octagon mx-auto mb-5 d-flex w-200px h-200px bgi-no-repeat bgi-size-contain bgi-position-center"
+                                style="background-image:url('assets/media/avatars/300-5.jpg')"></div>
+                            <!--end::Photo-->
+                            <!--begin::Person-->
+                            <div class="mb-0">
+                                <!--begin::Name-->
+                                <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-3">David
+                                    Nilson</a>
+                                <!--end::Name-->
+                                <!--begin::Position-->
+                                <div class="text-muted fs-6 fw-semibold mt-1">Python Expert</div>
+                                <!--begin::Position-->
+                            </div>
+                            <!--end::Person-->
+                        </div>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <div class="text-center">
+                            <!--begin::Photo-->
+                            <div class="octagon mx-auto mb-5 d-flex w-200px h-200px bgi-no-repeat bgi-size-contain bgi-position-center"
+                                style="background-image:url('assets/media/avatars/300-20.jpg')"></div>
+                            <!--end::Photo-->
+                            <!--begin::Person-->
+                            <div class="mb-0">
+                                <!--begin::Name-->
+                                <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-3">Anne Clarc</a>
+                                <!--end::Name-->
+                                <!--begin::Position-->
+                                <div class="text-muted fs-6 fw-semibold mt-1">Project Manager</div>
+                                <!--begin::Position-->
+                            </div>
+                            <!--end::Person-->
+                        </div>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <div class="text-center">
+                            <!--begin::Photo-->
+                            <div class="octagon mx-auto mb-5 d-flex w-200px h-200px bgi-no-repeat bgi-size-contain bgi-position-center"
+                                style="background-image:url('assets/media/avatars/300-23.jpg')"></div>
+                            <!--end::Photo-->
+                            <!--begin::Person-->
+                            <div class="mb-0">
+                                <!--begin::Name-->
+                                <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-3">Ricky Hunt</a>
+                                <!--end::Name-->
+                                <!--begin::Position-->
+                                <div class="text-muted fs-6 fw-semibold mt-1">Art Director</div>
+                                <!--begin::Position-->
+                            </div>
+                            <!--end::Person-->
+                        </div>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <div class="text-center">
+                            <!--begin::Photo-->
+                            <div class="octagon mx-auto mb-5 d-flex w-200px h-200px bgi-no-repeat bgi-size-contain bgi-position-center"
+                                style="background-image:url('assets/media/avatars/300-12.jpg')"></div>
+                            <!--end::Photo-->
+                            <!--begin::Person-->
+                            <div class="mb-0">
+                                <!--begin::Name-->
+                                <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-3">Alice
+                                    Wayde</a>
+                                <!--end::Name-->
+                                <!--begin::Position-->
+                                <div class="text-muted fs-6 fw-semibold mt-1">Marketing Manager</div>
+                                <!--begin::Position-->
+                            </div>
+                            <!--end::Person-->
+                        </div>
+                        <!--end::Item-->
+                        <!--begin::Item-->
+                        <div class="text-center">
+                            <!--begin::Photo-->
+                            <div class="octagon mx-auto mb-5 d-flex w-200px h-200px bgi-no-repeat bgi-size-contain bgi-position-center"
+                                style="background-image:url('assets/media/avatars/300-9.jpg')"></div>
+                            <!--end::Photo-->
+                            <!--begin::Person-->
+                            <div class="mb-0">
+                                <!--begin::Name-->
+                                <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-3">Carles
+                                    Puyol</a>
+                                <!--end::Name-->
+                                <!--begin::Position-->
+                                <div class="text-muted fs-6 fw-semibold mt-1">QA Managers</div>
+                                <!--begin::Position-->
+                            </div>
+                            <!--end::Person-->
+                        </div>
+                        <!--end::Item-->
                     </div>
-                    <!-- end col -->
+                    <!--end::Wrapper-->
+                    <!--begin::Button-->
+                    <button class="btn btn-icon btn-active-color-primary" id="kt_team_slider_prev">
+                        <i class="ki-duotone ki-left fs-2x"></i>
+                    </button>
+                    <!--end::Button-->
+                    <!--begin::Button-->
+                    <button class="btn btn-icon btn-active-color-primary" id="kt_team_slider_next">
+                        <i class="ki-duotone ki-right fs-2x"></i>
+                    </button>
+                    <!--end::Button-->
                 </div>
-                <!-- end row -->
+                <!--end::Slider-->
             </div>
-            <!-- end container -->
-        </section>
-        <!-- end review -->
-
-        <!-- start counter -->
-        <section class="py-5 position-relative bg-light">
+            <!--end::Container-->
+        </div>
+        <!--end::Team Section-->
+        <!--begin::Projects Section-->
+        <div class="mb-lg-n15 position-relative z-index-2">
+            <!--begin::Container-->
             <div class="container">
-                <div class="row text-center gy-4">
-                    <div class="col-lg-3 col-6">
-                        <div>
-                            <h2 class="mb-2"><span class="counter-value" data-target="100">0</span>+</h2>
-                            <div class="text-muted">Projects Completed</div>
+                <!--begin::Card-->
+                <div class="card" style="filter: drop-shadow(0px 0px 40px rgba(68, 81, 96, 0.08))">
+                    <!--begin::Card body-->
+                    <div class="card-body p-lg-20">
+                        <!--begin::Heading-->
+                        <div class="text-center mb-5 mb-lg-10">
+                            <!--begin::Title-->
+                            <h3 class="fs-2hx text-gray-900 mb-5" id="portfolio"
+                                data-kt-scroll-offset="{default: 100, lg: 250}">Our Projects</h3>
+                            <!--end::Title-->
                         </div>
-                    </div>
-                    <!-- end col -->
-
-                    <div class="col-lg-3 col-6">
-                        <div>
-                            <h2 class="mb-2"><span class="counter-value" data-target="24">0</span></h2>
-                            <div class="text-muted">Win Awards</div>
-                        </div>
-                    </div>
-                    <!-- end col -->
-
-                    <div class="col-lg-3 col-6">
-                        <div>
-                            <h2 class="mb-2"><span class="counter-value" data-target="20.3">0</span>k</h2>
-                            <div class="text-muted">Satisfied Clients</div>
-                        </div>
-                    </div>
-                    <!-- end col -->
-                    <div class="col-lg-3 col-6">
-                        <div>
-                            <h2 class="mb-2"><span class="counter-value" data-target="50">0</span></h2>
-                            <div class="text-muted">Employees</div>
-                        </div>
-                    </div>
-                    <!-- end col -->
-                </div>
-                <!-- end row -->
-            </div>
-            <!-- end container -->
-        </section>
-        <!-- end counter -->
-
-        <!-- start Work Process -->
-        <section class="section">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-lg-8">
-                        <div class="text-center mb-5">
-                            <h3 class="mb-3 fw-semibold">Our Work Process</h3>
-                            <p class="text-muted mb-4 ff-secondary">In an ideal world this website wouldn’t exist, a
-                                client would acknowledge the importance of having web copy before the Proin vitae ipsum
-                                vel ex finibus semper design starts.</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- end row -->
-
-                <div class="row text-center">
-                    <div class="col-lg-4">
-                        <div class="process-card mt-4">
-                            <div class="process-arrow-img d-none d-lg-block">
-                                <img src="{{ asset('assets/images/landing/process-arrow-img.png') }}" alt=""
-                                    class="img-fluid">
-                            </div>
-                            <div class="avatar-sm icon-effect mx-auto mb-4">
-                                <div class="avatar-title bg-transparent text-success rounded-circle h1">
-                                    <i class="ri-quill-pen-line"></i>
-                                </div>
-                            </div>
-
-                            <h5>Tell us what you need</h5>
-                            <p class="text-muted ff-secondary">The profession and the employer and your desire to make
-                                your mark.</p>
-                        </div>
-                    </div>
-                    <!-- end col -->
-                    <div class="col-lg-4">
-                        <div class="process-card mt-4">
-                            <div class="process-arrow-img d-none d-lg-block">
-                                <img src="{{ asset('assets/images/landing/process-arrow-img.png') }}" alt=""
-                                    class="img-fluid">
-                            </div>
-                            <div class="avatar-sm icon-effect mx-auto mb-4">
-                                <div class="avatar-title bg-transparent text-success rounded-circle h1">
-                                    <i class="ri-user-follow-line"></i>
-                                </div>
-                            </div>
-
-                            <h5>Get free quotes</h5>
-                            <p class="text-muted ff-secondary">The most important aspect of beauty was, therefore, an
-                                inherent part.</p>
-                        </div>
-                    </div>
-                    <!-- end col -->
-                    <div class="col-lg-4">
-                        <div class="process-card mt-4">
-                            <div class="avatar-sm icon-effect mx-auto mb-4">
-                                <div class="avatar-title bg-transparent text-success rounded-circle h1">
-                                    <i class="ri-book-mark-line"></i>
-                                </div>
-                            </div>
-
-                            <h5>Deliver high quality product</h5>
-                            <p class="text-muted ff-secondary">We quickly learn to fear and thus automatically avoid
-                                potentially.</p>
-                        </div>
-                    </div>
-                    <!-- end col -->
-                </div>
-                <!-- end row -->
-            </div>
-            <!-- end container -->
-        </section>
-        <!-- end Work Process -->
-
-        <!-- start team -->
-        <section class="section bg-light" id="team">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-lg-8">
-                        <div class="text-center mb-5">
-                            <h3 class="mb-3 fw-semibold">Our <span class="text-danger">Team</span></h3>
-                            <p class="text-muted mb-4 ff-secondary">To achieve this, it would be necessary to have
-                                uniform grammar, pronunciation and more common words. If several languages coalesce the
-                                grammar.</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- end row -->
-                <div class="row">
-                    <div class="col-lg-3 col-sm-6">
-                        <div class="card">
-                            <div class="card-body text-center p-4">
-                                <div class="avatar-xl mx-auto mb-4 position-relative">
-                                    <img src="{{ asset('assets/images/users/avatar-2.jpg') }}" alt=""
-                                        class="img-fluid rounded-circle">
-                                    <a href="apps-mailbox.html"
-                                        class="btn btn-success btn-sm position-absolute bottom-0 end-0 rounded-circle avatar-xs">
-                                        <div class="avatar-title bg-transparent">
-                                            <i class="ri-mail-fill align-bottom"></i>
-                                        </div>
-                                    </a>
-                                </div>
-                                <!-- end card body -->
-                                <h5 class="mb-1"><a href="pages-profile.html" class="text-body">Nancy Martino</a>
-                                </h5>
-                                <p class="text-muted mb-0 ff-secondary">Team Leader</p>
-                            </div>
-                        </div>
-                        <!-- end card -->
-                    </div>
-                    <!-- end col -->
-                    <div class="col-lg-3 col-sm-6">
-                        <div class="card">
-                            <div class="card-body text-center p-4">
-                                <div class="avatar-xl mx-auto mb-4 position-relative">
-                                    <img src="{{ asset('assets/images/users/avatar-10.jpg') }}" alt=""
-                                        class="img-fluid rounded-circle">
-                                    <a href="apps-mailbox.html"
-                                        class="btn btn-success btn-sm position-absolute bottom-0 end-0 rounded-circle avatar-xs">
-                                        <div class="avatar-title bg-transparent">
-                                            <i class="ri-mail-fill align-bottom"></i>
-                                        </div>
-                                    </a>
-                                </div>
-                                <!-- end card body -->
-                                <h5 class="mb-1"><a href="pages-profile.html" class="text-body">Henry Baird</a>
-                                </h5>
-                                <p class="text-muted mb-0 ff-secondary">Full Stack Developer</p>
-                            </div>
-                        </div>
-                        <!-- end card -->
-                    </div>
-                    <!-- end col -->
-                    <div class="col-lg-3 col-sm-6">
-                        <div class="card">
-                            <div class="card-body text-center p-4">
-                                <div class="avatar-xl mx-auto mb-4 position-relative">
-                                    <img src="{{ asset('assets/images/users/avatar-3.jpg') }}" alt=""
-                                        class="img-fluid rounded-circle">
-                                    <a href="apps-mailbox.html"
-                                        class="btn btn-success btn-sm position-absolute bottom-0 end-0 rounded-circle avatar-xs">
-                                        <div class="avatar-title bg-transparent">
-                                            <i class="ri-mail-fill align-bottom"></i>
-                                        </div>
-                                    </a>
-                                </div>
-                                <!-- end card body -->
-                                <h5 class="mb-1"><a href="pages-profile.html" class="text-body">Frank Hook</a></h5>
-                                <p class="text-muted mb-0 ff-secondary">Project Manager</p>
-                            </div>
-                        </div>
-                        <!-- end card -->
-                    </div>
-                    <!-- end col -->
-                    <div class="col-lg-3 col-sm-6">
-                        <div class="card">
-                            <div class="card-body text-center p-4">
-                                <div class="avatar-xl mx-auto mb-4 position-relative">
-                                    <img src="{{ asset('assets/images/users/avatar-8.jpg') }}" alt=""
-                                        class="img-fluid rounded-circle">
-                                    <a href="apps-mailbox.html"
-                                        class="btn btn-success btn-sm position-absolute bottom-0 end-0 rounded-circle avatar-xs">
-                                        <div class="avatar-title bg-transparent">
-                                            <i class="ri-mail-fill align-bottom"></i>
-                                        </div>
-                                    </a>
-                                </div>
-                                <!-- end card body -->
-                                <h5 class="mb-1"><a href="pages-profile.html" class="text-body">Donald Palmer</a>
-                                </h5>
-                                <p class="text-muted mb-0 ff-secondary">UI/UX Designer</p>
-                            </div>
-                        </div>
-                        <!-- end card -->
-                    </div>
-                    <!-- end col -->
-                </div>
-                <!-- end row -->
-                <div class="row">
-                    <div class="col-lg-3 col-sm-6">
-                        <div class="card">
-                            <div class="card-body text-center p-4">
-                                <div class="avatar-xl mx-auto mb-4 position-relative">
-                                    <img src="{{ asset('assets/images/users/avatar-5.jpg') }}" alt=""
-                                        class="img-fluid rounded-circle">
-                                    <a href="apps-mailbox.html"
-                                        class="btn btn-success btn-sm position-absolute bottom-0 end-0 rounded-circle avatar-xs">
-                                        <div class="avatar-title bg-transparent">
-                                            <i class="ri-mail-fill align-bottom"></i>
-                                        </div>
-                                    </a>
-                                </div>
-                                <!-- end card body -->
-                                <h5 class="mb-1"><a href="pages-profile.html" class="text-body">Erica Kernan</a>
-                                </h5>
-                                <p class="text-muted mb-0 ff-secondary">Web Designer</p>
-                            </div>
-                        </div>
-                        <!-- end card -->
-                    </div>
-                    <!-- end col -->
-                    <div class="col-lg-3 col-sm-6">
-                        <div class="card">
-                            <div class="card-body text-center p-4">
-                                <div class="avatar-xl mx-auto mb-4 position-relative">
-                                    <img src="{{ asset('assets/images/users/avatar-4.jpg') }}" alt=""
-                                        class="img-fluid rounded-circle">
-                                    <a href="apps-mailbox.html"
-                                        class="btn btn-success btn-sm position-absolute bottom-0 end-0 rounded-circle avatar-xs">
-                                        <div class="avatar-title bg-transparent">
-                                            <i class="ri-mail-fill align-bottom"></i>
-                                        </div>
-                                    </a>
-                                </div>
-                                <!-- end card body -->
-                                <h5 class="mb-1"><a href="pages-profile.html" class="text-body">Alexis Clarke</a>
-                                </h5>
-                                <p class="text-muted mb-0 ff-secondary">Backend Developer</p>
-                            </div>
-                        </div>
-                        <!-- end card -->
-                    </div>
-                    <!-- end col -->
-                    <div class="col-lg-3 col-sm-6">
-                        <div class="card">
-                            <div class="card-body text-center p-4">
-                                <div class="avatar-xl mx-auto mb-4 position-relative">
-                                    <img src="{{ asset('assets/images/users/avatar-6.jpg') }}" alt=""
-                                        class="img-fluid rounded-circle">
-                                    <a href="apps-mailbox.html"
-                                        class="btn btn-success btn-sm position-absolute bottom-0 end-0 rounded-circle avatar-xs">
-                                        <div class="avatar-title bg-transparent">
-                                            <i class="ri-mail-fill align-bottom"></i>
-                                        </div>
-                                    </a>
-                                </div>
-                                <!-- end card body -->
-                                <h5 class="mb-1"><a href="pages-profile.html" class="text-body">Marie Ward</a></h5>
-                                <p class="text-muted mb-0 ff-secondary">Full Stack Developer</p>
-                            </div>
-                        </div>
-                        <!-- end card -->
-                    </div>
-                    <!-- end col -->
-
-                    <div class="col-lg-3 col-sm-6">
-                        <div class="card">
-                            <div class="card-body text-center p-4">
-                                <div class="avatar-xl mx-auto mb-4 position-relative">
-                                    <img src="{{ asset('assets/images/users/avatar-7.jpg') }}" alt=""
-                                        class="img-fluid rounded-circle">
-                                    <a href="apps-mailbox.html"
-                                        class="btn btn-success btn-sm position-absolute bottom-0 end-0 rounded-circle avatar-xs">
-                                        <div class="avatar-title bg-transparent">
-                                            <i class="ri-mail-fill align-bottom"></i>
-                                        </div>
-                                    </a>
-                                </div>
-                                <!-- end card body -->
-                                <h5 class="mb-1"><a href="pages-profile.html" class="text-body">Jack Gough</a></h5>
-                                <p class="text-muted mb-0 ff-secondary">React Js Developer</p>
-                            </div>
-                        </div>
-                        <!-- end card -->
-                    </div>
-                    <!-- end col -->
-                </div>
-                <!-- end row -->
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="text-center mt-2">
-                            <a href="pages-team.html" class="btn btn-primary">View All Members <i
-                                    class="ri-arrow-right-line ms-1 align-bottom"></i></a>
-                        </div>
-                    </div>
-                </div>
-                <!-- end row -->
-            </div>
-            <!-- end container -->
-        </section>
-        <!-- end team -->
-
-        <!-- start contact -->
-        <section class="section" id="contact">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-lg-8">
-                        <div class="text-center mb-5">
-                            <h3 class="mb-3 fw-semibold">Get In Touch</h3>
-                            <p class="text-muted mb-4 ff-secondary">We thrive when coming up with innovative ideas but
-                                also understand that a smart concept should be supported with faucibus sapien odio
-                                measurable results.</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- end row -->
-
-                <div class="row gy-4">
-                    <div class="col-lg-4">
-                        <div>
-                            <div class="mt-4">
-                                <h5 class="fs-13 text-muted text-uppercase">Office Address 1:</h5>
-                                <div class="ff-secondary fw-semibold">4461 Cedar Street Moro, <br />AR 72368</div>
-                            </div>
-                            <div class="mt-4">
-                                <h5 class="fs-13 text-muted text-uppercase">Office Address 2:</h5>
-                                <div class="ff-secondary fw-semibold">2467 Swick Hill Street <br />New Orleans, LA
-                                </div>
-                            </div>
-                            <div class="mt-4">
-                                <h5 class="fs-13 text-muted text-uppercase">Working Hours:</h5>
-                                <div class="ff-secondary fw-semibold">9:00am to 6:00pm</div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- end col -->
-                    <div class="col-lg-8">
-                        <div>
-                            <form>
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="mb-4">
-                                            <label for="name" class="form-label fs-13">Name</label>
-                                            <input name="name" id="name" type="text"
-                                                class="form-control bg-light border-light" placeholder="Your name*">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="mb-4">
-                                            <label for="email" class="form-label fs-13">Email</label>
-                                            <input name="email" id="email" type="email"
-                                                class="form-control bg-light border-light"
-                                                placeholder="Your email*">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-lg-12">
-                                        <div class="mb-4">
-                                            <label for="subject" class="form-label fs-13">Subject</label>
-                                            <input type="text" class="form-control bg-light border-light"
-                                                id="subject" name="subject" placeholder="Your Subject.." />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-lg-12">
-                                        <div class="mb-3">
-                                            <label for="comments" class="form-label fs-13">Message</label>
-                                            <textarea name="comments" id="comments" rows="3" class="form-control bg-light border-light"
-                                                placeholder="Your message..."></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-lg-12 text-end">
-                                        <input type="submit" id="submit" name="send"
-                                            class="submitBnt btn btn-primary" value="Send Message">
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                <!-- end row -->
-            </div>
-            <!-- end container -->
-        </section>
-        <!-- end contact -->
-
-        <!-- start cta -->
-        <section class="py-5 bg-primary position-relative">
-            <div class="bg-overlay bg-overlay-pattern opacity-50"></div>
-            <div class="container">
-                <div class="row align-items-center gy-4">
-                    <div class="col-sm">
-                        <div>
-                            <h4 class="text-white mb-0 fw-semibold">Build your web App/SaaS with Velzon dashboard</h4>
-                        </div>
-                    </div>
-                    <!-- end col -->
-                    <div class="col-sm-auto">
-                        <div>
-                            <a href="https://1.envato.market/velzon-admin" target="_blank"
-                                class="btn bg-gradient btn-danger"><i
-                                    class="ri-shopping-cart-2-line align-middle me-1"></i> Buy Now</a>
-                        </div>
-                    </div>
-                    <!-- end col -->
-                </div>
-                <!-- end row -->
-            </div>
-            <!-- end container -->
-        </section>
-        <!-- end cta -->
-
-        <!-- Start footer -->
-        <footer class="custom-footer bg-dark py-5 position-relative">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-4 mt-4">
-                        <div>
-                            <div>
-                                <img src="{{ asset('assets/images/logo-light.png') }}" alt="logo light" height="17">
-                            </div>
-                            <div class="mt-4 fs-13">
-                                <p>Premium Multipurpose Admin & Dashboard Template</p>
-                                <p class="ff-secondary">You can build any type of web application like eCommerce, CRM,
-                                    CMS, Project management apps, Admin Panels, etc using Velzon.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-7 ms-lg-auto">
-                        <div class="row">
-                            <div class="col-sm-4 mt-4">
-                                <h5 class="text-white mb-0">Company</h5>
-                                <div class="text-muted mt-3">
-                                    <ul class="list-unstyled ff-secondary footer-list fs-14">
-                                        <li><a href="pages-profile.html">About Us</a></li>
-                                        <li><a href="pages-gallery.html">Gallery</a></li>
-                                        <li><a href="apps-projects-overview.html">Projects</a></li>
-                                        <li><a href="pages-timeline.html">Timeline</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="col-sm-4 mt-4">
-                                <h5 class="text-white mb-0">Apps Pages</h5>
-                                <div class="text-muted mt-3">
-                                    <ul class="list-unstyled ff-secondary footer-list fs-14">
-                                        <li><a href="pages-pricing.html">Calendar</a></li>
-                                        <li><a href="apps-mailbox.html">Mailbox</a></li>
-                                        <li><a href="apps-chat.html">Chat</a></li>
-                                        <li><a href="apps-crm-deals.html">Deals</a></li>
-                                        <li><a href="apps-tasks-kanban.html">Kanban Board</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="col-sm-4 mt-4">
-                                <h5 class="text-white mb-0">Support</h5>
-                                <div class="text-muted mt-3">
-                                    <ul class="list-unstyled ff-secondary footer-list fs-14">
-                                        <li><a href="pages-faqs.html">FAQ</a></li>
-                                        <li><a href="pages-faqs.html">Contact</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="row text-center text-sm-start align-items-center mt-5">
-                    <div class="col-sm-6">
-
-                        <div>
-                            <p class="copy-rights mb-0">
-                                <script>
-                                    document.write(new Date().getFullYear())
-                                </script> © Velzon - Themesbrand
-                            </p>
-                        </div>
-                    </div>
-                    <div class="col-sm-6">
-                        <div class="text-sm-end mt-3 mt-sm-0">
-                            <ul class="list-inline mb-0 footer-social-link">
-                                <li class="list-inline-item">
-                                    <a href="javascript: void(0);" class="avatar-xs d-block">
-                                        <div class="avatar-title rounded-circle">
-                                            <i class="ri-facebook-fill"></i>
-                                        </div>
-                                    </a>
+                        <!--end::Heading-->
+                        <!--begin::Tabs wrapper-->
+                        <div class="d-flex flex-center mb-5 mb-lg-15">
+                            <!--begin::Tabs-->
+                            <ul class="nav border-transparent flex-center fs-5 fw-bold">
+                                <li class="nav-item">
+                                    <a class="nav-link text-gray-500 text-active-primary px-3 px-lg-6 active"
+                                        href="#" data-bs-toggle="tab"
+                                        data-bs-target="#kt_landing_projects_latest">Latest</a>
                                 </li>
-                                <li class="list-inline-item">
-                                    <a href="javascript: void(0);" class="avatar-xs d-block">
-                                        <div class="avatar-title rounded-circle">
-                                            <i class="ri-github-fill"></i>
-                                        </div>
-                                    </a>
+                                <li class="nav-item">
+                                    <a class="nav-link text-gray-500 text-active-primary px-3 px-lg-6" href="#"
+                                        data-bs-toggle="tab" data-bs-target="#kt_landing_projects_web_design">Web
+                                        Design</a>
                                 </li>
-                                <li class="list-inline-item">
-                                    <a href="javascript: void(0);" class="avatar-xs d-block">
-                                        <div class="avatar-title rounded-circle">
-                                            <i class="ri-linkedin-fill"></i>
-                                        </div>
-                                    </a>
+                                <li class="nav-item">
+                                    <a class="nav-link text-gray-500 text-active-primary px-3 px-lg-6" href="#"
+                                        data-bs-toggle="tab" data-bs-target="#kt_landing_projects_mobile_apps">Mobile
+                                        Apps</a>
                                 </li>
-                                <li class="list-inline-item">
-                                    <a href="javascript: void(0);" class="avatar-xs d-block">
-                                        <div class="avatar-title rounded-circle">
-                                            <i class="ri-google-fill"></i>
-                                        </div>
-                                    </a>
-                                </li>
-                                <li class="list-inline-item">
-                                    <a href="javascript: void(0);" class="avatar-xs d-block">
-                                        <div class="avatar-title rounded-circle">
-                                            <i class="ri-dribbble-line"></i>
-                                        </div>
-                                    </a>
+                                <li class="nav-item">
+                                    <a class="nav-link text-gray-500 text-active-primary px-3 px-lg-6" href="#"
+                                        data-bs-toggle="tab"
+                                        data-bs-target="#kt_landing_projects_development">Development</a>
                                 </li>
                             </ul>
+                            <!--end::Tabs-->
                         </div>
+                        <!--end::Tabs wrapper-->
+                        <!--begin::Tabs content-->
+                        <div class="tab-content">
+                            <!--begin::Tab pane-->
+                            <div class="tab-pane fade show active" id="kt_landing_projects_latest">
+                                <!--begin::Row-->
+                                <div class="row g-10">
+                                    <!--begin::Col-->
+                                    <div class="col-lg-6">
+                                        <!--begin::Item-->
+                                        <a class="d-block card-rounded overlay h-lg-100"
+                                            data-fslightbox="lightbox-projects"
+                                            href="assets/media/stock/600x600/img-23.jpg">
+                                            <!--begin::Image-->
+                                            <div class="overlay-wrapper bgi-no-repeat bgi-position-center bgi-size-cover card-rounded h-lg-100 min-h-250px"
+                                                style="background-image:url('assets/media/stock/600x600/img-23.jpg')">
+                                            </div>
+                                            <!--end::Image-->
+                                            <!--begin::Action-->
+                                            <div class="overlay-layer card-rounded bg-dark bg-opacity-25">
+                                                <i class="ki-duotone ki-eye fs-3x text-white">
+                                                    <span class="path1"></span>
+                                                    <span class="path2"></span>
+                                                    <span class="path3"></span>
+                                                </i>
+                                            </div>
+                                            <!--end::Action-->
+                                        </a>
+                                        <!--end::Item-->
+                                    </div>
+                                    <!--end::Col-->
+                                    <!--begin::Col-->
+                                    <div class="col-lg-6">
+                                        <!--begin::Row-->
+                                        <div class="row g-10 mb-10">
+                                            <!--begin::Col-->
+                                            <div class="col-lg-6">
+                                                <!--begin::Item-->
+                                                <a class="d-block card-rounded overlay"
+                                                    data-fslightbox="lightbox-projects"
+                                                    href="assets/media/stock/600x600/img-22.jpg">
+                                                    <!--begin::Image-->
+                                                    <div class="overlay-wrapper bgi-no-repeat bgi-position-center bgi-size-cover card-rounded h-250px"
+                                                        style="background-image:url('assets/media/stock/600x600/img-22.jpg')">
+                                                    </div>
+                                                    <!--end::Image-->
+                                                    <!--begin::Action-->
+                                                    <div class="overlay-layer card-rounded bg-dark bg-opacity-25">
+                                                        <i class="ki-duotone ki-eye fs-3x text-white">
+                                                            <span class="path1"></span>
+                                                            <span class="path2"></span>
+                                                            <span class="path3"></span>
+                                                        </i>
+                                                    </div>
+                                                    <!--end::Action-->
+                                                </a>
+                                                <!--end::Item-->
+                                            </div>
+                                            <!--end::Col-->
+                                            <!--begin::Col-->
+                                            <div class="col-lg-6">
+                                                <!--begin::Item-->
+                                                <a class="d-block card-rounded overlay"
+                                                    data-fslightbox="lightbox-projects"
+                                                    href="assets/media/stock/600x600/img-21.jpg">
+                                                    <!--begin::Image-->
+                                                    <div class="overlay-wrapper bgi-no-repeat bgi-position-center bgi-size-cover card-rounded h-250px"
+                                                        style="background-image:url('assets/media/stock/600x600/img-21.jpg')">
+                                                    </div>
+                                                    <!--end::Image-->
+                                                    <!--begin::Action-->
+                                                    <div class="overlay-layer card-rounded bg-dark bg-opacity-25">
+                                                        <i class="ki-duotone ki-eye fs-3x text-white">
+                                                            <span class="path1"></span>
+                                                            <span class="path2"></span>
+                                                            <span class="path3"></span>
+                                                        </i>
+                                                    </div>
+                                                    <!--end::Action-->
+                                                </a>
+                                                <!--end::Item-->
+                                            </div>
+                                            <!--end::Col-->
+                                        </div>
+                                        <!--end::Row-->
+                                        <!--begin::Item-->
+                                        <a class="d-block card-rounded overlay" data-fslightbox="lightbox-projects"
+                                            href="assets/media/stock/600x400/img-20.jpg">
+                                            <!--begin::Image-->
+                                            <div class="overlay-wrapper bgi-no-repeat bgi-position-center bgi-size-cover card-rounded h-250px"
+                                                style="background-image:url('assets/media/stock/600x600/img-20.jpg')">
+                                            </div>
+                                            <!--end::Image-->
+                                            <!--begin::Action-->
+                                            <div class="overlay-layer card-rounded bg-dark bg-opacity-25">
+                                                <i class="ki-duotone ki-eye fs-3x text-white">
+                                                    <span class="path1"></span>
+                                                    <span class="path2"></span>
+                                                    <span class="path3"></span>
+                                                </i>
+                                            </div>
+                                            <!--end::Action-->
+                                        </a>
+                                        <!--end::Item-->
+                                    </div>
+                                    <!--end::Col-->
+                                </div>
+                                <!--end::Row-->
+                            </div>
+                            <!--end::Tab pane-->
+                            <!--begin::Tab pane-->
+                            <div class="tab-pane fade" id="kt_landing_projects_web_design">
+                                <!--begin::Row-->
+                                <div class="row g-10">
+                                    <!--begin::Col-->
+                                    <div class="col-lg-6">
+                                        <!--begin::Item-->
+                                        <a class="d-block card-rounded overlay h-lg-100"
+                                            data-fslightbox="lightbox-projects"
+                                            href="assets/media/stock/600x600/img-11.jpg">
+                                            <!--begin::Image-->
+                                            <div class="overlay-wrapper bgi-no-repeat bgi-position-center bgi-size-cover card-rounded h-lg-100 min-h-250px"
+                                                style="background-image:url('assets/media/stock/600x600/img-11.jpg')">
+                                            </div>
+                                            <!--end::Image-->
+                                            <!--begin::Action-->
+                                            <div class="overlay-layer card-rounded bg-dark bg-opacity-25">
+                                                <i class="ki-duotone ki-eye fs-3x text-white">
+                                                    <span class="path1"></span>
+                                                    <span class="path2"></span>
+                                                    <span class="path3"></span>
+                                                </i>
+                                            </div>
+                                            <!--end::Action-->
+                                        </a>
+                                        <!--end::Item-->
+                                    </div>
+                                    <!--end::Col-->
+                                    <!--begin::Col-->
+                                    <div class="col-lg-6">
+                                        <!--begin::Row-->
+                                        <div class="row g-10 mb-10">
+                                            <!--begin::Col-->
+                                            <div class="col-lg-6">
+                                                <!--begin::Item-->
+                                                <a class="d-block card-rounded overlay"
+                                                    data-fslightbox="lightbox-projects"
+                                                    href="assets/media/stock/600x600/img-12.jpg">
+                                                    <!--begin::Image-->
+                                                    <div class="overlay-wrapper bgi-no-repeat bgi-position-center bgi-size-cover card-rounded h-250px"
+                                                        style="background-image:url('assets/media/stock/600x600/img-12.jpg')">
+                                                    </div>
+                                                    <!--end::Image-->
+                                                    <!--begin::Action-->
+                                                    <div class="overlay-layer card-rounded bg-dark bg-opacity-25">
+                                                        <i class="ki-duotone ki-eye fs-3x text-white">
+                                                            <span class="path1"></span>
+                                                            <span class="path2"></span>
+                                                            <span class="path3"></span>
+                                                        </i>
+                                                    </div>
+                                                    <!--end::Action-->
+                                                </a>
+                                                <!--end::Item-->
+                                            </div>
+                                            <!--end::Col-->
+                                            <!--begin::Col-->
+                                            <div class="col-lg-6">
+                                                <!--begin::Item-->
+                                                <a class="d-block card-rounded overlay"
+                                                    data-fslightbox="lightbox-projects"
+                                                    href="assets/media/stock/600x600/img-21.jpg">
+                                                    <!--begin::Image-->
+                                                    <div class="overlay-wrapper bgi-no-repeat bgi-position-center bgi-size-cover card-rounded h-250px"
+                                                        style="background-image:url('assets/media/stock/600x600/img-21.jpg')">
+                                                    </div>
+                                                    <!--end::Image-->
+                                                    <!--begin::Action-->
+                                                    <div class="overlay-layer card-rounded bg-dark bg-opacity-25">
+                                                        <i class="ki-duotone ki-eye fs-3x text-white">
+                                                            <span class="path1"></span>
+                                                            <span class="path2"></span>
+                                                            <span class="path3"></span>
+                                                        </i>
+                                                    </div>
+                                                    <!--end::Action-->
+                                                </a>
+                                                <!--end::Item-->
+                                            </div>
+                                            <!--end::Col-->
+                                        </div>
+                                        <!--end::Row-->
+                                        <!--begin::Item-->
+                                        <a class="d-block card-rounded overlay" data-fslightbox="lightbox-projects"
+                                            href="assets/media/stock/600x400/img-20.jpg">
+                                            <!--begin::Image-->
+                                            <div class="overlay-wrapper bgi-no-repeat bgi-position-center bgi-size-cover card-rounded h-250px"
+                                                style="background-image:url('assets/media/stock/600x600/img-20.jpg')">
+                                            </div>
+                                            <!--end::Image-->
+                                            <!--begin::Action-->
+                                            <div class="overlay-layer card-rounded bg-dark bg-opacity-25">
+                                                <i class="ki-duotone ki-eye fs-3x text-white">
+                                                    <span class="path1"></span>
+                                                    <span class="path2"></span>
+                                                    <span class="path3"></span>
+                                                </i>
+                                            </div>
+                                            <!--end::Action-->
+                                        </a>
+                                        <!--end::Item-->
+                                    </div>
+                                    <!--end::Col-->
+                                </div>
+                                <!--end::Row-->
+                            </div>
+                            <!--end::Tab pane-->
+                            <!--begin::Tab pane-->
+                            <div class="tab-pane fade" id="kt_landing_projects_mobile_apps">
+                                <!--begin::Row-->
+                                <div class="row g-10">
+                                    <!--begin::Col-->
+                                    <div class="col-lg-6">
+                                        <!--begin::Row-->
+                                        <div class="row g-10 mb-10">
+                                            <!--begin::Col-->
+                                            <div class="col-lg-6">
+                                                <!--begin::Item-->
+                                                <a class="d-block card-rounded overlay"
+                                                    data-fslightbox="lightbox-projects"
+                                                    href="assets/media/stock/600x600/img-16.jpg">
+                                                    <!--begin::Image-->
+                                                    <div class="overlay-wrapper bgi-no-repeat bgi-position-center bgi-size-cover card-rounded h-250px"
+                                                        style="background-image:url('assets/media/stock/600x600/img-16.jpg')">
+                                                    </div>
+                                                    <!--end::Image-->
+                                                    <!--begin::Action-->
+                                                    <div class="overlay-layer card-rounded bg-dark bg-opacity-25">
+                                                        <i class="ki-duotone ki-eye fs-3x text-white">
+                                                            <span class="path1"></span>
+                                                            <span class="path2"></span>
+                                                            <span class="path3"></span>
+                                                        </i>
+                                                    </div>
+                                                    <!--end::Action-->
+                                                </a>
+                                                <!--end::Item-->
+                                            </div>
+                                            <!--end::Col-->
+                                            <!--begin::Col-->
+                                            <div class="col-lg-6">
+                                                <!--begin::Item-->
+                                                <a class="d-block card-rounded overlay"
+                                                    data-fslightbox="lightbox-projects"
+                                                    href="assets/media/stock/600x600/img-12.jpg">
+                                                    <!--begin::Image-->
+                                                    <div class="overlay-wrapper bgi-no-repeat bgi-position-center bgi-size-cover card-rounded h-250px"
+                                                        style="background-image:url('assets/media/stock/600x600/img-12.jpg')">
+                                                    </div>
+                                                    <!--end::Image-->
+                                                    <!--begin::Action-->
+                                                    <div class="overlay-layer card-rounded bg-dark bg-opacity-25">
+                                                        <i class="ki-duotone ki-eye fs-3x text-white">
+                                                            <span class="path1"></span>
+                                                            <span class="path2"></span>
+                                                            <span class="path3"></span>
+                                                        </i>
+                                                    </div>
+                                                    <!--end::Action-->
+                                                </a>
+                                                <!--end::Item-->
+                                            </div>
+                                            <!--end::Col-->
+                                        </div>
+                                        <!--end::Row-->
+                                        <!--begin::Item-->
+                                        <a class="d-block card-rounded overlay" data-fslightbox="lightbox-projects"
+                                            href="assets/media/stock/600x400/img-15.jpg">
+                                            <!--begin::Image-->
+                                            <div class="overlay-wrapper bgi-no-repeat bgi-position-center bgi-size-cover card-rounded h-250px"
+                                                style="background-image:url('assets/media/stock/600x600/img-15.jpg')">
+                                            </div>
+                                            <!--end::Image-->
+                                            <!--begin::Action-->
+                                            <div class="overlay-layer card-rounded bg-dark bg-opacity-25">
+                                                <i class="ki-duotone ki-eye fs-3x text-white">
+                                                    <span class="path1"></span>
+                                                    <span class="path2"></span>
+                                                    <span class="path3"></span>
+                                                </i>
+                                            </div>
+                                            <!--end::Action-->
+                                        </a>
+                                        <!--end::Item-->
+                                    </div>
+                                    <!--end::Col-->
+                                    <!--begin::Col-->
+                                    <div class="col-lg-6">
+                                        <!--begin::Item-->
+                                        <a class="d-block card-rounded overlay h-lg-100"
+                                            data-fslightbox="lightbox-projects"
+                                            href="assets/media/stock/600x600/img-23.jpg">
+                                            <!--begin::Image-->
+                                            <div class="overlay-wrapper bgi-no-repeat bgi-position-center bgi-size-cover card-rounded h-lg-100 min-h-250px"
+                                                style="background-image:url('assets/media/stock/600x600/img-23.jpg')">
+                                            </div>
+                                            <!--end::Image-->
+                                            <!--begin::Action-->
+                                            <div class="overlay-layer card-rounded bg-dark bg-opacity-25">
+                                                <i class="ki-duotone ki-eye fs-3x text-white">
+                                                    <span class="path1"></span>
+                                                    <span class="path2"></span>
+                                                    <span class="path3"></span>
+                                                </i>
+                                            </div>
+                                            <!--end::Action-->
+                                        </a>
+                                        <!--end::Item-->
+                                    </div>
+                                    <!--end::Col-->
+                                </div>
+                                <!--end::Row-->
+                            </div>
+                            <!--end::Tab pane-->
+                            <!--begin::Tab pane-->
+                            <div class="tab-pane fade" id="kt_landing_projects_development">
+                                <!--begin::Row-->
+                                <div class="row g-10">
+                                    <!--begin::Col-->
+                                    <div class="col-lg-6">
+                                        <!--begin::Item-->
+                                        <a class="d-block card-rounded overlay h-lg-100"
+                                            data-fslightbox="lightbox-projects"
+                                            href="assets/media/stock/600x600/img-15.jpg">
+                                            <!--begin::Image-->
+                                            <div class="overlay-wrapper bgi-no-repeat bgi-position-center bgi-size-cover card-rounded h-lg-100 min-h-250px"
+                                                style="background-image:url('assets/media/stock/600x600/img-15.jpg')">
+                                            </div>
+                                            <!--end::Image-->
+                                            <!--begin::Action-->
+                                            <div class="overlay-layer card-rounded bg-dark bg-opacity-25">
+                                                <i class="ki-duotone ki-eye fs-3x text-white">
+                                                    <span class="path1"></span>
+                                                    <span class="path2"></span>
+                                                    <span class="path3"></span>
+                                                </i>
+                                            </div>
+                                            <!--end::Action-->
+                                        </a>
+                                        <!--end::Item-->
+                                    </div>
+                                    <!--end::Col-->
+                                    <!--begin::Col-->
+                                    <div class="col-lg-6">
+                                        <!--begin::Row-->
+                                        <div class="row g-10 mb-10">
+                                            <!--begin::Col-->
+                                            <div class="col-lg-6">
+                                                <!--begin::Item-->
+                                                <a class="d-block card-rounded overlay"
+                                                    data-fslightbox="lightbox-projects"
+                                                    href="assets/media/stock/600x600/img-22.jpg">
+                                                    <!--begin::Image-->
+                                                    <div class="overlay-wrapper bgi-no-repeat bgi-position-center bgi-size-cover card-rounded h-250px"
+                                                        style="background-image:url('assets/media/stock/600x600/img-22.jpg')">
+                                                    </div>
+                                                    <!--end::Image-->
+                                                    <!--begin::Action-->
+                                                    <div class="overlay-layer card-rounded bg-dark bg-opacity-25">
+                                                        <i class="ki-duotone ki-eye fs-3x text-white">
+                                                            <span class="path1"></span>
+                                                            <span class="path2"></span>
+                                                            <span class="path3"></span>
+                                                        </i>
+                                                    </div>
+                                                    <!--end::Action-->
+                                                </a>
+                                                <!--end::Item-->
+                                            </div>
+                                            <!--end::Col-->
+                                            <!--begin::Col-->
+                                            <div class="col-lg-6">
+                                                <!--begin::Item-->
+                                                <a class="d-block card-rounded overlay"
+                                                    data-fslightbox="lightbox-projects"
+                                                    href="assets/media/stock/600x600/img-21.jpg">
+                                                    <!--begin::Image-->
+                                                    <div class="overlay-wrapper bgi-no-repeat bgi-position-center bgi-size-cover card-rounded h-250px"
+                                                        style="background-image:url('assets/media/stock/600x600/img-21.jpg')">
+                                                    </div>
+                                                    <!--end::Image-->
+                                                    <!--begin::Action-->
+                                                    <div class="overlay-layer card-rounded bg-dark bg-opacity-25">
+                                                        <i class="ki-duotone ki-eye fs-3x text-white">
+                                                            <span class="path1"></span>
+                                                            <span class="path2"></span>
+                                                            <span class="path3"></span>
+                                                        </i>
+                                                    </div>
+                                                    <!--end::Action-->
+                                                </a>
+                                                <!--end::Item-->
+                                            </div>
+                                            <!--end::Col-->
+                                        </div>
+                                        <!--end::Row-->
+                                        <!--begin::Item-->
+                                        <a class="d-block card-rounded overlay" data-fslightbox="lightbox-projects"
+                                            href="assets/media/stock/600x400/img-14.jpg">
+                                            <!--begin::Image-->
+                                            <div class="overlay-wrapper bgi-no-repeat bgi-position-center bgi-size-cover card-rounded h-250px"
+                                                style="background-image:url('assets/media/stock/600x600/img-14.jpg')">
+                                            </div>
+                                            <!--end::Image-->
+                                            <!--begin::Action-->
+                                            <div class="overlay-layer card-rounded bg-dark bg-opacity-25">
+                                                <i class="ki-duotone ki-eye fs-3x text-white">
+                                                    <span class="path1"></span>
+                                                    <span class="path2"></span>
+                                                    <span class="path3"></span>
+                                                </i>
+                                            </div>
+                                            <!--end::Action-->
+                                        </a>
+                                        <!--end::Item-->
+                                    </div>
+                                    <!--end::Col-->
+                                </div>
+                                <!--end::Row-->
+                            </div>
+                            <!--end::Tab pane-->
+                        </div>
+                        <!--end::Tabs content-->
                     </div>
+                    <!--end::Card body-->
                 </div>
+                <!--end::Card-->
             </div>
-        </footer>
-        <!-- end footer -->
-
-        <!--start back-to-top-->
-        <button onclick="topFunction()" class="btn btn-danger btn-icon landing-back-top" id="back-to-top">
-            <i class="ri-arrow-up-line"></i>
-        </button>
-        <!--end back-to-top-->
-
+            <!--end::Container-->
+        </div>
+        <!--end::Projects Section-->
+        <!--begin::Pricing Section-->
+        <div class="mt-sm-n20">
+            <!--begin::Curve top-->
+            <div class="landing-curve landing-dark-color">
+                <svg viewBox="15 -1 1470 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M1 48C4.93573 47.6644 8.85984 47.3311 12.7725 47H1489.16C1493.1 47.3311 1497.04 47.6644 1501 48V47H1489.16C914.668 -1.34764 587.282 -1.61174 12.7725 47H1V48Z"
+                        fill="currentColor"></path>
+                </svg>
+            </div>
+            <!--end::Curve top-->
+            <!--begin::Wrapper-->
+            <div class="py-20 landing-dark-bg">
+                <!--begin::Container-->
+                <div class="container">
+                    <!--begin::Plans-->
+                    <div class="d-flex flex-column container pt-lg-20">
+                        <!--begin::Heading-->
+                        <div class="mb-13 text-center">
+                            <h1 class="fs-2hx fw-bold text-white mb-5" id="pricing"
+                                data-kt-scroll-offset="{default: 100, lg: 150}">Clear Pricing Makes it Easy</h1>
+                            <div class="text-gray-600 fw-semibold fs-5">Save thousands to millions of bucks by using
+                                single tool for different
+                                <br />amazing and outstanding cool and great useful admin
+                            </div>
+                        </div>
+                        <!--end::Heading-->
+                        <!--begin::Pricing-->
+                        <div class="text-center" id="kt_pricing">
+                            <!--begin::Nav group-->
+                            <div class="nav-group landing-dark-bg d-inline-flex mb-15" data-kt-buttons="true"
+                                style="border: 1px dashed #2B4666;">
+                                <a href="#"
+                                    class="btn btn-color-gray-600 btn-active btn-active-success px-6 py-3 me-2 active"
+                                    data-kt-plan="month">Monthly</a>
+                                <a href="#"
+                                    class="btn btn-color-gray-600 btn-active btn-active-success px-6 py-3"
+                                    data-kt-plan="annual">Annual</a>
+                            </div>
+                            <!--end::Nav group-->
+                            <!--begin::Row-->
+                            <div class="row g-10">
+                                <!--begin::Col-->
+                                <div class="col-xl-4">
+                                    <div class="d-flex h-100 align-items-center">
+                                        <!--begin::Option-->
+                                        <div
+                                            class="w-100 d-flex flex-column flex-center rounded-3 bg-body py-15 px-10">
+                                            <!--begin::Heading-->
+                                            <div class="mb-7 text-center">
+                                                <!--begin::Title-->
+                                                <h1 class="text-gray-900 mb-5 fw-boldest">Startup</h1>
+                                                <!--end::Title-->
+                                                <!--begin::Description-->
+                                                <div class="text-gray-500 fw-semibold mb-5">Best Settings for Startups
+                                                </div>
+                                                <!--end::Description-->
+                                                <!--begin::Price-->
+                                                <div class="text-center">
+                                                    <span class="mb-2 text-primary">$</span>
+                                                    <span class="fs-3x fw-bold text-primary"
+                                                        data-kt-plan-price-month="99"
+                                                        data-kt-plan-price-annual="999">99</span>
+                                                    <span class="fs-7 fw-semibold opacity-50"
+                                                        data-kt-plan-price-month="/ Mon"
+                                                        data-kt-plan-price-annual="/ Ann">/ Mon</span>
+                                                </div>
+                                                <!--end::Price-->
+                                            </div>
+                                            <!--end::Heading-->
+                                            <!--begin::Features-->
+                                            <div class="w-100 mb-10">
+                                                <!--begin::Item-->
+                                                <div class="d-flex flex-stack mb-5">
+                                                    <span class="fw-semibold fs-6 text-gray-800 text-start pe-3">Up to
+                                                        10 Active Users</span>
+                                                    <i class="ki-duotone ki-check-circle fs-1 text-success">
+                                                        <span class="path1"></span>
+                                                        <span class="path2"></span>
+                                                    </i>
+                                                </div>
+                                                <!--end::Item-->
+                                                <!--begin::Item-->
+                                                <div class="d-flex flex-stack mb-5">
+                                                    <span class="fw-semibold fs-6 text-gray-800 text-start pe-3">Up to
+                                                        30 Project Integrations</span>
+                                                    <i class="ki-duotone ki-check-circle fs-1 text-success">
+                                                        <span class="path1"></span>
+                                                        <span class="path2"></span>
+                                                    </i>
+                                                </div>
+                                                <!--end::Item-->
+                                                <!--begin::Item-->
+                                                <div class="d-flex flex-stack mb-5">
+                                                    <span class="fw-semibold fs-6 text-gray-800">Keen Analytics
+                                                        Platform</span>
+                                                    <i class="ki-duotone ki-cross-circle fs-1">
+                                                        <span class="path1"></span>
+                                                        <span class="path2"></span>
+                                                    </i>
+                                                </div>
+                                                <!--end::Item-->
+                                                <!--begin::Item-->
+                                                <div class="d-flex flex-stack mb-5">
+                                                    <span class="fw-semibold fs-6 text-gray-800">Targets Timelines &
+                                                        Files</span>
+                                                    <i class="ki-duotone ki-cross-circle fs-1">
+                                                        <span class="path1"></span>
+                                                        <span class="path2"></span>
+                                                    </i>
+                                                </div>
+                                                <!--end::Item-->
+                                                <!--begin::Item-->
+                                                <div class="d-flex flex-stack">
+                                                    <span class="fw-semibold fs-6 text-gray-800">Unlimited
+                                                        Projects</span>
+                                                    <i class="ki-duotone ki-cross-circle fs-1">
+                                                        <span class="path1"></span>
+                                                        <span class="path2"></span>
+                                                    </i>
+                                                </div>
+                                                <!--end::Item-->
+                                            </div>
+                                            <!--end::Features-->
+                                            <!--begin::Select-->
+                                            <a href="#" class="btn btn-primary">Select</a>
+                                            <!--end::Select-->
+                                        </div>
+                                        <!--end::Option-->
+                                    </div>
+                                </div>
+                                <!--end::Col-->
+                                <!--begin::Col-->
+                                <div class="col-xl-4">
+                                    <div class="d-flex h-100 align-items-center">
+                                        <!--begin::Option-->
+                                        <div
+                                            class="w-100 d-flex flex-column flex-center rounded-3 bg-primary py-20 px-10">
+                                            <!--begin::Heading-->
+                                            <div class="mb-7 text-center">
+                                                <!--begin::Title-->
+                                                <h1 class="text-white mb-5 fw-boldest">Business</h1>
+                                                <!--end::Title-->
+                                                <!--begin::Description-->
+                                                <div class="text-white opacity-75 fw-semibold mb-5">Best Settings for
+                                                    Business</div>
+                                                <!--end::Description-->
+                                                <!--begin::Price-->
+                                                <div class="text-center">
+                                                    <span class="mb-2 text-white">$</span>
+                                                    <span class="fs-3x fw-bold text-white"
+                                                        data-kt-plan-price-month="199"
+                                                        data-kt-plan-price-annual="1999">199</span>
+                                                    <span class="fs-7 fw-semibold text-white opacity-75"
+                                                        data-kt-plan-price-month="/ Mon"
+                                                        data-kt-plan-price-annual="/ Ann">/ Mon</span>
+                                                </div>
+                                                <!--end::Price-->
+                                            </div>
+                                            <!--end::Heading-->
+                                            <!--begin::Features-->
+                                            <div class="w-100 mb-10">
+                                                <!--begin::Item-->
+                                                <div class="d-flex flex-stack mb-5">
+                                                    <span
+                                                        class="fw-semibold fs-6 text-white opacity-75 text-start pe-3">Up
+                                                        to 10 Active Users</span>
+                                                    <i class="ki-duotone ki-check-circle fs-1 text-white">
+                                                        <span class="path1"></span>
+                                                        <span class="path2"></span>
+                                                    </i>
+                                                </div>
+                                                <!--end::Item-->
+                                                <!--begin::Item-->
+                                                <div class="d-flex flex-stack mb-5">
+                                                    <span
+                                                        class="fw-semibold fs-6 text-white opacity-75 text-start pe-3">Up
+                                                        to 30 Project Integrations</span>
+                                                    <i class="ki-duotone ki-check-circle fs-1 text-white">
+                                                        <span class="path1"></span>
+                                                        <span class="path2"></span>
+                                                    </i>
+                                                </div>
+                                                <!--end::Item-->
+                                                <!--begin::Item-->
+                                                <div class="d-flex flex-stack mb-5">
+                                                    <span
+                                                        class="fw-semibold fs-6 text-white opacity-75 text-start pe-3">Keen
+                                                        Analytics Platform</span>
+                                                    <i class="ki-duotone ki-check-circle fs-1 text-white">
+                                                        <span class="path1"></span>
+                                                        <span class="path2"></span>
+                                                    </i>
+                                                </div>
+                                                <!--end::Item-->
+                                                <!--begin::Item-->
+                                                <div class="d-flex flex-stack mb-5">
+                                                    <span
+                                                        class="fw-semibold fs-6 text-white opacity-75 text-start pe-3">Targets
+                                                        Timelines & Files</span>
+                                                    <i class="ki-duotone ki-check-circle fs-1 text-white">
+                                                        <span class="path1"></span>
+                                                        <span class="path2"></span>
+                                                    </i>
+                                                </div>
+                                                <!--end::Item-->
+                                                <!--begin::Item-->
+                                                <div class="d-flex flex-stack">
+                                                    <span class="fw-semibold fs-6 text-white opacity-75">Unlimited
+                                                        Projects</span>
+                                                    <i class="ki-duotone ki-cross-circle fs-1 text-white">
+                                                        <span class="path1"></span>
+                                                        <span class="path2"></span>
+                                                    </i>
+                                                </div>
+                                                <!--end::Item-->
+                                            </div>
+                                            <!--end::Features-->
+                                            <!--begin::Select-->
+                                            <a href="#"
+                                                class="btn btn-color-primary btn-active-light-primary btn-light">Select</a>
+                                            <!--end::Select-->
+                                        </div>
+                                        <!--end::Option-->
+                                    </div>
+                                </div>
+                                <!--end::Col-->
+                                <!--begin::Col-->
+                                <div class="col-xl-4">
+                                    <div class="d-flex h-100 align-items-center">
+                                        <!--begin::Option-->
+                                        <div
+                                            class="w-100 d-flex flex-column flex-center rounded-3 bg-body py-15 px-10">
+                                            <!--begin::Heading-->
+                                            <div class="mb-7 text-center">
+                                                <!--begin::Title-->
+                                                <h1 class="text-gray-900 mb-5 fw-boldest">Enterprise</h1>
+                                                <!--end::Title-->
+                                                <!--begin::Description-->
+                                                <div class="text-gray-500 fw-semibold mb-5">Best Settings for
+                                                    Enterprise</div>
+                                                <!--end::Description-->
+                                                <!--begin::Price-->
+                                                <div class="text-center">
+                                                    <span class="mb-2 text-primary">$</span>
+                                                    <span class="fs-3x fw-bold text-primary"
+                                                        data-kt-plan-price-month="999"
+                                                        data-kt-plan-price-annual="9999">999</span>
+                                                    <span class="fs-7 fw-semibold opacity-50"
+                                                        data-kt-plan-price-month="/ Mon"
+                                                        data-kt-plan-price-annual="/ Ann">/ Mon</span>
+                                                </div>
+                                                <!--end::Price-->
+                                            </div>
+                                            <!--end::Heading-->
+                                            <!--begin::Features-->
+                                            <div class="w-100 mb-10">
+                                                <!--begin::Item-->
+                                                <div class="d-flex flex-stack mb-5">
+                                                    <span class="fw-semibold fs-6 text-gray-800 text-start pe-3">Up to
+                                                        10 Active Users</span>
+                                                    <i class="ki-duotone ki-check-circle fs-1 text-success">
+                                                        <span class="path1"></span>
+                                                        <span class="path2"></span>
+                                                    </i>
+                                                </div>
+                                                <!--end::Item-->
+                                                <!--begin::Item-->
+                                                <div class="d-flex flex-stack mb-5">
+                                                    <span class="fw-semibold fs-6 text-gray-800 text-start pe-3">Up to
+                                                        30 Project Integrations</span>
+                                                    <i class="ki-duotone ki-check-circle fs-1 text-success">
+                                                        <span class="path1"></span>
+                                                        <span class="path2"></span>
+                                                    </i>
+                                                </div>
+                                                <!--end::Item-->
+                                                <!--begin::Item-->
+                                                <div class="d-flex flex-stack mb-5">
+                                                    <span class="fw-semibold fs-6 text-gray-800 text-start pe-3">Keen
+                                                        Analytics Platform</span>
+                                                    <i class="ki-duotone ki-check-circle fs-1 text-success">
+                                                        <span class="path1"></span>
+                                                        <span class="path2"></span>
+                                                    </i>
+                                                </div>
+                                                <!--end::Item-->
+                                                <!--begin::Item-->
+                                                <div class="d-flex flex-stack mb-5">
+                                                    <span
+                                                        class="fw-semibold fs-6 text-gray-800 text-start pe-3">Targets
+                                                        Timelines & Files</span>
+                                                    <i class="ki-duotone ki-check-circle fs-1 text-success">
+                                                        <span class="path1"></span>
+                                                        <span class="path2"></span>
+                                                    </i>
+                                                </div>
+                                                <!--end::Item-->
+                                                <!--begin::Item-->
+                                                <div class="d-flex flex-stack">
+                                                    <span
+                                                        class="fw-semibold fs-6 text-gray-800 text-start pe-3">Unlimited
+                                                        Projects</span>
+                                                    <i class="ki-duotone ki-check-circle fs-1 text-success">
+                                                        <span class="path1"></span>
+                                                        <span class="path2"></span>
+                                                    </i>
+                                                </div>
+                                                <!--end::Item-->
+                                            </div>
+                                            <!--end::Features-->
+                                            <!--begin::Select-->
+                                            <a href="#" class="btn btn-primary">Select</a>
+                                            <!--end::Select-->
+                                        </div>
+                                        <!--end::Option-->
+                                    </div>
+                                </div>
+                                <!--end::Col-->
+                            </div>
+                            <!--end::Row-->
+                        </div>
+                        <!--end::Pricing-->
+                    </div>
+                    <!--end::Plans-->
+                </div>
+                <!--end::Container-->
+            </div>
+            <!--end::Wrapper-->
+            <!--begin::Curve bottom-->
+            <div class="landing-curve landing-dark-color">
+                <svg viewBox="15 12 1470 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M0 11C3.93573 11.3356 7.85984 11.6689 11.7725 12H1488.16C1492.1 11.6689 1496.04 11.3356 1500 11V12H1488.16C913.668 60.3476 586.282 60.6117 11.7725 12H0V11Z"
+                        fill="currentColor"></path>
+                </svg>
+            </div>
+            <!--end::Curve bottom-->
+        </div>
+        <!--end::Pricing Section-->
+        <!--begin::Testimonials Section-->
+        <div class="mt-20 mb-n20 position-relative z-index-2">
+            <!--begin::Container-->
+            <div class="container">
+                <!--begin::Heading-->
+                <div class="text-center mb-17">
+                    <!--begin::Title-->
+                    <h3 class="fs-2hx text-gray-900 mb-5" id="clients"
+                        data-kt-scroll-offset="{default: 125, lg: 150}">What Our Clients Say</h3>
+                    <!--end::Title-->
+                    <!--begin::Description-->
+                    <div class="fs-5 text-muted fw-bold">Save thousands to millions of bucks by using single tool
+                        <br />for different amazing and great useful admin
+                    </div>
+                    <!--end::Description-->
+                </div>
+                <!--end::Heading-->
+                <!--begin::Row-->
+                <div class="row g-lg-10 mb-10 mb-lg-20">
+                    <!--begin::Col-->
+                    <div class="col-lg-4">
+                        <!--begin::Testimonial-->
+                        <div
+                            class="d-flex flex-column justify-content-between h-lg-100 px-10 px-lg-0 pe-lg-10 mb-15 mb-lg-0">
+                            <!--begin::Wrapper-->
+                            <div class="mb-7">
+                                <!--begin::Rating-->
+                                <div class="rating mb-6">
+                                    <div class="rating-label me-2 checked">
+                                        <i class="ki-duotone ki-star fs-5"></i>
+                                    </div>
+                                    <div class="rating-label me-2 checked">
+                                        <i class="ki-duotone ki-star fs-5"></i>
+                                    </div>
+                                    <div class="rating-label me-2 checked">
+                                        <i class="ki-duotone ki-star fs-5"></i>
+                                    </div>
+                                    <div class="rating-label me-2 checked">
+                                        <i class="ki-duotone ki-star fs-5"></i>
+                                    </div>
+                                    <div class="rating-label me-2 checked">
+                                        <i class="ki-duotone ki-star fs-5"></i>
+                                    </div>
+                                </div>
+                                <!--end::Rating-->
+                                <!--begin::Title-->
+                                <div class="fs-2 fw-bold text-gray-900 mb-3">This is by far the cleanest template
+                                    <br />and the most well structured
+                                </div>
+                                <!--end::Title-->
+                                <!--begin::Feedback-->
+                                <div class="text-gray-500 fw-semibold fs-4">The most well thought out design theme I
+                                    have ever used. The codes are up to tandard. The css styles are very clean. In fact
+                                    the cleanest and the most up to standard I have ever seen.</div>
+                                <!--end::Feedback-->
+                            </div>
+                            <!--end::Wrapper-->
+                            <!--begin::Author-->
+                            <div class="d-flex align-items-center">
+                                <!--begin::Avatar-->
+                                <div class="symbol symbol-circle symbol-50px me-5">
+                                    <img src="assets/media/avatars/300-1.jpg" class="" alt="" />
+                                </div>
+                                <!--end::Avatar-->
+                                <!--begin::Name-->
+                                <div class="flex-grow-1">
+                                    <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-6">Paul
+                                        Miles</a>
+                                    <span class="text-muted d-block fw-bold">Development Lead</span>
+                                </div>
+                                <!--end::Name-->
+                            </div>
+                            <!--end::Author-->
+                        </div>
+                        <!--end::Testimonial-->
+                    </div>
+                    <!--end::Col-->
+                    <!--begin::Col-->
+                    <div class="col-lg-4">
+                        <!--begin::Testimonial-->
+                        <div
+                            class="d-flex flex-column justify-content-between h-lg-100 px-10 px-lg-0 pe-lg-10 mb-15 mb-lg-0">
+                            <!--begin::Wrapper-->
+                            <div class="mb-7">
+                                <!--begin::Rating-->
+                                <div class="rating mb-6">
+                                    <div class="rating-label me-2 checked">
+                                        <i class="ki-duotone ki-star fs-5"></i>
+                                    </div>
+                                    <div class="rating-label me-2 checked">
+                                        <i class="ki-duotone ki-star fs-5"></i>
+                                    </div>
+                                    <div class="rating-label me-2 checked">
+                                        <i class="ki-duotone ki-star fs-5"></i>
+                                    </div>
+                                    <div class="rating-label me-2 checked">
+                                        <i class="ki-duotone ki-star fs-5"></i>
+                                    </div>
+                                    <div class="rating-label me-2 checked">
+                                        <i class="ki-duotone ki-star fs-5"></i>
+                                    </div>
+                                </div>
+                                <!--end::Rating-->
+                                <!--begin::Title-->
+                                <div class="fs-2 fw-bold text-gray-900 mb-3">This is by far the cleanest template
+                                    <br />and the most well structured
+                                </div>
+                                <!--end::Title-->
+                                <!--begin::Feedback-->
+                                <div class="text-gray-500 fw-semibold fs-4">The most well thought out design theme I
+                                    have ever used. The codes are up to tandard. The css styles are very clean. In fact
+                                    the cleanest and the most up to standard I have ever seen.</div>
+                                <!--end::Feedback-->
+                            </div>
+                            <!--end::Wrapper-->
+                            <!--begin::Author-->
+                            <div class="d-flex align-items-center">
+                                <!--begin::Avatar-->
+                                <div class="symbol symbol-circle symbol-50px me-5">
+                                    <img src="assets/media/avatars/300-2.jpg" class="" alt="" />
+                                </div>
+                                <!--end::Avatar-->
+                                <!--begin::Name-->
+                                <div class="flex-grow-1">
+                                    <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-6">Janya
+                                        Clebert</a>
+                                    <span class="text-muted d-block fw-bold">Development Lead</span>
+                                </div>
+                                <!--end::Name-->
+                            </div>
+                            <!--end::Author-->
+                        </div>
+                        <!--end::Testimonial-->
+                    </div>
+                    <!--end::Col-->
+                    <!--begin::Col-->
+                    <div class="col-lg-4">
+                        <!--begin::Testimonial-->
+                        <div
+                            class="d-flex flex-column justify-content-between h-lg-100 px-10 px-lg-0 pe-lg-10 mb-15 mb-lg-0">
+                            <!--begin::Wrapper-->
+                            <div class="mb-7">
+                                <!--begin::Rating-->
+                                <div class="rating mb-6">
+                                    <div class="rating-label me-2 checked">
+                                        <i class="ki-duotone ki-star fs-5"></i>
+                                    </div>
+                                    <div class="rating-label me-2 checked">
+                                        <i class="ki-duotone ki-star fs-5"></i>
+                                    </div>
+                                    <div class="rating-label me-2 checked">
+                                        <i class="ki-duotone ki-star fs-5"></i>
+                                    </div>
+                                    <div class="rating-label me-2 checked">
+                                        <i class="ki-duotone ki-star fs-5"></i>
+                                    </div>
+                                    <div class="rating-label me-2 checked">
+                                        <i class="ki-duotone ki-star fs-5"></i>
+                                    </div>
+                                </div>
+                                <!--end::Rating-->
+                                <!--begin::Title-->
+                                <div class="fs-2 fw-bold text-gray-900 mb-3">This is by far the cleanest template
+                                    <br />and the most well structured
+                                </div>
+                                <!--end::Title-->
+                                <!--begin::Feedback-->
+                                <div class="text-gray-500 fw-semibold fs-4">The most well thought out design theme I
+                                    have ever used. The codes are up to tandard. The css styles are very clean. In fact
+                                    the cleanest and the most up to standard I have ever seen.</div>
+                                <!--end::Feedback-->
+                            </div>
+                            <!--end::Wrapper-->
+                            <!--begin::Author-->
+                            <div class="d-flex align-items-center">
+                                <!--begin::Avatar-->
+                                <div class="symbol symbol-circle symbol-50px me-5">
+                                    <img src="assets/media/avatars/300-16.jpg" class="" alt="" />
+                                </div>
+                                <!--end::Avatar-->
+                                <!--begin::Name-->
+                                <div class="flex-grow-1">
+                                    <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-6">Steave
+                                        Brown</a>
+                                    <span class="text-muted d-block fw-bold">Development Lead</span>
+                                </div>
+                                <!--end::Name-->
+                            </div>
+                            <!--end::Author-->
+                        </div>
+                        <!--end::Testimonial-->
+                    </div>
+                    <!--end::Col-->
+                </div>
+                <!--end::Row-->
+                <!--begin::Highlight-->
+                <div class="d-flex flex-stack flex-wrap flex-md-nowrap card-rounded shadow p-8 p-lg-12 mb-n5 mb-lg-n13"
+                    style="background: linear-gradient(90deg, #20AA3E 0%, #03A588 100%);">
+                    <!--begin::Content-->
+                    <div class="my-2 me-5">
+                        <!--begin::Title-->
+                        <div class="fs-1 fs-lg-2qx fw-bold text-white mb-2">Start With Metronic Today,
+                            <span class="fw-normal">Speed Up Development!</span>
+                        </div>
+                        <!--end::Title-->
+                        <!--begin::Description-->
+                        <div class="fs-6 fs-lg-5 text-white fw-semibold opacity-75">Join over 100,000 Professionals
+                            Community to Stay Ahead</div>
+                        <!--end::Description-->
+                    </div>
+                    <!--end::Content-->
+                    <!--begin::Link-->
+                    <a href="https://1.envato.market/Vm7VRE"
+                        class="btn btn-lg btn-outline border-2 btn-outline-white flex-shrink-0 my-2">Purchase on
+                        Themeforest</a>
+                    <!--end::Link-->
+                </div>
+                <!--end::Highlight-->
+            </div>
+            <!--end::Container-->
+        </div>
+        <!--end::Testimonials Section-->
+        <!--begin::Footer Section-->
+        <div class="mb-0">
+            <!--begin::Curve top-->
+            <div class="landing-curve landing-dark-color">
+                <svg viewBox="15 -1 1470 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M1 48C4.93573 47.6644 8.85984 47.3311 12.7725 47H1489.16C1493.1 47.3311 1497.04 47.6644 1501 48V47H1489.16C914.668 -1.34764 587.282 -1.61174 12.7725 47H1V48Z"
+                        fill="currentColor"></path>
+                </svg>
+            </div>
+            <!--end::Curve top-->
+            <!--begin::Wrapper-->
+            <div class="landing-dark-bg pt-20">
+                <!--begin::Container-->
+                <div class="container">
+                    <!--begin::Row-->
+                    <div class="row py-10 py-lg-20">
+                        <!--begin::Col-->
+                        <div class="col-lg-6 pe-lg-16 mb-10 mb-lg-0">
+                            <!--begin::Block-->
+                            <div class="rounded landing-dark-border p-9 mb-10">
+                                <!--begin::Title-->
+                                <h2 class="text-white">Would you need a Custom License?</h2>
+                                <!--end::Title-->
+                                <!--begin::Text-->
+                                <span class="fw-normal fs-4 text-gray-700">Email us to
+                                    <a href="https://keenthemes.com/support"
+                                        class="text-white opacity-50 text-hover-primary">support@keenthemes.com</a></span>
+                                <!--end::Text-->
+                            </div>
+                            <!--end::Block-->
+                            <!--begin::Block-->
+                            <div class="rounded landing-dark-border p-9">
+                                <!--begin::Title-->
+                                <h2 class="text-white">How About a Custom Project?</h2>
+                                <!--end::Title-->
+                                <!--begin::Text-->
+                                <span class="fw-normal fs-4 text-gray-700">Use Our Custom Development Service.
+                                    <a href="pages/user-profile/overview.html"
+                                        class="text-white opacity-50 text-hover-primary">Click to Get a
+                                        Quote</a></span>
+                                <!--end::Text-->
+                            </div>
+                            <!--end::Block-->
+                        </div>
+                        <!--end::Col-->
+                        <!--begin::Col-->
+                        <div class="col-lg-6 ps-lg-16">
+                            <!--begin::Navs-->
+                            <div class="d-flex justify-content-center">
+                                <!--begin::Links-->
+                                <div class="d-flex fw-semibold flex-column me-20">
+                                    <!--begin::Subtitle-->
+                                    <h4 class="fw-bold text-gray-500 mb-6">More for Metronic</h4>
+                                    <!--end::Subtitle-->
+                                    <!--begin::Link-->
+                                    <a href="https://keenthemes.com/faqs"
+                                        class="text-white opacity-50 text-hover-primary fs-5 mb-6">FAQ</a>
+                                    <!--end::Link-->
+                                    <!--begin::Link-->
+                                    <a href="https://preview.keenthemes.com/html/metronic/docs"
+                                        class="text-white opacity-50 text-hover-primary fs-5 mb-6">Documentaions</a>
+                                    <!--end::Link-->
+                                    <!--begin::Link-->
+                                    <a href="https://www.youtube.com/c/KeenThemesTuts/videos"
+                                        class="text-white opacity-50 text-hover-primary fs-5 mb-6">Video Tuts</a>
+                                    <!--end::Link-->
+                                    <!--begin::Link-->
+                                    <a href="https://preview.keenthemes.com/html/metronic/docs/getting-started/changelog"
+                                        class="text-white opacity-50 text-hover-primary fs-5 mb-6">Changelog</a>
+                                    <!--end::Link-->
+                                    <!--begin::Link-->
+                                    <a href="https://devs.keenthemes.com/"
+                                        class="text-white opacity-50 text-hover-primary fs-5 mb-6">Support Forum</a>
+                                    <!--end::Link-->
+                                    <!--begin::Link-->
+                                    <a href="https://keenthemes.com/blog"
+                                        class="text-white opacity-50 text-hover-primary fs-5">Blog</a>
+                                    <!--end::Link-->
+                                </div>
+                                <!--end::Links-->
+                                <!--begin::Links-->
+                                <div class="d-flex fw-semibold flex-column ms-lg-20">
+                                    <!--begin::Subtitle-->
+                                    <h4 class="fw-bold text-gray-500 mb-6">Stay Connected</h4>
+                                    <!--end::Subtitle-->
+                                    <!--begin::Link-->
+                                    <a href="https://www.facebook.com/keenthemes" class="mb-6">
+                                        <img src="assets/media/svg/brand-logos/facebook-4.svg" class="h-20px me-2"
+                                            alt="" />
+                                        <span
+                                            class="text-white opacity-50 text-hover-primary fs-5 mb-6">Facebook</span>
+                                    </a>
+                                    <!--end::Link-->
+                                    <!--begin::Link-->
+                                    <a href="https://github.com/KeenthemesHub" class="mb-6">
+                                        <img src="assets/media/svg/brand-logos/github.svg" class="h-20px me-2"
+                                            alt="" />
+                                        <span class="text-white opacity-50 text-hover-primary fs-5 mb-6">Github</span>
+                                    </a>
+                                    <!--end::Link-->
+                                    <!--begin::Link-->
+                                    <a href="https://twitter.com/keenthemes" class="mb-6">
+                                        <img src="assets/media/svg/brand-logos/twitter.svg" class="h-20px me-2"
+                                            alt="" />
+                                        <span class="text-white opacity-50 text-hover-primary fs-5 mb-6">Twitter</span>
+                                    </a>
+                                    <!--end::Link-->
+                                    <!--begin::Link-->
+                                    <a href="https://dribbble.com/keenthemes" class="mb-6">
+                                        <img src="assets/media/svg/brand-logos/dribbble-icon-1.svg"
+                                            class="h-20px me-2" alt="" />
+                                        <span
+                                            class="text-white opacity-50 text-hover-primary fs-5 mb-6">Dribbble</span>
+                                    </a>
+                                    <!--end::Link-->
+                                    <!--begin::Link-->
+                                    <a href="https://www.instagram.com/keenthemes" class="mb-6">
+                                        <img src="assets/media/svg/brand-logos/instagram-2-1.svg" class="h-20px me-2"
+                                            alt="" />
+                                        <span
+                                            class="text-white opacity-50 text-hover-primary fs-5 mb-6">Instagram</span>
+                                    </a>
+                                    <!--end::Link-->
+                                </div>
+                                <!--end::Links-->
+                            </div>
+                            <!--end::Navs-->
+                        </div>
+                        <!--end::Col-->
+                    </div>
+                    <!--end::Row-->
+                </div>
+                <!--end::Container-->
+                <!--begin::Separator-->
+                <div class="landing-dark-separator"></div>
+                <!--end::Separator-->
+                <!--begin::Container-->
+                <div class="container">
+                    <!--begin::Wrapper-->
+                    <div class="d-flex flex-column flex-md-row flex-stack py-7 py-lg-10">
+                        <!--begin::Copyright-->
+                        <div class="d-flex align-items-center order-2 order-md-1">
+                            <!--begin::Logo-->
+                            <a href="landing.html">
+                                <img alt="Logo" src="assets/media/logos/landing.svg" class="h-15px h-md-20px" />
+                            </a>
+                            <!--end::Logo image-->
+                            <!--begin::Logo image-->
+                            <span class="mx-5 fs-6 fw-semibold text-gray-600 pt-1"
+                                href="https://keenthemes.com">&copy; 2024 Keenthemes Inc.</span>
+                            <!--end::Logo image-->
+                        </div>
+                        <!--end::Copyright-->
+                        <!--begin::Menu-->
+                        <ul
+                            class="menu menu-gray-600 menu-hover-primary fw-semibold fs-6 fs-md-5 order-1 mb-5 mb-md-0">
+                            <li class="menu-item">
+                                <a href="https://keenthemes.com" target="_blank" class="menu-link px-2">About</a>
+                            </li>
+                            <li class="menu-item mx-5">
+                                <a href="https://devs.keenthemes.com" target="_blank"
+                                    class="menu-link px-2">Support</a>
+                            </li>
+                            <li class="menu-item">
+                                <a href="" target="_blank" class="menu-link px-2">Purchase</a>
+                            </li>
+                        </ul>
+                        <!--end::Menu-->
+                    </div>
+                    <!--end::Wrapper-->
+                </div>
+                <!--end::Container-->
+            </div>
+            <!--end::Wrapper-->
+        </div>
+        <!--end::Footer Section-->
+        <!--begin::Scrolltop-->
+        <div id="kt_scrolltop" class="scrolltop" data-kt-scrolltop="true">
+            <i class="ki-duotone ki-arrow-up">
+                <span class="path1"></span>
+                <span class="path2"></span>
+            </i>
+        </div>
+        <!--end::Scrolltop-->
     </div>
-    <!-- end layout wrapper -->
-
-
-    <!-- JAVASCRIPT -->
-    <script src="{{ asset('assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/simplebar/simplebar.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/node-waves/waves.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/feather-icons/feather.min.js') }}"></script>
-    <script src="{{ asset('assets/js/pages/plugins/lord-icon-2.1.0.js') }}"></script>
-    {{-- <script src="{{ asset('assets/js/plugins.js') }}"></script> --}}
-    <!-- Replacement of plugins.js -->
-    <script src="{{ asset('assets/libs/choices.js/public/assets/scripts/choices.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/flatpickr/flatpickr.min.js') }}"></script>
-
-    <!--Swiper slider js-->
-    <script src="{{ asset('assets/libs/swiper/swiper-bundle.min.js') }}"></script>
-
-    <!-- landing init -->
-    <script src="{{ asset('assets/js/pages/landing.init.js') }}"></script>
+    <!--end::Root-->
+    <!--begin::Scrolltop-->
+    <div id="kt_scrolltop" class="scrolltop" data-kt-scrolltop="true">
+        <i class="ki-duotone ki-arrow-up">
+            <span class="path1"></span>
+            <span class="path2"></span>
+        </i>
+    </div>
+    <!--end::Scrolltop-->
+    <!--begin::Javascript-->
+    <script>
+        var hostUrl = "assets/";
+    </script>
+    <!--begin::Global Javascript Bundle(mandatory for all pages)-->
+    <script src="assets/plugins/global/plugins.bundle.js"></script>
+    <script src="assets/js/scripts.bundle.js"></script>
+    <!--end::Global Javascript Bundle-->
+    <!--begin::Vendors Javascript(used for this page only)-->
+    <script src="assets/plugins/custom/fslightbox/fslightbox.bundle.js"></script>
+    <script src="assets/plugins/custom/typedjs/typedjs.bundle.js"></script>
+    <!--end::Vendors Javascript-->
+    <!--begin::Custom Javascript(used for this page only)-->
+    <script src="assets/js/custom/landing.js"></script>
+    <script src="assets/js/custom/pages/pricing/general.js"></script>
+    <!--end::Custom Javascript-->
+    <!--end::Javascript-->
 </body>
+<!--end::Body-->
 
 </html>

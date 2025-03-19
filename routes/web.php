@@ -12,7 +12,7 @@ use App\Http\Controllers\Student\GuardianController;
 
 Route::get('/', function() {
     return view('landing.index');
-});
+})->name('home');
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
