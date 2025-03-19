@@ -15,13 +15,14 @@ return new class extends Migration
             $table->id();
             $table->string('student_unique_id')->unique();
             $table->foreignId('branch_id');
-            $table->string('full_name');
+            $table->string('name_en');
+            $table->string('name_bn');
             $table->date('date_of_birth');
             $table->enum('gender', ['male', 'female']);
             $table->foreignId('class_id');
             $table->enum('academic_group', ['General', 'Science', 'Commerce', 'Arts']);
             $table->foreignId('shift_id');
-            $table->string('institution_roll')->nullable();
+            // $table->string('institution_roll')->nullable();
             $table->foreignId('institution_id')->nullable();
             $table->string('religion')->nullable();
             $table->text('home_address')->nullable();

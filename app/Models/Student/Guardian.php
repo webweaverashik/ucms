@@ -11,7 +11,7 @@ class Guardian extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'mobile_number', 'gender', 'address', 'relationship', 'student_id', 'deleted_by'];
+    protected $fillable = ['name', 'mobile_number', 'gender', 'relationship', 'student_id', 'deleted_by'];
 
     /**
      * Get the student associated with this guardian.

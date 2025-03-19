@@ -14,9 +14,11 @@ return new class extends Migration
         Schema::create('siblings', function (Blueprint $table) {
             $table->id();
             $table->string('full_name');
-            $table->string('class');
-            $table->foreignId('institution_id');
+            $table->string('age');
+            $table->string('class')->nullable();
+            $table->foreignId('institution_id')->nullable();
             $table->foreignId('student_id');
+            $table->enum('relationship', ['brother', 'sister']);
             $table->softDeletes();
             $table->timestamps();
         });

@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('name');
             $table->string('mobile_number', 11);
             $table->enum('gender', ['male', 'female']);
-            $table->text('address')->nullable();
             $table->enum('relationship', ['father', 'mother', 'brother', 'sister', 'uncle']);
             $table->foreignId('student_id');
             $table->softDeletes();

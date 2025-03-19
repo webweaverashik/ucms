@@ -29,9 +29,7 @@ class StudentFactory extends Factory
         $class = ClassName::inRandomOrder()->first() ?? ClassName::factory()->create();
 
         // Determine academic group based on class numeral
-        $academic_group = in_array($class->class_numeral, ['01', '02', '03', '04', '05', '06', '07', '08'])
-            ? 'General'
-            : $this->faker->randomElement(['Science', 'Commerce', 'Arts']);
+        $academic_group = in_array($class->class_numeral, ['01', '02', '03', '04', '05', '06', '07', '08']) ? 'General' : $this->faker->randomElement(['Science', 'Commerce', 'Arts']);
 
         // Generate a unique roll number (1-99)
         $roll = str_pad($this->faker->unique()->numberBetween(1, 99), 2, '0', STR_PAD_LEFT);
@@ -39,16 +37,19 @@ class StudentFactory extends Factory
         // Generate student_unique_id (format: BP-YYCCRR)
         $studentUniqueId = "{$branch->branch_prefix}-{$year}{$class->class_numeral}{$roll}";
 
+        $banglaNames = ['আরিফ হোসেন', 'সুমাইয়া আক্তার', 'রাকিব হাসান', 'জান্নাতুল ফেরদৌস', 'ইমরান খান', 'তাসনিম রহমান', 'সাকিব আহমেদ', 'নাদিয়া সুলতানা', 'ফাহিম চৌধুরী', 'মাহিয়া মিম', 'নাসির উদ্দিন', 'রুমকি বেগম', 'শামীম সরকার', 'সাদিয়া ইসলাম', 'জুবায়ের ভূঁইয়া', 'আফিয়া শেখ', 'তানভীর মিয়া', 'আয়েশা খাতুন', 'আসিফ আলী', 'ফারজানা হক'];
+
         return [
             'student_unique_id' => $studentUniqueId,
             'branch_id' => $branch->id,
-            'full_name' => $this->faker->name,
+            'name_en' => $this->faker->name,
+            'name_bn' => $this->faker->randomElement($banglaNames),
             'date_of_birth' => $this->faker->date(),
             'gender' => $this->faker->randomElement(['male', 'female']),
             'class_id' => $class->id,
             'academic_group' => $academic_group,
             'shift_id' => Shift::inRandomOrder()->first()->id ?? Shift::factory()->create()->id,
-            'institution_roll' => $roll,
+            // 'institution_roll' => $roll,
             'institution_id' => Institution::inRandomOrder()->first()->id ?? Institution::factory()->create()->id,
             'religion' => 'Islam',
             'home_address' => $this->faker->optional()->address,

@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Student;
 use Illuminate\Http\Request;
 use App\Models\Academic\Shift;
 use App\Models\Student\Student;
+use App\Models\Academic\Subject;
+use App\Models\Student\Guardian;
 use App\Models\Academic\ClassName;
 use App\Http\Controllers\Controller;
+use App\Models\Academic\Institution;
 
 class StudentController extends Controller
 {
@@ -37,7 +40,13 @@ class StudentController extends Controller
      */
     public function create()
     {
-        return view('students.create');
+        $guardians = Guardian::all();
+        $classnames = ClassName::all();
+        $subjects = Subject::all();
+        $shifts = Shift::where('branch_id', auth()->user()->branch_id)->get();
+        $institutions = Institution::all();
+        
+        return view('students.create', compact('guardians', 'classnames', 'subjects', 'shifts', 'institutions'));
     }
 
     /**
