@@ -15,11 +15,11 @@
         <!--begin::Page bg image-->
         <style>
             body {
-                background-image: url('assets/media/auth/bg1.jpg');
+                background-image: url('{{ asset('assets/media/auth/bg1.jpg') }}');
             }
 
             [data-bs-theme="dark"] body {
-                background-image: url('assets/media/auth/bg1-dark.jpg');
+                background-image: url('{{ asset('assets/media/auth/bg1-dark.jpg') }}');
             }
         </style>
         <!--end::Page bg image-->
@@ -38,9 +38,9 @@
                         <!--end::Text-->
                         <!--begin::Illustration-->
                         <div class="mb-3">
-                            <img src="assets/media/auth/404-error.png" class="mw-100 mh-300px theme-light-show"
+                            <img src="{{ asset('assets/media/auth/404-error.png') }}" class="mw-100 mh-300px theme-light-show"
                                 alt="" />
-                            <img src="assets/media/auth/404-error-dark.png" class="mw-100 mh-300px theme-dark-show"
+                            <img src="{{ asset('assets/media/auth/404-error-dark.png') }}" class="mw-100 mh-300px theme-dark-show"
                                 alt="" />
                         </div>
                         <!--end::Illustration-->

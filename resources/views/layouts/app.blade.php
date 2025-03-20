@@ -53,7 +53,7 @@
     <!--end::App-->
 
     <!--begin::Drawers-->
-    @yield('drawers')
+    @include('layouts.partials.drawers')
     <!--end::Drawers-->
 
 
@@ -64,7 +64,7 @@
     <!--end::Scrolltop-->
 
     <!--begin::Modals-->
-    @yield('modals')
+    @include('layouts.partials.modals')
     <!--end::Modals-->
 
     <!--begin::Javascript-->

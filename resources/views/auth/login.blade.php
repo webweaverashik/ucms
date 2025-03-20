@@ -31,12 +31,13 @@
                 <div class="d-flex flex-column flex-center pb-0 pb-lg-10 p-10 w-100">
                     <!--begin::Image-->
                     <img class="theme-light-show mx-auto mw-100 w-150px w-lg-300px mb-10 mb-lg-20"
-                        src="{{ asset('assets/media/auth/agency.png') }}" alt="" />
+                        src="{{ asset('assets/img/icon.png') }}" alt="" />
                     <img class="theme-dark-show mx-auto mw-100 w-150px w-lg-300px mb-10 mb-lg-20"
                         src="{{ asset('assets/media/auth/agency-dark.png') }}" alt="" />
                     <!--end::Image-->
                     <!--begin::Title-->
-                    <h1 class="text-gray-800 fs-2qx fw-bold text-center mb-7">Fast, Efficient and Productive</h1>
+                    <h1 class="text-gray-800 fs-2qx fw-bold text-center mb-7">Unique Coaching Management System (UCMS)
+                    </h1>
                     <!--end::Title-->
                     <!--begin::Text-->
                     <div class="text-gray-600 fs-base text-center fw-semibold">In this kind of post,
@@ -61,8 +62,9 @@
                         <div class="d-flex flex-center flex-column flex-column-fluid pb-15 pb-lg-20">
                             <!--begin::Form-->
                             {{-- <form class="form w-100" novalidate="novalidate" id="kt_sign_in_form" data-kt-redirect-url="index.html" action="#"> --}}
-                            <form class="form w-100" novalidate="novalidate" id="kt_sign_in_form" action="{{ route('login') }}" method="POST">
-                            @csrf
+                            <form class="form w-100" novalidate="novalidate" id="kt_sign_in_form"
+                                action="{{ route('login') }}" method="POST">
+                                @csrf
                                 <!--begin::Heading-->
                                 <div class="text-center mb-11">
                                     <!--begin::Title-->
@@ -123,8 +125,7 @@
                                 <div class="d-flex flex-stack flex-wrap gap-3 fs-base fw-semibold mb-8">
                                     <div></div>
                                     <!--begin::Link-->
-                                    <a href="authentication/layouts/overlay/reset-password.html"
-                                        class="link-primary">Forgot Password ?</a>
+                                    <a href="#" class="link-primary">Forgot Password ?</a>
                                     <!--end::Link-->
                                 </div>
                                 <!--end::Wrapper-->
@@ -144,7 +145,7 @@
                                 <!--end::Submit button-->
                                 <!--begin::Sign up-->
                                 <div class="text-gray-500 text-center fw-semibold fs-6">Not a Member yet?
-                                    <a href="authentication/layouts/overlay/sign-up.html" class="link-primary">Sign
+                                    <a href="#" class="link-primary">Sign
                                         up</a>
                                 </div>
                                 <!--end::Sign up-->
@@ -260,6 +261,43 @@
     {{-- <script src="{{ asset('assets/js/custom/authentication/sign-in/general.js') }}"></script> --}}
     <!--end::Custom Javascript-->
     <!--end::Javascript-->
+
+    @if (session('success') || session('warning') || session('error'))
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                toastr.options = {
+                    "closeButton": true,
+                    "debug": false,
+                    "newestOnTop": true,
+                    "progressBar": true,
+                    "positionClass": "toastr-top-right",
+                    "preventDuplicates": false,
+                    "onclick": null,
+                    "showDuration": "300",
+                    "hideDuration": "1000",
+                    "timeOut": "5000",
+                    "extendedTimeOut": "1000",
+                    "showEasing": "swing",
+                    "hideEasing": "linear",
+                    "showMethod": "fadeIn",
+                    "hideMethod": "fadeOut"
+                };
+
+                @if (session('success'))
+                    toastr.success("{{ session('success') }}");
+                @endif
+
+                @if (session('warning'))
+                    toastr.warning("{{ session('warning') }}");
+                @endif
+
+                @if (session('error'))
+                    toastr.error("{{ session('error') }}");
+                @endif
+            });
+        </script>
+    @endif
+
 </body>
 <!--end::Body-->
 
