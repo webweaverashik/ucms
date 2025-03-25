@@ -390,7 +390,7 @@
                     <!--begin:Users Menu item-->
                     <div class="menu-item">
                         <!--begin:Menu link-->
-                        <a class="menu-link" href="{{ route('teachers.index') }}" id="users_link">
+                        <a class="menu-link" href="{{ route('users.index') }}" id="users_link">
                             <span class="menu-icon">
                                 <i class="ki-outline ki-user fs-2"></i>
                             </span>

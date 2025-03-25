@@ -12,7 +12,7 @@ class BranchFactory extends Factory
     public function definition(): array
     {
         // List of predefined branch names
-        $branch_names = ['Khilgaon', 'Goran'];
+        $branch_names = ['Goran', 'Khilgaon'];
         static $index = 0; // Use a static variable to track the index
 
         $branch_name = $branch_names[$index % count($branch_names)]; // Get branch name serially

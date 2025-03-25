@@ -18,7 +18,7 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
-    protected $fillable = ['name', 'email', 'mobile_number', 'password', 'branch_id', 'photo_url'];
+    protected $fillable = ['name', 'email', 'mobile_number', 'password', 'branch_id', 'is_active', 'photo_url'];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -46,5 +46,13 @@ class User extends Authenticatable
     public function branch()
     {
         return $this->belongsTo(Branch::class);
+    }
+
+    /**
+     * Get the login activities for the user.
+     */
+    public function loginActivities()
+    {
+        return $this->hasMany(LoginActivity::class);
     }
 }

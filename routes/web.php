@@ -30,6 +30,10 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
         return redirect()->back();
     })->name('logout.get');
 
+    // Custom routes
+    Route::post('users/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggleActive');
+    
+    
     // resource controller routes
     Route::resource('users', UserController::class);
     Route::resource('students', StudentController::class);

@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('password');
             $table->foreignId('branch_id')->nullable();
             $table->timestamp('email_verified_at')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->string('photo_url')->nullable();
             $table->rememberToken();
             $table->timestamps();

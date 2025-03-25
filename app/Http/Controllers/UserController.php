@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Models\Branch;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -11,7 +13,10 @@ class UserController extends Controller
      */
     public function index()
     {
-        //
+        $users = User::withoutTrashed()->orderby('id', 'desc')->get();
+        $branches = Branch::all();
+
+        return view('users.index', compact('users', 'branches'));
     }
 
     /**
@@ -57,8 +62,26 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(User $user)
     {
-        //
+        $user->delete();
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Toggle active and inactive farms
+     */
+    public function toggleActive(Request $request)
+    {
+        $user = User::find($request->farm_id);
+
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Error. Please, contact support.']);
+        }
+
+        $user->is_active = $request->is_active;
+        $user->save();
+
+        return response()->json(['success' => true, 'message' => 'User activation status updated.']);
     }
 }
