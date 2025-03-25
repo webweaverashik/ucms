@@ -21,10 +21,11 @@ var KTSubscriptionsList = function () {
 
         // Init datatable --- more info on datatables: https://datatables.net/manual/
         datatable = $(table).DataTable({
-            "info": false,
+            "info": true,
             'order': [],
+            "lengthMenu": [10, 25, 50, 100],
             "pageLength": 10,
-            "lengthChange": false,
+            "lengthChange": true,
             'columnDefs': [
                 { orderable: false, targets: 0 }, // Disable ordering on column 0 (checkbox)
                 { orderable: false, targets: 6 }, // Disable ordering on column 6 (actions)                

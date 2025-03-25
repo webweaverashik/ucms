@@ -18,21 +18,21 @@ class StudentController extends Controller
      */
     public function index()
     {
-        // $students = Student::with('activations')->get();
+        $students = Student::withoutTrashed()->orderby('id', 'desc')->get();
 
-        $active_students = Student::whereHas('studentActivation', function ($query) {
-            $query->where('active_status', 'active');
-        })->get();
+        // $active_students = Student::whereHas('studentActivation', function ($query) {
+        //     $query->where('active_status', 'active');
+        // })->get();
 
-        $inactive_students = Student::whereHas('studentActivation', function ($query) {
-            $query->where('active_status', 'inactive');
-        })->get();
+        // $inactive_students = Student::whereHas('studentActivation', function ($query) {
+        //     $query->where('active_status', 'inactive');
+        // })->get();
 
         $classnames = ClassName::all();
         $shifts = Shift::all();
-        // return response()->json($classnames);
+        // return response()->json($students);
 
-        return view('students.index', compact('active_students', 'inactive_students', 'classnames', 'shifts'));
+        return view('students.index', compact('students', 'classnames', 'shifts'));
     }
 
     /**

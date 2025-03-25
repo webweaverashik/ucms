@@ -152,19 +152,12 @@
                                         {{ $user->loginActivities()->latest()->first()->created_at ?? '-' }}</td>
                                     <td class="text-center">
                                         @if ($user->id != auth()->user()->id)
-                                            @if ($user->is_active == 0)
-                                                <div
-                                                    class="form-check form-switch form-check-solid form-check-success d-flex justify-content-center">
-                                                    <input class="form-check-input toggle-active" type="checkbox"
-                                                        value="{{ $user->id }}">
-                                                </div>
-                                            @elseif ($user->is_active == 1)
-                                                <div
-                                                    class="form-check form-switch form-check-solid form-check-success d-flex justify-content-center">
-                                                    <input class="form-check-input toggle-active" type="checkbox"
-                                                        value="{{ $user->id }}" checked />
-                                                </div>
-                                            @endif
+                                            <div
+                                                class="form-check form-switch form-check-solid form-check-success d-flex justify-content-center">
+                                                <input class="form-check-input toggle-active" type="checkbox"
+                                                    value="{{ $user->id }}"
+                                                    @if ($user->is_active == 1) checked @endif>
+                                            </div>
                                         @endif
                                     </td>
                                     <td class="text-center">
@@ -612,7 +605,13 @@
 
     <script>
         $(document).ready(function() {
-            $('#kt_table_users').DataTable();
+            $('#kt_table_users').DataTable({
+                'columnDefs': [{
+                        orderable: false,
+                        targets: 6
+                    }, // Disable ordering on column 6 (actions)                
+                ]
+            });
         });
     </script>
 

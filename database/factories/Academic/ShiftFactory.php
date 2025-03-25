@@ -13,7 +13,7 @@ class ShiftFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->randomElement(['Morning', 'Evening']),
+            'name' => $this->faker->randomElement(['Morning', 'Day']),
             'branch_id' => Branch::inRandomOrder()->value('id') ?? Branch::factory()->create()->id,
         ];
     }

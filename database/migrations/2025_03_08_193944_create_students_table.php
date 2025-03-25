@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('student_unique_id')->unique();
             $table->foreignId('branch_id');
-            $table->string('name_en');
-            $table->string('name_bn');
+            $table->string('name');
+            // $table->string('name_bn');
             $table->date('date_of_birth');
             $table->enum('gender', ['male', 'female']);
             $table->foreignId('class_id');

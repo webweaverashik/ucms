@@ -42,8 +42,8 @@ class StudentFactory extends Factory
         return [
             'student_unique_id' => $studentUniqueId,
             'branch_id' => $branch->id,
-            'name_en' => $this->faker->name,
-            'name_bn' => $this->faker->randomElement($banglaNames),
+            'name' => $this->faker->name,
+            // 'name_bn' => $this->faker->randomElement($banglaNames),
             'date_of_birth' => $this->faker->date(),
             'gender' => $this->faker->randomElement(['male', 'female']),
             'class_id' => $class->id,
