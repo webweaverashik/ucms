@@ -4,11 +4,14 @@ namespace App\Models\Student;
 
 use App\Models\Branch;
 use App\Models\Academic\Shift;
+use App\Models\Payment\Payment;
 use App\Models\Sheets\SheetTaken;
 use App\Models\Academic\ClassName;
 use App\Models\Academic\Institution;
 use App\Models\Academic\SubjectTaken;
+use App\Models\Payment\PaymentInvoice;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Payment\PaymentTransaction;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -94,5 +97,23 @@ class Student extends Model
     public function sheetsTaken()
     {
         return $this->hasMany(SheetTaken::class);
+    }
+
+    // Add the payment relationship
+    public function payments()
+    {
+        return $this->hasOne(Payment::class);
+    }
+
+    // Add the payment invoices relationship
+    public function paymentInvoices()
+    {
+        return $this->hasMany(PaymentInvoice::class);
+    }
+
+    // Add the payment transactions relationship
+    public function paymentTransactions()
+    {
+        return $this->hasMany(PaymentTransaction::class);
     }
 }

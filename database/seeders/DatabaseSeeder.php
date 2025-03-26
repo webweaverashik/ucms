@@ -6,6 +6,7 @@ use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Database\Seeders\Academic\ShiftSeeder;
+use Database\Seeders\Payment\PaymentSeeder;
 use Database\Seeders\Student\SiblingSeeder;
 use Database\Seeders\Student\StudentSeeder;
 use Database\Seeders\Teacher\TeacherSeeder;
@@ -16,7 +17,9 @@ use Database\Seeders\Academic\ClassNameSeeder;
 use Database\Seeders\Academic\InstitutionSeeder;
 use Database\Seeders\Student\MobileNumberSeeder;
 use Database\Seeders\Academic\SubjectTakenSeeder;
+use Database\Seeders\Payment\PaymentInvoiceSeeder;
 use Database\Seeders\Student\StudentActivationSeeder;
+use Database\Seeders\Payment\PaymentTransactionSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -40,6 +43,9 @@ class DatabaseSeeder extends Seeder
             // StudentActivationSeeder::class, // will be called by StudentFactory
             SubjectSeeder::class,
             SubjectTakenSeeder::class,
+            PaymentSeeder::class,
+            PaymentInvoiceSeeder::class,
+            PaymentTransactionSeeder::class,
         ]);
     }
 }

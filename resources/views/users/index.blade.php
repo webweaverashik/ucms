@@ -601,7 +601,9 @@
 @endpush
 
 @push('page-js')
-    <script src="{{ asset('assets/js/custom/apps/user-management/users/list/add.js') }}"></script>{{--  Used for modal close only --}}
+
+    {{-- <script src="{{ asset('assets/js/custom/apps/user-management/users/list/table.js') }}"></script> --}}
+    <script src="{{ asset('assets/js/custom/apps/user-management/users/list/add.js') }}"></script><!--  Used for modal close only -->
 
     <script>
         $(document).ready(function() {

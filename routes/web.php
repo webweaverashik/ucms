@@ -40,6 +40,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::resource('guardians', GuardianController::class);
     Route::resource('teachers', TeacherController::class);
 
+
     // AJAX Routes
     Route::get('/get-subjects/{classId}', [SubjectController::class, 'getSubjects']);
 });

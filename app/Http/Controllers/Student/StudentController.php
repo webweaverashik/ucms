@@ -30,9 +30,10 @@ class StudentController extends Controller
 
         $classnames = ClassName::all();
         $shifts = Shift::all();
+        $institutions = Institution::all();
         // return response()->json($students);
 
-        return view('students.index', compact('students', 'classnames', 'shifts'));
+        return view('students.index', compact('students', 'classnames', 'shifts', 'institutions'));
     }
 
     /**
@@ -45,7 +46,7 @@ class StudentController extends Controller
         $subjects = Subject::all();
         $shifts = Shift::where('branch_id', auth()->user()->branch_id)->get();
         $institutions = Institution::all();
-        
+
         return view('students.create', compact('guardians', 'classnames', 'subjects', 'shifts', 'institutions'));
     }
 
@@ -87,5 +88,30 @@ class StudentController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function ucms(Request $request)
+    {
+        $search = $request->input('search');
+        $filter = $request->input('filter');
+
+        // Query the students table
+        $query = Student::query();
+
+        // Apply search filter
+        if ($search) {
+            $query->where('name', 'like', '%' . $search . '%');
+        }
+
+        // Apply filter if set (e.g., class)
+        if ($filter) {
+            $query->where('class', $filter);
+        }
+
+        // Paginate the results
+        $students = $query->paginate(10);
+
+        // Return the view with the necessary data
+        return view('students.student', compact('students', 'search', 'filter'));
     }
 }
