@@ -4,7 +4,7 @@
 
 @extends('layouts.app')
 
-@section('title', 'All Guardians')
+@section('title', 'All Shifts')
 
 @section('header-title')
     <div data-kt-swapper="true" data-kt-swapper-mode="{default: 'prepend', lg: 'prepend'}"
@@ -12,7 +12,7 @@
         class="page-title d-flex align-items-center flex-wrap me-3 mb-5 mb-lg-0">
         <!--begin::Title-->
         <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 align-items-center my-0">
-            All Guardians
+            All Shifts
         </h1>
         <!--end::Title-->
         <!--begin::Separator-->
@@ -23,7 +23,7 @@
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
                 <a href="?page=index" class="text-muted text-hover-primary">
-                    Student Info </a>
+                    Academic </a>
             </li>
             <!--end::Item-->
             <!--begin::Item-->
@@ -33,7 +33,7 @@
             <!--end::Item-->
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                Guardians </li>
+                Shifts </li>
             <!--end::Item-->
         </ul>
         <!--end::Breadcrumb-->
@@ -49,7 +49,8 @@
 @endpush
 
 @push('page-js')
-<script>
-     document.getElementById("guardians_link").classList.add("active");
- </script>
+    <script>
+        document.getElementById("academic_menu").classList.add("here", "show");
+        document.getElementById("shifts_link").classList.add("active");
+    </script>
 @endpush

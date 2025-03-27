@@ -4,10 +4,12 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Academic\ShiftController;
 use App\Http\Controllers\Student\StudentController;
 use App\Http\Controllers\Teacher\TeacherController;
 use App\Http\Controllers\Academic\SubjectController;
 use App\Http\Controllers\Student\GuardianController;
+use App\Http\Controllers\Academic\ClassNameController;
 
 
 Route::get('/', function() {
@@ -30,8 +32,12 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
         return redirect()->back();
     })->name('logout.get');
 
+
+    
     // Custom routes
     Route::post('users/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggleActive');
+    // AJAX Routes
+    Route::get('/get-subjects/{classId}', [SubjectController::class, 'getSubjects']);
     
     
     // resource controller routes
@@ -39,10 +45,11 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::resource('students', StudentController::class);
     Route::resource('guardians', GuardianController::class);
     Route::resource('teachers', TeacherController::class);
+    Route::resource('classnames', ClassNameController::class);
+    Route::resource('shifts', ShiftController::class);
+    Route::resource('subjects', SubjectController::class);
 
 
-    // AJAX Routes
-    Route::get('/get-subjects/{classId}', [SubjectController::class, 'getSubjects']);
 });
 
 // Handle GET /logout for logged-out users (redirect to login)

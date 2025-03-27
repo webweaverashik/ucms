@@ -4,7 +4,7 @@
     <!--begin::Logo-->
     <div class="app-sidebar-logo px-6" id="kt_app_sidebar_logo">
         <!--begin::Logo image-->
-        <a href="?page=index">
+        <a href="{{ route('dashboard') }}">
             <img alt="Logo" src="{{ asset('assets/img/logo-dark.png') }}" class="h-50px app-sidebar-logo-default" />
             <img alt="Logo" src="{{ asset('assets/img/icon.png') }}" class="h-20px app-sidebar-logo-minimize" />
         </a>
@@ -112,7 +112,7 @@
                             <!--begin:Menu item-->
                             <div class="menu-item">
                                 <!--begin:Menu link--><a class="menu-link" id="transfer_students_link"
-                                    href="?page=pages/user-profile/documents"><span class="menu-bullet"><span
+                                    href="#"><span class="menu-bullet"><span
                                             class="bullet bullet-dot"></span></span><span class="menu-title">Transfer
                                         Students</span></a>
                                 <!--end:Menu link-->
@@ -141,7 +141,7 @@
                             <!--begin:Menu item-->
                             <div class="menu-item">
                                 <!--begin:Menu link--><a class="menu-link" id="new_admission_link"
-                                    href="{{ route('students.index') }}"><span class="menu-bullet"><span
+                                    href="{{ route('students.create') }}"><span class="menu-bullet"><span
                                             class="bullet bullet-dot"></span></span><span class="menu-title">New
                                                 Admission</span></a>
                                 <!--end:Menu link-->
@@ -151,7 +151,7 @@
                             <!--begin:Menu item-->
                             <div class="menu-item">
                                 <!--begin:Menu link--><a class="menu-link" id="pending_approval_link"
-                                    href="?page=pages/user-profile/projects"><span class="menu-bullet"><span
+                                    href="#"><span class="menu-bullet"><span
                                             class="bullet bullet-dot"></span></span><span class="menu-title">Pending
                                                 Approval</span></a>
                                 <!--end:Menu link-->
@@ -190,7 +190,7 @@
                             <!--begin:Menu item-->
                             <div class="menu-item">
                                 <!--begin:Menu link--><a class="menu-link" id="class_link"
-                                    href="{{ route('students.index') }}"><span class="menu-bullet"><span
+                                    href="{{ route('classnames.index') }}"><span class="menu-bullet"><span
                                             class="bullet bullet-dot"></span></span><span class="menu-title">Class</span></a>
                                 <!--end:Menu link-->
                             </div>
@@ -199,7 +199,7 @@
                             <!--begin:Menu item-->
                             <div class="menu-item">
                                 <!--begin:Menu link--><a class="menu-link" id="shifts_link"
-                                    href="?page=pages/user-profile/projects"><span class="menu-bullet"><span
+                                    href="{{ route('shifts.index') }}"><span class="menu-bullet"><span
                                             class="bullet bullet-dot"></span></span><span class="menu-title">Shifts</span></a>
                                 <!--end:Menu link-->
                             </div>
@@ -208,7 +208,7 @@
                             <!--begin:Menu item-->
                             <div class="menu-item">
                                 <!--begin:Menu link--><a class="menu-link" id="subjects_link"
-                                    href="?page=pages/user-profile/campaigns"><span class="menu-bullet"><span
+                                    href="{{ route('subjects.index') }}"><span class="menu-bullet"><span
                                             class="bullet bullet-dot"></span></span><span class="menu-title">Subjects</span></a>
                                 <!--end:Menu link-->
                             </div>

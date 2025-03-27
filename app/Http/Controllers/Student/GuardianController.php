@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Student;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Student\Guardian;
+use App\Http\Controllers\Controller;
 
 class GuardianController extends Controller
 {
@@ -12,7 +13,9 @@ class GuardianController extends Controller
      */
     public function index()
     {
-        //
+        $guardians = Guardian::withoutTrashed()->get();
+
+        return view('guardians.index', compact('guardians'));
     }
 
     /**

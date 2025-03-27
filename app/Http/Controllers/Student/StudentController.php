@@ -41,11 +41,11 @@ class StudentController extends Controller
      */
     public function create()
     {
-        $guardians = Guardian::all();
-        $classnames = ClassName::all();
-        $subjects = Subject::all();
-        $shifts = Shift::where('branch_id', auth()->user()->branch_id)->get();
-        $institutions = Institution::all();
+        $guardians = Guardian::withoutTrashed()->get();
+        $classnames = ClassName::withoutTrashed()->get();
+        $subjects = Subject::withoutTrashed()->get();
+        $shifts = Shift::withoutTrashed()->get();
+        $institutions = Institution::withoutTrashed()->get();
 
         return view('students.create', compact('guardians', 'classnames', 'subjects', 'shifts', 'institutions'));
     }

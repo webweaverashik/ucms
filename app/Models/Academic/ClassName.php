@@ -11,13 +11,7 @@ class ClassName extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'class_numeral', 'branch_id'];
-
-    // Get the branch in which this class is created
-    public function branch()
-    {
-        return $this->belongsTo(Branch::class, 'branch_id');
-    }
+    protected $fillable = ['name', 'class_numeral'];
 
     // Get all subjects associated with this class
     public function subjects()

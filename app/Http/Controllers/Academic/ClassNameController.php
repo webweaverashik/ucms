@@ -1,18 +1,23 @@
 <?php
 
-namespace App\Http\Controllers\Teacher;
+namespace App\Http\Controllers\Academic;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Academic\ClassName;
+use App\Http\Controllers\Controller;
 
-class TeacherController extends Controller
+class ClassNameController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return view('teachers.index');
+        $classnames = ClassName::withoutTrashed()->get();
+
+        // return $classnames;
+
+        return view('classnames.index', compact('classnames'));
     }
 
     /**

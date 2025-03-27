@@ -1,18 +1,26 @@
 <?php
-
-namespace App\Http\Controllers\Teacher;
+namespace App\Http\Controllers\Academic;
 
 use App\Http\Controllers\Controller;
+use App\Models\Academic\Shift;
 use Illuminate\Http\Request;
 
-class TeacherController extends Controller
+class ShiftController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return view('teachers.index');
+        if (auth()->user()->branch_id) {
+            $shifts = Shift::where('branch_id', auth()->user()->branch_id)
+                ->withoutTrashed()
+                ->get();
+        } else {
+            $shifts = Shift::withoutTrashed()->get();
+        }
+
+        return view('shifts.index', compact('shifts'));
     }
 
     /**

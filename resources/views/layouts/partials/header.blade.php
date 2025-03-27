@@ -31,7 +31,14 @@
             <!--begin::Navbar-->
             <div class="app-navbar flex-shrink-0">
                 <!--begin::Search-->
-                <div class="app-navbar-item align-items-stretch ms-1 ms-md-4">
+                <div class="app-navbar-item ms-1 ms-md-4">
+                    <!--begin::Search-->
+                    <span class="badge badge-lg badge-light-info fw-bold fs-3">@if (auth()->user()->branch_id) {{ auth()->user()->branch->branch_name }} Branch @else SuperAdmin @endif</span>
+                    <!--end::Search-->
+                </div>
+                <!--end::Search-->
+                <!--begin::Search-->
+                {{-- <div class="app-navbar-item align-items-stretch ms-1 ms-md-4">
                     <!--begin::Search-->
                     <div id="kt_header_search" class="header-search d-flex align-items-stretch"
                         data-kt-search-keypress="true" data-kt-search-min-length="2" data-kt-search-enter="enter"
@@ -775,17 +782,17 @@
                         <!--end::Menu-->
                     </div>
                     <!--end::Search-->
-                </div>
+                </div> --}}
                 <!--end::Search-->
                 <!--begin::Activities-->
-                <div class="app-navbar-item ms-1 ms-md-4">
+                {{-- <div class="app-navbar-item ms-1 ms-md-4">
                     <!--begin::Drawer toggle-->
                     <div class="btn btn-icon btn-custom btn-icon-muted btn-active-light btn-active-color-primary w-35px h-35px"
                         id="kt_activities_toggle">
                         <i class="ki-outline ki-messages fs-2"></i>
                     </div>
                     <!--end::Drawer toggle-->
-                </div>
+                </div> --}}
                 <!--end::Activities-->
                 <!--begin::Notifications-->
                 <div class="app-navbar-item ms-1 ms-md-4">
@@ -800,7 +807,7 @@
                         id="kt_menu_notifications">
                         <!--begin::Heading-->
                         <div class="d-flex flex-column bgi-no-repeat rounded-top"
-                            style="background-image:url('assets/media/misc/menu-header-bg.jpg')">
+                            style="background-image:url('{{ asset('assets/media/misc/menu-header-bg.jpg') }}')">
                             <!--begin::Title-->
                             <h3 class="text-white fw-semibold px-9 mt-10 mb-6">
                                 Notifications <span class="fs-8 opacity-75 ps-3">24 reports</span>
@@ -1327,7 +1334,7 @@
                 </div>
                 <!--end::Notifications-->
                 <!--begin::Chat-->
-                <div class="app-navbar-item ms-1 ms-md-4">
+                {{-- <div class="app-navbar-item ms-1 ms-md-4">
                     <!--begin::Menu wrapper-->
                     <div class="btn btn-icon btn-custom btn-icon-muted btn-active-light btn-active-color-primary w-35px h-35px position-relative"
                         id="kt_drawer_chat_toggle">
@@ -1337,10 +1344,10 @@
                         </span>
                     </div>
                     <!--end::Menu wrapper-->
-                </div>
+                </div> --}}
                 <!--end::Chat-->
                 <!--begin::My apps links-->
-                <div class="app-navbar-item ms-1 ms-md-4">
+                {{-- <div class="app-navbar-item ms-1 ms-md-4">
                     <!--begin::Menu wrapper-->
                     <div class="btn btn-icon btn-custom btn-icon-muted btn-active-light btn-active-color-primary w-35px h-35px"
                         data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-attach="parent"
@@ -1647,7 +1654,7 @@
                     <!--end::My apps-->
 
                     <!--end::Menu wrapper-->
-                </div>
+                </div> --}}
                 <!--end::My apps links-->
 
                 <!--begin::Theme mode-->

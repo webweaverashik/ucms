@@ -2872,6 +2872,8 @@
 @endpush
 
 @push('page-js')
+    <script src="{{ asset('assets/js/widgets.bundle.js') }}"></script>
+    <script src="{{ asset('assets/js/custom/widgets.js') }}"></script>
     <script>
         document.getElementById("dashboard_link").classList.add("active");
     </script>

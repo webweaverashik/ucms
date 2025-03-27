@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('name'); // Class levels (IV, V, IX, HSC)
             $table->string('class_numeral'); // Three => 03, Four => 04, helpful for student id generation
-            $table->foreignId('branch_id');
             $table->softDeletes(); // Enables soft delete feature
             $table->timestamps();
         });

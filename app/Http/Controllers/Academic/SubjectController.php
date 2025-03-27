@@ -13,7 +13,9 @@ class SubjectController extends Controller
      */
     public function index()
     {
-        //
+        $subjects = Subject::withoutTrashed()->get();
+
+        return view('subjects.index', compact('subjects'));
     }
 
     /**

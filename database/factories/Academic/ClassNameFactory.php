@@ -35,7 +35,6 @@ class ClassNameFactory extends Factory
         return [
             'name' => $name,
             'class_numeral' => $classes[$name],
-            'branch_id' => 1, // Ensure BranchFactory exists
         ];
     }
 }
