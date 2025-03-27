@@ -108,7 +108,7 @@
                                     <td class="d-flex align-items-center">
                                         <!--begin:: Avatar -->
                                         <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
-                                            <a href="{{ $user->photo_url ? asset($user->photo_url) : '#' }}">
+                                            <a href="#">
                                                 <div class="symbol-label">
                                                     <img src="{{ $user->photo_url ? asset($user->photo_url) : asset('assets/img/dummy.png') }}"
                                                         alt="{{ $user->name }}" class="w-100" />
@@ -602,20 +602,7 @@
 
 @push('page-js')
 
-    {{-- <script src="{{ asset('assets/js/custom/apps/user-management/users/list/table.js') }}"></script> --}}
-    <script src="{{ asset('assets/js/custom/apps/user-management/users/list/add.js') }}"></script><!--  Used for modal close only -->
-
-    <script>
-        $(document).ready(function() {
-            $('#kt_table_users').DataTable({
-                'columnDefs': [{
-                        orderable: false,
-                        targets: 6
-                    }, // Disable ordering on column 6 (actions)                
-                ]
-            });
-        });
-    </script>
+    <script src="{{ asset('js/users.index.js') }}"></script><!--  Used for modal close only -->
 
     <script>
         document.getElementById("users_link").classList.add("active");
@@ -677,14 +664,14 @@
                     const userId = this.dataset.userId;
 
                     Swal.fire({
-                        title: 'আপনি কি নিশ্চিত ডিলিট করতে চান?',
-                        text: "ডিলিট করার পর এই ইউজারের তথ্য আর পাওয়া যাবে না।",
+                        title: 'Are you sure to delete this user?',
+                        text: "User data will be unavailable after deletion.",
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#3085d6',
                         cancelButtonColor: '#d33',
-                        confirmButtonText: 'হ্যাঁ, ডিলিট করবো।',
-                        cancelButtonText: 'ক্যানসেল',
+                        confirmButtonText: 'Yes, delete.',
+                        cancelButtonText: 'Cancel',
                     }).then((result) => {
                         if (result.isConfirmed) {
                             fetch("{{ route('users.destroy', '') }}/" + userId, {
@@ -701,22 +688,22 @@
                                 .then(data => {
                                     if (data.success) {
                                         Swal.fire({
-                                            title: 'সফল!',
-                                            text: 'ইউজার ডিলিট করা হয়েছে।',
+                                            title: 'Success!',
+                                            text: 'User has been deleted successfully.',
                                             icon: 'success',
-                                            confirmButtonText: 'ঠিক আছে।'
+                                            confirmButtonText: 'OK'
                                         }).then(() => {
                                             window.location.reload();
                                         });
                                     } else {
-                                        Swal.fire('ব্যর্থ!', 'ইউজার করা যায়নি।',
+                                        Swal.fire('Failed!', 'User could not be deleted.',
                                             'error');
                                     }
                                 })
                                 .catch(error => {
                                     console.error('Error:', error);
-                                    Swal.fire('ব্যর্থ!',
-                                        'একটি ত্রুটি হয়েছে। অনুগ্রহ করে সাপোর্টে যোগাযোগ করুন।',
+                                    Swal.fire('Error!',
+                                        'Please, contact your administrator.',
                                         'error');
                                 });
                         }
