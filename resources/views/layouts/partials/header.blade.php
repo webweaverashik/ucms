@@ -33,7 +33,7 @@
                 <!--begin::Search-->
                 <div class="app-navbar-item ms-1 ms-md-4">
                     <!--begin::Search-->
-                    <span class="badge badge-lg badge-light-info fw-bold fs-3">@if (auth()->user()->branch_id) {{ auth()->user()->branch->branch_name }} Branch @else SuperAdmin @endif</span>
+                    <span class="badge badge-lg badge-info fs-5">@if (auth()->user()->branch_id) {{ auth()->user()->branch->branch_name }} Branch @else SuperAdmin @endif</span>
                     <!--end::Search-->
                 </div>
                 <!--end::Search-->

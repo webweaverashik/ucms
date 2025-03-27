@@ -25,6 +25,7 @@ return new class extends Migration
             // $table->string('institution_roll')->nullable();
             $table->foreignId('institution_id')->nullable();
             $table->string('religion')->nullable();
+            $table->enum('blood_group', ['A+', 'B+', 'AB+', 'O+', 'A-', 'B-', 'AB-', 'O-'])->nullable();
             $table->text('home_address')->nullable();
             $table->string('email')->unique()->nullable();
             $table->string('password');

@@ -9,6 +9,6 @@ class ShiftSeeder extends Seeder
 {
     public function run(): void
     {
-        Shift::factory()->count(3)->create(); // Creates 2 shifts: Morning and Evening
+        Shift::factory()->count(2)->create(); // Creates 2 shifts: Morning and Evening
     }
 }

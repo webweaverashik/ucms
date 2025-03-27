@@ -3,14 +3,15 @@
 namespace Database\Factories\Student;
 
 use Carbon\Carbon;
+use App\Models\Branch;
 use Faker\Generator as Faker;
 use App\Models\Academic\Shift;
 use App\Models\Student\Student;
 use App\Models\Student\Reference;
 use App\Models\Academic\ClassName;
 use App\Models\Academic\Institution;
+use Illuminate\Support\Facades\Hash;
 use App\Models\Student\StudentActivation;
-use App\Models\Branch;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class StudentFactory extends Factory
@@ -54,7 +55,7 @@ class StudentFactory extends Factory
             'religion' => 'Islam',
             'home_address' => $this->faker->optional()->address,
             'email' => null,
-            'password' => bcrypt('password'),
+            'password' => Hash::make('password'),
             'reference_id' => Reference::inRandomOrder()->first()->id ?? Reference::factory()->create()->id,
             'student_activation_id' => null, // Set after creation
             'photo_url' => null,

@@ -23,7 +23,7 @@
         <script>
             document.addEventListener("DOMContentLoaded", function() {
                 toastr.options = {
-                    "closeButton": true,
+                    "closeButton": false,
                     "debug": false,
                     "newestOnTop": true,
                     "progressBar": true,
@@ -37,7 +37,7 @@
                     "showEasing": "swing",
                     "hideEasing": "linear",
                     "showMethod": "fadeIn",
-                    "hideMethod": "fadeOut"
+                    "hideMethod": "fadeOut",
                 };
 
                 @if (session('success'))
