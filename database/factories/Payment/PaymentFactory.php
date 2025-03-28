@@ -18,7 +18,7 @@ class PaymentFactory extends Factory
         return [
             'student_id' => $studentId,
             'payment_style' => $this->faker->randomElement(['current', 'due']),
-            'due_date' => $this->faker->randomElement([ '1/7', '1/10', '1/15', '1/30']),
+            'due_date' => $this->faker->randomElement([ 7, 10, 15, 30]),
             'tuition_fee' => $this->faker->randomFloat(2, 1000, 5000),
         ];
     }

@@ -108,24 +108,6 @@ var KTCreateAccount = function () {
                     }
                });
           });
-
-          // // Expiry month. For more info, plase visit the official plugin site: https://select2.org/
-          // $(form.querySelector('[name="card_expiry_month"]')).on('change', function () {
-          // // Revalidate the field when an option is chosen
-          // validations[4].revalidateField('card_expiry_month');
-          // });
-
-          // // Expiry year. For more info, plase visit the official plugin site: https://select2.org/
-          // $(form.querySelector('[name="card_expiry_year"]')).on('change', function () {
-          // // Revalidate the field when an option is chosen
-          // validations[4].revalidateField('card_expiry_year');
-          // });
-
-          // // Expiry year. For more info, plase visit the official plugin site: https://select2.org/
-          // $(form.querySelector('[name="student_name"]')).on('change', function () {
-          // // Revalidate the field when an option is chosen
-          // validations[2].revalidateField('student_name');
-          // });
      };
 
 
@@ -155,26 +137,44 @@ var KTCreateAccount = function () {
                               validators: {
                                    notEmpty: {
                                         message: 'Mobile no. is required'
+                                   },
+                                   regexp: {
+                                        regexp: /^01[4-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
+                                        message: 'Please enter a valid Bangladeshi mobile number'
+                                   },
+                                   stringLength: {
+                                        min: 11,
+                                        max: 11,
+                                        message: 'The mobile number must be exactly 11 digits'
                                    }
                               }
                          },
-                         // 'avatar': {
-                         // validators: {
-                         // notEmpty: {
-                         // message: 'Please select student photo'
-                         // },
-                         // file: {
-                         // extension: 'jpg,jpeg,png',
-                         // type: 'image/jpeg,image/png',
-                         // maxSize: 204800, // 2048 * 1024
-                         // message: 'The selected file type or size is not valid'
-                         // },
-                         // }
-                         // },
+                         'avatar': {
+                              validators: {
+                                   notEmpty: {
+                                        message: 'Please select student photo'
+                                   },
+                                   file: {
+                                        extension: 'jpg,jpeg,png',
+                                        type: 'image/jpeg,image/png',
+                                        maxSize: 204800, // 2048 * 1024
+                                        message: 'The selected file type or size is not valid'
+                                   },
+                              }
+                         },
                          'student_phone_sms': {
                               validators: {
                                    notEmpty: {
                                         message: 'SMS no. is required for result and notice'
+                                   },
+                                   regexp: {
+                                        regexp: /^01[4-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
+                                        message: 'Please enter a valid Bangladeshi mobile number'
+                                   },
+                                   stringLength: {
+                                        min: 11,
+                                        max: 11,
+                                        message: 'The mobile number must be exactly 11 digits'
                                    }
                               }
                          },
@@ -209,27 +209,43 @@ var KTCreateAccount = function () {
                form,
                {
                     fields: {
-                         'account_team_size': {
+                         'guardian_1_name': {
                               validators: {
                                    notEmpty: {
-                                        message: 'Time size is required'
+                                        message: 'Name is required'
                                    }
                               }
                          },
-                         'account_name': {
+                         'guardian_1_mobile': {
                               validators: {
                                    notEmpty: {
-                                        message: 'Account name is required'
+                                        message: 'Mobile number is required'
+                                   },
+                                   regexp: {
+                                        regexp: /^01[4-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
+                                        message: 'Please enter a valid Bangladeshi mobile number'
+                                   },
+                                   stringLength: {
+                                        min: 11,
+                                        max: 11,
+                                        message: 'The mobile number must be exactly 11 digits'
                                    }
                               }
                          },
-                         'account_plan': {
+                         'guardian_1_gender': {
                               validators: {
                                    notEmpty: {
-                                        message: 'Account plan is required'
+                                        message: 'Select the gender'
                                    }
                               }
-                         }
+                         },
+                         'guardian_1_relationship': {
+                              validators: {
+                                   notEmpty: {
+                                        message: 'Required field'
+                                   }
+                              }
+                         },
                     },
                     plugins: {
                          trigger: new FormValidation.plugins.Trigger(),
@@ -248,37 +264,27 @@ var KTCreateAccount = function () {
                form,
                {
                     fields: {
-                         'business_name': {
+                         'student_institution': {
                               validators: {
                                    notEmpty: {
-                                        message: 'Busines name is required'
+                                        message: 'Please, select an institution'
                                    }
                               }
                          },
-                         'business_descriptor': {
+                         'student_class': {
                               validators: {
                                    notEmpty: {
-                                        message: 'Busines descriptor is required'
+                                        message: 'Please, assign this student to a class'
                                    }
                               }
                          },
-                         'business_type': {
+                         'student_academic_group': {
                               validators: {
                                    notEmpty: {
-                                        message: 'Busines type is required'
+                                        message: 'Select a group'
                                    }
                               }
                          },
-                         'business_email': {
-                              validators: {
-                                   notEmpty: {
-                                        message: 'Busines email is required'
-                                   },
-                                   emailAddress: {
-                                        message: 'The value is not a valid email address'
-                                   }
-                              }
-                         }
                     },
                     plugins: {
                          trigger: new FormValidation.plugins.Trigger(),
@@ -297,49 +303,31 @@ var KTCreateAccount = function () {
                form,
                {
                     fields: {
-                         'card_name': {
+                         'student_shift': {
                               validators: {
                                    notEmpty: {
-                                        message: 'Name on card is required'
+                                        message: 'Select a shift'
                                    }
                               }
                          },
-                         'card_number': {
+                         'student_tuition_fee': {
                               validators: {
                                    notEmpty: {
-                                        message: 'Card member is required'
+                                        message: 'Enter a tuition fee'
                                    },
-                                   creditCard: {
-                                        message: 'Card number is not valid'
+                              }
+                         },
+                         'payment_style': {
+                              validators: {
+                                   notEmpty: {
+                                        message: 'Select any payment style'
                                    }
                               }
                          },
-                         'card_expiry_month': {
+                         'payment_due_date': {
                               validators: {
                                    notEmpty: {
-                                        message: 'Month is required'
-                                   }
-                              }
-                         },
-                         'card_expiry_year': {
-                              validators: {
-                                   notEmpty: {
-                                        message: 'Year is required'
-                                   }
-                              }
-                         },
-                         'card_cvv': {
-                              validators: {
-                                   notEmpty: {
-                                        message: 'CVV is required'
-                                   },
-                                   digits: {
-                                        message: 'CVV must contain only digits'
-                                   },
-                                   stringLength: {
-                                        min: 3,
-                                        max: 4,
-                                        message: 'CVV must contain 3 to 4 digits only'
+                                        message: 'Select payment deadline'
                                    }
                               }
                          }
@@ -357,34 +345,6 @@ var KTCreateAccount = function () {
                }
           ));
      };
-
-     // Init form repeater --- more info: https://github.com/DubFriend/jquery.repeater
-     const initFormRepeater = () => {
-          $('#guardian_info_add_repeater').repeater({
-               initEmpty: false,
-
-               defaultValues: {
-                    'text-input': 'foo'
-               },
-
-               show: function () {
-                    $(this).slideDown();
-
-                    // Init select2 on new repeated items
-                    initGuardianFields();
-               },
-
-               hide: function (deleteElement) {
-                    $(this).slideUp(deleteElement);
-               }
-          });
-     }
-
-     // Init condition select2
-     const initGuardianFields = () => {
-          // Re-init select2
-          $(this).find('[data-kt-repeater="select2"]').select2();
-     }
 
      return {
           // Public Functions
@@ -409,7 +369,6 @@ var KTCreateAccount = function () {
                initStepper();
                // initValidation();
                handleForm();
-               initFormRepeater();
 
                $("#student_birth_date").flatpickr({
                     dateFormat: "d-m-Y",

@@ -102,11 +102,11 @@ $(function () {
          `;
 
           if (generalSubjects.length) {
-               html += createSubjectSection('Common Subjects', generalSubjects);
+               html += createSubjectSection('Compulsory', generalSubjects);
           }
 
           if (groupSubjects.length) {
-               html += createSubjectSection(`${currentGroup} Subjects`, groupSubjects);
+               html += createSubjectSection(`${currentGroup} Group`, groupSubjects);
           }
 
           $subjectContainer.html(html || '<div class="alert alert-info">No subjects available</div>');
@@ -116,14 +116,14 @@ $(function () {
      function createSubjectSection(title, subjects) {
           return `
              <div class="subject-section">
-                 <h6>${title}</h6>
+                 <label class="form-label">${title}</label>
                  <div class="row">
                      ${subjects.map(subject => `
                          <div class="col-md-3 mb-3">
                              <div class="form-check">
                                  <input class="form-check-input subject-checkbox" type="checkbox"
-                                        name="subjects[]" value="${subject.id}" id="sub_${subject.id}">
-                                 <label class="form-check-label" for="sub_${subject.id}">
+                                        name="subjects[${subject.id}]" value="${subject.id}" id="sub_${subject.id}">
+                                 <label class="form-check-label fs-6" for="sub_${subject.id}">
                                      ${subject.name}
                                  </label>
                              </div>
