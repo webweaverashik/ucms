@@ -20,7 +20,7 @@ return new class extends Migration
             $table->date('date_of_birth');
             $table->enum('gender', ['male', 'female']);
             $table->foreignId('class_id');
-            $table->enum('academic_group', ['General', 'Science', 'Commerce', 'Arts']);
+            $table->enum('academic_group', ['General', 'Science', 'Commerce', 'Arts'])->default('General');
             $table->foreignId('shift_id');
             // $table->string('institution_roll')->nullable();
             $table->foreignId('institution_id')->nullable();

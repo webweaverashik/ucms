@@ -1,15 +1,14 @@
 <?php
-
 namespace App\Http\Controllers\Student;
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Models\Academic\ClassName;
+use App\Models\Academic\Institution;
 use App\Models\Academic\Shift;
-use App\Models\Student\Student;
 use App\Models\Academic\Subject;
 use App\Models\Student\Guardian;
-use App\Models\Academic\ClassName;
-use App\Http\Controllers\Controller;
-use App\Models\Academic\Institution;
+use App\Models\Student\Student;
+use Illuminate\Http\Request;
 
 class StudentController extends Controller
 {
@@ -91,28 +90,35 @@ class StudentController extends Controller
         //
     }
 
-    public function ucms(Request $request)
+    public function getReferredData(Request $request)
     {
-        $search = $request->input('search');
-        $filter = $request->input('filter');
+        $refererType = $request->get('referer_type');
 
-        // Query the students table
-        $query = Student::query();
-
-        // Apply search filter
-        if ($search) {
-            $query->where('name', 'like', '%' . $search . '%');
+        if ($refererType == 'teacher') {
+            // Fetch teacher data (no unique_id)
+            $teachers = Teacher::withoutTrashed()->get(); // Adjust according to your data model
+            return response()->json(
+                $teachers->map(function ($teacher) {
+                    return [
+                        'id' => $teacher->id,
+                        'name' => $teacher->name,
+                    ];
+                }),
+            );
+        } elseif ($refererType == 'student') {
+            // Fetch student data
+            $students = Student::withoutTrashed()->get(); // Adjust according to your data model
+            return response()->json(
+                $students->map(function ($student) {
+                    return [
+                        'id' => $student->id,
+                        'name' => $student->name,
+                        'student_unique_id' => $student->student_unique_id, // Keep the unique_id for students
+                    ];
+                }),
+            );
         }
 
-        // Apply filter if set (e.g., class)
-        if ($filter) {
-            $query->where('class', $filter);
-        }
-
-        // Paginate the results
-        $students = $query->paginate(10);
-
-        // Return the view with the necessary data
-        return view('students.student', compact('students', 'search', 'filter'));
+        return response()->json([]);
     }
 }

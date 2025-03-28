@@ -9,6 +9,7 @@ use App\Http\Controllers\Student\StudentController;
 use App\Http\Controllers\Teacher\TeacherController;
 use App\Http\Controllers\Academic\SubjectController;
 use App\Http\Controllers\Student\GuardianController;
+use App\Http\Controllers\Student\ReferenceController;
 use App\Http\Controllers\Academic\ClassNameController;
 
 
@@ -36,9 +37,18 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     
     // Custom routes
     Route::post('users/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggleActive');
+
     // AJAX Routes
-    Route::get('/get-subjects/{classId}', [SubjectController::class, 'getSubjects']);
-    
+    Route::prefix('admin')->group(function () {
+        Route::get('/referrers/teachers', [ReferenceController::class, 'getTeachers'])->name('admin.referrers.teachers');
+        Route::get('/referrers/students', [ReferenceController::class, 'getStudents'])->name('admin.referrers.students');
+    });
+
+    Route::get('/get-subjects/{class_id}/{academic_group}', [SubjectController::class, 'getSubjects']);
+
+
+
+
     
     // resource controller routes
     Route::resource('users', UserController::class);

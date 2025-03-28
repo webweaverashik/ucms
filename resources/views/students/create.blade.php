@@ -530,12 +530,12 @@
                                 <div class="col-md">
                                     <label class="form-label required">Guardian-1 Name</label>
                                     <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
-                                        placeholder="Enter full name" name="guardian_1_name" required/>
+                                        placeholder="Enter full name" name="guardian_1_name" required />
                                 </div>
                                 <div class="col-md">
                                     <label class="form-label required">Guardian-1 Mobile No.</label>
                                     <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
-                                        placeholder="Enter contact number" name="guardian_1_mobile" required/>
+                                        placeholder="Enter contact number" name="guardian_1_mobile" required />
                                 </div>
                                 <div class="col-md-2">
                                     <!--begin::Label-->
@@ -834,7 +834,7 @@
                                 <!--end::Class Input group-->
                             </div>
 
-                            <div class="col-lg-4">
+                            <div class="col-lg-4" id="group-col">
                                 <!--begin::Class Input group-->
                                 <div class="fv-row mb-7">
                                     <!--begin::Label-->
@@ -887,6 +887,22 @@
                             </div>
                         </div>
 
+                        <div class="fv-row">
+                            <label class="form-label required">Enrolled Subjects</label>
+                            <!-- Select All Toggle -->
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="select_all_subjects">
+                                <label class="form-check-label fw-bold fs-6" for="select_all_subjects">
+                                    Select All
+                                </label>
+                            </div>
+
+                            <!-- Subject Checkboxes -->
+                            <div id="subject_list">
+                                <!-- Subjects will be loaded here dynamically -->
+                            </div>
+                        </div>
+
                     </div>
                     <!--end::Wrapper-->
                 </div>
@@ -899,7 +915,9 @@
                         <!--begin::Heading-->
                         <div class="pb-10 pb-lg-15">
                             <!--begin::Title-->
-                            <h2 class="fw-bold text-gray-900">Administrative <span class="badge badge-danger badge-lg">{{ auth()->user()->branch->branch_name }} Branch</span></h2>
+                            <h2 class="fw-bold text-gray-900">Administrative <span
+                                    class="badge badge-danger badge-lg">{{ auth()->user()->branch->branch_name }}
+                                    Branch</span></h2>
                             <!--end::Title-->
                             <!--begin::Notice-->
                             <div class="text-muted fw-semibold fs-6">Set shift, tuition fee, type, due date etc.</div>
@@ -948,7 +966,7 @@
                         </div>
                         <!--end::Input group-->
 
-                        {{-- Mobile Number Row --}}
+                        {{-- Tuition fee, type, due date Row --}}
                         <div class="row">
                             <div class="col-md-4">
                                 <!--begin::Input group-->
@@ -1019,7 +1037,10 @@
                                 </div>
                                 <!--end::Input group-->
                             </div>
+                        </div>
 
+                        {{-- Referrer Row --}}
+                        <div class="row">
                             <div class="col-md-4">
                                 <!--begin::Input group-->
                                 <div class="fv-row mb-7">
@@ -1031,14 +1052,14 @@
                                     <div class="d-flex mt-3">
                                         <!--begin::Radio-->
                                         <div class="form-check form-check-custom form-check-solid me-5">
-                                            <input class="form-check-input" type="radio" value="current"
-                                                name="referer_type" id="referer_type_teacher" checked="checked"
-                                                />
+                                            <input class="form-check-input" type="radio" value="teacher"
+                                                name="referer_type" id="referer_type_teacher" checked="checked" />
                                             <label class="form-check-label fs-6 fw-medium"
                                                 for="referer_type_teacher">Teacher</label>
                                         </div>
+
                                         <div class="form-check form-check-custom form-check-solid">
-                                            <input class="form-check-input" type="radio" value="due"
+                                            <input class="form-check-input" type="radio" value="student"
                                                 name="referer_type" id="referer_type_student" />
                                             <label class="form-check-label fs-6 fw-medium"
                                                 for="referer_type_student">Student</label>
@@ -1057,13 +1078,9 @@
                                     <label class="fw-semibold fs-6 mb-2 required">Referred By:</label>
                                     <!--end::Label-->
                                     <!--begin::Input-->
-                                    <select name="payment_due_date" class="form-select form-select-solid"
-                                        data-control="select2" data-placeholder="Select the person"
-                                        required>
+                                    <select name="referred_by" id="referred_by" class="form-select form-select-solid"
+                                        data-control="select2" data-placeholder="Select the person" required>
                                         <option></option>
-                                        @foreach ($students as $student)
-                                            <option value="{{ $student->id }}">{{ $student->name }} ({{ $student->student_unique_id }})</option>
-                                        @endforeach
                                     </select>
                                     <!--end::Input-->
                                 </div>
@@ -1180,5 +1197,163 @@
     <script>
         document.getElementById("admission_menu").classList.add("here", "show");
         document.getElementById("new_admission_link").classList.add("active");
+    </script>
+
+    {{-- AJAX Teacher or Student Date loading : Referred By --}}
+    <script>
+        $(document).ready(function() {
+            let $referredBySelect = $('select[name="referred_by"]');
+
+            // Initialize Select2
+            $referredBySelect.select2({
+                placeholder: "Select the person",
+                allowClear: true
+            });
+
+            // Function to load data via AJAX and update the select field
+            function loadReferredByData(type) {
+                let url = type === 'teacher' ?
+                    '{{ route('admin.referrers.teachers') }}' :
+                    '{{ route('admin.referrers.students') }}';
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    dataType: 'json',
+                    beforeSend: function() {
+                        $referredBySelect.prop('disabled', true); // Disable while loading
+                    },
+                    success: function(data) {
+                        $referredBySelect.empty().append(
+                            '<option value="" disabled selected>Select the person</option>');
+
+                        $.each(data, function(index, person) {
+                            let displayText = person.name;
+                            if (person.student_unique_id) {
+                                displayText += ` (${person.student_unique_id})`;
+                            }
+                            $referredBySelect.append(
+                                `<option value="${person.id}">${displayText}</option>`);
+                        });
+
+                        $referredBySelect.prop('disabled', false).trigger('change');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error loading referred by data:", error);
+                        alert("Failed to load data. Please try again.");
+                        $referredBySelect.prop('disabled', false);
+                    }
+                });
+            }
+
+            // Auto-load teachers on page load (since teacher radio is preselected)
+            loadReferredByData('teacher');
+
+            // Event listener for radio button changes
+            $('input[name="referer_type"]').on('change', function() {
+                let selectedType = $(this).val();
+                loadReferredByData(selectedType);
+            });
+        });
+    </script>
+
+    {{-- AJAX Subjct Checkbox : Subjects Taken --}}
+    <script>
+        $(document).ready(function() {
+            let $classSelect = $('select[name="student_class"]');
+            let $groupCol = $('#group-col');
+            let $subjectList = $('#subject_list');
+            let $selectAllSubjects = $('#select_all_subjects');
+            let $groupRadios = $('input[name="academic_group"]'); // Group radio buttons
+
+            // Initialize Select2
+            $classSelect.select2({
+                placeholder: "Assign to class",
+                allowClear: true
+            });
+
+            // Function to load subjects based on class numeral and group
+            function loadSubjects(classId, academicGroup = 'General') {
+                if (!classId) {
+                    $subjectList.empty();
+                    return;
+                }
+
+                $.ajax({
+                    url: `/get-subjects/${classId}/${academicGroup}`, // Updated Laravel route
+                    type: 'GET',
+                    dataType: 'json',
+                    beforeSend: function() {
+                        $subjectList.html('<p>Loading subjects...</p>');
+                    },
+                    success: function(data) {
+                        $subjectList.empty();
+                        if (data.length === 0) {
+                            $subjectList.html('<p>No subjects available.</p>');
+                            return;
+                        }
+
+                        $.each(data, function(index, subject) {
+                            let checkbox = `
+                        <div class="form-check">
+                            <input class="form-check-input subject-checkbox" type="checkbox" id="subject_${subject.id}" value="${subject.id}">
+                            <label class="form-check-label" for="subject_${subject.id}">${subject.name}</label>
+                        </div>`;
+                            $subjectList.append(checkbox);
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error loading subjects:", error);
+                        $subjectList.html('<p class="text-danger">Failed to load subjects.</p>');
+                    }
+                });
+            }
+
+            // Handle class selection
+            $classSelect.on('change', function() {
+                let selectedOption = $(this).find(':selected');
+                let classNumeral = selectedOption.data('class-numeral');
+                let classId = selectedOption.val();
+
+                if (classNumeral <= 8) {
+                    $groupCol.hide();
+                    loadSubjects(classId, 'General'); // Fetch subjects for 'General'
+                } else {
+                    $groupCol.show();
+                    let selectedGroup = $('input[name="academic_group"]:checked')
+                .val(); // Get selected group
+                    if (selectedGroup) {
+                        loadSubjects(classId, selectedGroup);
+                    }
+                }
+            });
+
+            // Handle group selection (for classes 09 and above)
+            $groupRadios.on('change', function() {
+                let selectedClass = $classSelect.val();
+                let selectedGroup = $(this).val();
+
+                if (selectedClass) {
+                    loadSubjects(selectedClass, selectedGroup);
+                }
+            });
+
+            // Select All toggle
+            $selectAllSubjects.on('change', function() {
+                $('.subject-checkbox').prop('checked', this.checked);
+            });
+
+            // Update 'Select All' checkbox when any subject is manually changed
+            $(document).on('change', '.subject-checkbox', function() {
+                if ($('.subject-checkbox:checked').length === $('.subject-checkbox').length) {
+                    $selectAllSubjects.prop('checked', true);
+                } else {
+                    $selectAllSubjects.prop('checked', false);
+                }
+            });
+
+            // Trigger change event initially
+            $classSelect.trigger('change');
+        });
     </script>
 @endpush

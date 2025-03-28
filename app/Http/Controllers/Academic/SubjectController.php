@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Academic;
 
 use Illuminate\Http\Request;
 use App\Models\Academic\Subject;
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 
 class SubjectController extends Controller
@@ -69,12 +70,19 @@ class SubjectController extends Controller
     /**
      * Get subjects by class ID using AJAX request
      */
-    public function getSubjects($classId)
+    // public function getSubjects($classId)
+    // {
+    //     $subjects = Subject::where('class_id', $classId)
+    //         ->select('id', 'subject_name', 'is_mandatory', 'academic_group') // ✅ Include academic_group
+    //         ->orderByDesc('is_mandatory') // ✅ Sort in Laravel
+    //         ->get();
+
+    //     return response()->json($subjects);
+    // }
+
+    public function getSubjects($class_id, $academic_group): JsonResponse
     {
-        $subjects = Subject::where('class_id', $classId)
-            ->select('id', 'subject_name', 'is_mandatory', 'academic_group') // ✅ Include academic_group
-            ->orderByDesc('is_mandatory') // ✅ Sort in Laravel
-            ->get();
+        $subjects = Subject::where('class_id', $class_id)->where('academic_group', $academic_group)->select('id', 'name')->withoutTrashed()->get();
 
         return response()->json($subjects);
     }
