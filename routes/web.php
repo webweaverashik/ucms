@@ -44,7 +44,8 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
         Route::get('/referrers/students', [ReferenceController::class, 'getStudents'])->name('admin.referrers.students');
     });
 
-    Route::get('/get-subjects/{class_id}/{academic_group}', [SubjectController::class, 'getSubjects']);
+    Route::get('/get-subjects', [SubjectController::class, 'getSubjects']);
+
 
 
 

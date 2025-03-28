@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Academic;
 use Illuminate\Http\Request;
 use App\Models\Academic\Subject;
 use Illuminate\Http\JsonResponse;
+use App\Models\Academic\ClassName;
 use App\Http\Controllers\Controller;
 
 class SubjectController extends Controller
@@ -72,18 +73,39 @@ class SubjectController extends Controller
      */
     // public function getSubjects($classId)
     // {
-    //     $subjects = Subject::where('class_id', $classId)
-    //         ->select('id', 'subject_name', 'is_mandatory', 'academic_group') // ✅ Include academic_group
-    //         ->orderByDesc('is_mandatory') // ✅ Sort in Laravel
-    //         ->get();
+    //     // Get subjects where class_id matches the selected class
+    //     $subjects = Subject::where('class_id', $classId)->withoutTrashed()->orderByDesc('is_mandatory')->get();
 
-    //     return response()->json($subjects);
+    //     // Return the subjects as JSON
+    //     return response()->json(['subjects' => $subjects]);
     // }
 
-    public function getSubjects($class_id, $academic_group): JsonResponse
+    public function getSubjects(Request $request)
     {
-        $subjects = Subject::where('class_id', $class_id)->where('academic_group', $academic_group)->select('id', 'name')->withoutTrashed()->get();
+        $validated = $request->validate([
+            'class_id' => 'required|exists:class_names,id',
+            'group' => 'required|in:General,Science,Commerce,Arts', // Changed to 'group'
+            'include_general' => 'required|boolean',
+        ]);
 
-        return response()->json($subjects);
+        $query = Subject::where('class_id', $request->class_id)
+            ->when(
+                $request->include_general,
+                function ($q) use ($request) {
+                    return $q->where(function ($q) use ($request) {
+                        $q->where('academic_group', 'General')->orWhere('academic_group', $request->group);
+                    });
+                },
+                function ($q) {
+                    return $q->where('academic_group', 'General');
+                },
+            )
+            ->orderBy('academic_group')
+            ->orderBy('name');
+
+        return response()->json([
+            'success' => true,
+            'subjects' => $query->get(),
+        ]);
     }
 }

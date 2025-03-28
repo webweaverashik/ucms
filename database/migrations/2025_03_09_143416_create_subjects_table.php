@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('subjects', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->enum('academic_group', ['General', 'Science', 'Commerce', 'Arts']);
+            $table->enum('academic_group', ['General', 'Science', 'Commerce', 'Arts'])->default('General');
             $table->boolean('is_mandatory')->default(false); // 1 = Auto-selected, 0 = Optional
             $table->foreignId('class_id');
             $table->softDeletes(); // Enables soft delete feature

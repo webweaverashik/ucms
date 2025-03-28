@@ -819,8 +819,9 @@
                                     <!--end::Label-->
 
                                     <!--begin::Solid input group style-->
-                                    <select name="student_class" class="form-select form-select-solid"
-                                        data-control="select2" data-placeholder="Assign to class" required>
+                                    <select name="student_class" id="student_class_input"
+                                        class="form-select form-select-solid" data-control="select2"
+                                        data-placeholder="Assign to class" required>
                                         <option></option>
                                         @foreach ($classnames as $classname)
                                             <option value="{{ $classname->id }}"
@@ -834,7 +835,8 @@
                                 <!--end::Class Input group-->
                             </div>
 
-                            <div class="col-lg-4" id="group-col">
+                            {{-- Group Selection --}}
+                            <div class="col-lg-4" id="student-group-selection">
                                 <!--begin::Class Input group-->
                                 <div class="fv-row mb-7">
                                     <!--begin::Label-->
@@ -887,21 +889,27 @@
                             </div>
                         </div>
 
+
+                        <!--begin::Enrolled Subjects-->
                         <div class="fv-row">
                             <label class="form-label required">Enrolled Subjects</label>
+                            <p class="text-muted">Select all the subjects taken by the student.</p>
+
                             <!-- Select All Toggle -->
-                            <div class="form-check">
+                            <div class="form-check mb-3">
                                 <input class="form-check-input" type="checkbox" id="select_all_subjects">
                                 <label class="form-check-label fw-bold fs-6" for="select_all_subjects">
                                     Select All
                                 </label>
                             </div>
 
-                            <!-- Subject Checkboxes -->
+                            <!-- begin:Subject Checkboxes -->
                             <div id="subject_list">
-                                <!-- Subjects will be loaded here dynamically -->
+                                <!-- Subjects will be loaded here dynamically via AJAX -->
                             </div>
+                            <!-- end:Subject Checkboxes -->
                         </div>
+                        <!-- end:Enrolled Subjects -->
 
                     </div>
                     <!--end::Wrapper-->
@@ -1193,7 +1201,7 @@
 @endpush
 
 @push('page-js')
-    <script src="{{ asset('js/students.create.js') }}"></script>
+    <script src="{{ asset('js/students/students.create.js') }}"></script>
     <script>
         document.getElementById("admission_menu").classList.add("here", "show");
         document.getElementById("new_admission_link").classList.add("active");
@@ -1257,103 +1265,6 @@
         });
     </script>
 
-    {{-- AJAX Subjct Checkbox : Subjects Taken --}}
-    <script>
-        $(document).ready(function() {
-            let $classSelect = $('select[name="student_class"]');
-            let $groupCol = $('#group-col');
-            let $subjectList = $('#subject_list');
-            let $selectAllSubjects = $('#select_all_subjects');
-            let $groupRadios = $('input[name="academic_group"]'); // Group radio buttons
-
-            // Initialize Select2
-            $classSelect.select2({
-                placeholder: "Assign to class",
-                allowClear: true
-            });
-
-            // Function to load subjects based on class numeral and group
-            function loadSubjects(classId, academicGroup = 'General') {
-                if (!classId) {
-                    $subjectList.empty();
-                    return;
-                }
-
-                $.ajax({
-                    url: `/get-subjects/${classId}/${academicGroup}`, // Updated Laravel route
-                    type: 'GET',
-                    dataType: 'json',
-                    beforeSend: function() {
-                        $subjectList.html('<p>Loading subjects...</p>');
-                    },
-                    success: function(data) {
-                        $subjectList.empty();
-                        if (data.length === 0) {
-                            $subjectList.html('<p>No subjects available.</p>');
-                            return;
-                        }
-
-                        $.each(data, function(index, subject) {
-                            let checkbox = `
-                        <div class="form-check">
-                            <input class="form-check-input subject-checkbox" type="checkbox" id="subject_${subject.id}" value="${subject.id}">
-                            <label class="form-check-label" for="subject_${subject.id}">${subject.name}</label>
-                        </div>`;
-                            $subjectList.append(checkbox);
-                        });
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("Error loading subjects:", error);
-                        $subjectList.html('<p class="text-danger">Failed to load subjects.</p>');
-                    }
-                });
-            }
-
-            // Handle class selection
-            $classSelect.on('change', function() {
-                let selectedOption = $(this).find(':selected');
-                let classNumeral = selectedOption.data('class-numeral');
-                let classId = selectedOption.val();
-
-                if (classNumeral <= 8) {
-                    $groupCol.hide();
-                    loadSubjects(classId, 'General'); // Fetch subjects for 'General'
-                } else {
-                    $groupCol.show();
-                    let selectedGroup = $('input[name="academic_group"]:checked')
-                .val(); // Get selected group
-                    if (selectedGroup) {
-                        loadSubjects(classId, selectedGroup);
-                    }
-                }
-            });
-
-            // Handle group selection (for classes 09 and above)
-            $groupRadios.on('change', function() {
-                let selectedClass = $classSelect.val();
-                let selectedGroup = $(this).val();
-
-                if (selectedClass) {
-                    loadSubjects(selectedClass, selectedGroup);
-                }
-            });
-
-            // Select All toggle
-            $selectAllSubjects.on('change', function() {
-                $('.subject-checkbox').prop('checked', this.checked);
-            });
-
-            // Update 'Select All' checkbox when any subject is manually changed
-            $(document).on('change', '.subject-checkbox', function() {
-                if ($('.subject-checkbox:checked').length === $('.subject-checkbox').length) {
-                    $selectAllSubjects.prop('checked', true);
-                } else {
-                    $selectAllSubjects.prop('checked', false);
-                }
-            });
-
-            // Trigger change event initially
-            $classSelect.trigger('change');
-        });
-    </script>
+    {{-- Dynamically show subject list and group --}}
+    <script src="{{ asset('js/students/ajax-subjects.js') }}"></script>
 @endpush
