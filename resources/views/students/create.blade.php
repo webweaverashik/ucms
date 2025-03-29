@@ -42,6 +42,8 @@
 
 
 @section('content')
+<div id="error-container"></div>
+
     <!--begin::Stepper-->
     <div class="stepper stepper-pills stepper-column d-flex flex-column flex-xl-row flex-row-fluid gap-10"
         id="kt_create_student_stepper">
@@ -179,8 +181,8 @@
         <!--begin::Form Content-->
         <div class="card d-flex flex-row-fluid flex-center">
             <!--begin::Form-->
-            <form class="card-body py-20 w-100 px-9" novalidate="novalidate" action="{{ route('students.store') }}"
-                method="POST" enctype="multipart/form-data" id="kt_create_student_form">
+            <form class="card-body py-20 w-100 px-9" novalidate="novalidate" enctype="multipart/form-data"
+                id="kt_create_student_form">
                 @csrf
 
                 <!--begin::Step 1-->
@@ -277,10 +279,10 @@
                                             <label class="fw-semibold fs-6 mb-2">WhatsApp No. (optional)</label>
                                             <!--end::Label-->
                                             <!--begin::Input-->
-                                            <input type="text" name="student_phone_whats" maxlength="11"
+                                            <input type="text" name="student_phone_whatsapp" maxlength="11"
                                                 class="form-control form-control-solid mb-3 mb-lg-0"
                                                 placeholder="Write WhatsApp number (if any)"
-                                                value="{{ old('student_phone_whats') }}" />
+                                                value="{{ old('student_phone_whatsapp') }}" />
                                             <!--end::Input-->
                                         </div>
                                         <!--end::Input group-->
@@ -309,7 +311,7 @@
                                         <!--begin::Birthday group-->
                                         <div class="fv-row">
                                             <!--begin::Label-->
-                                            <label class="form-label">Date of Birth</label>
+                                            <label class="form-label required">Date of Birth</label>
                                             <!--end::Label-->
                                             <!--begin::Editor-->
                                             <div class="input-group input-group-solid flex-nowrap">
@@ -320,7 +322,7 @@
                                                     <input name="birth_date" id="student_birth_date"
                                                         placeholder="Select a date"
                                                         class="form-control form-control-solid"
-                                                        value="{{ old('birth_date') }}" />
+                                                        value="{{ old('birth_date') }}" required />
                                                 </div>
                                             </div>
                                             <!--end::Editor-->
@@ -535,8 +537,9 @@
                                 </div>
                                 <div class="col-md fv-row">
                                     <label class="form-label required">Guardian-1 Mobile No.</label>
-                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0" maxlength="11"
-                                        placeholder="Enter contact number" name="guardian_1_mobile" required />
+                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
+                                        maxlength="11" placeholder="Enter contact number" name="guardian_1_mobile"
+                                        required />
                                 </div>
                                 <div class="col-md-2 fv-row">
                                     <!--begin::Label-->
@@ -545,8 +548,8 @@
 
                                     <!--begin::Solid input group style-->
                                     <select name="guardian_1_gender" data-hide-search="true"
-                                        class="form-select form-select-solid"
-                                        data-control="select2" data-placeholder="Select" required>
+                                        class="form-select form-select-solid" data-control="select2"
+                                        data-placeholder="Select" required>
                                         <option></option>
                                         <option value="male">Male</option>
                                         <option value="female">Female</option>
@@ -560,8 +563,8 @@
 
                                     <!--begin::Solid input group style-->
                                     <select name="guardian_1_relationship" data-hide-search="true"
-                                        class="form-select form-select-solid"
-                                        data-control="select2" data-placeholder="Select" required>
+                                        class="form-select form-select-solid" data-control="select2"
+                                        data-placeholder="Select" required>
                                         <option></option>
                                         <option value="father">Father</option>
                                         <option value="mother">Mother</option>
@@ -584,8 +587,8 @@
                                 </div>
                                 <div class="col-md">
                                     <label class="form-label">Guardian-2 Mobile No.</label>
-                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0" maxlength="11"
-                                        placeholder="Enter contact number" name="guardian_2_mobile" />
+                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
+                                        maxlength="11" placeholder="Enter contact number" name="guardian_2_mobile" />
                                 </div>
                                 <div class="col-md-2">
                                     <!--begin::Label-->
@@ -594,8 +597,8 @@
 
                                     <!--begin::Solid input group style-->
                                     <select name="guardian_2_gender" data-hide-search="true"
-                                        class="form-select form-select-solid"
-                                        data-control="select2" data-placeholder="Select">
+                                        class="form-select form-select-solid" data-control="select2"
+                                        data-placeholder="Select">
                                         <option></option>
                                         <option value="male">Male</option>
                                         <option value="female">Female</option>
@@ -609,8 +612,8 @@
 
                                     <!--begin::Solid input group style-->
                                     <select name="guardian_2_relationship" data-hide-search="true"
-                                        class="form-select form-select-solid"
-                                        data-control="select2" data-placeholder="Select">
+                                        class="form-select form-select-solid" data-control="select2"
+                                        data-placeholder="Select">
                                         <option></option>
                                         <option value="father">Father</option>
                                         <option value="mother">Mother</option>
@@ -633,8 +636,8 @@
                                 </div>
                                 <div class="col-md">
                                     <label class="form-label">Guardian-3 Mobile No.</label>
-                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0" maxlength="11"
-                                        placeholder="Enter contact number" name="guardian_3_mobile" />
+                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
+                                        maxlength="11" placeholder="Enter contact number" name="guardian_3_mobile" />
                                 </div>
                                 <div class="col-md-2">
                                     <!--begin::Label-->
@@ -643,8 +646,8 @@
 
                                     <!--begin::Solid input group style-->
                                     <select name="guardian_3_gender" data-hide-search="true"
-                                        class="form-select form-select-solid"
-                                        data-control="select2" data-placeholder="Select">
+                                        class="form-select form-select-solid" data-control="select2"
+                                        data-placeholder="Select">
                                         <option></option>
                                         <option value="male">Male</option>
                                         <option value="female">Female</option>
@@ -658,8 +661,8 @@
 
                                     <!--begin::Solid input group style-->
                                     <select name="guardian_3_relationship" data-hide-search="true"
-                                        class="form-select form-select-solid"
-                                        data-control="select2" data-placeholder="Select">
+                                        class="form-select form-select-solid" data-control="select2"
+                                        data-placeholder="Select">
                                         <option></option>
                                         <option value="father">Father</option>
                                         <option value="mother">Mother</option>
@@ -689,7 +692,7 @@
                                 </div>
                                 <div class="col-md-1">
                                     <label class="form-label">Age (Y)</label>
-                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
+                                    <input type="number" class="form-control form-control-solid mb-2 mb-md-0" min="6" max="20"
                                         name="sibling_1_age" />
                                 </div>
                                 <div class="col-md-1">
@@ -699,8 +702,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Instituition</label>
-                                    <select name="sibling_1_institution"
-                                        class="form-select form-select-solid"
+                                    <select name="sibling_1_institution" class="form-select form-select-solid"
                                         data-control="select2" data-placeholder="Select an instituition">
                                         <option></option>
                                         @foreach ($institutions as $institution)
@@ -717,8 +719,8 @@
 
                                     <!--begin::Solid input group style-->
                                     <select name="sibling_1_relationship" data-hide-search="true"
-                                        class="form-select form-select-solid"
-                                        data-control="select2" data-placeholder="Select">
+                                        class="form-select form-select-solid" data-control="select2"
+                                        data-placeholder="Select">
                                         <option></option>
                                         <option value="brother">Brother</option>
                                         <option value="sister">Sister</option>
@@ -737,7 +739,7 @@
                                 </div>
                                 <div class="col-md-1">
                                     <label class="form-label">Age (Y)</label>
-                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
+                                    <input type="number" class="form-control form-control-solid mb-2 mb-md-0" min="6" max="20"
                                         name="sibling_2_age" />
                                 </div>
                                 <div class="col-md-1">
@@ -747,8 +749,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Instituition</label>
-                                    <select name="sibling_2_institution"
-                                        class="form-select form-select-solid"
+                                    <select name="sibling_2_institution" class="form-select form-select-solid"
                                         data-control="select2" data-placeholder="Select an instituition">
                                         <option></option>
                                         @foreach ($institutions as $institution)
@@ -765,8 +766,8 @@
 
                                     <!--begin::Solid input group style-->
                                     <select name="sibling_2_relationship" data-hide-search="true"
-                                        class="form-select form-select-solid"
-                                        data-control="select2" data-placeholder="Select">
+                                        class="form-select form-select-solid" data-control="select2"
+                                        data-placeholder="Select">
                                         <option></option>
                                         <option value="brother">Brother</option>
                                         <option value="sister">Sister</option>
@@ -866,7 +867,8 @@
                                         <div class="col-lg-6">
                                             <!--begin::Option-->
                                             <input type="radio" class="btn-check" name="student_academic_group"
-                                                value="Science" checked="checked" id="academic_group_science_input" required/>
+                                                value="Science" checked="checked" id="academic_group_science_input"
+                                                required />
                                             <label
                                                 class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                                 for="academic_group_science_input">
@@ -884,8 +886,8 @@
                                         <!--begin::Col-->
                                         <div class="col-lg-6">
                                             <!--begin::Option-->
-                                            <input type="radio" class="btn-check" name="student_academic_group" 
-                                                value="Commerce" id="academic_group_commerce_input" required/>
+                                            <input type="radio" class="btn-check" name="student_academic_group"
+                                                value="Commerce" id="academic_group_commerce_input" required />
                                             <label
                                                 class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                                 for="academic_group_commerce_input">
@@ -995,18 +997,19 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <!--begin::Input group-->
-                                <div class="fv-row mb-7">
+                                <div class="mb-7 fv-row">
                                     <!--begin::Label-->
                                     <label class="required fw-semibold fs-6 mb-2">Tuition Fee</label>
                                     <!--end::Label-->
                                     <!--begin::Input group-->
-                                    <div class="input-group input-group-solid mb-5 flex-nowrap">
-                                        <input type="number" class="form-control rounded-end-0 border-end" name="student_tuition_fee"
-                                            min="0" placeholder="Write tuition fee" required />
-                                        <span class="input-group-text">
+                                    {{-- <div class="input-group input-group-solid mb-5 flex-nowrap"> --}}
+                                        <input type="number" class="form-control form-control-solid"
+                                            name="student_tuition_fee" min="0" placeholder="Write tuition fee"
+                                            required />
+                                        {{-- <span class="input-group-text">
                                             Tk
                                         </span>
-                                    </div>
+                                    </div> --}}
                                     <!--end::Input group-->
                                 </div>
                                 <!--end::Input group-->
@@ -1135,7 +1138,8 @@
                             <!--end::Title-->
 
                             <!--begin::Notice-->
-                            <div class="text-muted fw-semibold fs-6">Now, it requires Branch Manager approval to activate student account.
+                            <div class="text-muted fw-semibold fs-6">Now, it requires Branch Manager approval to activate
+                                student account.
                             </div>
                             <!--end::Notice-->
                         </div>
@@ -1160,8 +1164,10 @@
                                 <div class="d-flex flex-stack flex-grow-1">
                                     <!--begin::Content-->
                                     <div class="fw-semibold">
-                                        <h4 class="text-gray-900 fw-bold"><span id="admitted_name">Ashikur Rahman</span>, ID: <span id="admitted_id">G-250905</span></h4>
-                                        <div class="fs-6 text-gray-700">You may download the admission form after manager approval.
+                                        <h4 class="text-gray-900 fw-bold"><span id="admitted_name">Ashikur Rahman</span>,
+                                            ID: <span id="admitted_id">G-250905</span></h4>
+                                        <div class="fs-6 text-gray-700">You can download the admission form after manager
+                                            approval.
                                         </div>
                                     </div>
                                     <!--end::Content-->
@@ -1207,7 +1213,7 @@
             <!--end::Form-->
         </div>
         <!--end::Form Content-->
-        
+
     </div>
     <!--end::Stepper-->
 @endsection
@@ -1218,6 +1224,11 @@
 @endpush
 
 @push('page-js')
+    <script>
+        var storeStudentRoute = "{{ route('students.store') }}";
+        var csrfToken = "{{ csrf_token() }}";
+    </script>
+
     <script src="{{ asset('js/students/students.create.js') }}"></script>
     <script>
         document.getElementById("admission_menu").classList.add("here", "show");

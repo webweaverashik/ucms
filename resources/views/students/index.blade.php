@@ -44,7 +44,6 @@
 
 
 @section('content')
-
     <!--begin::Card-->
     <div class="card">
         <!--begin::Card header-->

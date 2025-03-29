@@ -14,7 +14,7 @@ class SiblingFactory extends Factory
     public function definition(): array
     {
         return [
-            'full_name' => $this->faker->name,
+            'name' => $this->faker->name,
             'age' => $this->faker->numberBetween(5, 14),
             'class' => 'Class ' . $this->faker->numberBetween(1, 12), // Random class name
             'institution_id' => Institution::inRandomOrder()->first()->id ?? Institution::factory(),

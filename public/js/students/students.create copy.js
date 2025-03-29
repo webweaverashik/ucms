@@ -87,155 +87,28 @@ var KTCreateAccount = function () {
 
      var handleForm = function () {
           formSubmitButton.addEventListener('click', function (e) {
-               e.preventDefault();
-
-               var validator = validations[3];
-
+               var validator = validations[3]; // Final checking before submission
                validator.validate().then(function (status) {
                     console.log('Validation Status:', status);
 
-                    if (status === 'Valid') {
-                         // Disable button and show loading indicator
+                    if (status == 'Valid') {
+                         e.preventDefault();
                          formSubmitButton.disabled = true;
                          formSubmitButton.setAttribute('data-kt-indicator', 'on');
 
-                         // Collect form data
-                         var formData = new FormData(document.getElementById('kt_create_student_form'));
-
-                         // Add CSRF token manually
-                         formData.append('_token', csrfToken);
-
-                         // Send data via AJAX
-                         fetch(storeStudentRoute, {
-                              method: "POST",
-                              body: formData,
-                              headers: {
-                                   'X-CSRF-TOKEN': csrfToken,
-                                   'Accept': 'application/json' // Explicitly ask for JSON
-                              }
-                         })
-                              .then(response => {
-                                   // First check if the response is OK (status 200-299)
-                                   if (!response.ok) {
-                                        return response.text().then(text => {
-                                             // Try to parse as JSON even if status not OK
-                                             try {
-                                                  const data = JSON.parse(text);
-                                                  return Promise.reject(data.errors || data.message || "Request failed");
-                                             } catch {
-                                                  return Promise.reject(text || "Request failed with status " + response.status);
-                                             }
-                                        });
-                                   }
-                                   return response.json();
-                              })
-                              .then(data => {
-                                   if (data.success) {
-                                        Swal.fire({
-                                             text: "Student admission completed successfully! Pending for Branch Manager approval.",
-                                             icon: "success",
-                                             buttonsStyling: false,
-                                             confirmButtonText: "Ok",
-                                             customClass: {
-                                                  confirmButton: "btn btn-primary"
-                                             }
-                                        });
-
-                                        document.getElementById('admitted_name').innerText = data.student.name;
-                                        document.getElementById('admitted_id').innerText = data.student.student_unique_id;
-
-                                        stepperObj.goNext();
-
-                                        setTimeout(function () {
-                                             var prevButton = document.querySelector('[data-kt-stepper-action="previous"]');
-                                             if (prevButton) {
-                                                  prevButton.style.display = 'none';
-                                             }
-                                        }, 300);
-                                   } else {
-                                        console.log("Errors:", data.errors);
-                                        showErrors(data.errors || ["An unknown error occurred."]);
-                                        enablePreviousButton();
-                                   }
-                              })
-                              .catch(error => {
-                                   // Handle both string errors and Error objects
-                                   const errorMessages = Array.isArray(error) ? error :
-                                        (error.message ? [error.message] :
-                                             (typeof error === 'string' ? [error] :
-                                                  ["Something went wrong!"]));
-
-                                   showErrors(errorMessages);
-                                   console.error("Error:", error);
-                                   enablePreviousButton();
-                              })
-                              .finally(() => {
-                                   formSubmitButton.removeAttribute('data-kt-indicator');
-                                   formSubmitButton.disabled = false;
-                              });
+                         setTimeout(function () {
+                              formSubmitButton.removeAttribute('data-kt-indicator');
+                              formSubmitButton.disabled = false;
+                              stepperObj.goNext();
+                         }, 2000);
                     } else {
                          toastr.options.progressBar = true;
-                         toastr.error("Please, fill up the required fields.");
+                         toastr.error('Please, fill up the required fields.');
                          KTUtil.scrollTop();
                     }
                });
           });
      };
-
-
-     // Function to display errors on the last step
-     function showErrors(errors) {
-          var errorContainer = document.getElementById("error-container"); // Ensure container exists
-
-          if (!errorContainer) {
-               console.error("Error container not found!");
-               return;
-          }
-
-          errors.forEach(error => {
-               var errorElement = document.createElement("div");
-               errorElement.classList.add(
-                    "alert", "alert-dismissible", "bg-light-danger", "border", "border-danger", "border-dashed",
-                    "d-flex", "flex-column", "flex-sm-row", "w-100", "p-5", "mb-10"
-               );
-               errorElement.setAttribute("role", "alert");
-
-               errorElement.innerHTML = `
-                   <!--begin::Icon-->
-                   <i class="ki-duotone ki-message-text-2 fs-2hx text-danger me-4 mb-5 mb-sm-0">
-                       <span class="path1"></span>
-                       <span class="path2"></span>
-                       <span class="path3"></span>
-                   </i>
-                   <!--end::Icon-->
-           
-                   <!--begin::Content-->
-                   <div class="d-flex flex-column pe-0 pe-sm-10">
-                       <h5 class="mb-1 text-danger">The following errors have been found.</h5>
-                       <span class="text-danger">${error}</span>
-                   </div>
-                   <!--end::Content-->
-           
-                   <!--begin::Close-->
-                   <button type="button" class="position-absolute position-sm-relative m-2 m-sm-0 top-0 end-0 btn btn-icon ms-sm-auto"
-                       data-bs-dismiss="alert">
-                       <i class="ki-outline ki-cross fs-1 text-danger"></i>
-                   </button>
-                   <!--end::Close-->
-               `;
-
-               errorContainer.prepend(errorElement);
-          });
-     }
-
-     function enablePreviousButton() {
-          var prevButton = document.querySelector('[data-kt-stepper-action="previous"]');
-          if (prevButton) {
-               prevButton.style.display = "block";
-          }
-     }
-
-
 
 
      var initValidation = function () {
@@ -316,13 +189,6 @@ var KTCreateAccount = function () {
                               validators: {
                                    emailAddress: {
                                         message: 'The value is not a valid email address',
-                                   },
-                              }
-                         },
-                         'birth_date': {
-                              validators: {
-                                   notEmpty: {
-                                        message: 'Birth date is required',
                                    },
                               }
                          },
@@ -501,7 +367,7 @@ var KTCreateAccount = function () {
                formContinueButton = stepper.querySelector('[data-kt-stepper-action="next"]');
 
                initStepper();
-               initValidation();
+               // initValidation();
                handleForm();
 
                $("#student_birth_date").flatpickr({

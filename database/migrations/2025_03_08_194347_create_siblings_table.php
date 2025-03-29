@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('siblings', function (Blueprint $table) {
             $table->id();
-            $table->string('full_name');
+            $table->string('name');
             $table->string('age');
             $table->string('class')->nullable();
             $table->foreignId('institution_id')->nullable();

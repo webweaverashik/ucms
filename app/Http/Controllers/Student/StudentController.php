@@ -6,9 +6,16 @@ use App\Models\Academic\ClassName;
 use App\Models\Academic\Institution;
 use App\Models\Academic\Shift;
 use App\Models\Academic\Subject;
+use App\Models\Payment\Payment;
 use App\Models\Student\Guardian;
+use App\Models\Student\MobileNumber;
+use App\Models\Student\Reference;
+use App\Models\Student\Sibling;
 use App\Models\Student\Student;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class StudentController extends Controller
 {
@@ -17,18 +24,10 @@ class StudentController extends Controller
      */
     public function index()
     {
-        $students = Student::withoutTrashed()->orderby('id', 'desc')->get();
+        $students = Student::where('student_activation_id', '!=', null)->withoutTrashed()->orderby('id', 'desc')->get();
 
-        // $active_students = Student::whereHas('studentActivation', function ($query) {
-        //     $query->where('active_status', 'active');
-        // })->get();
-
-        // $inactive_students = Student::whereHas('studentActivation', function ($query) {
-        //     $query->where('active_status', 'inactive');
-        // })->get();
-
-        $classnames = ClassName::all();
-        $shifts = Shift::all();
+        $classnames   = ClassName::all();
+        $shifts       = Shift::all();
         $institutions = Institution::all();
         // return response()->json($students);
 
@@ -40,11 +39,11 @@ class StudentController extends Controller
      */
     public function create()
     {
-        $students = Student::withoutTrashed()->get();
-        $guardians = Guardian::withoutTrashed()->get();
-        $classnames = ClassName::withoutTrashed()->get();
-        $subjects = Subject::withoutTrashed()->get();
-        $shifts = Shift::where('branch_id', auth()->user()->branch_id)->get();
+        $students     = Student::withoutTrashed()->get();
+        $guardians    = Guardian::withoutTrashed()->get();
+        $classnames   = ClassName::withoutTrashed()->get();
+        $subjects     = Subject::withoutTrashed()->get();
+        $shifts       = Shift::where('branch_id', auth()->user()->branch_id)->get();
         $institutions = Institution::withoutTrashed()->get();
 
         return view('students.create', compact('students', 'guardians', 'classnames', 'subjects', 'shifts', 'institutions'));
@@ -55,7 +54,201 @@ class StudentController extends Controller
      */
     public function store(Request $request)
     {
-        return $request;
+        // Validate request data
+        $validated = $request->validate([
+            // Student Table Fields
+            'student_name'            => 'required|string|max:255',
+            'student_home_address'    => 'nullable|string|max:500',
+            'student_email'           => 'nullable|email|max:255|unique:students,email',
+            'birth_date'              => 'required|date_format:d-m-Y|before:today',
+            'student_gender'          => 'required|in:male,female',
+            'student_religion'        => 'nullable|string|in:Islam,Hinduism,Christianity,Buddhism,Others',
+            'student_blood_group'     => 'nullable|string|in:A+,B+,AB+,O+,A-,B-,AB-,O-',
+            'student_class'           => 'required|integer|exists:class_names,id',
+            'student_academic_group'  => 'required|string|in:General,Science,Commerce,Arts',
+            'student_shift'           => 'required|integer|exists:shifts,id',
+            'student_institution'     => 'required|integer|exists:institutions,id',
+            'subjects'                => 'required|array',
+            'subjects.*'              => 'integer|exists:subjects,id',
+            'student_remarks'         => 'nullable|string|max:1000',
+
+            // Mobile Numbers Table Fields (Up to 3)
+            'student_phone_home'      => ['required', 'regex:/^01[3-9]\d{8}$/'],
+            'student_phone_sms'       => ['required', 'regex:/^01[3-9]\d{8}$/'],
+            'student_phone_whatsapp'  => ['nullable', 'regex:/^01[3-9]\d{8}$/'], // Made this field optional
+
+            // Payment Table Fields
+            'student_tuition_fee'     => 'required|numeric|min:0',
+            'payment_style'           => 'required|in:current,due',
+            'payment_due_date'        => 'required|integer|min:1|max:30',
+
+            // Guardians Table Fields (Up to 3)
+            'guardian_1_name'         => 'required|string|max:255',
+            'guardian_1_mobile'       => 'required|string|max:11',
+            'guardian_1_gender'       => 'required|in:male,female',
+            'guardian_1_relationship' => 'required|string|in:father,mother,brother,sister,uncle,aunt',
+            'guardian_2_name'         => 'nullable|string|max:255',
+            'guardian_2_mobile'       => 'nullable|string|max:11',
+            'guardian_2_gender'       => 'nullable|in:male,female',
+            'guardian_2_relationship' => 'nullable|string|in:father,mother,brother,sister,uncle,aunt',
+            'guardian_3_name'         => 'nullable|string|max:255',
+            'guardian_3_mobile'       => 'nullable|string|max:11',
+            'guardian_3_gender'       => 'nullable|in:male,female',
+            'guardian_3_relationship' => 'nullable|string|in:father,mother,brother,sister,uncle,aunt',
+
+            // Siblings Table Fields (Up to 2)
+            'sibling_1_name'          => 'nullable|string|max:255',
+            'sibling_1_age'           => 'nullable|integer|min:1|max:20',
+            'sibling_1_class'         => 'nullable|string',
+            'sibling_1_institution'   => 'nullable|integer|exists:institutions,id',
+            'sibling_1_relationship'  => 'nullable|string|in:brother,sister',
+            'sibling_2_name'          => 'nullable|string|max:255',
+            'sibling_2_age'           => 'nullable|integer|min:1|max:20',
+            'sibling_2_class'         => 'nullable|string',
+            'sibling_2_institution'   => 'nullable|integer|exists:institutions,id',
+            'sibling_2_relationship'  => 'nullable|string|in:brother,sister',
+
+            // Reference
+            'referer_type'            => 'nullable|string|in:student,teacher',
+            'referred_by'             => [
+                'nullable',
+                'integer',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->referer_type === 'student') {
+                        $exists = DB::table('students')->where('id', $value)->exists();
+                    } elseif ($request->referer_type === 'teacher') {
+                        $exists = DB::table('teachers')->where('id', $value)->exists();
+                    } else {
+                        $exists = false;
+                    }
+
+                    if (! $exists) {
+                        $fail('The referred person must be a valid ' . $request->referer_type . '.');
+                    }
+                },
+            ],
+        ]);
+
+        return DB::transaction(function () use ($validated) {
+            // Fetch branch and class details
+            $branch = auth()->user()->branch;
+            $class  = ClassName::findOrFail($validated['student_class']);
+            $year   = Carbon::now()->format('y');
+
+            // Generate student unique ID
+            $maxStudent = Student::where('class_id', $class->id)
+                ->where('student_unique_id', 'like', "{$branch->branch_prefix}-{$year}{$class->class_numeral}%")
+                ->orderByDesc('student_unique_id')
+                ->first();
+
+            $nextStudentId = $maxStudent ? (int) substr($maxStudent->student_unique_id, -2) + 1 : 1;
+            $nextStudentId = min($nextStudentId, 99); // Ensure it doesn't exceed 99
+
+            $studentUniqueId = "{$branch->branch_prefix}-{$year}{$class->class_numeral}" . str_pad($nextStudentId, 2, '0', STR_PAD_LEFT);
+
+            // Insert student record
+            $student = Student::create([
+                'student_unique_id' => $studentUniqueId,
+                'branch_id'         => $branch->id,
+                'name'              => $validated['student_name'],
+                'date_of_birth'     => Carbon::createFromFormat('d-m-Y', $validated['birth_date'])->format('Y-m-d'),
+                'gender'            => $validated['student_gender'],
+                'class_id'          => $validated['student_class'],
+                'academic_group'    => $validated['student_academic_group'],
+                'shift_id'          => $validated['student_shift'],
+                'institution_id'    => $validated['student_institution'],
+                'religion'          => $validated['student_religion'] ?? null,
+                'blood_group'       => $validated['student_blood_group'] ?? null,
+                'home_address'      => $validated['student_home_address'] ?? null,
+                'email'             => $validated['student_email'] ?? null,
+                'password'          => Hash::make('password'),
+                'reference_id'      => null,
+                'remarks'           => $validated['student_remarks'] ?? null,
+            ]);
+
+            if (! $student) {
+                return response()->json(['error' => 'Student creation failed!'], 500);
+            }
+
+            // Attach subjects using subjectsTaken() relationship
+            foreach ($validated['subjects'] as $subjectId) {
+                $student->subjectsTaken()->create(['subject_id' => $subjectId]);
+            }
+
+            // Insert guardians
+            for ($i = 1; $i <= 3; $i++) {
+                if (! empty($validated["guardian_{$i}_name"])) {
+                    Guardian::create([
+                        'student_id'    => $student->id,
+                        'name'          => $validated["guardian_{$i}_name"],
+                        'mobile_number' => $validated["guardian_{$i}_mobile"],
+                        'gender'        => $validated["guardian_{$i}_gender"],
+                        'relationship'  => $validated["guardian_{$i}_relationship"],
+                        'password'      => Hash::make('password'),
+                    ]);
+                }
+            }
+
+            // Insert siblings
+            for ($i = 1; $i <= 2; $i++) {
+                if (! empty($validated["sibling_{$i}_name"])) {
+                    Sibling::create([
+                        'student_id'     => $student->id,
+                        'name'           => $validated["sibling_{$i}_name"],
+                        'age'            => $validated["sibling_{$i}_age"],
+                        'class'          => $validated["sibling_{$i}_class"],
+                        'institution_id' => $validated["sibling_{$i}_institution"],
+                        'relationship'   => $validated["sibling_{$i}_relationship"],
+                    ]);
+                }
+            }
+
+            // Handle reference (if applicable)
+            if (! empty($validated['referer_type']) && ! empty($validated['referred_by'])) {
+                $reference = Reference::create([
+                    'referer_id'   => $validated['referred_by'],
+                    'referer_type' => $validated['referer_type'],
+                ]);
+
+                // Update student reference_id
+                $student->update(['reference_id' => $reference->id]);
+            }
+
+            // Insert data into the Payment model
+            Payment::create([
+                'student_id'    => $student->id,
+                'payment_style' => $validated['payment_style'],
+                'due_date'      => $validated['payment_due_date'], // Now always required
+                'tuition_fee'   => $validated['student_tuition_fee'],
+            ]);
+
+            // Insert mobile numbers using `create()`
+            MobileNumber::create([
+                'student_id'    => $student->id,
+                'mobile_number' => $validated['student_phone_home'],
+                'number_type'   => 'home',
+            ]);
+
+            MobileNumber::create([
+                'student_id'    => $student->id,
+                'mobile_number' => $validated['student_phone_sms'],
+                'number_type'   => 'sms',
+            ]);
+
+            if (isset($validated['student_phone_whatsapp'])) {
+                MobileNumber::create([
+                    'student_id'    => $student->id,
+                    'mobile_number' => $validated['student_phone_whatsapp'],
+                    'number_type'   => 'whatsapp',
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'student' => $student,
+                'message' => 'Student created successfully',
+            ]);
+        });
     }
 
     /**
@@ -95,24 +288,24 @@ class StudentController extends Controller
         $refererType = $request->get('referer_type');
 
         if ($refererType == 'teacher') {
-            // Fetch teacher data (no unique_id)
+                                                          // Fetch teacher data (no unique_id)
             $teachers = Teacher::withoutTrashed()->get(); // Adjust according to your data model
             return response()->json(
                 $teachers->map(function ($teacher) {
                     return [
-                        'id' => $teacher->id,
+                        'id'   => $teacher->id,
                         'name' => $teacher->name,
                     ];
                 }),
             );
         } elseif ($refererType == 'student') {
-            // Fetch student data
+                                                          // Fetch student data
             $students = Student::withoutTrashed()->get(); // Adjust according to your data model
             return response()->json(
                 $students->map(function ($student) {
                     return [
-                        'id' => $student->id,
-                        'name' => $student->name,
+                        'id'                => $student->id,
+                        'name'              => $student->name,
                         'student_unique_id' => $student->student_unique_id, // Keep the unique_id for students
                     ];
                 }),
