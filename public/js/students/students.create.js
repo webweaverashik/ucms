@@ -278,13 +278,10 @@ var KTCreateAccount = function () {
                          },
                          'avatar': {
                               validators: {
-                                   notEmpty: {
-                                        message: 'Please select student photo'
-                                   },
                                    file: {
                                         extension: 'jpg,jpeg,png',
                                         type: 'image/jpeg,image/png',
-                                        maxSize: 204800, // 2048 * 1024
+                                        maxSize: 204800, // 200 * 1024
                                         message: 'The selected file type or size is not valid'
                                    },
                               }

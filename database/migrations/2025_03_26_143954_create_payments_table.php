@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('student_id');
             $table->enum('payment_style', ['current', 'due']);
-            $table->integer('due_date');
+            $table->integer('due_date')->default(7);
             $table->decimal('tuition_fee', 10, 2);
             $table->timestamps();
         });

@@ -13,7 +13,7 @@ class Payment extends Model
     protected $fillable = [
         'student_id',
         'payment_style',
-        'deadline',
+        'due_date',
         'tuition_fee',
     ];
 

@@ -337,7 +337,7 @@
                                 <!--begin::Photo Input group-->
                                 <div class="fv-row mb-7">
                                     <!--begin::Label-->
-                                    <label class="required d-block fw-semibold fs-6 mb-5">Profile Photo</label>
+                                    <label class="d-block fw-semibold fs-6 mb-5">Profile Photo (optional)</label>
                                     <!--end::Label-->
                                     <!--begin::Image placeholder-->
                                     <style>
@@ -1073,7 +1073,7 @@
                                 <!--begin::Input group-->
                                 <div class="fv-row mb-7">
                                     <!--begin::Label-->
-                                    <label class="fw-semibold fs-6 mb-2">Referer Type:</label>
+                                    <label class="fw-semibold fs-6 mb-2">Referer Type (optional)</label>
                                     <!--end::Label-->
 
                                     <!--begin::Input-->
@@ -1103,7 +1103,7 @@
                                 <!--begin::Input group-->
                                 <div class="fv-row mb-7">
                                     <!--begin::Label-->
-                                    <label class="fw-semibold fs-6 mb-2">Referred By:</label>
+                                    <label class="fw-semibold fs-6 mb-2">Referred By (optional)</label>
                                     <!--end::Label-->
                                     <!--begin::Input-->
                                     <select name="referred_by" id="referred_by" class="form-select form-select-solid"

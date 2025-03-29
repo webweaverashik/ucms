@@ -63,14 +63,16 @@ class StudentController extends Controller
             'birth_date'              => 'required|date_format:d-m-Y|before:today',
             'student_gender'          => 'required|in:male,female',
             'student_religion'        => 'nullable|string|in:Islam,Hinduism,Christianity,Buddhism,Others',
-            'student_blood_group'     => 'nullable|string|in:A+,B+,AB+,O+,A-,B-,AB-,O-',
+            // 'student_blood_group'     => 'nullable|string|in:A+,B+,AB+,O+,A-,B-,AB-,O-',
+            'student_blood_group'     => 'nullable|string',
             'student_class'           => 'required|integer|exists:class_names,id',
-            'student_academic_group'  => 'required|string|in:General,Science,Commerce,Arts',
+            'student_academic_group'  => 'nullable|string|in:General,Science,Commerce,Arts',
             'student_shift'           => 'required|integer|exists:shifts,id',
             'student_institution'     => 'required|integer|exists:institutions,id',
             'subjects'                => 'required|array',
             'subjects.*'              => 'integer|exists:subjects,id',
             'student_remarks'         => 'nullable|string|max:1000',
+            'avatar'                  => 'nullable|image|mimes:jpg,jpeg,png|max:200',
 
             // Mobile Numbers Table Fields (Up to 3)
             'student_phone_home'      => ['required', 'regex:/^01[3-9]\d{8}$/'],
@@ -80,7 +82,7 @@ class StudentController extends Controller
             // Payment Table Fields
             'student_tuition_fee'     => 'required|numeric|min:0',
             'payment_style'           => 'required|in:current,due',
-            'payment_due_date'        => 'required|integer|min:1|max:30',
+            'payment_due_date'        => 'required|integer|in:7,10,15,30',
 
             // Guardians Table Fields (Up to 3)
             'guardian_1_name'         => 'required|string|max:255',
@@ -154,7 +156,7 @@ class StudentController extends Controller
                 'date_of_birth'     => Carbon::createFromFormat('d-m-Y', $validated['birth_date'])->format('Y-m-d'),
                 'gender'            => $validated['student_gender'],
                 'class_id'          => $validated['student_class'],
-                'academic_group'    => $validated['student_academic_group'],
+                'academic_group'    => $validated['student_academic_group'] ?? 'General',
                 'shift_id'          => $validated['student_shift'],
                 'institution_id'    => $validated['student_institution'],
                 'religion'          => $validated['student_religion'] ?? null,
@@ -168,6 +170,23 @@ class StudentController extends Controller
 
             if (! $student) {
                 return response()->json(['error' => 'Student creation failed!'], 500);
+            }
+
+            // ✅ Handle file upload with unique_id prefix (only if a file is provided)
+            if (isset($validated['avatar'])) { // ✅ Check if 'avatar' exists
+                $file      = $validated['avatar']; // ✅ Directly access the file
+                $extension = $file->getClientOriginalExtension();
+
+                $filename  = $studentUniqueId . '_photo' . '.' . $extension;
+                $photoPath = 'uploads/students/';
+
+                // Move the file
+                $file->move(public_path($photoPath), $filename);
+
+                $imageURL = $photoPath . $filename;
+
+                // ✅ Update student photo in DB
+                $student->update(['photo_url' => $imageURL]);
             }
 
             // Attach subjects using subjectsTaken() relationship
