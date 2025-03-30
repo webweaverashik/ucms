@@ -24,7 +24,12 @@ class StudentController extends Controller
      */
     public function index()
     {
-        $students = Student::where('student_activation_id', '!=', null)->withoutTrashed()->orderby('id', 'desc')->get();
+        if (auth()->user()->branch_id != 0) {
+            $students = Student::where('student_activation_id', '!=', null)->where('branch_id', auth()->user()->branch_id)->withoutTrashed()->orderby('id', 'desc')->get();
+        }
+        else {
+            $students = Student::where('student_activation_id', '!=', null)->withoutTrashed()->orderby('id', 'desc')->get();
+        }
 
         $classnames   = ClassName::all();
         $shifts       = Shift::all();
@@ -173,7 +178,8 @@ class StudentController extends Controller
             }
 
             // ✅ Handle file upload with unique_id prefix (only if a file is provided)
-            if (isset($validated['avatar'])) { // ✅ Check if 'avatar' exists
+            if (isset($validated['avatar'])) {
+                                                   // ✅ Check if 'avatar' exists
                 $file      = $validated['avatar']; // ✅ Directly access the file
                 $extension = $file->getClientOriginalExtension();
 
