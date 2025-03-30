@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('mobile_number', 11);
             $table->string('password');
-            $table->foreignId('branch_id')->nullable();
+            $table->foreignId('branch_id');
             $table->timestamp('email_verified_at')->nullable();
             $table->boolean('is_active')->default(true);
             $table->string('photo_url')->nullable();

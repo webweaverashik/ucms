@@ -276,7 +276,7 @@
                                         <!--begin::Input group-->
                                         <div class="fv-row mb-7">
                                             <!--begin::Label-->
-                                            <label class="fw-semibold fs-6 mb-2">WhatsApp No. (optional)</label>
+                                            <label class="fw-semibold fs-6 mb-2">WhatsApp No. <span class="text-muted">(optional)</span></label>
                                             <!--end::Label-->
                                             <!--begin::Input-->
                                             <input type="text" name="student_phone_whatsapp" maxlength="11"
@@ -295,7 +295,7 @@
                                         <!--begin::Email Input group-->
                                         <div class="fv-row mb-7">
                                             <!--begin::Label-->
-                                            <label class="fw-semibold fs-6 mb-2">Email (optional)</label>
+                                            <label class="fw-semibold fs-6 mb-2">Email <span class="text-muted">(optional)</span></label>
                                             <!--end::Label-->
                                             <!--begin::Input-->
                                             <input type="email" name="student_email"
@@ -337,7 +337,7 @@
                                 <!--begin::Photo Input group-->
                                 <div class="fv-row mb-7">
                                     <!--begin::Label-->
-                                    <label class="d-block fw-semibold fs-6 mb-5">Profile Photo (optional)</label>
+                                    <label class="d-block fw-semibold fs-6 mb-5">Profile Photo <span class="text-muted">(optional)</span></label>
                                     <!--end::Label-->
                                     <!--begin::Image placeholder-->
                                     <style>
@@ -446,7 +446,7 @@
                                 <!--begin::Religion Input group-->
                                 <div class="fv-row mb-7">
                                     <!--begin::Label-->
-                                    <label class="form-label">Religion</label>
+                                    <label class="form-label">Religion <span class="text-muted">(optional)</span></label>
                                     <!--end::Label-->
 
                                     <!--begin::Solid input group style-->
@@ -472,7 +472,7 @@
                                 <!--begin::Blood Input group-->
                                 <div class="fv-row">
                                     <!--begin::Label-->
-                                    <label class="form-label">Blood Group</label>
+                                    <label class="form-label">Blood Group <span class="text-muted">(optional)</span></label>
                                     <!--end::Label-->
 
                                     <!--begin::Solid input group style-->
@@ -1073,7 +1073,7 @@
                                 <!--begin::Input group-->
                                 <div class="fv-row mb-7">
                                     <!--begin::Label-->
-                                    <label class="fw-semibold fs-6 mb-2">Referer Type (optional)</label>
+                                    <label class="fw-semibold fs-6 mb-2">Referer Type <span class="text-muted">(optional)</span></label>
                                     <!--end::Label-->
 
                                     <!--begin::Input-->
@@ -1103,7 +1103,7 @@
                                 <!--begin::Input group-->
                                 <div class="fv-row mb-7">
                                     <!--begin::Label-->
-                                    <label class="fw-semibold fs-6 mb-2">Referred By (optional)</label>
+                                    <label class="fw-semibold fs-6 mb-2">Referred By <span class="text-muted">(optional)</span></label>
                                     <!--end::Label-->
                                     <!--begin::Input-->
                                     <select name="referred_by" id="referred_by" class="form-select form-select-solid"
@@ -1116,7 +1116,7 @@
                             </div>
 
                             <div class="col-md-12">
-                                <label class="form-label">Remarks (optional)</label>
+                                <label class="form-label">Remarks <span class="text-muted">(optional)</span></label>
                                 <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
                                     placeholder="Write remarks (if any)" name="student_remarks" />
                             </div>

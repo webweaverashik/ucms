@@ -262,7 +262,7 @@
                                 </td>
                                 <td class="text-center">
                                     @if ($student->payments)
-                                        {{ ucfirst($student->payments->payment_style) }}-{{ $student->payments->deadline }}
+                                        {{ ucfirst($student->payments->payment_style) }}-1/{{ $student->payments->due_date }}
                                     @endif
                                 </td>
                                 <td class="text-center">{{ $student->created_at->format('d-M-Y') }}</td>
