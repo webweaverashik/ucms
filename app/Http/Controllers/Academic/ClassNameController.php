@@ -13,9 +13,7 @@ class ClassNameController extends Controller
      */
     public function index()
     {
-        $classnames = ClassName::withoutTrashed()->get();
-
-        // return $classnames;
+        $classnames = ClassName::withoutTrashed()->orderby('id', 'desc')->get();
 
         return view('classnames.index', compact('classnames'));
     }

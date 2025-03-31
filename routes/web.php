@@ -37,6 +37,8 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     
     // Custom routes
     Route::post('users/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggleActive');
+    Route::get('students/pending', [StudentController::class, 'pending'])->name('students.pending');;
+
 
     // AJAX Routes
     Route::prefix('admin')->group(function () {

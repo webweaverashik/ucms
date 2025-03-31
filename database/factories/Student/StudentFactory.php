@@ -1,18 +1,17 @@
 <?php
-
 namespace Database\Factories\Student;
 
-use Carbon\Carbon;
-use App\Models\Branch;
-use Faker\Generator as Faker;
-use App\Models\Academic\Shift;
-use App\Models\Student\Student;
-use App\Models\Student\Reference;
 use App\Models\Academic\ClassName;
 use App\Models\Academic\Institution;
-use Illuminate\Support\Facades\Hash;
+use App\Models\Academic\Shift;
+use App\Models\Branch;
+use App\Models\Student\Reference;
+use App\Models\Student\Student;
 use App\Models\Student\StudentActivation;
+use Carbon\Carbon;
+use Faker\Generator as Faker;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Hash;
 
 class StudentFactory extends Factory
 {
@@ -41,26 +40,32 @@ class StudentFactory extends Factory
         $banglaNames = ['আরিফ হোসেন', 'সুমাইয়া আক্তার', 'রাকিব হাসান', 'জান্নাতুল ফেরদৌস', 'ইমরান খান', 'তাসনিম রহমান', 'সাকিব আহমেদ', 'নাদিয়া সুলতানা', 'ফাহিম চৌধুরী', 'মাহিয়া মিম', 'নাসির উদ্দিন', 'রুমকি বেগম', 'শামীম সরকার', 'সাদিয়া ইসলাম', 'জুবায়ের ভূঁইয়া', 'আফিয়া শেখ', 'তানভীর মিয়া', 'আয়েশা খাতুন', 'আসিফ আলী', 'ফারজানা হক'];
 
         return [
-            'student_unique_id' => $studentUniqueId,
-            'branch_id' => $branch->id,
-            'name' => $this->faker->name,
+            'student_unique_id'     => $studentUniqueId,
+            'branch_id'             => $branch->id,
+            'name'                  => $this->faker->name,
             // 'name_bn' => $this->faker->randomElement($banglaNames),
-            'date_of_birth' => $this->faker->date(),
-            'gender' => $this->faker->randomElement(['male', 'female']),
-            'class_id' => $class->id,
-            'academic_group' => $academic_group,
-            'shift_id' => Shift::inRandomOrder()->first()->id ?? Shift::factory()->create()->id,
+            'date_of_birth'         => $this->faker->date(),
+            'gender'                => $this->faker->randomElement(['male', 'female']),
+            'class_id'              => $class->id,
+            'academic_group'        => $academic_group,
+            'shift_id'              => Shift::inRandomOrder()->first()->id ?? Shift::factory()->create()->id,
             // 'institution_roll' => $roll,
-            'institution_id' => Institution::inRandomOrder()->first()->id ?? Institution::factory()->create()->id,
-            'religion' => 'Islam',
-            'home_address' => $this->faker->optional()->address,
-            'email' => null,
-            'password' => Hash::make('password'),
-            'reference_id' => Reference::inRandomOrder()->first()->id ?? Reference::factory()->create()->id,
+            'institution_id'        => Institution::inRandomOrder()->first()->id ?? Institution::factory()->create()->id,
+            'religion'              => 'Islam',
+            'home_address'          => $this->faker->address,
+            'email'                 => function () {
+                if (rand(1, 100) <= 30) {
+                    return $this->faker->unique()->safeEmail();
+                } else {
+                    return null;
+                }
+            },
+            'password'              => Hash::make('password'),
+            'reference_id'          => Reference::inRandomOrder()->first()->id ?? Reference::factory()->create()->id,
             'student_activation_id' => null, // Set after creation
-            'photo_url' => null,
-            'remarks' => null,
-            'deleted_by' => null,
+            'photo_url'             => null,
+            'remarks'               => null,
+            'deleted_by'            => null,
         ];
     }
 

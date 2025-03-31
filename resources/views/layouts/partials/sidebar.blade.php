@@ -151,7 +151,7 @@
                             <!--begin:Menu item-->
                             <div class="menu-item">
                                 <!--begin:Menu link--><a class="menu-link" id="pending_approval_link"
-                                    href="#"><span class="menu-bullet"><span
+                                    href="{{ route('students.pending') }}"><span class="menu-bullet"><span
                                             class="bullet bullet-dot"></span></span><span class="menu-title">Pending
                                                 Approval</span></a>
                                 <!--end:Menu link-->

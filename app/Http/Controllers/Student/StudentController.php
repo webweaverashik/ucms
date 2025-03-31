@@ -26,8 +26,7 @@ class StudentController extends Controller
     {
         if (auth()->user()->branch_id != 0) {
             $students = Student::where('student_activation_id', '!=', null)->where('branch_id', auth()->user()->branch_id)->withoutTrashed()->orderby('id', 'desc')->get();
-        }
-        else {
+        } else {
             $students = Student::where('student_activation_id', '!=', null)->withoutTrashed()->orderby('id', 'desc')->get();
         }
 
@@ -37,6 +36,22 @@ class StudentController extends Controller
         // return response()->json($students);
 
         return view('students.index', compact('students', 'classnames', 'shifts', 'institutions'));
+    }
+
+    public function pending()
+    {
+        if (auth()->user()->branch_id != 0) {
+            $students = Student::where('student_activation_id', null)->where('branch_id', auth()->user()->branch_id)->withoutTrashed()->orderby('id', 'desc')->get();
+        } else {
+            $students = Student::where('student_activation_id', null)->withoutTrashed()->orderby('id', 'desc')->get();
+        }
+
+        $classnames   = ClassName::all();
+        $shifts       = Shift::all();
+        $institutions = Institution::all();
+        // return response()->json($students);
+
+        return view('students.pending', compact('students', 'classnames', 'shifts', 'institutions'));
     }
 
     /**
@@ -65,7 +80,7 @@ class StudentController extends Controller
             'student_name'            => 'required|string|max:255',
             'student_home_address'    => 'nullable|string|max:500',
             'student_email'           => 'nullable|email|max:255|unique:students,email',
-            'birth_date'              => 'required|date_format:d-m-Y|before:today',
+            'birth_date'              => 'required',
             'student_gender'          => 'required|in:male,female',
             'student_religion'        => 'nullable|string|in:Islam,Hinduism,Christianity,Buddhism,Others',
             // 'student_blood_group'     => 'nullable|string|in:A+,B+,AB+,O+,A-,B-,AB-,O-',
@@ -179,17 +194,20 @@ class StudentController extends Controller
 
             // ✅ Handle file upload with unique_id prefix (only if a file is provided)
             if (isset($validated['avatar'])) {
-                                                   // ✅ Check if 'avatar' exists
                 $file      = $validated['avatar']; // ✅ Directly access the file
                 $extension = $file->getClientOriginalExtension();
-
                 $filename  = $studentUniqueId . '_photo' . '.' . $extension;
-                $photoPath = 'uploads/students/';
+                $photoPath = public_path('uploads/students/'); // Full path
 
-                // Move the file
-                $file->move(public_path($photoPath), $filename);
+                // ✅ Check if folder exists, if not, create it with proper permissions
+                if (! file_exists($photoPath)) {
+                    mkdir($photoPath, 0777, true); // 0777 allows full read/write access
+                }
 
-                $imageURL = $photoPath . $filename;
+                // ✅ Move the file
+                $file->move($photoPath, $filename);
+
+                $imageURL = 'uploads/students/' . $filename;
 
                 // ✅ Update student photo in DB
                 $student->update(['photo_url' => $imageURL]);
@@ -289,7 +307,20 @@ class StudentController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $student = Student::findOrFail($id);
+        
+        if (auth()->user()->branch_id != 0) {
+            $students = Student::where('student_activation_id', '!=', null)->where('branch_id', auth()->user()->branch_id)->withoutTrashed()->orderby('id', 'desc')->get();
+        } else {
+            $students = Student::where('student_activation_id', '!=', null)->withoutTrashed()->orderby('id', 'desc')->get();
+        }
+
+        $classnames   = ClassName::all();
+        $shifts       = Shift::all();
+        $institutions = Institution::all();
+        // return response()->json($students);
+
+        return view('students.edit', compact('student', 'students', 'classnames', 'shifts', 'institutions'));
     }
 
     /**
