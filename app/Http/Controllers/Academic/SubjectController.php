@@ -1,12 +1,10 @@
 <?php
-
 namespace App\Http\Controllers\Academic;
 
 use Illuminate\Http\Request;
 use App\Models\Academic\Subject;
-use Illuminate\Http\JsonResponse;
-use App\Models\Academic\ClassName;
 use App\Http\Controllers\Controller;
+use App\Models\Academic\SubjectTaken;
 
 class SubjectController extends Controller
 {
@@ -71,15 +69,6 @@ class SubjectController extends Controller
     /**
      * Get subjects by class ID using AJAX request
      */
-    // public function getSubjects($classId)
-    // {
-    //     // Get subjects where class_id matches the selected class
-    //     $subjects = Subject::where('class_id', $classId)->withoutTrashed()->orderByDesc('is_mandatory')->get();
-
-    //     // Return the subjects as JSON
-    //     return response()->json(['subjects' => $subjects]);
-    // }
-
     public function getSubjects(Request $request)
     {
         $validated = $request->validate([
@@ -106,6 +95,44 @@ class SubjectController extends Controller
         return response()->json([
             'success' => true,
             'subjects' => $query->get(),
+        ]);
+    }
+
+    /**
+     * Get subjects taken by the student
+     */
+    public function getTakenSubjects(Request $request)
+    {
+        $validated = $request->validate([
+            'class_id' => 'required|exists:class_names,id',
+            'group' => 'required|in:General,Science,Commerce,Arts',
+            'include_general' => 'required|boolean',
+            'student_id' => 'required|exists:students,id', // Ensure student_id is valid
+        ]);
+
+        // Fetch subjects based on class_id and academic group
+        $query = Subject::where('class_id', $request->class_id)
+            ->when(
+                $request->include_general,
+                function ($q) use ($request) {
+                    return $q->where(function ($q) use ($request) {
+                        $q->where('academic_group', 'General')->orWhere('academic_group', $request->group);
+                    });
+                },
+                function ($q) {
+                    return $q->where('academic_group', 'General');
+                },
+            )
+            ->orderBy('academic_group')
+            ->orderBy('name');
+
+        // Get the subjects assigned to this student
+        $takenSubjects = SubjectTaken::where('student_id', $request->student_id)->pluck('subject_id')->toArray();
+
+        return response()->json([
+            'success' => true,
+            'subjects' => $query->get(),
+            'taken_subjects' => $takenSubjects,
         ]);
     }
 }

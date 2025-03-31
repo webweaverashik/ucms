@@ -50,10 +50,11 @@
         $dueDates = [7 => '1 to 7', 10 => '1 to 10', 15 => '1 to 15', 30 => '1 to 30'];
         $refererType = $student->reference->referer_type ?? 'teacher'; // Default to 'teacher' if not set
     @endphp
+    <input type="hidden" id="student_id_input" name="student_id" value="{{ $student->id }}">
 
     <!--begin::Stepper-->
     <div class="stepper stepper-pills stepper-column d-flex flex-column flex-xl-row flex-row-fluid gap-10"
-        id="kt_create_student_stepper">
+        id="kt_update_student_stepper">
 
         <!--begin::Aside-->
         <div class="card d-flex justify-content-center justify-content-xl-start flex-row-auto w-100 w-xl-300px w-xxl-400px">
@@ -670,12 +671,8 @@
                                         class="form-select form-select-solid" data-control="select2"
                                         data-placeholder="Select">
                                         <option></option>
-                                        <option value="male"
-                                            {{ isset($student->guardians[2]) && $student->guardians[2]->gender == 'male' ? 'selected' : '' }}>
-                                            Male</option>
-                                        <option value="female"
-                                            {{ isset($student->guardians[2]) && $student->guardians[2]->gender == 'female' ? 'selected' : '' }}>
-                                            Female</option>
+                                        <option value="male" {{ isset($student->guardians[2]) && $student->guardians[2]->gender == 'male' ? 'selected' : '' }}>Male</option>
+                                        <option value="female" {{ isset($student->guardians[2]) && $student->guardians[2]->gender == 'female' ? 'selected' : '' }}>Female</option>
                                     </select>
                                     <!--end::Solid input group style-->
                                 </div>
@@ -1168,7 +1165,8 @@
                             <div class="col-md-12">
                                 <label class="form-label">Remarks <span class="text-muted">(optional)</span></label>
                                 <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
-                                    placeholder="Write remarks (if any)" name="student_remarks" value="{{ $student->remarks }}"/>
+                                    placeholder="Write remarks (if any)" name="student_remarks"
+                                    value="{{ $student->remarks }}" />
                             </div>
                         </div>
 
@@ -1184,12 +1182,11 @@
                         <!--begin::Heading-->
                         <div class="pb-8 pb-lg-10">
                             <!--begin::Title-->
-                            <h2 class="fw-bold text-gray-900">Admission Done!</h2>
+                            <h2 class="fw-bold text-gray-900">Update Done!</h2>
                             <!--end::Title-->
 
                             <!--begin::Notice-->
-                            <div class="text-muted fw-semibold fs-6">Now, it requires Branch Manager approval to activate
-                                student account.
+                            <div class="text-muted fw-semibold fs-6">Student data has been updated successfully.
                             </div>
                             <!--end::Notice-->
                         </div>
@@ -1205,9 +1202,9 @@
 
                             <!--begin::Alert-->
                             <!--begin::Notice-->
-                            <div class="notice d-flex bg-light-warning rounded border-warning border border-dashed p-6">
+                            <div class="notice d-flex bg-light-success rounded border-success border border-dashed p-6">
                                 <!--begin::Icon-->
-                                <i class="ki-outline ki-information fs-2tx text-warning me-4">
+                                <i class="ki-outline ki-information fs-2tx text-success me-4">
                                 </i>
                                 <!--end::Icon-->
                                 <!--begin::Wrapper-->
@@ -1216,8 +1213,7 @@
                                     <div class="fw-semibold">
                                         <h4 class="text-gray-900 fw-bold"><span id="admitted_name">Ashikur Rahman</span>,
                                             ID: <span id="admitted_id">G-250905</span></h4>
-                                        <div class="fs-6 text-gray-700">You can download the admission form after manager
-                                            approval.
+                                        <div class="fs-6 text-gray-700">Please, recheck student data if everything is ok.
                                         </div>
                                     </div>
                                     <!--end::Content-->
@@ -1279,19 +1275,24 @@
     </script>
 
     <script>
-        var storeStudentRoute = "{{ route('students.store') }}";
+        var studentId = document.getElementById('student_id_input').value;
+
+        var updateStudentRoute = function(studentId) {
+            return "{{ route('students.update', ':id') }}".replace(':id', studentId);
+        };
         var csrfToken = "{{ csrf_token() }}";
 
-        var ajaxTeacherRoute = "{{ route('admin.referrers.teachers') }}";
-        var ajaxStudentRoute = "{{ route('admin.referrers.students') }}";
+        // --- For reference ajax request ---
+        // var ajaxTeacherRoute = "{{ route('admin.referrers.teachers') }}";
+        // var ajaxStudentRoute = "{{ route('admin.referrers.students') }}";
     </script>
 
 
     {{-- AJAX Teacher or Student Data loading : Referred By --}}
-    <script src="{{ asset('js/students/ajax-reference.js') }}"></script>
+    {{-- <script src="{{ asset('js/students/ajax-reference.js') }}"></script> --}}
 
     {{-- Dynamically show subject list and group --}}
-    <script src="{{ asset('js/students/ajax-subjects.js') }}"></script>
+    <script src="{{ asset('js/students/ajax-subjects-update.js') }}"></script>
 
     {{-- Student admission form ajax activities --}}
     <script src="{{ asset('js/students/students.update.js') }}"></script>

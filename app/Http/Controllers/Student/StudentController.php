@@ -308,17 +308,24 @@ class StudentController extends Controller
     public function edit(string $id)
     {
         $student = Student::findOrFail($id);
-        
-        if (auth()->user()->branch_id != 0) {
-            $students = Student::where('student_activation_id', '!=', null)->where('branch_id', auth()->user()->branch_id)->withoutTrashed()->orderby('id', 'desc')->get();
-        } else {
-            $students = Student::where('student_activation_id', '!=', null)->withoutTrashed()->orderby('id', 'desc')->get();
+
+        // Restrict access: Only allow editing if the user belongs to the same branch
+        if (auth()->user()->branch_id != 0 && auth()->user()->branch_id != $student->branch_id) {
+            return redirect()->route('students.index')->with('error', 'This student is not available on this branch.');
         }
+
+        // Fetch students based on branch access
+        $studentsQuery = Student::where('student_activation_id', '!=', null)->withoutTrashed()->orderby('id', 'desc');
+
+        if (auth()->user()->branch_id != 0) {
+            $studentsQuery->where('branch_id', auth()->user()->branch_id);
+        }
+
+        $students = $studentsQuery->get();
 
         $classnames   = ClassName::all();
         $shifts       = Shift::all();
         $institutions = Institution::all();
-        // return response()->json($students);
 
         return view('students.edit', compact('student', 'students', 'classnames', 'shifts', 'institutions'));
     }
@@ -326,9 +333,148 @@ class StudentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Student $student)
     {
-        //
+        // Validate request data
+        $validated = $request->validate([
+            // Student Table Fields
+            'student_name'            => 'required|string|max:255',
+            'student_home_address'    => 'nullable|string|max:500',
+            'student_email'           => 'nullable|email|max:255|unique:students,email,' . $student->id,
+            'birth_date'              => 'required',
+            'student_gender'          => 'required|in:male,female',
+            'student_religion'        => 'nullable|string|in:Islam,Hinduism,Christianity,Buddhism,Others',
+            'student_blood_group'     => 'nullable|string',
+            'student_class'           => 'required|integer|exists:class_names,id',
+            'student_academic_group'  => 'nullable|string|in:General,Science,Commerce,Arts',
+            'student_shift'           => 'required|integer|exists:shifts,id',
+            'student_institution'     => 'required|integer|exists:institutions,id',
+            'subjects'                => 'required|array',
+            'subjects.*'              => 'integer|exists:subjects,id',
+            'student_remarks'         => 'nullable|string|max:1000',
+            'avatar'                  => 'nullable|image|mimes:jpg,jpeg,png|max:200',
+
+            // Mobile Numbers Table Fields (Up to 3)
+            'student_phone_home'      => ['required', 'regex:/^01[3-9]\d{8}$/'],
+            'student_phone_sms'       => ['required', 'regex:/^01[3-9]\d{8}$/'],
+            'student_phone_whatsapp'  => ['nullable', 'regex:/^01[3-9]\d{8}$/'],
+
+            // Payment Table Fields
+            'student_tuition_fee'     => 'required|numeric|min:0',
+            'payment_style'           => 'required|in:current,due',
+            'payment_due_date'        => 'required|integer|in:7,10,15,30',
+
+            // Guardians Table Fields (Up to 3)
+            'guardian_1_name'         => 'required|string|max:255',
+            'guardian_1_mobile'       => 'required|string|max:11',
+            'guardian_1_gender'       => 'required|in:male,female',
+            'guardian_1_relationship' => 'required|string|in:father,mother,brother,sister,uncle,aunt',
+            'guardian_2_name'         => 'nullable|string|max:255',
+            'guardian_2_mobile'       => 'nullable|string|max:11',
+            'guardian_2_gender'       => 'nullable|in:male,female',
+            'guardian_2_relationship' => 'nullable|string|in:father,mother,brother,sister,uncle,aunt',
+            'guardian_3_name'         => 'nullable|string|max:255',
+            'guardian_3_mobile'       => 'nullable|string|max:11',
+            'guardian_3_gender'       => 'nullable|in:male,female',
+            'guardian_3_relationship' => 'nullable|string|in:father,mother,brother,sister,uncle,aunt',
+
+            // Siblings Table Fields (Up to 2)
+            'sibling_1_name'          => 'nullable|string|max:255',
+            'sibling_1_age'           => 'nullable|integer|min:1|max:20',
+            'sibling_1_class'         => 'nullable|string',
+            'sibling_1_institution'   => 'nullable|integer|exists:institutions,id',
+            'sibling_1_relationship'  => 'nullable|string|in:brother,sister',
+            'sibling_2_name'          => 'nullable|string|max:255',
+            'sibling_2_age'           => 'nullable|integer|min:1|max:20',
+            'sibling_2_class'         => 'nullable|string',
+            'sibling_2_institution'   => 'nullable|integer|exists:institutions,id',
+            'sibling_2_relationship'  => 'nullable|string|in:brother,sister',
+        ]);
+
+        return DB::transaction(function () use ($validated, $student) {
+            // Update student record
+            $student->update([
+                'name'           => $validated['student_name'],
+                'date_of_birth'  => Carbon::createFromFormat('d-m-Y', $validated['birth_date'])->format('Y-m-d'),
+                'gender'         => $validated['student_gender'],
+                'class_id'       => $validated['student_class'],
+                'academic_group' => $validated['student_academic_group'] ?? 'General',
+                'shift_id'       => $validated['student_shift'],
+                'institution_id' => $validated['student_institution'],
+                'religion'       => $validated['student_religion'] ?? null,
+                'blood_group'    => $validated['student_blood_group'] ?? null,
+                'home_address'   => $validated['student_home_address'] ?? null,
+                'email'          => $validated['student_email'] ?? null,
+                'remarks'        => $validated['student_remarks'] ?? null,
+            ]);
+
+            // Handle avatar update
+            if (isset($validated['avatar'])) {
+                $file      = $validated['avatar'];
+                $extension = $file->getClientOriginalExtension();
+                $filename  = $student->student_unique_id . '_photo.' . $extension;
+                $photoPath = public_path('uploads/students/');
+                if (! file_exists($photoPath)) {
+                    mkdir($photoPath, 0777, true);
+                }
+                $file->move($photoPath, $filename);
+                $student->update(['photo_url' => 'uploads/students/' . $filename]);
+            }
+
+            // Update subjects
+            $student->subjectsTaken()->delete();
+            foreach ($validated['subjects'] as $subjectId) {
+                $student->subjectsTaken()->create(['subject_id' => $subjectId]);
+            }
+
+            // Update guardians
+            foreach ([1, 2, 3] as $i) {
+                if (! empty($validated["guardian_{$i}_name"])) {
+                    $student->guardians()->updateOrCreate(
+                        ['relationship' => $validated["guardian_{$i}_relationship"]],
+                        [
+                            'name'          => $validated["guardian_{$i}_name"],
+                            'mobile_number' => $validated["guardian_{$i}_mobile"],
+                            'gender'        => $validated["guardian_{$i}_gender"],
+                        ]
+                    );
+                }
+            }
+
+            // Update siblings
+            foreach ([1, 2] as $i) {
+                if (! empty($validated["sibling_{$i}_name"])) {
+                    $student->siblings()->updateOrCreate(
+                        ['name' => $validated["sibling_{$i}_name"]],
+                        [
+                            'age'            => $validated["sibling_{$i}_age"],
+                            'class'          => $validated["sibling_{$i}_class"],
+                            'institution_id' => $validated["sibling_{$i}_institution"],
+                            'relationship'   => $validated["sibling_{$i}_relationship"],
+                        ]
+                    );
+                }
+            }
+
+            // Update payment details
+            $student->payments()->update([
+                'payment_style' => $validated['payment_style'],
+                'due_date'      => $validated['payment_due_date'],
+                'tuition_fee'   => $validated['student_tuition_fee'],
+            ]);
+
+            // Update mobile numbers
+            $student->mobileNumbers()->delete();
+            MobileNumber::create(['student_id' => $student->id, 'mobile_number' => $validated['student_phone_home'], 'number_type' => 'home']);
+
+            MobileNumber::create(['student_id' => $student->id, 'mobile_number' => $validated['student_phone_sms'], 'number_type' => 'sms']);
+
+            if (isset($validated['student_phone_whatsapp'])) {
+                MobileNumber::create(['student_id' => $student->id, 'mobile_number' => $validated['student_phone_whatsapp'], 'number_type' => 'whatsapp']);
+            }
+
+            return response()->json(['success' => true, 'student' => $student, 'message' => 'Student updated successfully']);
+        });
     }
 
     /**

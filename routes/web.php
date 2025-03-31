@@ -47,6 +47,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     });
 
     Route::get('/get-subjects', [SubjectController::class, 'getSubjects']);
+    Route::get('/get-taken-subjects', [SubjectController::class, 'getTakenSubjects']);
 
 
 

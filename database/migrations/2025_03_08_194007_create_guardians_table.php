@@ -1,11 +1,11 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -17,12 +17,13 @@ return new class extends Migration
             $table->string('mobile_number', 11);
             $table->enum('gender', ['male', 'female']);
             $table->enum('relationship', ['father', 'mother', 'brother', 'sister', 'uncle', 'aunt']);
-            $table->string('password');
+            $table->string('password')->default(function () {
+                return Hash::make('password');
+            });
             $table->foreignId('student_id');
             $table->softDeletes();
             $table->foreignId('deleted_by')->nullable();
             $table->timestamps();
-
         });
     }
 
