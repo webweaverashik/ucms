@@ -10,6 +10,7 @@ use App\Http\Controllers\Teacher\TeacherController;
 use App\Http\Controllers\Academic\SubjectController;
 use App\Http\Controllers\Student\GuardianController;
 use App\Http\Controllers\Student\ReferenceController;
+use App\Http\Controllers\StudentActivationController;
 use App\Http\Controllers\Academic\ClassNameController;
 
 
@@ -38,7 +39,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     // Custom routes
     Route::post('users/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggleActive');
     Route::get('students/pending', [StudentController::class, 'pending'])->name('students.pending');;
-
+    Route::post('/students/{student}/activate', [StudentActivationController::class, 'activate'])->name('students.activate');
 
     // AJAX Routes
     Route::prefix('admin')->group(function () {

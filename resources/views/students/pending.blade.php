@@ -162,7 +162,7 @@
                                         </div>
                                     </th> --}}
                             <th class="w-10px pe-2">SL</th>
-                            <th class="min-w-200px">Student</th>
+                            <th class="min-w-250px">Student</th>
                             <th class="d-none">Class (filter)</th>
                             <th class="text-center">Class</th>
                             <th class="text-center">Shift</th>
@@ -195,7 +195,7 @@
                                     <div class="d-flex flex-column">
                                         <a href="{{ route('students.show', $student->id) }}"
                                             class="text-gray-800 text-hover-primary mb-1">{{ $student->name }}
-                                            @if ($student->student_activation_id == NULL)
+                                            @if ($student->student_activation_id == null)
                                                 <span
                                                     class="bullet bullet-dot bg-success h-6px w-6px position-absolute animation-blink"
                                                     title="Pending Student" data-bs-toggle="tooltip"
@@ -211,7 +211,7 @@
                                 <td class="text-center">{{ $student->class->name }}</td>
                                 <td class="text-center">{{ $student->shift->name }}</td>
                                 <td class="text-center">{{ $student->institution->name }}
-                                    ({{ $student->institution->eiin_number }})</td>
+                                    (EIIN: {{ $student->institution->eiin_number }})</td>
                                 <td>
                                     @foreach ($student->guardians as $guardian)
                                         <a href="{{ route('guardians.show', $guardian->id) }}"><span
@@ -243,8 +243,8 @@
                                         data-kt-menu="true">
                                         <!--begin::Menu item-->
                                         <div class="menu-item px-3">
-                                            <a href="{{ route('students.show', $student->id) }}"
-                                                class="menu-link px-3">View</a>
+                                            <a href="#" class="menu-link px-3 activate-student"
+                                                data-student-id="{{ $student->id }}">Approve</a>
                                         </div>
                                         <!--end::Menu item-->
                                         <!--begin::Menu item-->
@@ -255,8 +255,8 @@
                                         <!--end::Menu item-->
                                         <!--begin::Menu item-->
                                         <div class="menu-item px-3">
-                                            <a href="#" data-kt-subscriptions-table-filter="delete_row"
-                                                class="menu-link px-3">Delete</a>
+                                            <a href="#" class="menu-link px-3 delete-student"
+                                                data-student-id="{{ $student->id }}">Delete</a>
                                         </div>
                                         <!--end::Menu item-->
                                     </div>
@@ -282,6 +282,10 @@
 
 
 @push('page-js')
+    <script>
+        const routeDeleteStudent = "{{ route('students.destroy', ':id') }}";
+    </script>
+
     <script src="{{ asset('js/students/students.pending.js') }}"></script>
 
     <script>

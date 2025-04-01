@@ -1,5 +1,6 @@
 <head>
     <title>@yield('title', 'Dashboard') - UCMS</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta charset="utf-8" />
     <meta name="description" content="Unique Coaching Management System (UCMS) is an all-in-one solution for academic coaching centers, streamlining student admissions, attendance tracking, tuition and notes payment management, teacher scheduling, and sheet distribution. Designed for efficiency, UCMS ensures seamless operations with role-based access for Super Admins, Branch Managers, Accountants, Teachers, Guardians, and Students." />
     <meta name="keywords" content="coaching management system, academic management software, student management system, tuition management system, coaching center software, attendance tracking, payment management, teacher scheduling, notes distribution, sheet distribution system, role-based access, education ERP, UCMS, coaching automation, student fee management, guardian portal, online coaching management, school management system" />

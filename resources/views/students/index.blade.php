@@ -277,8 +277,7 @@
                                         data-kt-menu="true">
                                         <!--begin::Menu item-->
                                         <div class="menu-item px-3">
-                                            <a href="{{ route('students.show', $student->id) }}"
-                                                class="menu-link px-3">View</a>
+                                            <a href="#" class="menu-link px-3">Inactive</a>
                                         </div>
                                         <!--end::Menu item-->
                                         <!--begin::Menu item-->
@@ -289,8 +288,8 @@
                                         <!--end::Menu item-->
                                         <!--begin::Menu item-->
                                         <div class="menu-item px-3">
-                                            <a href="#" data-kt-subscriptions-table-filter="delete_row"
-                                                class="menu-link px-3">Delete</a>
+                                            <a href="#" class="menu-link px-3 delete-student"
+                                                data-student-id="{{ $student->id }}">Delete</a>
                                         </div>
                                         <!--end::Menu item-->
                                     </div>
@@ -316,6 +315,10 @@
 
 
 @push('page-js')
+    <script>
+        const routeDeleteStudent = "{{ route('students.destroy', ':id') }}";
+    </script>
+
     <script src="{{ asset('js/students/students.index.js') }}"></script>
 
     <script>

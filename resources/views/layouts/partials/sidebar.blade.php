@@ -91,19 +91,11 @@
                                 <!--end:Menu link-->
                             </div>
                             <!--end:Menu item-->
-                            <!--begin:Menu item-->
-                            <div class="menu-item">
-                                <!--begin:Menu link--><a class="menu-link" id="subjects_assign_link"
-                                    href="?page=pages/user-profile/projects"><span class="menu-bullet"><span
-                                            class="bullet bullet-dot"></span></span><span class="menu-title">Subject
-                                        Assign</span></a>
-                                <!--end:Menu link-->
-                            </div>
-                            <!--end:Menu item-->
+
                             <!--begin:Menu item-->
                             <div class="menu-item">
                                 <!--begin:Menu link--><a class="menu-link" id="promote_students_link"
-                                    href="?page=pages/user-profile/campaigns"><span class="menu-bullet"><span
+                                    href="#"><span class="menu-bullet"><span
                                             class="bullet bullet-dot"></span></span><span class="menu-title">Promote
                                         Students</span></a>
                                 <!--end:Menu link-->
