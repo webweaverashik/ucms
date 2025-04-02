@@ -1,10 +1,9 @@
 <?php
-
 namespace App\Http\Controllers\Student;
 
-use Illuminate\Http\Request;
-use App\Models\Student\Guardian;
 use App\Http\Controllers\Controller;
+use App\Models\Student\Guardian;
+use Illuminate\Http\Request;
 
 class GuardianController extends Controller
 {
@@ -13,7 +12,17 @@ class GuardianController extends Controller
      */
     public function index()
     {
-        $guardians = Guardian::withoutTrashed()->get();
+        $userBranchId = auth()->user()->branch_id;
+
+        if (auth()->user()->branch_id != 0) {
+            $guardians = Guardian::whereHas('student', function ($query) use ($userBranchId) {
+                $query->where('branch_id', $userBranchId);
+            })
+                ->withoutTrashed()
+                ->get();
+        } else {
+            $guardians = Guardian::withoutTrashed()->get(); // SuperAdmin can view everything
+        }
 
         return view('guardians.index', compact('guardians'));
     }

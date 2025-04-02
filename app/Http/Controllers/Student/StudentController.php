@@ -464,13 +464,17 @@ class StudentController extends Controller
             ]);
 
             // Update mobile numbers
-            $student->mobileNumbers()->delete();
-            MobileNumber::create(['student_id' => $student->id, 'mobile_number' => $validated['student_phone_home'], 'number_type' => 'home']);
+            $student->mobileNumbers()->where('number_type', 'home')->update(['mobile_number' => $validated['student_phone_home']]);
 
-            MobileNumber::create(['student_id' => $student->id, 'mobile_number' => $validated['student_phone_sms'], 'number_type' => 'sms']);
+            $student->mobileNumbers()->where('number_type', 'sms')->update(['mobile_number' => $validated['student_phone_sms']]);
 
             if (isset($validated['student_phone_whatsapp'])) {
-                MobileNumber::create(['student_id' => $student->id, 'mobile_number' => $validated['student_phone_whatsapp'], 'number_type' => 'whatsapp']);
+                $whatsappMobile = $student->mobileNumbers()->where('number_type', 'whatsapp')->first();
+                if ($whatsappMobile) {
+                    $whatsappMobile->update(['mobile_number' => $validated['student_phone_whatsapp']]);
+                } else {
+                    MobileNumber::create(['student_id' => $student->id, 'mobile_number' => $validated['student_phone_whatsapp'], 'number_type' => 'whatsapp']);
+                }
             }
 
             return response()->json(['success' => true, 'student' => $student, 'message' => 'Student updated successfully']);
@@ -482,7 +486,15 @@ class StudentController extends Controller
      */
     public function destroy(Student $student)
     {
+        // Delete corresponding guardians
+        $student->guardians()->delete();
+
+        // Delete corresponding siblings
+        $student->siblings()->delete();
+
+        // Now delete the student
         $student->delete();
+
         return response()->json(['success' => true]);
     }
 

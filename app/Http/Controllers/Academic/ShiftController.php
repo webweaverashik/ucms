@@ -1,9 +1,10 @@
 <?php
 namespace App\Http\Controllers\Academic;
 
-use App\Http\Controllers\Controller;
-use App\Models\Academic\Shift;
+use App\Models\Branch;
 use Illuminate\Http\Request;
+use App\Models\Academic\Shift;
+use App\Http\Controllers\Controller;
 
 class ShiftController extends Controller
 {
@@ -12,15 +13,10 @@ class ShiftController extends Controller
      */
     public function index()
     {
-        if (auth()->user()->branch_id) {
-            $shifts = Shift::where('branch_id', auth()->user()->branch_id)
-                ->withoutTrashed()
-                ->get();
-        } else {
-            $shifts = Shift::withoutTrashed()->get();
-        }
+        $shifts = Shift::withoutTrashed()->get();
+        $branches = Branch::all();
 
-        return view('shifts.index', compact('shifts'));
+        return view('shifts.index', compact('branches', 'shifts'));
     }
 
     /**
@@ -36,7 +32,20 @@ class ShiftController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'shift_name' => ['required', 'string', 'max:15', 'regex:/^\S+$/'], // No spaces allowed
+            'shift_branch' => 'required|integer',
+        ], [
+            'shift_name.regex' => 'Single word only',
+        ]);
+        
+        
+        Shift::create([
+            'name' => $validated['shift_name'],
+            'branch_id' => $validated['shift_branch'],
+        ]);
+
+        return redirect()->route('shifts.index')->with('success', 'Shift created successfully.');
     }
 
     /**
