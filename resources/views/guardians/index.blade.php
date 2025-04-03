@@ -302,7 +302,13 @@
                             <!--begin::Student Input group-->
                             <div class="fv-row mb-7">
                                 <!--begin::Label-->
-                                <label class="form-label required">Corrosponding Student</label>
+                                <label class="form-label">
+                                    <span>Corrosponding Student</span>
+                                    <span class="ms-1" data-bs-toggle="tooltip" title="Student cannot be changed.">
+                                        <i class="ki-outline ki-information-5 text-gray-500 fs-6">
+                                        </i>
+                                    </span>
+                                </label>
                                 <!--end::Label-->
 
                                 <!--begin::Solid input group style-->
@@ -313,7 +319,7 @@
                                     <div class="overflow-hidden flex-grow-1">
                                         <select name="guardian_student"
                                             class="form-select form-select-solid rounded-start-0 border-start"
-                                            data-control="select2" data-dropdown-parent="#kt_modal_edit_guardian" data-placeholder="Select an option" data-allow-clear="true" required>
+                                            data-control="select2" data-dropdown-parent="#kt_modal_edit_guardian" data-placeholder="Select an option" disabled>
                                             <option></option>
                                             @foreach ($students as $student)
                                                 <option value="{{ $student->id }}">{{ $student->name }}
@@ -465,12 +471,6 @@
 @endpush
 
 @push('page-js')
-    <script>
-        $(document).ready(function() {
-            $('#guardian_student_select').select2(); // Initialize Select2
-        });
-    </script>
-    
     <script>
         const routeDeleteGuardian = "{{ route('guardians.destroy', ':id') }}";
     </script>

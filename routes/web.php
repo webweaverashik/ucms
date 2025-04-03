@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Academic\ShiftController;
+use App\Http\Controllers\Student\SiblingController;
 use App\Http\Controllers\Student\StudentController;
 use App\Http\Controllers\Teacher\TeacherController;
 use App\Http\Controllers\Academic\SubjectController;
@@ -59,6 +60,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::resource('users', UserController::class);
     Route::resource('students', StudentController::class);
     Route::resource('guardians', GuardianController::class);
+    Route::resource('siblings', SiblingController::class);
     Route::resource('teachers', TeacherController::class);
     Route::resource('classnames', ClassNameController::class);
     Route::resource('shifts', ShiftController::class);

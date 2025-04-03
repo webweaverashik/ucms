@@ -1,6 +1,6 @@
 "use strict";
 
-var KTGuardiansList = function () {
+var KTSiblingsList = function () {
     // Define shared variables
     var table;
     var datatable;
@@ -16,8 +16,8 @@ var KTGuardiansList = function () {
             "lengthChange": true,
             "autoWidth": false,  // Disable auto width
             'columnDefs': [
-                { orderable: false, targets: 4 }, // Disable ordering on column Guardian                
-                { orderable: false, targets: 9 }, // Disable ordering on column Actions                
+                { orderable: false, targets: 4 }, // Disable ordering on column sibling                
+                { orderable: false, targets: 10 }, // Disable ordering on column Actions                
             ]
         });
 
@@ -29,7 +29,7 @@ var KTGuardiansList = function () {
 
     // Search Datatable --- official docs reference: https://datatables.net/reference/api/search()
     var handleSearch = function () {
-        const filterSearch = document.querySelector('[data-kt-subscription-table-filter="search"]');
+        const filterSearch = document.querySelector('[data-kt-siblings-table-filter="search"]');
         filterSearch.addEventListener('keyup', function (e) {
             datatable.search(e.target.value).draw();
         });
@@ -38,9 +38,9 @@ var KTGuardiansList = function () {
     // Filter Datatable
     var handleFilter = function () {
         // Select filter options
-        const filterForm = document.querySelector('[data-kt-subscription-table-filter="form"]');
-        const filterButton = filterForm.querySelector('[data-kt-subscription-table-filter="filter"]');
-        const resetButton = filterForm.querySelector('[data-kt-subscription-table-filter="reset"]');
+        const filterForm = document.querySelector('[data-kt-siblings-table-filter="form"]');
+        const filterButton = filterForm.querySelector('[data-kt-siblings-table-filter="filter"]');
+        const resetButton = filterForm.querySelector('[data-kt-siblings-table-filter="reset"]');
         const selectOptions = filterForm.querySelectorAll('select');
 
         // Filter datatable on submit
@@ -76,17 +76,17 @@ var KTGuardiansList = function () {
         });
     }
 
-    // Delete pending students
+    // Delete siblings
     const handleDeletion = function () {
-        document.querySelectorAll('.delete-guardian').forEach(item => {
+        document.querySelectorAll('.delete-sibling').forEach(item => {
             item.addEventListener('click', function (e) {
                 e.preventDefault();
 
-                let guardianId = this.getAttribute('data-guardian-id');
-                let url = routeDeleteGuardian.replace(':id', guardianId);  // Replace ':id' with actual student ID
+                let siblingId = this.getAttribute('data-sibling-id');
+                let url = routeDeleteSibling.replace(':id', siblingId);  // Replace ':id' with actual student ID
 
                 Swal.fire({
-                    title: "Are you sure to delete this guardian?",
+                    title: "Are you sure to delete this sibling?",
                     text: "This action cannot be undone!",
                     icon: "warning",
                     showCancelButton: true,
@@ -107,7 +107,7 @@ var KTGuardiansList = function () {
                                 if (data.success) {
                                     Swal.fire({
                                         title: "Deleted!",
-                                        text: "The guardian has been removed successfully.",
+                                        text: "The sibling has been removed successfully.",
                                         icon: "success",
                                     }).then(() => {
                                         location.reload(); // Reload to reflect changes
@@ -137,7 +137,7 @@ var KTGuardiansList = function () {
     return {
         // Public functions  
         init: function () {
-            table = document.getElementById('kt_guardians_table');
+            table = document.getElementById('kt_siblings_table');
 
             if (!table) {
                 return;
@@ -152,9 +152,9 @@ var KTGuardiansList = function () {
 }();
 
 
-var KTGuardiansEditGuardian = function () {
+var KTSiblingsEditSibling = function () {
     // Shared variables
-    const element = document.getElementById('kt_modal_edit_guardian');
+    const element = document.getElementById('kt_modal_edit_sibling');
 
     // Early return if element doesn't exist
     if (!element) {
@@ -164,15 +164,15 @@ var KTGuardiansEditGuardian = function () {
         };
     }
 
-    const form = element.querySelector('#kt_modal_edit_guardian_form');
+    const form = element.querySelector('#kt_modal_edit_sibling_form');
     const modal = bootstrap.Modal.getOrCreateInstance(element);
 
-    let guardianId = null; // Declare globally
+    let siblingId = null; // Declare globally
 
-    // Init edit guardian modal
-    var initEditGuardian = () => {
+    // Init edit sibling modal
+    var initEditsibling = () => {
         // Cancel button handler
-        const cancelButton = element.querySelector('[data-kt-guardians-modal-action="cancel"]');
+        const cancelButton = element.querySelector('[data-kt-siblings-modal-action="cancel"]');
         if (cancelButton) {
             cancelButton.addEventListener('click', e => {
                 e.preventDefault();
@@ -182,7 +182,7 @@ var KTGuardiansEditGuardian = function () {
         }
 
         // Close button handler
-        const closeButton = element.querySelector('[data-kt-guardians-modal-action="close"]');
+        const closeButton = element.querySelector('[data-kt-siblings-modal-action="close"]');
         if (closeButton) {
             closeButton.addEventListener('click', e => {
                 e.preventDefault();
@@ -192,25 +192,25 @@ var KTGuardiansEditGuardian = function () {
         }
 
         // AJAX form data load
-        const editButtons = document.querySelectorAll("[data-bs-target='#kt_modal_edit_guardian']");
+        const editButtons = document.querySelectorAll("[data-bs-target='#kt_modal_edit_sibling']");
         if (editButtons.length) {
             editButtons.forEach((button) => {
                 button.addEventListener("click", function () {
-                    guardianId = this.getAttribute("data-guardian-id"); // Assign value globally
-                    console.log("Guardian ID:", guardianId);
-                    if (!guardianId) return;
+                    siblingId = this.getAttribute("data-sibling-id"); // Assign value globally
+                    console.log("Sibling ID:", siblingId);
+                    if (!siblingId) return;
 
                     // Clear form
                     if (form) form.reset();
 
-                    fetch(`/guardians/${guardianId}`)
+                    fetch(`/siblings/${siblingId}`)
                         .then(response => {
                             if (!response.ok) throw new Error('Network response was not ok');
                             return response.json();
                         })
                         .then(data => {
                             if (data.success && data.data) {
-                                const guardian = data.data;
+                                const sibling = data.data;
 
                                 // Helper function to safely set values
                                 const setValue = (selector, value) => {
@@ -225,17 +225,20 @@ var KTGuardiansEditGuardian = function () {
                                 };
 
                                 // Populate form fields
-                                setValue("select[name='guardian_student']", guardian.student_id);
-                                setValue("input[name='guardian_name']", guardian.name);
-                                setValue("input[name='guardian_mobile_number']", guardian.mobile_number);
-                                checkRadio('guardian_gender', guardian.gender);
-                                setValue("select[name='guardian_relationship']", guardian.relationship);
+                                setValue("select[name='sibling_student']", sibling.student_id);
+                                setValue("input[name='sibling_name']", sibling.name);
+                                setValue("input[name='sibling_age']", sibling.age);
+                                setValue("input[name='sibling_class']", sibling.class);
+                                setValue("select[name='sibling_institution']", sibling.institution_id);
+                                setValue("select[name='sibling_relationship']", sibling.relationship);
 
                                 // Trigger change events
-                                const studentSelect = document.querySelector("select[name='guardian_student']");
-                                const relationshipSelect = document.querySelector("select[name='guardian_relationship']");
+                                const studentSelect = document.querySelector("select[name='sibling_student']");
+                                const institutionSelect = document.querySelector("select[name='sibling_institution']");
+                                const relationshipSelect = document.querySelector("select[name='sibling_relationship']");
                                 if (studentSelect) studentSelect.dispatchEvent(new Event("change"));
                                 if (relationshipSelect) relationshipSelect.dispatchEvent(new Event("change"));
+                                if (institutionSelect) institutionSelect.dispatchEvent(new Event("change"));
 
                                 // Show modal
                                 modal.show();
@@ -245,12 +248,12 @@ var KTGuardiansEditGuardian = function () {
                         })
                         .catch(error => {
                             console.error("Error:", error);
-                            toastr.error(error.message || "Failed to load guardian details");
+                            toastr.error(error.message || "Failed to load sibling details");
                         });
                 });
             });
         }
-        
+
     }
 
     // Form validation
@@ -261,44 +264,42 @@ var KTGuardiansEditGuardian = function () {
             form,
             {
                 fields: {
-                    // 'guardian_student': {
+                    // 'sibling_student': {
                     //     validators: {
                     //         notEmpty: {
                     //             message: 'Please, select a student'
                     //         }
                     //     }
                     // },
-                    'guardian_name': {
+                    'sibling_name': {
                         validators: {
                             notEmpty: {
                                 message: 'Name is required'
                             }
                         }
                     },
-                    'guardian_mobile_number': {
+                    'sibling_age': {
                         validators: {
                             notEmpty: {
-                                message: 'Mobile number is required'
-                            },
-                            regexp: {
-                                regexp: /^01[4-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
-                                message: 'Please enter a valid Bangladeshi mobile number'
-                            },
-                            stringLength: {
-                                min: 11,
-                                max: 11,
-                                message: 'The mobile number must be exactly 11 digits'
+                                message: 'Please, mention the age.'
                             }
                         }
                     },
-                    'guardian_gender': {
+                    'sibling_class': {
                         validators: {
                             notEmpty: {
-                                message: 'Please, select a gender'
+                                message: 'Please, mention the class.'
                             }
                         }
                     },
-                    'guardian_relationship': {
+                    'sibling_institution': {
+                        validators: {
+                            notEmpty: {
+                                message: 'Institution is required.'
+                            }
+                        }
+                    },
+                    'sibling_relationship': {
                         validators: {
                             notEmpty: {
                                 message: 'Select a relationship'
@@ -317,7 +318,7 @@ var KTGuardiansEditGuardian = function () {
             }
         );
 
-        const submitButton = element.querySelector('[data-kt-guardians-modal-action="submit"]');
+        const submitButton = element.querySelector('[data-kt-siblings-modal-action="submit"]');
         if (submitButton && validator) {
             submitButton.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -336,7 +337,7 @@ var KTGuardiansEditGuardian = function () {
                         formData.append('_method', 'PUT'); // For Laravel resource route
 
                         // Submit via AJAX
-                        fetch(`/guardians/${guardianId}`, {
+                        fetch(`/siblings/${siblingId}`, {
                             method: 'POST', // Laravel expects POST for PUT routes
                             body: formData,
                             headers: {
@@ -353,7 +354,7 @@ var KTGuardiansEditGuardian = function () {
                                 submitButton.disabled = false;
 
                                 if (data.success) {
-                                    toastr.success(data.message || 'Guardian updated successfully');
+                                    toastr.success(data.message || 'sibling updated successfully');
                                     modal.hide();
 
                                     // Reload the page
@@ -365,7 +366,7 @@ var KTGuardiansEditGuardian = function () {
                             .catch(error => {
                                 submitButton.removeAttribute('data-kt-indicator');
                                 submitButton.disabled = false;
-                                toastr.error(error.message || 'Failed to update guardian');
+                                toastr.error(error.message || 'Failed to update sibling');
                                 console.error('Error:', error);
                             });
                     } else {
@@ -378,7 +379,7 @@ var KTGuardiansEditGuardian = function () {
 
     return {
         init: function () {
-            initEditGuardian();
+            initEditsibling();
             initValidation();
         }
     };
@@ -386,6 +387,6 @@ var KTGuardiansEditGuardian = function () {
 
 // On document ready
 KTUtil.onDOMContentLoaded(function () {
-    KTGuardiansList.init();
-    KTGuardiansEditGuardian.init();
+    KTSiblingsList.init();
+    KTSiblingsEditSibling.init();
 });

@@ -87,7 +87,7 @@ class GuardianController extends Controller
         // return $request;
 
         $validated = $request->validate([
-            'guardian_student'       => 'required|exists:students,id', // Must be a valid student ID
+            // 'guardian_student'       => 'required|exists:students,id', // Must be a valid student ID
             'guardian_name'          => 'required|string|max:255',     // Required, must be a string, max length 255
             'guardian_mobile_number' => 'required|string|max:11',
             'guardian_gender'        => 'required|in:male,female',                                    // Must be male or female
@@ -99,7 +99,7 @@ class GuardianController extends Controller
 
         // Prepare data for update
         $updateData = [
-            'student_id'    => $validated['guardian_student'],
+            // 'student_id'    => $validated['guardian_student'],
             'name'          => $validated['guardian_name'],
             'mobile_number' => $validated['guardian_mobile_number'],
             'gender'        => $validated['guardian_gender'],

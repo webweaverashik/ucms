@@ -267,7 +267,7 @@
                     <!--begin:Siblings Menu item-->
                     <div class="menu-item">
                         <!--begin:Menu link-->
-                        <a class="menu-link" href="{{ route('guardians.index') }}" id="siblings_link">
+                        <a class="menu-link" href="{{ route('siblings.index') }}" id="siblings_link">
                             <span class="menu-icon">
                                 {{-- <i class="ki-outline ki-calendar-8 fs-2"></i> --}}
                                 <i class="fa-solid fa-children fs-2"></i>
