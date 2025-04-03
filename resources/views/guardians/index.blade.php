@@ -43,6 +43,18 @@
 
 
 @section('content')
+
+    @php
+        // Define badge colors for different branches
+        $badgeColors = ['badge-light-primary', 'badge-light-success', 'badge-light-warning'];
+
+        // Map branches to badge colors dynamically
+        $branchColors = [];
+        foreach ($branches as $index => $branch) {
+            $branchColors[$branch->branch_name] = $badgeColors[$index % count($badgeColors)];
+        }
+    @endphp
+
     <!--begin::Card-->
     <div class="card">
         <!--begin::Card header-->
@@ -109,16 +121,17 @@
                             <!--end::Input group-->
 
                             <!--begin::Input group-->
-                            <div class="mb-10">
+                            {{-- <div class="mb-10">
                                 <label class="form-label fs-6 fw-semibold">Branch:</label>
                                 <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                     data-placeholder="Select option" data-allow-clear="true"
                                     data-kt-subscription-table-filter="status" data-hide-search="true">
                                     <option></option>
-                                    <option value="active"></option>
-                                    <option value="suspended">Inactive</option>
+                                    @foreach ($branches as $branch)
+                                        <option value="{{ $branch->name }}">{{ $branch->name }}</option>
+                                    @endforeach
                                 </select>
-                            </div>
+                            </div> --}}
                             <!--end::Input group-->
                             <!--begin::Actions-->
                             <div class="d-flex justify-content-end">
@@ -149,19 +162,11 @@
 
         <!--begin::Card body-->
         <div class="card-body pt-0">
-
             <!--begin::Table-->
             <div class="table-responsive">
                 <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_guardians_table">
                     <thead>
                         <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
-                            {{-- <th class="w-10px pe-2">
-                                        <div class="form-check form-check-sm form-check-custom form-check-solid me-3">
-                                            <input class="form-check-input" type="checkbox" data-kt-check="true"
-                                                data-kt-check-target="#kt_students_table .form-check-input"
-                                                value="1" />
-                                        </div>
-                                    </th> --}}
                             <th class="w-10px pe-2">SL</th>
                             <th class="min-w-200px">Name</th>
                             <th class="d-none">Gender (filter)</th>
@@ -170,7 +175,8 @@
                             <th class="text-center">Mobile</th>
                             <th class="text-center">Relationship</th>
                             <th class="text-center">Monthly<br>Payment (৳)</th>
-                            <th class="text-end min-w-70px">Actions</th>
+                            <th class="text-center">Branch</th>
+                            <th class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="text-gray-600 fw-semibold">
@@ -210,8 +216,9 @@
                                 <td class="text-center">
                                     @if ($guardian->student)
                                         <a href="{{ route('students.show', $guardian->student->id) }}">
-                                            <span class="badge badge-light-primary text-hover-success">
-                                                {{ $guardian->student->name }}, {{ $guardian->student->student_unique_id }}
+                                            <span class="text-hover-success fs-6">
+                                                {{ $guardian->student->name }},
+                                                {{ $guardian->student->student_unique_id }}
                                             </span>
                                         </a>
                                     @else
@@ -228,27 +235,28 @@
                                 <td class="text-center">
                                     {{ intval(optional(optional($guardian->student)->payments)->tuition_fee) }}
                                 </td>
-                                <td class="text-end">
-                                    <a href="#" class="btn btn-light btn-active-light-primary btn-sm"
-                                        data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions
-                                        <i class="ki-outline ki-down fs-5 m-0"></i></a>
-                                    <!--begin::Menu-->
-                                    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4"
-                                        data-kt-menu="true">
-
-                                        <!--begin::Menu item-->
-                                        <div class="menu-item px-3">
-                                            <a href="#" class="menu-link px-3">Edit</a>
-                                        </div>
-                                        <!--end::Menu item-->
-                                        <!--begin::Menu item-->
-                                        <div class="menu-item px-3">
-                                            <a href="#" class="menu-link px-3 delete-guardian"
-                                                data-student-id="{{ $guardian->id }}">Delete</a>
-                                        </div>
-                                        <!--end::Menu item-->
-                                    </div>
-                                    <!--end::Menu-->
+                                <td class="text-center">
+                                    @if ($guardian->student && $guardian->student->branch)
+                                        @php
+                                            $branchName = $guardian->student->branch->branch_name;
+                                            $badgeColor = $branchColors[$branchName] ?? 'badge-light-secondary'; // Default color
+                                        @endphp
+                                        <span class="badge {{ $badgeColor }}">{{ $branchName }}</span>
+                                    @else
+                                        <span class="badge badge-light-danger">No Branch Assigned</span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    <a href="#" title="Edit Guardian" data-bs-toggle="modal"
+                                        data-bs-target="#kt_modal_edit_guardian" data-guardian-id="{{ $guardian->id }}"
+                                        class="btn btn-icon btn-active-light-warning w-30px h-30px me-3">
+                                        <i class="ki-outline ki-pencil fs-2"></i>
+                                    </a>
+                                    <a href="#" title="Delete Guardian" data-bs-toggle="tooltip"
+                                        class="btn btn-icon btn-active-light-danger w-30px h-30px me-3 delete-guardian"
+                                        data-guardian-id="{{ $guardian->id }}">
+                                        <i class="ki-outline ki-trash fs-2"></i>
+                                    </a>
                                 </td>
                             </tr>
                         @endforeach
@@ -260,6 +268,195 @@
         <!--end::Card body-->
     </div>
     <!--end::Card-->
+
+    <!--begin::Modal - Edit Guardian-->
+    <div class="modal fade" id="kt_modal_edit_guardian" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+        data-bs-keyboard="false">
+        <!--begin::Modal dialog-->
+        <div class="modal-dialog modal-dialog-centered mw-650px">
+            <!--begin::Modal content-->
+            <div class="modal-content">
+                <!--begin::Modal header-->
+                <div class="modal-header" id="kt_modal_edit_guardian_header">
+                    <!--begin::Modal title-->
+                    <h2 class="fw-bold">Update Guardian</h2>
+                    <!--end::Modal title-->
+                    <!--begin::Close-->
+                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-guardians-modal-action="close">
+                        <i class="ki-outline ki-cross fs-1">
+                        </i>
+                    </div>
+                    <!--end::Close-->
+                </div>
+                <!--end::Modal header-->
+                <!--begin::Modal body-->
+                <div class="modal-body px-5 my-7">
+                    <!--begin::Form-->
+                    <form id="kt_modal_edit_guardian_form" class="form" action="#" novalidate="novalidate">
+                        <!--begin::Scroll-->
+                        <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_add_guardian_scroll"
+                            data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
+                            data-kt-scroll-dependencies="#kt_modal_edit_guardian_header"
+                            data-kt-scroll-wrappers="#kt_modal_edit_guardian_scroll" data-kt-scroll-offset="300px">
+
+                            <!--begin::Student Input group-->
+                            <div class="fv-row mb-7">
+                                <!--begin::Label-->
+                                <label class="form-label required">Corrosponding Student</label>
+                                <!--end::Label-->
+
+                                <!--begin::Solid input group style-->
+                                <div class="input-group input-group-solid flex-nowrap">
+                                    <span class="input-group-text">
+                                        <i class="las la-graduation-cap fs-3"></i>
+                                    </span>
+                                    <div class="overflow-hidden flex-grow-1">
+                                        <select name="guardian_student"
+                                            class="form-select form-select-solid rounded-start-0 border-start"
+                                            data-control="select2" data-dropdown-parent="#kt_modal_edit_guardian" data-placeholder="Select an option" data-allow-clear="true" required>
+                                            <option></option>
+                                            @foreach ($students as $student)
+                                                <option value="{{ $student->id }}">{{ $student->name }}
+                                                    (ID: {{ $student->student_unique_id }})
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <!--end::Solid input group style-->
+                            </div>
+                            <!--end::Student Input group-->
+
+                            <!--begin::Name Input group-->
+                            <div class="fv-row mb-7">
+                                <!--begin::Label-->
+                                <label class="required fw-semibold fs-6 mb-2">Guardian Name</label>
+                                <!--end::Label-->
+                                <!--begin::Input-->
+                                <input type="text" name="guardian_name"
+                                    class="form-control form-control-solid mb-3 mb-lg-0" placeholder="Full Name"
+                                    required />
+                                <!--end::Input-->
+                            </div>
+                            <!--end::Name Input group-->
+
+                            <!--begin::Phone Input group-->
+                            <div class="fv-row mb-7">
+                                <!--begin::Label-->
+                                <label class="required fw-semibold fs-6 mb-2">Guardian Phone</label>
+                                <!--end::Label-->
+                                <!--begin::Input-->
+                                <input type="text" name="guardian_mobile_number"
+                                    class="form-control form-control-solid mb-3 mb-lg-0" placeholder="e.g. Phone Number"
+                                    required />
+                                <!--end::Input-->
+                            </div>
+                            <!--end::Phone Input group-->
+
+                            <!--begin::Gender Input group-->
+                            <div class="fv-row mb-7">
+                                <!--begin::Label-->
+                                <label class="d-flex align-items-center form-label mb-3 required">Gender</label>
+                                <!--end::Label-->
+                                <!--begin::Row-->
+                                <div class="row">
+                                    <!--begin::Col-->
+                                    <div class="col-lg-6">
+                                        <!--begin::Option-->
+                                        <input type="radio" class="btn-check" name="guardian_gender" value="male"
+                                            checked="checked" id="gender_male_input" />
+                                        <label
+                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                            for="gender_male_input">
+                                            <i class="las la-mars fs-2x me-5"></i>
+                                            <!--begin::Info-->
+                                            <span class="d-block fw-semibold text-start">
+                                                <span class="text-gray-900 fw-bold d-block fs-6">Male</span>
+                                            </span>
+                                            <!--end::Info-->
+                                        </label>
+                                        <!--end::Option-->
+                                    </div>
+                                    <!--end::Col-->
+                                    <!--begin::Col-->
+                                    <div class="col-lg-6">
+                                        <!--begin::Option-->
+                                        <input type="radio" class="btn-check" name="guardian_gender" value="female"
+                                            id="gender_female_input" />
+                                        <label
+                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                            for="gender_female_input">
+                                            <i class="las la-venus fs-2x me-5"></i>
+                                            <!--begin::Info-->
+                                            <span class="d-block fw-semibold text-start">
+                                                <span class="text-gray-900 fw-bold d-block fs-6">Female</span>
+                                            </span>
+                                            <!--end::Info-->
+                                        </label>
+                                        <!--end::Option-->
+                                    </div>
+                                    <!--end::Col-->
+                                </div>
+                                <!--end::Row-->
+                            </div>
+                            <!--end::Gender Input group-->
+
+                            <!--begin::Input group-->
+                            <div class="fv-row">
+                                <!--begin::Label-->
+                                <label class="form-label required">Relationship with student</label>
+                                <!--end::Label-->
+
+                                <!--begin::Solid input group style-->
+                                <select name="guardian_relationship" class="form-select form-select-solid"
+                                    data-control="select2" data-hide-search="true" data-placeholder="Select" required>
+                                    <option></option>
+                                    <option value="father">Father</option>
+                                    <option value="mother">Mother</option>
+                                    <option value="brother">Brother</option>
+                                    <option value="sister">Sister</option>
+                                    <option value="uncle">Uncle</option>
+                                    <option value="aunt">Aunt</option>
+                                </select>
+                                <!--end::Solid input group style-->
+                            </div>
+                            <!--end::Input group-->
+
+                            {{-- <!--begin::Name Input group-->
+                            <div class="fv-row mb-7">
+                                <!--begin::Label-->
+                                <label class="fw-semibold fs-6 mb-2">Password <span class="text-muted">(optional)</span></label>
+                                <!--end::Label-->
+                                <!--begin::Input-->
+                                <input type="password" name="guardian_password"
+                                    class="form-control form-control-solid mb-3 mb-lg-0" placeholder="alphaneumeric and min 8 digit password"/>
+                                <!--end::Input-->
+                            </div>
+                            <!--end::Name Input group--> --}}
+
+                        </div>
+                        <!--end::Scroll-->
+                        <!--begin::Actions-->
+                        <div class="text-center pt-10">
+                            <button type="reset" class="btn btn-light me-3"
+                                data-kt-guardians-modal-action="cancel">Discard</button>
+                            <button type="submit" class="btn btn-primary" data-kt-guardians-modal-action="submit">
+                                <span class="indicator-label">Update</span>
+                                <span class="indicator-progress">Please wait...
+                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                            </button>
+                        </div>
+                        <!--end::Actions-->
+                    </form>
+                    <!--end::Form-->
+                </div>
+                <!--end::Modal body-->
+            </div>
+            <!--end::Modal content-->
+        </div>
+        <!--end::Modal dialog-->
+    </div>
+    <!--end::Modal - Edit Guardian-->
 @endsection
 
 
@@ -268,7 +465,18 @@
 @endpush
 
 @push('page-js')
+    <script>
+        $(document).ready(function() {
+            $('#guardian_student_select').select2(); // Initialize Select2
+        });
+    </script>
+    
+    <script>
+        const routeDeleteGuardian = "{{ route('guardians.destroy', ':id') }}";
+    </script>
+
     <script src="{{ asset('js/guardians/index.js') }}"></script>
+
 
     <script>
         document.getElementById("guardians_link").classList.add("active");

@@ -1,24 +1,12 @@
 "use strict";
 
-var KTSubscriptionsList = function () {
+var KTGuardiansList = function () {
     // Define shared variables
     var table;
     var datatable;
-    // var toolbarBase;
-    // var toolbarSelected;
-    // var selectedCount;
 
     // Private functions
     var initDatatable = function () {
-        // Set date data order
-        // const tableRows = table.querySelectorAll('tbody tr');
-
-        // tableRows.forEach(row => {
-        //     const dateRow = row.querySelectorAll('td');
-        //     const realDate = moment(dateRow[10].innerHTML, "DD MMM YYYY, LT").format(); // select date from 4th column in table
-        //     dateRow[10].setAttribute('data-order', realDate);
-        // });
-
         // Init datatable --- more info on datatables: https://datatables.net/manual/
         datatable = $(table).DataTable({
             "info": true,
@@ -29,14 +17,13 @@ var KTSubscriptionsList = function () {
             "autoWidth": false,  // Disable auto width
             'columnDefs': [
                 { orderable: false, targets: 4 }, // Disable ordering on column Guardian                
-                { orderable: false, targets: 8 }, // Disable ordering on column Actions                
+                { orderable: false, targets: 9 }, // Disable ordering on column Actions                
             ]
         });
 
         // Re-init functions on every table re-draw -- more info: https://datatables.net/reference/event/draw
         datatable.on('draw', function () {
-            // initToggleToolbar();
-            // toggleToolbars();
+
         });
     }
 
@@ -91,15 +78,15 @@ var KTSubscriptionsList = function () {
 
     // Delete pending students
     const handleDeletion = function () {
-        document.querySelectorAll('.delete-student').forEach(item => {
+        document.querySelectorAll('.delete-guardian').forEach(item => {
             item.addEventListener('click', function (e) {
                 e.preventDefault();
-    
-                let studentId = this.getAttribute('data-student-id');
-                let url = routeDeleteStudent.replace(':id', studentId);  // Replace ':id' with actual student ID
-    
+
+                let guardianId = this.getAttribute('data-guardian-id');
+                let url = routeDeleteGuardian.replace(':id', guardianId);  // Replace ':id' with actual student ID
+
                 Swal.fire({
-                    title: "Are you sure to delete this student?",
+                    title: "Are you sure to delete this guardian?",
                     text: "This action cannot be undone!",
                     icon: "warning",
                     showCancelButton: true,
@@ -115,38 +102,38 @@ var KTSubscriptionsList = function () {
                                 "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
                             },
                         })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire({
-                                    title: "Deleted!",
-                                    text: "The student has been removed successfully.",
-                                    icon: "success",
-                                }).then(() => {
-                                    location.reload(); // Reload to reflect changes
-                                });
-                            } else {
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        title: "Deleted!",
+                                        text: "The guardian has been removed successfully.",
+                                        icon: "success",
+                                    }).then(() => {
+                                        location.reload(); // Reload to reflect changes
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: "Error!",
+                                        text: data.message,
+                                        icon: "error",
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error("Fetch Error:", error);
                                 Swal.fire({
                                     title: "Error!",
-                                    text: data.message,
+                                    text: "Something went wrong. Please try again.",
                                     icon: "error",
                                 });
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Fetch Error:", error);
-                            Swal.fire({
-                                title: "Error!",
-                                text: "Something went wrong. Please try again.",
-                                icon: "error",
                             });
-                        });
                     }
                 });
             });
         });
     };
-    
+
     return {
         // Public functions  
         init: function () {
@@ -157,7 +144,6 @@ var KTSubscriptionsList = function () {
             }
 
             initDatatable();
-            // initToggleToolbar();
             handleSearch();
             handleDeletion();
             handleFilter();
@@ -165,7 +151,241 @@ var KTSubscriptionsList = function () {
     }
 }();
 
+
+var KTGuardiansEditGuardian = function () {
+    // Shared variables
+    const element = document.getElementById('kt_modal_edit_guardian');
+
+    // Early return if element doesn't exist
+    if (!element) {
+        console.error('Modal element not found');
+        return {
+            init: function () { }
+        };
+    }
+
+    const form = element.querySelector('#kt_modal_edit_guardian_form');
+    const modal = bootstrap.Modal.getOrCreateInstance(element);
+
+    let guardianId = null; // Declare globally
+
+    // Init edit guardian modal
+    var initEditGuardian = () => {
+        // Cancel button handler
+        const cancelButton = element.querySelector('[data-kt-guardians-modal-action="cancel"]');
+        if (cancelButton) {
+            cancelButton.addEventListener('click', e => {
+                e.preventDefault();
+                if (form) form.reset();
+                modal.hide();
+            });
+        }
+
+        // Close button handler
+        const closeButton = element.querySelector('[data-kt-guardians-modal-action="close"]');
+        if (closeButton) {
+            closeButton.addEventListener('click', e => {
+                e.preventDefault();
+                if (form) form.reset();
+                modal.hide();
+            });
+        }
+
+        // AJAX form data load
+        const editButtons = document.querySelectorAll("[data-bs-target='#kt_modal_edit_guardian']");
+        if (editButtons.length) {
+            editButtons.forEach((button) => {
+                button.addEventListener("click", function () {
+                    guardianId = this.getAttribute("data-guardian-id"); // Assign value globally
+                    console.log("Guardian ID:", guardianId);
+                    if (!guardianId) return;
+
+                    // Clear form
+                    if (form) form.reset();
+
+                    fetch(`/guardians/${guardianId}`)
+                        .then(response => {
+                            if (!response.ok) throw new Error('Network response was not ok');
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success && data.data) {
+                                const guardian = data.data;
+
+                                // Helper function to safely set values
+                                const setValue = (selector, value) => {
+                                    const el = document.querySelector(selector);
+                                    if (el) el.value = value;
+                                };
+
+                                // Helper function to safely check radio buttons
+                                const checkRadio = (name, value) => {
+                                    const radio = document.querySelector(`input[name='${name}'][value='${value}']`);
+                                    if (radio) radio.checked = true;
+                                };
+
+                                // Populate form fields
+                                setValue("select[name='guardian_student']", guardian.student_id);
+                                setValue("input[name='guardian_name']", guardian.name);
+                                setValue("input[name='guardian_mobile_number']", guardian.mobile_number);
+                                checkRadio('guardian_gender', guardian.gender);
+                                setValue("select[name='guardian_relationship']", guardian.relationship);
+
+                                // Trigger change events
+                                const studentSelect = document.querySelector("select[name='guardian_student']");
+                                const relationshipSelect = document.querySelector("select[name='guardian_relationship']");
+                                if (studentSelect) studentSelect.dispatchEvent(new Event("change"));
+                                if (relationshipSelect) relationshipSelect.dispatchEvent(new Event("change"));
+
+                                // Show modal
+                                modal.show();
+                            } else {
+                                throw new Error(data.message || 'Invalid response data');
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            toastr.error(error.message || "Failed to load guardian details");
+                        });
+                });
+            });
+        }
+        
+    }
+
+    // Form validation
+    var initValidation = function () {
+        if (!form) return;
+
+        var validator = FormValidation.formValidation(
+            form,
+            {
+                fields: {
+                    'guardian_student': {
+                        validators: {
+                            notEmpty: {
+                                message: 'Please, select a student'
+                            }
+                        }
+                    },
+                    'guardian_name': {
+                        validators: {
+                            notEmpty: {
+                                message: 'Name is required'
+                            }
+                        }
+                    },
+                    'guardian_mobile_number': {
+                        validators: {
+                            notEmpty: {
+                                message: 'Mobile number is required'
+                            },
+                            regexp: {
+                                regexp: /^01[4-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
+                                message: 'Please enter a valid Bangladeshi mobile number'
+                            },
+                            stringLength: {
+                                min: 11,
+                                max: 11,
+                                message: 'The mobile number must be exactly 11 digits'
+                            }
+                        }
+                    },
+                    'guardian_gender': {
+                        validators: {
+                            notEmpty: {
+                                message: 'Please, select a gender'
+                            }
+                        }
+                    },
+                    'guardian_relationship': {
+                        validators: {
+                            notEmpty: {
+                                message: 'Select a relationship'
+                            }
+                        }
+                    },
+                },
+                plugins: {
+                    trigger: new FormValidation.plugins.Trigger(),
+                    bootstrap: new FormValidation.plugins.Bootstrap5({
+                        rowSelector: '.fv-row',
+                        eleInvalidClass: '',
+                        eleValidClass: ''
+                    })
+                }
+            }
+        );
+
+        const submitButton = element.querySelector('[data-kt-guardians-modal-action="submit"]');
+        if (submitButton && validator) {
+            submitButton.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                validator.validate().then(function (status) {
+                    if (status == 'Valid') {
+                        // Show loading indication
+                        submitButton.setAttribute('data-kt-indicator', 'on');
+                        submitButton.disabled = true;
+
+                        // Prepare form data
+                        const formData = new FormData(form);
+
+                        // Add CSRF token for Laravel
+                        formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+                        formData.append('_method', 'PUT'); // For Laravel resource route
+
+                        // Submit via AJAX
+                        fetch(`/guardians/${guardianId}`, {
+                            method: 'POST', // Laravel expects POST for PUT routes
+                            body: formData,
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                            .then(response => {
+                                if (!response.ok) throw new Error('Network response was not ok');
+                                return response.json();
+                            })
+                            .then(data => {
+                                submitButton.removeAttribute('data-kt-indicator');
+                                submitButton.disabled = false;
+
+                                if (data.success) {
+                                    toastr.success(data.message || 'Guardian updated successfully');
+                                    modal.hide();
+
+                                    // Reload the page
+                                    window.location.reload();
+                                } else {
+                                    throw new Error(data.message || 'Update failed');
+                                }
+                            })
+                            .catch(error => {
+                                submitButton.removeAttribute('data-kt-indicator');
+                                submitButton.disabled = false;
+                                toastr.error(error.message || 'Failed to update guardian');
+                                console.error('Error:', error);
+                            });
+                    } else {
+                        toastr.warning('Please fill all required fields correctly');
+                    }
+                });
+            });
+        }
+    }
+
+    return {
+        init: function () {
+            initEditGuardian();
+            initValidation();
+        }
+    };
+}();
+
 // On document ready
 KTUtil.onDOMContentLoaded(function () {
-    KTSubscriptionsList.init();
+    KTGuardiansList.init();
+    KTGuardiansEditGuardian.init();
 });

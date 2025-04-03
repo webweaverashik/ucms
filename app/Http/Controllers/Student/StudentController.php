@@ -14,6 +14,7 @@ use App\Models\Student\Sibling;
 use App\Models\Student\Student;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
@@ -25,7 +26,11 @@ class StudentController extends Controller
     public function index()
     {
         if (auth()->user()->branch_id != 0) {
-            $students = Student::where('student_activation_id', '!=', null)->where('branch_id', auth()->user()->branch_id)->withoutTrashed()->orderby('id', 'desc')->get();
+            $students = Student::where('student_activation_id', '!=', null)
+                ->where('branch_id', auth()->user()->branch_id)
+                ->withoutTrashed()
+                ->orderby('id', 'desc')
+                ->get();
         } else {
             $students = Student::where('student_activation_id', '!=', null)->withoutTrashed()->orderby('id', 'desc')->get();
         }
@@ -41,7 +46,11 @@ class StudentController extends Controller
     public function pending()
     {
         if (auth()->user()->branch_id != 0) {
-            $students = Student::where('student_activation_id', null)->where('branch_id', auth()->user()->branch_id)->withoutTrashed()->orderby('id', 'desc')->get();
+            $students = Student::where('student_activation_id', null)
+                ->where('branch_id', auth()->user()->branch_id)
+                ->withoutTrashed()
+                ->orderby('id', 'desc')
+                ->get();
         } else {
             $students = Student::where('student_activation_id', null)->withoutTrashed()->orderby('id', 'desc')->get();
         }
@@ -436,7 +445,7 @@ class StudentController extends Controller
                             'name'          => $validated["guardian_{$i}_name"],
                             'mobile_number' => $validated["guardian_{$i}_mobile"],
                             'gender'        => $validated["guardian_{$i}_gender"],
-                        ]
+                        ],
                     );
                 }
             }
@@ -451,7 +460,7 @@ class StudentController extends Controller
                             'class'          => $validated["sibling_{$i}_class"],
                             'institution_id' => $validated["sibling_{$i}_institution"],
                             'relationship'   => $validated["sibling_{$i}_relationship"],
-                        ]
+                        ],
                     );
                 }
             }
@@ -464,9 +473,15 @@ class StudentController extends Controller
             ]);
 
             // Update mobile numbers
-            $student->mobileNumbers()->where('number_type', 'home')->update(['mobile_number' => $validated['student_phone_home']]);
+            $student
+                ->mobileNumbers()
+                ->where('number_type', 'home')
+                ->update(['mobile_number' => $validated['student_phone_home']]);
 
-            $student->mobileNumbers()->where('number_type', 'sms')->update(['mobile_number' => $validated['student_phone_sms']]);
+            $student
+                ->mobileNumbers()
+                ->where('number_type', 'sms')
+                ->update(['mobile_number' => $validated['student_phone_sms']]);
 
             if (isset($validated['student_phone_whatsapp'])) {
                 $whatsappMobile = $student->mobileNumbers()->where('number_type', 'whatsapp')->first();
@@ -486,13 +501,20 @@ class StudentController extends Controller
      */
     public function destroy(Student $student)
     {
-        // Delete corresponding guardians
+        $deletedBy = Auth::id(); // Get the authenticated user's ID
+
+        // Update 'deleted_by' for guardians before deleting
+        $student->guardians()->update(['deleted_by' => $deletedBy]);
+
+        // Update 'deleted_by' for siblings before deleting
+        $student->siblings()->update(['deleted_by' => $deletedBy]);
+
+        // Update 'deleted_by' for student before deleting
+        $student->update(['deleted_by' => $deletedBy]);
+
+        // Now delete all records
         $student->guardians()->delete();
-
-        // Delete corresponding siblings
         $student->siblings()->delete();
-
-        // Now delete the student
         $student->delete();
 
         return response()->json(['success' => true]);

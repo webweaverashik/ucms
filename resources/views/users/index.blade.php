@@ -154,19 +154,18 @@
                                 @endif
                             </td>
                             <td class="text-center">
-                                <a href="{{ route('users.edit', $user->id) }}" title="সংশোধন" data-bs-toggle="modal"
+                                <a href="#" title="Edit User" data-bs-toggle="modal"
                                     data-bs-target="#kt_modal_edit_user" data-user-id="{{ $user->id }}"
                                     class="btn btn-icon btn-active-light-warning w-30px h-30px me-3">
                                     <i class="ki-outline ki-pencil fs-2"></i>
                                 </a>
                                 @if ($user->id != auth()->user()->id)
-                                    <a href="#" title="ডিলিট" data-bs-toggle="tooltip"
+                                    <a href="#" title="Delete User" data-bs-toggle="tooltip"
                                         class="btn btn-icon btn-active-light-danger w-30px h-30px me-3 delete-user"
                                         data-user-id="{{ $user->id }}">
                                         <i class="ki-outline ki-trash fs-2"></i>
                                     </a>
                                 @endif
-
                             </td>
                         </tr>
                     @endforeach
@@ -180,7 +179,7 @@
 
 
     <!--begin::Modal - Add User-->
-    <div class="modal fade" id="kt_modal_add_user" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="kt_modal_add_user" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <!--begin::Modal dialog-->
         <div class="modal-dialog modal-dialog-centered mw-650px">
             <!--begin::Modal content-->
@@ -396,7 +395,7 @@
     <!--end::Modal - Add User-->
 
     <!--begin::Modal - Edit User-->
-    <div class="modal fade" id="kt_modal_edit_user" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="kt_modal_edit_user" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <!--begin::Modal dialog-->
         <div class="modal-dialog modal-dialog-centered mw-650px">
             <!--begin::Modal content-->
