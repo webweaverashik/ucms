@@ -172,6 +172,14 @@
                         <div class="menu-sub menu-sub-accordion">
                             <!--begin:Menu item-->
                             <div class="menu-item">
+                                <!--begin:Menu link--><a class="menu-link" id="institutions_link"
+                                    href="{{ route('institutions.index') }}"><span class="menu-bullet"><span
+                                            class="bullet bullet-dot"></span></span><span class="menu-title">Institutions</span></a>
+                                <!--end:Menu link-->
+                            </div>
+                            <!--end:Menu item-->
+                            <!--begin:Menu item-->
+                            <div class="menu-item">
                                 <!--begin:Menu link--><a class="menu-link" id="class_link"
                                     href="{{ route('classnames.index') }}"><span class="menu-bullet"><span
                                             class="bullet bullet-dot"></span></span><span class="menu-title">Class</span></a>

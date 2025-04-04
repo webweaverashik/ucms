@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('institutions', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('eiin_number')->unique();
+            $table->string('eiin_number');
             $table->enum('type', ['school', 'college']);
             $table->softDeletes();
             $table->timestamps();

@@ -244,8 +244,14 @@
                                 <td class="d-none">{{ $student->class->class_numeral }}_ucms</td>
                                 <td class="text-center">{{ $student->class->name }}</td>
                                 <td class="text-center">{{ $student->shift->name }}</td>
-                                <td class="text-center">{{ $student->institution->name }}
-                                    ({{ $student->institution->eiin_number }})</td>
+                                <td class="text-center">
+                                    @if ($student->institution)
+                                        {{ $student->institution->name }}
+                                        ({{ $student->institution->eiin_number }})
+                                    @else
+                                        -
+                                    @endif
+                                </td>
                                 <td>
                                     @foreach ($student->guardians as $guardian)
                                         <a href="{{ route('guardians.show', $guardian->id) }}"><span

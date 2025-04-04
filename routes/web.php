@@ -13,6 +13,7 @@ use App\Http\Controllers\Student\GuardianController;
 use App\Http\Controllers\Student\ReferenceController;
 use App\Http\Controllers\StudentActivationController;
 use App\Http\Controllers\Academic\ClassNameController;
+use App\Http\Controllers\Academic\InstitutionController;
 
 
 Route::get('/', function() {
@@ -62,6 +63,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::resource('guardians', GuardianController::class);
     Route::resource('siblings', SiblingController::class);
     Route::resource('teachers', TeacherController::class);
+    Route::resource('institutions', InstitutionController::class);
     Route::resource('classnames', ClassNameController::class);
     Route::resource('shifts', ShiftController::class);
     Route::resource('subjects', SubjectController::class);
