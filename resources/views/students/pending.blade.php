@@ -282,6 +282,13 @@
 
 
 @push('page-js')
+    <script src="{{ asset('assets/js/custom/apps/customers/view/add-payment.js') }}"></script>
+    <script src="{{ asset('assets/js/custom/apps/customers/view/adjust-balance.js') }}"></script>
+    <script src="{{ asset('assets/js/custom/apps/customers/view/invoices.js') }}"></script>
+    <script src="{{ asset('assets/js/custom/apps/customers/view/payment-method.js') }}"></script>
+    <script src="{{ asset('assets/js/custom/apps/customers/view/payment-table.js') }}"></script>
+    <script src="{{ asset('assets/js/custom/apps/customers/view/statement.js') }}"></script>
+
     <script>
         const routeDeleteStudent = "{{ route('students.destroy', ':id') }}";
     </script>

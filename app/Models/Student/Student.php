@@ -1,19 +1,18 @@
 <?php
-
 namespace App\Models\Student;
 
-use App\Models\Branch;
-use App\Models\Academic\Shift;
-use App\Models\Payment\Payment;
-use App\Models\Sheets\SheetTaken;
 use App\Models\Academic\ClassName;
 use App\Models\Academic\Institution;
+use App\Models\Academic\Shift;
 use App\Models\Academic\SubjectTaken;
+use App\Models\Branch;
+use App\Models\Payment\Payment;
 use App\Models\Payment\PaymentInvoice;
-use Illuminate\Database\Eloquent\Model;
 use App\Models\Payment\PaymentTransaction;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Sheets\SheetTaken;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Student extends Model
 {
@@ -34,7 +33,7 @@ class Student extends Model
     }
 
     // Get the current academic class of this student
-    public function class()
+    public function class ()
     {
         return $this->belongsTo(ClassName::class, 'class_id');
     }
@@ -72,7 +71,7 @@ class Student extends Model
     // Get the student's reference:
     public function reference()
     {
-        return $this->morphOne(Reference::class, 'referer');
+        return $this->belongsTo(Reference::class, 'reference_id');
     }
 
     // Get all the student's mobile numbers:

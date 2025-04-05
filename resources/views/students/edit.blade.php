@@ -170,8 +170,8 @@
                             <!--end::Icon-->
                             <!--begin::Label-->
                             <div class="stepper-label">
-                                <h3 class="stepper-title">Admission Done</h3>
-                                <div class="stepper-desc fw-semibold">Branch Manager approval</div>
+                                <h3 class="stepper-title">Update Completed</h3>
+                                <div class="stepper-desc fw-semibold">Verify the modification</div>
                             </div>
                             <!--end::Label-->
                         </div>

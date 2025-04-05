@@ -308,7 +308,20 @@ class StudentController extends Controller
      */
     public function show(string $id)
     {
-        //
+        // Try to find the student including trashed ones (if soft deletes are enabled)
+        $student = Student::withTrashed()->find($id);
+
+        // If not found or trashed, redirect with warning
+        if (! $student || $student->trashed()) {
+            return redirect()->route('students.index')->with('warning', 'Student not found or deleted.');
+        }
+
+        // Restrict access: Only allow editing if the user belongs to the same branch
+        if (auth()->user()->branch_id != 0 && auth()->user()->branch_id != $student->branch_id) {
+            return redirect()->route('students.index')->with('error', 'This student is not available on this branch.');
+        }
+
+        return view('students.view', compact('student'));
     }
 
     /**
@@ -316,7 +329,13 @@ class StudentController extends Controller
      */
     public function edit(string $id)
     {
-        $student = Student::findOrFail($id);
+        // Try to find the student including trashed ones (if soft deletes are enabled)
+        $student = Student::with('reference.referer')->withTrashed()->findOrFail($id);
+
+        // If not found or trashed, redirect with warning
+        if (! $student || $student->trashed()) {
+            return redirect()->route('students.index')->with('warning', 'Student not found or deleted.');
+        }
 
         // Restrict access: Only allow editing if the user belongs to the same branch
         if (auth()->user()->branch_id != 0 && auth()->user()->branch_id != $student->branch_id) {
