@@ -48,8 +48,7 @@
         <!--begin::Sidebar-->
         <div class="flex-column flex-lg-row-auto w-100 w-xl-350px mb-10">
             <!--begin::Card-->
-            <div class="card card-flush mb-0 @if ($student->studentActivation->active_status == 'inactive') border border-dashed border-danger @endif"
-                data-kt-sticky="true" data-kt-sticky-name="student-summary" data-kt-sticky-offset="{default: 0}"
+            <div class="card card-flush mb-0 @if ($student->studentActivation->active_status == 'inactive') border border-dashed border-danger @endif" data-kt-sticky="true" data-kt-sticky-name="student-summary" data-kt-sticky-offset="{default: false, lg: 0}"
                 data-kt-sticky-width="{lg: '250px', xl: '350px'}" data-kt-sticky-left="auto" data-kt-sticky-top="100px"
                 data-kt-sticky-animation="false" data-kt-sticky-zindex="95">
                 <!--begin::Card header-->
@@ -72,7 +71,11 @@
                             data-kt-menu="true">
                             <!--begin::Menu item-->
                             <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3">Inactivate Student</a>
+                                @if ($student->studentActivation->active_status == 'active')
+                                    <a href="#" class="menu-link px-3">Inactivate Student</a>
+                                @else
+                                    <a href="#" class="menu-link px-3">Activate Student</a>
+                                @endif
                             </div>
                             <!--end::Menu item-->
                             <!--begin::Menu item-->
@@ -93,6 +96,7 @@
                     <!--end::Card toolbar-->
                 </div>
                 <!--end::Card header-->
+
                 <!--begin::Card body-->
                 <div class="card-body pt-0 fs-6">
                     <!--begin::Section-->
@@ -120,9 +124,71 @@
                         <!--end::Details-->
                     </div>
                     <!--end::Section-->
+
                     <!--begin::Seperator-->
                     <div class="separator separator-dashed mb-7"></div>
                     <!--end::Seperator-->
+
+                    <!--begin::Section-->
+                    <div class="mb-7">
+                        <!--begin::Title-->
+                        <h5 class="mb-4">Academic Info
+                        </h5>
+                        <!--end::Title-->
+                        <!--begin::Details-->
+                        <div class="mb-0">
+                            <!--begin::Details-->
+                            <table class="table fs-6 fw-semibold gs-0 gy-2 gx-2">
+                                <!--begin::Row-->
+                                <tr class="">
+                                    <td class="text-gray-500">Class:</td>
+                                    <td class="text-gray-800">{{ $student->class->name }}
+                                        ({{ $student->class->class_numeral }})</td>
+                                </tr>
+                                <!--end::Row-->
+                                
+                                <!--begin::Row-->
+                                @if ($student->academic_group != 'General')
+                                <tr>
+                                    <td class="text-gray-500">Group:</td>
+                                    <td>{{ $student->academic_group }}</td>
+                                </tr>
+                                @endif
+                                <!--end::Row-->
+                                
+                                <!--begin::Row-->
+                                <tr class="">
+                                    <td class="text-gray-500">Shift:</td>
+                                    <td>{{ $student->shift->name }}</td>
+                                </tr>
+                                <!--end::Row-->
+
+                                <!--begin::Row-->
+                                <tr class="">
+                                    <td class="text-gray-500">Institution:</td>
+                                    <td>
+                                        @if ($student->institution)
+                                            <a href="{{ url('students/?institution=') . $student->institution_id }}" class="text-gray-800">
+                                                {{ $student->institution->name }} (EIIN:
+                                                {{ $student->institution->eiin_number }})
+                                            </a>
+                                        @else
+                                            <span class="text-gray-600">N/A</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                                <!--end::Row-->
+                            </table>
+                            <!--end::Details-->
+                        </div>
+                        <!--end::Details-->
+                    </div>
+                    <!--end::Section-->
+
+                    <!--begin::Seperator-->
+                    <div class="separator separator-dashed mb-7"></div>
+                    <!--end::Seperator-->
+
                     <!--begin::Section-->
                     <div class="mb-7">
                         <!--begin::Title-->
@@ -139,37 +205,45 @@
                                     <td class="text-gray-800">{{ ucfirst($student->payments->payment_style) }}</td>
                                 </tr>
                                 <!--end::Row-->
+
                                 <!--begin::Row-->
                                 <tr class="">
                                     <td class="text-gray-500">Monthly Fee:</td>
-                                    <td>{{ intval($student->payments->tuition_fee) }}</td>
+                                    <td>{{ intval($student->payments->tuition_fee) }} Tk</td>
                                 </tr>
                                 <!--end::Row-->
+
                                 <!--begin::Row-->
                                 <tr class="">
                                     <td class="text-gray-500">Due Date:</td>
                                     <td class="text-gray-800">1 to {{ $student->payments->due_date }}</td>
                                 </tr>
                                 <!--end::Row-->
-                                @if ($student->reference && $student->reference->referer)
-    <tr>
-        <td class="text-gray-500">Reference:</td>
-        <td class="text-gray-800">
-            @php
-                $referer = $student->reference->referer;
-                $type = strtolower($student->reference->referer_type);
-                $route = $type === 'student' ? route('students.show', $referer->id) : route('teachers.show', $referer->id);
-            @endphp
 
-            <a href="{{ $route }}" class="text-primary fw-bold">
-                {{ ucfirst($type) }} - {{ $referer->name ?? 'N/A' }}
-                @if ($type === 'student')
-                    (ID: {{ $referer->id }})
-                @endif
-            </a>
-        </td>
-    </tr>
-@endif
+                                <!--begin::Row-->
+                                @if ($student->reference && $student->reference->referer)
+                                    <tr>
+                                        <td class="text-gray-500">Reference:</td>
+                                        <td class="text-gray-800">
+                                            @php
+                                                $referer = $student->reference->referer;
+                                                $type = strtolower($student->reference->referer_type);
+                                                $route =
+                                                    $type === 'student'
+                                                        ? route('students.show', $referer->id)
+                                                        : route('teachers.show', $referer->id);
+                                            @endphp
+
+                                            <a href="{{ $route }}" class="text-primary fw-bold">
+                                                {{ $referer->name ?? 'N/A' }}
+                                                @if ($type === 'student')
+                                                    ({{ $referer->student_unique_id }})
+                                                @endif
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endif
+                                <!--end::Row-->
 
                             </table>
                             <!--end::Details-->
@@ -177,9 +251,11 @@
                         <!--end::Details-->
                     </div>
                     <!--end::Section-->
+
                     <!--begin::Seperator-->
                     <div class="separator separator-dashed mb-7"></div>
                     <!--end::Seperator-->
+
                     <!--begin::Section-->
                     <div class="mb-10">
                         <!--begin::Title-->
@@ -187,12 +263,6 @@
                         <!--end::Title-->
                         <!--begin::Details-->
                         <table class="table fs-6 fw-semibold gs-0 gy-2 gx-2">
-                            <!--begin::Row-->
-                            <tr class="">
-                                <td class="text-gray-500">Admission:</td>
-                                <td class="text-gray-800">{{ $student->created_at->format('d-M-Y') }}</td>
-                            </tr>
-                            <!--end::Row-->
                             <!--begin::Row-->
                             <tr class="">
                                 <td class="text-gray-500">Status:</td>
@@ -207,22 +277,36 @@
                                 </td>
                             </tr>
                             <!--end::Row-->
+
+                            @if ($student->studentActivation->active_status == 'inactive')
                             <!--begin::Row-->
                             <tr class="">
-                                <td class="text-gray-500">Next Invoice:</td>
-                                <td class="text-gray-800">15 Apr 2022</td>
+                                <td class="text-gray-500">Inactive Since:</td>
+                                <td class="text-gray-800">
+                                    {{ $student->studentActivation->created_at->diffForHumans() }}
+                                    <span class="ms-1" data-bs-toggle="tooltip" title="{{ $student->studentActivation->created_at->format('d-M-Y h:m:s A') }}">
+                                        <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
+                                    </span>
+                                </td>
+                            </tr>
+                            <!--end::Row-->
+                            @endif
+
+                            <!--begin::Row-->
+                            <tr class="">
+                                <td class="text-gray-500">Admission Date:</td>
+                                <td class="text-gray-800">
+                                    {{ $student->created_at->format('d-M-Y') }}
+                                    <span class="ms-1" data-bs-toggle="tooltip" title="{{ $student->created_at->format('d-M-Y h:m:s A') }}">
+                                        <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
+                                    </span>
+                                </td>
                             </tr>
                             <!--end::Row-->
                         </table>
                         <!--end::Details-->
                     </div>
                     <!--end::Section-->
-                    <!--begin::Actions-->
-                    <div class="mb-0">
-                        <a href="{{ route('students.edit', $student->id) }}" class="btn btn-primary"
-                            id="kt_subscriptions_create_button">Edit Student</a>
-                    </div>
-                    <!--end::Actions-->
                 </div>
                 <!--end::Card body-->
             </div>
@@ -237,19 +321,31 @@
                 <!--begin:::Tab item-->
                 <li class="nav-item">
                     <a class="nav-link text-active-primary pb-4 active" data-bs-toggle="tab"
-                        href="#kt_customer_view_overview_tab">Overview</a>
+                        href="#kt_customer_view_overview_tab">Personal Info</a>
                 </li>
                 <!--end:::Tab item-->
                 <!--begin:::Tab item-->
                 <li class="nav-item">
                     <a class="nav-link text-active-primary pb-4" data-bs-toggle="tab"
-                        href="#kt_customer_view_overview_events_and_logs_tab">Events & Logs</a>
+                        href="#kt_customer_view_overview_events_and_logs_tab">Enrolled Subjects</a>
                 </li>
                 <!--end:::Tab item-->
                 <!--begin:::Tab item-->
                 <li class="nav-item">
                     <a class="nav-link text-active-primary pb-4" data-kt-countup-tabs="true" data-bs-toggle="tab"
-                        href="#kt_customer_view_overview_statements">Statements</a>
+                        href="#kt_customer_view_overview_statements">Transactions</a>
+                </li>
+                <!--end:::Tab item-->
+                <!--begin:::Tab item-->
+                <li class="nav-item">
+                    <a class="nav-link text-active-primary pb-4" data-kt-countup-tabs="true" data-bs-toggle="tab"
+                        href="#kt_customer_view_overview_statements">Sheets</a>
+                </li>
+                <!--end:::Tab item-->
+                <!--begin:::Tab item-->
+                <li class="nav-item">
+                    <a class="nav-link text-active-primary pb-4" data-kt-countup-tabs="true" data-bs-toggle="tab"
+                        href="#activity">Activity</a>
                 </li>
                 <!--end:::Tab item-->
                 <!--begin:::Tab item-->
