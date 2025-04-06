@@ -1295,5 +1295,5 @@
     <script src="{{ asset('js/students/ajax-subjects-update.js') }}"></script>
 
     {{-- Student admission form ajax activities --}}
-    <script src="{{ asset('js/students/students.update.js') }}"></script>
+    <script src="{{ asset('js/students/update.js') }}"></script>
 @endpush

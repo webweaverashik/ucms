@@ -324,7 +324,7 @@
         const routeDeleteStudent = "{{ route('students.destroy', ':id') }}";
     </script>
 
-    <script src="{{ asset('js/students/students.index.js') }}"></script>
+    <script src="{{ asset('js/students/index.js') }}"></script>
 
     <script>
         document.getElementById("student_info_menu").classList.add("here", "show");

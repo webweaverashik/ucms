@@ -1,12 +1,23 @@
 "use strict";
 
-var KTSubscriptionsList = function () {
+var KTStudentsList = function () {
     // Define shared variables
     var table;
     var datatable;
+    // var toolbarBase;
+    // var toolbarSelected;
+    // var selectedCount;
 
     // Private functions
     var initDatatable = function () {
+        // Set date data order
+        // const tableRows = table.querySelectorAll('tbody tr');
+
+        // tableRows.forEach(row => {
+        //     const dateRow = row.querySelectorAll('td');
+        //     const realDate = moment(dateRow[10].innerHTML, "DD MMM YYYY, LT").format(); // select date from 4th column in table
+        //     dateRow[10].setAttribute('data-order', realDate);
+        // });
 
         // Init datatable --- more info on datatables: https://datatables.net/manual/
         datatable = $(table).DataTable({
@@ -15,17 +26,16 @@ var KTSubscriptionsList = function () {
             "lengthMenu": [10, 25, 50, 100],
             "pageLength": 25,
             "lengthChange": true,
-            "autoWidth": false, // Disable auto width
+            "autoWidth": false,  // Disable auto width
             'columnDefs': [
-                { orderable: false, targets: 6 }, // Disable ordering on column Guardian
-                { orderable: false, targets: 12 }, // Disable ordering on column Actions
+                { orderable: false, targets: 6 }, // Disable ordering on column Guardian                
+                { orderable: false, targets: 12 }, // Disable ordering on column Actions                
             ]
         });
 
         // Re-init functions on every table re-draw -- more info: https://datatables.net/reference/event/draw
         datatable.on('draw', function () {
             // initToggleToolbar();
-            // handleRowDeletion();
             // toggleToolbars();
         });
     }
@@ -136,72 +146,9 @@ var KTSubscriptionsList = function () {
             });
         });
     };
-
     
-
-    // Student approval AJAX
-    const handleApproval = function () {
-        document.querySelectorAll('.activate-student').forEach(item => {
-            item.addEventListener('click', function (e) {
-                e.preventDefault();
-
-                let studentId = this.getAttribute('data-student-id');
-
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: "Do you want to approve this student?",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, approve!'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        fetch(`/students/${studentId}/activate`, {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                            },
-                            body: JSON.stringify({
-                                active_status: "active",
-                                reason: "Admission Done",
-                            }),
-                        })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    Swal.fire({
-                                        title: "Approved!",
-                                        text: "The student has been activated successfully.",
-                                        icon: "success",
-                                    }).then(() => {
-                                        location.reload(); // Reload to reflect changes
-                                    });
-                                } else {
-                                    Swal.fire({
-                                        title: "Error!",
-                                        text: data.message,
-                                        icon: "error",
-                                    });
-                                }
-                            })
-                            .catch(error => {
-                                console.error("Fetch Error:", error);
-                                Swal.fire({
-                                    title: "Error!",
-                                    text: "Something went wrong. Please try again.",
-                                    icon: "error",
-                                });
-                            });
-                    }
-                });
-            });
-        });
-    };
-
     return {
-        // Public functions
+        // Public functions  
         init: function () {
             table = document.getElementById('kt_students_table');
 
@@ -213,7 +160,6 @@ var KTSubscriptionsList = function () {
             // initToggleToolbar();
             handleSearch();
             handleDeletion();
-            handleApproval();
             handleFilter();
         }
     }
@@ -221,5 +167,5 @@ var KTSubscriptionsList = function () {
 
 // On document ready
 KTUtil.onDOMContentLoaded(function () {
-    KTSubscriptionsList.init();
+    KTStudentsList.init();
 });

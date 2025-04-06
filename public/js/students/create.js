@@ -1,7 +1,7 @@
 "use strict";
 
 // Class definition
-var KTCreateAccount = function () {
+var KTCreateStudent = function () {
      // Elements
      var modal;
      var modalEl;
@@ -95,30 +95,30 @@ var KTCreateAccount = function () {
                     console.log('Validation Status:', status);
 
                     if (status === 'Valid') {
+                         // Disable button and show loading indicator
                          formSubmitButton.disabled = true;
                          formSubmitButton.setAttribute('data-kt-indicator', 'on');
 
-                         var form = document.getElementById('kt_update_student_form');
-                         var formData = new FormData(form);
-
-                         // Get student ID
-                         var studentId = document.getElementById('student_id_input').value;
-                         var updateUrl = updateStudentRoute(studentId);
+                         // Collect form data
+                         var formData = new FormData(document.getElementById('kt_create_student_form'));
 
                          // Add CSRF token manually
-                         formData.append('_method', 'PUT'); // Required for Laravel updates
+                         formData.append('_token', csrfToken);
 
-                         fetch(updateUrl, {
-                              method: "POST", // Laravel requires POST with _method='PUT' for updates
+                         // Send data via AJAX
+                         fetch(storeStudentRoute, {
+                              method: "POST",
                               body: formData,
                               headers: {
                                    'X-CSRF-TOKEN': csrfToken,
-                                   'Accept': 'application/json'
+                                   'Accept': 'application/json' // Explicitly ask for JSON
                               }
                          })
                               .then(response => {
+                                   // First check if the response is OK (status 200-299)
                                    if (!response.ok) {
                                         return response.text().then(text => {
+                                             // Try to parse as JSON even if status not OK
                                              try {
                                                   const data = JSON.parse(text);
                                                   return Promise.reject(data.errors || data.message || "Request failed");
@@ -132,7 +132,7 @@ var KTCreateAccount = function () {
                               .then(data => {
                                    if (data.success) {
                                         Swal.fire({
-                                             text: "Student details updated successfully!",
+                                             text: "Student admission completed successfully! Pending for Branch Manager approval.",
                                              icon: "success",
                                              buttonsStyling: false,
                                              confirmButtonText: "Ok",
@@ -143,7 +143,7 @@ var KTCreateAccount = function () {
 
                                         document.getElementById('admitted_name').innerText = data.student.name;
                                         document.getElementById('admitted_id').innerText = data.student.student_unique_id;
-                                        
+
                                         stepperObj.goNext();
 
                                         setTimeout(function () {
@@ -159,6 +159,7 @@ var KTCreateAccount = function () {
                                    }
                               })
                               .catch(error => {
+                                   // Handle both string errors and Error objects
                                    const errorMessages = Array.isArray(error) ? error :
                                         (error.message ? [error.message] :
                                              (typeof error === 'string' ? [error] :
@@ -200,28 +201,28 @@ var KTCreateAccount = function () {
                errorElement.setAttribute("role", "alert");
 
                errorElement.innerHTML = `
-                              <!--begin::Icon-->
-                              <i class="ki-duotone ki-message-text-2 fs-2hx text-danger me-4 mb-5 mb-sm-0">
-                              <span class="path1"></span>
-                              <span class="path2"></span>
-                              <span class="path3"></span>
-                              </i>
-                              <!--end::Icon-->
-
-                              <!--begin::Content-->
-                              <div class="d-flex flex-column pe-0 pe-sm-10">
-                              <h5 class="mb-1 text-danger">The following errors have been found.</h5>
-                              <span class="text-danger">${error}</span>
-                              </div>
-                              <!--end::Content-->
-
-                              <!--begin::Close-->
-                              <button type="button" class="position-absolute position-sm-relative m-2 m-sm-0 top-0 end-0 btn btn-icon ms-sm-auto"
-                              data-bs-dismiss="alert">
-                              <i class="ki-outline ki-cross fs-1 text-danger"></i>
-                              </button>
-                              <!--end::Close-->
-                              `;
+                   <!--begin::Icon-->
+                   <i class="ki-duotone ki-message-text-2 fs-2hx text-danger me-4 mb-5 mb-sm-0">
+                       <span class="path1"></span>
+                       <span class="path2"></span>
+                       <span class="path3"></span>
+                   </i>
+                   <!--end::Icon-->
+           
+                   <!--begin::Content-->
+                   <div class="d-flex flex-column pe-0 pe-sm-10">
+                       <h5 class="mb-1 text-danger">The following errors have been found.</h5>
+                       <span class="text-danger">${error}</span>
+                   </div>
+                   <!--end::Content-->
+           
+                   <!--begin::Close-->
+                   <button type="button" class="position-absolute position-sm-relative m-2 m-sm-0 top-0 end-0 btn btn-icon ms-sm-auto"
+                       data-bs-dismiss="alert">
+                       <i class="ki-outline ki-cross fs-1 text-danger"></i>
+                   </button>
+                   <!--end::Close-->
+               `;
 
                errorContainer.prepend(errorElement);
           });
@@ -290,19 +291,6 @@ var KTCreateAccount = function () {
                                    notEmpty: {
                                         message: 'SMS no. is required for result and notice'
                                    },
-                                   regexp: {
-                                        regexp: /^01[4-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
-                                        message: 'Please enter a valid Bangladeshi mobile number'
-                                   },
-                                   stringLength: {
-                                        min: 11,
-                                        max: 11,
-                                        message: 'The mobile number must be exactly 11 digits'
-                                   }
-                              }
-                         },
-                         'student_phone_whatsapp': {
-                              validators: {
                                    regexp: {
                                         regexp: /^01[4-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
                                         message: 'Please enter a valid Bangladeshi mobile number'
@@ -499,13 +487,13 @@ var KTCreateAccount = function () {
                     modal = new bootstrap.Modal(modalEl);
                }
 
-               stepper = document.querySelector('#kt_update_student_stepper');
+               stepper = document.querySelector('#kt_create_student_stepper');
 
                if (!stepper) {
                     return;
                }
 
-               form = stepper.querySelector('#kt_update_student_form');
+               form = stepper.querySelector('#kt_create_student_form');
                formSubmitButton = stepper.querySelector('[data-kt-stepper-action="submit"]');
                formContinueButton = stepper.querySelector('[data-kt-stepper-action="next"]');
 
@@ -523,5 +511,5 @@ var KTCreateAccount = function () {
 
 // On document ready
 KTUtil.onDOMContentLoaded(function () {
-     KTCreateAccount.init();
+     KTCreateStudent.init();
 });
