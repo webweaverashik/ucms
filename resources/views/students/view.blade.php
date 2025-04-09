@@ -428,7 +428,7 @@
                         <!--end::Menu item-->
                         <!--begin::Menu item-->
                         <div class="menu-item px-5">
-                            @if ($student->studentActivation->active_status == 'active')
+                            @if ( optional($student->studentActivation)->active_status == 'active')
                                 <a href="#" class="menu-link px-5">Inactivate Student</a>
                             @else
                                 <a href="#" class="menu-link px-5">Activate Student</a>
