@@ -290,9 +290,9 @@
 
                             <!--begin::Row-->
                             <tr class="">
-                                @if ($student->studentActivation->active_status == 'active')
+                                @if (optional($student->studentActivation)->active_status == 'active')
                                     <td class="text-gray-500">Active Since:</td>
-                                @elseif ($student->studentActivation->active_status == 'inactive')
+                                @elseif (optional($student->studentActivation)->active_status == 'inactive')
                                     <td class="text-gray-500">Inactive Since:</td>
                                 @endif
                                 <td class="text-gray-800">
