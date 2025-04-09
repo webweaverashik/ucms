@@ -272,13 +272,18 @@
                             <tr class="">
                                 <td class="text-gray-500">Status:</td>
                                 <td>
-                                    @if ($student->studentActivation->active_status == 'inactive')
-                                        <span
-                                            class="badge badge-light-danger">{{ ucfirst($student->studentActivation->active_status) }}</span>
+                                    @php
+                                        $status = $student->studentActivation?->active_status;
+                                    @endphp
+
+                                    @if ($status === 'inactive')
+                                        <span class="badge badge-light-danger">{{ ucfirst($status) }}</span>
+                                    @elseif ($status === 'active')
+                                        <span class="badge badge-light-success">{{ ucfirst($status) }}</span>
                                     @else
-                                        <span
-                                            class="badge badge-light-success">{{ ucfirst($student->studentActivation->active_status) }}</span>
+                                        <span class="badge badge-light-secondary">Unknown</span>
                                     @endif
+
                                 </td>
                             </tr>
                             <!--end::Row-->
