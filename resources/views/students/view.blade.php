@@ -48,7 +48,10 @@
         <!--begin::Sidebar-->
         <div class="flex-column flex-lg-row-auto w-100 w-xl-350px mb-10">
             <!--begin::Card-->
-            <div class="card card-flush mb-0 @if ($student->studentActivation->active_status == 'inactive') border border-dashed border-danger @endif"
+            <div class="card card-flush mb-0
+            @if ($student->studentActivation->active_status && $student->studentActivation->active_status == 'inactive') 
+            border border-dashed border-danger
+            @endif"
                 data-kt-sticky="true" data-kt-sticky-name="student-summary" data-kt-sticky-offset="{default: false, lg: 0}"
                 data-kt-sticky-width="{lg: '250px', xl: '350px'}" data-kt-sticky-left="auto" data-kt-sticky-top="100px"
                 data-kt-sticky-animation="false" data-kt-sticky-zindex="95">
@@ -699,7 +702,8 @@
                                             <!--begin::Details-->
                                             <div class="d-flex flex-column py-2">
                                                 <div class="d-flex align-items-center fs-5 fw-bold mb-2">
-                                                    {{ $sibling->name }} <span class="ms-5 text-gray-600 fs-7    fw-semibold">{{ ucfirst($sibling->relationship) }}</span>
+                                                    {{ $sibling->name }} <span
+                                                        class="ms-5 text-gray-600 fs-7    fw-semibold">{{ ucfirst($sibling->relationship) }}</span>
                                                 </div>
                                                 <div class="fs-6 fw-semibold text-gray-600">
                                                     Class: {{ $sibling->class }}<br>
