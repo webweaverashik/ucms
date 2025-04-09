@@ -49,7 +49,7 @@
         <div class="flex-column flex-lg-row-auto w-100 w-xl-350px mb-10">
             <!--begin::Card-->
             <div class="card card-flush mb-0
-            @if ($student->studentActivation->active_status && $student->studentActivation->active_status == 'inactive') 
+            @if ($student->studentActivation->active_status != NULL && $student->studentActivation->active_status == 'inactive') 
             border border-dashed border-danger
             @endif"
                 data-kt-sticky="true" data-kt-sticky-name="student-summary" data-kt-sticky-offset="{default: false, lg: 0}"
