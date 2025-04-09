@@ -17,9 +17,7 @@ return new class extends Migration {
             $table->string('mobile_number', 11);
             $table->enum('gender', ['male', 'female']);
             $table->enum('relationship', ['father', 'mother', 'brother', 'sister', 'uncle', 'aunt']);
-            $table->string('password')->default(function () {
-                return Hash::make('password');
-            });
+            $table->string('password')->nullable();
             $table->foreignId('student_id');
             $table->softDeletes();
             $table->foreignId('deleted_by')->nullable();
