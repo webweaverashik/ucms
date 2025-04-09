@@ -74,11 +74,12 @@
                             data-kt-menu="true">
                             <!--begin::Menu item-->
                             <div class="menu-item px-3">
-                                @if ($student->studentActivation->active_status == 'active')
+                                @if (optional($student->studentActivation)->active_status == 'active')
                                     <a href="#" class="menu-link px-3">Inactivate Student</a>
                                 @else
                                     <a href="#" class="menu-link px-3">Activate Student</a>
                                 @endif
+
                             </div>
                             <!--end::Menu item-->
                             <!--begin::Menu item-->
