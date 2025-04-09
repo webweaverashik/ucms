@@ -29,23 +29,19 @@
             <div class="d-flex flex-lg-row-fluid">
                 <!--begin::Content-->
                 <div class="d-flex flex-column flex-center pb-0 pb-lg-10 p-10 w-100">
-                    <!--begin::Image-->
+                    <!--begin::Image--><a href="http://ashikur-rahman.com/uniquecoachingbd">
                     <img class="theme-light-show mx-auto mw-100 w-150px w-lg-300px mb-10 mb-lg-20"
                         src="{{ asset('assets/img/icon.png') }}" alt="" />
                     <img class="theme-dark-show mx-auto mw-100 w-150px w-lg-300px mb-10 mb-lg-20"
                         src="{{ asset('assets/img/icon.png') }}" alt="" />
+                    </a>
                     <!--end::Image-->
                     <!--begin::Title-->
                     <h1 class="text-gray-800 fs-2qx fw-bold text-center mb-7">Unique Coaching Management System (UCMS)
                     </h1>
                     <!--end::Title-->
                     <!--begin::Text-->
-                    <div class="text-gray-600 fs-base text-center fw-semibold">In this kind of post,
-                        <a href="#" class="opacity-75-hover text-primary me-1">the blogger</a>introduces a person
-                        they’ve interviewed
-                        <br />and provides some background information about
-                        <a href="#" class="opacity-75-hover text-primary me-1">the interviewee</a>and their
-                        <br />work following this is a transcript of the interview.
+                    <div class="text-gray-600 fs-base text-center fw-semibold ">UCMS (Unique Coaching Management System) is an all-in-one solution to effortlessly manage<br> student data, attendance, exams, results, payments, and more for coaching centers.<br> Designed for institutes like Unique Coaching, it streamlines operations and boosts<br> academic efficiency with powerful features and real-time insights.
                     </div>
                     <!--end::Text-->
                 </div>

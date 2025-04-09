@@ -16,9 +16,7 @@ use App\Http\Controllers\Academic\ClassNameController;
 use App\Http\Controllers\Academic\InstitutionController;
 
 
-Route::get('/', function() {
-    return view('landing.index');
-})->name('home');
+Route::get('/', [AuthController::class, 'showLogin'])->name('home');
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
