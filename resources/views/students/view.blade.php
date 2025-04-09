@@ -309,11 +309,15 @@
                             <tr class="">
                                 <td class="text-gray-500">Admission Date:</td>
                                 <td class="text-gray-800">
+                                    @if ($student->studentActivation)
                                     {{ $student->created_at->format('d-M-Y') }}
                                     <span class="ms-1" data-bs-toggle="tooltip"
                                         title="{{ $student->created_at->format('d-M-Y h:m:s A') }}">
                                         <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
                                     </span>
+                                    @else
+                                    Pending
+                                    @endif
                                 </td>
                             </tr>
                             <!--end::Row-->
