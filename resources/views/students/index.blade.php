@@ -282,6 +282,10 @@
                                         data-kt-menu="true">
                                         <!--begin::Menu item-->
                                         <div class="menu-item px-3">
+                                            <a href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" class="menu-link px-3">Download Form</a>
+                                        </div>
+                                        <!--begin::Menu item-->
+                                        <div class="menu-item px-3">
                                             <a href="#" class="menu-link px-3">Inactive</a>
                                         </div>
                                         <!--end::Menu item-->
