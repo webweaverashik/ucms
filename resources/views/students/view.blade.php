@@ -214,14 +214,14 @@
                                 <!--begin::Row-->
                                 <tr class="">
                                     <td class="text-gray-500">Monthly Fee:</td>
-                                    <td>{{ intval($student->payments->tuition_fee) }} Tk</td>
+                                    <td>@if ($student->payments) {{ intval($student->payments->tuition_fee) }} @else 2000 @endif Tk</td>
                                 </tr>
                                 <!--end::Row-->
 
                                 <!--begin::Row-->
                                 <tr class="">
                                     <td class="text-gray-500">Due Date:</td>
-                                    <td class="text-gray-800">1 to {{ $student->payments->due_date }}</td>
+                                    <td class="text-gray-800">1 to @if ($student->payments) {{ $student->payments->due_date }} @else 7 @endif</td>
                                 </tr>
                                 <!--end::Row-->
 
