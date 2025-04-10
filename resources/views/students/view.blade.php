@@ -207,7 +207,7 @@
                                 <!--begin::Row-->
                                 <tr class="">
                                     <td class="text-gray-500">Payment Style:</td>
-                                    <td class="text-gray-800">{{ ucfirst($student->payments->payment_style) }}</td>
+                                    <td class="text-gray-800">@if ($student->payments) {{ ucfirst($student->payments->payment_style) }} @else Current @endif</td>
                                 </tr>
                                 <!--end::Row-->
 
