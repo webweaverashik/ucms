@@ -140,17 +140,17 @@
                                 </div>
                                 <!--end::Submit button-->
                                 <!--begin::Sign up-->
-                                <div class="text-gray-500 text-center fw-semibold fs-6">Not a Member yet?
+                                {{-- <div class="text-gray-500 text-center fw-semibold fs-6">Not a Member yet?
                                     <a href="#" class="link-primary">Sign
                                         up</a>
-                                </div>
+                                </div> --}}
                                 <!--end::Sign up-->
                             </form>
                             <!--end::Form-->
                         </div>
                         <!--end::Wrapper-->
                         <!--begin::Footer-->
-                        <div class="d-flex flex-stack">
+                        {{-- <div class="d-flex flex-stack">
                             <!--begin::Languages-->
                             <div class="me-10">
                                 <!--begin::Toggle-->
@@ -233,7 +233,7 @@
                                 <a href="pages/contact.html" target="_blank">Contact Us</a>
                             </div>
                             <!--end::Links-->
-                        </div>
+                        </div> --}}
                         <!--end::Footer-->
                     </div>
                     <!--end::Content-->
