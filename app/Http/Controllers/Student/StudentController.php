@@ -570,4 +570,13 @@ class StudentController extends Controller
 
         return response()->json([]);
     }
+
+    public function toggleActive(Request $request) 
+    {
+        $student = Student::findOrFail($request->student_id);
+
+        if (! $student) {
+            return response()->json(['success' => false, 'message' => 'Student is not found.']);
+        }
+    }
 }

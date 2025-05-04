@@ -239,24 +239,24 @@
                                         data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions
                                         <i class="ki-outline ki-down fs-5 m-0"></i></a>
                                     <!--begin::Menu-->
-                                    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4"
+                                    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-150px py-4"
                                         data-kt-menu="true">
                                         <!--begin::Menu item-->
                                         <div class="menu-item px-3">
-                                            <a href="#" class="menu-link px-3 activate-student"
-                                                data-student-id="{{ $student->id }}">Approve</a>
+                                            <a href="#" class="menu-link px-3 text-hover-success approve-student"
+                                                data-student-id="{{ $student->id }}"><i class="bi bi-person-check fs-3 me-2"></i> Approve</a>
                                         </div>
                                         <!--end::Menu item-->
                                         <!--begin::Menu item-->
                                         <div class="menu-item px-3">
                                             <a href="{{ route('students.edit', $student->id) }}"
-                                                class="menu-link px-3">Edit</a>
+                                                class="menu-link text-hover-primary px-3"><i class="las la-pen fs-3 me-2"></i> Edit</a>
                                         </div>
                                         <!--end::Menu item-->
                                         <!--begin::Menu item-->
                                         <div class="menu-item px-3">
-                                            <a href="#" class="menu-link px-3 delete-student"
-                                                data-student-id="{{ $student->id }}">Delete</a>
+                                            <a href="#" class="menu-link text-hover-danger px-3 delete-student"
+                                                data-student-id="{{ $student->id }}"><i class="bi bi-trash fs-3 me-2"></i> Delete</a>
                                         </div>
                                         <!--end::Menu item-->
                                     </div>

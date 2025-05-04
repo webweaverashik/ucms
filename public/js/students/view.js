@@ -1,6 +1,6 @@
 "use strict";
 
-var KTStudentsList = function () {
+var KTStudentsView = function () {
     // Define shared variables
     var table;
     var datatable;
@@ -123,7 +123,7 @@ var KTStudentsList = function () {
                                     text: "The student has been removed successfully.",
                                     icon: "success",
                                 }).then(() => {
-                                    location.reload(); // Reload to reflect changes
+                                    window.location.href = '/students';
                                 });
                             } else {
                                 Swal.fire({
@@ -150,22 +150,22 @@ var KTStudentsList = function () {
     return {
         // Public functions  
         init: function () {
-            table = document.getElementById('kt_students_table');
+            // table = document.getElementById('kt_students_table');
 
-            if (!table) {
-                return;
-            }
+            // if (!table) {
+            //     return;
+            // }
 
-            initDatatable();
+            // initDatatable();
             // initToggleToolbar();
-            handleSearch();
+            // handleSearch();
             handleDeletion();
-            handleFilter();
+            // handleFilter();
         }
     }
 }();
 
 // On document ready
 KTUtil.onDOMContentLoaded(function () {
-    KTStudentsList.init();
+    KTStudentsView.init();
 });

@@ -180,13 +180,6 @@
                 <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_students_table">
                     <thead>
                         <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
-                            {{-- <th class="w-10px pe-2">
-                                        <div class="form-check form-check-sm form-check-custom form-check-solid me-3">
-                                            <input class="form-check-input" type="checkbox" data-kt-check="true"
-                                                data-kt-check-target="#kt_students_table .form-check-input"
-                                                value="1" />
-                                        </div>
-                                    </th> --}}
                             <th class="w-10px pe-2">SL</th>
                             <th class="min-w-200px">Student</th>
                             <th class="d-none">Active/Inactive (filter)</th>
@@ -212,7 +205,8 @@
                                     <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
                                         <a href="{{ route('students.show', $student->id) }}">
                                             <div class="symbol-label">
-                                                <img src="{{ $student->photo_url ? asset($student->photo_url) : asset('assets/img/dummy.png') }}" alt="{{ $student->name }}" class="w-100" />
+                                                <img src="{{ $student->photo_url ? asset($student->photo_url) : asset('assets/img/dummy.png') }}"
+                                                    alt="{{ $student->name }}" class="w-100" />
                                             </div>
                                         </a>
                                     </div>
@@ -278,27 +272,42 @@
                                         data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions
                                         <i class="ki-outline ki-down fs-5 m-0"></i></a>
                                     <!--begin::Menu-->
-                                    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-150px py-4"
+                                    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-175px py-4"
                                         data-kt-menu="true">
+
                                         <!--begin::Menu item-->
                                         <div class="menu-item px-3">
-                                            <a href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" class="menu-link px-3">Download Form</a>
-                                        </div>
-                                        <!--begin::Menu item-->
-                                        <div class="menu-item px-3">
-                                            <a href="#" class="menu-link px-3">Active/Inactive</a>
+                                            @if (optional($student->studentActivation)->active_status == 'active')
+                                                <a href="#" class="menu-link text-hover-warning px-3" data-bs-toggle="modal" data-bs-target="#kt_toggle_activate_student_modal"
+                                                    data-student-id="{{ $student->id }}"><i
+                                                        class="bi bi-person-slash fs-2 me-2"></i> Deactivate</a>
+                                            @else
+                                                <a href="#" class="menu-link text-hover-success px-3" data-bs-toggle="modal" data-bs-target="#kt_toggle_activate_student_modal"
+                                                    data-student-id="{{ $student->id }}"><i
+                                                        class="bi bi-person-check fs-3 me-2"></i> Activate</a>
+                                            @endif
                                         </div>
                                         <!--end::Menu item-->
+
+                                        <div class="menu-item px-3">
+                                            <a href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+                                                class="menu-link text-hover-primary px-3"><i
+                                                    class="bi bi-download fs-3 me-2"></i> Download</a>
+                                        </div>
+
                                         <!--begin::Menu item-->
                                         <div class="menu-item px-3">
                                             <a href="{{ route('students.edit', $student->id) }}"
-                                                class="menu-link px-3">Edit</a>
+                                                class="menu-link text-hover-primary px-3"><i
+                                                    class="las la-pen fs-3 me-2"></i> Edit</a>
                                         </div>
                                         <!--end::Menu item-->
+
                                         <!--begin::Menu item-->
                                         <div class="menu-item px-3">
-                                            <a href="#" class="menu-link px-3 delete-student"
-                                                data-student-id="{{ $student->id }}">Delete</a>
+                                            <a href="#" class="menu-link px-3 text-hover-danger delete-student"
+                                                data-student-id="{{ $student->id }}"><i
+                                                    class="bi bi-trash fs-3 me-2"></i> Delete</a>
                                         </div>
                                         <!--end::Menu item-->
                                     </div>
@@ -314,6 +323,87 @@
         <!--end::Card body-->
     </div>
     <!--end::Card-->
+
+
+    <!--begin::Modal - Add Record-->
+    <div class="modal fade" id="kt_toggle_activate_student_modal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+        data-bs-keyboard="false">
+        <!--begin::Modal dialog-->
+        <div class="modal-dialog modal-dialog-centered mw-650px">
+            <!--begin::Modal content-->
+            <div class="modal-content">
+                <!--begin::Modal header-->
+                <div class="modal-header">
+                    <!--begin::Modal title-->
+                    <h2>Activation/Deactivation Student</h2>
+                    <!--end::Modal title-->
+                    <!--begin::Close-->
+                    <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
+                        <i class="ki-outline ki-cross fs-1">
+                        </i>
+                    </div>
+                    <!--end::Close-->
+                </div>
+                <!--end::Modal header-->
+
+                <!--begin::Modal body-->
+                <div class="modal-body py-lg-5">
+                    <!--begin::Content-->
+                    <div class="flex-row-fluid p-lg-5">
+                        <div>
+                            <form action="{{ route('students.toggleActive') }}"
+                                class="form d-flex flex-column" method="POST">
+                                @csrf
+                                <!--begin::Left column-->
+                                <div class="d-flex flex-column">
+
+                                    <input type="hidden" name="student_id" id="student_id" />
+
+                                    <div class="row">
+                                        <div class="col-lg-12">
+                                            <!--begin::Input group-->
+                                            <div class="d-flex flex-column mb-5 fv-row">
+                                                <!--begin::Label-->
+                                                <label class="fs-4 fw-semibold mb-2">রোগের ইতিহাস &nbsp; <span
+                                                        class="text-muted fs-6">(প্রযোজ্য হলে)</span>
+                                                </label>
+                                                <!--end::Label-->
+                                                <!--begin::Input-->
+                                                <textarea class="form-control" rows="3" name="history_of_disease" placeholder="এই রোগের পূর্ব বিবরণ লিখুন">{{ old('history_of_disease') }}</textarea>
+                                                <!--end::Input-->
+                                            </div>
+                                            <!--end::Input group-->
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-end">
+                                        <!--begin::Button-->
+                                        <button type="reset" class="btn btn-secondary me-5">Cancel</button>
+                                        <!--end::Button-->
+                                        <!--begin::Button-->
+                                        <button type="submit" id="kt_add_record_submit" class="btn btn-primary">
+                                            <span class="indicator-label">Submit</span>
+                                            <span class="indicator-progress">Please wait...
+                                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                            </span>
+                                        </button>
+                                        <!--end::Button-->
+                                    </div>
+                                </div>
+                                <!--end::Left column-->
+                            </form>
+                        </div>
+                    </div>
+                    <!--end::Content-->
+                </div>
+                <!--end::Modal body-->
+            </div>
+            <!--end::Modal content-->
+        </div>
+        <!--end::Modal dialog-->
+    </div>
+    <!--end::Modal - Add Record-->
+
 @endsection
 
 
@@ -326,6 +416,7 @@
 @push('page-js')
     <script>
         const routeDeleteStudent = "{{ route('students.destroy', ':id') }}";
+        const routeToggleActive = "{{ route('students.toggleActive', ':id') }}";
     </script>
 
     <script src="{{ asset('js/students/index.js') }}"></script>

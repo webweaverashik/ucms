@@ -141,7 +141,7 @@ var KTPendingStudentsList = function () {
 
     // Student approval AJAX
     const handleApproval = function () {
-        document.querySelectorAll('.activate-student').forEach(item => {
+        document.querySelectorAll('.approve-student').forEach(item => {
             item.addEventListener('click', function (e) {
                 e.preventDefault();
 
@@ -157,7 +157,7 @@ var KTPendingStudentsList = function () {
                     confirmButtonText: 'Yes, approve!'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        fetch(`/students/${studentId}/activate`, {
+                        fetch(`/students/${studentId}/approve`, {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
@@ -173,7 +173,7 @@ var KTPendingStudentsList = function () {
                                 if (data.success) {
                                     Swal.fire({
                                         title: "Approved!",
-                                        text: "The student has been activated successfully.",
+                                        text: "The student has been approved successfully.",
                                         icon: "success",
                                     }).then(() => {
                                         location.reload(); // Reload to reflect changes

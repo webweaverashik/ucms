@@ -94,10 +94,12 @@ var KTStudentsList = function () {
         document.querySelectorAll('.delete-student').forEach(item => {
             item.addEventListener('click', function (e) {
                 e.preventDefault();
-    
+
                 let studentId = this.getAttribute('data-student-id');
+                console.log('Student ID:', studentId);
+
                 let url = routeDeleteStudent.replace(':id', studentId);  // Replace ':id' with actual student ID
-    
+
                 Swal.fire({
                     title: "Are you sure to delete this student?",
                     text: "This action cannot be undone!",
@@ -115,38 +117,38 @@ var KTStudentsList = function () {
                                 "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
                             },
                         })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire({
-                                    title: "Deleted!",
-                                    text: "The student has been removed successfully.",
-                                    icon: "success",
-                                }).then(() => {
-                                    location.reload(); // Reload to reflect changes
-                                });
-                            } else {
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        title: "Deleted!",
+                                        text: "The student has been removed successfully.",
+                                        icon: "success",
+                                    }).then(() => {
+                                        location.reload(); // Reload to reflect changes
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: "Error!",
+                                        text: data.message,
+                                        icon: "error",
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error("Fetch Error:", error);
                                 Swal.fire({
                                     title: "Error!",
-                                    text: data.message,
+                                    text: "Something went wrong. Please try again.",
                                     icon: "error",
                                 });
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Fetch Error:", error);
-                            Swal.fire({
-                                title: "Error!",
-                                text: "Something went wrong. Please try again.",
-                                icon: "error",
                             });
-                        });
                     }
                 });
             });
         });
     };
-    
+
     return {
         // Public functions  
         init: function () {
@@ -158,6 +160,7 @@ var KTStudentsList = function () {
 
             initDatatable();
             // initToggleToolbar();
+
             handleSearch();
             handleDeletion();
             handleFilter();

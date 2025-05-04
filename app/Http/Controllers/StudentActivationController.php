@@ -9,7 +9,7 @@ use App\Models\Student\StudentActivation;
 
 class StudentActivationController extends Controller
 {
-    public function activate(Request $request, Student $student)
+    public function approve(Request $request, Student $student)
     {
         $request->validate([
             'active_status' => 'required|in:active,inactive',

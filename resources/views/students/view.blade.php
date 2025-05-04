@@ -70,27 +70,30 @@
                             </i>
                         </a>
                         <!--begin::Menu-->
-                        <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-6 w-200px py-4"
+                        <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-6 w-175px py-4"
                             data-kt-menu="true">
                             <!--begin::Menu item-->
                             <div class="menu-item px-3">
                                 @if (optional($student->studentActivation)->active_status == 'active')
-                                    <a href="#" class="menu-link px-3">Inactivate Student</a>
+                                    <a href="#" class="menu-link text-hover-warning px-3 toggle-inactive"><i
+                                            class="bi bi-person-slash fs-2 me-2"></i> Deactivate</a>
                                 @else
-                                    <a href="#" class="menu-link px-3">Activate Student</a>
+                                    <a href="#" class="menu-link text-hover-success px-3 toggle-active"><i
+                                            class="bi bi-person-check fs-3 me-2"></i> Activate</a>
                                 @endif
 
                             </div>
                             <!--end::Menu item-->
                             <!--begin::Menu item-->
                             <div class="menu-item px-3">
-                                <a href="{{ route('students.edit', $student->id) }}" class="menu-link px-3">Edit Student</a>
+                                <a href="{{ route('students.edit', $student->id) }}"
+                                    class="menu-link text-hover-primary px-3"><i class="las la-pen fs-3 me-2"></i> Edit</a>
                             </div>
                             <!--end::Menu item-->
                             <!--begin::Menu item-->
                             <div class="menu-item px-3">
-                                <a href="#" class="menu-link text-danger px-3"
-                                    data-kt-student-view-action="delete">Delete Student</a>
+                                <a href="#" class="menu-link text-danger px-3 delete-student" data-student-id="{{ $student->id }}"><i
+                                        class="bi bi-trash fs-3 me-2 text-danger"></i> Delete</a>
                             </div>
                             <!--end::Menu item-->
                         </div>
@@ -167,22 +170,6 @@
                                 </tr>
                                 <!--end::Row-->
 
-                                {{-- <!--begin::Row-->
-                                <tr class="">
-                                    <td class="text-gray-500">Institution:</td>
-                                    <td>
-                                        @if ($student->institution)
-                                            <a href="{{ url('students/?institution=') . $student->institution_id }}"
-                                                class="text-gray-800">
-                                                {{ $student->institution->name }} (EIIN:
-                                                {{ $student->institution->eiin_number }})
-                                            </a>
-                                        @else
-                                            <span class="text-gray-600">N/A</span>
-                                        @endif
-                                    </td>
-                                </tr>
-                                <!--end::Row--> --}}
                             </table>
                             <!--end::Details-->
                         </div>
@@ -207,21 +194,38 @@
                                 <!--begin::Row-->
                                 <tr class="">
                                     <td class="text-gray-500">Payment Style:</td>
-                                    <td class="text-gray-800">@if ($student->payments) {{ ucfirst($student->payments->payment_style) }} @else Current @endif</td>
+                                    <td class="text-gray-800">
+                                        @if ($student->payments)
+                                            {{ ucfirst($student->payments->payment_style) }}
+                                        @else
+                                            Current
+                                        @endif
+                                    </td>
                                 </tr>
                                 <!--end::Row-->
 
                                 <!--begin::Row-->
                                 <tr class="">
                                     <td class="text-gray-500">Monthly Fee:</td>
-                                    <td>@if ($student->payments) {{ intval($student->payments->tuition_fee) }} @else 2000 @endif Tk</td>
+                                    <td>
+                                        @if ($student->payments)
+                                            {{ intval($student->payments->tuition_fee) }}
+                                        @else
+                                            2000
+                                        @endif Tk
+                                    </td>
                                 </tr>
                                 <!--end::Row-->
 
                                 <!--begin::Row-->
                                 <tr class="">
                                     <td class="text-gray-500">Due Date:</td>
-                                    <td class="text-gray-800">1 to @if ($student->payments) {{ $student->payments->due_date }} @else 7 @endif</td>
+                                    <td class="text-gray-800">1 to @if ($student->payments)
+                                            {{ $student->payments->due_date }}
+                                        @else
+                                            7
+                                        @endif
+                                    </td>
                                 </tr>
                                 <!--end::Row-->
 
@@ -297,13 +301,13 @@
                                 @endif
                                 <td class="text-gray-800">
                                     @if ($student->studentActivation)
-                                    {{ $student->studentActivation->created_at->diffForHumans() }}
-                                    <span class="ms-1" data-bs-toggle="tooltip"
-                                        title="{{ $student->studentActivation->created_at->format('d-M-Y h:m:s A') }}">
-                                        <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
-                                    </span>
+                                        {{ $student->studentActivation->created_at->diffForHumans() }}
+                                        <span class="ms-1" data-bs-toggle="tooltip"
+                                            title="{{ $student->studentActivation->created_at->format('d-M-Y h:m:s A') }}">
+                                            <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
+                                        </span>
                                     @else
-                                    Pending
+                                        Pending
                                     @endif
                                 </td>
                             </tr>
@@ -318,7 +322,7 @@
                                         title="{{ $student->created_at->format('d-M-Y h:m:s A') }}">
                                         <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
                                     </span>
-                                    
+
                                 </td>
                             </tr>
                             <!--end::Row-->
@@ -428,21 +432,26 @@
                         <!--end::Menu item-->
                         <!--begin::Menu item-->
                         <div class="menu-item px-5">
-                            @if ( optional($student->studentActivation)->active_status == 'active')
-                                <a href="#" class="menu-link px-5">Inactivate Student</a>
+                            @if (optional($student->studentActivation)->active_status == 'active')
+                                <a href="#" class="menu-link px-5 text-hover-warning toggle-inactive"><i
+                                        class="bi bi-person-slash fs-2 me-2"></i> Deactivate Student</a>
                             @else
-                                <a href="#" class="menu-link px-5">Activate Student</a>
+                                <a href="#" class="menu-link px-5 text-hover-success toggle-active"><i
+                                        class="bi bi-person-check fs-2 me-2"></i> Activate Student</a>
                             @endif
                         </div>
                         <!--end::Menu item-->
                         <!--begin::Menu item-->
                         <div class="menu-item px-5 my-1">
-                            <a href="{{ route('students.edit', $student->id) }}" class="menu-link px-5">Edit Students</a>
+                            <a href="{{ route('students.edit', $student->id) }}"
+                                class="menu-link px-5 text-hover-primary"><i class="las la-pen fs-3 me-2"></i> Edit
+                                Students</a>
                         </div>
                         <!--end::Menu item-->
                         <!--begin::Menu item-->
                         <div class="menu-item px-5">
-                            <a href="#" class="menu-link text-danger px-5">Delete Student</a>
+                            <a href="#" class="menu-link text-danger px-5 delete-student" data-student-id="{{ $student->id }}"><i
+                                    class="bi bi-trash fs-3 me-2 text-danger"></i> Delete Student</a>
                         </div>
                         <!--end::Menu item-->
                     </div>
@@ -2055,6 +2064,13 @@
 @endpush
 
 @push('page-js')
+    <script>
+        const routeDeleteStudent = "{{ route('students.destroy', ':id') }}";
+        const routeToggleActive = "{{ route('students.toggleActive', ':id') }}";
+    </script>
+
+    <script src="{{ asset('js/students/view.js') }}"></script>
+
     <script>
         document.getElementById("student_info_menu").classList.add("here", "show");
         document.getElementById("all_students_link").classList.add("active");

@@ -13,7 +13,7 @@ class Sibling extends Model
 
     protected $table = 'siblings';
 
-    protected $fillable = ['name', 'age', 'class', 'institution_id', 'student_id', 'relationship'];
+    protected $fillable = ['name', 'age', 'class', 'institution_id', 'student_id', 'relationship', 'deleted_by'];
 
     // Get the student of the current sibling
     public function student()
