@@ -492,15 +492,15 @@ class StudentController extends Controller
             ]);
 
             // Update mobile numbers
-            $student
-                ->mobileNumbers()
-                ->where('number_type', 'home')
-                ->update(['mobile_number' => $validated['student_phone_home']]);
+            $student->mobileNumbers()->updateOrCreate(
+                ['number_type' => 'home'],
+                ['mobile_number' => $validated['student_phone_home']]
+            );
 
-            $student
-                ->mobileNumbers()
-                ->where('number_type', 'sms')
-                ->update(['mobile_number' => $validated['student_phone_sms']]);
+            $student->mobileNumbers()->updateOrCreate(
+                ['number_type' => 'sms'],
+                ['mobile_number' => $validated['student_phone_sms']]
+            );
 
             if (isset($validated['student_phone_whatsapp'])) {
                 $whatsappMobile = $student->mobileNumbers()->where('number_type', 'whatsapp')->first();
@@ -569,14 +569,5 @@ class StudentController extends Controller
         }
 
         return response()->json([]);
-    }
-
-    public function toggleActive(Request $request) 
-    {
-        $student = Student::findOrFail($request->student_id);
-
-        if (! $student) {
-            return response()->json(['success' => false, 'message' => 'Student is not found.']);
-        }
     }
 }

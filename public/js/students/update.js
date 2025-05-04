@@ -66,7 +66,7 @@ var KTUpdateStudent = function () {
                               KTUtil.scrollTop();
                          } else {
                               toastr.options.progressBar = true;
-                              toastr.warning('You have to fill up the required fields.');
+                              toastr.warning('Please, fill up the required fields.');
                               KTUtil.scrollTop();
                          }
                     });

@@ -1,7 +1,7 @@
-/* #toastr-container>div {
-    opacity: .9 !important;
+#toastr-container>div {
+    opacity: 1 !important;
 }
 
-.fw-medium {
+/* .fw-medium {
     font-weight: 500;
 } */

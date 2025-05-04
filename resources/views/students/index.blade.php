@@ -278,12 +278,22 @@
                                         <!--begin::Menu item-->
                                         <div class="menu-item px-3">
                                             @if (optional($student->studentActivation)->active_status == 'active')
-                                                <a href="#" class="menu-link text-hover-warning px-3" data-bs-toggle="modal" data-bs-target="#kt_toggle_activate_student_modal"
-                                                    data-student-id="{{ $student->id }}"><i
+                                                <a href="#" class="menu-link text-hover-warning px-3"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#kt_toggle_activation_student_modal"
+                                                    data-student-unique-id="{{ $student->student_unique_id }}"
+                                                    data-student-name="{{ $student->name }}"
+                                                    data-student-id="{{ $student->id }}"
+                                                    data-active-status="{{ optional($student->studentActivation)->active_status }}"><i
                                                         class="bi bi-person-slash fs-2 me-2"></i> Deactivate</a>
                                             @else
-                                                <a href="#" class="menu-link text-hover-success px-3" data-bs-toggle="modal" data-bs-target="#kt_toggle_activate_student_modal"
-                                                    data-student-id="{{ $student->id }}"><i
+                                                <a href="#" class="menu-link text-hover-success px-3"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#kt_toggle_activation_student_modal"
+                                                    data-student-unique-id="{{ $student->student_unique_id }}"
+                                                    data-student-name="{{ $student->name }}"
+                                                    data-student-id="{{ $student->id }}"
+                                                    data-active-status="{{ optional($student->studentActivation)->active_status }}"><i
                                                         class="bi bi-person-check fs-3 me-2"></i> Activate</a>
                                             @endif
                                         </div>
@@ -325,9 +335,9 @@
     <!--end::Card-->
 
 
-    <!--begin::Modal - Add Record-->
-    <div class="modal fade" id="kt_toggle_activate_student_modal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
-        data-bs-keyboard="false">
+    <!--begin::Modal - Toggle Activation Student-->
+    <div class="modal fade" id="kt_toggle_activation_student_modal" tabindex="-1" aria-hidden="true"
+        data-bs-backdrop="static" data-bs-keyboard="false">
         <!--begin::Modal dialog-->
         <div class="modal-dialog modal-dialog-centered mw-650px">
             <!--begin::Modal content-->
@@ -335,7 +345,7 @@
                 <!--begin::Modal header-->
                 <div class="modal-header">
                     <!--begin::Modal title-->
-                    <h2>Activation/Deactivation Student</h2>
+                    <h2 id="toggle-activation-modal-title">Activation/Deactivation Student</h2>
                     <!--end::Modal title-->
                     <!--begin::Close-->
                     <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
@@ -351,25 +361,27 @@
                     <!--begin::Content-->
                     <div class="flex-row-fluid p-lg-5">
                         <div>
-                            <form action="{{ route('students.toggleActive') }}"
-                                class="form d-flex flex-column" method="POST">
+                            <form action="{{ route('students.toggleActive') }}" class="form d-flex flex-column"
+                                method="POST">
                                 @csrf
                                 <!--begin::Left column-->
                                 <div class="d-flex flex-column">
 
                                     <input type="hidden" name="student_id" id="student_id" />
+                                    <input type="hidden" name="active_status" id="activation_status" />
 
                                     <div class="row">
                                         <div class="col-lg-12">
                                             <!--begin::Input group-->
                                             <div class="d-flex flex-column mb-5 fv-row">
                                                 <!--begin::Label-->
-                                                <label class="fs-4 fw-semibold mb-2">রোগের ইতিহাস &nbsp; <span
-                                                        class="text-muted fs-6">(প্রযোজ্য হলে)</span>
-                                                </label>
+                                                <label class="fs-5 fw-semibold mb-2 required"
+                                                    id="reason_label">Activation/Deactivation Reason</label>
                                                 <!--end::Label-->
+
                                                 <!--begin::Input-->
-                                                <textarea class="form-control" rows="3" name="history_of_disease" placeholder="এই রোগের পূর্ব বিবরণ লিখুন">{{ old('history_of_disease') }}</textarea>
+                                                <textarea class="form-control" rows="3" name="reason" placeholder="Write the reason for this update"
+                                                    required></textarea>
                                                 <!--end::Input-->
                                             </div>
                                             <!--end::Input group-->
@@ -378,14 +390,12 @@
 
                                     <div class="d-flex justify-content-end">
                                         <!--begin::Button-->
-                                        <button type="reset" class="btn btn-secondary me-5">Cancel</button>
+                                        <button type="reset" class="btn btn-secondary me-5"
+                                            data-bs-dismiss="modal">Cancel</button>
                                         <!--end::Button-->
                                         <!--begin::Button-->
-                                        <button type="submit" id="kt_add_record_submit" class="btn btn-primary">
-                                            <span class="indicator-label">Submit</span>
-                                            <span class="indicator-progress">Please wait...
-                                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
-                                            </span>
+                                        <button type="submit" class="btn btn-primary">
+                                            Submit
                                         </button>
                                         <!--end::Button-->
                                     </div>
@@ -402,7 +412,7 @@
         </div>
         <!--end::Modal dialog-->
     </div>
-    <!--end::Modal - Add Record-->
+    <!--end::Modal - Toggle Activation Student-->
 
 @endsection
 

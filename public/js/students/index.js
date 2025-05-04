@@ -149,6 +149,39 @@ var KTStudentsList = function () {
         });
     };
 
+    // Toggle activation modal AJAX
+    const handleToggleActivationAJAX = function () {
+        const toggleButtons = document.querySelectorAll('[data-bs-target="#kt_toggle_activation_student_modal"]');
+
+        toggleButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const studentId = this.getAttribute('data-student-id');
+                const studentName = this.getAttribute('data-student-name');
+                const studentUniqueId = this.getAttribute('data-student-unique-id');
+                const activeStatus = this.getAttribute('data-active-status');
+
+                // Set hidden field values
+                document.getElementById('student_id').value = studentId;
+                document.getElementById('activation_status').value = (activeStatus === 'active') ? 'inactive' : 'active';
+
+
+                // Update modal title and label
+                const modalTitle = document.getElementById('toggle-activation-modal-title');
+                const reasonLabel = document.getElementById('reason_label');
+
+                if (activeStatus === 'active') {
+                    modalTitle.textContent = `Deactivate Student - ${studentName} (${studentUniqueId})`;
+                    reasonLabel.textContent = 'Deactivation Reason';
+                } else {
+                    modalTitle.textContent = `Activate Student - ${studentName} (${studentUniqueId})`;
+                    reasonLabel.textContent = 'Activation Reason';
+                }
+            });
+        });
+    }
+
     return {
         // Public functions  
         init: function () {
@@ -164,6 +197,7 @@ var KTStudentsList = function () {
             handleSearch();
             handleDeletion();
             handleFilter();
+            handleToggleActivationAJAX();
         }
     }
 }();

@@ -40,7 +40,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::post('users/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggleActive');
     Route::get('students/pending', [StudentController::class, 'pending'])->name('students.pending');
     Route::post('students/{id}/approve', [StudentActivationController::class, 'approve'])->name('students.activate');
-    Route::post('students/toggle-active', [StudentController::class, 'toggleActive'])->name('students.toggleActive');
+    Route::post('students/toggle-active', [StudentActivationController::class, 'toggleActive'])->name('students.toggleActive');
 
     // AJAX Routes
     Route::prefix('admin')->group(function () {
