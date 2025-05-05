@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PdfController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Academic\ShiftController;
@@ -41,6 +42,8 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('students/pending', [StudentController::class, 'pending'])->name('students.pending');
     Route::post('students/{id}/approve', [StudentActivationController::class, 'approve'])->name('students.activate');
     Route::post('students/toggle-active', [StudentActivationController::class, 'toggleActive'])->name('students.toggleActive');
+    Route::get('students/{id}/download-form', [PdfController::class, 'downloadAdmissionForm'])->name('students.download');
+
 
     // AJAX Routes
     Route::prefix('admin')->group(function () {

@@ -297,7 +297,7 @@
 
                                     @if (optional($student->studentActivation)->active_status == 'active')
                                         <div class="menu-item px-3">
-                                            <a href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+                                            <a href="{{ route('students.download', $student->id) }}"
                                                 class="menu-link text-hover-primary px-3"><i
                                                     class="bi bi-download fs-3 me-2"></i> Download</a>
                                         </div>
