@@ -143,7 +143,7 @@ var KTUpdateStudent = function () {
 
                                         document.getElementById('admitted_name').innerText = data.student.name;
                                         document.getElementById('admitted_id').innerText = data.student.student_unique_id;
-                                        
+
                                         stepperObj.goNext();
 
                                         setTimeout(function () {
@@ -159,11 +159,39 @@ var KTUpdateStudent = function () {
                                    }
                               })
                               .catch(error => {
-                                   const errorMessages = Array.isArray(error) ? error :
-                                        (error.message ? [error.message] :
-                                             (typeof error === 'string' ? [error] :
-                                                  ["Something went wrong!"]));
+                                   let errorMessages = [];
 
+                                   // Laravel validation or structured response
+                                   if (error.response && error.response.data) {
+                                        const data = error.response.data;
+
+                                        if (typeof data === 'string') {
+                                             errorMessages.push(data);
+                                        } else if (data.message) {
+                                             errorMessages.push(data.message);
+                                        }
+
+                                        if (data.errors && typeof data.errors === 'object') {
+                                             for (const key in data.errors) {
+                                                  if (Array.isArray(data.errors[key])) {
+                                                       errorMessages.push(...data.errors[key]);
+                                                  }
+                                             }
+                                        }
+                                   }
+                                   // If error is directly a string or message property exists
+                                   else if (typeof error === 'string') {
+                                        errorMessages.push(error);
+                                   } else if (error.message) {
+                                        errorMessages.push(error.message);
+                                   } else if (typeof error === 'object') {
+                                        // Fallback to stringify the object if nothing else
+                                        errorMessages.push(JSON.stringify(error));
+                                   } else {
+                                        errorMessages.push("Something went wrong!");
+                                   }
+
+                                   
                                    showErrors(errorMessages);
                                    console.error("Error:", error);
                                    enablePreviousButton();
@@ -291,7 +319,7 @@ var KTUpdateStudent = function () {
                                         message: 'SMS no. is required for result and notice'
                                    },
                                    regexp: {
-                                        regexp: /^01[4-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
+                                        regexp: /^01[3-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
                                         message: 'Please enter a valid Bangladeshi mobile number'
                                    },
                                    stringLength: {
@@ -304,7 +332,7 @@ var KTUpdateStudent = function () {
                          'student_phone_whatsapp': {
                               validators: {
                                    regexp: {
-                                        regexp: /^01[4-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
+                                        regexp: /^01[3-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
                                         message: 'Please enter a valid Bangladeshi mobile number'
                                    },
                                    stringLength: {

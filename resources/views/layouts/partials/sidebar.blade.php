@@ -135,7 +135,7 @@
                                 <!--begin:Menu link--><a class="menu-link" id="new_admission_link"
                                     href="{{ route('students.create') }}"><span class="menu-bullet"><span
                                             class="bullet bullet-dot"></span></span><span class="menu-title">New
-                                                Admission</span></a>
+                                        Admission</span></a>
                                 <!--end:Menu link-->
                             </div>
                             <!--end:Menu item-->
@@ -145,7 +145,7 @@
                                 <!--begin:Menu link--><a class="menu-link" id="pending_approval_link"
                                     href="{{ route('students.pending') }}"><span class="menu-bullet"><span
                                             class="bullet bullet-dot"></span></span><span class="menu-title">Pending
-                                                Approval</span></a>
+                                        Approval</span></a>
                                 <!--end:Menu link-->
                             </div>
                             <!--end:Menu item-->
@@ -174,7 +174,8 @@
                             <div class="menu-item">
                                 <!--begin:Menu link--><a class="menu-link" id="institutions_link"
                                     href="{{ route('institutions.index') }}"><span class="menu-bullet"><span
-                                            class="bullet bullet-dot"></span></span><span class="menu-title">Institutions</span></a>
+                                            class="bullet bullet-dot"></span></span><span
+                                        class="menu-title">Institutions</span></a>
                                 <!--end:Menu link-->
                             </div>
                             <!--end:Menu item-->
@@ -182,27 +183,32 @@
                             <div class="menu-item">
                                 <!--begin:Menu link--><a class="menu-link" id="class_link"
                                     href="{{ route('classnames.index') }}"><span class="menu-bullet"><span
-                                            class="bullet bullet-dot"></span></span><span class="menu-title">Class</span></a>
+                                            class="bullet bullet-dot"></span></span><span
+                                        class="menu-title">Class</span></a>
                                 <!--end:Menu link-->
                             </div>
                             <!--end:Menu item-->
 
                             <!--begin:Menu item-->
                             <div class="menu-item">
-                                <!--begin:Menu link--><a class="menu-link" id="shifts_link"
-                                    href="{{ route('shifts.index') }}"><span class="menu-bullet"><span
-                                            class="bullet bullet-dot"></span></span><span class="menu-title">Shifts</span></a>
+                                <!--begin:Menu link-->
+                                <a class="menu-link" id="shifts_link" href="{{ route('shifts.index') }}"><span
+                                        class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
+                                        class="menu-title">Shifts</span>
+                                </a>
                                 <!--end:Menu link-->
                             </div>
                             <!--end:Menu item-->
 
                             <!--begin:Menu item-->
-                            <div class="menu-item">
-                                <!--begin:Menu link--><a class="menu-link" id="subjects_link"
-                                    href="{{ route('subjects.index') }}"><span class="menu-bullet"><span
-                                            class="bullet bullet-dot"></span></span><span class="menu-title">Subjects</span></a>
+                            {{-- <div class="menu-item">
+                                <!--begin:Menu link-->
+                                <a class="menu-link" id="subjects_link" href="{{ route('subjects.index') }}"><span
+                                        class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
+                                        class="menu-title">Subjects</span>
+                                </a>
                                 <!--end:Menu link-->
-                            </div>
+                            </div> --}}
                             <!--end:Menu item-->
                         </div>
                         <!--end:Menu sub-->
@@ -229,7 +235,8 @@
                             <div class="menu-item">
                                 <!--begin:Menu link--><a class="menu-link" id="all_sheets_link"
                                     href="{{ route('students.index') }}"><span class="menu-bullet"><span
-                                            class="bullet bullet-dot"></span></span><span class="menu-title">All Sheets</span></a>
+                                            class="bullet bullet-dot"></span></span><span class="menu-title">All
+                                        Sheets</span></a>
                                 <!--end:Menu link-->
                             </div>
                             <!--end:Menu item-->
@@ -238,7 +245,8 @@
                             <div class="menu-item">
                                 <!--begin:Menu link--><a class="menu-link" id="sheet_fee_link"
                                     href="?page=pages/user-profile/projects"><span class="menu-bullet"><span
-                                            class="bullet bullet-dot"></span></span><span class="menu-title">Sheet Fee</span></a>
+                                            class="bullet bullet-dot"></span></span><span class="menu-title">Sheet
+                                        Fee</span></a>
                                 <!--end:Menu link-->
                             </div>
                             <!--end:Menu item-->
@@ -247,7 +255,8 @@
                             <div class="menu-item">
                                 <!--begin:Menu link--><a class="menu-link" id="sheet_distribution_link"
                                     href="?page=pages/user-profile/campaigns"><span class="menu-bullet"><span
-                                            class="bullet bullet-dot"></span></span><span class="menu-title">Sheet Distribution</span></a>
+                                            class="bullet bullet-dot"></span></span><span class="menu-title">Sheet
+                                        Distribution</span></a>
                                 <!--end:Menu link-->
                             </div>
                             <!--end:Menu item-->
@@ -332,7 +341,8 @@
                     <!--begin:Teachers Info Menu Heading-->
                     <div class="menu-item pt-5">
                         <!--begin:Menu content-->
-                        <div class="menu-content"><span class="menu-heading fw-bold text-uppercase fs-7">Teachers Info</span>
+                        <div class="menu-content"><span class="menu-heading fw-bold text-uppercase fs-7">Teachers
+                                Info</span>
                         </div>
                         <!--end:Menu content-->
                     </div>
@@ -372,7 +382,8 @@
                     <!--begin:Systems Info Menu Heading-->
                     <div class="menu-item pt-5">
                         <!--begin:Menu content-->
-                        <div class="menu-content"><span class="menu-heading fw-bold text-uppercase fs-7">Systems</span>
+                        <div class="menu-content"><span
+                                class="menu-heading fw-bold text-uppercase fs-7">Systems</span>
                         </div>
                         <!--end:Menu content-->
                     </div>
@@ -418,7 +429,8 @@
 
     <!--begin::Footer-->
     <div class="app-sidebar-footer flex-column-auto pt-2 pb-6 px-6" id="kt_app_sidebar_footer">
-        <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+        <a href="{{ route('logout') }}"
+            onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
             class="btn btn-flex flex-center btn-custom btn-danger overflow-hidden text-nowrap px-0 h-40px w-100"
             data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-dismiss-="click" title="Logout">
             <span class="btn-label">

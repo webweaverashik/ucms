@@ -351,9 +351,9 @@ class StudentController extends Controller
 
         $students = $studentsQuery->get();
 
-        $classnames   = ClassName::all();
-        $shifts       = Shift::all();
-        $institutions = Institution::all();
+        $classnames   = ClassName::withoutTrashed()->get();
+        $shifts       = Shift::where('branch_id', auth()->user()->branch_id)->get();
+        $institutions = Institution::withoutTrashed()->get();
 
         return view('students.edit', compact('student', 'students', 'classnames', 'shifts', 'institutions'));
     }

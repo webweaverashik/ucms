@@ -5,3 +5,16 @@
 /* .fw-medium {
     font-weight: 500;
 } */
+
+
+table.ucms-table {
+    border: 1px dashed #F1F1F4 !important;
+    border-collapse: collapse !important;
+}
+
+table.ucms-table th,
+table.ucms-table td {
+    border: 1px dashed #F1F1F4 !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+}

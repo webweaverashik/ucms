@@ -53,7 +53,7 @@
                 <!--begin::Search-->
                 <div class="d-flex align-items-center position-relative my-1">
                     <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
-                        data-kt-subscription-table-filter="search" class="form-control form-control-solid w-250px ps-12"
+                        data-kt-subscription-table-filter="search" class="form-control form-control-solid w-450px ps-12"
                         placeholder="Search Students">
                 </div>
                 <!--end::Search-->
@@ -133,12 +133,6 @@
                     </div>
                     <!--end::Menu 1-->
                     <!--end::Filter-->
-                    {{-- <!--begin::Export-->
-                            <button type="button" class="btn btn-light-primary me-3" data-bs-toggle="modal"
-                                data-bs-target="#kt_subscriptions_export_modal">
-                                <i class="ki-outline ki-exit-up fs-2">
-                                </i>Export</button>
-                            <!--end::Export--> --}}
                 </div>
                 <!--end::Toolbar-->
             </div>
@@ -147,70 +141,57 @@
         <!--end::Card header-->
 
         <!--begin::Card body-->
-        <div class="card-body pt-0">
-
+        <div class="card-body py-4">
             <!--begin::Table-->
-            <div class="table-responsive">
-                <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_students_table">
+                <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_students_table">
                     <thead>
-                        <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
-                            {{-- <th class="w-10px pe-2">
-                                        <div class="form-check form-check-sm form-check-custom form-check-solid me-3">
-                                            <input class="form-check-input" type="checkbox" data-kt-check="true"
-                                                data-kt-check-target="#kt_students_table .form-check-input"
-                                                value="1" />
-                                        </div>
-                                    </th> --}}
-                            <th class="w-10px pe-2">SL</th>
-                            <th class="min-w-250px">Student</th>
+                        <tr class="fw-bold fs-7 text-uppercase gs-0">
+                            <th class="w-25px">SL</th>
+                            <th class="min-w-200px">Student</th>
                             <th class="d-none">Class (filter)</th>
-                            <th class="text-center">Class</th>
-                            <th class="text-center">Shift</th>
-                            <th class="text-center">School</th>
-                            <th class="">Guardians</th>
-                            <th class="text-center">Mobile<br>(Home)</th>
-                            <th class="text-center">Fee (৳)</th>
-                            <th class="text-center">Payment Type</th>
-                            <th class="text-center">Admission Date</th>
-                            <th class="text-center">Remarks</th>
-                            <th class="text-end min-w-70px">Actions</th>
+                            <th>Class</th>
+                            <th>Shift</th>
+                            <th>School</th>
+                            <th>Guardians</th>
+                            <th>Mobile<br>(Home)</th>
+                            <th>Fee (৳)</th>
+                            <th>Payment<br>Type</th>
+                            <th>Admission<br>Date</th>
+                            <th class="d-none">Remarks</th>
+                            <th class="min-w-70px">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="text-gray-600 fw-semibold">
                         @foreach ($students as $student)
                             <tr>
                                 <td class="pe-2">{{ $loop->index + 1 }}</td>
-                                <td class="d-flex align-items-center">
-                                    <!--begin:: Avatar -->
-                                    <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
-                                        <a href="{{ route('students.show', $student->id) }}">
-                                            <div class="symbol-label">
-                                                <img src="{{ $student->photo_url ? asset($student->photo_url) : asset('assets/img/dummy.png') }}"
-                                                    alt="{{ $student->name }}" class="w-100" />
-                                            </div>
-                                        </a>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <!--begin:: Avatar -->
+                                        <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
+                                            <a href="{{ route('students.show', $student->id) }}">
+                                                <div class="symbol-label">
+                                                    <img src="{{ $student->photo_url ? asset($student->photo_url) : asset('assets/img/dummy.png') }}"
+                                                        alt="{{ $student->name }}" class="w-100" />
+                                                </div>
+                                            </a>
+                                        </div>
+                                        <!--end::Avatar-->
+
+                                        <!--begin::user details-->
+                                        <div class="d-flex flex-column text-start">
+                                            <a href="{{ route('students.show', $student->id) }}"
+                                                class="text-gray-800 text-hover-primary mb-1">{{ $student->name }}
+                                            </a>
+                                            <span class="fw-bold fs-base">{{ $student->student_unique_id }}</span>
+                                        </div>
+                                        <!--begin::user details-->
                                     </div>
-                                    <!--end::Avatar-->
-                                    <!--begin::user details-->
-                                    <div class="d-flex flex-column">
-                                        <a href="{{ route('students.show', $student->id) }}"
-                                            class="text-gray-800 text-hover-primary mb-1">{{ $student->name }}
-                                            @if ($student->student_activation_id == null)
-                                                <span
-                                                    class="bullet bullet-dot bg-success h-6px w-6px position-absolute animation-blink"
-                                                    title="Pending Student" data-bs-toggle="tooltip"
-                                                    data-bs-placement="top">
-                                                </span>
-                                            @endif
-                                        </a>
-                                        <span class="fw-bold fs-base">{{ $student->student_unique_id }}</span>
-                                    </div>
-                                    <!--begin::user details-->
                                 </td>
                                 <td class="d-none">{{ $student->class->class_numeral }}_ucms</td>
-                                <td class="text-center">{{ $student->class->name }}</td>
-                                <td class="text-center">{{ $student->shift->name }}</td>
-                                <td class="text-center">{{ $student->institution->name }}
+                                <td>{{ $student->class->name }}</td>
+                                <td>{{ $student->shift->name }}</td>
+                                <td>{{ $student->institution->name }}
                                     (EIIN: {{ $student->institution->eiin_number }})</td>
                                 <td>
                                     @foreach ($student->guardians as $guardian)
@@ -219,22 +200,22 @@
                                                 {{ ucfirst($guardian->relationship) }}</span></a><br>
                                     @endforeach
                                 </td>
-                                <td class="text-center">
+                                <td>
                                     {!! $student->mobileNumbers->where('number_type', 'home')->pluck('mobile_number')->implode('<br>') ?: '-' !!}
                                 </td>
-                                <td class="text-center">
+                                <td>
                                     @if ($student->payments)
                                         {{ intval($student->payments->tuition_fee) }}
                                     @endif
                                 </td>
-                                <td class="text-center">
+                                <td>
                                     @if ($student->payments)
                                         {{ ucfirst($student->payments->payment_style) }}-1/{{ $student->payments->due_date }}
                                     @endif
                                 </td>
-                                <td class="text-center">{{ $student->created_at->format('d-M-Y') }}</td>
-                                <td class="text-center">{{ $student->remarks }}</td>
-                                <td class="text-end">
+                                <td>{{ $student->created_at->format('d-M-Y') }}</td>
+                                <td class="d-none">{{ $student->remarks }}</td>
+                                <td>
                                     <a href="#" class="btn btn-light btn-active-light-primary btn-sm"
                                         data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions
                                         <i class="ki-outline ki-down fs-5 m-0"></i></a>
@@ -244,19 +225,22 @@
                                         <!--begin::Menu item-->
                                         <div class="menu-item px-3">
                                             <a href="#" class="menu-link px-3 text-hover-success approve-student"
-                                                data-student-id="{{ $student->id }}"><i class="bi bi-person-check fs-3 me-2"></i> Approve</a>
+                                                data-student-id="{{ $student->id }}"><i
+                                                    class="bi bi-person-check fs-3 me-2"></i> Approve</a>
                                         </div>
                                         <!--end::Menu item-->
                                         <!--begin::Menu item-->
                                         <div class="menu-item px-3">
                                             <a href="{{ route('students.edit', $student->id) }}"
-                                                class="menu-link text-hover-primary px-3"><i class="las la-pen fs-3 me-2"></i> Edit</a>
+                                                class="menu-link text-hover-primary px-3"><i
+                                                    class="las la-pen fs-3 me-2"></i> Edit</a>
                                         </div>
                                         <!--end::Menu item-->
                                         <!--begin::Menu item-->
                                         <div class="menu-item px-3">
                                             <a href="#" class="menu-link text-hover-danger px-3 delete-student"
-                                                data-student-id="{{ $student->id }}"><i class="bi bi-trash fs-3 me-2"></i> Delete</a>
+                                                data-student-id="{{ $student->id }}"><i
+                                                    class="bi bi-trash fs-3 me-2"></i> Delete</a>
                                         </div>
                                         <!--end::Menu item-->
                                     </div>
@@ -266,7 +250,6 @@
                         @endforeach
                     </tbody>
                 </table>
-            </div>
             <!--end::Table-->
         </div>
         <!--end::Card body-->

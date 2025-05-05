@@ -126,16 +126,15 @@
             <!--begin::Card body-->
             <div class="card-body pt-0">
                 <!--begin::Table-->
-                <div class="table-responsive">
-                    <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_institutions_table">
+                    <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_institutions_table">
                         <thead>
-                            <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
-                                <th class="w-20px pe-2">SL</th>
-                                <th class="min-w-200px">Name</th>
-                                <th class="text-center">EIIN Number</th>
+                            <tr class="fw-bold fs-7 text-uppercase gs-0">
+                                <th class="w-30px">SL</th>
+                                <th class="w-500px">Institution Name</th>
+                                <th>EIIN Number</th>
                                 <th class="d-none">Type (Filter)</th>
-                                <th class="text-center">Type</th>
-                                <th class="text-center">Actions</th>
+                                <th>Type</th>
+                                <th class="w-100px">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="text-gray-600 fw-semibold">
@@ -163,7 +162,6 @@
                             @endforeach
                         </tbody>
                     </table>
-                </div>
                 <!--end::Table-->
             </div>
             <!--end::Card body-->

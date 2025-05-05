@@ -49,7 +49,7 @@
         <div class="flex-column flex-lg-row-auto w-100 w-xl-350px mb-10">
             <!--begin::Card-->
             <div class="card card-flush mb-0
-            @if (optional($student->studentActivation)->active_status === 'inactive') border border-dashed border-danger @endif"
+            @if (optional($student->studentActivation)->active_status === 'inactive') border border-dashed border-danger @elseif ($student->studentActivation == null) border border-dashed border-info @endif"
                 data-kt-sticky="true" data-kt-sticky-name="student-summary" data-kt-sticky-offset="{default: false, lg: 0}"
                 data-kt-sticky-width="{lg: '250px', xl: '350px'}" data-kt-sticky-left="auto" data-kt-sticky-top="100px"
                 data-kt-sticky-animation="false" data-kt-sticky-zindex="95">
@@ -294,7 +294,7 @@
                                     @elseif ($status === 'active')
                                         <span class="badge badge-light-success">{{ ucfirst($status) }}</span>
                                     @else
-                                        <span class="badge badge-light-secondary">Unknown</span>
+                                        <span class="badge badge-light-info">Pending Approval</span>
                                     @endif
 
                                 </td>
@@ -308,17 +308,16 @@
                                 @elseif (optional($student->studentActivation)->active_status == 'inactive')
                                     <td class="text-gray-500">Inactive Since:</td>
                                 @endif
-                                <td class="text-gray-800">
-                                    @if ($student->studentActivation)
+
+                                @if ($student->studentActivation)
+                                    <td class="text-gray-800">
                                         {{ $student->studentActivation->created_at->diffForHumans() }}
                                         <span class="ms-1" data-bs-toggle="tooltip"
                                             title="{{ $student->studentActivation->created_at->format('d-M-Y h:m:s A') }}">
                                             <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
                                         </span>
-                                    @else
-                                        Pending
-                                    @endif
-                                </td>
+                                    </td>
+                                @endif
                             </tr>
                             <!--end::Row-->
 

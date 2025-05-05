@@ -44,7 +44,7 @@
 @section('content')
     {{-- Setting different badge color to different branches --}}
     @php
-        $badgeColors = ['badge-light-primary', 'badge-light-success', 'badge-light-warning'];
+        $badgeColors = ['badge-light-primary', 'badge-light-info', 'badge-light-success'];
         $branchColors = [];
 
         foreach ($branches as $index => $branch) {
@@ -80,7 +80,7 @@
                                 <!--begin::Card body-->
                                 <div class="card-body pt-1">
                                     <!--begin::Users-->
-                                    <div class="fw-bold text-gray-600 mb-5">Total active students on this class:
+                                    <div class="fw-bold text-gray-600 mb-5">Total active students on this shift:
                                         {{ count($shift->activeStudents) }}</div>
                                     <!--end::Users-->
                                 </div>

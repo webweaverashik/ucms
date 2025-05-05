@@ -53,7 +53,7 @@
                 <!--begin::Search-->
                 <div class="d-flex align-items-center position-relative my-1">
                     <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
-                        data-kt-subscription-table-filter="search" class="form-control form-control-solid w-250px ps-12"
+                        data-kt-subscription-table-filter="search" class="form-control form-control-solid w-450px ps-12"
                         placeholder="Search Students">
                 </div>
                 <!--end::Search-->
@@ -173,34 +173,33 @@
         <!--end::Card header-->
 
         <!--begin::Card body-->
-        <div class="card-body pt-0">
-
+        <div class="card-body py-4">
             <!--begin::Table-->
-            <div class="table-responsive">
-                <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_students_table">
-                    <thead>
-                        <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
-                            <th class="w-10px pe-2">SL</th>
-                            <th class="min-w-200px">Student</th>
-                            <th class="d-none">Active/Inactive (filter)</th>
-                            <th class="d-none">Class (filter)</th>
-                            <th class="text-center">Class</th>
-                            <th class="text-center">Shift</th>
-                            <th class="text-center">School</th>
-                            <th class="">Guardians</th>
-                            <th class="text-center">Mobile<br>(Home)</th>
-                            <th class="text-center">Fee (৳)</th>
-                            <th class="text-center">Payment Type</th>
-                            <th class="text-center">Admission Date</th>
-                            <th class="text-center">Remarks</th>
-                            <th class="text-end min-w-70px">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-gray-600 fw-semibold">
-                        @foreach ($students as $student)
-                            <tr>
-                                <td class="pe-2">{{ $loop->index + 1 }}</td>
-                                <td class="d-flex align-items-center">
+            <table class="table table-hover table-row-dashed align-middle fs-6 gy-5 ucms-table" id="kt_students_table">
+                <thead>
+                    <tr class="fw-bold fs-7 text-uppercase gs-0">
+                        <th class="w-25px">SL</th>
+                        <th class="min-w-200px">Student</th>
+                        <th class="d-none">Active/Inactive (filter)</th>
+                        <th class="d-none">Class (filter)</th>
+                        <th>Class</th>
+                        <th>Shift</th>
+                        <th>School</th>
+                        <th>Guardians</th>
+                        <th>Mobile<br>(Home)</th>
+                        <th>Fee (৳)</th>
+                        <th>Payment<br>Type</th>
+                        <th>Admission<br>Date</th>
+                        <th class="d-none">Remarks</th>
+                        <th class="min-w-70px">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-600 fw-semibold">
+                    @foreach ($students as $student)
+                        <tr>
+                            <td class="pe-2">{{ $loop->index + 1 }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
                                     <!--begin:: Avatar -->
                                     <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
                                         <a href="{{ route('students.show', $student->id) }}">
@@ -211,123 +210,121 @@
                                         </a>
                                     </div>
                                     <!--end::Avatar-->
+
                                     <!--begin::user details-->
-                                    <div class="d-flex flex-column">
+                                    <div class="d-flex flex-column text-start">
                                         <a href="{{ route('students.show', $student->id) }}"
-                                            class="text-gray-800 text-hover-primary mb-1">{{ $student->name }}
-                                            @if ($student->studentActivation->active_status == 'inactive')
-                                                <span
-                                                    class="bullet bullet-dot bg-danger h-6px w-6px position-absolute animation-blink"
-                                                    title="Inactive Student" data-bs-toggle="tooltip"
-                                                    data-bs-placement="top">
-                                                </span>
-                                            @endif
+                                            class="@if ($student->studentActivation->active_status == 'inactive') text-danger @else text-gray-800 text-hover-primary @endif mb-1"
+                                            @if ($student->studentActivation->active_status == 'inactive') title="Inactive Student" data-bs-toggle="tooltip" data-bs-placement="top" @endif>{{ $student->name }}
                                         </a>
                                         <span class="fw-bold fs-base">{{ $student->student_unique_id }}</span>
                                     </div>
                                     <!--begin::user details-->
-                                </td>
-                                <td class="d-none">
-                                    @if ($student->studentActivation->active_status == 'active')
-                                        active
-                                    @else
-                                        suspended
-                                    @endif
-                                </td>
-                                <td class="d-none">{{ $student->class->class_numeral }}_ucms</td>
-                                <td class="text-center">{{ $student->class->name }}</td>
-                                <td class="text-center">{{ $student->shift->name }}</td>
-                                <td class="text-center">
-                                    @if ($student->institution)
-                                        {{ $student->institution->name }}
-                                        ({{ $student->institution->eiin_number }})
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-                                <td>
-                                    @foreach ($student->guardians as $guardian)
-                                        <a href="{{ route('guardians.show', $guardian->id) }}"><span
-                                                class="badge badge-light-primary text-hover-success">{{ $guardian->name }},
-                                                {{ ucfirst($guardian->relationship) }}</span></a><br>
-                                    @endforeach
-                                </td>
-                                <td class="text-center">
-                                    {!! $student->mobileNumbers->where('number_type', 'home')->pluck('mobile_number')->implode('<br>') ?: '-' !!}
-                                </td>
-                                <td class="text-center">
-                                    @if ($student->payments)
-                                        {{ intval($student->payments->tuition_fee) }}
-                                    @endif
-                                </td>
-                                <td class="text-center">
-                                    @if ($student->payments)
-                                        {{ ucfirst($student->payments->payment_style) }}-1/{{ $student->payments->due_date }}
-                                    @endif
-                                </td>
-                                <td class="text-center">{{ $student->created_at->format('d-M-Y') }}</td>
-                                <td class="text-center">{{ $student->remarks }}</td>
-                                <td class="text-end">
-                                    <a href="#" class="btn btn-light btn-active-light-primary btn-sm"
-                                        data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions
-                                        <i class="ki-outline ki-down fs-5 m-0"></i></a>
-                                    <!--begin::Menu-->
-                                    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-175px py-4"
-                                        data-kt-menu="true">
+                                </div>
+                            </td>
 
-                                        <!--begin::Menu item-->
-                                        <div class="menu-item px-3">
-                                            @if (optional($student->studentActivation)->active_status == 'active')
-                                                <a href="#" class="menu-link text-hover-warning px-3"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#kt_toggle_activation_student_modal"
-                                                    data-student-unique-id="{{ $student->student_unique_id }}"
-                                                    data-student-name="{{ $student->name }}"
-                                                    data-student-id="{{ $student->id }}"
-                                                    data-active-status="{{ optional($student->studentActivation)->active_status }}"><i
-                                                        class="bi bi-person-slash fs-2 me-2"></i> Deactivate</a>
-                                            @else
-                                                <a href="#" class="menu-link text-hover-success px-3"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#kt_toggle_activation_student_modal"
-                                                    data-student-unique-id="{{ $student->student_unique_id }}"
-                                                    data-student-name="{{ $student->name }}"
-                                                    data-student-id="{{ $student->id }}"
-                                                    data-active-status="{{ optional($student->studentActivation)->active_status }}"><i
-                                                        class="bi bi-person-check fs-3 me-2"></i> Activate</a>
-                                            @endif
-                                        </div>
-                                        <!--end::Menu item-->
+                            <td class="d-none">
+                                @if ($student->studentActivation->active_status == 'active')
+                                    active
+                                @else
+                                    suspended
+                                @endif
+                            </td>
+                            <td class="d-none">{{ $student->class->class_numeral }}_ucms</td>
+                            <td>{{ $student->class->name }}</td>
+                            <td>{{ $student->shift->name }}</td>
+                            <td>
+                                @if ($student->institution)
+                                    {{ $student->institution->name }}
+                                    ({{ $student->institution->eiin_number }})
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td>
+                                @foreach ($student->guardians as $guardian)
+                                    <a href="{{ route('guardians.show', $guardian->id) }}"><span
+                                            class="badge badge-light-primary text-hover-success">{{ $guardian->name }},
+                                            {{ ucfirst($guardian->relationship) }}</span></a><br>
+                                @endforeach
+                            </td>
+                            <td>
+                                {!! $student->mobileNumbers->where('number_type', 'home')->pluck('mobile_number')->implode('<br>') ?: '-' !!}
+                            </td>
+                            <td>
+                                @if ($student->payments)
+                                    {{ intval($student->payments->tuition_fee) }}
+                                @endif
+                            </td>
+                            <td>
+                                @if ($student->payments)
+                                    {{ ucfirst($student->payments->payment_style) }}-1/{{ $student->payments->due_date }}
+                                @endif
+                            </td>
+                            <td>{{ $student->created_at->format('d-M-Y') }}</td>
+                            <td class="d-none">{{ $student->remarks }}</td>
+                            <td>
+                                <a href="#" class="btn btn-light btn-active-light-primary btn-sm"
+                                    data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions
+                                    <i class="ki-outline ki-down fs-5 m-0"></i></a>
+                                <!--begin::Menu-->
+                                <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-175px py-4"
+                                    data-kt-menu="true">
 
+                                    <!--begin::Menu item-->
+                                    <div class="menu-item px-3">
+                                        @if (optional($student->studentActivation)->active_status == 'active')
+                                            <a href="#" class="menu-link text-hover-warning px-3"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#kt_toggle_activation_student_modal"
+                                                data-student-unique-id="{{ $student->student_unique_id }}"
+                                                data-student-name="{{ $student->name }}"
+                                                data-student-id="{{ $student->id }}"
+                                                data-active-status="{{ optional($student->studentActivation)->active_status }}"><i
+                                                    class="bi bi-person-slash fs-2 me-2"></i> Deactivate</a>
+                                        @else
+                                            <a href="#" class="menu-link text-hover-success px-3"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#kt_toggle_activation_student_modal"
+                                                data-student-unique-id="{{ $student->student_unique_id }}"
+                                                data-student-name="{{ $student->name }}"
+                                                data-student-id="{{ $student->id }}"
+                                                data-active-status="{{ optional($student->studentActivation)->active_status }}"><i
+                                                    class="bi bi-person-check fs-3 me-2"></i> Activate</a>
+                                        @endif
+                                    </div>
+                                    <!--end::Menu item-->
+
+                                    @if (optional($student->studentActivation)->active_status == 'active')
                                         <div class="menu-item px-3">
                                             <a href="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
                                                 class="menu-link text-hover-primary px-3"><i
                                                     class="bi bi-download fs-3 me-2"></i> Download</a>
                                         </div>
+                                    @endif
 
-                                        <!--begin::Menu item-->
-                                        <div class="menu-item px-3">
-                                            <a href="{{ route('students.edit', $student->id) }}"
-                                                class="menu-link text-hover-primary px-3"><i
-                                                    class="las la-pen fs-3 me-2"></i> Edit</a>
-                                        </div>
-                                        <!--end::Menu item-->
-
-                                        <!--begin::Menu item-->
-                                        <div class="menu-item px-3">
-                                            <a href="#" class="menu-link px-3 text-hover-danger delete-student"
-                                                data-student-id="{{ $student->id }}"><i
-                                                    class="bi bi-trash fs-3 me-2"></i> Delete</a>
-                                        </div>
-                                        <!--end::Menu item-->
+                                    <!--begin::Menu item-->
+                                    <div class="menu-item px-3">
+                                        <a href="{{ route('students.edit', $student->id) }}"
+                                            class="menu-link text-hover-primary px-3"><i class="las la-pen fs-3 me-2"></i>
+                                            Edit</a>
                                     </div>
-                                    <!--end::Menu-->
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+                                    <!--end::Menu item-->
+
+                                    <!--begin::Menu item-->
+                                    <div class="menu-item px-3">
+                                        <a href="#" class="menu-link px-3 text-hover-danger delete-student"
+                                            data-student-id="{{ $student->id }}"><i class="bi bi-trash fs-3 me-2"></i>
+                                            Delete</a>
+                                    </div>
+                                    <!--end::Menu item-->
+                                </div>
+                                <!--end::Menu-->
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
             <!--end::Table-->
         </div>
         <!--end::Card body-->

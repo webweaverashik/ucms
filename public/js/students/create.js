@@ -159,11 +159,38 @@ var KTCreateStudent = function () {
                                    }
                               })
                               .catch(error => {
-                                   // Handle both string errors and Error objects
-                                   const errorMessages = Array.isArray(error) ? error :
-                                        (error.message ? [error.message] :
-                                             (typeof error === 'string' ? [error] :
-                                                  ["Something went wrong!"]));
+                                   let errorMessages = [];
+
+                                   // Laravel validation or structured response
+                                   if (error.response && error.response.data) {
+                                        const data = error.response.data;
+
+                                        if (typeof data === 'string') {
+                                             errorMessages.push(data);
+                                        } else if (data.message) {
+                                             errorMessages.push(data.message);
+                                        }
+
+                                        if (data.errors && typeof data.errors === 'object') {
+                                             for (const key in data.errors) {
+                                                  if (Array.isArray(data.errors[key])) {
+                                                       errorMessages.push(...data.errors[key]);
+                                                  }
+                                             }
+                                        }
+                                   }
+                                   // If error is directly a string or message property exists
+                                   else if (typeof error === 'string') {
+                                        errorMessages.push(error);
+                                   } else if (error.message) {
+                                        errorMessages.push(error.message);
+                                   } else if (typeof error === 'object') {
+                                        // Fallback to stringify the object if nothing else
+                                        errorMessages.push(JSON.stringify(error));
+                                   } else {
+                                        errorMessages.push("Something went wrong!");
+                                   }
+
 
                                    showErrors(errorMessages);
                                    console.error("Error:", error);

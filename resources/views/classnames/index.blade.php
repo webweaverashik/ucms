@@ -44,12 +44,58 @@
 @section('content')
     <!--begin::Row-->
     <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-5 g-xl-9">
+        <!--begin::Add new card-->
+        <div class="col-md-4">
+            <!--begin::Card-->
+            <div class="card h-md-100">
+                <!--begin::Card body-->
+                <div class="card-body d-flex flex-center">
+                    <!--begin::Button-->
+                    <button type="button" class="btn btn-clear d-flex flex-column flex-center" data-bs-toggle="modal"
+                        data-bs-target="#kt_modal_add_role">
+                        <!--begin::Illustration-->
+                        <img src="{{ asset('assets/media/illustrations/sketchy-1/4.png') }}" alt=""
+                            class="mw-100 mh-250px mb-7" />
+                        <!--end::Illustration-->
+                        <!--begin::Label-->
+                        <div class="btn btn-primary fw-bold fs-3">Add New Class</div>
+                        <!--end::Label-->
+                    </button>
+                    <!--begin::Button-->
+                </div>
+                <!--begin::Card body-->
+            </div>
+            <!--begin::Card-->
+        </div>
+        <!--begin::Add new card-->
 
         @foreach ($classnames as $classname)
+            @php
+                $groupedSubjects = $classname->subjects->groupBy('academic_group');
+
+                // Define the desired order
+                $desiredOrder = ['General', 'Science', 'Commerce'];
+
+                // Start with a sorted collection
+                $sortedGroups = collect();
+
+                // Add desired groups in order if they exist
+                foreach ($desiredOrder as $groupName) {
+                    if ($groupedSubjects->has($groupName)) {
+                        $sortedGroups->put($groupName, $groupedSubjects->get($groupName));
+                        $groupedSubjects->forget($groupName);
+                    }
+                }
+
+                // Add any remaining groups afterward
+                $sortedGroups = $sortedGroups->merge($groupedSubjects);
+            @endphp
+
+
             <!--begin::Col-->
             <div class="col-md-4">
                 <!--begin::Card-->
-                <div class="card card-flush h-md-100">
+                <div class="card card-flush h-md-100 border-hover-primary">
                     <!--begin::Card header-->
                     <div class="card-header">
                         <!--begin::Card title-->
@@ -66,18 +112,23 @@
                             {{ count($classname->activeStudents) }}</div>
                         <!--end::Users-->
                         <!--begin::Permissions-->
-                        <div class="d-flex flex-column text-gray-600">
-                            @foreach ($classname->subjects as $subjects)
-                                <div class="d-flex align-items-center py-2">
-                                    <span class="bullet bg-primary me-3"></span>{{ $subjects->name }}
-                                </div>
-                            @endforeach
+                        <div class="d-flex flex-column text-gray-700 fs-5">
+                            <div class="row">
+                                @foreach ($sortedGroups as $group => $subjects)
+                                    <div class="col-12 mb-2">
+                                        <h5 class="fw-bold">{{ $group }}:</h5>
+                                    </div>
+                                    @foreach ($subjects as $subject)
+                                        <div class="col-lg-4 mb-3">
+                                            <div class="d-flex align-items-center py-2">
+                                                <span class="bullet bg-primary me-3"></span>{{ $subject->name }}
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @endforeach
+                            </div>
 
 
-                            {{-- <div class='d-flex align-items-center py-2'>
-                                <span class='bullet bg-primary me-3'></span>
-                                <em>and 7 more...</em>
-                            </div> --}}
                         </div>
                         <!--end::Permissions-->
                     </div>
@@ -96,29 +147,6 @@
             <!--end::Col-->
         @endforeach
 
-        <!--begin::Add new card-->
-        <div class="col-md-4">
-            <!--begin::Card-->
-            <div class="card h-md-400px">
-                <!--begin::Card body-->
-                <div class="card-body d-flex flex-center">
-                    <!--begin::Button-->
-                    <button type="button" class="btn btn-clear d-flex flex-column flex-center" data-bs-toggle="modal"
-                        data-bs-target="#kt_modal_add_role">
-                        <!--begin::Illustration-->
-                        <img src="{{ asset('assets/media/illustrations/sketchy-1/4.png') }}" alt="" class="mw-100 mh-250px mb-7" />
-                        <!--end::Illustration-->
-                        <!--begin::Label-->
-                        <div class="btn btn-primary fw-bold fs-3">Add New Class</div>
-                        <!--end::Label-->
-                    </button>
-                    <!--begin::Button-->
-                </div>
-                <!--begin::Card body-->
-            </div>
-            <!--begin::Card-->
-        </div>
-        <!--begin::Add new card-->
     </div>
     <!--end::Row-->
 
@@ -214,8 +242,8 @@
                                                         <!--begin::Checkbox-->
                                                         <label
                                                             class="form-check form-check-sm form-check-custom form-check-solid me-5 me-lg-20">
-                                                            <input class="form-check-input" type="checkbox" value=""
-                                                                name="user_management_read" />
+                                                            <input class="form-check-input" type="checkbox"
+                                                                value="" name="user_management_read" />
                                                             <span class="form-check-label">Read</span>
                                                         </label>
                                                         <!--end::Checkbox-->
