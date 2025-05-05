@@ -120,19 +120,6 @@
                             </div>
                             <!--end::Input group-->
 
-                            <!--begin::Input group-->
-                            {{-- <div class="mb-10">
-                                <label class="form-label fs-6 fw-semibold">Branch:</label>
-                                <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                    data-placeholder="Select option" data-allow-clear="true"
-                                    data-kt-subscription-table-filter="status" data-hide-search="true">
-                                    <option></option>
-                                    @foreach ($branches as $branch)
-                                        <option value="{{ $branch->name }}">{{ $branch->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div> --}}
-                            <!--end::Input group-->
                             <!--begin::Actions-->
                             <div class="d-flex justify-content-end">
                                 <button type="reset" class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
@@ -146,12 +133,6 @@
                     </div>
                     <!--end::Menu 1-->
                     <!--end::Filter-->
-
-                    <!--begin::Add New Guardian-->
-                    {{-- <a href="{{ route('guardians.create') }}" class="btn btn-primary">
-                        <i class="ki-outline ki-plus fs-2"></i>New Guardian
-                    </a> --}}
-                    <!--end::Add New Guardian-->
                 </div>
                 <!--end::Toolbar-->
 
@@ -197,7 +178,7 @@
                                     <!--end::Avatar-->
                                     <!--begin::user details-->
                                     <div class="d-flex flex-column">
-                                        <a href="{{ route('guardians.show', $guardian->id) }}"
+                                        <a href="#"
                                             class="text-gray-800 text-hover-primary mb-1">{{ $guardian->name }}
                                         </a>
                                     </div>

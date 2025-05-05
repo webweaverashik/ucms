@@ -11,7 +11,7 @@ class Subject extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['subject_name', 'academic_group', 'is_mandatory', 'class_id'];
+    protected $fillable = ['name', 'academic_group', 'is_mandatory', 'class_id'];
 
     public function class()
     {

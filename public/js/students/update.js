@@ -265,7 +265,7 @@ var KTUpdateStudent = function () {
                                         message: 'Mobile no. is required'
                                    },
                                    regexp: {
-                                        regexp: /^01[4-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
+                                        regexp: /^01[3-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
                                         message: 'Please enter a valid Bangladeshi mobile number'
                                    },
                                    stringLength: {

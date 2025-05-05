@@ -777,7 +777,7 @@
                                 @foreach ($student->subjectsTaken as $subjectTaken)
                                     <div class="col-md-3 mb-3">
                                         <h5 class="text-gray-700"><i class="bi bi-check2-circle fs-3 text-success"></i>
-                                            {{ $subjectTaken->subject->subject_name ?? 'N/A' }}</h5>
+                                            {{ $subjectTaken->subject->name ?? 'N/A' }}</h5>
                                     </div>
                                 @endforeach
                             </div>
