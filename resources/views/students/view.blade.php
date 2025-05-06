@@ -542,6 +542,20 @@
                             <!--begin::Input group-->
                             <div class="row mb-5">
                                 <!--begin::Label-->
+                                <label class="col-lg-4 fw-semibold text-muted fs-6">Blood Group</label>
+                                <!--end::Label-->
+                                <!--begin::Col-->
+                                <div class="col-lg-8 fv-row">
+                                    <span
+                                        class="fw-bold text-gray-800 fs-6">{{ $student->blood_group }}</span>
+                                </div>
+                                <!--end::Col-->
+                            </div>
+                            <!--end::Input group-->
+
+                            <!--begin::Input group-->
+                            <div class="row mb-5">
+                                <!--begin::Label-->
                                 <label class="col-lg-4 fw-semibold text-muted fs-6">Date of Birth</label>
                                 <!--end::Label-->
                                 <!--begin::Col-->

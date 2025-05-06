@@ -13,7 +13,7 @@ class MobileNumberFactory extends Factory
     public function definition(): array
     {
         return [
-            'mobile_number' => '01' . $this->faker->numberBetween(100000000, 999999999), // Valid BD mobile number
+            'mobile_number' => '01' . $this->faker->numberBetween(300000000, 999999999), // Valid BD mobile number
             'number_type' => $this->faker->randomElement(['home', 'sms', 'whatsapp']),
             'student_id' => Student::inRandomOrder()->first()->id ?? Student::factory(),
         ];

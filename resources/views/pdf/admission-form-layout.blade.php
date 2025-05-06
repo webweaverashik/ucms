@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Admission Form</title>
+    <title>{{ $student->student_unique_id }} - Admission Form</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
     <style>
@@ -93,7 +93,7 @@
 </head>
 
 <body class="p-2">
-    <div class="max-w-[1000px] mx-auto outer-frame p-4 relative">
+    <div class="max-w-[1000px] h-full mx-auto outer-frame p-4 relative">
         <!-- Corner decorations -->
         <div class="corner tl"></div>
         <div class="corner tr"></div>
@@ -284,22 +284,28 @@
             @php
                 $takenSubjectIds = $student->subjectsTaken->pluck('subject_id')->toArray();
 
-                // Sort and group subjects by academic_group with desired order
+                // Desired group order
                 $groupOrder = ['General', 'Science', 'Commerce'];
+
+                // Sort and group subjects by academic_group
                 $groupedSubjects = collect($student->class->subjects)
                     ->sortBy(function ($subject) use ($groupOrder) {
                         return array_search($subject->academic_group, $groupOrder) !== false
                             ? array_search($subject->academic_group, $groupOrder)
                             : count($groupOrder); // put unmatched groups at the end
                     })
-                    ->groupBy('academic_group');
+                    ->groupBy('academic_group')
+                    ->filter(function ($subjects) use ($takenSubjectIds) {
+                        // Keep only groups that have at least one subject taken by the student
+                        return $subjects->pluck('id')->intersect($takenSubjectIds)->isNotEmpty();
+                    });
             @endphp
 
-            <div class="mb-1 space-y-2 text-[13px] font-normal">
+            <div class="mb-1 space-y-1 text-[13px] font-normal">
                 @foreach ($groupedSubjects as $group => $subjects)
-                    <div>
+                    <div class="mb-2">
                         <div class="font-semibold text-gray-600 mb-1">{{ $group ?? 'Others' }}:</div>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                        <div class="grid grid-cols-5 gap-2">
                             @foreach ($subjects as $subject)
                                 <label class="flex items-center space-x-1">
                                     <input type="checkbox" class="form-checkbox" name="subjects[]"
@@ -315,7 +321,6 @@
 
 
 
-
             <div class="flex justify-around text-[12px] font-normal mt-10 mb-2">
                 <span class="border-t border-solid border-black min-w-[80px]">Date & Signature of Guardian</span>
                 <span class="border-t border-solid border-black min-w-[80px]">Date & Signature of Student</span>
@@ -325,76 +330,80 @@
                 class="w-100 text-center pb-1 mb-2 mx-auto text-[10px] border-b border-dotted border-[#333] dotted-underline">
                 # N.B.: If you change any kind of information above, please inform the office as soon as possible.</div>
 
-            <div class="border border-black rounded px-2 py-1 w-max text-[15px] font-bold mb-2 mx-auto">Only for
-                Admin</div>
+            <div class="absolute bottom-0 mb-1">
+                <div class="border border-black rounded px-2 py-1 w-max text-[15px] font-bold mb-2 mx-auto">Only for
+                    Admin</div>
 
-            <div class="mb-2 flex flex-wrap items-center text-[15px] font-normal">
-                <label class="w-[125px]">Student ID</label>:
-                <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[200px] font-bold ml-2">
-                    {{ $student->student_unique_id }}</div>
+                <div class="mb-2 flex flex-wrap items-center text-[15px] font-normal">
+                    <label class="w-[125px]">Student ID</label>:
+                    <div
+                        class="flex-1 border-b border-dotted border-black dotted-underline min-w-[200px] font-bold ml-2">
+                        {{ $student->student_unique_id }}</div>
 
-                <label class="ml-4 mr-2">Date of Admission :</label>
-                <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[200px] font-bold">
-                    {{ $student->created_at->format('d/m/Y') }}</div>
-            </div>
-
-            <div class="mb-2 flex flex-wrap items-center text-[15px] font-normal">
-                <label class="w-[125px]">Salary/Package</label>:
-                <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[50px] font-bold mx-2">
-                    {{ intval($student->payments->tuition_fee) }}</div>
-                <span>Taka.</span>
-
-                <label class="ml-4 mr-2">Way of Payment :</label>
-                <label class="ml-2 flex items-center"><input type="checkbox" class="mr-1"
-                        @if ($student->payments->due_date == 7) checked @endif>1 to 7</label>
-                <label class="ml-2 flex items-center"><input type="checkbox" class="mr-1"
-                        @if ($student->payments->due_date == 10) checked @endif />1 to 10</label>
-                <label class="ml-2 flex items-center"><input type="checkbox" class="mr-1"
-                        @if ($student->payments->due_date == 15) checked @endif />1 to 15</label>
-                <label class="ml-2 flex items-center"><input type="checkbox" class="mr-1"
-                        @if ($student->payments->due_date == 30) checked @endif />1 to 30</label>
-            </div>
-
-            <div class="mb-2 flex flex-wrap items-center text-[15px] font-normal">
-                <label class="w-[125px]">Shift</label>:
-                @foreach ($student->branch->shifts as $shift)
-                    <label class="ml-2 flex items-center"><input type="checkbox" class="mr-1"
-                            value="{{ $shift->id }}"
-                            @if ($shift->id == $student->shift_id) checked @endif />{{ $shift->name }}</label>
-                @endforeach
-
-                <button type="button"
-                    class="ml-auto border border-black rounded px-2 py-0.5 text-[15px] font-semibold">Payment
-                    Type:</button>
-                <label class="ml-2 flex items-center"><input type="checkbox" class="mr-1"
-                        @if ($student->payments->payment_style == 'current') checked @endif />Current</label>
-                <label class="ml-2 flex items-center"><input type="checkbox" class="mr-1"
-                        @if ($student->payments->payment_style == 'due') checked @endif />Due</label>
-            </div>
-
-            <div class="mb-2 flex flex-wrap items-center text-[15px] font-normal">
-                <label class="w-[125px]">Reference</label>:
-                <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[200px] ml-2">
-                    @if ($student->reference && $student->reference->referer)
-                        @php
-                            $referer = $student->reference->referer;
-                        @endphp
-
-                        @if ($referer instanceof \App\Models\Student\Student)
-                            {{ $referer->name }} ({{ $referer->student_unique_id }})
-                        @else
-                            {{ $referer->name }}
-                        @endif
-                    @endif
+                    <label class="ml-4 mr-2">Date of Admission :</label>
+                    <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[200px] font-bold">
+                        {{ $student->created_at->format('d/m/Y') }}</div>
                 </div>
-                <label class="font-normal mr-2">Others Note :</label>
-                <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[200px]">
-                    {{ $student->remarks }}</div>
-            </div>
 
-            <div class="flex justify-between text-[12px] font-normal mt-10">
-                <span class="border-t border-solid border-black min-w-[80px]">Date & Signature of Admin</span>
-                <span class="border-t border-solid border-black min-w-[80px]">Information Update</span>
+                <div class="mb-2 flex flex-wrap items-center text-[15px] font-normal">
+                    <label class="w-[125px]">Salary/Package</label>:
+                    <div
+                        class="flex-1 border-b border-dotted border-black dotted-underline min-w-[50px] font-bold mx-2">
+                        {{ intval($student->payments->tuition_fee) }}</div>
+                    <span>Taka.</span>
+
+                    <label class="ml-4 mr-2">Way of Payment :</label>
+                    <label class="ml-2 flex items-center"><input type="checkbox" class="mr-1"
+                            @if ($student->payments->due_date == 7) checked @endif>1 to 7</label>
+                    <label class="ml-2 flex items-center"><input type="checkbox" class="mr-1"
+                            @if ($student->payments->due_date == 10) checked @endif />1 to 10</label>
+                    <label class="ml-2 flex items-center"><input type="checkbox" class="mr-1"
+                            @if ($student->payments->due_date == 15) checked @endif />1 to 15</label>
+                    <label class="ml-2 flex items-center"><input type="checkbox" class="mr-1"
+                            @if ($student->payments->due_date == 30) checked @endif />1 to 30</label>
+                </div>
+
+                <div class="mb-2 flex flex-wrap items-center text-[15px] font-normal">
+                    <label class="w-[125px]">Shift</label>:
+                    @foreach ($student->branch->shifts as $shift)
+                        <label class="ml-2 flex items-center"><input type="checkbox" class="mr-1"
+                                value="{{ $shift->id }}"
+                                @if ($shift->id == $student->shift_id) checked @endif />{{ $shift->name }}</label>
+                    @endforeach
+
+                    <button type="button"
+                        class="ml-auto border border-black rounded px-2 py-0.5 text-[15px] font-semibold">Payment
+                        Type:</button>
+                    <label class="ml-2 flex items-center"><input type="checkbox" class="mr-1"
+                            @if ($student->payments->payment_style == 'current') checked @endif />Current</label>
+                    <label class="ml-2 flex items-center"><input type="checkbox" class="mr-1"
+                            @if ($student->payments->payment_style == 'due') checked @endif />Due</label>
+                </div>
+
+                <div class="mb-2 flex flex-wrap items-center text-[15px] font-normal">
+                    <label class="w-[125px]">Reference</label>:
+                    <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[200px] ml-2">
+                        @if ($student->reference && $student->reference->referer)
+                            @php
+                                $referer = $student->reference->referer;
+                            @endphp
+
+                            @if ($referer instanceof \App\Models\Student\Student)
+                                {{ $referer->name }} ({{ $referer->student_unique_id }})
+                            @else
+                                {{ $referer->name }}
+                            @endif
+                        @endif
+                    </div>
+                    <label class="font-normal mr-2">Others Note :</label>
+                    <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[200px]">
+                        {{ $student->remarks }}</div>
+                </div>
+
+                <div class="flex justify-between text-[12px] font-normal mt-10">
+                    <span class="border-t border-solid border-black min-w-[80px]">Date & Signature of Admin</span>
+                    <span class="border-t border-solid border-black min-w-[80px]">Information Update</span>
+                </div>
             </div>
         </form>
     </div>

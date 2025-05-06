@@ -64,7 +64,7 @@
                     @endphp
                         <!--begin::Col-->
                         <div class="col-md-4">
-                            <a href="{{ url('students/?branch=') . $shift->id }}">
+                            <a href="{{ url('students/?shift=') . $shift->id }}">
                             <!--begin::Card-->
                             <div class="card card-flush h-md-100">
                                 <!--begin::Card header-->
