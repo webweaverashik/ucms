@@ -278,7 +278,7 @@
                                     @if (optional($student->studentActivation)->active_status == 'active')
                                         <div class="menu-item px-3">
                                             <a href="{{ route('students.download', $student->id) }}"
-                                                class="menu-link text-hover-primary px-3"><i
+                                                class="menu-link text-hover-primary px-3" target="_blank"><i
                                                     class="bi bi-download fs-3 me-2"></i> Download</a>
                                         </div>
                                     @endif

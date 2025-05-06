@@ -457,6 +457,15 @@
                             @endif
                         </div>
                         <!--end::Menu item-->
+
+                        @if (optional($student->studentActivation)->active_status == 'active')
+                            <div class="menu-item px-5">
+                                <a href="{{ route('students.download', $student->id) }}" target="_blank"
+                                    class="menu-link text-hover-primary px-5"><i class="bi bi-download fs-2 me-2"></i>
+                                    Download</a>
+                            </div>
+                        @endif
+
                         <!--begin::Menu item-->
                         <div class="menu-item px-5 my-1">
                             <a href="{{ route('students.edit', $student->id) }}"
@@ -499,7 +508,7 @@
                             <!--begin::Row-->
                             <div class="row mb-5">
                                 <!--begin::Label-->
-                                <label class="col-lg-4 fw-semibold text-muted">Full Name</label>
+                                <label class="col-lg-4 fw-semibold text-muted fs-6">Full Name</label>
                                 <!--end::Label-->
                                 <!--begin::Col-->
                                 <div class="col-lg-8">
@@ -512,7 +521,7 @@
                             <!--begin::Input group-->
                             <div class="row mb-5">
                                 <!--begin::Label-->
-                                <label class="col-lg-4 fw-semibold text-muted">Gender</label>
+                                <label class="col-lg-4 fw-semibold text-muted fs-6">Gender</label>
                                 <!--end::Label-->
                                 <!--begin::Col-->
                                 <div class="col-lg-8 fv-row">
@@ -533,7 +542,7 @@
                             <!--begin::Input group-->
                             <div class="row mb-5">
                                 <!--begin::Label-->
-                                <label class="col-lg-4 fw-semibold text-muted">Date of Birth</label>
+                                <label class="col-lg-4 fw-semibold text-muted fs-6">Date of Birth</label>
                                 <!--end::Label-->
                                 <!--begin::Col-->
                                 <div class="col-lg-8 fv-row">
@@ -547,7 +556,7 @@
                             <!--begin::Input group-->
                             <div class="row mb-5">
                                 <!--begin::Label-->
-                                <label class="col-lg-4 fw-semibold text-muted">Home Address</label>
+                                <label class="col-lg-4 fw-semibold text-muted fs-6">Home Address</label>
                                 <!--end::Label-->
                                 <!--begin::Col-->
                                 <div class="col-lg-8 fv-row">
@@ -560,7 +569,7 @@
                             <!--begin::Input group-->
                             <div class="row mb-5">
                                 <!--begin::Label-->
-                                <label class="col-lg-4 fw-semibold text-muted">Religion</label>
+                                <label class="col-lg-4 fw-semibold text-muted fs-6">Religion</label>
                                 <!--end::Label-->
                                 <!--begin::Col-->
                                 <div class="col-lg-8 fv-row">
@@ -573,7 +582,7 @@
                             <!--begin::Input group-->
                             <div class="row mb-5">
                                 <!--begin::Label-->
-                                <label class="col-lg-4 fw-semibold text-muted">Email</label>
+                                <label class="col-lg-4 fw-semibold text-muted fs-6">Email</label>
                                 <!--end::Label-->
                                 <!--begin::Col-->
                                 <div class="col-lg-8 d-flex align-items-center">
@@ -586,7 +595,7 @@
                             <!--begin::Input group-->
                             <div class="row mb-5">
                                 <!--begin::Label-->
-                                <label class="col-lg-4 fw-semibold text-muted">Phone (Home)</label>
+                                <label class="col-lg-4 fw-semibold text-muted fs-6">Phone (Home)</label>
                                 <!--end::Label-->
                                 <!--begin::Col-->
                                 <div class="col-lg-8 d-flex align-items-center">
@@ -600,7 +609,7 @@
                             <!--begin::Input group-->
                             <div class="row mb-5">
                                 <!--begin::Label-->
-                                <label class="col-lg-4 fw-semibold text-muted">Phone (SMS)</label>
+                                <label class="col-lg-4 fw-semibold text-muted fs-6">Phone (SMS)</label>
                                 <!--end::Label-->
                                 <!--begin::Col-->
                                 <div class="col-lg-8 d-flex align-items-center">
@@ -612,7 +621,7 @@
                             <!--begin::Input group-->
                             <div class="row mb-5">
                                 <!--begin::Label-->
-                                <label class="col-lg-4 fw-semibold text-muted">Phone (WhatsApp)</label>
+                                <label class="col-lg-4 fw-semibold text-muted fs-6">Phone (WhatsApp)</label>
                                 <!--end::Label-->
                                 <!--begin::Col-->
                                 <div class="col-lg-8 d-flex align-items-center">
@@ -626,7 +635,7 @@
                             <!--begin::Input group-->
                             <div class="row mb-5">
                                 <!--begin::Label-->
-                                <label class="col-lg-4 fw-semibold text-muted">Institution
+                                <label class="col-lg-4 fw-semibold text-muted fs-6">Institution
                                     <span class="ms-1" data-bs-toggle="tooltip" title="School or College Name">
                                         <i class="ki-outline ki-information fs-7">
                                         </i>
@@ -772,14 +781,52 @@
                         <!--begin::Card body-->
                         <div class="card-body py-0">
                             <!--begin::Table wrapper-->
+                            @php
+                                $groupedSubjects = $student->subjectsTaken->groupBy(
+                                    fn($item) => $item->subject->academic_group ?? 'Unknown',
+                                );
+                            @endphp
+
                             <div class="row">
-                                @foreach ($student->subjectsTaken as $subjectTaken)
-                                    <div class="col-md-3 mb-3">
-                                        <h5 class="text-gray-700"><i class="bi bi-check2-circle fs-3 text-success"></i>
-                                            {{ $subjectTaken->subject->name ?? 'N/A' }}</h5>
-                                    </div>
+                                {{-- Render priority groups first --}}
+                                @foreach (['General', 'Science', 'Commerce'] as $priorityGroup)
+                                    @if ($groupedSubjects->has($priorityGroup))
+                                        <div class="col-12 mb-2">
+                                            <h5 class="fw-bold">{{ $priorityGroup }}</h5>
+                                            <div class="row">
+                                                @foreach ($groupedSubjects[$priorityGroup] as $subjectTaken)
+                                                    <div class="col-md-3 mb-3">
+                                                        <h6 class="text-gray-600">
+                                                            <i class="bi bi-check2-circle fs-3 text-success"></i>
+                                                            {{ $subjectTaken->subject->name ?? 'N/A' }}
+                                                        </h6>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+                                @endforeach
+
+                                {{-- Render remaining non-priority groups --}}
+                                @foreach ($groupedSubjects as $group => $subjects)
+                                    @if (!in_array($group, ['General', 'Science', 'Commerce']))
+                                        <div class="col-12 mb-2">
+                                            <h4 class="fw-bold">{{ $group }}</h4>
+                                            <div class="row">
+                                                @foreach ($subjects as $subjectTaken)
+                                                    <div class="col-md-3 mb-3">
+                                                        <h5 class="text-gray-700">
+                                                            <i class="bi bi-check2-circle fs-3 text-success"></i>
+                                                            {{ $subjectTaken->subject->name ?? 'N/A' }}
+                                                        </h5>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
                                 @endforeach
                             </div>
+
                             <!--end::Table wrapper-->
                         </div>
                         <!--end::Card body-->

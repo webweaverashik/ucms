@@ -127,8 +127,6 @@
                                     @endforeach
                                 @endforeach
                             </div>
-
-
                         </div>
                         <!--end::Permissions-->
                     </div>
