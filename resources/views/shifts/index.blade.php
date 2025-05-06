@@ -44,7 +44,7 @@
 @section('content')
     {{-- Setting different badge color to different branches --}}
     @php
-        $badgeColors = ['badge-light-primary', 'badge-light-info', 'badge-light-success'];
+        $badgeColors = ['badge-light-primary', 'badge-light-success', 'badge-light-warning'];
         $branchColors = [];
 
         foreach ($branches as $index => $branch) {

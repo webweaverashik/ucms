@@ -170,7 +170,7 @@
                         <th class="d-none">Class (filter)</th>
                         <th>Class</th>
                         <th>Shift</th>
-                        <th>School</th>
+                        <th class="w-300px">School</th>
                         <th>Guardians</th>
                         <th>Mobile<br>(Home)</th>
                         <th>Fee (৳)</th>

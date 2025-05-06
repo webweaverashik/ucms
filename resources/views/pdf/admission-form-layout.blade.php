@@ -111,8 +111,8 @@
                 <h1 class="text-6xl font-black text-center mb-0" style="font-family: 'SolaimanLipi', sans-serif;">ইউনিক
                     কোচিং
                 </h1>
-                <p class="text-center text-[10px] mb-1">
-                    {{ $student->branch->address }}<br />
+                <p class="text-center text-[11px] mb-1">
+                    {{ $student->branch->address }}, Phone: {{ $student->branch->phone_number }}<br />
                     {{ $student->branch->branch_name }} Branch
                 </p>
             </div>

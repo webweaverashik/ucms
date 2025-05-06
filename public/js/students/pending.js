@@ -146,6 +146,7 @@ var KTPendingStudentsList = function () {
                 e.preventDefault();
 
                 let studentId = this.getAttribute('data-student-id');
+                console.log("Student ID: ", studentId);
 
                 Swal.fire({
                     title: 'Are you sure?',

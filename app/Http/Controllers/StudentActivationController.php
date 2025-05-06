@@ -9,8 +9,10 @@ use Illuminate\Support\Facades\DB;
 
 class StudentActivationController extends Controller
 {
-    public function approve(Request $request, Student $student)
+    public function approve(Request $request, string $id)
     {
+        $student = Student::findOrFail($id);
+        
         $request->validate([
             'active_status' => 'required|in:active,inactive',
             'reason'        => 'nullable|string|max:255',

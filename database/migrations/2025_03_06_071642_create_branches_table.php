@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('branch_name');
             $table->string('branch_prefix');
             $table->string('address');
-            $table->string('phone_number', 11);
+            $table->string('phone_number');
             $table->timestamps();
         });
     }

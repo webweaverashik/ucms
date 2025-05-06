@@ -13,9 +13,13 @@ return new class extends Migration
     {
         Schema::create('payment_invoices', function (Blueprint $table) {
             $table->id();
-            $table->string('invoice_number');
+            $table->string('invoice_number')->unique();
             $table->foreignId('student_id');
+            $table->decimal('amount', 10, 2);
             $table->string('month_year');
+            $table->enum('status', ['due', 'overdue', 'partially_paid', 'paid'])->default('due');
+            $table->softDeletes();
+            $table->foreignId('deleted_by')->nullable();
             $table->timestamps();
         });
     }

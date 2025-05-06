@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('payment_invoice_id');
             $table->enum('payment_type', ['partial', 'full']);
             $table->decimal('amount_paid', 10, 2);
-            $table->string('voucher_no');
+            $table->string('voucher_no')->unique();
             $table->timestamps();
         });
     }

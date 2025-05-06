@@ -64,8 +64,8 @@
                 <!--begin::Search-->
                 <div class="d-flex align-items-center position-relative my-1">
                     <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
-                        data-kt-subscription-table-filter="search" class="form-control form-control-solid w-250px ps-12"
-                        placeholder="Search Guardians">
+                        data-kt-subscription-table-filter="search" class="form-control form-control-solid w-350px ps-12"
+                        placeholder="Search In Guardians">
                 </div>
                 <!--end::Search-->
             </div>
@@ -167,20 +167,18 @@
                                 <td class="d-flex align-items-center">
                                     <!--begin:: Avatar -->
                                     <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
-                                        <a href="#">
                                             <div class="symbol-label">
                                                 <img src="{{ asset($guardian->gender == 'male' ? 'img/male.png' : 'img/female.png') }}"
                                                     alt="{{ $guardian->name }}" class="w-100" />
 
                                             </div>
-                                        </a>
                                     </div>
                                     <!--end::Avatar-->
                                     <!--begin::user details-->
                                     <div class="d-flex flex-column">
-                                        <a href="#"
-                                            class="text-gray-800 text-hover-primary mb-1">{{ $guardian->name }}
-                                        </a>
+                                        <span 
+                                            class="text-gray-800 mb-1">{{ $guardian->name }}
+                                        </span>
                                     </div>
                                     <!--begin::user details-->
                                 </td>
