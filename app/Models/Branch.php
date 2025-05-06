@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Academic\Shift;
 use App\Models\Student\Student;
 use App\Models\Academic\ClassName;
 use Illuminate\Database\Eloquent\Model;
@@ -37,5 +38,11 @@ class Branch extends Model
     public function classes()
     {
         return $this->hasMany(ClassName::class);
+    }
+
+    // Get all the shifts in the branch
+    public function shifts()
+    {
+        return $this->hasMany(Shift::class);
     }
 }
