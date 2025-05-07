@@ -14,8 +14,7 @@ class MobileNumberFactory extends Factory
     {
         return [
             'mobile_number' => '01' . $this->faker->numberBetween(300000000, 999999999), // Valid BD mobile number
-            'number_type' => $this->faker->randomElement(['home', 'sms', 'whatsapp']),
-            'student_id' => Student::inRandomOrder()->first()->id ?? Student::factory(),
+            'number_type'   => 'home', // default type, will override in seeder
         ];
     }
 }

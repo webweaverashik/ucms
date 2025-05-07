@@ -12,9 +12,9 @@ use App\Http\Controllers\Teacher\TeacherController;
 use App\Http\Controllers\Academic\SubjectController;
 use App\Http\Controllers\Student\GuardianController;
 use App\Http\Controllers\Student\ReferenceController;
-use App\Http\Controllers\StudentActivationController;
 use App\Http\Controllers\Academic\ClassNameController;
 use App\Http\Controllers\Academic\InstitutionController;
+use App\Http\Controllers\Student\StudentActivationController;
 
 
 Route::get('/', [AuthController::class, 'showLogin'])->name('home');

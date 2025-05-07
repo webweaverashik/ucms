@@ -45,7 +45,7 @@ class DatabaseSeeder extends Seeder
             SubjectTakenSeeder::class,
             PaymentSeeder::class,
             PaymentInvoiceSeeder::class,
-            PaymentTransactionSeeder::class,
+            // PaymentTransactionSeeder::class,
         ]);
     }
 }

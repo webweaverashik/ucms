@@ -1,6 +1,7 @@
 <?php
 namespace Database\Factories\Payment;
 
+use App\Models\Payment\Payment;
 use App\Models\Payment\PaymentInvoice;
 use App\Models\Student\Student;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -11,14 +12,17 @@ class PaymentInvoiceFactory extends Factory
 
     public function definition()
     {
-        // Fetch an existing student ID from the database
-        $studentId = Student::inRandomOrder()->first()->id;
+        // ---- Not using this factory ----
+        
+        $student = Student::inRandomOrder()->first();
+
+        $tuitionFee = Payment::where('student_id', $student->id)->inRandomOrder()->value('tuition_fee') ?? 0;
 
         return [
             'invoice_number' => $this->faker->unique()->numberBetween(1000, 9999),
-            'student_id'     => $studentId,
-            'amount'         => $this->faker->randomFloat(2, 1500, 5000),
-            'month_year'     => $this->faker->monthName() . '-' . $this->faker->year(),
+            'student_id'     => $student->id,
+            'amount'         => $tuitionFee,
+            'month_year'     => date('m_Y', strtotime($this->faker->date())),
         ];
     }
 }
