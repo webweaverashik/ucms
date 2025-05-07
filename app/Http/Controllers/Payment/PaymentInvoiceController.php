@@ -33,8 +33,6 @@ class PaymentInvoiceController extends Controller
             ->orderBy('id', 'desc')
             ->get();
 
-        $students = Student::withoutTrashed()->get();
-
         $dueMonths = PaymentInvoice::where('status', '!=', 'paid')
             ->pluck('month_year')
             ->unique()
@@ -51,7 +49,7 @@ class PaymentInvoiceController extends Controller
             })
             ->values();
 
-        return view('invoices.index', compact('unpaid_invoices', 'paid_invoices', 'students', 'dueMonths', 'paidMonths'));
+        return view('invoices.index', compact('unpaid_invoices', 'paid_invoices', 'dueMonths', 'paidMonths'));
     }
 
     /**
