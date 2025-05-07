@@ -14,7 +14,9 @@ use App\Http\Controllers\Student\GuardianController;
 use App\Http\Controllers\Student\ReferenceController;
 use App\Http\Controllers\Academic\ClassNameController;
 use App\Http\Controllers\Academic\InstitutionController;
+use App\Http\Controllers\Payment\PaymentInvoiceController;
 use App\Http\Controllers\Student\StudentActivationController;
+use App\Http\Controllers\Payment\PaymentTransactionController;
 
 
 Route::get('/', [AuthController::class, 'showLogin'])->name('home');
@@ -69,6 +71,8 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::resource('classnames', ClassNameController::class);
     Route::resource('shifts', ShiftController::class);
     Route::resource('subjects', SubjectController::class);
+    Route::resource('invoices', PaymentInvoiceController::class);
+    Route::resource('transactions', PaymentTransactionController::class);
 
 
 });

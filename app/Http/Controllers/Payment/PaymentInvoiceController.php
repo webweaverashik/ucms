@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Payment;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Student\Student;
+use App\Http\Controllers\Controller;
+use App\Models\Payment\PaymentInvoice;
 
 class PaymentInvoiceController extends Controller
 {
@@ -12,7 +14,11 @@ class PaymentInvoiceController extends Controller
      */
     public function index()
     {
-        //
+        $invoices = PaymentInvoice::withoutTrashed()->get();
+
+        $student = Student::withTrashed()->find(57);
+
+        return view('invoices.index', compact('invoices', 'student'));
     }
 
     /**

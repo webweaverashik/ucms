@@ -23,7 +23,7 @@
         <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 ">
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                <a href="?page=index" class="text-muted text-hover-primary">
+                <a href="#" class="text-muted text-hover-primary">
                     Student Info </a>
             </li>
             <!--end::Item-->
@@ -144,104 +144,103 @@
         <!--begin::Card body-->
         <div class="card-body pt-0">
             <!--begin::Table-->
-            <div class="table-responsive">
-                <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_guardians_table">
-                    <thead>
-                        <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
-                            <th class="w-10px pe-2">SL</th>
-                            <th class="min-w-200px">Name</th>
-                            <th class="d-none">Gender (filter)</th>
-                            <th class="text-center">Gender</th>
-                            <th class="text-center">Students</th>
-                            <th class="text-center">Mobile</th>
-                            <th class="text-center">Relationship</th>
-                            <th class="text-center">Monthly<br>Payment (৳)</th>
-                            <th class="text-center">Branch</th>
-                            <th class="text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-gray-600 fw-semibold">
-                        @foreach ($guardians as $guardian)
-                            <tr>
-                                <td class="pe-2">{{ $loop->index + 1 }}</td>
-                                <td class="d-flex align-items-center">
+            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_guardians_table">
+                <thead>
+                    <tr class="fw-bold fs-7 text-uppercase gs-0">
+                        <th class="w-25px">SL</th>
+                        <th class="min-w-200px">Name</th>
+                        <th class="d-none">Gender (filter)</th>
+                        <th>Gender</th>
+                        <th>Students</th>
+                        <th>Mobile</th>
+                        <th>Relationship</th>
+                        <th>Monthly<br>Payment (৳)</th>
+                        <th>Branch</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-600 fw-semibold">
+                    @foreach ($guardians as $guardian)
+                        <tr>
+                            <td class="pe-2">{{ $loop->index + 1 }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
                                     <!--begin:: Avatar -->
                                     <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
-                                            <div class="symbol-label">
-                                                <img src="{{ asset($guardian->gender == 'male' ? 'img/male.png' : 'img/female.png') }}"
-                                                    alt="{{ $guardian->name }}" class="w-100" />
+                                        <div class="symbol-label">
+                                            <img src="{{ asset($guardian->gender == 'male' ? 'img/male.png' : 'img/female.png') }}"
+                                                alt="{{ $guardian->name }}" class="w-100" />
 
-                                            </div>
+                                        </div>
                                     </div>
                                     <!--end::Avatar-->
                                     <!--begin::user details-->
                                     <div class="d-flex flex-column">
-                                        <span 
-                                            class="text-gray-800 mb-1">{{ $guardian->name }}
+                                        <span class="text-gray-800 mb-1">{{ $guardian->name }}
                                         </span>
                                     </div>
                                     <!--begin::user details-->
-                                </td>
-                                <td class="d-none">gd_{{ $guardian->gender }}</td>
-                                <td class="text-center">
-                                    @if ($guardian->gender == 'male')
-                                        <i class="las la-mars"></i>
-                                        {{ ucfirst($guardian->gender) }}
-                                    @else
-                                        <i class="las la-venus"></i>
-                                        {{ ucfirst($guardian->gender) }}
-                                    @endif
-                                </td>
-                                <td class="text-center">
-                                    @if ($guardian->student)
-                                        <a href="{{ route('students.show', $guardian->student->id) }}">
-                                            <span class="text-hover-success fs-6">
-                                                {{ $guardian->student->name }},
-                                                {{ $guardian->student->student_unique_id }}
-                                            </span>
-                                        </a>
-                                    @else
-                                        <span class="badge badge-light-danger">No Student Assigned</span>
-                                    @endif
-                                </td>
+                                </div>
+                            </td>
+                            <td class="d-none">gd_{{ $guardian->gender }}</td>
+                            <td>
+                                @if ($guardian->gender == 'male')
+                                    <i class="las la-mars"></i>
+                                    {{ ucfirst($guardian->gender) }}
+                                @else
+                                    <i class="las la-venus"></i>
+                                    {{ ucfirst($guardian->gender) }}
+                                @endif
+                            </td>
+                            <td>
+                                @if ($guardian->student)
+                                    <a href="{{ route('students.show', $guardian->student->id) }}">
+                                        <span class="text-hover-success fs-6">
+                                            {{ $guardian->student->name }},
+                                            {{ $guardian->student->student_unique_id }}
+                                        </span>
+                                    </a>
+                                @else
+                                    <span class="badge badge-light-danger">No Student Assigned</span>
+                                @endif
+                            </td>
 
-                                <td class="text-center">
-                                    {{ $guardian->mobile_number }}
-                                </td>
-                                <td class="text-center">
-                                    {{ ucfirst($guardian->relationship) }}
-                                </td>
-                                <td class="text-center">
-                                    {{ intval(optional(optional($guardian->student)->payments)->tuition_fee) }}
-                                </td>
-                                <td class="text-center">
-                                    @if ($guardian->student && $guardian->student->branch)
-                                        @php
-                                            $branchName = $guardian->student->branch->branch_name;
-                                            $badgeColor = $branchColors[$branchName] ?? 'badge-light-secondary'; // Default color
-                                        @endphp
-                                        <span class="badge {{ $badgeColor }}">{{ $branchName }}</span>
-                                    @else
-                                        <span class="badge badge-light-danger">No Branch Assigned</span>
-                                    @endif
-                                </td>
-                                <td class="text-center">
-                                    <a href="#" title="Edit Guardian" data-bs-toggle="modal"
-                                        data-bs-target="#kt_modal_edit_guardian" data-guardian-id="{{ $guardian->id }}"
-                                        class="btn btn-icon btn-active-light-warning w-30px h-30px me-3">
-                                        <i class="ki-outline ki-pencil fs-2"></i>
-                                    </a>
-                                    <a href="#" title="Delete Guardian" data-bs-toggle="tooltip"
-                                        class="btn btn-icon btn-active-light-danger w-30px h-30px me-3 delete-guardian"
-                                        data-guardian-id="{{ $guardian->id }}">
-                                        <i class="ki-outline ki-trash fs-2"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+                            <td>
+                                {{ $guardian->mobile_number }}
+                            </td>
+                            <td>
+                                {{ ucfirst($guardian->relationship) }}
+                            </td>
+                            <td>
+                                {{ intval(optional(optional($guardian->student)->payments)->tuition_fee) }}
+                            </td>
+                            <td>
+                                @if ($guardian->student && $guardian->student->branch)
+                                    @php
+                                        $branchName = $guardian->student->branch->branch_name;
+                                        $badgeColor = $branchColors[$branchName] ?? 'badge-light-secondary'; // Default color
+                                    @endphp
+                                    <span class="badge {{ $badgeColor }}">{{ $branchName }}</span>
+                                @else
+                                    <span class="badge badge-light-danger">No Branch Assigned</span>
+                                @endif
+                            </td>
+                            <td>
+                                <a href="#" title="Edit Guardian" data-bs-toggle="modal"
+                                    data-bs-target="#kt_modal_edit_guardian" data-guardian-id="{{ $guardian->id }}"
+                                    class="btn btn-icon btn-active-light-warning w-30px h-30px me-3">
+                                    <i class="ki-outline ki-pencil fs-2"></i>
+                                </a>
+                                <a href="#" title="Delete Guardian" data-bs-toggle="tooltip"
+                                    class="btn btn-icon btn-active-light-danger w-30px h-30px me-3 delete-guardian"
+                                    data-guardian-id="{{ $guardian->id }}">
+                                    <i class="ki-outline ki-trash fs-2"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
             <!--end::Table-->
         </div>
         <!--end::Card body-->
@@ -298,7 +297,8 @@
                                     <div class="overflow-hidden flex-grow-1">
                                         <select name="guardian_student"
                                             class="form-select form-select-solid rounded-start-0 border-start"
-                                            data-control="select2" data-dropdown-parent="#kt_modal_edit_guardian" data-placeholder="Select an option" disabled>
+                                            data-control="select2" data-dropdown-parent="#kt_modal_edit_guardian"
+                                            data-placeholder="Select an option" disabled>
                                             <option></option>
                                             @foreach ($students as $student)
                                                 <option value="{{ $student->id }}">{{ $student->name }}

@@ -310,7 +310,7 @@
                     <!--begin:Invoices Menu item-->
                     <div class="menu-item">
                         <!--begin:Menu link-->
-                        <a class="menu-link" href="{{ route('guardians.index') }}" id="invoices_link">
+                        <a class="menu-link" href="{{ route('invoices.index') }}" id="invoices_link">
                             <span class="menu-icon">
                                 {{-- <i class="ki-outline ki-calendar-8 fs-2"></i> --}}
                                 <i class="fa-solid fa-file-invoice-dollar fs-2"></i>
@@ -325,12 +325,12 @@
                     <!--begin:Payments Menu item-->
                     <div class="menu-item">
                         <!--begin:Menu link-->
-                        <a class="menu-link" href="{{ route('guardians.index') }}" id="payments_link">
+                        <a class="menu-link" href="{{ route('transactions.index') }}" id="transactions_link">
                             <span class="menu-icon">
                                 {{-- <i class="ki-outline ki-calendar-8 fs-2"></i> --}}
                                 <i class="fa-solid fa-comments-dollar fs-2"></i>
                             </span>
-                            <span class="menu-title">Payments</span>
+                            <span class="menu-title">Transactions</span>
                         </a>
                         <!--end:Menu link-->
                     </div>
