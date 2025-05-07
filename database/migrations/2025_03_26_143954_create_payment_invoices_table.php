@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('student_id');
             $table->decimal('amount', 10, 2);
             $table->string('month_year');
-            $table->enum('status', ['due', 'overdue', 'partially_paid', 'paid'])->default('due');
+            $table->enum('status', ['due', 'partially_paid', 'paid'])->default('due');
             $table->softDeletes();
             $table->foreignId('deleted_by')->nullable();
             $table->timestamps();

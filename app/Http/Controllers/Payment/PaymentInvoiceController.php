@@ -1,11 +1,10 @@
 <?php
-
 namespace App\Http\Controllers\Payment;
 
-use Illuminate\Http\Request;
-use App\Models\Student\Student;
 use App\Http\Controllers\Controller;
 use App\Models\Payment\PaymentInvoice;
+use App\Models\Student\Student;
+use Illuminate\Http\Request;
 
 class PaymentInvoiceController extends Controller
 {
@@ -14,11 +13,45 @@ class PaymentInvoiceController extends Controller
      */
     public function index()
     {
-        $invoices = PaymentInvoice::withoutTrashed()->get();
+        $unpaid_invoices = PaymentInvoice::where('status', '!=', 'paid')
+            ->whereHas('student', function ($query) {
+                $query->whereNull('deleted_at')->whereHas('studentActivation', function ($q) {
+                    $q->where('active_status', 'active');
+                });
+            })
+            ->withoutTrashed()
+            ->orderBy('id', 'desc')
+            ->get();
 
-        $student = Student::withTrashed()->find(57);
+        $paid_invoices = PaymentInvoice::where('status', 'paid')
+            ->whereHas('student', function ($query) {
+                $query->whereNull('deleted_at')->whereHas('studentActivation', function ($q) {
+                    $q->where('active_status', 'active');
+                });
+            })
+            ->withoutTrashed()
+            ->orderBy('id', 'desc')
+            ->get();
 
-        return view('invoices.index', compact('invoices', 'student'));
+        $students = Student::withoutTrashed()->get();
+
+        $dueMonths = PaymentInvoice::where('status', '!=', 'paid')
+            ->pluck('month_year')
+            ->unique()
+            ->sortBy(function ($value) {
+                return \Carbon\Carbon::createFromFormat('m_Y', $value);
+            })
+            ->values();
+
+        $paidMonths = PaymentInvoice::where('status', 'paid')
+            ->pluck('month_year')
+            ->unique()
+            ->sortBy(function ($value) {
+                return \Carbon\Carbon::createFromFormat('m_Y', $value);
+            })
+            ->values();
+
+        return view('invoices.index', compact('unpaid_invoices', 'paid_invoices', 'students', 'dueMonths', 'paidMonths'));
     }
 
     /**
