@@ -3,7 +3,6 @@ namespace App\Http\Controllers\Payment;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment\PaymentInvoice;
-use App\Models\Student\Student;
 use Illuminate\Http\Request;
 
 class PaymentInvoiceController extends Controller
@@ -16,11 +15,11 @@ class PaymentInvoiceController extends Controller
         $unpaid_invoices = PaymentInvoice::where('status', '!=', 'paid')
             ->whereHas('student', function ($query) {
                 $query->whereNull('deleted_at')
-                ->where(function ($q) {
-                    $q->whereHas('studentActivation', function ($q2) {
-                        $q2->where('active_status', 'active');
-                    })->orWhereNull('student_activation_id');
-                });
+                    ->where(function ($q) {
+                        $q->whereHas('studentActivation', function ($q2) {
+                            $q2->where('active_status', 'active');
+                        })->orWhereNull('student_activation_id');
+                    });
             })
             ->withoutTrashed()
             ->orderBy('id', 'desc')
@@ -86,7 +85,7 @@ class PaymentInvoiceController extends Controller
     {
         $invoice = PaymentInvoice::find($id);
 
-        if (!$invoice) {
+        if (! $invoice) {
             return redirect()->route('invoices.index')->with('warning', 'Invoice not found.');
         }
 
@@ -107,5 +106,19 @@ class PaymentInvoiceController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function getDueInvoices($studentId)
+    {
+        $dueInvoices = PaymentInvoice::where('student_id', $studentId)
+            ->where('status', '!=', 'paid')
+            ->withoutTrashed()
+            ->get(['id', 'invoice_number', 'amount'])
+            ->map(function ($invoice) {
+                $invoice->amount = (int) $invoice->amount; // Cast to integer
+                return $invoice;
+            });
+
+        return response()->json($dueInvoices);
     }
 }

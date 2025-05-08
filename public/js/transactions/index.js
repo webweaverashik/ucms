@@ -75,63 +75,6 @@ var KTAllTransactionsList = function () {
             });
       }
 
-      // Delete pending students
-      const handleDeletion = function () {
-            document.querySelectorAll('.delete-guardian').forEach(item => {
-                  item.addEventListener('click', function (e) {
-                        e.preventDefault();
-
-                        let guardianId = this.getAttribute('data-guardian-id');
-                        let url = routeDeleteGuardian.replace(':id', guardianId);  // Replace ':id' with actual student ID
-
-                        Swal.fire({
-                              title: "Are you sure to delete this guardian?",
-                              text: "This action cannot be undone!",
-                              icon: "warning",
-                              showCancelButton: true,
-                              confirmButtonColor: "#d33",
-                              cancelButtonColor: "#3085d6",
-                              confirmButtonText: "Yes, delete!",
-                        }).then((result) => {
-                              if (result.isConfirmed) {
-                                    fetch(url, {
-                                          method: "DELETE",
-                                          headers: {
-                                                "Content-Type": "application/json",
-                                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                                          },
-                                    })
-                                          .then(response => response.json())
-                                          .then(data => {
-                                                if (data.success) {
-                                                      Swal.fire({
-                                                            title: "Deleted!",
-                                                            text: "The guardian has been removed successfully.",
-                                                            icon: "success",
-                                                      }).then(() => {
-                                                            location.reload(); // Reload to reflect changes
-                                                      });
-                                                } else {
-                                                      Swal.fire({
-                                                            title: "Error!",
-                                                            text: data.message,
-                                                            icon: "error",
-                                                      });
-                                                }
-                                          })
-                                          .catch(error => {
-                                                console.error("Fetch Error:", error);
-                                                Swal.fire({
-                                                      title: "Error!",
-                                                      text: "Something went wrong. Please try again.",
-                                                      icon: "error",
-                                                });
-                                          });
-                              }
-                        });
-                  });
-            });
-      };
 
       return {
             // Public functions  
@@ -145,13 +88,110 @@ var KTAllTransactionsList = function () {
                   initDatatable();
                   handleSearch();
                   handleFilter();
-                  // handleDeletion();
             }
       }
+}();
+
+
+var KTAddTransaction = function () {
+      // Shared variables
+      const element = document.getElementById('kt_modal_add_transaction');
+
+      // Early return if element doesn't exist
+      if (!element) {
+            console.error('Modal element not found');
+            return {
+                  init: function () { }
+            };
+      }
+
+      const form = element.querySelector('#kt_modal_add_transaction_form');
+      const modal = bootstrap.Modal.getOrCreateInstance(element);
+      const studentSelect = document.getElementById('transaction_student_select');
+      const invoiceSelect = document.getElementById('student_due_invoice_select');
+
+
+      // Init add transaction form
+      var initAddTransaction = () => {
+
+      }
+
+      var initCloseModal = () => {
+
+            // Reset Select2 inputs
+
+            // Cancel button handler
+            const cancelButton = element.querySelector('[data-kt-add-transaction-modal-action="cancel"]');
+            if (cancelButton) {
+                  cancelButton.addEventListener('click', e => {
+                        e.preventDefault();
+                        if (form) form.reset();
+
+                        if (studentSelect && $(studentSelect).data('select2')) {
+                              $(studentSelect).val(null).trigger('change');
+                        }
+
+                        if (invoiceSelect && $(invoiceSelect).data('select2')) {
+                              $(invoiceSelect).val(null).trigger('change');
+                        }
+
+                        // Reset amount input
+                        const amountInput = document.getElementById('transaction_amount_input');
+                        if (amountInput) {
+                              amountInput.value = '';
+                              amountInput.disabled = true;
+                        }
+
+                        // Remove previous error state
+                        $('#transaction_amount_input').removeClass('is-invalid');
+                        $('#transaction_amount_error').remove();
+
+                        modal.hide();
+                  });
+            }
+
+            // Close button handler
+            const closeButton = element.querySelector('[data-kt-add-transaction-modal-action="close"]');
+            if (closeButton) {
+                  closeButton.addEventListener('click', e => {
+                        e.preventDefault();
+                        if (form) form.reset();
+
+                        if (studentSelect && $(studentSelect).data('select2')) {
+                              $(studentSelect).val(null).trigger('change');
+                        }
+
+                        if (invoiceSelect && $(invoiceSelect).data('select2')) {
+                              $(invoiceSelect).val(null).trigger('change');
+                        }
+
+                        // Reset amount input
+                        const amountInput = document.getElementById('transaction_amount_input');
+                        if (amountInput) {
+                              amountInput.value = '';
+                              amountInput.disabled = true;
+                        }
+
+                        // Remove previous error state
+                        $('#transaction_amount_input').removeClass('is-invalid');
+                        $('#transaction_amount_error').remove();
+
+                        modal.hide();
+                  });
+            }
+      }
+
+      return {
+            init: function () {
+                  // initAddTransaction();
+                  initCloseModal();
+            }
+      };
 }();
 
 
 // On document ready
 KTUtil.onDOMContentLoaded(function () {
       KTAllTransactionsList.init();
+      KTAddTransaction.init();
 });

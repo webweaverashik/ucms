@@ -13,6 +13,9 @@ class PaymentTransactionFactory extends Factory
 
     public function definition()
     {
+
+        // -------- Not being Used this factory -----------
+        
         // Fetch an existing student ID from the database
         $studentId = Student::inRandomOrder()->first()->id;
 

@@ -122,7 +122,8 @@
                     <!--end::Menu 1-->
 
                     <!--begin::Add subscription-->
-                    <a href="{{ route('transactions.create') }}" class="btn btn-primary">
+                    <a href="#" class="btn btn-primary" data-bs-toggle="modal"
+                        data-bs-target="#kt_modal_add_transaction">
                         <i class="ki-outline ki-plus fs-2"></i>New Transaction</a>
                     <!--end::Add subscription-->
 
@@ -198,6 +199,180 @@
         <!--end::Card body-->
     </div>
     <!--end::Card-->
+
+
+
+    <!--begin::Modal - Add Transaction-->
+    <div class="modal fade" id="kt_modal_add_transaction" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+        data-bs-keyboard="false">
+        <!--begin::Modal dialog-->
+        <div class="modal-dialog modal-dialog-centered mw-650px">
+            <!--begin::Modal content-->
+            <div class="modal-content">
+                <!--begin::Modal header-->
+                <div class="modal-header" id="kt_modal_add_transaction_header">
+                    <!--begin::Modal title-->
+                    <h2 class="fw-bold">Add Transaction</h2>
+                    <!--end::Modal title-->
+                    <!--begin::Close-->
+                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-add-transaction-modal-action="close">
+                        <i class="ki-outline ki-cross fs-1">
+                        </i>
+                    </div>
+                    <!--end::Close-->
+                </div>
+                <!--end::Modal header-->
+                <!--begin::Modal body-->
+                <div class="modal-body px-5 my-7">
+                    <!--begin::Form-->
+                    <form id="kt_modal_add_transaction_form" class="form" action="{{ route('transactions.store') }}"
+                        method="POST">
+                        @csrf
+                        <!--begin::Scroll-->
+                        <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_add_transaction_scroll"
+                            data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
+                            data-kt-scroll-dependencies="#kt_modal_transaction_header"
+                            data-kt-scroll-wrappers="#kt_modal_add_transaction_scroll" data-kt-scroll-offset="300px">
+
+                            <!--begin::Name Input group-->
+                            <div class="fv-row mb-7">
+                                <!--begin::Label-->
+                                <label class="required fw-semibold fs-6 mb-2">Select Student</label>
+                                <!--end::Label-->
+
+                                <!--begin::Solid input group style-->
+                                <div class="input-group input-group-solid flex-nowrap">
+                                    <span class="input-group-text">
+                                        <i class="las la-graduation-cap fs-3"></i>
+                                    </span>
+                                    <div class="overflow-hidden flex-grow-1">
+                                        <select name="transaction_student"
+                                            class="form-select form-select-solid rounded-start-0 border-start"
+                                            data-control="select2" data-dropdown-parent="#kt_modal_add_transaction"
+                                            data-placeholder="Select a student" id="transaction_student_select">
+                                            <option></option>
+                                            @foreach ($students as $student)
+                                                <option value="{{ $student->id }}">{{ $student->name }}
+                                                    ({{ $student->student_unique_id }})
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <!--end::Solid input group style-->
+                            </div>
+                            <!--end::Name Input group-->
+
+                            <!--begin::Phone Input group-->
+                            <div class="fv-row mb-7">
+                                <!--begin::Label-->
+                                <label class="required fw-semibold fs-6 mb-2">Invoice Number</label>
+                                <!--end::Label-->
+
+                                <!--begin::Solid input group style-->
+                                <div class="input-group input-group-solid flex-nowrap">
+                                    <span class="input-group-text">
+                                        <i class="ki-outline ki-save-2 fs-3"></i>
+                                    </span>
+                                    <div class="overflow-hidden flex-grow-1">
+                                        <select name="transaction_invoice"
+                                            class="form-select form-select-solid rounded-start-0 border-start"
+                                            data-control="select2" data-dropdown-parent="#kt_modal_add_transaction"
+                                            data-placeholder="Select a due invoice" id="student_due_invoice_select">
+                                            <!-- show the due invoice of selected student -->
+                                        </select>
+                                    </div>
+                                </div>
+                                <!--end::Solid input group style-->
+                            </div>
+                            <!--end::Phone Input group-->
+
+                            <!--begin::Type Input group-->
+                            <div class="fv-row mb-7">
+                                <!--begin::Label-->
+                                <label class="d-flex align-items-center form-label mb-3 required">Payment Type</label>
+                                <!--end::Label-->
+                                <!--begin::Row-->
+                                <div class="row">
+                                    <!--begin::Col-->
+                                    <div class="col-lg-6">
+                                        <!--begin::Option-->
+                                        <input type="radio" class="btn-check" name="transaction_type" value="full"
+                                            checked="checked" id="full_payment_type_input" />
+                                        <label
+                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                            for="full_payment_type_input">
+                                            <i class="ki-outline ki-dollar fs-2x me-5"></i>
+                                            <!--begin::Info-->
+                                            <span class="d-block fw-semibold text-start">
+                                                <span class="text-gray-900 fw-bold d-block fs-6">Full Payment</span>
+                                            </span>
+                                            <!--end::Info-->
+                                        </label>
+                                        <!--end::Option-->
+                                    </div>
+                                    <!--end::Col-->
+
+                                    <!--begin::Col-->
+                                    <div class="col-lg-6">
+                                        <!--begin::Option-->
+                                        <input type="radio" class="btn-check" name="transaction_type" value="partial"
+                                            id="partial_payment_type_input" />
+                                        <label
+                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                            for="partial_payment_type_input">
+                                            <i class="ki-outline ki-finance-calculator fs-2x me-5"></i>
+                                            <!--begin::Info-->
+                                            <span class="d-block fw-semibold text-start">
+                                                <span class="text-gray -mt-2-900 fw-bold d-block fs-6">Partial
+                                                    Payment</span>
+                                            </span>
+                                            <!--end::Info-->
+                                        </label>
+                                        <!--end::Option-->
+                                    </div>
+                                    <!--end::Col-->
+                                </div>
+                                <!--end::Row-->
+                            </div>
+                            <!--end::Type Input group-->
+
+                            <!--begin::Name Input group-->
+                            <div class="fv-row">
+                                <!--begin::Label-->
+                                <label class="required fw-semibold fs-6 mb-2">Amount</label>
+                                <!--end::Label-->
+                                <!--begin::Input-->
+                                <input type="number" name="transaction_amount" min="0"
+                                    id="transaction_amount_input" class="form-control form-control-solid mb-3 mb-lg-0"
+                                    placeholder="Enter the paid amount" required disabled />
+                                <!--end::Input-->
+                            </div>
+                            <!--end::Name Input group-->
+
+                        </div>
+                        <!--end::Scroll-->
+                        <!--begin::Actions-->
+                        <div class="text-center pt-10">
+                            <button type="reset" class="btn btn-light me-3"
+                                data-kt-add-transaction-modal-action="cancel">Discard</button>
+                            <button type="submit" class="btn btn-primary" data-kt-add-transaction-modal-action="submit">
+                                <span class="indicator-label">Submit</span>
+                                <span class="indicator-progress">Please wait...
+                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                            </button>
+                        </div>
+                        <!--end::Actions-->
+                    </form>
+                    <!--end::Form-->
+                </div>
+                <!--end::Modal body-->
+            </div>
+            <!--end::Modal content-->
+        </div>
+        <!--end::Modal dialog-->
+    </div>
+    <!--end::Modal - Add Transaction-->
 @endsection
 
 
@@ -207,6 +382,7 @@
 
 @push('page-js')
     <script src="{{ asset('js/transactions/index.js') }}"></script>
+    <script src="{{ asset('js/transactions/ajax-form.js') }}"></script>
 
     <script>
         document.getElementById("transactions_link").classList.add("active");
