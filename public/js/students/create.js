@@ -329,6 +329,19 @@ var KTCreateStudent = function () {
                                    }
                               }
                          },
+                         'student_phone_whatsapp': {
+                              validators: {
+                                   regexp: {
+                                        regexp: /^01[3-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
+                                        message: 'Please enter a valid Bangladeshi mobile number'
+                                   },
+                                   stringLength: {
+                                        min: 11,
+                                        max: 11,
+                                        message: 'The mobile number must be exactly 11 digits'
+                                   }
+                              }
+                         },
                          'student_gender': {
                               validators: {
                                    notEmpty: {

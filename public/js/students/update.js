@@ -191,7 +191,7 @@ var KTUpdateStudent = function () {
                                         errorMessages.push("Something went wrong!");
                                    }
 
-                                   
+
                                    showErrors(errorMessages);
                                    console.error("Error:", error);
                                    enablePreviousButton();

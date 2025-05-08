@@ -10,14 +10,21 @@ class PaymentInvoiceSeeder extends Seeder
 {
     public function run()
     {
-        $studentsWithCurrentPayment = Student::whereIn('id', Payment::where('payment_style', 'current')->pluck('student_id'))->get();
+        $studentsWithCurrentPayment = Student::whereIn(
+            'id',
+            Payment::where('payment_style', 'current')->pluck('student_id')
+        )->with('branch')->get();
 
         $yearSuffix = now()->format('y'); // '25'
         $month      = now()->format('m'); // '05'
-        $sequence   = 1001;
+
+        $branchSequences = []; // To track invoice sequence per branch
 
         foreach ($studentsWithCurrentPayment as $student) {
-            $payment = Payment::where('student_id', $student->id)->where('payment_style', 'current')->inRandomOrder()->first();
+            $payment = Payment::where('student_id', $student->id)
+                ->where('payment_style', 'current')
+                ->inRandomOrder()
+                ->first();
 
             if (! $payment || ! $student->branch) {
                 continue;
@@ -25,10 +32,16 @@ class PaymentInvoiceSeeder extends Seeder
 
             $prefix = $student->branch->branch_prefix;
 
-            $invoiceNumber = "{$prefix}{$yearSuffix}{$month}_{$sequence}";
-            $monthYear = now()->format('m_Y');
+            // Start sequence from 1001 for each branch
+            if (! isset($branchSequences[$prefix])) {
+                $branchSequences[$prefix] = 1001;
+            }
 
-            // Create the PaymentInvoice directly without using the factory
+            $sequence = $branchSequences[$prefix];
+
+            $invoiceNumber = "{$prefix}{$yearSuffix}{$month}_{$sequence}";
+            $monthYear     = now()->format('m_Y');
+
             PaymentInvoice::create([
                 'student_id'     => $student->id,
                 'amount'         => $payment->tuition_fee,
@@ -36,7 +49,7 @@ class PaymentInvoiceSeeder extends Seeder
                 'month_year'     => $monthYear,
             ]);
 
-            $sequence++;
+            $branchSequences[$prefix]++; // Increment for that branch
         }
     }
 }

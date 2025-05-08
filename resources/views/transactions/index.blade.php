@@ -179,11 +179,7 @@
                             </td>
 
                             <td>
-                                {{ $transaction->created_at->format('d-M-Y') }}
-                                <span class="ms-1" data-bs-toggle="tooltip"
-                                    title="{{ $transaction->created_at->format('d-M-Y h:i:s A') }}">
-                                    <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
-                                </span>
+                                {{ $transaction->created_at->format('h:i A, d-M-Y') }}
                             </td>
 
                             <td>

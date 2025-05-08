@@ -7,6 +7,7 @@ use App\Models\Academic\Institution;
 use App\Models\Academic\Shift;
 use App\Models\Academic\Subject;
 use App\Models\Payment\Payment;
+use App\Models\Payment\PaymentInvoice;
 use App\Models\Student\Guardian;
 use App\Models\Student\MobileNumber;
 use App\Models\Student\Reference;
@@ -279,6 +280,36 @@ class StudentController extends Controller
                 'due_date'      => $validated['payment_due_date'], // Now always required
                 'tuition_fee'   => $validated['student_tuition_fee'],
             ]);
+
+            // Create a invoice if the payment style is Current
+            if ($validated['payment_style'] == 'current') {
+                $yearSuffix = now()->format('y'); // '25'
+                $month      = now()->format('m'); // '05'
+                $prefix     = $student->branch->branch_prefix;
+                $monthYear  = now()->format('m_Y');
+
+                // Fetch the last invoice for the same prefix and month
+                $lastInvoice = PaymentInvoice::where('invoice_number', 'like', "{$prefix}{$yearSuffix}{$month}_%")
+                    ->orderBy('invoice_number', 'desc')
+                    ->first();
+
+                if ($lastInvoice) {
+                    // Extract the numeric sequence after the last underscore
+                    $lastSequence = (int) substr($lastInvoice->invoice_number, strrpos($lastInvoice->invoice_number, '_') + 1);
+                    $nextSequence = $lastSequence + 1;
+                } else {
+                    $nextSequence = 1001; // Start from 1001 if no previous invoice
+                }
+
+                $invoiceNumber = "{$prefix}{$yearSuffix}{$month}_{$nextSequence}";
+
+                PaymentInvoice::create([
+                    'invoice_number' => $invoiceNumber,
+                    'student_id'     => $student->id,
+                    'amount'         => $validated['student_tuition_fee'],
+                    'month_year'     => $monthYear,
+                ]);
+            }
 
             // Insert mobile numbers using `create()`
             MobileNumber::create([

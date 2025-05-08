@@ -15,8 +15,11 @@ class PaymentInvoiceController extends Controller
     {
         $unpaid_invoices = PaymentInvoice::where('status', '!=', 'paid')
             ->whereHas('student', function ($query) {
-                $query->whereNull('deleted_at')->whereHas('studentActivation', function ($q) {
-                    $q->where('active_status', 'active');
+                $query->whereNull('deleted_at')
+                ->where(function ($q) {
+                    $q->whereHas('studentActivation', function ($q2) {
+                        $q2->where('active_status', 'active');
+                    })->orWhereNull('student_activation_id');
                 });
             })
             ->withoutTrashed()

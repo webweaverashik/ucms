@@ -183,7 +183,7 @@ var KTPendingStudentsList = function () {
                                     Swal.fire({
                                         title: "Error!",
                                         text: data.message,
-                                        icon: "error",
+                                        icon: "warning",
                                     });
                                 }
                             })

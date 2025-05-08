@@ -1,19 +1,29 @@
 <?php
 namespace App\Http\Controllers\Student;
 
-use Illuminate\Http\Request;
-use App\Models\Student\Student;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Student\Student;
 use App\Models\Student\StudentActivation;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class StudentActivationController extends Controller
 {
     public function approve(Request $request, string $id)
     {
         $student = Student::findOrFail($id);
-        
+
+        // Check if the student has any unpaid (due or partially_paid) invoice
+        $hasDueInvoice = $student->paymentInvoices()
+            ->whereIn('status', ['due', 'partially_paid'])
+            ->exists();
+
+        if ($hasDueInvoice) {
+            // return redirect()->back()->with('error', 'Admission fee is still due. Cannot approve.');
+            return response()->json(['success' => false, 'message' => 'Admission fee is still due. Cannot approve.']);
+        }
+
         $request->validate([
             'active_status' => 'required|in:active,inactive',
             'reason'        => 'nullable|string|max:255',
