@@ -81,7 +81,13 @@ class PaymentInvoiceController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $invoice = PaymentInvoice::find($id);
+
+        if (!$invoice) {
+            return redirect()->route('invoices.index')->with('warning', 'Invoice not found.');
+        }
+
+        return view('invoices.edit', compact('invoice'));
     }
 
     /**

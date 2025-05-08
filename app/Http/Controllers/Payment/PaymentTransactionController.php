@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Payment;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Models\Payment\PaymentTransaction;
 
 class PaymentTransactionController extends Controller
 {
@@ -12,7 +13,9 @@ class PaymentTransactionController extends Controller
      */
     public function index()
     {
-        return view('transactions.index');
+        $transactions = PaymentTransaction::all();
+
+        return view('transactions.index', compact('transactions'));
     }
 
     /**

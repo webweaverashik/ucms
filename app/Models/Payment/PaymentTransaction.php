@@ -2,8 +2,9 @@
 
 namespace App\Models\Payment;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Student\Student;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PaymentTransaction extends Model
 {
@@ -20,6 +21,11 @@ class PaymentTransaction extends Model
     public function paymentInvoice()
     {
         return $this->belongsTo(PaymentInvoice::class);
+    }
+
+    public function student()
+    {
+        return $this->belongsTo(Student::class);
     }
 }
 
