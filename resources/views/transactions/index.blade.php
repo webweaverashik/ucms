@@ -338,7 +338,7 @@
                             <!--end::Type Input group-->
 
                             <!--begin::Name Input group-->
-                            <div class="fv-row">
+                            <div class="fv-row mb-7">
                                 <!--begin::Label-->
                                 <label class="required fw-semibold fs-6 mb-2">Amount</label>
                                 <!--end::Label-->
@@ -346,6 +346,19 @@
                                 <input type="number" name="transaction_amount" min="0"
                                     id="transaction_amount_input" class="form-control form-control-solid mb-3 mb-lg-0"
                                     placeholder="Enter the paid amount" required disabled />
+                                <!--end::Input-->
+                            </div>
+                            <!--end::Name Input group-->
+
+                            <!--begin::Name Input group-->
+                            <div class="fv-row">
+                                <!--begin::Label-->
+                                <label class="fw-semibold fs-6 mb-2">Remarks <span class="text-muted">(optional)</span></label>
+                                <!--end::Label-->
+                                <!--begin::Input-->
+                                <input type="text" name="transaction_remarks" min="0"
+                                    class="form-control form-control-solid mb-3 mb-lg-0"
+                                    placeholder="Add some remarks"/>
                                 <!--end::Input-->
                             </div>
                             <!--end::Name Input group-->

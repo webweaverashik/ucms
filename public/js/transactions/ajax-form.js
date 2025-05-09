@@ -9,34 +9,61 @@ $('#transaction_student_select').on('change', function () {
         url: `/students/${studentId}/due-invoices`,
         method: 'GET',
         success: function (response) {
-            invoices = response; // store globally
+            invoices = response;
             const $invoiceSelect = $('#student_due_invoice_select');
             $invoiceSelect.empty().append(`<option></option>`);
+            
             response.forEach(invoice => {
                 $invoiceSelect.append(
-                    `<option value="${invoice.id}">${invoice.invoice_number} - ৳${invoice.amount}</option>`
+                    `<option value="${invoice.id}">
+                        ${invoice.invoice_number} - Total: ৳${invoice.total_amount}, Due: ৳${invoice.amount_due}
+                    </option>`
                 );
             });
-            $('#transaction_amount_input').val('').prop('disabled', true); // reset amount
-            $('#transaction_amount_input').removeClass('is-invalid'); // Remove previous error state
-            $('#transaction_amount_error').remove(); // Remove error message
+            
+            $('#transaction_amount_input').val('').prop('disabled', true);
+            $('#transaction_amount_input').removeClass('is-invalid');
+            $('#transaction_amount_error').remove();
+            
+            // Reset payment type options
+            $('input[name="transaction_type"]').prop('disabled', false);
         }
     });
 });
 
-// 2. Populate amount when invoice selected
+// 2. Populate amount and adjust payment options when invoice selected
 $('#student_due_invoice_select').on('change', function () {
     const selectedId = $(this).val();
     const invoice = invoices.find(inv => inv.id == selectedId);
+    
     if (invoice) {
-        $('#transaction_amount_input')
-            .val(invoice.amount)
-            .prop('disabled', false) // Changed to always enabled
-            .data('max', invoice.amount); // store max for validation
+        const $amountInput = $('#transaction_amount_input');
+        $amountInput
+            .val(invoice.amount_due)
+            .prop('disabled', false) // Always enabled now
+            .data('max', invoice.amount_due)
+            .attr('min', 1);
+        
+        // Enable/disable payment type options based on amount due
+        const $fullPaymentOption = $('input[name="transaction_type"][value="full"]');
+        const $partialPaymentOption = $('input[name="transaction_type"][value="partial"]');
+        
+        if (invoice.amount_due < invoice.total_amount) {
+            // Only partial payment allowed if amount_due < total_amount
+            $fullPaymentOption.prop('disabled', true).prop('checked', false);
+            $partialPaymentOption.prop('checked', true);
+            $amountInput.val(''); // Clear value but keep enabled
+        } else {
+            // Both options allowed if full amount is due
+            $fullPaymentOption.prop('disabled', false);
+            $partialPaymentOption.prop('disabled', false);
+            $fullPaymentOption.prop('checked', true);
+            $amountInput.val(invoice.amount_due); // Set to full amount but keep enabled
+        }
     }
 });
 
-// 3. Toggle input behavior for payment type
+// 3. Toggle input behavior for payment type (but keep enabled)
 $('input[name="transaction_type"]').on('change', function () {
     const isPartial = $(this).val() === 'partial';
     const $amountInput = $('#transaction_amount_input');
@@ -45,14 +72,14 @@ $('input[name="transaction_type"]').on('change', function () {
 
     if (invoice) {
         if (isPartial) {
-            $amountInput.val('').prop('disabled', false); // Clear value for partial payment
+            $amountInput.val(''); // Clear value for partial payment
         } else {
-            $amountInput.val(invoice.amount).prop('disabled', false); // Set to full amount but keep enabled
+            $amountInput.val(invoice.amount_due); // Set to full amount
         }
     }
 });
 
-// 4. Continuously check the validity of the amount as the user types
+// 4. Validate amount input
 $('#transaction_amount_input').on('input', function () {
     const amount = parseFloat($(this).val());
     const maxAmount = parseFloat($(this).data('max'));
@@ -65,22 +92,19 @@ $('#transaction_amount_input').on('input', function () {
     // Validate the amount
     let isValid = true;
     let errorMessage = '';
-
+    
     if (isNaN(amount)) {
         isValid = false;
         errorMessage = 'Please enter a valid number';
-    } else if (amount < 500) {
+    } else if (amount < 1) {
         isValid = false;
-        errorMessage = 'Amount must be at least ৳500';
-    } else if (isPartial && amount >= maxAmount) {
+        errorMessage = 'Amount must be at least ৳1';
+    } else if (isPartial && amount > maxAmount) {
         isValid = false;
-        errorMessage = `For partial payments, amount must be less than ৳${maxAmount}`;
+        errorMessage = `Amount cannot exceed the due amount of ৳${maxAmount}`;
     } else if (!isPartial && amount != maxAmount) {
         isValid = false;
         errorMessage = `For full payment, amount must be exactly ৳${maxAmount}`;
-    } else if (amount > maxAmount) {
-        isValid = false;
-        errorMessage = `Amount cannot exceed ৳${maxAmount}`;
     }
 
     if (!isValid) {
@@ -93,7 +117,7 @@ $('#transaction_amount_input').on('input', function () {
     }
 });
 
-// 5. Validation before form submit
+// 5. Form submission validation
 $('#kt_modal_add_transaction_form').on('submit', function (e) {
     const amount = parseFloat($('#transaction_amount_input').val());
     const maxAmount = parseFloat($('#transaction_amount_input').data('max'));
@@ -101,16 +125,14 @@ $('#kt_modal_add_transaction_form').on('submit', function (e) {
 
     // Check validation
     let isValid = true;
-
+    
     if (isNaN(amount)) {
         isValid = false;
-    } else if (amount < 500) {
+    } else if (amount < 1) {
         isValid = false;
-    } else if (isPartial && amount >= maxAmount) {
+    } else if (isPartial && amount > maxAmount) {
         isValid = false;
     } else if (!isPartial && amount != maxAmount) {
-        isValid = false;
-    } else if (amount > maxAmount) {
         isValid = false;
     }
 
@@ -119,6 +141,7 @@ $('#kt_modal_add_transaction_form').on('submit', function (e) {
         toastr.warning('Please enter a valid amount.');
         return false;
     }
-
+    
+    // Amount will always be submitted since input is never disabled
     return true;
 });

@@ -44,7 +44,8 @@ class PaymentInvoiceSeeder extends Seeder
 
             PaymentInvoice::create([
                 'student_id'     => $student->id,
-                'amount'         => $payment->tuition_fee,
+                'total_amount'   => $payment->tuition_fee,
+                'amount_due'     => $payment->tuition_fee,
                 'invoice_number' => $invoiceNumber,
                 'month_year'     => $monthYear,
             ]);

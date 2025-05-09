@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('invoice_number')->unique();
             $table->foreignId('student_id');
-            $table->decimal('amount', 10, 2);
+            $table->decimal('total_amount', 10, 2);
+            $table->decimal('amount_due', 10, 2);
             $table->string('month_year');
             $table->enum('status', ['due', 'partially_paid', 'paid'])->default('due');
             $table->softDeletes();

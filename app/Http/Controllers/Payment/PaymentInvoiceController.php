@@ -27,9 +27,12 @@ class PaymentInvoiceController extends Controller
 
         $paid_invoices = PaymentInvoice::where('status', 'paid')
             ->whereHas('student', function ($query) {
-                $query->whereNull('deleted_at')->whereHas('studentActivation', function ($q) {
-                    $q->where('active_status', 'active');
-                });
+                $query->whereNull('deleted_at')
+                    ->where(function ($q) {
+                        $q->whereHas('studentActivation', function ($q2) {
+                            $q2->where('active_status', 'active');
+                        })->orWhereNull('student_activation_id');
+                    });
             })
             ->withoutTrashed()
             ->orderBy('id', 'desc')
@@ -113,12 +116,14 @@ class PaymentInvoiceController extends Controller
         $dueInvoices = PaymentInvoice::where('student_id', $studentId)
             ->where('status', '!=', 'paid')
             ->withoutTrashed()
-            ->get(['id', 'invoice_number', 'amount'])
+            ->get(['id', 'invoice_number', 'total_amount', 'amount_due'])
             ->map(function ($invoice) {
-                $invoice->amount = (int) $invoice->amount; // Cast to integer
+                $invoice->total_amount = (int) $invoice->total_amount;
+                $invoice->amount_due   = (int) $invoice->amount_due;
                 return $invoice;
             });
 
         return response()->json($dueInvoices);
     }
+
 }

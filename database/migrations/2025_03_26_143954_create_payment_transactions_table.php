@@ -18,6 +18,7 @@ return new class extends Migration
             $table->enum('payment_type', ['partial', 'full']);
             $table->decimal('amount_paid', 10, 2);
             $table->string('voucher_no')->unique();
+            $table->text('remarks')->nullable();
             $table->timestamps();
         });
     }

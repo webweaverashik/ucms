@@ -306,7 +306,8 @@ class StudentController extends Controller
                 PaymentInvoice::create([
                     'invoice_number' => $invoiceNumber,
                     'student_id'     => $student->id,
-                    'amount'         => $validated['student_tuition_fee'],
+                    'total_amount'   => $validated['student_tuition_fee'],
+                    'amount_due'     => $validated['student_tuition_fee'],
                     'month_year'     => $monthYear,
                 ]);
             }

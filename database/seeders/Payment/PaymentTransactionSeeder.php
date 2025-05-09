@@ -1,43 +1,50 @@
 <?php
 namespace Database\Seeders\Payment;
 
-use Illuminate\Database\Seeder;
 use App\Models\Payment\PaymentInvoice;
 use App\Models\Payment\PaymentTransaction;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class PaymentTransactionSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        $invoices = PaymentInvoice::with('student')->get();
+        $invoices = PaymentInvoice::where('status', '!=', 'paid')->get();
 
         foreach ($invoices as $invoice) {
-            // Decide number of transactions per invoice (1 or 2)
-            $transactionCount = rand(1, 2);
-            $remainingAmount  = $invoice->amount;
+            $totalAmount = $invoice->total_amount;
+            $remaining   = $totalAmount;
 
-            for ($i = 1; $i <= $transactionCount; $i++) {
-                // Generate a random amount for partial payments or full for the last
-                if ($i < $transactionCount) {
-                    $amountPaid  = round($remainingAmount * 0.5, 2);
-                    $paymentType = 'partial';
+            // Randomly decide whether to make full or partial payments (1 to 3 transactions)
+            $transactionCount = rand(1, 3);
+
+            for ($i = 1; $i <= $transactionCount && $remaining > 0; $i++) {
+                $isLastTransaction = ($i === $transactionCount || $remaining < 100);
+
+                if ($isLastTransaction) {
+                    $amountPaid = $remaining;
                 } else {
-                    $amountPaid  = $remainingAmount;
-                    $paymentType = $i === 1 ? 'full' : 'partial'; // If only 1 txn, it's full
+                    $amountPaid = round(rand(100, $remaining - 50), 2);
                 }
 
-                $voucherNo = 'TXN_' . $invoice->invoice_number . '_' . str_pad($i, 2, '0', STR_PAD_LEFT);
+                $paymentType = ($amountPaid == $remaining) ? 'full' : 'partial';
 
                 PaymentTransaction::create([
                     'student_id'         => $invoice->student_id,
                     'payment_invoice_id' => $invoice->id,
                     'payment_type'       => $paymentType,
                     'amount_paid'        => $amountPaid,
-                    'voucher_no'         => $voucherNo,
+                    'voucher_no'         => strtoupper(Str::random(10)),
                 ]);
 
-                $remainingAmount -= $amountPaid;
+                $remaining -= $amountPaid;
             }
+
+            // Update invoice after transaction(s)
+            $invoice->amount_due = max(0, $remaining);
+            $invoice->status     = ($invoice->amount_due == 0) ? 'paid' : 'partially_paid';
+            $invoice->save();
         }
     }
 }

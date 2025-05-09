@@ -192,6 +192,7 @@
                                 <th class="w-150px">Invoice No.</th>
                                 <th class="w-350px">Student</th>
                                 <th>Amount (৳)</th>
+                                <th>Due (৳)</th>
                                 <th class="d-none">Billing Month (filter)</th>
                                 <th>Billing Month</th>
                                 <th class="d-none">Due Date (filter)</th>
@@ -218,7 +219,8 @@
                                         </a>
                                     </td>
 
-                                    <td>{{ intval($invoice->amount) }}</td>
+                                    <td>{{ intval($invoice->total_amount) }}</td>
+                                    <td>{{ intval($invoice->amount_due) }}</td>
 
                                     <td class="d-none">D_{{ $invoice->month_year }}</td>
 
@@ -234,28 +236,23 @@
 
                                     @php
                                         $status = $invoice->status;
-
                                         $payment = optional($invoice->student)->payments;
                                         $dueDate = null;
+                                        $isOverdue = false;
 
-                                        if (
-                                            $payment &&
-                                            $payment->payment_style === 'current' &&
-                                            $payment->due_date &&
-                                            $invoice->month_year
-                                        ) {
+                                        if ($payment && $payment->due_date && $invoice->month_year) {
                                             try {
                                                 $monthYear = \Carbon\Carbon::createFromFormat(
                                                     'm_Y',
                                                     $invoice->month_year,
                                                 );
                                                 $dueDate = $monthYear->copy()->day($payment->due_date);
-                                                // Convert both to date string to ignore time
+
                                                 if (
                                                     in_array($status, ['due', 'partially_paid']) &&
                                                     now()->toDateString() > $dueDate->toDateString()
                                                 ) {
-                                                    $status = 'overdue';
+                                                    $isOverdue = true;
                                                 }
                                             } catch (\Exception $e) {
                                                 // Silently ignore parse errors
@@ -268,7 +265,9 @@
                                             I_due
                                         @elseif ($status === 'partially_paid')
                                             I_partial
-                                        @elseif ($status === 'overdue')
+                                        @endif
+
+                                        @if ($isOverdue)
                                             I_overdue
                                         @endif
                                     </td>
@@ -278,8 +277,10 @@
                                             <span class="badge badge-warning">Due</span>
                                         @elseif ($status === 'partially_paid')
                                             <span class="badge badge-info">Partial</span>
-                                        @elseif ($status === 'overdue')
-                                            <span class="badge badge-danger">Overdue</span>
+                                        @endif
+
+                                        @if ($isOverdue)
+                                            <span class="badge badge-danger ms-1">Overdue</span>
                                         @endif
                                     </td>
 
@@ -439,7 +440,7 @@
                                         </a>
                                     </td>
 
-                                    <td>{{ intval($invoice->amount) }}</td>
+                                    <td>{{ intval($invoice->total_amount) }}</td>
 
                                     <td class="d-none">P_{{ $invoice->month_year }}</td>
 

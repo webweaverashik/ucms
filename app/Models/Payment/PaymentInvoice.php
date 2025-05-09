@@ -1,11 +1,10 @@
 <?php
-
 namespace App\Models\Payment;
 
 use App\Models\Student\Student;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PaymentInvoice extends Model
 {
@@ -14,7 +13,8 @@ class PaymentInvoice extends Model
     protected $fillable = [
         'invoice_number',
         'student_id',
-        'amount',
+        'total_amount',
+        'amount_due',
         'month_year',
         'status',
         'deleted_by',
@@ -29,5 +29,5 @@ class PaymentInvoice extends Model
     {
         return $this->hasMany(PaymentTransaction::class);
     }
-}
 
+}
