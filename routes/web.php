@@ -42,6 +42,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::post('students/{id}/approve', [StudentActivationController::class, 'approve'])->name('students.activate');
     Route::post('students/toggle-active', [StudentActivationController::class, 'toggleActive'])->name('students.toggleActive');
     Route::get('students/{id}/download-form', [PdfController::class, 'downloadAdmissionForm'])->name('students.download');
+    Route::get('transactions/{id}/download-payslip', [PdfController::class, 'downloadPaySlip'])->name('transactions.download');
 
     // AJAX Routes
     Route::prefix('admin')->group(function () {

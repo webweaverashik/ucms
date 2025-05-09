@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Models\Payment\PaymentTransaction;
 use App\Models\Student\Student;
 use Spatie\LaravelPdf\Facades\Pdf;
 
@@ -30,6 +31,16 @@ class PdfController extends Controller
             ->inline($student->student_unique_id . '_admission_form.pdf'); // Use inline() to display and download() to download
 
         // return view('pdf.admission-form-layout', ['student' => $student]);
+
+    }
+
+    public function downloadPaySlip(string $id)
+    {
+        $transaction = PaymentTransaction::find($id);
+
+        return Pdf::view('pdf.admission-form-layout', ['transaction' => $transaction]) // Pass the student data to the view
+            ->format('a4')
+            ->inline($transaction->vocher_no . '_payslip.pdf'); // Use inline() to display and download() to download
 
     }
 }

@@ -184,9 +184,10 @@
                             </td>
 
                             <td>
-                                <a href="{{ route('transactions.edit', $transaction->id) }}" title="Edit Transaction"
-                                    data-bs-toggle="tooltip" title="Edit Invoice"
-                                    class="btn btn-icon btn-active-light-warning w-30px h-30px me-3">
+                                {{-- <a href="{{ route('transactions.download', $transaction->id) }}" --}}
+                                <a href="#"
+                                    data-bs-toggle="tooltip" title="Download Payslip"
+                                    class="btn btn-icon btn-active-light-primary w-30px h-30px me-3">
                                     <i class="bi bi-download fs-2"></i>
                                 </a>
                             </td>
