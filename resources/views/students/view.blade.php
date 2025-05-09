@@ -546,8 +546,7 @@
                                 <!--end::Label-->
                                 <!--begin::Col-->
                                 <div class="col-lg-8 fv-row">
-                                    <span
-                                        class="fw-bold text-gray-800 fs-6">{{ $student->blood_group }}</span>
+                                    <span class="fw-bold text-gray-800 fs-6">{{ $student->blood_group }}</span>
                                 </div>
                                 <!--end::Col-->
                             </div>
@@ -871,7 +870,8 @@
                                     <!--begin::Col-->
                                     <div class="border border-dashed border-gray-300 w-150px rounded my-3 p-4 me-6">
                                         <span class="fs-1 fw-bold text-gray-800 lh-1">
-                                            <span data-kt-countup="true" data-kt-countup-value="6,840"
+                                            <span data-kt-countup="true"
+                                                data-kt-countup-value="{{ $student->paymentTransactions->sum('amount_paid') }}"
                                                 data-kt-countup-prefix="৳">0</span>
                                         </span>
                                         <span class="fs-6 fw-semibold text-muted d-block lh-1 pt-2">Total Paid</span>
@@ -881,14 +881,15 @@
                                     <div class="border border-dashed border-gray-300 w-125px rounded my-3 p-4 me-6">
                                         <span class="fs-1 fw-bold text-gray-800 lh-1">
                                             <span class="" data-kt-countup="true"
-                                                data-kt-countup-value="16">0</span></span>
+                                                data-kt-countup-value="{{ $student->paymentInvoices->whereNull('deleted_at')->count() }}">0</span></span>
                                         <span class="fs-6 fw-semibold text-muted d-block lh-1 pt-2">Months</span>
                                     </div>
                                     <!--end::Col-->
                                     <!--begin::Col-->
                                     <div class="border border-dashed border-warning w-150px rounded my-3 p-4 me-6">
                                         <span class="fs-1 fw-bold text-gray-800 lh-1">
-                                            <span data-kt-countup="true" data-kt-countup-value="1,240"
+                                            <span data-kt-countup="true"
+                                                data-kt-countup-value="{{ $student->paymentInvoices->whereNull('deleted_at')->sum('due') }}"
                                                 data-kt-countup-prefix="৳">0</span>
                                         </span>
                                         <span class="fs-6 fw-semibold text-muted d-block lh-1 pt-2">Due</span>
@@ -917,215 +918,51 @@
                         <div class="card-body pb-5">
                             <!--begin::Table-->
                             <table id="kt_student_view_transactions_table"
-                                class="table align-middle table-row-dashed fs-6 text-gray-600 fw-semibold gy-4">
+                                class="table table-hover align-middle table-row-dashed fs-6 fw-semibold gy-4 ucms-table">
                                 <thead class="border-bottom border-gray-200">
-                                    <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+                                    <tr class="fw-bold fs-7 text-uppercase gs-0">
+                                        <th class="w-25px">SL</th>
                                         <th class="w-125px">Date</th>
-                                        <th class="w-100px">Order ID</th>
-                                        <th class="w-300px">Details</th>
+                                        <th class="w-100px">Invoice No.</th>
+                                        <th class="w-300px">Voucher No.</th>
                                         <th class="w-100px">Amount</th>
-                                        <th class="w-100px text-end pe-7">Invoice</th>
+                                        <th class="w-100px">Payment Type</th>
+                                        <th class="w-100px text-end pe-7">Download</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>Nov 01, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">102445788</a>
-                                        </td>
-                                        <td>Darknight transparency 36 Icons Pack</td>
-                                        <td class="text-success">$38.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Oct 24, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">423445721</a>
-                                        </td>
-                                        <td>Seller Fee</td>
-                                        <td class="text-danger">$-2.60</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Oct 08, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">312445984</a>
-                                        </td>
-                                        <td>Cartoon Mobile Emoji Phone Pack</td>
-                                        <td class="text-success">$76.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Sep 15, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">312445984</a>
-                                        </td>
-                                        <td>Iphone 12 Pro Mockup Mega Bundle</td>
-                                        <td class="text-success">$5.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>May 30, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">523445943</a>
-                                        </td>
-                                        <td>Seller Fee</td>
-                                        <td class="text-danger">$-1.30</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Apr 22, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">231445943</a>
-                                        </td>
-                                        <td>Parcel Shipping / Delivery Service App</td>
-                                        <td class="text-success">$204.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Feb 09, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">426445943</a>
-                                        </td>
-                                        <td>Visual Design Illustration</td>
-                                        <td class="text-success">$31.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Nov 01, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">984445943</a>
-                                        </td>
-                                        <td>Abstract Vusial Pack</td>
-                                        <td class="text-success">$52.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Jan 04, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">324442313</a>
-                                        </td>
-                                        <td>Seller Fee</td>
-                                        <td class="text-danger">$-0.80</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Nov 01, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">102445788</a>
-                                        </td>
-                                        <td>Darknight transparency 36 Icons Pack</td>
-                                        <td class="text-success">$38.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Oct 24, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">423445721</a>
-                                        </td>
-                                        <td>Seller Fee</td>
-                                        <td class="text-danger">$-2.60</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Oct 08, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">312445984</a>
-                                        </td>
-                                        <td>Cartoon Mobile Emoji Phone Pack</td>
-                                        <td class="text-success">$76.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Sep 15, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">312445984</a>
-                                        </td>
-                                        <td>Iphone 12 Pro Mockup Mega Bundle</td>
-                                        <td class="text-success">$5.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>May 30, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">523445943</a>
-                                        </td>
-                                        <td>Seller Fee</td>
-                                        <td class="text-danger">$-1.30</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Apr 22, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">231445943</a>
-                                        </td>
-                                        <td>Parcel Shipping / Delivery Service App</td>
-                                        <td class="text-success">$204.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Feb 09, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">426445943</a>
-                                        </td>
-                                        <td>Visual Design Illustration</td>
-                                        <td class="text-success">$31.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Nov 01, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">984445943</a>
-                                        </td>
-                                        <td>Abstract Vusial Pack</td>
-                                        <td class="text-success">$52.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Jan 04, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">324442313</a>
-                                        </td>
-                                        <td>Seller Fee</td>
-                                        <td class="text-danger">$-0.80</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
+                                    @foreach ($student->paymentTransactions->sortByDesc('created_at') as $transaction)
+                                        <tr>
+                                            <td>{{ $loop->index + 1 }}</td>
+                                            <td>{{ $transaction->created_at->format('d-M-Y') }}
+                                                <span class="ms-1" data-bs-toggle="tooltip"
+                                                    title="{{ $transaction->created_at->format('d-M-Y h:i:s A') }}">
+                                                    <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="{{ route('invoices.show', $transaction->paymentInvoice->id) }}">
+                                                    {{ $transaction->paymentInvoice->invoice_number }}
+                                                </a>
+                                            </td>
+                                            <td>{{ $transaction->voucher_no }}</td>
+                                            <td class="text-success">৳ {{ intval($transaction->amount_paid) }}</td>
+                                            <td>
+                                                @if ($transaction->payment_type === 'partial')
+                                                    <span class="badge badge-warning">Partial</span>
+                                                @elseif ($transaction->payment_type === 'full')
+                                                    <span class="badge badge-success">Full Paid</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-end">
+                                                {{-- <a href="{{ route('transactions.download', $transaction->id) }}" --}}
+                                                <a href="#" data-bs-toggle="tooltip" title="Download Payslip"
+                                                    class="btn btn-icon btn-active-light-primary w-30px h-30px me-3">
+                                                    <i class="bi bi-download fs-2"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
                                 </tbody>
                             </table>
                             <!--end::Table-->
