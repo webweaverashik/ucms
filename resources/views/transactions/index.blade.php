@@ -184,8 +184,7 @@
                             </td>
 
                             <td>
-                                {{-- <a href="{{ route('transactions.download', $transaction->id) }}" --}}
-                                <a href="#"
+                                <a href="{{ route('transactions.download', $transaction->id) }}" target="_blank"
                                     data-bs-toggle="tooltip" title="Download Payslip"
                                     class="btn btn-icon btn-active-light-primary w-30px h-30px me-3">
                                     <i class="bi bi-download fs-2"></i>
@@ -354,12 +353,12 @@
                             <!--begin::Name Input group-->
                             <div class="fv-row">
                                 <!--begin::Label-->
-                                <label class="fw-semibold fs-6 mb-2">Remarks <span class="text-muted">(optional)</span></label>
+                                <label class="fw-semibold fs-6 mb-2">Remarks <span
+                                        class="text-muted">(optional)</span></label>
                                 <!--end::Label-->
                                 <!--begin::Input-->
                                 <input type="text" name="transaction_remarks" min="0"
-                                    class="form-control form-control-solid mb-3 mb-lg-0"
-                                    placeholder="Add some remarks"/>
+                                    class="form-control form-control-solid mb-3 mb-lg-0" placeholder="Add some remarks" />
                                 <!--end::Input-->
                             </div>
                             <!--end::Name Input group-->
