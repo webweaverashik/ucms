@@ -191,10 +191,10 @@
                                 <th class="w-25px">SL</th>
                                 <th class="w-150px">Invoice No.</th>
                                 <th class="w-350px">Student</th>
-                                <th>Amount (৳)</th>
-                                <th>Due (৳)</th>
                                 <th class="d-none">Billing Month (filter)</th>
                                 <th>Billing Month</th>
+                                <th>Toal Amount (৳)</th>
+                                <th>Remaining (৳)</th>
                                 <th class="d-none">Due Date (filter)</th>
                                 <th>Due Date</th>
                                 <th class="d-none">Status (filter)</th>
@@ -213,19 +213,19 @@
                                     </td>
 
                                     <td>
-                                        <a href="{{ route('students.show', $invoice->student->id) }}">
+                                        <a href="{{ route('students.show', $invoice->student->id) }}" target="_blank">
                                             {{ $invoice->student->name }},
                                             {{ $invoice->student->student_unique_id }}
                                         </a>
                                     </td>
 
-                                    <td>{{ intval($invoice->total_amount) }}</td>
-                                    <td>{{ intval($invoice->amount_due) }}</td>
-
+                                    
                                     <td class="d-none">D_{{ $invoice->month_year }}</td>
-
+                                    
                                     <td>{{ \Carbon\Carbon::createFromFormat('m_Y', $invoice->month_year)->format('F Y') }}
                                     </td>
+                                    <td>{{ $invoice->total_amount }}</td>
+                                    <td>{{ $invoice->amount_due }}</td>
                                     <td class="d-none">
                                         1/{{ $invoice->student->payments->due_date }}
                                     </td>
@@ -274,29 +274,32 @@
 
                                     <td>
                                         @if ($status === 'due')
-                                            <span class="badge badge-warning">Due</span>
+                                            @if ($isOverdue)
+                                                <span class="badge badge-danger ms-1">Overdue</span>
+                                            @else
+                                                <span class="badge badge-warning">Due</span>
+                                            @endif
                                         @elseif ($status === 'partially_paid')
                                             <span class="badge badge-info">Partial</span>
-                                        @endif
-
-                                        @if ($isOverdue)
-                                            <span class="badge badge-danger ms-1">Overdue</span>
+                                            @if ($isOverdue)
+                                                <span class="badge badge-danger ms-1">Overdue</span>
+                                            @endif
                                         @endif
                                     </td>
-
-
-
+                                    
                                     <td>
-                                        <a href="{{ route('invoices.edit', $invoice->id) }}" title="Edit invoice"
-                                            data-bs-toggle="tooltip" title="Edit Invoice"
-                                            class="btn btn-icon btn-active-light-warning w-30px h-30px me-3">
-                                            <i class="ki-outline ki-pencil fs-2"></i>
-                                        </a>
-                                        <a href="#" title="Delete invoice" data-bs-toggle="tooltip"
-                                            class="btn btn-icon btn-active-light-danger w-30px h-30px me-3 delete-invoice"
-                                            data-invoice-id="{{ $invoice->id }}">
-                                            <i class="ki-outline ki-trash fs-2"></i>
-                                        </a>
+                                        @if ($invoice->student->studentActivation->active_status == 'active')
+                                            <a href="{{ route('invoices.edit', $invoice->id) }}" title="Edit invoice"
+                                                data-bs-toggle="tooltip" title="Edit Invoice"
+                                                class="btn btn-icon btn-active-light-warning w-30px h-30px me-3">
+                                                <i class="ki-outline ki-pencil fs-2"></i>
+                                            </a>
+                                            <a href="#" title="Delete invoice" data-bs-toggle="tooltip"
+                                                class="btn btn-icon btn-active-light-danger w-30px h-30px me-3 delete-invoice"
+                                                data-invoice-id="{{ $invoice->id }}">
+                                                <i class="ki-outline ki-trash fs-2"></i>
+                                            </a>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
@@ -440,7 +443,7 @@
                                         </a>
                                     </td>
 
-                                    <td>{{ intval($invoice->total_amount) }}</td>
+                                    <td>{{ $invoice->total_amount }}</td>
 
                                     <td class="d-none">P_{{ $invoice->month_year }}</td>
 
@@ -485,7 +488,7 @@
 
 @push('page-js')
     <script>
-        const routeDeleteGuardian = "{{ route('invoices.destroy', ':id') }}";
+        const routeDeleteInvoice = "{{ route('invoices.destroy', ':id') }}";
     </script>
 
     <script src="{{ asset('js/invoices/index.js') }}"></script>

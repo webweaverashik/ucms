@@ -14,7 +14,7 @@ class PaymentFactory extends Factory
             // We'll assign `student_id` manually in the seeder
             'payment_style' => $this->faker->randomElement(['current', 'due']),
             'due_date'      => $this->faker->randomElement([7, 10, 15, 30]),
-            'tuition_fee'   => $this->faker->randomFloat(2, 1500, 5000),
+            'tuition_fee' => $this->faker->numberBetween(1500, 5000),
         ];
     }
 }

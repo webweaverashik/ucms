@@ -16,6 +16,7 @@ class PaymentTransaction extends Model
         'payment_type',
         'amount_paid',
         'voucher_no',
+        'remarks',
     ];
 
     public function paymentInvoice()

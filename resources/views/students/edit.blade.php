@@ -1046,7 +1046,7 @@
                                     {{-- <div class="input-group input-group-solid mb-5 flex-nowrap"> --}}
                                     <input type="number" class="form-control form-control-solid"
                                         name="student_tuition_fee" min="0" placeholder="Write tuition fee"
-                                        required value="{{ intval($student->payments->tuition_fee) }}" />
+                                        required value="{{ $student->payments->tuition_fee }}" />
                                     {{-- <span class="input-group-text">
                                             Tk
                                         </span>

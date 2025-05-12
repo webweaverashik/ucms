@@ -235,7 +235,7 @@
                             </td>
                             <td>
                                 @if ($student->payments)
-                                    {{ intval($student->payments->tuition_fee) }}
+                                    {{ $student->payments->tuition_fee }}
                                 @endif
                             </td>
                             <td>

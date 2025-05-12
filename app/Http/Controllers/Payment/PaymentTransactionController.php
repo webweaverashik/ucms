@@ -18,6 +18,12 @@ class PaymentTransactionController extends Controller
 
         if (auth()->user()->branch_id != 0) {
             $students = Student::where('branch_id', auth()->user()->branch_id)
+                ->where(function($query) {
+                    $query->whereNull('student_activation_id')
+                        ->orWhereHas('studentActivation', function ($q) {
+                            $q->where('active_status', 'active');
+                    });
+                })
                 ->withoutTrashed()
                 ->orderby('student_unique_id', 'asc')
                 ->get();
@@ -53,6 +59,8 @@ class PaymentTransactionController extends Controller
 
         // Use amount_due instead of total_amount for validation
         $maxAmount = $invoice->amount_due;
+
+        // return ['request' => $validated, 'invoice' => $invoice, 'maxAmount' => $maxAmount];
 
         // Extra check: partial payments must be <= amount_due
         if ($validated['transaction_type'] === 'partial' && $validated['transaction_amount'] > $maxAmount) {

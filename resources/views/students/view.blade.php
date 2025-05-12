@@ -217,10 +217,10 @@
                                     <td class="text-gray-500">Monthly Fee:</td>
                                     <td>
                                         @if ($student->payments)
-                                            {{ intval($student->payments->tuition_fee) }}
+                                            ৳ {{ $student->payments->tuition_fee }}
                                         @else
-                                            2000
-                                        @endif Tk
+                                            N/A
+                                        @endif
                                     </td>
                                 </tr>
                                 <!--end::Row-->
@@ -889,7 +889,7 @@
                                     <div class="border border-dashed border-warning w-150px rounded my-3 p-4 me-6">
                                         <span class="fs-1 fw-bold text-gray-800 lh-1">
                                             <span data-kt-countup="true"
-                                                data-kt-countup-value="{{ $student->paymentInvoices->whereNull('deleted_at')->sum('due') }}"
+                                                data-kt-countup-value="{{ $student->paymentInvoices->whereNull('deleted_at')->sum('amount_due') }}"
                                                 data-kt-countup-prefix="৳">0</span>
                                         </span>
                                         <span class="fs-6 fw-semibold text-muted d-block lh-1 pt-2">Due</span>
@@ -946,7 +946,7 @@
                                                 </a>
                                             </td>
                                             <td>{{ $transaction->voucher_no }}</td>
-                                            <td class="text-success">৳ {{ intval($transaction->amount_paid) }}</td>
+                                            <td class="text-success">৳ {{ $transaction->amount_paid }}</td>
                                             <td>
                                                 @if ($transaction->payment_type === 'partial')
                                                     <span class="badge badge-warning">Partial</span>

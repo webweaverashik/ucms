@@ -14,12 +14,15 @@ class PaymentInvoiceController extends Controller
     {
         $unpaid_invoices = PaymentInvoice::where('status', '!=', 'paid')
             ->whereHas('student', function ($query) {
-                $query->whereNull('deleted_at')
+                $query
+                    ->whereNull('deleted_at')
+                    ->where('branch_id', auth()->user()->branch_id)
                     ->where(function ($q) {
                         $q->whereHas('studentActivation', function ($q2) {
                             $q2->where('active_status', 'active');
                         })->orWhereNull('student_activation_id');
-                    });
+                    })
+                ;
             })
             ->withoutTrashed()
             ->orderBy('id', 'desc')
@@ -27,12 +30,15 @@ class PaymentInvoiceController extends Controller
 
         $paid_invoices = PaymentInvoice::where('status', 'paid')
             ->whereHas('student', function ($query) {
-                $query->whereNull('deleted_at')
-                    ->where(function ($q) {
+                $query
+                    ->whereNull('deleted_at')
+                    ->where('branch_id', auth()->user()->branch_id)
+                    /*->where(function ($q) {
                         $q->whereHas('studentActivation', function ($q2) {
                             $q2->where('active_status', 'active');
                         })->orWhereNull('student_activation_id');
-                    });
+                    })*/
+                ;
             })
             ->withoutTrashed()
             ->orderBy('id', 'desc')
@@ -78,7 +84,13 @@ class PaymentInvoiceController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $invoice = PaymentInvoice::find($id);
+
+        if (! $invoice) {
+            return redirect()->route('invoices.index')->with('warning', 'Invoice not found.');
+        }
+
+        return view('invoices.view', compact('invoice'));
     }
 
     /**
@@ -108,7 +120,7 @@ class PaymentInvoiceController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        return response()->json(['success' => true]);
     }
 
     public function getDueInvoices($studentId)
@@ -125,5 +137,4 @@ class PaymentInvoiceController extends Controller
 
         return response()->json($dueInvoices);
     }
-
 }

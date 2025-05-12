@@ -77,15 +77,15 @@ var KTDueInvoicesList = function () {
 
       // Delete pending students
       const handleDeletion = function () {
-            document.querySelectorAll('.delete-guardian').forEach(item => {
+            document.querySelectorAll('.delete-invoice').forEach(item => {
                   item.addEventListener('click', function (e) {
                         e.preventDefault();
 
-                        let guardianId = this.getAttribute('data-guardian-id');
-                        let url = routeDeleteGuardian.replace(':id', guardianId);  // Replace ':id' with actual student ID
+                        let invoiceId = this.getAttribute('data-invoice-id');
+                        let url = routeDeleteInvoice.replace(':id', invoiceId);  // Replace ':id' with actual invoice ID
 
                         Swal.fire({
-                              title: "Are you sure to delete this guardian?",
+                              title: "Are you sure to delete this invoice?",
                               text: "This action cannot be undone!",
                               icon: "warning",
                               showCancelButton: true,
@@ -106,7 +106,7 @@ var KTDueInvoicesList = function () {
                                                 if (data.success) {
                                                       Swal.fire({
                                                             title: "Deleted!",
-                                                            text: "The guardian has been removed successfully.",
+                                                            text: "The invoice has been deleted successfully.",
                                                             icon: "success",
                                                       }).then(() => {
                                                             location.reload(); // Reload to reflect changes
