@@ -219,9 +219,9 @@
                                         </a>
                                     </td>
 
-                                    
+
                                     <td class="d-none">D_{{ $invoice->month_year }}</td>
-                                    
+
                                     <td>{{ \Carbon\Carbon::createFromFormat('m_Y', $invoice->month_year)->format('F Y') }}
                                     </td>
                                     <td>{{ $invoice->total_amount }}</td>
@@ -286,7 +286,7 @@
                                             @endif
                                         @endif
                                     </td>
-                                    
+
                                     <td>
                                         @if ($invoice->student->studentActivation->active_status == 'active')
                                             <a href="{{ route('invoices.edit', $invoice->id) }}" title="Edit invoice"

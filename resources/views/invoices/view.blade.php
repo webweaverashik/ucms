@@ -123,7 +123,8 @@
                         <!--begin::Row-->
                         <tr class="">
                             <td class="text-gray-500">Remaining Amount:</td>
-                            <td class="text-gray-800">
+                            <td
+                                class="@if ($invoice->amount_due > 0) text-danger animation-blink @else text-gray-800 @endif">
                                 {{ $invoice->amount_due }} ৳
                             </td>
                         </tr>
@@ -190,6 +191,8 @@
                                     @if ($isOverdue)
                                         <span class="badge badge-danger ms-1">Overdue</span>
                                     @endif
+                                @elseif ($status === 'paid')
+                                    <span class="badge badge-success">Paid</span>
                                 @endif
                             </td>
                         </tr>
@@ -203,34 +206,36 @@
                 <div class="col-md-1">
                     <!--begin::Actions-->
                     <div class="d-flex justify-content-end mb-4">
-                        <!--begin::Three Dots-->
-                        <div class="me-0">
-                            <button class="btn btn-sm btn-icon btn-bg-light btn-active-color-primary"
-                                data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
-                                <i class="ki-solid ki-dots-horizontal fs-2x"></i>
-                            </button>
+                        @if ($invoice->paymentTransactions->count() == 0)
                             <!--begin::Three Dots-->
+                            <div class="me-0">
+                                <button class="btn btn-sm btn-icon btn-bg-light btn-active-color-primary"
+                                    data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
+                                    <i class="ki-solid ki-dots-horizontal fs-2x"></i>
+                                </button>
+                                <!--begin::Three Dots-->
 
-                            <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-semibold w-150px py-3"
-                                data-kt-menu="true">
-                                <div class="menu-item px-3">
-                                    <a href="{{ route('invoices.edit', $invoice->id) }}"
-                                        class="menu-link px-3 text-hover-primary"><i class="las la-pen fs-2 me-2"></i>
-                                        Edit</a>
-                                </div>
-
-                                @if (auth()->user()->id != 20)
-                                    <!--begin::Menu item-->
+                                <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-semibold w-150px py-3"
+                                    data-kt-menu="true">
                                     <div class="menu-item px-3">
-                                        <a href="#" class="menu-link text-hover-danger px-3 delete-invoice"
-                                            data-farm-id={{ $invoice->id }}><i class="las la-trash fs-2 me-2"></i>
-                                            Delete</a>
+                                        <a href="{{ route('invoices.edit', $invoice->id) }}"
+                                            class="menu-link px-3 text-hover-primary"><i class="las la-pen fs-2 me-2"></i>
+                                            Edit</a>
                                     </div>
-                                    <!--end::Menu item-->
-                                @endif
+
+                                    @if (auth()->user()->id != 20)
+                                        <!--begin::Menu item-->
+                                        <div class="menu-item px-3">
+                                            <a href="#" class="menu-link text-hover-danger px-3 delete-invoice"
+                                                data-farm-id={{ $invoice->id }}><i class="las la-trash fs-2 me-2"></i>
+                                                Delete</a>
+                                        </div>
+                                        <!--end::Menu item-->
+                                    @endif
+                                </div>
+                                <!--end::Menu 3-->
                             </div>
-                            <!--end::Menu 3-->
-                        </div>
+                        @endif
                         <!--end::Menu-->
                     </div>
                     <!--end::Actions-->
@@ -254,8 +259,11 @@
             <!--begin::Toolbar-->
             <div class="card-toolbar">
                 <!--begin::Add user-->
-                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_transaction">
-                    <i class="ki-outline ki-plus fs-2"></i>Transaction</a>
+                @if ($invoice->amount_due != 0)
+                    <a href="#" class="btn btn-primary" data-bs-toggle="modal"
+                        data-bs-target="#kt_modal_add_transaction">
+                        <i class="ki-outline ki-plus fs-2"></i>Transaction</a>
+                @endif
                 <!--end::Add user-->
             </div>
             <!--end::Toolbar-->
@@ -268,7 +276,7 @@
             <div class="py-0">
                 <!--begin::Table-->
                 <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table"
-                    id="kt_transactions_table">
+                    id="kt_invoice_transactions_table">
                     <thead>
                         <tr class="fw-bold fs-7 text-uppercase gs-0">
                             <th class="w-25px">SL</th>
@@ -279,7 +287,7 @@
                             <th class="w-350px">Student</th>
                             <th>Payment Date</th>
                             <th>Remarks</th>
-                            <th>Actions</th>
+                            <th>Download</th>
                         </tr>
                     </thead>
                     <tbody class="text-gray-600 fw-semibold">
@@ -301,7 +309,7 @@
                                 </td>
 
                                 <td>
-                                    <a href="{{ route('students.show', $transaction->student->id) }}">
+                                    <a href="{{ route('students.show', $transaction->student->id) }}" target="_blank">
                                         {{ $transaction->student->name }},
                                         {{ $transaction->student->student_unique_id }}
                                     </a>
@@ -346,7 +354,7 @@
                     <h2 class="fw-bold">Add Transaction for {{ $invoice->invoice_number }}</h2>
                     <!--end::Modal title-->
                     <!--begin::Close-->
-                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-add-transaction-modal-action="close">
+                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
                         <i class="ki-outline ki-cross fs-1">
                         </i>
                     </div>
@@ -357,13 +365,20 @@
                 <div class="modal-body px-5 my-7">
                     <!--begin::Form-->
                     <form id="kt_modal_add_transaction_form" class="form" action="{{ route('transactions.store') }}"
-                        method="POST">
+                        method="POST" data-kt-redirect="false">
                         @csrf
                         <!--begin::Scroll-->
                         <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_add_transaction_scroll"
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_transaction_header"
                             data-kt-scroll-wrappers="#kt_modal_add_transaction_scroll" data-kt-scroll-offset="300px">
+
+                            {{-- hidden inputs --}}
+                            <input type="hidden" name="transaction_student" value="{{ $invoice->student_id }}">
+                            <input type="hidden" name="transaction_invoice" value="{{ $invoice->id }}">
+
+                            <div id="invoice_status_indicator" data-status="{{ $invoice->status }}"
+                                style="display:none;"></div>
 
                             <!--begin::Type Input group-->
                             <div class="fv-row mb-7">
@@ -376,7 +391,7 @@
                                     <div class="col-lg-6">
                                         <!--begin::Option-->
                                         <input type="radio" class="btn-check" name="transaction_type" value="full"
-                                            checked="checked" id="full_payment_type_input" />
+                                            id="full_payment_type_input" checked />
                                         <label
                                             class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                             for="full_payment_type_input">
@@ -420,11 +435,11 @@
                                 <!--begin::Label-->
                                 <label class="required fw-semibold fs-6 mb-2">Amount</label>
                                 <!--end::Label-->
-                                <!--begin::Input-->
+                                <!-- Amount input with total amount data attribute -->
                                 <input type="number" name="transaction_amount" min="0"
                                     id="transaction_amount_input" class="form-control form-control-solid mb-3 mb-lg-0"
-                                    placeholder="Enter the paid amount" required disabled />
-                                <!--end::Input-->
+                                    placeholder="Enter the paid amount" value="{{ $invoice->amount_due }}"
+                                    data-total-amount="{{ $invoice->total_amount }}" required />
                             </div>
                             <!--end::Name Input group-->
 
@@ -445,12 +460,9 @@
                         <!--end::Scroll-->
                         <!--begin::Actions-->
                         <div class="text-center pt-10">
-                            <button type="reset" class="btn btn-light me-3"
-                                data-kt-add-transaction-modal-action="cancel">Discard</button>
-                            <button type="submit" class="btn btn-primary" data-kt-add-transaction-modal-action="submit">
-                                <span class="indicator-label">Submit</span>
-                                <span class="indicator-progress">Please wait...
-                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                            <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Discard</button>
+                            <button type="submit" class="btn btn-primary">
+                                Submit
                             </button>
                         </div>
                         <!--end::Actions-->
@@ -472,6 +484,27 @@
 @endpush
 
 @push('page-js')
+    <script src="{{ asset('js/invoices/view-ajax.js') }}"></script>
+
+    <script>
+        $document.ready(function() {
+            // Initialize datatables
+            $('#kt_invoice_transactions_table').DataTable({
+                "info": true,
+                'order': [],
+                "lengthMenu": [10, 25, 50, 100],
+                "pageLength": 10,
+                "lengthChange": true,
+                "autoWidth": false, // Disable auto width
+                'columnDefs': [{
+                        orderable: false,
+                        targets: 8
+                    }, // Disable ordering on column Actions                
+                ]
+            });
+        })
+    </script>
+
     <script>
         document.getElementById("invoices_link").classList.add("active");
     </script>

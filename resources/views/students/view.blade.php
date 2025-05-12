@@ -927,6 +927,7 @@
                                         <th class="w-300px">Voucher No.</th>
                                         <th class="w-100px">Amount</th>
                                         <th class="w-100px">Payment Type</th>
+                                        <th class="w-50px">Remarks</th>
                                         <th class="w-100px text-end pe-7">Download</th>
                                     </tr>
                                 </thead>
@@ -954,6 +955,7 @@
                                                     <span class="badge badge-success">Full Paid</span>
                                                 @endif
                                             </td>
+                                            <td>{{ $transaction->remarks }}</td>
                                             <td class="text-end">
                                                 <a href="{{ route('transactions.download', $transaction->id) }}"
                                                     target="_blank" data-bs-toggle="tooltip" title="Download Payslip"

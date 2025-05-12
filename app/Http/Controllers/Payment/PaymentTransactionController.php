@@ -47,11 +47,13 @@ class PaymentTransactionController extends Controller
      */
     public function store(Request $request)
     {
+        return $request;
+
         $validated = $request->validate([
             'transaction_student' => 'required|exists:students,id',
             'transaction_invoice' => 'required|exists:payment_invoices,id',
             'transaction_type'    => 'required|in:full,partial',
-            'transaction_amount'  => 'required|numeric|min:1', // Changed from min:500 to min:1
+            'transaction_amount'  => 'required|numeric|min:1',
             'transaction_remarks' => 'nullable|string|max:1000',
         ]);
 
@@ -107,7 +109,7 @@ class PaymentTransactionController extends Controller
             ]);
         }
 
-        return redirect()->route('transactions.index')->with('success', 'Transaction recorded successfully.');
+        return redirect()->back()->with('success', 'Transaction recorded successfully.');
     }
 
     /**
