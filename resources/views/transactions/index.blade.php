@@ -81,29 +81,13 @@
                         <div class="px-7 py-5" data-transaction-table-filter="form">
                             <!--begin::Input group-->
                             <div class="mb-10">
-                                <label class="form-label fs-6 fw-semibold">Due Date:</label>
-                                <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                    data-placeholder="Select option" data-allow-clear="true"
-                                    data-transaction-table-filter="product" data-hide-search="true">
-                                    <option></option>
-                                    <option value="1/7">1-7</option>
-                                    <option value="1/10">1-10</option>
-                                    <option value="1/15">1-15</option>
-                                    <option value="1/30">1-30</option>
-                                </select>
-                            </div>
-                            <!--end::Input group-->
-
-                            <!--begin::Input group-->
-                            <div class="mb-10">
-                                <label class="form-label fs-6 fw-semibold">Invoice Status:</label>
+                                <label class="form-label fs-6 fw-semibold">Payment Type:</label>
                                 <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                     data-placeholder="Select option" data-allow-clear="true"
                                     data-transaction-table-filter="status" data-hide-search="true">
                                     <option></option>
-                                    <option value="I_due">Due</option>
-                                    <option value="I_overdue">Overdue</option>
-                                    <option value="I_partial">Partial Paid</option>
+                                    <option value="T_partial">Partial</option>
+                                    <option value="T_full_paid">Full Paid</option>
                                 </select>
                             </div>
                             <!--end::Input group-->
@@ -146,6 +130,7 @@
                         <th class="w-150px">Invoice No.</th>
                         <th>Voucher No.</th>
                         <th>Amount (৳)</th>
+                        <th class="d-none">Payment Type (Filter)</th>
                         <th>Payment Type</th>
                         <th class="w-350px">Student</th>
                         <th>Payment Date</th>
@@ -164,6 +149,14 @@
 
                             <td>{{ $transaction->voucher_no }}</td>
                             <td>{{ intval($transaction->amount_paid) }}</td>
+                            <td class="d-none">
+                                @if ($transaction->payment_type === 'partial')
+                                    T_partial
+                                @elseif ($transaction->payment_type === 'full')
+                                    T_full_paid
+                                @endif
+                            </td>
+
                             <td>
                                 @if ($transaction->payment_type === 'partial')
                                     <span class="badge badge-warning">Partial</span>

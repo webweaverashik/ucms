@@ -114,7 +114,7 @@ var KTDueInvoicesList = function () {
                                                 } else {
                                                       Swal.fire({
                                                             title: "Error!",
-                                                            text: data.message,
+                                                            text: data.error,
                                                             icon: "error",
                                                       });
                                                 }

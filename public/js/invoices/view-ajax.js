@@ -1,40 +1,40 @@
 $(document).ready(function () {
-// Get the invoice data from the hidden inputs and any status indicators
-    const invoice = {
-        id: $('input[name="transaction_invoice"]').val(),
-        student_id: $('input[name="transaction_student"]').val(),
-        amount_due: parseFloat($('#transaction_amount_input').val()),
-        // Assuming you have a way to get the current status (you might need to add this to your HTML)
-        status: $('#invoice_status_indicator').data('status') || 'unpaid' // Default to 'unpaid' if not found
-    };
+      // Get the invoice data from the hidden inputs and any status indicators
+      const invoice = {
+            id: $('input[name="transaction_invoice"]').val(),
+            student_id: $('input[name="transaction_student"]').val(),
+            amount_due: parseFloat($('#transaction_amount_input').val()),
+            // Assuming you have a way to get the current status (you might need to add this to your HTML)
+            status: $('#invoice_status_indicator').data('status') || 'unpaid' // Default to 'unpaid' if not found
+      };
 
-    // Initialize form behavior
-    function initializeForm() {
-        const $amountInput = $('#transaction_amount_input');
-        const $fullPaymentOption = $('input[name="transaction_type"][value="full"]');
-        const $partialPaymentOption = $('input[name="transaction_type"][value="partial"]');
+      // Initialize form behavior
+      function initializeForm() {
+            const $amountInput = $('#transaction_amount_input');
+            const $fullPaymentOption = $('input[name="transaction_type"][value="full"]');
+            const $partialPaymentOption = $('input[name="transaction_type"][value="partial"]');
 
-        // Set up amount input
-        $amountInput
-            .val(invoice.amount_due)
-            .prop('disabled', false)
-            .data('max', invoice.amount_due)
-            .attr('min', 1);
+            // Set up amount input
+            $amountInput
+                  .val(invoice.amount_due)
+                  .prop('disabled', false)
+                  .data('max', invoice.amount_due)
+                  .attr('min', 1);
 
-        // Check invoice status to determine payment options
-        if (invoice.status === 'partially_paid' || invoice.amount_due < invoice.total_amount) {
-            // Disable full payment for partially paid invoices
-            $fullPaymentOption.prop('disabled', true).prop('checked', false);
-            $partialPaymentOption.prop('checked', true);
-            $amountInput.val(''); // Clear value for partial payment
-        } else {
-            // Enable both options for unpaid invoices
-            $fullPaymentOption.prop('disabled', false);
-            $partialPaymentOption.prop('disabled', false);
-            $fullPaymentOption.prop('checked', true);
-            $amountInput.val(invoice.amount_due);
-        }
-    }
+            // Check invoice status to determine payment options
+            if (invoice.status === 'partially_paid' || invoice.amount_due < invoice.total_amount) {
+                  // Disable full payment for partially paid invoices
+                  $fullPaymentOption.prop('disabled', true).prop('checked', false);
+                  $partialPaymentOption.prop('checked', true);
+                  $amountInput.val(''); // Clear value for partial payment
+            } else {
+                  // Enable both options for unpaid invoices
+                  $fullPaymentOption.prop('disabled', false);
+                  $partialPaymentOption.prop('disabled', false);
+                  $fullPaymentOption.prop('checked', true);
+                  $amountInput.val(invoice.amount_due);
+            }
+      }
 
       // 1. Toggle input behavior for payment type
       $('input[name="transaction_type"]').on('change', function () {

@@ -16,7 +16,7 @@ var KTAllTransactionsList = function () {
                   "lengthChange": true,
                   "autoWidth": false,  // Disable auto width
                   'columnDefs': [
-                        { orderable: false, targets: 6 }, // Disable ordering on column Actions                
+                        { orderable: false, targets: 7 }, // Disable ordering on column Actions                
                   ]
             });
 

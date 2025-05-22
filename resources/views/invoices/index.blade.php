@@ -146,7 +146,7 @@
                                         <label class="form-label fs-6 fw-semibold">Billing Month:</label>
                                         <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                             data-placeholder="Select option" data-allow-clear="true"
-                                            data-kt-subscription-table-filter="status" data-hide-search="true">
+                                            data-kt-subscription-table-filter="status">
                                             <option></option>
                                             @foreach ($dueMonths as $dueMonth)
                                                 <option value="D_{{ $dueMonth }}">
@@ -288,7 +288,7 @@
                                     </td>
 
                                     <td>
-                                        @if ($invoice->student->studentActivation->active_status == 'active')
+                                        @if ($invoice->student->studentActivation->active_status == 'active' && $invoice->status == 'due')
                                             <a href="{{ route('invoices.edit', $invoice->id) }}" title="Edit invoice"
                                                 data-bs-toggle="tooltip" title="Edit Invoice"
                                                 class="btn btn-icon btn-active-light-warning w-30px h-30px me-3">

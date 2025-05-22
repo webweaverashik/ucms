@@ -120,6 +120,21 @@ class PaymentInvoiceController extends Controller
      */
     public function destroy(string $id)
     {
+        $invoice = PaymentInvoice::find($id);
+
+        if (!$invoice) {
+            return response()->json(['error' => 'Invoice not found'], 404);
+        }
+        
+        if ($invoice->status === 'paid' || $invoice->status === 'partially_paid') {
+            return response()->json(['error' => 'Cannot delete paid invoice'], 422);
+        }
+
+        if ($invoice->student->brach_id !== auth()->user()->branch_id) {
+            return response()->json(['error' => 'Unauthorized Access'], 403);
+        }
+
+        $invoice->delete();
         return response()->json(['success' => true]);
     }
 

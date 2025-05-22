@@ -14,7 +14,9 @@ class PaymentTransactionController extends Controller
      */
     public function index()
     {
-        $transactions = PaymentTransaction::orderBy('id', 'desc')->get();
+        $transactions = PaymentTransaction::whereHas('student', function ($query) {
+            $query->where('branch_id', auth()->user()->branch_id);
+        })->orderBy('id', 'desc')->get();
 
         if (auth()->user()->branch_id != 0) {
             $students = Student::where('branch_id', auth()->user()->branch_id)
@@ -47,8 +49,6 @@ class PaymentTransactionController extends Controller
      */
     public function store(Request $request)
     {
-        return $request;
-
         $validated = $request->validate([
             'transaction_student' => 'required|exists:students,id',
             'transaction_invoice' => 'required|exists:payment_invoices,id',

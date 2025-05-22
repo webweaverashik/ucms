@@ -223,11 +223,11 @@
                                             Edit</a>
                                     </div>
 
-                                    @if (auth()->user()->id != 20)
+                                    @if ($invoice->student->studentActivation->active_status == 'active' && $invoice->status == 'due')
                                         <!--begin::Menu item-->
                                         <div class="menu-item px-3">
                                             <a href="#" class="menu-link text-hover-danger px-3 delete-invoice"
-                                                data-farm-id={{ $invoice->id }}><i class="las la-trash fs-2 me-2"></i>
+                                                data-invoice-id={{ $invoice->id }}><i class="las la-trash fs-2 me-2"></i>
                                                 Delete</a>
                                         </div>
                                         <!--end::Menu item-->
@@ -460,7 +460,7 @@
                         <!--end::Scroll-->
                         <!--begin::Actions-->
                         <div class="text-center pt-10">
-                            <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Discard</button>
+                            <button type="button" class="btn btn-light me-3" data-bs-dismiss="modal">Discard</button>
                             <button type="submit" class="btn btn-primary">
                                 Submit
                             </button>
@@ -484,26 +484,12 @@
 @endpush
 
 @push('page-js')
-    <script src="{{ asset('js/invoices/view-ajax.js') }}"></script>
-
     <script>
-        $document.ready(function() {
-            // Initialize datatables
-            $('#kt_invoice_transactions_table').DataTable({
-                "info": true,
-                'order': [],
-                "lengthMenu": [10, 25, 50, 100],
-                "pageLength": 10,
-                "lengthChange": true,
-                "autoWidth": false, // Disable auto width
-                'columnDefs': [{
-                        orderable: false,
-                        targets: 8
-                    }, // Disable ordering on column Actions                
-                ]
-            });
-        })
+        const routeDeleteInvoice = "{{ route('invoices.destroy', ':id') }}";
     </script>
+    
+    <script src="{{ asset('js/invoices/view.js') }}"></script>
+    <script src="{{ asset('js/invoices/view-ajax.js') }}"></script>
 
     <script>
         document.getElementById("invoices_link").classList.add("active");
