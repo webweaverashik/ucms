@@ -235,30 +235,30 @@
 
 
                                     @php
-    $status = $invoice->status;
-    $payment = optional($invoice->student)->payments;
-    $dueDate = null;
-    $isOverdue = false;
+                                        $status = $invoice->status;
+                                        $payment = optional($invoice->student)->payments;
+                                        $dueDate = null;
+                                        $isOverdue = false;
 
-    if ($payment && $payment->due_date && $invoice->month_year) {
-        try {
-            $monthYearRaw = trim($invoice->month_year);
-            if (preg_match('/^\d{2}_\d{4}$/', $monthYearRaw)) {
-                $monthYear = \Carbon\Carbon::createFromFormat('m_Y', $monthYearRaw);
-                $dueDate = $monthYear->copy()->day((int) $payment->due_date); // 👈 Cast to int
+                                        if ($payment && $payment->due_date && $invoice->month_year) {
+                                            try {
+                                                $monthYearRaw = trim($invoice->month_year);
+                                                if (preg_match('/^\d{2}_\d{4}$/', $monthYearRaw)) {
+                                                    $monthYear = \Carbon\Carbon::createFromFormat('m_Y', $monthYearRaw);
+                                                    $dueDate = $monthYear->copy()->day((int) $payment->due_date); // 👈 Cast to int
 
-                if (
-                    in_array($status, ['due', 'partially_paid']) &&
-                    now()->toDateString() > $dueDate->toDateString()
-                ) {
-                    $isOverdue = true;
-                }
-            }
-        } catch (\Exception $e) {
-            // Silently ignore
-        }
-    }
-@endphp
+                                                    if (
+                                                        in_array($status, ['due', 'partially_paid']) &&
+                                                        now()->toDateString() > $dueDate->toDateString()
+                                                    ) {
+                                                        $isOverdue = true;
+                                                    }
+                                                }
+                                            } catch (\Exception $e) {
+                                                // Silently ignore
+                                            }
+                                        }
+                                    @endphp
 
 
                                     <td class="d-none">
