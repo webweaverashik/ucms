@@ -24,12 +24,12 @@ class PdfController extends Controller
             return redirect()->route('students.index')->with('warning', 'This student is inactive.');
         }
 
-        return Pdf::loadView('pdf.admission-form-layout', ['student' => $student])
-            ->setOption('args', ['--no-sandbox'])
-            ->nodeBinary('/home/uniqueco/.nvm/versions/node/v22.16.0/bin/node')
-            ->npmBinary('/home/uniqueco/.nvm/versions/node/v22.16.0/bin/npm')
-            ->paper('a4')
-            ->download($student->student_unique_id . '_admission_form.pdf');
+        return Pdf::view('pdf.admission-form-layout', ['student' => $student])
+    ->setOption('args', ['--no-sandbox'])
+    ->nodeBinary('/home/uniqueco/.nvm/versions/node/v22.16.0/bin/node')
+    ->npmBinary('/home/uniqueco/.nvm/versions/node/v22.16.0/bin/npm')
+    ->paper('a4')
+    ->download($student->student_unique_id . '_admission_form.pdf');
     }
 
     public function downloadPaySlip(string $id)
