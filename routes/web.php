@@ -1,22 +1,23 @@
 <?php
 
-use App\Http\Controllers\Academic\ClassNameController;
-use App\Http\Controllers\Academic\InstitutionController;
-use App\Http\Controllers\Academic\ShiftController;
-use App\Http\Controllers\Academic\SubjectController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\Payment\PaymentInvoiceController;
-use App\Http\Controllers\Payment\PaymentTransactionController;
-use App\Http\Controllers\PdfController;
-use App\Http\Controllers\Student\GuardianController;
-use App\Http\Controllers\Student\ReferenceController;
-use App\Http\Controllers\Student\SiblingController;
-use App\Http\Controllers\Student\StudentActivationController;
-use App\Http\Controllers\Student\StudentController;
-use App\Http\Controllers\Teacher\TeacherController;
-use App\Http\Controllers\UserController;
+use Spatie\LaravelPdf\Facades\Pdf;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PdfController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\Academic\ShiftController;
+use App\Http\Controllers\Student\SiblingController;
+use App\Http\Controllers\Student\StudentController;
+use App\Http\Controllers\Teacher\TeacherController;
+use App\Http\Controllers\Academic\SubjectController;
+use App\Http\Controllers\Student\GuardianController;
+use App\Http\Controllers\Student\ReferenceController;
+use App\Http\Controllers\Academic\ClassNameController;
+use App\Http\Controllers\Academic\InstitutionController;
+use App\Http\Controllers\Payment\PaymentInvoiceController;
+use App\Http\Controllers\Student\StudentActivationController;
+use App\Http\Controllers\Payment\PaymentTransactionController;
 
 Route::get('/', [AuthController::class, 'showLogin'])->name('home');
 
@@ -44,6 +45,12 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('students/{id}/download-form', [PdfController::class, 'downloadAdmissionForm'])->name('students.download');
     Route::get('transactions/{id}/download-payslip', [PdfController::class, 'downloadPaySlip'])->name('transactions.download');
 
+    Route::get('/test-pdf', function () {
+        return Pdf::view('pdf.test') // Create a simple test.blade.php
+            ->setOption('args', ['--no-sandbox', '--disable-setuid-sandbox'])
+            ->download('test.pdf');
+    });
+
     // AJAX Routes
     Route::prefix('admin')->group(function () {
         Route::get('/referrers/teachers', [ReferenceController::class, 'getTeachers'])->name('admin.referrers.teachers');
@@ -55,8 +62,6 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
 
     Route::get('/students/{student}/due-invoices', [PaymentInvoiceController::class, 'getDueInvoices'])->name('students.due.invoices');
 
-
-    
     // resource controller routes
     Route::resource('users', UserController::class);
     Route::resource('students', StudentController::class);
