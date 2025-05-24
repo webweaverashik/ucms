@@ -242,10 +242,10 @@
 
     if ($payment && $payment->due_date && $invoice->month_year) {
         try {
-            $monthYearRaw = trim($invoice->month_year); // Sanitize input
-            if (preg_match('/^\d{2}_\d{4}$/', $monthYearRaw)) { // Must match "m_Y" pattern
+            $monthYearRaw = trim($invoice->month_year);
+            if (preg_match('/^\d{2}_\d{4}$/', $monthYearRaw)) {
                 $monthYear = \Carbon\Carbon::createFromFormat('m_Y', $monthYearRaw);
-                $dueDate = $monthYear->copy()->day($payment->due_date);
+                $dueDate = $monthYear->copy()->day((int) $payment->due_date); // 👈 Cast to int
 
                 if (
                     in_array($status, ['due', 'partially_paid']) &&
@@ -255,7 +255,7 @@
                 }
             }
         } catch (\Exception $e) {
-            // Log or handle error if needed
+            // Silently ignore
         }
     }
 @endphp
