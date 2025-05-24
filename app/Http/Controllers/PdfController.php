@@ -26,9 +26,15 @@ class PdfController extends Controller
             return redirect()->route('students.index')->with('warning', 'This student is inactive.');
         }
 
-        return Pdf::view('pdf.admission-form-layout', ['student' => $student]) // Pass the student data to the view
-            ->format('a4')
-            ->download($student->student_unique_id . '_admission_form.pdf'); // Use inline() to display and download() to download
+        return Pdf::view('pdf.admission-form-layout', ['student' => $student])
+    ->pdf(function (\Spatie\Browsershot\Browsershot $browsershot) {
+        $browsershot
+            ->nodeBinary('/home/uniqueco/.nvm/versions/node/v22.16.0/bin/node')
+            ->npmBinary('/home/uniqueco/.nvm/versions/node/v22.16.0/bin/npm')
+            ->setOption('args', ['--no-sandbox']);
+    })
+    ->paper('a4')
+    ->download($student->student_unique_id . '_admission_form.pdf');
 
         // return view('pdf.admission-form-layout', ['student' => $student]);
 
