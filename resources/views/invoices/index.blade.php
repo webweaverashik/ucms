@@ -235,30 +235,31 @@
 
 
                                     @php
-                                        $status = $invoice->status;
-                                        $payment = optional($invoice->student)->payments;
-                                        $dueDate = null;
-                                        $isOverdue = false;
+    $status = $invoice->status;
+    $payment = optional($invoice->student)->payments;
+    $dueDate = null;
+    $isOverdue = false;
 
-                                        if ($payment && $payment->due_date && $invoice->month_year) {
-                                            try {
-                                                $monthYear = \Carbon\Carbon::createFromFormat(
-                                                    'm_Y',
-                                                    $invoice->month_year,
-                                                );
-                                                $dueDate = $monthYear->copy()->day($payment->due_date);
+    if ($payment && $payment->due_date && $invoice->month_year) {
+        try {
+            $monthYearRaw = trim($invoice->month_year); // Sanitize input
+            if (preg_match('/^\d{2}_\d{4}$/', $monthYearRaw)) { // Must match "m_Y" pattern
+                $monthYear = \Carbon\Carbon::createFromFormat('m_Y', $monthYearRaw);
+                $dueDate = $monthYear->copy()->day($payment->due_date);
 
-                                                if (
-                                                    in_array($status, ['due', 'partially_paid']) &&
-                                                    now()->toDateString() > $dueDate->toDateString()
-                                                ) {
-                                                    $isOverdue = true;
-                                                }
-                                            } catch (\Exception $e) {
-                                                // Silently ignore parse errors
-                                            }
-                                        }
-                                    @endphp
+                if (
+                    in_array($status, ['due', 'partially_paid']) &&
+                    now()->toDateString() > $dueDate->toDateString()
+                ) {
+                    $isOverdue = true;
+                }
+            }
+        } catch (\Exception $e) {
+            // Log or handle error if needed
+        }
+    }
+@endphp
+
 
                                     <td class="d-none">
                                         @if ($status === 'due')
