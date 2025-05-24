@@ -25,7 +25,7 @@ class PdfController extends Controller
         }
 
         return Pdf::view('pdf.admission-form-layout', ['student' => $student])
-    ->setOption('args', ['--no-sandbox'])
+    // ->setOption('args', ['--no-sandbox'])
     ->nodeBinary('/home/uniqueco/.nvm/versions/node/v22.16.0/bin/node')
     ->npmBinary('/home/uniqueco/.nvm/versions/node/v22.16.0/bin/npm')
     ->paper('a4')
