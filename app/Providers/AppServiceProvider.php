@@ -3,9 +3,9 @@ namespace App\Providers;
 
 use App\Models\Student\Student;
 use App\Models\Teacher\Teacher;
-use Spatie\Browsershot\Browsershot;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\ServiceProvider;
+use Spatie\Browsershot\Browsershot;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,9 +27,9 @@ class AppServiceProvider extends ServiceProvider
             'teacher' => Teacher::class,
         ]);
 
-        Browsershot::setNodeBinary('/home/uniqueco/.nvm/versions/node/v22.16.0/bin/node');
-        Browsershot::setNpmBinary('/home/uniqueco/.nvm/versions/node/v22.16.0/bin/npm');
-
-        Browsershot::setOption('args', ['--no-sandbox']);
+        Browsershot::create()
+            ->setNodeBinary('/home/uniqueco/.nvm/versions/node/v22.16.0/bin/node')
+            ->setNpmBinary('/home/uniqueco/.nvm/versions/node/v22.16.0/bin/npm')
+            ->setOption('args', ['--no-sandbox']);
     }
 }
