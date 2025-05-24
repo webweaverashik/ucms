@@ -27,12 +27,6 @@ class PdfController extends Controller
         }
 
         return Pdf::view('pdf.admission-form-layout', ['student' => $student]) // Pass the student data to the view
-            ->setOption('args', [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--single-process',
-                '--disable-dev-shm-usage',
-            ])
             ->format('a4')
             ->download($student->student_unique_id . '_admission_form.pdf'); // Use inline() to display and download() to download
 
