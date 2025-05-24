@@ -249,7 +249,7 @@
                                             Edit</a>
                                     </div>
 
-                                    @if ($invoice->student->studentActivation->active_status == 'active' && $invoice->status == 'due')
+                                    @if (optional($invoice->student->studentActivation->active_status == 'active') && $invoice->status == 'due')
                                         <!--begin::Menu item-->
                                         <div class="menu-item px-3">
                                             <a href="#" class="menu-link text-hover-danger px-3 delete-invoice"

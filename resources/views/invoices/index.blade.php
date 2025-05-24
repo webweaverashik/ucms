@@ -289,7 +289,7 @@
                                     </td>
 
                                     <td>
-                                        @if ($invoice->status == 'due')
+                                        @if (optional($invoice->student->studentActivation->active_status == 'active') && $invoice->status == 'due')
                                             <a href="{{ route('invoices.edit', $invoice->id) }}" title="Edit invoice"
                                                 data-bs-toggle="tooltip" title="Edit Invoice"
                                                 class="btn btn-icon btn-active-light-warning w-30px h-30px me-3">
