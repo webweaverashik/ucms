@@ -27,12 +27,7 @@ class PdfController extends Controller
         }
 
         return Pdf::view('pdf.admission-form-layout', ['student' => $student]) // Pass the student data to the view
-            ->withBrowsershot(function ($browsershot) {
-                $browsershot
-                    ->setRemoteInstanceUrl('https://chrome.browserless.io/pdf?token=2SN5w1ISBOIQFjK39c9539b9bf2f5e4de607ab78dd5d9d5e8')
-                    ->format('A4')
-                    ->margins(10, 10, 10, 10);
-            })
+            ->format('a4')
             ->download($student->student_unique_id . '_admission_form.pdf'); // Use inline() to display and download() to download
 
         // return view('pdf.admission-form-layout', ['student' => $student]);
