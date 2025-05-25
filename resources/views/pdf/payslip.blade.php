@@ -147,7 +147,7 @@
             </div>
 
             {{-- <small class="position-absolute bottom-0">{{ $transaction->created_at->format('d-M-Y h:i:s A') }}</small> --}}
-            <small>{{ $transaction->created_at->format('d-M-Y h:i:s A') }}</small>
+            <small style="margin: 10px; font-size: 8px">{{ $transaction->created_at->format('d-M-Y h:i:s A') }}</small>
 
         </div>
 </body>
