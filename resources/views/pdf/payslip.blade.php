@@ -109,7 +109,7 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>Tuition Fee</td>
+                    <td>Tuition Fee ({{ \Carbon\Carbon::createFromFormat('m_Y', $transaction->paymentInvoice->month_year)->format('F Y') }})</td>
                     <td style="text-align: center;">{{ $transaction->paymentInvoice->total_amount }}</td>
                 </tr>
                 <tr>
