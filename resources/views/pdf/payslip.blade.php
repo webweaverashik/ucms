@@ -13,6 +13,10 @@
             background-color: #fff;
         }
 
+        table {
+            border-collapse: collapse;
+        }
+
         .bordered-table th,
         .bordered-table td {
             border: 1px solid #000;
@@ -33,23 +37,6 @@
 
         .table th,
         .table td {
-            vertical-align: middle;
-        }
-
-        .logo-title {
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        .logo-title img {
-            width: 50px;
-            vertical-align: middle;
-        }
-
-        .logo-title h2 {
-            display: inline-block;
-            font-size: 20px;
-            margin: 0;
             vertical-align: middle;
         }
 
@@ -77,25 +64,31 @@
 </head>
 
 <body>
-    <div class="logo-title">
-        <img src="{{ public_path('img/uc-blue-logo.png') }}" alt="Logo" width="60">
-        <h2>Unique Coaching</h2>
-        <div>
-            <small>{{ $transaction->student->branch->address }}</small><br>
-            <small>Phone: {{ $transaction->student->branch->phone_number }}</small>
-        </div>
-    </div>
+    <table style="width: 100%; margin-bottom: 10px;">
+        <tr>
+            <td style="width: 60px; text-align: left; vertical-align: top;">
+                <img src="{{ public_path('img/uc-blue-logo.png') }}" alt="Logo" width="60">
+            </td>
+            <td style="text-align: left;">
+                <h2 style="margin: 0;">Unique Coaching</h2>
+                <div>
+                    <small>{{ $transaction->student->branch->address }}</small><br>
+                    <small>Phone: {{ $transaction->student->branch->phone_number }}</small>
+                </div>
+            </td>
+        </tr>
+    </table>
 
     <div class="info">
-        <p><strong>Invoice No:</strong> {{ $transaction->paymentInvoice->invoice_number }}</p>
-        <p><strong>Receipt No:</strong> {{ $transaction->voucher_no }}</p>
-        <p><strong>Name:</strong> {{ $transaction->student->name ?? '' }}
+        <p>Invoice: <strong>{{ $transaction->paymentInvoice->invoice_number }}</strong></p>
+        <p>Voucher: <strong>{{ $transaction->voucher_no }}</strong></p>
+        <p>Name: {{ $transaction->student->name ?? '' }}
             ({{ $transaction->student->student_unique_id ?? '' }})</p>
 
         <table class="row-table">
             <tr>
-                <td><strong>Class:</strong> {{ $transaction->student->class->class_numeral ?? '' }}</td>
-                <td style="text-align: right;"><strong>Shift:</strong> {{ $transaction->student->shift->name ?? '' }}
+                <td>Class: {{ $transaction->student->class->class_numeral ?? '' }}</td>
+                <td>Shift: {{ $transaction->student->shift->name ?? '' }}
                 </td>
             </tr>
         </table>
@@ -109,7 +102,9 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>Tuition Fee ({{ \Carbon\Carbon::createFromFormat('m_Y', $transaction->paymentInvoice->month_year)->format('F Y') }})</td>
+                    <td>Tuition Fee
+                        ({{ \Carbon\Carbon::createFromFormat('m_Y', $transaction->paymentInvoice->month_year)->format('F Y') }})
+                    </td>
                     <td style="text-align: center;">{{ $transaction->paymentInvoice->total_amount }}</td>
                 </tr>
                 <tr>
@@ -125,6 +120,14 @@
                     <td></td>
                 </tr>
                 <tr>
+                    <th>Total Payable</th>
+                    <th style="text-align: center;">{{ $transaction->paymentInvoice->total_amount }}</th>
+                </tr>
+                <tr>
+                    <td>(-) Paid Amount</td>
+                    <td style="text-align: center;">{{ $transaction->amount_paid }}</td>
+                </tr>
+                {{-- <tr>
                     <td>Previous Due</td>
                     @php
                         $previousPaid = $transaction->paymentInvoice->paymentTransactions
@@ -134,29 +137,22 @@
                         $due = $transaction->paymentInvoice->total_amount - $previousPaid;
                     @endphp
                     <td style="text-align: center;">{{ $due }}</td>
-                </tr>
+                </tr> --}}
                 <tr>
-                    <th>Total</th>
-                    <th style="text-align: center;">{{ $transaction->paymentInvoice->total_amount }}</th>
+                    <th>Remaining</th>
+                    <th style="text-align: center;">{{ $transaction->paymentInvoice->amount_due }}</th>
                 </tr>
             </tbody>
         </table>
 
-        <p>Paid Amount:<strong> {{ $transaction->amount_paid }} Tk</strong></p>
-        <p>Due Amount:<strong> {{ $transaction->paymentInvoice->amount_due }} Tk</strong></p>
 
         <table class="signature-table" style="width: 100%; margin-top: 20px;">
             <tr>
                 <td style="text-align: left;">
                     <div style="text-align: left;">
-                        <span style="font-style: italic; font-weight: bold;">{{ explode(' ', Auth::user()->name)[0] }}</span><br>
+                        <span
+                            style="font-style: italic; font-weight: bold;">{{ explode(' ', Auth::user()->name)[0] }}</span><br>
                         <div class="signature-line">Payment Collector</div>
-                    </div>
-                </td>
-                <td style="text-align: right;">
-                    <div style="text-align: center;">
-                        <span style="font-style: italic; font-weight: bold;">Ashfaq</span><br>
-                        <div class="signature-line">Authorized By</div>
                     </div>
                 </td>
             </tr>
@@ -164,7 +160,7 @@
 
 
         <div class="footer-note">
-            Printed on: {{ now()->format('d-m-Y h:i:s A') }}
+            Paid on: {{ $transaction->created_at->format('d-m-Y h:i:s A') }}
         </div>
     </div>
 </body>
