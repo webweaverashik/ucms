@@ -150,8 +150,6 @@ var KTDueInvoicesList = function () {
       }
 }();
 
-
-
 var KTPaidInvoicesList = function () {
       // Define shared variables
       var table;
@@ -243,9 +241,44 @@ var KTPaidInvoicesList = function () {
       }
 }();
 
+var KTCreateInvoiceModal = function () {
+      const element = document.getElementById('kt_modal_create_invoice');
+      const form = element.querySelector('#kt_modal_add_invoice_form');
+      const modal = new bootstrap.Modal(element);
+
+      // Init add schedule modal
+      var initAddInvoice = () => {
+
+            // Cancel button handler
+            const cancelButton = element.querySelector('[data-kt-add-invoice-modal-action="cancel"]');
+            cancelButton.addEventListener('click', e => {
+                  e.preventDefault();
+
+                  form.reset(); // Reset form			
+                  modal.hide();
+            });
+
+            // Close button handler
+            const closeButton = element.querySelector('[data-kt-add-invoice-modal-action="close"]');
+            closeButton.addEventListener('click', e => {
+                  e.preventDefault();
+
+                  form.reset(); // Reset form			
+                  modal.hide();
+            });
+      }
+
+      return {
+            // Public functions
+            init: function () {
+                  initAddInvoice();
+            }
+      };
+}();
 
 // On document ready
 KTUtil.onDOMContentLoaded(function () {
       KTDueInvoicesList.init();
       KTPaidInvoicesList.init();
+      KTCreateInvoiceModal.init();
 });

@@ -17,8 +17,10 @@ return new class extends Migration
             $table->foreignId('student_id');
             $table->integer('total_amount');
             $table->integer('amount_due');
-            $table->string('month_year');
+            $table->string('month_year')->nullable();
             $table->enum('status', ['due', 'partially_paid', 'paid'])->default('due');
+            $table->enum('invoice_type', ['tuition_fee', 'exam_fee', 'model_test_fee', 'others_fee'])->default('tuition_fee');
+            $table->foreignId('created_by')->nullable();
             $table->softDeletes();
             $table->foreignId('deleted_by')->nullable();
             $table->timestamps();

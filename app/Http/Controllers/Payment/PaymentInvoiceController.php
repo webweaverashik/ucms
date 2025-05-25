@@ -1,9 +1,10 @@
 <?php
 namespace App\Http\Controllers\Payment;
 
+use Illuminate\Http\Request;
+use App\Models\Student\Student;
 use App\Http\Controllers\Controller;
 use App\Models\Payment\PaymentInvoice;
-use Illuminate\Http\Request;
 
 class PaymentInvoiceController extends Controller
 {
@@ -60,7 +61,22 @@ class PaymentInvoiceController extends Controller
             })
             ->values();
 
-        return view('invoices.index', compact('unpaid_invoices', 'paid_invoices', 'dueMonths', 'paidMonths'));
+        if (auth()->user()->branch_id != 0) {
+            $students = Student::where('branch_id', auth()->user()->branch_id)
+                ->where(function ($query) {
+                    $query->whereNull('student_activation_id')
+                        ->orWhereHas('studentActivation', function ($q) {
+                            $q->where('active_status', 'active');
+                        });
+                })
+                ->withoutTrashed()
+                ->orderby('student_unique_id', 'asc')
+                ->get();
+        } else {
+            $students = Student::withoutTrashed()->orderby('student_unique_id', 'asc')->get();
+        }
+
+        return view('invoices.index', compact('unpaid_invoices', 'paid_invoices', 'dueMonths', 'paidMonths', 'students'));
     }
 
     /**
@@ -122,10 +138,10 @@ class PaymentInvoiceController extends Controller
     {
         $invoice = PaymentInvoice::find($id);
 
-        if (!$invoice) {
+        if (! $invoice) {
             return response()->json(['error' => 'Invoice not found'], 404);
         }
-        
+
         if ($invoice->status === 'paid' || $invoice->status === 'partially_paid') {
             return response()->json(['error' => 'Cannot delete paid invoice'], 422);
         }
@@ -134,7 +150,9 @@ class PaymentInvoiceController extends Controller
             return response()->json(['error' => 'Unauthorized Access'], 403);
         }
 
+        $invoice->update(['deleted_by' => auth()->user()->id]);
         $invoice->delete();
+        
         return response()->json(['success' => true]);
     }
 

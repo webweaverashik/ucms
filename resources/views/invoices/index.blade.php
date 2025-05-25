@@ -64,8 +64,8 @@
         <!--begin:::Tab item-->
         <li class="nav-item ms-auto">
             <!--begin::Action menu-->
-            <a href="{{ route('invoices.create') }}" class="btn btn-primary ps-7"><i
-                    class="ki-outline ki-plus fs-2 me-0"></i> Create Invoice</a>
+            <a href="#" class="btn btn-primary ps-7" data-bs-toggle="modal"
+                data-bs-target="#kt_modal_create_invoice"><i class="ki-outline ki-plus fs-2 me-0"></i> Create Invoice</a>
             <!--end::Menu-->
         </li>
         <!--end:::Tab item-->
@@ -290,7 +290,6 @@
 
                                     <td>
                                         @if (optional($invoice->student->studentActivation)->active_status == 'active' && $invoice->status == 'due')
-
                                             <a href="{{ route('invoices.edit', $invoice->id) }}" title="Edit invoice"
                                                 data-bs-toggle="tooltip" title="Edit Invoice"
                                                 class="btn btn-icon btn-active-light-warning w-30px h-30px me-3">
@@ -481,6 +480,160 @@
         <!--end:::Tab pane-->
     </div>
     <!--end:::Tab content-->
+
+
+    <!--begin::Modal - Create Invoice-->
+    <div class="modal fade" id="kt_modal_create_invoice" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+        data-bs-keyboard="false">
+        <!--begin::Modal dialog-->
+        <div class="modal-dialog modal-dialog-centered mw-650px">
+            <!--begin::Modal content-->
+            <div class="modal-content">
+                <!--begin::Modal header-->
+                <div class="modal-header" id="kt_modal_add_invoice_header">
+                    <!--begin::Modal title-->
+                    <h2 class="fw-bold">Create Invoice</h2>
+                    <!--end::Modal title-->
+                    <!--begin::Close-->
+                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-add-invoice-modal-action="close">
+                        <i class="ki-outline ki-cross fs-1">
+                        </i>
+                    </div>
+                    <!--end::Close-->
+                </div>
+                <!--end::Modal header-->
+                <!--begin::Modal body-->
+                <div class="modal-body px-5 my-7">
+                    <!--begin::Form-->
+                    <form id="kt_modal_add_invoice_form" class="form" action="{{ route('invoices.store') }}"
+                        method="POST">
+                        @csrf
+                        <!--begin::Scroll-->
+                        <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_add_invoice_scroll"
+                            data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
+                            data-kt-scroll-dependencies="#kt_modal_transaction_header"
+                            data-kt-scroll-wrappers="#kt_modal_add_invoice_scroll" data-kt-scroll-offset="300px">
+
+                            <!--begin::Name Input group-->
+                            <div class="fv-row mb-7">
+                                <!--begin::Label-->
+                                <label class="required fw-semibold fs-6 mb-2">Select Student</label>
+                                <!--end::Label-->
+
+                                <!--begin::Solid input group style-->
+                                <div class="input-group input-group-solid flex-nowrap">
+                                    <span class="input-group-text">
+                                        <i class="las la-graduation-cap fs-3"></i>
+                                    </span>
+                                    <div class="overflow-hidden flex-grow-1">
+                                        <select name="transaction_student"
+                                            class="form-select form-select-solid rounded-start-0 border-start"
+                                            data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
+                                            data-placeholder="Select a student">
+                                            <option></option>
+                                            @foreach ($students as $student)
+                                                <option value="{{ $student->id }}">{{ $student->name }}
+                                                    ({{ $student->student_unique_id }})
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <!--end::Solid input group style-->
+                            </div>
+                            <!--end::Name Input group-->
+
+                            <!--begin::Phone Input group-->
+                            <div class="fv-row mb-7">
+                                <!--begin::Label-->
+                                <label class="required fw-semibold fs-6 mb-2">Invoice Type</label>
+                                <!--end::Label-->
+
+                                <!--begin::Solid input group style-->
+                                <div class="input-group input-group-solid flex-nowrap">
+                                    <span class="input-group-text">
+                                        <i class="ki-outline ki-save-2 fs-3"></i>
+                                    </span>
+                                    <div class="overflow-hidden flex-grow-1">
+                                        <select name="transaction_invoice"
+                                            class="form-select form-select-solid rounded-start-0 border-start"
+                                            data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
+                                            data-placeholder="Select a due invoice" id="student_due_invoice_select">
+                                            <option></option>
+                                            <option value="tuition_fee" selected>Tuition Fee</option>
+                                            <option value="exam_fee">Exam Fee</option>
+                                            <option value="model_test_fee">Model Test Fee</option>
+                                            <option value="others_fee">Others</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <!--end::Solid input group style-->
+                            </div>
+                            <!--end::Phone Input group-->
+
+                            <!--begin::Phone Input group-->
+                            <div class="fv-row mb-7">
+                                <!--begin::Label-->
+                                <label class="required fw-semibold fs-6 mb-2">Month Year</label>
+                                <!--end::Label-->
+
+                                <!--begin::Solid input group style-->
+                                <div class="input-group input-group-solid flex-nowrap">
+                                    <span class="input-group-text">
+                                        <i class="ki-outline ki-calendar fs-3"></i>
+                                    </span>
+                                    <div class="overflow-hidden flex-grow-1">
+                                        <select name="transaction_invoice"
+                                            class="form-select form-select-solid rounded-start-0 border-start"
+                                            data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
+                                            data-placeholder="Select the month">
+                                            <option></option>
+                                            <option value="tuition_fee">Jan 2025</option>
+                                            <option value="tuition_fee">Feb 2025</option>
+                                            <option value="tuition_fee">Mar 2025</option>
+                                            <option value="tuition_fee">Apr 2025</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <!--end::Solid input group style-->
+                            </div>
+                            <!--end::Phone Input group-->
+
+                            <!--begin::Name Input group-->
+                            <div class="fv-row mb-7">
+                                <!--begin::Label-->
+                                <label class="required fw-semibold fs-6 mb-2">Amount</label>
+                                <!--end::Label-->
+                                <!--begin::Input-->
+                                <input type="number" name="transaction_amount" min="0"
+                                    id="transaction_amount_input" class="form-control form-control-solid mb-3 mb-lg-0"
+                                    placeholder="Enter the amount" required />
+                                <!--end::Input-->
+                            </div>
+                            <!--end::Name Input group-->
+                        </div>
+                        <!--end::Scroll-->
+                        <!--begin::Actions-->
+                        <div class="text-center pt-10">
+                            <button type="reset" class="btn btn-light me-3"
+                                data-kt-add-invoice-modal-action="cancel">Discard</button>
+                            <button type="submit" class="btn btn-primary" data-kt-add-invoice-modal-action="submit">
+                                <span class="indicator-label">Submit</span>
+                                <span class="indicator-progress">Please wait...
+                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                            </button>
+                        </div>
+                        <!--end::Actions-->
+                    </form>
+                    <!--end::Form-->
+                </div>
+                <!--end::Modal body-->
+            </div>
+            <!--end::Modal content-->
+        </div>
+        <!--end::Modal dialog-->
+    </div>
+    <!--end::Modal - Create Invoice-->
 @endsection
 
 
