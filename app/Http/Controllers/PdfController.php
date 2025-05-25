@@ -3,7 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Payment\PaymentTransaction;
 use App\Models\Student\Student;
-use Spatie\LaravelPdf\Facades\Pdf;
+use Mpdf\Mpdf;
 
 class PdfController extends Controller
 {
@@ -39,7 +39,34 @@ class PdfController extends Controller
             return redirect()->route('transactions.index')->with('warning', 'Transaction not found.');
         }
 
-        return view('pdf.payslip', ['transaction' => $transaction]);
+        // -- JS Print --
+        // return view('pdf.payslip', ['transaction' => $transaction]);
+
+        // -- mPDF Configuration --
+        $tempDir = storage_path('app/mpdf');
+
+        if (! file_exists($tempDir)) {
+            mkdir($tempDir, 0777, true);
+        }
+
+        $pdf = new Mpdf([
+            'mode'             => 'utf-8',
+            'format'           => [80, 140], // width: 80mm, height: auto or fixed like 297mm
+            'tempDir'          => $tempDir,
+            'default_font'     => 'arial',
+            'autoScriptToLang' => true,
+            'autoLangToFont'   => true,
+            'margin_top'       => 3,
+            'margin_bottom'    => 0,
+            'margin_left'      => 3,
+            'margin_right'     => 3,
+        ]);
+
+        $html = view('pdf.payslip', compact('transaction'))->render();
+
+        $pdf->WriteHTML($html);
+
+        return $pdf->Output($transaction->voucher_no . '.pdf', 'I'); // I = Inline view, D = Download
 
     }
 }
