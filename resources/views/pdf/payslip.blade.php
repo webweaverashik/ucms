@@ -6,29 +6,26 @@
     <title>{{ $transaction->voucher_no }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        @media print {
-            @page {
-                margin: 5px;
-            }
 
-            body {
-                font-size: 12px;
-            }
+        @page {
+            size: 80mm auto;
+            margin: 0;
         }
 
+        
         body {
             font-family: 'Arial', sans-serif;
             font-size: 11px;
             padding: 0;
             background-color: #fff;
         }
-
+        
         .bordered-table th,
         .bordered-table td {
             border: 1px solid #000 !important;
             padding: 4px 8px !important;
         }
-
+        
         .signature-line {
             border-top: 1px dotted #000;
             margin-top: 20px;
@@ -36,25 +33,31 @@
             text-align: center;
             font-size: 13px;
         }
-
+        
         .info p {
             margin-bottom: 4px;
         }
-
+        
         .table th,
         .table td {
             vertical-align: middle;
         }
-
+        
         .logo-title h2 {
             display: inline-block;
             vertical-align: middle;
             margin: 0;
         }
-
+        
         .logo-title img {
             width: 50px;
             vertical-align: middle;
+        }
+        
+        @media print {
+            .no-print {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -148,3 +151,6 @@
 </body>
 
 </html>
+<script>
+    window.onload = () => window.print();
+</script>

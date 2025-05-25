@@ -43,8 +43,12 @@ class PdfController extends Controller
             return redirect()->route('transactions.index')->with('warning', 'Transaction not found.');
         }
 
-        return Pdf::view('pdf.payslip', ['transaction' => $transaction]) // Pass the student data to the view
-            ->paperSize(80, 150, 'mm')                                       // 80mm width, 297mm height (A4 length)
-            ->inline($transaction->vocher_no . '_payslip.pdf');              // Use inline() to display and download() to download
+        // return Pdf::view('pdf.payslip', ['transaction' => $transaction]) // Pass the student data to the view
+        //     ->paperSize(80, 150, 'mm')                                       // 80mm width, 297mm height (A4 length)
+        //     ->inline($transaction->vocher_no . '_payslip.pdf');              // Use inline() to display and download() to download
+
+
+        return view('pdf.payslip', ['transaction' => $transaction]);
+
     }
 }

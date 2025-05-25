@@ -9,6 +9,11 @@
     <style>
         @import url('https://fonts.cdnfonts.com/css/solaimanlipi');
 
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
         body {
             font-family: 'Open Sans', sans-serif;
         }
