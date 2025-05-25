@@ -14,9 +14,10 @@
 
         
         body {
+            width: 80mm;
             font-family: 'Arial', sans-serif;
             font-size: 11px;
-            padding: 0;
+            padding: 5px 0;
             background-color: #fff;
         }
         

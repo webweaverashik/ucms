@@ -26,10 +26,6 @@ class PdfController extends Controller
             return redirect()->route('students.index')->with('warning', 'This student is inactive.');
         }
 
-        // return Pdf::view('pdf.admission-form-layout', ['student' => $student]) // Pass the student data to the view
-        //     ->format('a4')
-        //     ->inline($student->student_unique_id . '_admission_form.pdf'); // Use inline() to display and download() to download
-
         return view('pdf.admission-form-layout', ['student' => $student]);
 
     }
@@ -42,11 +38,6 @@ class PdfController extends Controller
         if (! $transaction) {
             return redirect()->route('transactions.index')->with('warning', 'Transaction not found.');
         }
-
-        // return Pdf::view('pdf.payslip', ['transaction' => $transaction]) // Pass the student data to the view
-        //     ->paperSize(80, 150, 'mm')                                       // 80mm width, 297mm height (A4 length)
-        //     ->inline($transaction->vocher_no . '_payslip.pdf');              // Use inline() to display and download() to download
-
 
         return view('pdf.payslip', ['transaction' => $transaction]);
 
