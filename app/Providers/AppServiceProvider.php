@@ -27,7 +27,7 @@ class AppServiceProvider extends ServiceProvider
             'teacher' => Teacher::class,
         ]);
 
-        // Browsershot::setNodeBinary('/home/uniqueco/.nvm/versions/node/v20.19.2/bin/node');
-        // Browsershot::setNpmBinary('/home/uniqueco/.nvm/versions/node/v20.19.2/bin/npm');
+        Browsershot::setNodeBinary('/home/uniqueco/.nvm/versions/node/v20.19.2/bin/node');
+        Browsershot::setNpmBinary('/home/uniqueco/.nvm/versions/node/v20.19.2/bin/npm');
     }
 }
