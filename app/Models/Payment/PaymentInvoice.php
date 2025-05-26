@@ -1,10 +1,11 @@
 <?php
 namespace App\Models\Payment;
 
+use App\Models\User;
 use App\Models\Student\Student;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PaymentInvoice extends Model
 {
@@ -30,6 +31,11 @@ class PaymentInvoice extends Model
     public function paymentTransactions()
     {
         return $this->hasMany(PaymentTransaction::class);
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
 }

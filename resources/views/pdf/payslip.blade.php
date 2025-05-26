@@ -153,7 +153,7 @@
                 <td style="text-align: left;">
                     <div style="text-align: left;">
                         <span
-                            style="font-style: italic; font-weight: bold;">{{ explode(' ', Auth::user()->name)[0] }}</span><br>
+                            style="font-style: italic; font-weight: bold;">{{ explode(' ', $transaction->createdBy->name)[1] }}</span><br>
                         <div class="signature-line">Payment Collector</div>
                     </div>
                 </td>

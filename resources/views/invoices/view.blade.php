@@ -107,12 +107,12 @@
                             <td class="text-gray-500">Billing Month:</td>
                             <td class="text-gray-800">
                                 @if (preg_match('/^\d{2}_\d{4}$/', $invoice->month_year))
-                                            {{ \Carbon\Carbon::createFromFormat('m_Y', $invoice->month_year)->format('F Y') }}
-                                        @else
-                                            N/A
-                                        @endif
+                                    {{ \Carbon\Carbon::createFromFormat('m_Y', $invoice->month_year)->format('F Y') }}
+                                @else
+                                    N/A
+                                @endif
                             </td>
-                            
+
                         </tr>
                         <!--end::Row-->
 
@@ -255,7 +255,6 @@
                                     </div>
 
                                     @if (optional($invoice->student->studentActivation)->active_status == 'active' && $invoice->status == 'due')
-
                                         <!--begin::Menu item-->
                                         <div class="menu-item px-3">
                                             <a href="#" class="menu-link text-hover-danger px-3 delete-invoice"

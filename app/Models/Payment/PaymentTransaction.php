@@ -2,6 +2,7 @@
 
 namespace App\Models\Payment;
 
+use App\Models\User;
 use App\Models\Student\Student;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -28,6 +29,11 @@ class PaymentTransaction extends Model
     public function student()
     {
         return $this->belongsTo(Student::class);
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }
 

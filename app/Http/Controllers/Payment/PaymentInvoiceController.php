@@ -216,11 +216,14 @@ class PaymentInvoiceController extends Controller
             return response()->json(['error' => 'Cannot delete paid invoice'], 422);
         }
 
-        if ($invoice->student->brach_id !== auth()->user()->branch_id) {
+        if ($invoice->student->branch_id !== auth()->user()->branch_id) {
             return response()->json(['error' => 'Unauthorized Access'], 403);
         }
 
-        $invoice->update(['deleted_by' => auth()->user()->id]);
+        $invoice->update([
+            'deleted_by' => auth()->id(),
+        ]);
+
         $invoice->delete();
 
         return response()->json(['success' => true]);

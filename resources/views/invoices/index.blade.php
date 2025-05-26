@@ -226,8 +226,8 @@
                             <tr class="fw-bold fs-7 text-uppercase gs-0">
                                 <th class="w-25px">SL</th>
                                 <th class="w-150px">Invoice No.</th>
-                                <th class="w-350px">Student</th>
-                                <th class="w-150px">Invoice Type</th>
+                                <th class="w-300px">Student</th>
+                                <th>Invoice Type</th>
                                 <th class="d-none">Billing Month (filter)</th>
                                 <th>Billing Month</th>
                                 <th>Toal Amount (৳)</th>
@@ -236,7 +236,7 @@
                                 <th>Due Date</th>
                                 <th class="d-none">Status (filter)</th>
                                 <th>Status</th>
-                                <th>Actions</th>
+                                <th class="w-100px">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="text-gray-600 fw-semibold">
@@ -339,11 +339,11 @@
                                         @if (optional($invoice->student->studentActivation)->active_status == 'active' && $invoice->status == 'due')
                                             <a href="{{ route('invoices.edit', $invoice->id) }}" title="Edit invoice"
                                                 data-bs-toggle="tooltip" title="Edit Invoice"
-                                                class="btn btn-icon btn-active-light-warning w-30px h-30px me-3">
+                                                class="btn btn-icon btn-active-light-warning w-30px h-30px">
                                                 <i class="ki-outline ki-pencil fs-2"></i>
                                             </a>
                                             <a href="#" title="Delete invoice" data-bs-toggle="tooltip"
-                                                class="btn btn-icon btn-active-light-danger w-30px h-30px me-3 delete-invoice"
+                                                class="btn btn-icon btn-active-light-danger w-30px h-30px delete-invoice"
                                                 data-invoice-id="{{ $invoice->id }}">
                                                 <i class="ki-outline ki-trash fs-2"></i>
                                             </a>
@@ -465,7 +465,7 @@
                                 <th class="w-25px">SL</th>
                                 <th class="w-150px">Invoice No.</th>
                                 <th class="w-350px">Student</th>
-                                <th class="w-150px">Invoice Type</th>
+                                <th>Invoice Type</th>
                                 <th>Amount (৳)</th>
                                 <th class="d-none">Billing Month (filter)</th>
                                 <th>Billing Month</th>
