@@ -106,8 +106,13 @@
                         <tr class="">
                             <td class="text-gray-500">Billing Month:</td>
                             <td class="text-gray-800">
-                                {{ \Carbon\Carbon::createFromFormat('m_Y', $invoice->month_year)->format('F Y') }}
+                                @if (preg_match('/^\d{2}_\d{4}$/', $invoice->month_year))
+                                            {{ \Carbon\Carbon::createFromFormat('m_Y', $invoice->month_year)->format('F Y') }}
+                                        @else
+                                            N/A
+                                        @endif
                             </td>
+                            
                         </tr>
                         <!--end::Row-->
 
@@ -326,7 +331,7 @@
                                 </td>
 
                                 <td>{{ $transaction->voucher_no }}</td>
-                                <td>{{ intval($transaction->amount_paid) }}</td>
+                                <td>{{ $transaction->amount_paid }}</td>
                                 <td>
                                     @if ($transaction->payment_type === 'partial')
                                         <span class="badge badge-warning">Partial</span>
