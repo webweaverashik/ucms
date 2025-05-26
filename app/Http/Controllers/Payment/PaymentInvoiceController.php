@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Payment;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\Student\Student;
 use App\Http\Controllers\Controller;
@@ -22,8 +23,7 @@ class PaymentInvoiceController extends Controller
                         $q->whereHas('studentActivation', function ($q2) {
                             $q2->where('active_status', 'active');
                         })->orWhereNull('student_activation_id');
-                    })
-                ;
+                    });
             })
             ->withoutTrashed()
             ->orderBy('id', 'desc')
@@ -31,49 +31,65 @@ class PaymentInvoiceController extends Controller
 
         $paid_invoices = PaymentInvoice::where('status', 'paid')
             ->whereHas('student', function ($query) {
-                $query
-                    ->whereNull('deleted_at')
-                    ->where('branch_id', auth()->user()->branch_id)
+                $query->whereNull('deleted_at')->where(
+                    'branch_id',
+                    auth()->user()->branch_id,
                     /*->where(function ($q) {
                         $q->whereHas('studentActivation', function ($q2) {
                             $q2->where('active_status', 'active');
                         })->orWhereNull('student_activation_id');
                     })*/
-                ;
+                );
             })
             ->withoutTrashed()
             ->orderBy('id', 'desc')
             ->get();
 
         $dueMonths = PaymentInvoice::where('status', '!=', 'paid')
+            ->whereNotNull('month_year') // avoid nulls
             ->pluck('month_year')
+            ->filter(function ($value) {
+                // ensure format matches 'm_Y' and is parseable
+                return preg_match('/^\d{2}_\d{4}$/', $value) && Carbon::hasFormat($value, 'm_Y');
+            })
             ->unique()
             ->sortBy(function ($value) {
-                return \Carbon\Carbon::createFromFormat('m_Y', $value);
+                return Carbon::createFromFormat('m_Y', $value);
             })
             ->values();
 
         $paidMonths = PaymentInvoice::where('status', 'paid')
+            ->whereNotNull('month_year') // Filter out nulls
             ->pluck('month_year')
+            ->filter(function ($value) {
+                // Ensure the value is in correct format like "01_2025"
+                return preg_match('/^\d{2}_\d{4}$/', $value) && Carbon::hasFormat($value, 'm_Y');
+            })
             ->unique()
             ->sortBy(function ($value) {
-                return \Carbon\Carbon::createFromFormat('m_Y', $value);
+                return Carbon::createFromFormat('m_Y', $value);
             })
             ->values();
 
         if (auth()->user()->branch_id != 0) {
             $students = Student::where('branch_id', auth()->user()->branch_id)
                 ->where(function ($query) {
-                    $query->whereNull('student_activation_id')
-                        ->orWhereHas('studentActivation', function ($q) {
-                            $q->where('active_status', 'active');
-                        });
+                    $query->whereNull('student_activation_id')->orWhereHas('studentActivation', function ($q) {
+                        $q->where('active_status', 'active');
+                    });
                 })
                 ->withoutTrashed()
                 ->orderby('student_unique_id', 'asc')
                 ->get();
         } else {
-            $students = Student::withoutTrashed()->orderby('student_unique_id', 'asc')->get();
+            $students = Student::where(function ($query) {
+                $query->whereNull('student_activation_id')->orWhereHas('studentActivation', function ($q) {
+                    $q->where('active_status', 'active');
+                });
+            })
+                ->withoutTrashed()
+                ->orderby('student_unique_id', 'asc')
+                ->get();
         }
 
         return view('invoices.index', compact('unpaid_invoices', 'paid_invoices', 'dueMonths', 'paidMonths', 'students'));
@@ -92,7 +108,60 @@ class PaymentInvoiceController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // return $request;
+
+        $rules = [
+            'invoice_student' => 'required|exists:students,id',
+            'invoice_type'    => 'required|in:tuition_fee,exam_fee,model_test_fee,others_fee',
+            'invoice_amount'  => 'required|numeric|min:0',
+        ];
+
+        // Conditionally apply rule for invoice_month_year
+        if ($request->invoice_type === 'tuition_fee') {
+            $rules['invoice_month_year'] = 'required|string';
+        } else {
+            $rules['invoice_month_year'] = 'nullable'; // or leave it out completely
+        }
+
+        // Validate the request
+        $request->validate($rules);
+
+                                          // --- Code for generating invoice number starts
+        $yearSuffix = now()->format('y'); // '25'
+        $month      = now()->format('m'); // '05'
+
+        $student = Student::with('branch')->findOrFail($request->invoice_student);
+        $prefix  = $student->branch->branch_prefix;
+
+        $monthYear = now()->format('m_Y');
+
+        // Fetch the last invoice for the same prefix and month
+        $lastInvoice = PaymentInvoice::where('invoice_number', 'like', "{$prefix}{$yearSuffix}{$month}_%")
+            ->orderBy('invoice_number', 'desc')
+            ->first();
+
+        if ($lastInvoice) {
+            // Extract the numeric sequence after the last underscore
+            $lastSequence = (int) substr($lastInvoice->invoice_number, strrpos($lastInvoice->invoice_number, '_') + 1);
+            $nextSequence = $lastSequence + 1;
+        } else {
+            $nextSequence = 1001; // Start from 1001 if no previous invoice
+        }
+
+        $invoiceNumber = "{$prefix}{$yearSuffix}{$month}_{$nextSequence}";
+        // --- Code for generating invoice number ends
+
+        // Invoice Generation
+        $invoice = PaymentInvoice::create([
+            'invoice_number' => $invoiceNumber,
+            'student_id'     => $request->invoice_student,
+            'total_amount'   => $request->invoice_amount,
+            'amount_due'     => $request->invoice_amount,
+            'month_year'     => $request->invoice_month_year, // Can be null for non-tuition
+            'created_by'     => auth()->id(),
+        ]);
+
+        return redirect()->back()->with('success', 'Invoice created successfully.');
     }
 
     /**
@@ -152,7 +221,7 @@ class PaymentInvoiceController extends Controller
 
         $invoice->update(['deleted_by' => auth()->user()->id]);
         $invoice->delete();
-        
+
         return response()->json(['success' => true]);
     }
 

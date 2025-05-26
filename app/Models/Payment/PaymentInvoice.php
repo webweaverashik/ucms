@@ -17,6 +17,8 @@ class PaymentInvoice extends Model
         'amount_due',
         'month_year',
         'status',
+        'invoice_type',
+        'created_by',
         'deleted_by',
     ];
 

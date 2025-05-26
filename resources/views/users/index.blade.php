@@ -52,6 +52,7 @@
             </ul>
         </div>
     @endif
+    
     <!--begin::Card-->
     <div class="card">
         <!--begin::Card header-->

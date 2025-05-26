@@ -43,6 +43,42 @@
 
 
 @section('content')
+    @if ($errors->any())
+        <div
+            class="alert alert-dismissible bg-light-danger border border-danger border-dashed d-flex flex-column flex-sm-row w-100 p-5 mb-10">
+            <!--begin::Icon-->
+            <i class="ki-duotone ki-message-text-2 fs-2hx text-danger me-4 mb-5 mb-sm-0">
+                <span class="path1"></span>
+                <span class="path2"></span>
+                <span class="path3"></span>
+            </i>
+            <!--end::Icon-->
+
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+
+            <!--begin::Content-->
+            <div class="d-flex flex-column pe-0 pe-sm-10">
+                <h5 class="mb-1 text-danger">The following errors have been found.</h5>
+                @foreach ($errors->all() as $error)
+                    <span class="text-danger">{{ $error }}</span>
+                @endforeach
+            </div>
+            <!--end::Content-->
+
+            <!--begin::Close-->
+            <button type="button"
+                class="position-absolute position-sm-relative m-2 m-sm-0 top-0 end-0 btn btn-icon ms-sm-auto"
+                data-bs-dismiss="alert">
+                <i class="ki-outline ki-cross fs-1 text-danger"></i>
+            </button>
+            <!--end::Close-->
+        </div>
+    @endif
+
     <!--begin:::Tabs-->
     <ul class="nav nav-custom nav-tabs nav-line-tabs nav-line-tabs-2x border-0 fs-4 fw-semibold mb-8">
         <!--begin:::Tab item-->
@@ -222,7 +258,14 @@
 
                                     <td class="d-none">D_{{ $invoice->month_year }}</td>
 
-                                    <td>{{ \Carbon\Carbon::createFromFormat('m_Y', $invoice->month_year)->format('F Y') }}
+                                    <td>
+                                        @if (preg_match('/^\d{2}_\d{4}$/', $invoice->month_year))
+                                            {{ \Carbon\Carbon::createFromFormat('m_Y', $invoice->month_year)->format('F Y') }}
+                                        @else
+                                            N/A
+                                        @endif
+                                    </td>
+
                                     </td>
                                     <td>{{ $invoice->total_amount }}</td>
                                     <td>{{ $invoice->amount_due }}</td>
@@ -448,7 +491,12 @@
 
                                     <td class="d-none">P_{{ $invoice->month_year }}</td>
 
-                                    <td>{{ \Carbon\Carbon::createFromFormat('m_Y', $invoice->month_year)->format('F Y') }}
+                                    <td>
+                                        @if (preg_match('/^\d{2}_\d{4}$/', $invoice->month_year))
+                                            {{ \Carbon\Carbon::createFromFormat('m_Y', $invoice->month_year)->format('F Y') }}
+                                        @else
+                                            N/A
+                                        @endif
                                     </td>
 
                                     <td class="d-none">
@@ -526,10 +574,10 @@
                                         <i class="las la-graduation-cap fs-3"></i>
                                     </span>
                                     <div class="overflow-hidden flex-grow-1">
-                                        <select name="transaction_student"
+                                        <select name="invoice_student"
                                             class="form-select form-select-solid rounded-start-0 border-start"
                                             data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
-                                            data-placeholder="Select a student">
+                                            data-placeholder="Select a student" required>
                                             <option></option>
                                             @foreach ($students as $student)
                                                 <option value="{{ $student->id }}">{{ $student->name }}
@@ -543,7 +591,7 @@
                             </div>
                             <!--end::Name Input group-->
 
-                            <!--begin::Phone Input group-->
+                            <!--begin::Invoice Type Input group-->
                             <div class="fv-row mb-7">
                                 <!--begin::Label-->
                                 <label class="required fw-semibold fs-6 mb-2">Invoice Type</label>
@@ -555,10 +603,10 @@
                                         <i class="ki-outline ki-save-2 fs-3"></i>
                                     </span>
                                     <div class="overflow-hidden flex-grow-1">
-                                        <select name="transaction_invoice"
+                                        <select name="invoice_type"
                                             class="form-select form-select-solid rounded-start-0 border-start"
                                             data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
-                                            data-placeholder="Select a due invoice" id="student_due_invoice_select">
+                                            data-placeholder="Select a invoice type" required disabled>
                                             <option></option>
                                             <option value="tuition_fee" selected>Tuition Fee</option>
                                             <option value="exam_fee">Exam Fee</option>
@@ -569,10 +617,10 @@
                                 </div>
                                 <!--end::Solid input group style-->
                             </div>
-                            <!--end::Phone Input group-->
+                            <!--end::Invoice Type Input group-->
 
-                            <!--begin::Phone Input group-->
-                            <div class="fv-row mb-7">
+                            <!--begin::Month_Year Input group-->
+                            <div class="fv-row mb-7" id="month_year_id">
                                 <!--begin::Label-->
                                 <label class="required fw-semibold fs-6 mb-2">Month Year</label>
                                 <!--end::Label-->
@@ -583,34 +631,42 @@
                                         <i class="ki-outline ki-calendar fs-3"></i>
                                     </span>
                                     <div class="overflow-hidden flex-grow-1">
-                                        <select name="transaction_invoice"
+                                        <select name="invoice_month_year"
                                             class="form-select form-select-solid rounded-start-0 border-start"
                                             data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
-                                            data-placeholder="Select the month">
+                                            data-placeholder="Select billing month" disabled required>
                                             <option></option>
-                                            <option value="tuition_fee">Jan 2025</option>
-                                            <option value="tuition_fee">Feb 2025</option>
-                                            <option value="tuition_fee">Mar 2025</option>
-                                            <option value="tuition_fee">Apr 2025</option>
+                                            <option value="01_2025">Jan 2025</option>
+                                            <option value="02_2025">Feb 2025</option>
+                                            <option value="03_2025">Mar 2025</option>
+                                            <option value="04_2025">Apr 2025</option>
                                         </select>
                                     </div>
                                 </div>
                                 <!--end::Solid input group style-->
                             </div>
-                            <!--end::Phone Input group-->
+                            <!--end::Month_Year Input group-->
 
-                            <!--begin::Name Input group-->
+                            <!--begin::Amount Input group-->
                             <div class="fv-row mb-7">
                                 <!--begin::Label-->
                                 <label class="required fw-semibold fs-6 mb-2">Amount</label>
                                 <!--end::Label-->
-                                <!--begin::Input-->
-                                <input type="number" name="transaction_amount" min="0"
-                                    id="transaction_amount_input" class="form-control form-control-solid mb-3 mb-lg-0"
-                                    placeholder="Enter the amount" required />
+                                <div class="input-group input-group-solid flex-nowrap">
+                                    <span class="input-group-text">
+                                        <i class="ki-outline ki-dollar fs-3"></i>
+                                    </span>
+                                    <div class="overflow-hidden flex-grow-1">
+                                        <!--begin::Input-->
+                                        <input type="number" name="invoice_amount" min="0"
+                                            class="form-control form-control-solid mb-3 mb-lg-0 rounded-start-0 border-start"
+                                            placeholder="Enter the amount" disabled required />
+                                        <!--end::Input-->
+                                    </div>
+                                </div>
                                 <!--end::Input-->
                             </div>
-                            <!--end::Name Input group-->
+                            <!--end::Amount Input group-->
                         </div>
                         <!--end::Scroll-->
                         <!--begin::Actions-->
@@ -647,6 +703,7 @@
     </script>
 
     <script src="{{ asset('js/invoices/index.js') }}"></script>
+    <script src="{{ asset('js/invoices/index-ajax.js') }}"></script>
 
     <script>
         document.getElementById("invoices_link").classList.add("active");

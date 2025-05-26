@@ -30,7 +30,14 @@ class PaymentTransactionController extends Controller
                 ->orderby('student_unique_id', 'asc')
                 ->get();
         } else {
-            $students = Student::withoutTrashed()->orderby('student_unique_id', 'asc')->get();
+            $students = Student::where(function ($query) {
+                $query->whereNull('student_activation_id')->orWhereHas('studentActivation', function ($q) {
+                    $q->where('active_status', 'active');
+                });
+            })
+                ->withoutTrashed()
+                ->orderby('student_unique_id', 'asc')
+                ->get();
         }
 
         return view('transactions.index', compact('transactions', 'students'));
@@ -86,6 +93,7 @@ class PaymentTransactionController extends Controller
             'amount_paid'        => $validated['transaction_amount'],
             'payment_type'       => $validated['transaction_type'],
             'voucher_no'         => $voucherNo,
+            'created_by'         => auth()->user()->id,
             'remarks'            => $validated['transaction_remarks'],
         ]);
 
