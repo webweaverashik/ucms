@@ -103,8 +103,8 @@
             <tbody>
                 <tr>
                     <td>Tuition Fee
-                        @if (preg_match('/^\d{2}_\d{4}$/', $invoice->month_year))
-                            ({{ \Carbon\Carbon::createFromFormat('m_Y', $invoice->month_year)->format('F Y') }})
+                        @if (preg_match('/^\d{2}_\d{4}$/', $transaction->paymentInvoice->month_year))
+                            ({{ \Carbon\Carbon::createFromFormat('m_Y', $transaction->paymentInvoice->month_year)->format('F Y') }})
                         @endif
                     </td>
                     <td style="text-align: center;">{{ $transaction->paymentInvoice->total_amount }}</td>
