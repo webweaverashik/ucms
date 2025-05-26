@@ -1,11 +1,11 @@
 <?php
 namespace App\Http\Controllers\Payment;
 
-use Carbon\Carbon;
-use Illuminate\Http\Request;
-use App\Models\Student\Student;
 use App\Http\Controllers\Controller;
 use App\Models\Payment\PaymentInvoice;
+use App\Models\Student\Student;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class PaymentInvoiceController extends Controller
 {
@@ -155,6 +155,7 @@ class PaymentInvoiceController extends Controller
         $invoice = PaymentInvoice::create([
             'invoice_number' => $invoiceNumber,
             'student_id'     => $request->invoice_student,
+            'invoice_type'   => $request->invoice_type,
             'total_amount'   => $request->invoice_amount,
             'amount_due'     => $request->invoice_amount,
             'month_year'     => $request->invoice_month_year, // Can be null for non-tuition

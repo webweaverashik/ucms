@@ -16,7 +16,7 @@ var KTDueInvoicesList = function () {
                   "lengthChange": true,
                   "autoWidth": false,  // Disable auto width
                   'columnDefs': [
-                        { orderable: false, targets: 10 }, // Disable ordering on column Actions                
+                        { orderable: false, targets: 11 }, // Disable ordering on column Actions                
                   ]
             });
 

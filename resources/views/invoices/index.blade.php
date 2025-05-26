@@ -227,6 +227,7 @@
                                 <th class="w-25px">SL</th>
                                 <th class="w-150px">Invoice No.</th>
                                 <th class="w-350px">Student</th>
+                                <th class="w-150px">Invoice Type</th>
                                 <th class="d-none">Billing Month (filter)</th>
                                 <th>Billing Month</th>
                                 <th>Toal Amount (৳)</th>
@@ -255,6 +256,7 @@
                                         </a>
                                     </td>
 
+                                    <td>{{ $invoice->invoice_type }}</td>
 
                                     <td class="d-none">D_{{ $invoice->month_year }}</td>
 
@@ -266,9 +268,11 @@
                                         @endif
                                     </td>
 
-                                    </td>
+
                                     <td>{{ $invoice->total_amount }}</td>
+
                                     <td>{{ $invoice->amount_due }}</td>
+                                    
                                     <td class="d-none">
                                         1/{{ $invoice->student->payments->due_date }}
                                     </td>
@@ -461,6 +465,7 @@
                                 <th class="w-25px">SL</th>
                                 <th class="w-150px">Invoice No.</th>
                                 <th class="w-350px">Student</th>
+                                <th class="w-150px">Invoice Type</th>
                                 <th>Amount (৳)</th>
                                 <th class="d-none">Billing Month (filter)</th>
                                 <th>Billing Month</th>
@@ -487,6 +492,7 @@
                                         </a>
                                     </td>
 
+                                    <td>{{ $invoice->invoice_type }}</td>
                                     <td>{{ $invoice->total_amount }}</td>
 
                                     <td class="d-none">P_{{ $invoice->month_year }}</td>
