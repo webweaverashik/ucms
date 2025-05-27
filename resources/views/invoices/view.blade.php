@@ -103,18 +103,18 @@
                         <!--end::Row-->
 
                         @if ($invoice->invoice_type == 'tuition_fee')
-                        <!--begin::Row-->
-                        <tr class="">
-                            <td class="text-gray-500">Billing Month:</td>
-                            <td class="text-gray-800">
-                                @if (preg_match('/^\d{2}_\d{4}$/', $invoice->month_year))
-                                    {{ \Carbon\Carbon::createFromFormat('m_Y', $invoice->month_year)->format('F Y') }}
-                                @else
-                                    N/A
-                                @endif
-                            </td>
-                        </tr>
-                        <!--end::Row-->
+                            <!--begin::Row-->
+                            <tr class="">
+                                <td class="text-gray-500">Billing Month:</td>
+                                <td class="text-gray-800">
+                                    @if (preg_match('/^\d{2}_\d{4}$/', $invoice->month_year))
+                                        {{ \Carbon\Carbon::createFromFormat('m_Y', $invoice->month_year)->format('F Y') }}
+                                    @else
+                                        N/A
+                                    @endif
+                                </td>
+                            </tr>
+                            <!--end::Row-->
                         @endif
 
                         <!--begin::Row-->
@@ -154,11 +154,11 @@
                         @endif
 
                         <tr class="">
-                                <td class="text-gray-500">Invoice Type:</td>
-                                <td class="text-gray-800">
-                                   {{ ucwords(str_replace('_', ' ', $invoice->invoice_type)) }}
-                                </td>
-                            </tr>
+                            <td class="text-gray-500">Invoice Type:</td>
+                            <td class="text-gray-800">
+                                {{ ucwords(str_replace('_', ' ', $invoice->invoice_type)) }}
+                            </td>
+                        </tr>
 
                         @php
                             $status = $invoice->status;
@@ -196,7 +196,11 @@
                             <td>
                                 @if ($status === 'due')
                                     @if ($isOverdue)
-                                        <span class="badge badge-danger ms-1">Overdue</span>
+                                        @if ($invoice->invoice_type != 'tuition_fee')
+                                            <span class="badge badge-warning">Due</span>
+                                        @else
+                                            <span class="badge badge-danger ms-1">Overdue</span>
+                                        @endif
                                     @else
                                         <span class="badge badge-warning">Due</span>
                                     @endif

@@ -291,10 +291,18 @@
                                     <td>{{ $invoice->amount_due }}</td>
 
                                     <td class="d-none">
-                                        1/{{ $invoice->student->payments->due_date }}
+                                        @if ($invoice->invoice_type == 'tuition_fee')
+                                            1/{{ $invoice->student->payments->due_date }}
+                                        @else
+                                            N/A
+                                        @endif
                                     </td>
                                     <td>
-                                        1-{{ $invoice->student->payments->due_date }}
+                                        @if ($invoice->invoice_type == 'tuition_fee')
+                                            1-{{ $invoice->student->payments->due_date }}
+                                        @else
+                                            N/A
+                                        @endif
                                     </td>
 
 
@@ -338,17 +346,21 @@
                                     </td>
 
                                     <td>
-                                        @if ($status === 'due')
-                                            @if ($isOverdue)
-                                                <span class="badge badge-danger ms-1">Overdue</span>
-                                            @else
-                                                <span class="badge badge-warning">Due</span>
+                                        @if ($invoice->invoice_type == 'tuition_fee')
+                                            @if ($status === 'due')
+                                                @if ($isOverdue)
+                                                    <span class="badge badge-danger ms-1">Overdue</span>
+                                                @else
+                                                    <span class="badge badge-warning">Due</span>
+                                                @endif
+                                            @elseif ($status === 'partially_paid')
+                                                <span class="badge badge-info">Partial</span>
+                                                @if ($isOverdue)
+                                                    <span class="badge badge-danger ms-1">Overdue</span>
+                                                @endif
                                             @endif
-                                        @elseif ($status === 'partially_paid')
-                                            <span class="badge badge-info">Partial</span>
-                                            @if ($isOverdue)
-                                                <span class="badge badge-danger ms-1">Overdue</span>
-                                            @endif
+                                        @else
+                                            <span class="badge badge-warning">Due</span>
                                         @endif
                                     </td>
 
@@ -541,7 +553,11 @@
                                     </td>
 
                                     <td class="d-none">
-                                        1/{{ $invoice->student->payments->due_date }}
+                                        @if ($invoice->invoice_type == 'tuition_fee')
+                                            1/{{ $invoice->student->payments->due_date }}
+                                        @else
+                                            N/A
+                                        @endif
                                     </td>
                                     <td>
                                         @if ($invoice->invoice_type == 'tuition_fee')

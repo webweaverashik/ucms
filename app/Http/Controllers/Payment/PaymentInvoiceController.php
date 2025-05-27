@@ -118,9 +118,11 @@ class PaymentInvoiceController extends Controller
 
         // Conditionally apply rule for invoice_month_year
         if ($request->invoice_type === 'tuition_fee') {
-            $rules['invoice_month_year'] = 'required|string';
+            $rules['invoice_month_year']  = 'required|string';
+            $validated_invoice_month_year = $request->invoice_month_year;
         } else {
-            $rules['invoice_month_year'] = 'nullable'; // or leave it out completely
+            $rules['invoice_month_year']  = 'nullable'; // or leave it out completely
+            $validated_invoice_month_year = null;
         }
 
         // Validate the request
@@ -158,7 +160,7 @@ class PaymentInvoiceController extends Controller
             'invoice_type'   => $request->invoice_type,
             'total_amount'   => $request->invoice_amount,
             'amount_due'     => $request->invoice_amount,
-            'month_year'     => $request->invoice_month_year, // Can be null for non-tuition
+            'month_year'     => $validated_invoice_month_year, // Can be null for non-tuition
             'created_by'     => auth()->id(),
         ]);
 
