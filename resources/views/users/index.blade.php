@@ -662,7 +662,7 @@
                         cancelButtonText: 'Cancel',
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            fetch("{{ route('users.destroy', '') }}/" + userId, {
+                            fetch("" + userId, {
                                     method: 'POST',
                                     headers: {
                                         'X-CSRF-TOKEN': "{{ csrf_token() }}",
