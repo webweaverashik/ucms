@@ -178,7 +178,44 @@ class PaymentInvoiceController extends Controller
             return redirect()->route('invoices.index')->with('warning', 'Invoice not found.');
         }
 
-        return view('invoices.view', compact('invoice'));
+
+        if (auth()->user()->branch_id != 0) {
+            $students = Student::where('branch_id', auth()->user()->branch_id)
+                ->where(function ($query) {
+                    $query->whereNull('student_activation_id')->orWhereHas('studentActivation', function ($q) {
+                        $q->where('active_status', 'active');
+                    });
+                })
+                ->withoutTrashed()
+                ->orderby('student_unique_id', 'asc')
+                ->get();
+        } else {
+            $students = Student::where(function ($query) {
+                $query->whereNull('student_activation_id')->orWhereHas('studentActivation', function ($q) {
+                    $q->where('active_status', 'active');
+                });
+            })
+                ->withoutTrashed()
+                ->orderby('student_unique_id', 'asc')
+                ->get();
+        }
+
+        return view('invoices.view', compact('invoice', 'students'));
+    }
+
+    public function viewAjax(PaymentInvoice $invoice)
+    {
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'id'             => $invoice->id,
+                'student_id'     => $invoice->student_id,
+                'invoice_number' => $invoice->invoice_number,
+                'total_amount'   => $invoice->total_amount,
+                'month_year'     => $invoice->month_year,
+                'invoice_type'   => $invoice->invoice_type,
+            ],
+        ]);
     }
 
     /**
@@ -186,13 +223,7 @@ class PaymentInvoiceController extends Controller
      */
     public function edit(string $id)
     {
-        $invoice = PaymentInvoice::find($id);
-
-        if (! $invoice) {
-            return redirect()->route('invoices.index')->with('warning', 'Invoice not found.');
-        }
-
-        return view('invoices.edit', compact('invoice'));
+        //
     }
 
     /**
@@ -200,7 +231,23 @@ class PaymentInvoiceController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'invoice_amount_edit' => 'required|numeric|min:0',
+        ]);
+
+        $invoice = PaymentInvoice::findOrFail($id);
+
+        // Update the guardian record
+        $invoice->update([
+            'total_amount' => $request->invoice_amount_edit,
+            'amount_due'   => $request->invoice_amount_edit,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Invoice updated successfully',
+            'data'    => $invoice,
+        ]);
     }
 
     /**

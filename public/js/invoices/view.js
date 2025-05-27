@@ -99,7 +99,211 @@ var KTInvoiceWithTransactionsList = function () {
       }
 }();
 
+
+var KTEditInvoiceModal = function () {
+      // Shared variables
+      const element = document.getElementById('kt_modal_edit_invoice');
+
+      // Early return if element doesn't exist
+      if (!element) {
+            console.error('Modal element not found');
+            return {
+                  init: function () { }
+            };
+      }
+
+      const form = element.querySelector('#kt_modal_edit_invoice_form');
+      const modal = bootstrap.Modal.getOrCreateInstance(element);
+
+      let invoiceId = null; // Declare globally
+
+      // Init edit invoice modal
+      var initEditInvoice = () => {
+            // Cancel button handler
+            const cancelButton = element.querySelector('[data-kt-edit-invoice-modal-action="cancel"]');
+            if (cancelButton) {
+                  cancelButton.addEventListener('click', e => {
+                        e.preventDefault();
+                        if (form) form.reset();
+                        modal.hide();
+                  });
+            }
+
+            // Close button handler
+            const closeButton = element.querySelector('[data-kt-edit-invoice-modal-action="close"]');
+            if (closeButton) {
+                  closeButton.addEventListener('click', e => {
+                        e.preventDefault();
+                        if (form) form.reset();
+                        modal.hide();
+                  });
+            }
+
+            // AJAX form data load
+            const editButtons = document.querySelectorAll("[data-bs-target='#kt_modal_edit_invoice']");
+            if (editButtons.length) {
+                  editButtons.forEach((button) => {
+                        button.addEventListener("click", function () {
+                              invoiceId = this.getAttribute("data-invoice-id"); // Assign value globally
+                              console.log("Invoice ID:", invoiceId);
+                              if (!invoiceId) return;
+
+                              // Clear form
+                              if (form) form.reset();
+
+                              fetch(`/invoices/${invoiceId}/view-ajax`)
+                                    .then(response => {
+                                          if (!response.ok) throw new Error('Network response was not ok');
+                                          return response.json();
+                                    })
+                                    .then(data => {
+                                          if (data.success && data.data) {
+                                                if (!data.success || !data.data) {
+                                                      throw new Error("Invalid response data");
+                                                }
+
+                                                const invoice = data.data;
+
+                                                // Set modal title
+                                                const titleEl = document.getElementById("kt_modal_edit_invoice_title");
+                                                if (titleEl) {
+                                                      titleEl.textContent = `Update Invoice ${invoice.invoice_number}`;
+                                                }
+
+                                                // Show/hide #invoice_type_id_edit based on invoice_type
+                                                const monthYearWrapper = document.querySelector("#month_year_id_edit");
+                                                if (monthYearWrapper) {
+                                                      if (invoice.invoice_type !== 'tuition_fee') {
+                                                            monthYearWrapper.style.display = 'none';
+                                                      } else {
+                                                            monthYearWrapper.style.display = '';
+                                                      }
+                                                }
+
+                                                // Populate regular input fields
+                                                document.querySelector("input[name='invoice_amount_edit']").value = invoice.total_amount;
+
+                                                // Set Select2 values and trigger change
+                                                const setSelect2Value = (name, value) => {
+                                                      const el = $(`select[name="${name}"]`);
+                                                      if (el.length) {
+                                                            el.val(value).trigger('change');
+                                                      }
+                                                };
+
+                                                // Populate form fields
+                                                setSelect2Value("invoice_student_edit", invoice.student_id);
+                                                setSelect2Value("invoice_type_edit", invoice.invoice_type);
+                                                setSelect2Value("invoice_month_year_edit", invoice.month_year);
+
+                                                // Show modal (assumes Bootstrap modal)
+                                                modal.show();
+                                          } else {
+                                                throw new Error(data.message || 'Invalid response data');
+                                          }
+                                    })
+                                    .catch(error => {
+                                          console.error("Error:", error);
+                                          toastr.error(error.message || "Failed to load invoice details");
+                                    });
+                        });
+                  });
+            }
+
+      }
+
+      // Form validation
+      var initValidation = function () {
+            if (!form) return;
+
+            var validator = FormValidation.formValidation(
+                  form,
+                  {
+                        fields: {
+                              'invoice_amount_edit': {
+                                    validators: {
+                                          notEmpty: {
+                                                message: 'Amount is required'
+                                          }
+                                    }
+                              }
+                        },
+                        plugins: {
+                              trigger: new FormValidation.plugins.Trigger(),
+                              bootstrap: new FormValidation.plugins.Bootstrap5({
+                                    rowSelector: '.fv-row',
+                                    eleInvalidClass: '',
+                                    eleValidClass: ''
+                              })
+                        }
+                  }
+            );
+
+            const submitButton = element.querySelector('[data-kt-edit-invoice-modal-action="submit"]');
+
+            if (submitButton && validator) {
+                  submitButton.addEventListener('click', function (e) {
+                        e.preventDefault(); // Prevent default button behavior
+
+                        validator.validate().then(function (status) {
+                              if (status === 'Valid') {
+                                    // Show loading indicator
+                                    submitButton.setAttribute('data-kt-indicator', 'on');
+                                    submitButton.disabled = true;
+
+                                    const formData = new FormData(form);
+                                    formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+                                    formData.append('_method', 'PUT');
+
+                                    fetch(`/invoices/${invoiceId}`, {
+                                          method: 'POST',
+                                          body: formData,
+                                          headers: {
+                                                'Accept': 'application/json',
+                                                'X-Requested-With': 'XMLHttpRequest'
+                                          }
+                                    })
+                                          .then(response => {
+                                                if (!response.ok) throw new Error('Network response was not ok');
+                                                return response.json();
+                                          })
+                                          .then(data => {
+                                                submitButton.removeAttribute('data-kt-indicator');
+                                                submitButton.disabled = false;
+
+                                                if (data.success) {
+                                                      toastr.success(data.message || 'Invoice updated successfully');
+                                                      modal.hide();
+                                                      window.location.reload();
+                                                } else {
+                                                      throw new Error(data.message || 'Invoice Update failed');
+                                                }
+                                          })
+                                          .catch(error => {
+                                                submitButton.removeAttribute('data-kt-indicator');
+                                                submitButton.disabled = false;
+                                                toastr.error(error.message || 'Failed to update invoice');
+                                                console.error('Error:', error);
+                                          });
+                              } else {
+                                    toastr.warning('Please fill all required fields correctly');
+                              }
+                        });
+                  });
+            }
+
+      }
+
+      return {
+            init: function () {
+                  initEditInvoice();
+                  initValidation();
+            }
+      };
+}();
+
 // On document ready
 KTUtil.onDOMContentLoaded(function () {
       KTInvoiceWithTransactionsList.init();
+      KTEditInvoiceModal.init();
 });

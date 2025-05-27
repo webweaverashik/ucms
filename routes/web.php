@@ -51,10 +51,12 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
         Route::get('/referrers/students', [ReferenceController::class, 'getStudents'])->name('admin.referrers.students');
     });
 
-    Route::get('/get-subjects', [SubjectController::class, 'getSubjects']);
-    Route::get('/get-taken-subjects', [SubjectController::class, 'getTakenSubjects']);
+    Route::get('get-subjects', [SubjectController::class, 'getSubjects']);
+    Route::get('get-taken-subjects', [SubjectController::class, 'getTakenSubjects']);
+    
+    Route::get('students/{student}/due-invoices', [PaymentInvoiceController::class, 'getDueInvoices'])->name('students.due.invoices');
+    Route::get('invoices/{invoice}/view-ajax', [PaymentInvoiceController::class, 'viewAjax'])->name('invoices.view.ajax');
 
-    Route::get('/students/{student}/due-invoices', [PaymentInvoiceController::class, 'getDueInvoices'])->name('students.due.invoices');
 
 
     
