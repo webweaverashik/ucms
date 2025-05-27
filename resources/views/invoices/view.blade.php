@@ -102,6 +102,7 @@
                         </tr>
                         <!--end::Row-->
 
+                        @if ($invoice->invoice_type == 'tuition_fee')
                         <!--begin::Row-->
                         <tr class="">
                             <td class="text-gray-500">Billing Month:</td>
@@ -112,9 +113,9 @@
                                     N/A
                                 @endif
                             </td>
-
                         </tr>
                         <!--end::Row-->
+                        @endif
 
                         <!--begin::Row-->
                         <tr class="">
@@ -143,39 +144,21 @@
                 <div class="col-md-2">
                     <!--begin::Details-->
                     <table class="table fs-6 fw-semibold gs-0 gy-1 gx-0 mt-10">
-                        <!--begin::Row-->
+                        @if ($invoice->invoice_type == 'tuition_fee')
+                            <tr class="">
+                                <td class="text-gray-500">Due Date:</td>
+                                <td class="text-gray-800">
+                                    1-{{ $invoice->student->payments->due_date }}
+                                </td>
+                            </tr>
+                        @endif
+
                         <tr class="">
-                            <td class="text-gray-500">Due Date:</td>
-                            <td class="text-gray-800">
-                                1-{{ $invoice->student->payments->due_date }}
-                            </td>
-                        </tr>
-                        <!--end::Row-->
-
-
-
-                        {{-- @php
-                            $status = $invoice->status;
-                            $payment = optional($invoice->student)->payments;
-                            $dueDate = null;
-                            $isOverdue = false;
-
-                            if ($payment && $payment->due_date && $invoice->month_year) {
-                                try {
-                                    $monthYear = \Carbon\Carbon::createFromFormat('m_Y', $invoice->month_year);
-                                    $dueDate = $monthYear->copy()->day($payment->due_date);
-
-                                    if (
-                                        in_array($status, ['due', 'partially_paid']) &&
-                                        now()->toDateString() > $dueDate->toDateString()
-                                    ) {
-                                        $isOverdue = true;
-                                    }
-                                } catch (\Exception $e) {
-                                    // Silently ignore parse errors
-                                }
-                            }
-                        @endphp --}}
+                                <td class="text-gray-500">Invoice Type:</td>
+                                <td class="text-gray-800">
+                                   {{ ucwords(str_replace('_', ' ', $invoice->invoice_type)) }}
+                                </td>
+                            </tr>
 
                         @php
                             $status = $invoice->status;

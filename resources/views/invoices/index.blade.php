@@ -150,6 +150,21 @@
                                 <div class="px-7 py-5" data-kt-due-invoice-table-filter="form">
                                     <!--begin::Input group-->
                                     <div class="mb-10">
+                                        <label class="form-label fs-6 fw-semibold">Invoice Type:</label>
+                                        <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
+                                            data-placeholder="Select option" data-allow-clear="true"
+                                            data-kt-subscription-table-filter="product" data-hide-search="true">
+                                            <option></option>
+                                            <option value="tuition_fee">Tuition Fee</option>
+                                            <option value="model_test_fee">Model Test Fee</option>
+                                            <option value="exam_fee">Exam Fee</option>
+                                            <option value="others_fee">Others Fee</option>
+                                        </select>
+                                    </div>
+                                    <!--end::Input group-->
+
+                                    <!--begin::Input group-->
+                                    <div class="mb-10">
                                         <label class="form-label fs-6 fw-semibold">Due Date:</label>
                                         <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                             data-placeholder="Select option" data-allow-clear="true"
@@ -227,6 +242,7 @@
                                 <th class="w-25px">SL</th>
                                 <th class="w-150px">Invoice No.</th>
                                 <th class="w-300px">Student</th>
+                                <th class="d-none">Invoice Type (filter)</th>
                                 <th>Invoice Type</th>
                                 <th class="d-none">Billing Month (filter)</th>
                                 <th>Billing Month</th>
@@ -256,7 +272,8 @@
                                         </a>
                                     </td>
 
-                                    <td>{{ $invoice->invoice_type }}</td>
+                                    <td class="d-none">{{ $invoice->invoice_type }}</td>
+                                    <td>{{ ucwords(str_replace('_', ' ', $invoice->invoice_type)) }}</td>
 
                                     <td class="d-none">D_{{ $invoice->month_year }}</td>
 
@@ -272,7 +289,7 @@
                                     <td>{{ $invoice->total_amount }}</td>
 
                                     <td>{{ $invoice->amount_due }}</td>
-                                    
+
                                     <td class="d-none">
                                         1/{{ $invoice->student->payments->due_date }}
                                     </td>
@@ -402,6 +419,21 @@
                                 <div class="px-7 py-5" data-kt-paid-invoice-table-filter="form">
                                     <!--begin::Input group-->
                                     <div class="mb-10">
+                                        <label class="form-label fs-6 fw-semibold">Invoice Type:</label>
+                                        <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
+                                            data-placeholder="Select option" data-allow-clear="true"
+                                            data-kt-subscription-table-filter="product" data-hide-search="true">
+                                            <option></option>
+                                            <option value="tuition_fee">Tuition Fee</option>
+                                            <option value="model_test_fee">Model Test Fee</option>
+                                            <option value="exam_fee">Exam Fee</option>
+                                            <option value="others_fee">Others Fee</option>
+                                        </select>
+                                    </div>
+                                    <!--end::Input group-->
+
+                                    <!--begin::Input group-->
+                                    <div class="mb-10">
                                         <label class="form-label fs-6 fw-semibold">Due Date:</label>
                                         <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                             data-placeholder="Select option" data-allow-clear="true"
@@ -465,6 +497,7 @@
                                 <th class="w-25px">SL</th>
                                 <th class="w-150px">Invoice No.</th>
                                 <th class="w-350px">Student</th>
+                                <th class="d-none">Invoice Type (filter)</th>
                                 <th>Invoice Type</th>
                                 <th>Amount (৳)</th>
                                 <th class="d-none">Billing Month (filter)</th>
@@ -492,7 +525,9 @@
                                         </a>
                                     </td>
 
-                                    <td>{{ $invoice->invoice_type }}</td>
+                                    <td class="d-none">{{ $invoice->invoice_type }}</td>
+                                    <td>{{ ucwords(str_replace('_', ' ', $invoice->invoice_type)) }}</td>
+
                                     <td>{{ $invoice->total_amount }}</td>
 
                                     <td class="d-none">P_{{ $invoice->month_year }}</td>
@@ -509,7 +544,11 @@
                                         1/{{ $invoice->student->payments->due_date }}
                                     </td>
                                     <td>
-                                        1-{{ $invoice->student->payments->due_date }}
+                                        @if ($invoice->invoice_type == 'tuition_fee')
+                                            1-{{ $invoice->student->payments->due_date }}
+                                        @else
+                                            N/A
+                                        @endif
                                     </td>
                                     <td>
                                         <span class="badge badge-success">{{ ucfirst($invoice->status) }}</span>

@@ -16,7 +16,7 @@ var KTDueInvoicesList = function () {
                   "lengthChange": true,
                   "autoWidth": false,  // Disable auto width
                   'columnDefs': [
-                        { orderable: false, targets: 12 }, // Disable ordering on column Actions                
+                        { orderable: false, targets: 13 }, // Disable ordering on column Actions                
                   ]
             });
 
@@ -166,7 +166,7 @@ var KTPaidInvoicesList = function () {
                   "lengthChange": true,
                   "autoWidth": false,  // Disable auto width
                   'columnDefs': [
-                        { orderable: false, targets: 9 }, // Disable ordering on status Guardian                
+                        { orderable: false, targets: 10 }, // Disable ordering on status Guardian                
                   ]
             });
 

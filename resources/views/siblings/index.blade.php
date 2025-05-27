@@ -65,7 +65,7 @@
                 <div class="d-flex align-items-center position-relative my-1">
                     <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
                         data-kt-siblings-table-filter="search" class="form-control form-control-solid w-250px ps-12"
-                        placeholder="Search Sibling">
+                        placeholder="Search in sibling">
                 </div>
                 <!--end::Search-->
             </div>
@@ -104,7 +104,7 @@
                             </div>
                             <!--end::Input group-->
                             <!--begin::Input group-->
-                            <div class="mb-10">
+                            {{-- <div class="mb-10">
                                 <label class="form-label fs-6 fw-semibold">Gender:</label>
                                 <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                     data-placeholder="Select option" data-allow-clear="true"
@@ -113,7 +113,7 @@
                                     <option value="gd_brother">Male</option>
                                     <option value="gd_sister">Female</option>
                                 </select>
-                            </div>
+                            </div> --}}
                             <!--end::Input group-->
 
                             <!--begin::Actions-->
