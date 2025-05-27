@@ -36,6 +36,7 @@ class PaymentTransactionSeeder extends Seeder
                     'payment_type'       => $paymentType,
                     'amount_paid'        => $amountPaid,
                     'voucher_no'         => strtoupper(Str::random(10)),
+                    'created_by'         => 2,
                 ]);
 
                 $remaining -= $amountPaid;

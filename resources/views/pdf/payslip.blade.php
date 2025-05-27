@@ -107,19 +107,19 @@
                             ({{ \Carbon\Carbon::createFromFormat('m_Y', $transaction->paymentInvoice->month_year)->format('F Y') }})
                         @endif
                     </td>
-                    <td style="text-align: center;">{{ $transaction->paymentInvoice->total_amount }}</td>
+                    <td style="text-align: center;">@if ($transaction->paymentInvoice->invoice_type == 'tuition_fee') {{ $transaction->paymentInvoice->total_amount }} @endif</td>
                 </tr>
                 <tr>
                     <td>Model Test Fee</td>
-                    <td></td>
+                    <td style="text-align: center;">@if ($transaction->paymentInvoice->invoice_type == 'model_test_fee') {{ $transaction->paymentInvoice->total_amount }} @endif</td>
                 </tr>
                 <tr>
                     <td>Admission Fee / Others</td>
-                    <td></td>
+                    <td style="text-align: center;">@if ($transaction->paymentInvoice->invoice_type == 'others_fee') {{ $transaction->paymentInvoice->total_amount }} @endif</td>
                 </tr>
                 <tr>
                     <td>Exam Fee</td>
-                    <td></td>
+                    <td style="text-align: center;">@if ($transaction->paymentInvoice->invoice_type == 'exam_fee') {{ $transaction->paymentInvoice->total_amount }} @endif</td>
                 </tr>
                 <tr>
                     <th>Total Payable</th>
