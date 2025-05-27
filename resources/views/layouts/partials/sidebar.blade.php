@@ -234,7 +234,7 @@
                             <!--begin:Menu item-->
                             <div class="menu-item">
                                 <!--begin:Menu link--><a class="menu-link" id="all_sheets_link"
-                                    href="{{ route('students.index') }}"><span class="menu-bullet"><span
+                                    href="#"><span class="menu-bullet"><span
                                             class="bullet bullet-dot"></span></span><span class="menu-title">All
                                         Sheets</span></a>
                                 <!--end:Menu link-->
@@ -244,7 +244,7 @@
                             <!--begin:Menu item-->
                             <div class="menu-item">
                                 <!--begin:Menu link--><a class="menu-link" id="sheet_fee_link"
-                                    href="?page=pages/user-profile/projects"><span class="menu-bullet"><span
+                                    href="#"><span class="menu-bullet"><span
                                             class="bullet bullet-dot"></span></span><span class="menu-title">Sheet
                                         Fee</span></a>
                                 <!--end:Menu link-->
@@ -254,7 +254,7 @@
                             <!--begin:Menu item-->
                             <div class="menu-item">
                                 <!--begin:Menu link--><a class="menu-link" id="sheet_distribution_link"
-                                    href="?page=pages/user-profile/campaigns"><span class="menu-bullet"><span
+                                    href="#"><span class="menu-bullet"><span
                                             class="bullet bullet-dot"></span></span><span class="menu-title">Sheet
                                         Distribution</span></a>
                                 <!--end:Menu link-->
@@ -406,7 +406,7 @@
                     <!--begin:Settings Tracking Menu item-->
                     <div class="menu-item">
                         <!--begin:Menu link-->
-                        <a class="menu-link" href="{{ route('teachers.index') }}" id="settings_link">
+                        <a class="menu-link" href="#" id="settings_link">
                             <span class="menu-icon">
                                 <i class="ki-outline ki-setting-2 fs-2"></i>
                             </span>
@@ -415,9 +415,6 @@
                         <!--end:Menu link-->
                     </div>
                     <!--end:Settings Tracking Menu item-->
-
-
-
                 </div>
                 <!--end::Menu-->
             </div>
