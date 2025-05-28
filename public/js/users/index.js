@@ -44,14 +44,15 @@ var KTUsersList = function () {
                     let url = routeDeleteUser.replace(':id', userId);  // Replace ':id' with actual user ID
 
                     Swal.fire({
-                         title: 'আপনি কি নিশ্চিত ডিলিট করতে চান?',
-                         text: "ডিলিট করার পর এই ইউজারের কোনো তথ্য থাকবে না। ",
+                         title: 'Are you sure you want to delete?',
+                         text: "Once deleted, this user's information will be removed.",
                          icon: 'warning',
                          showCancelButton: true,
                          confirmButtonColor: '#3085d6',
                          cancelButtonColor: '#d33',
-                         confirmButtonText: 'হ্যাঁ, ডিলিট করবো',
-                         cancelButtonText: 'ক্যানসেল',
+                         confirmButtonText: 'Yes, delete it',
+                         cancelButtonText: 'Cancel',
+
                     }).then((result) => {
                          if (result.isConfirmed) {
                               fetch(url, {
@@ -65,23 +66,21 @@ var KTUsersList = function () {
                                    .then(data => {
                                         if (data.success) {
                                              Swal.fire({
-                                                  title: 'সফল!',
-                                                  text: 'ইউজারটি সফলভাবে ডিলিট করা হয়েছে।',
+                                                  title: 'Success!',
+                                                  text: 'The user has been deleted successfully.',
                                                   icon: 'success',
-                                                  confirmButtonText: 'ঠিক আছে।'
+                                                  confirmButtonText: 'Okay',
+
                                              }).then(() => {
                                                   location.reload(); // Reload to reflect changes
                                              });
                                         } else {
-                                             Swal.fire('ব্যর্থ!', 'ইউজার ডিলিট করা যায়নি।',
-                                                  'error');
+                                             Swal.fire('Failed!', 'The user could not be deleted.', 'error');
                                         }
                                    })
                                    .catch(error => {
                                         console.error("Fetch Error:", error);
-                                        Swal.fire('ব্যর্থ!',
-                                             'একটি ত্রুটি হয়েছে। অনুগ্রহ করে সাপোর্টে যোগাযোগ করুন।',
-                                             'error');
+                                        Swal.fire('Failed!', 'An error occurred. Please contact support.', 'error');
                                    });
                          }
                     });
@@ -139,7 +138,7 @@ var KTUsersList = function () {
      return {
           // Public functions  
           init: function () {
-               table = document.getElementById('kt_table_users');
+               table = document.getElementById('kt_users_table');
 
                if (!table) {
                     return;
@@ -158,108 +157,108 @@ var KTUsersAddUser = function () {
      const element = document.getElementById('kt_modal_add_user');
      const form = element.querySelector('#kt_modal_add_user_form');
      const modal = new bootstrap.Modal(element);
- 
+
      // Init add schedule modal
      var initAddUser = () => {
- 
-         // Cancel button handler
-         const cancelButton = element.querySelector('[data-kt-users-modal-action="cancel"]');
-         cancelButton.addEventListener('click', e => {
-             e.preventDefault();
- 
-             form.reset(); // Reset form			
-             modal.hide();
-         });
- 
-         // Close button handler
-         const closeButton = element.querySelector('[data-kt-users-modal-action="close"]');
-         closeButton.addEventListener('click', e => {
-             e.preventDefault();
- 
-             form.reset(); // Reset form			
-             modal.hide();
-         });
+
+          // Cancel button handler
+          const cancelButton = element.querySelector('[data-kt-users-modal-action="cancel"]');
+          cancelButton.addEventListener('click', e => {
+               e.preventDefault();
+
+               form.reset(); // Reset form			
+               modal.hide();
+          });
+
+          // Close button handler
+          const closeButton = element.querySelector('[data-kt-users-modal-action="close"]');
+          closeButton.addEventListener('click', e => {
+               e.preventDefault();
+
+               form.reset(); // Reset form			
+               modal.hide();
+          });
      }
- 
+
      return {
-         // Public functions
-         init: function () {
-             initAddUser();
-         }
+          // Public functions
+          init: function () {
+               initAddUser();
+          }
      };
- }();
- 
- var KTUsersEditUser = function () {
+}();
+
+var KTUsersEditUser = function () {
      // Shared variables
      const element = document.getElementById('kt_modal_edit_user');
      const form = element.querySelector('#kt_modal_edit_user_form');
      const modal = new bootstrap.Modal(element);
- 
+
      // Init add schedule modal
      var initEditUser = () => {
- 
-         // Cancel button handler
-         const cancelButton = element.querySelector('[data-kt-users-modal-action="cancel"]');
-         cancelButton.addEventListener('click', e => {
-             e.preventDefault();
- 
-             form.reset(); // Reset form			
-             modal.hide();
-         });
- 
-         // Close button handler
-         const closeButton = element.querySelector('[data-kt-users-modal-action="close"]');
-         closeButton.addEventListener('click', e => {
-             e.preventDefault();
- 
-             form.reset(); // Reset form			
-             modal.hide();
-         });
+
+          // Cancel button handler
+          const cancelButton = element.querySelector('[data-kt-users-modal-action="cancel"]');
+          cancelButton.addEventListener('click', e => {
+               e.preventDefault();
+
+               form.reset(); // Reset form			
+               modal.hide();
+          });
+
+          // Close button handler
+          const closeButton = element.querySelector('[data-kt-users-modal-action="close"]');
+          closeButton.addEventListener('click', e => {
+               e.preventDefault();
+
+               form.reset(); // Reset form			
+               modal.hide();
+          });
      }
- 
+
      return {
-         // Public functions
-         init: function () {
-             initEditUser();
-         }
+          // Public functions
+          init: function () {
+               initEditUser();
+          }
      };
- }();
- 
- var KTUsersEditPassword = function () {
+}();
+
+var KTUsersEditPassword = function () {
      // Shared variables
      const element = document.getElementById('kt_modal_edit_password');
      const form = element.querySelector('#kt_modal_edit_password_form');
      const modal = new bootstrap.Modal(element);
- 
+
      // Init add schedule modal
      var initEditPassword = () => {
- 
-         // Cancel button handler
-         const cancelButton = element.querySelector('[data-kt-edit-password-modal-action="cancel"]');
-         cancelButton.addEventListener('click', e => {
-             e.preventDefault();
- 
-             form.reset(); // Reset form			
-             modal.hide();
-         });
- 
-         // Close button handler
-         const closeButton = element.querySelector('[data-kt-edit-password-modal-action="close"]');
-         closeButton.addEventListener('click', e => {
-             e.preventDefault();
- 
-             form.reset(); // Reset form			
-             modal.hide();
-         });
+
+          // Cancel button handler
+          const cancelButton = element.querySelector('[data-kt-edit-password-modal-action="cancel"]');
+          cancelButton.addEventListener('click', e => {
+               e.preventDefault();
+
+               form.reset(); // Reset form			
+               modal.hide();
+          });
+
+          // Close button handler
+          const closeButton = element.querySelector('[data-kt-edit-password-modal-action="close"]');
+          closeButton.addEventListener('click', e => {
+               e.preventDefault();
+
+               form.reset(); // Reset form			
+               modal.hide();
+          });
      }
- 
+
      return {
-         // Public functions
-         init: function () {
-          initEditPassword();
-         }
+          // Public functions
+          init: function () {
+               initEditPassword();
+          }
      };
- }();
+}();
 
 // On document ready
 KTUtil.onDOMContentLoaded(function () {

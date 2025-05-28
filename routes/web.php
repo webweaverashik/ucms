@@ -43,7 +43,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::post('students/toggle-active', [StudentActivationController::class, 'toggleActive'])->name('students.toggleActive');
     Route::get('students/{id}/download-form', [PdfController::class, 'downloadAdmissionForm'])->name('students.download');
     Route::get('transactions/{id}/download-payslip', [PdfController::class, 'downloadPaySlip'])->name('transactions.download');
-    
+    Route::post('users/password', [UserController::class, 'userPasswordReset'])->name('users.password.reset');
 
     // AJAX Routes
     Route::prefix('admin')->group(function () {
@@ -53,13 +53,10 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
 
     Route::get('get-subjects', [SubjectController::class, 'getSubjects']);
     Route::get('get-taken-subjects', [SubjectController::class, 'getTakenSubjects']);
-    
+
     Route::get('students/{student}/due-invoices', [PaymentInvoiceController::class, 'getDueInvoices'])->name('students.due.invoices');
     Route::get('invoices/{invoice}/view-ajax', [PaymentInvoiceController::class, 'viewAjax'])->name('invoices.view.ajax');
 
-
-
-    
     // resource controller routes
     Route::resource('users', UserController::class);
     Route::resource('students', StudentController::class);

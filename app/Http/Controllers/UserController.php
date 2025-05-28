@@ -84,4 +84,22 @@ class UserController extends Controller
 
         return response()->json(['success' => true, 'message' => 'User activation status updated.']);
     }
+
+    public function userPasswordReset(Request $request)
+    {
+        $user = User::findOrFail($request->user_id);
+
+        $request->validate([
+            'new_password' => 'required|string|min:6',
+        ]);
+
+        if (! $user) {
+            return redirect()->back()->with('error', 'ইউজার পাওয়া যায়নি');
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return redirect()->back()->with('success', 'পাসওয়ার্ড সফলভাবে রিসেট করা হয়েছে।');
+    }
 }
