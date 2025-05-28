@@ -163,18 +163,15 @@
                                 @endif
                             </td>
                             <td>
-                                <a href="#" title="Edit User" data-bs-toggle="tooltip" data-bs-placement="top"
-                                    data-user-id="{{ $user->id }}"
-                                    class="btn btn-icon text-hover-primary w-30px h-30px"
-                                    onclick="new bootstrap.Modal(document.getElementById('kt_modal_edit_user')).show(); return false;">
+                                <a href="#" title="Edit User" data-bs-toggle="modal"
+                                    data-bs-target="#kt_modal_edit_user" data-user-id="{{ $user->id }}"
+                                    class="btn btn-icon text-hover-primary w-30px h-30px">
                                     <i class="ki-outline ki-pencil fs-2"></i>
                                 </a>
 
-                                <a href="#" title="Reset Password" data-bs-toggle="tooltip" data-bs-placement="top"
-                                    data-bs-target="#kt_modal_edit_password"
-                                    class="btn btn-icon text-hover-primary w-30px h-30px change-password-btn"
-                                    data-user-id="{{ $user->id }}"
-                                    onclick="var modal = new bootstrap.Modal(document.getElementById('kt_modal_edit_password')); modal.show(); return false;">
+                                <a href="#" title="Reset Passsword" data-bs-toggle="modal"
+                                    data-bs-target="#kt_modal_edit_password" data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}"
+                                    class="btn btn-icon text-hover-primary w-30px h-30px change-password-btn">
                                     <i class="ki-outline ki-key fs-2"></i>
                                 </a>
 
@@ -604,15 +601,16 @@
     <!--end::Modal - Edit User-->
 
     <!--begin::Modal - Edit User Password-->
-    <div class="modal fade" id="kt_modal_edit_password" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal fade" id="kt_modal_edit_password" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+        data-bs-keyboard="false">
         <!--begin::Modal dialog-->
-        <div class="modal-dialog modal-dialog-centered mw-400px">
+        <div class="modal-dialog modal-dialog-centered mw-450px">
             <!--begin::Modal content-->
             <div class="modal-content">
                 <!--begin::Modal header-->
                 <div class="modal-header" id="kt_modal_edit_password_header">
                     <!--begin::Modal title-->
-                    <h2 class="fw-bold">পাসওয়ার্ড আপডেট করুন</h2>
+                    <h2 class="fw-bold" id="kt_modal_edit_password_title">Password Reset</h2>
                     <!--end::Modal title-->
                     <!--begin::Close-->
                     <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-edit-password-modal-action="close">
@@ -640,16 +638,15 @@
                                         <!--begin::Label-->
                                         <input type="hidden" name="user_id" id="user_id_input">
 
-                                        <label class="required fw-semibold fs-6 mb-2">নতুন পাসওয়ার্ড লিখুন</label>
+                                        <label class="required fw-semibold fs-6 mb-2">Write New Password</label>
                                         <!--end::Label-->
 
                                         <div class="input-group">
                                             <input type="password" name="new_password" id="userPasswordNew"
-                                                class="form-control mb-3 mb-lg-0" placeholder="নতুন পাসওয়ার্ড দিন"
+                                                class="form-control mb-3 mb-lg-0" placeholder="Enter New Password"
                                                 required />
                                             <span class="input-group-text toggle-password" data-target="userPasswordNew"
-                                                style="cursor: pointer;" title="পাসওয়ার্ড দেখুন"
-                                                data-bs-toggle="tooltip">
+                                                style="cursor: pointer;" title="See Password" data-bs-toggle="tooltip">
                                                 <i class="ki-outline ki-eye fs-3"></i>
                                             </span>
                                         </div>
@@ -663,9 +660,9 @@
                         <!--begin::Actions-->
                         <div class="text-center pt-10">
                             <button type="reset" class="btn btn-light me-3"
-                                data-kt-edit-password-modal-action="cancel">বাতিল</button>
+                                data-kt-edit-password-modal-action="cancel">Discard</button>
                             <button type="submit" class="btn btn-success" data-kt-edit-password-modal-action="submit">
-                                <span class="indicator-label">আপডেট করুন</span>
+                                <span class="indicator-label">Update</span>
                                 <span class="indicator-progress">Please wait...
                                     <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
                             </button>
@@ -698,5 +695,39 @@
 
     <script>
         document.getElementById("users_link").classList.add("active");
+    </script>
+
+
+    {{-- Toggle show/hide password --}}
+    <script>
+        document.querySelectorAll('.toggle-password').forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                const inputId = this.getAttribute('data-target');
+                const input = document.getElementById(inputId);
+                const icon = this.querySelector('i');
+
+                const isPassword = input.type === 'password';
+                input.type = isPassword ? 'text' : 'password';
+
+                icon.classList.toggle('ki-eye');
+                icon.classList.toggle('ki-eye-slash');
+            });
+        });
+    </script>
+
+
+    {{-- AJAX data load for edit password button to hidden input field --}}
+    <script>
+        $(document).ready(function() {
+            $('.change-password-btn').on('click', function() {
+                const userId = $(this).data('user-id');
+                const userName = $(this).data('user-name');
+
+                $('#user_id_input').val(userId);
+                setTimeout(function() {
+                    $('#kt_modal_edit_password_title').text(`Password Reset of ${userName}`);
+                }, 50);
+            });
+        });
     </script>
 @endpush

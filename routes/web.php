@@ -36,14 +36,30 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
         return redirect()->back();
     })->name('logout.get');
 
-    // Custom routes
+    // ------- Custom routes start -------
+    // Users
     Route::post('users/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggleActive');
+    Route::post('users/password', [UserController::class, 'userPasswordReset'])->name('users.password.reset');
+    
+    // Students
     Route::get('students/pending', [StudentController::class, 'pending'])->name('students.pending');
     Route::post('students/{id}/approve', [StudentActivationController::class, 'approve'])->name('students.activate');
     Route::post('students/toggle-active', [StudentActivationController::class, 'toggleActive'])->name('students.toggleActive');
     Route::get('students/{id}/download-form', [PdfController::class, 'downloadAdmissionForm'])->name('students.download');
+
+    // Invoices
+    Route::get('students/{student}/due-invoices', [PaymentInvoiceController::class, 'getDueInvoices'])->name('students.due.invoices');
+    Route::get('invoices/{invoice}/view-ajax', [PaymentInvoiceController::class, 'viewAjax'])->name('invoices.view.ajax');
+
+    // Transactions
     Route::get('transactions/{id}/download-payslip', [PdfController::class, 'downloadPaySlip'])->name('transactions.download');
-    Route::post('users/password', [UserController::class, 'userPasswordReset'])->name('users.password.reset');
+
+    // Subjects
+    Route::get('get-subjects', [SubjectController::class, 'getSubjects']);
+    Route::get('get-taken-subjects', [SubjectController::class, 'getTakenSubjects']);
+    
+    // ------- Custom routes end -------
+
 
     // AJAX Routes
     Route::prefix('admin')->group(function () {
@@ -51,13 +67,9 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
         Route::get('/referrers/students', [ReferenceController::class, 'getStudents'])->name('admin.referrers.students');
     });
 
-    Route::get('get-subjects', [SubjectController::class, 'getSubjects']);
-    Route::get('get-taken-subjects', [SubjectController::class, 'getTakenSubjects']);
 
-    Route::get('students/{student}/due-invoices', [PaymentInvoiceController::class, 'getDueInvoices'])->name('students.due.invoices');
-    Route::get('invoices/{invoice}/view-ajax', [PaymentInvoiceController::class, 'viewAjax'])->name('invoices.view.ajax');
 
-    // resource controller routes
+    // Resource Routes
     Route::resource('users', UserController::class);
     Route::resource('students', StudentController::class);
     Route::resource('guardians', GuardianController::class);

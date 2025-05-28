@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Branch;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -73,7 +74,7 @@ class UserController extends Controller
      */
     public function toggleActive(Request $request)
     {
-        $user = User::find($request->farm_id);
+        $user = User::find($request->user_id);
 
         if (!$user) {
             return response()->json(['success' => false, 'message' => 'Error. Please, contact support.']);
@@ -94,12 +95,12 @@ class UserController extends Controller
         ]);
 
         if (! $user) {
-            return redirect()->back()->with('error', 'ইউজার পাওয়া যায়নি');
+            return redirect()->back()->with('error', 'User not found');
         }
 
         $user->password = Hash::make($request->new_password);
         $user->save();
 
-        return redirect()->back()->with('success', 'পাসওয়ার্ড সফলভাবে রিসেট করা হয়েছে।');
+        return redirect()->back()->with('success', 'Successfully updated password.');
     }
 }

@@ -224,7 +224,7 @@ var KTUsersEditUser = function () {
      };
 }();
 
-var KTUsersEditPassword = function () {
+var KTUsersResetPassword = function () {
      // Shared variables
      const element = document.getElementById('kt_modal_edit_password');
      const form = element.querySelector('#kt_modal_edit_password_form');
@@ -265,5 +265,5 @@ KTUtil.onDOMContentLoaded(function () {
      KTUsersList.init();
      KTUsersAddUser.init();
      KTUsersEditUser.init();
-     KTUsersEditPassword.init();
+     KTUsersResetPassword.init();
 });
