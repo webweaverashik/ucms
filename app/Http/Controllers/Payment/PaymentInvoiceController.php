@@ -174,10 +174,9 @@ class PaymentInvoiceController extends Controller
     {
         $invoice = PaymentInvoice::find($id);
 
-        if (! $invoice) {
+        if (! $invoice || optional($invoice->student)->deleted_at !== null) {
             return redirect()->route('invoices.index')->with('warning', 'Invoice not found.');
         }
-
 
         if (auth()->user()->branch_id != 0) {
             $students = Student::where('branch_id', auth()->user()->branch_id)
