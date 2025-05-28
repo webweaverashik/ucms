@@ -48,7 +48,7 @@ class PaymentTransactionController extends Controller
      */
     public function create()
     {
-        return route('transactions.index');
+        return redirect()->route('transactions.index');
     }
 
     /**
@@ -125,7 +125,7 @@ class PaymentTransactionController extends Controller
      */
     public function show(string $id)
     {
-        return route('transactions.index');
+        return redirect()->route('transactions.index');
     }
 
     /**
@@ -133,7 +133,7 @@ class PaymentTransactionController extends Controller
      */
     public function edit(string $id)
     {
-        return route('transactions.index');
+        return redirect()->route('transactions.index');
     }
 
     /**
@@ -141,7 +141,7 @@ class PaymentTransactionController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        return route('transactions.index');
+        return redirect()->route('transactions.index');
     }
 
     /**
@@ -149,6 +149,6 @@ class PaymentTransactionController extends Controller
      */
     public function destroy(string $id)
     {
-        return route('transactions.index');
+        return redirect()->route('transactions.index');
     }
 }

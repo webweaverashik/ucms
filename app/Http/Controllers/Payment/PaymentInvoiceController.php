@@ -222,7 +222,7 @@ class PaymentInvoiceController extends Controller
      */
     public function edit(string $id)
     {
-        return route('invoices.index');
+        return redirect()->route('invoices.index');
     }
 
     /**
