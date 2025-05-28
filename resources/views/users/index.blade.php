@@ -52,7 +52,7 @@
             </ul>
         </div>
     @endif
-    
+
     <!--begin::Card-->
     <div class="card">
         <!--begin::Card header-->
@@ -64,7 +64,7 @@
                     <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5">
                     </i>
                     <input type="text" data-kt-user-table-filter="search"
-                        class="form-control form-control-solid w-250px ps-13" placeholder="Search user" />
+                        class="form-control form-control-solid w-350px ps-13" placeholder="Search user" />
                 </div>
                 <!--end::Search-->
             </div>
@@ -83,25 +83,27 @@
             <!--end::Card toolbar-->
         </div>
         <!--end::Card header-->
+
         <!--begin::Card body-->
         <div class="card-body py-4">
             <!--begin::Table-->
-            <table class="table table-hover align-middle fs-6 gy-5" id="kt_table_users">
+            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_table_users">
                 <thead>
-                    <tr class="fw-bold fs-5 text-uppercase gs-0">
-                        <th class="w-50px text-center">SL</th>
+                    <tr class="fw-bold fs-7 text-uppercase gs-0">
+                        <th class="w-50px">SL</th>
                         <th class="min-w-125px">User Info</th>
-                        <th class="min-w-125px text-center">Branch</th>
-                        <th class="min-w-125px text-center">Role</th>
-                        <th class="min-w-125px text-center">Last Login</th>
-                        <th class="min-w-125px text-center">Active/Inactive</th>
-                        <th class="min-w-100px text-center">Actions</th>
+                        <th class="min-w-125px">Branch</th>
+                        <th class="min-w-125px">Role</th>
+                        <th class="min-w-125px">Last Login</th>
+                        <th class="min-w-125px">Active/Inactive</th>
+                        <th class="min-w-100px">Actions</th>
                     </tr>
                 </thead>
+
                 <tbody class="text-gray-600 fw-semibold fs-5">
                     @foreach ($users as $user)
                         <tr>
-                            <td class="text-center">{{ $loop->index + 1 }}</td>
+                            <td>{{ $loop->index + 1 }}</td>
                             <td class="d-flex align-items-center">
                                 <!--begin:: Avatar -->
                                 <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
@@ -114,13 +116,13 @@
                                 </div>
                                 <!--end::Avatar-->
                                 <!--begin::user details-->
-                                <div class="d-flex flex-column">
-                                    <a href="#" class="text-gray-800 text-hover-primary mb-1">{{ $user->name }}</a>
+                                <div class="d-flex flex-column text-start">
+                                    <a href="#" class="text-gray-800 mb-1">{{ $user->name }}</a>
                                     <span class="fw-bold fs-base">{{ $user->email }}</span>
                                 </div>
                                 <!--begin::user details-->
                             </td>
-                            <td class="text-center">
+                            <td>
                                 @if ($user->branch)
                                     @php
                                         $branchColors = [
@@ -136,16 +138,22 @@
                                     <span class="text-muted">-</span>
                                 @endif
                             </td>
-                            <td class="text-center">
+                            <td>
                                 @if ($user->role == 'staff')
                                     <div class="badge badge-light-warning fw-bold">Staff</div>
                                 @elseif ($user->role == 'admin')
                                     <div class="badge badge-light-success fw-bold">Admin</div>
                                 @endif
                             </td>
-                            <td class="text-center">
-                                {{ $user->loginActivities()->latest()->first()->created_at ?? '-' }}</td>
-                            <td class="text-center">
+                            <td>
+                                {!! optional($user->loginActivities()->latest()->first())->created_at
+                                    ? optional($user->loginActivities()->latest()->first())->created_at->format('d-M-Y') .
+                                        '<br>' .
+                                        optional($user->loginActivities()->latest()->first())->created_at->format('h:i:s A')
+                                    : '-' !!}
+
+                            </td>
+                            <td>
                                 @if ($user->id != auth()->user()->id)
                                     <div
                                         class="form-check form-switch form-check-solid form-check-success d-flex justify-content-center">
@@ -154,15 +162,21 @@
                                     </div>
                                 @endif
                             </td>
-                            <td class="text-center">
+                            <td>
                                 <a href="#" title="Edit User" data-bs-toggle="modal"
                                     data-bs-target="#kt_modal_edit_user" data-user-id="{{ $user->id }}"
-                                    class="btn btn-icon btn-active-light-warning w-30px h-30px me-3">
+                                    class="btn btn-icon text-hover-primary w-30px h-30px">
                                     <i class="ki-outline ki-pencil fs-2"></i>
                                 </a>
+                                <a href="#" title="পাসওয়ার্ড পরিবর্তন" data-bs-toggle="modal"
+                                    data-bs-target="#kt_modal_edit_password" data-user-id="{{ $user->id }}"
+                                    class="btn btn-icon text-hover-primary w-30px h-30px change-password-btn">
+                                    <i class="ki-outline ki-key fs-2"></i>
+                                </a>
+
                                 @if ($user->id != auth()->user()->id)
                                     <a href="#" title="Delete User" data-bs-toggle="tooltip"
-                                        class="btn btn-icon btn-active-light-danger w-30px h-30px me-3 delete-user"
+                                        class="btn btn-icon text-hover-danger w-30px h-30px delete-user"
                                         data-user-id="{{ $user->id }}">
                                         <i class="ki-outline ki-trash fs-2"></i>
                                     </a>
@@ -180,7 +194,8 @@
 
 
     <!--begin::Modal - Add User-->
-    <div class="modal fade" id="kt_modal_add_user" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal fade" id="kt_modal_add_user" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+        data-bs-keyboard="false">
         <!--begin::Modal dialog-->
         <div class="modal-dialog modal-dialog-centered mw-650px">
             <!--begin::Modal content-->
@@ -396,7 +411,8 @@
     <!--end::Modal - Add User-->
 
     <!--begin::Modal - Edit User-->
-    <div class="modal fade" id="kt_modal_edit_user" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal fade" id="kt_modal_edit_user" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+        data-bs-keyboard="false">
         <!--begin::Modal dialog-->
         <div class="modal-dialog modal-dialog-centered mw-650px">
             <!--begin::Modal content-->
@@ -590,155 +606,14 @@
 @endpush
 
 @push('page-js')
-    <script src="{{ asset('js/users.index.js') }}"></script><!--  Used for modal close only -->
+    <script>
+        const routeDeleteUser = "{{ route('users.destroy', ':id') }}";
+        const routeToggleActive = "{{ route('users.toggleActive', ':id') }}";
+    </script>
+
+    <script src="{{ asset('js/users/index.js') }}"></script>
 
     <script>
         document.getElementById("users_link").classList.add("active");
-    </script>
-
-    {{-- Toggle active/inactive button --}}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const toggleInputs = document.querySelectorAll('.toggle-active');
-
-            toggleInputs.forEach(input => {
-                input.addEventListener('change', function() {
-                    const farmId = this.value;
-                    const isActive = this.checked ? 1 : 0;
-                    const row = this.closest('tr'); // Get the parent <tr> element
-
-                    fetch("{{ route('users.toggleActive') }}", {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': "{{ csrf_token() }}"
-                            },
-                            body: JSON.stringify({
-                                farm_id: farmId,
-                                is_active: isActive
-                            })
-                        })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data.success) {
-                                toastr.success(data.message);
-                            } else {
-                                toastr.error(data.message);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            toastr.error('Error occurred while toggling farm status');
-                        });
-                });
-            });
-        });
-    </script>
-
-    {{-- Delete button alert modal dialog --}}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const deleteButtons = document.querySelectorAll('.delete-user');
-
-            deleteButtons.forEach(button => {
-                button.addEventListener('click', function(event) {
-                    event.preventDefault();
-
-                    const userId = this.dataset.userId;
-
-                    Swal.fire({
-                        title: 'Are you sure to delete this user?',
-                        text: "User data will be unavailable after deletion.",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#3085d6',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Yes, delete.',
-                        cancelButtonText: 'Cancel',
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            fetch("" + userId, {
-                                    method: 'POST',
-                                    headers: {
-                                        'X-CSRF-TOKEN': "{{ csrf_token() }}",
-                                        'Content-Type': 'application/json'
-                                    },
-                                    body: JSON.stringify({
-                                        _method: 'DELETE'
-                                    })
-                                })
-                                .then(response => response.json())
-                                .then(data => {
-                                    if (data.success) {
-                                        Swal.fire({
-                                            title: 'Success!',
-                                            text: 'User has been deleted successfully.',
-                                            icon: 'success',
-                                            confirmButtonText: 'OK'
-                                        }).then(() => {
-                                            window.location.reload();
-                                        });
-                                    } else {
-                                        Swal.fire('Failed!',
-                                            'User could not be deleted.',
-                                            'error');
-                                    }
-                                })
-                                .catch(error => {
-                                    console.error('Error:', error);
-                                    Swal.fire('Error!',
-                                        'Please, contact your administrator.',
-                                        'error');
-                                });
-                        }
-                    });
-                });
-            });
-        });
-    </script>
-
-    <script>
-        $(document).ready(function() {
-            $(document).on("click", "[data-bs-target='#kt_modal_edit_user']", function() {
-                let userId = $(this).data("user-id");
-                let url = "/users/" + userId + "/edit"; // Adjust as per your route
-
-                $.ajax({
-                    url: url,
-                    type: "GET",
-                    dataType: "json",
-                    success: function(response) {
-                        if (response.success) {
-                            let user = response.user;
-
-                            // Set form action dynamically
-                            $("#kt_modal_edit_user_form").attr("action", "/users/" + userId);
-
-                            // Populate form fields
-                            $("input[name='user_name']").val(user.name);
-                            $("input[name='user_email']").val(user.email);
-                            $("input[name='user_role'][value='" + user.role + "']").prop(
-                                "checked", true);
-
-                            // Profile image preview
-                            if (user.photo_url) {
-                                $(".image-input-wrapper").css("background-image", "url(" + user
-                                    .photo_url + ")");
-                            }
-                        } else {
-                            alert("User data not found!");
-                        }
-                    },
-                    error: function() {
-                        alert("Error fetching user data!");
-                    },
-                });
-            });
-        });
     </script>
 @endpush
