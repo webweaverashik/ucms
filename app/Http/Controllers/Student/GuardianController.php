@@ -42,7 +42,7 @@ class GuardianController extends Controller
      */
     public function create()
     {
-        //
+        return redirect()->back()->with('warning', 'Activity Not Allowed');
     }
 
     /**
@@ -50,7 +50,7 @@ class GuardianController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        return redirect()->back()->with('warning', 'Activity Not Allowed');
     }
 
     /**
@@ -58,19 +58,19 @@ class GuardianController extends Controller
      */
     public function show(Guardian $guardian)
     {
-        return response()->json([
-            'success' => true,
-            'data'    => [
-                'id'            => $guardian->id,
-                'student_id'    => $guardian->student_id,
-                'name'          => $guardian->name,
-                'mobile_number' => $guardian->mobile_number,
-                'gender'        => $guardian->gender,
-                'relationship'  => $guardian->relationship,
-            ],
-        ]);
+        // return response()->json([
+        //     'success' => true,
+        //     'data'    => [
+        //         'id'            => $guardian->id,
+        //         'student_id'    => $guardian->student_id,
+        //         'name'          => $guardian->name,
+        //         'mobile_number' => $guardian->mobile_number,
+        //         'gender'        => $guardian->gender,
+        //         'relationship'  => $guardian->relationship,
+        //     ],
+        // ]);
 
-        // return redirect()->back();
+        return redirect()->back()->with('warning', 'Activity Not Allowed');
     }
 
     /**
@@ -78,7 +78,7 @@ class GuardianController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        return redirect()->back()->with('warning', 'Activity Not Allowed');
     }
 
     /**

@@ -42,7 +42,7 @@ class SiblingController extends Controller
      */
     public function create()
     {
-        //
+        return redirect()->back()->with('warning', 'Activity Not Allowed');
     }
 
     /**
@@ -50,7 +50,7 @@ class SiblingController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        return redirect()->back()->with('warning', 'Activity Not Allowed');
     }
 
     /**
@@ -77,7 +77,7 @@ class SiblingController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        return redirect()->back()->with('warning', 'Activity Not Allowed');
     }
 
     /**

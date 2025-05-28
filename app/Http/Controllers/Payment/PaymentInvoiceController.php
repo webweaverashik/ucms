@@ -222,7 +222,7 @@ class PaymentInvoiceController extends Controller
      */
     public function edit(string $id)
     {
-        return redirect()->back()->with('warning', 'Not Allowed');
+        return redirect()->back()->with('warning', 'Activity Not Allowed');
     }
 
     /**
