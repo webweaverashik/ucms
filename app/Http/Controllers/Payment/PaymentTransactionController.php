@@ -48,7 +48,7 @@ class PaymentTransactionController extends Controller
      */
     public function create()
     {
-        return redirect()->route('transactions.index');
+        return redirect()->back()->with('error', 'Something went wrong.');
     }
 
     /**
@@ -125,7 +125,7 @@ class PaymentTransactionController extends Controller
      */
     public function show(string $id)
     {
-        return redirect()->route('transactions.index');
+        return redirect()->back()->with('error', 'Something went wrong.');
     }
 
     /**
@@ -133,7 +133,7 @@ class PaymentTransactionController extends Controller
      */
     public function edit(string $id)
     {
-        return redirect()->route('transactions.index');
+        return redirect()->back()->with('error', 'Something went wrong.');
     }
 
     /**
@@ -141,7 +141,7 @@ class PaymentTransactionController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        return redirect()->route('transactions.index');
+        return redirect()->back()->with('error', 'Something went wrong.');
     }
 
     /**
@@ -149,6 +149,6 @@ class PaymentTransactionController extends Controller
      */
     public function destroy(string $id)
     {
-        return redirect()->route('transactions.index');
+        return redirect()->back()->with('error', 'Something went wrong.');
     }
 }
