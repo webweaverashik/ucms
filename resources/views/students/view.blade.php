@@ -882,7 +882,7 @@
                                         <span class="fs-1 fw-bold text-gray-800 lh-1">
                                             <span class="" data-kt-countup="true"
                                                 data-kt-countup-value="{{ $student->paymentInvoices->whereNull('deleted_at')->count() }}">0</span></span>
-                                        <span class="fs-6 fw-semibold text-muted d-block lh-1 pt-2">Months</span>
+                                        <span class="fs-6 fw-semibold text-muted d-block lh-1 pt-2">Invoices</span>
                                     </div>
                                     <!--end::Col-->
                                     <!--begin::Col-->
@@ -1008,7 +1008,7 @@
                                         <span class="fs-1 fw-bold text-gray-800 lh-1">
                                             <span class="" data-kt-countup="true"
                                                 data-kt-countup-value="16">0</span></span>
-                                        <span class="fs-6 fw-semibold text-muted d-block lh-1 pt-2">Months</span>
+                                        <span class="fs-6 fw-semibold text-muted d-block lh-1 pt-2">Invoices</span>
                                     </div>
                                     <!--end::Col-->
                                     <!--begin::Col-->

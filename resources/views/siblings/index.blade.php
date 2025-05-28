@@ -221,11 +221,11 @@
                                 <td class="text-center">
                                     <a href="#" title="Edit Sibling" data-bs-toggle="modal"
                                         data-bs-target="#kt_modal_edit_sibling" data-sibling-id="{{ $sibling->id }}"
-                                        class="btn btn-icon btn-active-light-warning w-30px h-30px me-3">
+                                        class="btn btn-icon text-hover-primary w-30px h-30px">
                                         <i class="ki-outline ki-pencil fs-2"></i>
                                     </a>
                                     <a href="#" title="Delete Sibling" data-bs-toggle="tooltip"
-                                        class="btn btn-icon btn-active-light-danger w-30px h-30px me-3 delete-sibling"
+                                        class="btn btn-icon text-hover-danger w-30px h-30px delete-sibling"
                                         data-sibling-id="{{ $sibling->id }}">
                                         <i class="ki-outline ki-trash fs-2"></i>
                                     </a>
