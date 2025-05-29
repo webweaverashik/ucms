@@ -400,7 +400,7 @@
                             @endif
                         @endif
                     </div>
-                    <label class="font-normal mr-2">Others Note :</label>
+                    <label class="font-normal mx-2">Others Note :</label>
                     <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[200px]">
                         {{ $student->remarks }}</div>
                 </div>
