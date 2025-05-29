@@ -1277,44 +1277,43 @@
                         <!--end::Card header-->
                         <!--begin::Card body-->
                         <div class="card-body pt-0 pb-5">
-                            <!--begin::Table wrapper-->
-                            <div class="table-responsive">
-                                <!--begin::Table-->
-                                <table class="table align-middle table-row-dashed gy-5" id="kt_table_users_login_session">
-                                    <thead class="border-bottom border-gray-200 fs-7 fw-bold">
-                                        <tr class="text-start text-muted text-uppercase gs-0">
-                                            <th class="min-w-100px">Activity</th>
-                                            <th>Reason</th>
-                                            <th>Updated by</th>
-                                            <th class="min-w-125px">Time</th>
+                            <!--begin::Table-->
+                            <table class="table align-middle table-row-dashed table-hover fs-6 gy-5 ucms-table"
+                                id="kt_students_acitivation_table">
+                                <thead>
+                                    <tr class="fw-bold fs-7 text-uppercase gs-0">
+                                        <th class="w-20px">SL</th>
+                                        <th class="min-w-100px">Activity</th>
+                                        <th>Reason</th>
+                                        <th>Updated by</th>
+                                        <th class="min-w-125px">Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="fs-6 fw-semibold text-gray-600">
+                                    @foreach ($student->activations->sortByDesc('created_at') as $record)
+                                        <tr>
+                                            <td class="pe-2">{{ $loop->index + 1 }}</td>
+                                            <td>
+                                                @if ($record->active_status == 'inactive')
+                                                    <span
+                                                        class="badge badge-light-danger">{{ ucfirst($record->active_status) }}</span>
+                                                @else
+                                                    <span
+                                                        class="badge badge-light-success">{{ ucfirst($record->active_status) }}</span>
+                                                @endif
+                                            </td>
+                                            <td>{{ $record->reason }}</td>
+                                            <td>{{ $record->updatedBy->name }}</td>
+                                            <td>{{ $record->created_at->diffForHumans() }} <span class="ms-1"
+                                                    data-bs-toggle="tooltip"
+                                                    title="{{ $record->created_at->format('d-M-Y h:m:s A') }}">
+                                                    <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
+                                                </span></td>
                                         </tr>
-                                    </thead>
-                                    <tbody class="fs-6 fw-semibold text-gray-600">
-                                        @foreach ($student->activations->sortByDesc('created_at') as $record)
-                                            <tr>
-                                                <td>
-                                                    @if ($record->active_status == 'inactive')
-                                                        <span
-                                                            class="badge badge-light-danger">{{ ucfirst($record->active_status) }}</span>
-                                                    @else
-                                                        <span
-                                                            class="badge badge-light-success">{{ ucfirst($record->active_status) }}</span>
-                                                    @endif
-                                                </td>
-                                                <td>{{ $record->reason }}</td>
-                                                <td>{{ $record->updatedBy->name }}</td>
-                                                <td>{{ $record->created_at->diffForHumans() }} <span class="ms-1"
-                                                        data-bs-toggle="tooltip"
-                                                        title="{{ $record->created_at->format('d-M-Y h:m:s A') }}">
-                                                        <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
-                                                    </span></td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                                <!--end::Table-->
-                            </div>
-                            <!--end::Table wrapper-->
+                                    @endforeach
+                                </tbody>
+                            </table>
+                            <!--end::Table-->
                         </div>
                         <!--end::Card body-->
                     </div>

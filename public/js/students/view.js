@@ -290,9 +290,51 @@ var KTStudentsSheetsView = function () {
     }
 }();
 
+var KTStudentsActivity = function () {
+    // Define shared variables
+    var table;
+    var datatable;
+
+    // Private functions
+    var initDatatable = function () {
+        // Init datatable --- more info on datatables: https://datatables.net/manual/
+        datatable = $(table).DataTable({
+            "info": true,
+            'order': [],
+            "lengthMenu": [10, 25, 50, 100],
+            "pageLength": 10,
+            "lengthChange": true,
+            "autoWidth": false,  // Disable auto width
+            'columnDefs': [
+                { orderable: false, targets: 2 }, // Disable ordering on column Guardian                
+            ]
+        });
+
+        // Re-init functions on every table re-draw -- more info: https://datatables.net/reference/event/draw
+        datatable.on('draw', function () {
+
+        });
+    }
+
+
+    return {
+        // Public functions  
+        init: function () {
+            table = document.getElementById('kt_students_acitivation_table');
+
+            if (!table) {
+                return;
+            }
+
+            initDatatable();
+        }
+    }
+}();
+
 // On document ready
 KTUtil.onDOMContentLoaded(function () {
     KTStudentsView.init();
     KTStudentsTuitionFeeView.init();
     KTStudentsSheetsView.init();
+    KTStudentsActivity.init();
 });
