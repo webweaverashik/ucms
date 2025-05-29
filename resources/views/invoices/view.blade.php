@@ -328,6 +328,8 @@
                                         <span class="badge badge-warning">Partial</span>
                                     @elseif ($transaction->payment_type === 'full')
                                         <span class="badge badge-success">Full Paid</span>
+                                    @elseif ($transaction->payment_type === 'discounted')
+                                        <span class="badge badge-info">Discounted</span>
                                     @endif
                                 </td>
 
@@ -368,7 +370,7 @@
     <div class="modal fade" id="kt_modal_add_transaction" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
         data-bs-keyboard="false">
         <!--begin::Modal dialog-->
-        <div class="modal-dialog modal-dialog-centered mw-650px">
+        <div class="modal-dialog modal-dialog-centered mw-750px">
             <!--begin::Modal content-->
             <div class="modal-content">
                 <!--begin::Modal header-->
@@ -411,7 +413,7 @@
                                 <!--begin::Row-->
                                 <div class="row">
                                     <!--begin::Col-->
-                                    <div class="col-lg-6">
+                                    <div class="col-lg-4">
                                         <!--begin::Option-->
                                         <input type="radio" class="btn-check" name="transaction_type" value="full"
                                             id="full_payment_type_input" checked />
@@ -430,7 +432,7 @@
                                     <!--end::Col-->
 
                                     <!--begin::Col-->
-                                    <div class="col-lg-6">
+                                    <div class="col-lg-4">
                                         <!--begin::Option-->
                                         <input type="radio" class="btn-check" name="transaction_type" value="partial"
                                             id="partial_payment_type_input" />
@@ -442,6 +444,25 @@
                                             <span class="d-block fw-semibold text-start">
                                                 <span class="text-gray -mt-2-900 fw-bold d-block fs-6">Partial
                                                     Payment</span>
+                                            </span>
+                                            <!--end::Info-->
+                                        </label>
+                                        <!--end::Option-->
+                                    </div>
+                                    <!--end::Col-->
+
+                                    <!--begin::Col-->
+                                    <div class="col-lg-4">
+                                        <!--begin::Option-->
+                                        <input type="radio" class="btn-check" name="transaction_type"
+                                            value="discounted" id="discounted_payment_type_input" />
+                                        <label
+                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                            for="discounted_payment_type_input">
+                                            <i class="ki-outline ki-discount fs-2x me-5"></i>
+                                            <!--begin::Info-->
+                                            <span class="d-block fw-semibold text-start">
+                                                <span class="text-gray -mt-2-900 fw-bold d-block fs-6">Discounted</span>
                                             </span>
                                             <!--end::Info-->
                                         </label>

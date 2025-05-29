@@ -20,11 +20,11 @@ class PaymentTransactionController extends Controller
 
         if (auth()->user()->branch_id != 0) {
             $students = Student::where('branch_id', auth()->user()->branch_id)
-                ->where(function($query) {
+                ->where(function ($query) {
                     $query->whereNull('student_activation_id')
                         ->orWhereHas('studentActivation', function ($q) {
                             $q->where('active_status', 'active');
-                    });
+                        });
                 })
                 ->withoutTrashed()
                 ->orderby('student_unique_id', 'asc')
@@ -56,10 +56,12 @@ class PaymentTransactionController extends Controller
      */
     public function store(Request $request)
     {
+        // return $request;
+
         $validated = $request->validate([
             'transaction_student' => 'required|exists:students,id',
             'transaction_invoice' => 'required|exists:payment_invoices,id',
-            'transaction_type'    => 'required|in:full,partial',
+            'transaction_type'    => 'required|in:full,partial,discounted',
             'transaction_amount'  => 'required|numeric|min:1',
             'transaction_remarks' => 'nullable|string|max:1000',
         ]);
@@ -71,14 +73,22 @@ class PaymentTransactionController extends Controller
 
         // return ['request' => $validated, 'invoice' => $invoice, 'maxAmount' => $maxAmount];
 
-        // Extra check: partial payments must be <= amount_due
-        if ($validated['transaction_type'] === 'partial' && $validated['transaction_amount'] > $maxAmount) {
-            return redirect()->back()->with('warning', 'Partial payment must be less than or equal to the due amount.');
-        }
+        // Combined validation for all payment types
+        $paymentType = $validated['transaction_type'];
+        $amount      = $validated['transaction_amount'];
 
-        // Extra check: full payments must match amount_due
-        if ($validated['transaction_type'] === 'full' && $validated['transaction_amount'] != $maxAmount) {
-            return redirect()->back()->with('warning', 'For full payments, the amount must equal the due amount.');
+        if (($paymentType === 'full' && $amount != $maxAmount) ||
+            (in_array($paymentType, ['partial', 'discounted']) && $amount >= $maxAmount)) {
+
+            $errorMessage = match ($paymentType) {
+                'full' => "For full payments, the amount must equal the due amount (৳{$maxAmount}).",
+                'partial' => "Partial payment must be less than the due amount (৳{$maxAmount}).",
+                'discounted' => "Discounted payment must be less than the due amount (৳{$maxAmount}).",
+            };
+
+            return redirect()
+                ->back()
+                ->with('warning', $errorMessage);
         }
 
         // Count existing transactions for this invoice to get next sequence number
@@ -100,8 +110,14 @@ class PaymentTransactionController extends Controller
         // Update invoice status and amount_due
         $newAmountDue = $invoice->amount_due - $validated['transaction_amount'];
 
-        if ($newAmountDue <= 0) {
-            // Full payment (even if marked as partial but paid full amount)
+        if ($validated['transaction_type'] === 'discounted') {
+            // For discounted payments, mark as fully paid regardless of amount
+            $invoice->update([
+                'amount_due' => 0,
+                'status'     => 'paid',
+            ]);
+        } elseif ($newAmountDue <= 0) {
+            // Full payment (regular case)
             $invoice->update([
                 'amount_due' => 0,
                 'status'     => 'paid',
@@ -110,8 +126,7 @@ class PaymentTransactionController extends Controller
             // Partial payment
             $invoice->update([
                 'amount_due' => $newAmountDue,
-                'status'     =>
-                $invoice->amount_due == $invoice->total_amount
+                'status'     => $invoice->amount_due == $invoice->total_amount
                 ? 'partially_paid'  // First partial payment
                 : $invoice->status, // Keep existing status if already partially paid
             ]);

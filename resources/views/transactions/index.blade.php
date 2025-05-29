@@ -88,6 +88,7 @@
                                     <option></option>
                                     <option value="T_partial">Partial</option>
                                     <option value="T_full_paid">Full Paid</option>
+                                    <option value="T_discounted">Discounted</option>
                                 </select>
                             </div>
                             <!--end::Input group-->
@@ -154,6 +155,8 @@
                                     T_partial
                                 @elseif ($transaction->payment_type === 'full')
                                     T_full_paid
+                                @elseif ($transaction->payment_type === 'discounted')
+                                    T_discounted
                                 @endif
                             </td>
 
@@ -162,6 +165,8 @@
                                     <span class="badge badge-warning">Partial</span>
                                 @elseif ($transaction->payment_type === 'full')
                                     <span class="badge badge-success">Full Paid</span>
+                                @elseif ($transaction->payment_type === 'discounted')
+                                    <span class="badge badge-info">Discounted</span>
                                 @endif
                             </td>
 
@@ -199,7 +204,7 @@
     <div class="modal fade" id="kt_modal_add_transaction" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
         data-bs-keyboard="false">
         <!--begin::Modal dialog-->
-        <div class="modal-dialog modal-dialog-centered mw-650px">
+        <div class="modal-dialog modal-dialog-centered mw-750px">
             <!--begin::Modal content-->
             <div class="modal-content">
                 <!--begin::Modal header-->
@@ -288,7 +293,7 @@
                                 <!--begin::Row-->
                                 <div class="row">
                                     <!--begin::Col-->
-                                    <div class="col-lg-6">
+                                    <div class="col-lg-4">
                                         <!--begin::Option-->
                                         <input type="radio" class="btn-check" name="transaction_type" value="full"
                                             checked="checked" id="full_payment_type_input" />
@@ -307,7 +312,7 @@
                                     <!--end::Col-->
 
                                     <!--begin::Col-->
-                                    <div class="col-lg-6">
+                                    <div class="col-lg-4">
                                         <!--begin::Option-->
                                         <input type="radio" class="btn-check" name="transaction_type" value="partial"
                                             id="partial_payment_type_input" />
@@ -325,39 +330,66 @@
                                         <!--end::Option-->
                                     </div>
                                     <!--end::Col-->
+
+                                    <!--begin::Col-->
+                                    <div class="col-lg-4">
+                                        <!--begin::Option-->
+                                        <input type="radio" class="btn-check" name="transaction_type"
+                                            value="discounted" id="discounted_payment_type_input" />
+                                        <label
+                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                            for="discounted_payment_type_input">
+                                            <i class="ki-outline ki-discount fs-2x me-5"></i>
+                                            <!--begin::Info-->
+                                            <span class="d-block fw-semibold text-start">
+                                                <span class="text-gray -mt-2-900 fw-bold d-block fs-6">Discounted</span>
+                                            </span>
+                                            <!--end::Info-->
+                                        </label>
+                                        <!--end::Option-->
+                                    </div>
+                                    <!--end::Col-->
                                 </div>
                                 <!--end::Row-->
                             </div>
                             <!--end::Type Input group-->
 
-                            <!--begin::Name Input group-->
-                            <div class="fv-row mb-7">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">Amount</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <input type="number" name="transaction_amount" min="0"
-                                    id="transaction_amount_input" class="form-control form-control-solid mb-3 mb-lg-0"
-                                    placeholder="Enter the paid amount" required disabled />
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Name Input group-->
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <!--begin::Name Input group-->
+                                    <div class="fv-row mb-7">
+                                        <!--begin::Label-->
+                                        <label class="required fw-semibold fs-6 mb-2">Amount</label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <input type="number" name="transaction_amount" min="0"
+                                            id="transaction_amount_input"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="Enter the paid amount" required disabled />
+                                        <!--end::Input-->
+                                    </div>
+                                    <!--end::Name Input group-->
+                                </div>
 
-                            <!--begin::Name Input group-->
-                            <div class="fv-row">
-                                <!--begin::Label-->
-                                <label class="fw-semibold fs-6 mb-2">Remarks <span
-                                        class="text-muted">(optional)</span></label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <input type="text" name="transaction_remarks" min="0"
-                                    class="form-control form-control-solid mb-3 mb-lg-0" placeholder="Add some remarks" />
-                                <!--end::Input-->
+                                <div class="col-lg-6">
+                                    <!--begin::Name Input group-->
+                                    <div class="fv-row">
+                                        <!--begin::Label-->
+                                        <label class="fw-semibold fs-6 mb-2">Remarks <span
+                                                class="text-muted">(optional)</span></label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <input type="text" name="transaction_remarks" min="0"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="Add some remarks" />
+                                        <!--end::Input-->
+                                    </div>
+                                    <!--end::Name Input group-->
+                                </div>
                             </div>
-                            <!--end::Name Input group-->
-
                         </div>
                         <!--end::Scroll-->
+
                         <!--begin::Actions-->
                         <div class="text-center pt-10">
                             <button type="reset" class="btn btn-light me-3"

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('student_id');
             $table->foreignId('payment_invoice_id');
-            $table->enum('payment_type', ['partial', 'full']);
+            $table->enum('payment_type', ['partial', 'full', 'discounted']);
             $table->integer('amount_paid');
             $table->string('voucher_no')->unique();
             $table->text('remarks')->nullable();
