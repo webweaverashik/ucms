@@ -417,7 +417,11 @@
 </html>
 
 <script>
-    window.onload = function () {
+    window.onload = function() {
         window.print();
-    }
+    };
+
+    window.onafterprint = function() {
+        window.close();
+    };
 </script>
