@@ -278,8 +278,8 @@
                                     <td class="d-none">D_{{ $invoice->month_year }}</td>
 
                                     <td>
-                                        @if (preg_match('/^\d{2}_\d{4}$/', $invoice->month_year))
-                                            {{ \Carbon\Carbon::createFromFormat('m_Y', $invoice->month_year)->format('F Y') }}
+                                        @if (preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year, $matches))
+                                            {{ \Carbon\Carbon::create($matches[2], $matches[1], 1)->format('F Y') }}
                                         @else
                                             N/A
                                         @endif
@@ -366,8 +366,9 @@
 
                                     <td>
                                         @if (optional($invoice->student->studentActivation)->active_status == 'active' && $invoice->status == 'due')
-                                            <a href="#" title="Edit invoice" data-invoice-id="{{ $invoice->id }}" data-bs-toggle="modal" 
-                                                data-bs-target="#kt_modal_edit_invoice" title="Edit Invoice"
+                                            <a href="#" title="Edit invoice" data-invoice-id="{{ $invoice->id }}"
+                                                data-bs-toggle="modal" data-bs-target="#kt_modal_edit_invoice"
+                                                title="Edit Invoice"
                                                 class="btn btn-icon text-hover-primary w-30px h-30px">
                                                 <i class="ki-outline ki-pencil fs-2"></i>
                                             </a>
@@ -545,8 +546,8 @@
                                     <td class="d-none">P_{{ $invoice->month_year }}</td>
 
                                     <td>
-                                        @if (preg_match('/^\d{2}_\d{4}$/', $invoice->month_year))
-                                            {{ \Carbon\Carbon::createFromFormat('m_Y', $invoice->month_year)->format('F Y') }}
+                                        @if (preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year, $matches))
+                                            {{ \Carbon\Carbon::create($matches[2], $matches[1], 1)->format('F Y') }}
                                         @else
                                             N/A
                                         @endif
@@ -667,7 +668,8 @@
                                         <select name="invoice_type"
                                             class="form-select form-select-solid rounded-start-0 border-start"
                                             data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
-                                            data-placeholder="Select a invoice type" data-hide-search="true" required disabled>
+                                            data-placeholder="Select a invoice type" data-hide-search="true" required
+                                            disabled>
                                             <option></option>
                                             <option value="tuition_fee" selected>Tuition Fee</option>
                                             <option value="exam_fee">Exam Fee</option>
@@ -776,8 +778,7 @@
                 <!--begin::Modal body-->
                 <div class="modal-body px-5 my-7">
                     <!--begin::Form-->
-                    <form id="kt_modal_edit_invoice_form" class="form" action="#"
-                        novalidate="novalidate">
+                    <form id="kt_modal_edit_invoice_form" class="form" action="#" novalidate="novalidate">
                         <!--begin::Scroll-->
                         <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_edit_invoice_scroll"
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
@@ -882,7 +883,7 @@
                                         <!--begin::Input-->
                                         <input type="number" name="invoice_amount_edit"
                                             class="form-control form-control-solid mb-3 mb-lg-0 rounded-start-0 border-start"
-                                            placeholder="Enter the amount" required/>
+                                            placeholder="Enter the amount" required />
                                         <!--end::Input-->
                                     </div>
                                 </div>
