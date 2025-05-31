@@ -649,7 +649,7 @@
                                         <select name="invoice_student"
                                             class="form-select form-select-solid rounded-start-0 border-start"
                                             data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
-                                            data-placeholder="Select a student" required>
+                                            data-placeholder="Select a student at first" required>
                                             <option></option>
                                             @foreach ($students as $student)
                                                 <option value="{{ $student->id }}">{{ $student->name }}
@@ -709,10 +709,6 @@
                                             data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
                                             data-placeholder="Select billing month" disabled required>
                                             <option></option>
-                                            <option value="01_2025">Jan 2025</option>
-                                            <option value="02_2025">Feb 2025</option>
-                                            <option value="03_2025">Mar 2025</option>
-                                            <option value="04_2025">Apr 2025</option>
                                         </select>
                                     </div>
                                 </div>
@@ -869,10 +865,6 @@
                                             data-control="select2" data-dropdown-parent="#kt_modal_edit_invoice"
                                             data-placeholder="Select billing month" disabled>
                                             <option></option>
-                                            <option value="01_2025">Jan 2025</option>
-                                            <option value="02_2025">Feb 2025</option>
-                                            <option value="03_2025">Mar 2025</option>
-                                            <option value="04_2025">Apr 2025</option>
                                         </select>
                                     </div>
                                 </div>

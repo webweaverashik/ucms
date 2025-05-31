@@ -107,8 +107,8 @@
                             <tr class="">
                                 <td class="text-gray-500">Billing Month:</td>
                                 <td class="text-gray-800">
-                                    @if (preg_match('/^\d{2}_\d{4}$/', $invoice->month_year))
-                                        {{ \Carbon\Carbon::createFromFormat('m_Y', $invoice->month_year)->format('F Y') }}
+                                    @if (preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year, $matches))
+                                        {{ \Carbon\Carbon::create($matches[2], $matches[1], 1)->format('F Y') }}
                                     @else
                                         N/A
                                     @endif

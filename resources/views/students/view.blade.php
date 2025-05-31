@@ -953,6 +953,8 @@
                                                     <span class="badge badge-warning">Partial</span>
                                                 @elseif ($transaction->payment_type === 'full')
                                                     <span class="badge badge-success">Full Paid</span>
+                                                @elseif ($transaction->payment_type === 'discounted')
+                                                    <span class="badge badge-info">Discounted</span>
                                                 @endif
                                             </td>
                                             <td>{{ $transaction->remarks }}</td>

@@ -202,21 +202,6 @@ class PaymentInvoiceController extends Controller
         return view('invoices.view', compact('invoice', 'students'));
     }
 
-    public function viewAjax(PaymentInvoice $invoice)
-    {
-        return response()->json([
-            'success' => true,
-            'data'    => [
-                'id'             => $invoice->id,
-                'student_id'     => $invoice->student_id,
-                'invoice_number' => $invoice->invoice_number,
-                'total_amount'   => $invoice->total_amount,
-                'month_year'     => $invoice->month_year,
-                'invoice_type'   => $invoice->invoice_type,
-            ],
-        ]);
-    }
-
     /**
      * Show the form for editing the specified resource.
      */
@@ -275,6 +260,24 @@ class PaymentInvoiceController extends Controller
         $invoice->delete();
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * invoice edit modal ajax
+     */
+    public function viewAjax(PaymentInvoice $invoice)
+    {
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'id'             => $invoice->id,
+                'student_id'     => $invoice->student_id,
+                'invoice_number' => $invoice->invoice_number,
+                'total_amount'   => $invoice->total_amount,
+                'month_year'     => $invoice->month_year,
+                'invoice_type'   => $invoice->invoice_type,
+            ],
+        ]);
     }
 
     public function getDueInvoices($studentId)

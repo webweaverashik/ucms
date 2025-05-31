@@ -370,7 +370,41 @@ var KTEditInvoiceModal = function () {
                                                 // Populate form fields
                                                 setSelect2Value("invoice_student_edit", invoice.student_id);
                                                 setSelect2Value("invoice_type_edit", invoice.invoice_type);
-                                                setSelect2Value("invoice_month_year_edit", invoice.month_year);
+
+                                                // Handle month_year select field differently
+                                                const monthYearSelect = $("select[name='invoice_month_year_edit']");
+                                                if (monthYearSelect.length) {
+                                                      // Clear existing options
+                                                      monthYearSelect.empty();
+
+                                                      // Convert "MM_YYYY" to "Month YYYY"
+                                                      const formatMonthYear = (monthYear) => {
+                                                            if (!monthYear) return '';
+
+                                                            const [month, year] = monthYear.split('_');
+                                                            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                                                                  'July', 'August', 'September', 'October', 'November', 'December'];
+                                                            const monthName = monthNames[parseInt(month) - 1] || month;
+                                                            return `${monthName} ${year}`;
+                                                      };
+
+                                                      const formattedMonthYear = formatMonthYear(invoice.month_year);
+
+                                                      // Create and append new option with formatted display text
+                                                      const option = new Option(
+                                                            formattedMonthYear,    // Display text (April 2025)
+                                                            invoice.month_year,    // Original value (04_2025)
+                                                            true,                 // selected
+                                                            true                  // selected
+                                                      );
+
+                                                      monthYearSelect.append(option).trigger('change');
+
+                                                      // If you need to add more options, format them similarly
+                                                      // Example:
+                                                      // const option2 = new Option(formatMonthYear('05_2025'), '05_2025');
+                                                      // monthYearSelect.append(option2);
+                                                }
 
                                                 // Show modal (assumes Bootstrap modal)
                                                 modal.show();
