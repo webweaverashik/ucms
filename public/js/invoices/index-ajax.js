@@ -33,7 +33,7 @@ $(document).ready(function () {
       });
 
       // 4. When the reset button is clicked
-      $('[data-kt-add-invoice-modal-action="cancel"]').on('click', function () {
+      function resetInvoiceForm() {
             // Reset Select2 inputs
             $('select[data-control="select2"]').val(null).trigger('change');
 
@@ -45,5 +45,11 @@ $(document).ready(function () {
             // Optional: show invoice_type_id again and make invoice_month_year required
             $('select[name="invoice_type"]').val('tuition_fee').trigger('change');
             $('select[name="invoice_month_year"]').prop('required', true);
-      });
+      }
+
+      // When the reset button is clicked
+      $('[data-kt-add-invoice-modal-action="cancel"]').on('click', resetInvoiceForm);
+
+      // When the close button is clicked
+      $('[data-kt-add-invoice-modal-action="close"]').on('click', resetInvoiceForm);
 });
