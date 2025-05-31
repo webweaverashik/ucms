@@ -604,19 +604,48 @@ class StudentController extends Controller
     }
 
     /**
-     * Get the last paid month for a student.
+     * Get the last invoice month for a student.
      */
-    public function getLastPaidMonth(Student $student)
+    // public function getLastInvoiceMonth(Student $student)
+    // {
+    //     $lastInvoice = $student->paymentInvoices()
+    //         ->where('invoice_type', 'tuition_fee')
+    //         ->withoutTrashed()
+    //         ->orderByRaw("SUBSTRING_INDEX(month_year, '_', -1) DESC, SUBSTRING_INDEX(month_year, '_', 1) DESC")
+    //         ->first();
+
+    //     return response()->json([
+    //         'last_invoice_month' => $lastInvoice ? $lastInvoice->month_year : null,
+    //         'tuition_fee'     => $student->payments->tuition_fee,
+    //     ]);
+    // }
+
+    public function getLastInvoiceMonth(Student $student)
     {
-        $lastPayment = $student->paymentInvoices()
+        $currentDate      = now();
+        $currentMonth     = $currentDate->format('m');
+        $currentYear      = $currentDate->format('Y');
+        $currentMonthYear = "{$currentMonth}_{$currentYear}";
+
+        // Check if current month invoice exists
+        $currentMonthInvoice = $student->paymentInvoices()
+            ->where('month_year', $currentMonthYear)
+            ->where('invoice_type', 'tuition_fee')
+            ->withoutTrashed()
+            ->exists();
+
+        // Get last invoice regardless of month
+        $lastInvoice = $student->paymentInvoices()
             ->where('invoice_type', 'tuition_fee')
             ->withoutTrashed()
             ->orderByRaw("SUBSTRING_INDEX(month_year, '_', -1) DESC, SUBSTRING_INDEX(month_year, '_', 1) DESC")
             ->first();
 
         return response()->json([
-            'last_paid_month' => $lastPayment ? $lastPayment->month_year : null,
-            'tuition_fee'     => $student->payments->tuition_fee,
+            'last_invoice_month'           => $lastInvoice ? $lastInvoice->month_year : null,
+            'current_month_invoice_exists' => $currentMonthInvoice,
+            'should_show_next_month'       => ($currentDate->day >= 25 && $currentMonthInvoice),
+            'tuition_fee'                  => $student->payments->tuition_fee,
         ]);
     }
 }

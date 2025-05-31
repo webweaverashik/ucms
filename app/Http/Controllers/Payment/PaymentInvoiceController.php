@@ -128,7 +128,17 @@ class PaymentInvoiceController extends Controller
         // Validate the request
         $request->validate($rules);
 
-                                          // --- Code for generating invoice number starts
+        // when actually creating the invoice to prevent duplicates
+        $exists = PaymentInvoice::where('student_id', $request->invoice_student)
+            ->where('month_year', $request->invoice_month_year)
+            ->where('invoice_type', 'tuition_fee')
+            ->exists();
+
+        if ($exists) {
+            return back()->with('warning', 'Invoice Already Exists');
+        }
+
+        // Code for generating invoice number starts
         $yearSuffix = now()->format('y'); // '25'
         $month      = now()->format('m'); // '05'
 
