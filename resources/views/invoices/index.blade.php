@@ -200,8 +200,13 @@
                                             data-kt-subscription-table-filter="status">
                                             <option></option>
                                             @foreach ($dueMonths as $dueMonth)
+                                                @php
+                                                    $parts = explode('_', $dueMonth);
+                                                    $date = new DateTime();
+                                                    $date->setDate($parts[1], $parts[0], 1);
+                                                @endphp
                                                 <option value="D_{{ $dueMonth }}">
-                                                    {{ \Carbon\Carbon::createFromFormat('m_Y', $dueMonth)->format('F Y') }}
+                                                    {{ $date->format('F Y') }}
                                                 </option>
                                             @endforeach
                                         </select>
@@ -468,8 +473,13 @@
                                             data-kt-subscription-table-filter="status" data-hide-search="true">
                                             <option></option>
                                             @foreach ($paidMonths as $paidMonth)
+                                                @php
+                                                    $parts = explode('_', $paidMonth);
+                                                    $date = new DateTime();
+                                                    $date->setDate($parts[1], $parts[0], 1);
+                                                @endphp
                                                 <option value="P_{{ $paidMonth }}">
-                                                    {{ \Carbon\Carbon::createFromFormat('m_Y', $paidMonth)->format('F Y') }}
+                                                    {{ $date->format('F Y') }}
                                                 </option>
                                             @endforeach
                                         </select>
