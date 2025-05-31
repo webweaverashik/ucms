@@ -307,7 +307,6 @@
                             <th>Voucher No.</th>
                             <th>Amount (৳)</th>
                             <th>Payment Type</th>
-                            <th class="w-350px">Student</th>
                             <th>Payment Date</th>
                             <th>Remarks</th>
                             <th>Download</th>
@@ -331,13 +330,6 @@
                                     @elseif ($transaction->payment_type === 'discounted')
                                         <span class="badge badge-info">Discounted</span>
                                     @endif
-                                </td>
-
-                                <td>
-                                    <a href="{{ route('students.show', $transaction->student->id) }}" target="_blank">
-                                        {{ $transaction->student->name }},
-                                        {{ $transaction->student->student_unique_id }}
-                                    </a>
                                 </td>
 
                                 <td>
