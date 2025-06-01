@@ -606,20 +606,6 @@ class StudentController extends Controller
     /**
      * Get the last invoice month for a student.
      */
-    // public function getLastInvoiceMonth(Student $student)
-    // {
-    //     $lastInvoice = $student->paymentInvoices()
-    //         ->where('invoice_type', 'tuition_fee')
-    //         ->withoutTrashed()
-    //         ->orderByRaw("SUBSTRING_INDEX(month_year, '_', -1) DESC, SUBSTRING_INDEX(month_year, '_', 1) DESC")
-    //         ->first();
-
-    //     return response()->json([
-    //         'last_invoice_month' => $lastInvoice ? $lastInvoice->month_year : null,
-    //         'tuition_fee'     => $student->payments->tuition_fee,
-    //     ]);
-    // }
-
     public function getLastInvoiceMonth(Student $student)
     {
         $currentDate      = now();

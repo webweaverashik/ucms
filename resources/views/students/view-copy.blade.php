@@ -275,7 +275,7 @@
                     <!--end::Seperator-->
 
                     <!--begin::Section-->
-                    <div class="mb-0">
+                    <div class="mb-10">
                         <!--begin::Title-->
                         <h5 class="mb-4">Activation Details</h5>
                         <!--end::Title-->
@@ -881,7 +881,7 @@
                                     <div class="border border-dashed border-gray-300 w-125px rounded my-3 p-4 me-6">
                                         <span class="fs-1 fw-bold text-gray-800 lh-1">
                                             <span class="" data-kt-countup="true"
-                                                data-kt-countup-value="{{ $student->paymentInvoices->count() }}">0</span></span>
+                                                data-kt-countup-value="{{ $student->paymentInvoices->whereNull('deleted_at')->count() }}">0</span></span>
                                         <span class="fs-6 fw-semibold text-muted d-block lh-1 pt-2">Invoices</span>
                                     </div>
                                     <!--end::Col-->
@@ -889,7 +889,7 @@
                                     <div class="border border-dashed border-warning w-150px rounded my-3 p-4 me-6">
                                         <span class="fs-1 fw-bold text-gray-800 lh-1">
                                             <span data-kt-countup="true"
-                                                data-kt-countup-value="{{ $student->paymentInvoices->sum('amount_due') }}"
+                                                data-kt-countup-value="{{ $student->paymentInvoices->whereNull('deleted_at')->sum('amount_due') }}"
                                                 data-kt-countup-prefix="৳">0</span>
                                         </span>
                                         <span class="fs-6 fw-semibold text-muted d-block lh-1 pt-2">Due</span>
@@ -903,196 +903,73 @@
                         <!--end::Body-->
                     </div>
                     <!--end::Earnings-->
-
                     <!--begin::Statements-->
                     <div class="card mb-6 mb-xl-9">
                         <!--begin::Header-->
                         <div class="card-header">
                             <!--begin::Title-->
                             <div class="card-title">
-                                <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x fw-semibold border-0">
-                                    <li class="nav-item">
-                                        <a class="nav-link active" data-bs-toggle="tab"
-                                            href="#kt_tab_pane_invoices">Invoices</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" data-bs-toggle="tab"
-                                            href="#kt_tab_pane_transactions">Transactions</a>
-                                    </li>
-                                </ul>
+                                <h2>Statement</h2>
                             </div>
                             <!--end::Title-->
-
                         </div>
                         <!--end::Header-->
                         <!--begin::Card body-->
-                        <div class="card-body pb-5 tab-content">
-                            <div class="tab-pane fade show active" id="kt_tab_pane_invoices" role="tabpanel">
-                                <!--begin::Table-->
-                                <table id="kt_student_view_invoices_table"
-                                    class="table table-hover align-middle table-row-dashed fs-6 fw-semibold gy-4 ucms-table">
-                                    <thead class="border-bottom border-gray-200">
-                                        <tr class="fw-bold fs-7 text-uppercase gs-0">
-                                            <th class="w-25px">SL</th>
-                                            <th class="w-150px">Invoice No.</th>
-                                            <th>Invoice Type</th>
-                                            <th>Billing Month</th>
-                                            <th>Toal Amount (৳)</th>
-                                            <th>Remaining (৳)</th>
-                                            <th>Status</th>
-                                            <th class="w-100px">Actions</th>
+                        <div class="card-body pb-5">
+                            <!--begin::Table-->
+                            <table id="kt_student_view_transactions_table"
+                                class="table table-hover align-middle table-row-dashed fs-6 fw-semibold gy-4 ucms-table">
+                                <thead class="border-bottom border-gray-200">
+                                    <tr class="fw-bold fs-7 text-uppercase gs-0">
+                                        <th class="w-25px">SL</th>
+                                        <th class="w-125px">Date</th>
+                                        <th class="w-100px">Invoice No.</th>
+                                        <th class="w-300px">Voucher No.</th>
+                                        <th class="w-100px">Amount</th>
+                                        <th class="w-100px">Payment Type</th>
+                                        <th class="w-50px">Remarks</th>
+                                        <th class="w-100px text-end pe-7">Download</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($student->paymentTransactions->sortByDesc('created_at') as $transaction)
+                                        <tr>
+                                            <td>{{ $loop->index + 1 }}</td>
+                                            <td>{{ $transaction->created_at->format('d-M-Y') }}
+                                                <span class="ms-1" data-bs-toggle="tooltip"
+                                                    title="{{ $transaction->created_at->format('d-M-Y h:i:s A') }}">
+                                                    <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="{{ route('invoices.show', $transaction->paymentInvoice->id) }}">
+                                                    {{ $transaction->paymentInvoice->invoice_number }}
+                                                </a>
+                                            </td>
+                                            <td>{{ $transaction->voucher_no }}</td>
+                                            <td class="text-success">৳ {{ $transaction->amount_paid }}</td>
+                                            <td>
+                                                @if ($transaction->payment_type === 'partial')
+                                                    <span class="badge badge-warning">Partial</span>
+                                                @elseif ($transaction->payment_type === 'full')
+                                                    <span class="badge badge-success">Full Paid</span>
+                                                @elseif ($transaction->payment_type === 'discounted')
+                                                    <span class="badge badge-info">Discounted</span>
+                                                @endif
+                                            </td>
+                                            <td>{{ $transaction->remarks }}</td>
+                                            <td class="text-end">
+                                                <a href="{{ route('transactions.download', $transaction->id) }}"
+                                                    target="_blank" data-bs-toggle="tooltip" title="Download Payslip"
+                                                    class="btn btn-icon btn-active-light-primary w-30px h-30px me-3">
+                                                    <i class="bi bi-download fs-2"></i>
+                                                </a>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($student->paymentInvoices->sortByDesc('created_at') as $invoice)
-                                            <tr>
-                                                <td>{{ $loop->index + 1 }}</td>
-                                                <td>
-                                                    <a href="{{ route('invoices.show', $invoice->id) }}" target="_blank">
-                                                        {{ $invoice->invoice_number }}
-                                                    </a>
-                                                </td>
-                                                <td>{{ ucwords(str_replace('_', ' ', $invoice->invoice_type)) }}</td>
-                                                <td>
-                                                    @if (preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year, $matches))
-                                                        {{ \Carbon\Carbon::create($matches[2], $matches[1], 1)->format('F Y') }}
-                                                    @else
-                                                        N/A
-                                                    @endif
-                                                </td>
-                                                <td>{{ $invoice->total_amount }}</td>
-                                                <td>{{ $invoice->amount_due }}</td>
-
-                                                <!-- start: Invoice Status Badge -->
-                                                @php
-                                                    $status = $invoice->status;
-                                                    $payment = optional($invoice->student)->payments;
-                                                    $dueDate = null;
-                                                    $isOverdue = false;
-
-                                                    if ($payment && $payment->due_date && $invoice->month_year) {
-                                                        try {
-                                                            $monthYearRaw = trim($invoice->month_year);
-                                                            if (preg_match('/^\d{2}_\d{4}$/', $monthYearRaw)) {
-                                                                $monthYear = \Carbon\Carbon::createFromFormat(
-                                                                    'm_Y',
-                                                                    $monthYearRaw,
-                                                                );
-                                                                $dueDate = $monthYear
-                                                                    ->copy()
-                                                                    ->day((int) $payment->due_date); // 👈 Cast to int
-
-                                                                if (
-                                                                    in_array($status, ['due', 'partially_paid']) &&
-                                                                    now()->toDateString() > $dueDate->toDateString()
-                                                                ) {
-                                                                    $isOverdue = true;
-                                                                }
-                                                            }
-                                                        } catch (\Exception $e) {
-                                                            // Silently ignore
-                                                        }
-                                                    }
-                                                @endphp
-                                                <td>
-                                                    @if ($status === 'due')
-                                                        @if ($isOverdue)
-                                                            <span class="badge badge-danger">Overdue</span>
-                                                        @else
-                                                            <span class="badge badge-warning">Due</span>
-                                                        @endif
-                                                    @elseif ($status === 'partially_paid')
-                                                        <span class="badge badge-info">Partial</span>
-                                                        @if ($isOverdue)
-                                                            <span class="badge badge-danger ms-1">Overdue</span>
-                                                        @endif
-                                                    @elseif ($status === 'paid')
-                                                        <span class="badge badge-success">Paid</span>
-                                                    @endif
-                                                </td>
-                                                <!-- end: Invoice Status Badge -->
-
-
-                                                <td>
-                                                    @if (optional($invoice->student->studentActivation)->active_status == 'active' && $invoice->status == 'due')
-                                                        <a href="#" title="Edit invoice"
-                                                            data-invoice-id="{{ $invoice->id }}" data-bs-toggle="modal"
-                                                            data-bs-target="#kt_modal_edit_invoice" title="Edit Invoice"
-                                                            class="btn btn-icon text-hover-primary w-30px h-30px">
-                                                            <i class="ki-outline ki-pencil fs-2"></i>
-                                                        </a>
-                                                        <a href="#" title="Delete invoice" data-bs-toggle="tooltip"
-                                                            class="btn btn-icon text-hover-danger w-30px h-30px delete-invoice"
-                                                            data-invoice-id="{{ $invoice->id }}">
-                                                            <i class="ki-outline ki-trash fs-2"></i>
-                                                        </a>
-                                                    @endif
-                                                </td>
-
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                                <!--end::Table-->
-                            </div>
-
-                            <div class="tab-pane fade show" id="kt_tab_pane_transactions" role="tabpanel">
-                                <!--begin::Table-->
-                                <table id="kt_student_view_transactions_table"
-                                    class="table table-hover align-middle table-row-dashed fs-6 fw-semibold gy-4 ucms-table">
-                                    <thead class="border-bottom border-gray-200">
-                                        <tr class="fw-bold fs-7 text-uppercase gs-0">
-                                            <th class="w-25px">SL</th>
-                                            <th class="w-150px">Date</th>
-                                            <th class="w-150px">Invoice No.</th>
-                                            <th class="w-150px">Voucher No.</th>
-                                            <th class="w-150px">Amount</th>
-                                            <th class="w-150px">Payment Type</th>
-                                            <th>Remarks</th>
-                                            <th class="w-100px">Download</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($student->paymentTransactions->sortByDesc('created_at') as $transaction)
-                                            <tr>
-                                                <td>{{ $loop->index + 1 }}</td>
-                                                <td>{{ $transaction->created_at->format('d-M-Y') }}
-                                                    <span class="ms-1" data-bs-toggle="tooltip"
-                                                        title="{{ $transaction->created_at->format('d-M-Y h:i:s A') }}">
-                                                        <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <a
-                                                        href="{{ route('invoices.show', $transaction->paymentInvoice->id) }}">
-                                                        {{ $transaction->paymentInvoice->invoice_number }}
-                                                    </a>
-                                                </td>
-                                                <td>{{ $transaction->voucher_no }}</td>
-                                                <td class="text-success">৳ {{ $transaction->amount_paid }}</td>
-                                                <td>
-                                                    @if ($transaction->payment_type === 'partial')
-                                                        <span class="badge badge-warning">Partial</span>
-                                                    @elseif ($transaction->payment_type === 'full')
-                                                        <span class="badge badge-success">Full Paid</span>
-                                                    @elseif ($transaction->payment_type === 'discounted')
-                                                        <span class="badge badge-info">Discounted</span>
-                                                    @endif
-                                                </td>
-                                                <td>{{ $transaction->remarks }}</td>
-                                                <td class="text-end">
-                                                    <a href="{{ route('transactions.download', $transaction->id) }}"
-                                                        target="_blank" data-bs-toggle="tooltip" title="Download Payslip"
-                                                        class="btn btn-icon btn-active-light-primary w-30px h-30px me-3">
-                                                        <i class="bi bi-download fs-2"></i>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                                <!--end::Table-->
-                            </div>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                            <!--end::Table-->
                         </div>
                         <!--end::Card body-->
                     </div>

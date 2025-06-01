@@ -354,7 +354,7 @@
                                         @if ($invoice->invoice_type == 'tuition_fee')
                                             @if ($status === 'due')
                                                 @if ($isOverdue)
-                                                    <span class="badge badge-danger ms-1">Overdue</span>
+                                                    <span class="badge badge-danger">Overdue</span>
                                                 @else
                                                     <span class="badge badge-warning">Due</span>
                                                 @endif
@@ -707,7 +707,7 @@
                                         <select name="invoice_month_year"
                                             class="form-select form-select-solid rounded-start-0 border-start"
                                             data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
-                                            data-placeholder="Select billing month" disabled required>
+                                            data-placeholder="Select billing month" data-hide-search="true" disabled required>
                                             <option></option>
                                         </select>
                                     </div>
@@ -727,7 +727,7 @@
                                     </span>
                                     <div class="overflow-hidden flex-grow-1">
                                         <!--begin::Input-->
-                                        <input type="number" name="invoice_amount" min="0"
+                                        <input type="number" name="invoice_amount" min="500"
                                             class="form-control form-control-solid mb-3 mb-lg-0 rounded-start-0 border-start"
                                             placeholder="Enter the amount" disabled required />
                                         <!--end::Input-->
@@ -883,7 +883,7 @@
                                     </span>
                                     <div class="overflow-hidden flex-grow-1">
                                         <!--begin::Input-->
-                                        <input type="number" name="invoice_amount_edit"
+                                        <input type="number" name="invoice_amount_edit" min="500"
                                             class="form-control form-control-solid mb-3 mb-lg-0 rounded-start-0 border-start"
                                             placeholder="Enter the amount" required />
                                         <!--end::Input-->
