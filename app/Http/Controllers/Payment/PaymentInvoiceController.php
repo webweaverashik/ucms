@@ -17,7 +17,6 @@ class PaymentInvoiceController extends Controller
         $unpaid_invoices = PaymentInvoice::where('status', '!=', 'paid')
             ->whereHas('student', function ($query) {
                 $query
-                    ->whereNull('deleted_at')
                     ->where('branch_id', auth()->user()->branch_id)
                     ->where(function ($q) {
                         $q->whereHas('studentActivation', function ($q2) {
@@ -25,25 +24,18 @@ class PaymentInvoiceController extends Controller
                         })->orWhereNull('student_activation_id');
                     });
             })
-            ->withoutTrashed()
             ->orderBy('id', 'desc')
             ->get();
 
+
         $paid_invoices = PaymentInvoice::where('status', 'paid')
             ->whereHas('student', function ($query) {
-                $query->whereNull('deleted_at')->where(
-                    'branch_id',
-                    auth()->user()->branch_id,
-                    /*->where(function ($q) {
-                        $q->whereHas('studentActivation', function ($q2) {
-                            $q2->where('active_status', 'active');
-                        })->orWhereNull('student_activation_id');
-                    })*/
-                );
+                $query->withoutTrashed()->where('branch_id', auth()->user()->branch_id);
             })
-            ->withoutTrashed()
             ->orderBy('id', 'desc')
             ->get();
+            
+            // return count($paid_invoices);
 
         $dueMonths = PaymentInvoice::where('status', '!=', 'paid')
             ->whereNotNull('month_year') // avoid nulls
@@ -100,7 +92,7 @@ class PaymentInvoiceController extends Controller
      */
     public function create()
     {
-        //
+        return redirect()->back()->with('warning', 'Activity Not Allowed');
     }
 
     /**
@@ -184,7 +176,7 @@ class PaymentInvoiceController extends Controller
     {
         $invoice = PaymentInvoice::find($id);
 
-        if (! $invoice || $invoice->student === null || $invoice->student->deleted_at !== null) {
+        if (! $invoice || $invoice->student === null || $invoice->student->trashed()) {
             return redirect()->route('invoices.index')->with('warning', 'Invoice not found');
         }
 
@@ -195,7 +187,6 @@ class PaymentInvoiceController extends Controller
                         $q->where('active_status', 'active');
                     });
                 })
-                ->withoutTrashed()
                 ->orderby('student_unique_id', 'asc')
                 ->get();
         } else {
@@ -204,7 +195,6 @@ class PaymentInvoiceController extends Controller
                     $q->where('active_status', 'active');
                 });
             })
-                ->withoutTrashed()
                 ->orderby('student_unique_id', 'asc')
                 ->get();
         }

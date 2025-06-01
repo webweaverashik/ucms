@@ -12,7 +12,7 @@ class InstitutionController extends Controller
      */
     public function index()
     {
-        $institutions = Institution::withoutTrashed()->get();
+        $institutions = Institution::all();
 
         return view('institutions.index', compact('institutions'));
     }
@@ -22,7 +22,7 @@ class InstitutionController extends Controller
      */
     public function create()
     {
-        //
+        return redirect()->back()->with('warning', 'Activity Not Allowed');
     }
 
     /**
@@ -67,7 +67,7 @@ class InstitutionController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        return redirect()->back()->with('warning', 'Activity Not Allowed');
     }
 
     /**

@@ -22,14 +22,13 @@ class GuardianController extends Controller
             $guardians = Guardian::whereHas('student', function ($query) use ($userBranchId) {
                 $query->where('branch_id', $userBranchId);
             })
-                ->withoutTrashed()
                 ->get();
 
-            $students = Student::where('branch_id', $userBranchId)->withoutTrashed()->orderby('student_unique_id', 'asc')->get();
+            $students = Student::where('branch_id', $userBranchId)->orderby('student_unique_id', 'asc')->get();
         } else {
-            $guardians = Guardian::withoutTrashed()->get(); // SuperAdmin can view everything
+            $guardians = Guardian::all(); // SuperAdmin can view everything
 
-            $students = Student::withoutTrashed()->orderby('student_unique_id', 'asc')->get();
+            $students = Student::orderby('student_unique_id', 'asc')->get();
         }
 
         $branches = Branch::all();

@@ -13,7 +13,7 @@ class SubjectController extends Controller
      */
     public function index()
     {
-        $subjects = Subject::withoutTrashed()->get();
+        $subjects = Subject::all();
 
         return view('subjects.index', compact('subjects'));
     }
@@ -23,7 +23,7 @@ class SubjectController extends Controller
      */
     public function create()
     {
-        //
+        return redirect()->back()->with('warning', 'Activity Not Allowed');
     }
 
     /**
@@ -31,7 +31,7 @@ class SubjectController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        return redirect()->back()->with('warning', 'Activity Not Allowed');
     }
 
     /**
@@ -39,7 +39,7 @@ class SubjectController extends Controller
      */
     public function show(string $id)
     {
-        //
+        return redirect()->back()->with('warning', 'Activity Not Allowed');
     }
 
     /**
@@ -47,7 +47,7 @@ class SubjectController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        return redirect()->back()->with('warning', 'Activity Not Allowed');
     }
 
     /**
@@ -55,7 +55,7 @@ class SubjectController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        return redirect()->back()->with('warning', 'Activity Not Allowed');
     }
 
     /**
@@ -63,7 +63,7 @@ class SubjectController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        return redirect()->back()->with('warning', 'Activity Not Allowed');
     }
 
     /**

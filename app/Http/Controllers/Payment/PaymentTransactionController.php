@@ -26,7 +26,6 @@ class PaymentTransactionController extends Controller
                             $q->where('active_status', 'active');
                         });
                 })
-                ->withoutTrashed()
                 ->orderby('student_unique_id', 'asc')
                 ->get();
         } else {
@@ -35,7 +34,6 @@ class PaymentTransactionController extends Controller
                     $q->where('active_status', 'active');
                 });
             })
-                ->withoutTrashed()
                 ->orderby('student_unique_id', 'asc')
                 ->get();
         }

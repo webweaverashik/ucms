@@ -21,18 +21,17 @@ class SiblingController extends Controller
             $siblings = Sibling::whereHas('student', function ($query) use ($userBranchId) {
                 $query->where('branch_id', $userBranchId);
             })
-                ->withoutTrashed()
                 ->get();
 
             $students = Student::where('branch_id', $userBranchId)->withoutTrashed()->orderby('student_unique_id', 'asc')->get();
         } else {
-            $siblings = Sibling::withoutTrashed()->get(); // SuperAdmin can view everything
+            $siblings = Sibling::all(); // SuperAdmin can view everything
 
-            $students = Student::withoutTrashed()->orderby('student_unique_id', 'asc')->get();
+            $students = Student::orderby('student_unique_id', 'asc')->get();
         }
 
         $branches     = Branch::all();
-        $institutions = Institution::withoutTrashed()->get();
+        $institutions = Institution::all();
 
         return view('siblings.index', compact('siblings', 'branches', 'students', 'institutions'));
     }
