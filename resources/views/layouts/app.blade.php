@@ -57,20 +57,11 @@
     </div>
     <!--end::App-->
 
-    <!--begin::Drawers-->
-    {{-- @include('layouts.partials.drawers') --}}
-    <!--end::Drawers-->
-
-
     <!--begin::Scrolltop-->
     <div id="kt_scrolltop" class="scrolltop" data-kt-scrolltop="true">
         <i class="ki-outline ki-arrow-up"></i>
     </div>
     <!--end::Scrolltop-->
-
-    <!--begin::Modals-->
-    {{-- @include('layouts.partials.modals') --}}
-    <!--end::Modals-->
 
     <!--begin::Javascript-->
     @include('layouts.partials.scripts')
