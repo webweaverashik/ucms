@@ -54,7 +54,7 @@
                     <div class="d-flex flex-wrap flex-sm-nowrap mb-6">
                         <!--begin::Image-->
                         <div class="d-flex flex-center flex-shrink-0 bg-light rounded-circle w-125px h-125px me-7 mb-4">
-                            <img class="w-100 p-3 symbol-circle"
+                            <img class="w-100 p-3 rounded-circle"
                                 src="{{ $invoice->student->photo_url ? asset($invoice->student->photo_url) : asset('assets/img/dummy.png') }}"
                                 alt="{{ $invoice->student->name }}" />
                         </div>
