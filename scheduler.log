@@ -1,0 +1,52 @@
+
+  2025-06-02 13:25:52 Running ["artisan" invoices:generate-monthly] .................................... 417.58ms DONE
+  ⇂ "D:\OneDrive\laragon\bin\php\php-8.2.22-nts-Win32-vs16-x64\php.exe" "artisan" invoices:generate-monthly >> "D:\OneDrive\laragon\www\ucms\storage\logs/invoice-generation.log" 2>&1  
+
+
+  2025-06-02 13:26:52 Running ["artisan" invoices:generate-monthly] .................................... 416.18ms DONE
+  ⇂ "D:\OneDrive\laragon\bin\php\php-8.2.22-nts-Win32-vs16-x64\php.exe" "artisan" invoices:generate-monthly >> "D:\OneDrive\laragon\www\ucms\storage\logs/invoice-generation.log" 2>&1  
+
+
+  2025-06-02 13:27:52 Running ["artisan" invoices:generate-monthly] .................................... 620.65ms DONE
+  ⇂ "D:\OneDrive\laragon\bin\php\php-8.2.22-nts-Win32-vs16-x64\php.exe" "artisan" invoices:generate-monthly >> "D:\OneDrive\laragon\www\ucms\storage\logs/invoice-generation.log" 2>&1  
+
+
+  2025-06-02 13:28:53 Running ["artisan" invoices:generate-monthly] .................................... 431.95ms DONE
+  ⇂ "D:\OneDrive\laragon\bin\php\php-8.2.22-nts-Win32-vs16-x64\php.exe" "artisan" invoices:generate-monthly >> "D:\OneDrive\laragon\www\ucms\storage\logs/invoice-generation.log" 2>&1  
+
+
+  2025-06-02 13:29:53 Running ["artisan" invoices:generate-monthly] .................................... 420.94ms DONE
+  ⇂ "D:\OneDrive\laragon\bin\php\php-8.2.22-nts-Win32-vs16-x64\php.exe" "artisan" invoices:generate-monthly >> "D:\OneDrive\laragon\www\ucms\storage\logs/invoice-generation.log" 2>&1  
+
+
+  2025-06-02 13:30:53 Running ["artisan" invoices:generate-monthly] .................................... 422.28ms DONE
+  ⇂ "D:\OneDrive\laragon\bin\php\php-8.2.22-nts-Win32-vs16-x64\php.exe" "artisan" invoices:generate-monthly >> "D:\OneDrive\laragon\www\ucms\storage\logs/invoice-generation.log" 2>&1  
+
+
+  2025-06-02 13:31:53 Running ["artisan" invoices:generate-monthly] .................................... 420.35ms DONE
+  ⇂ "D:\OneDrive\laragon\bin\php\php-8.2.22-nts-Win32-vs16-x64\php.exe" "artisan" invoices:generate-monthly >> "D:\OneDrive\laragon\www\ucms\storage\logs/invoice-generation.log" 2>&1  
+
+
+  2025-06-02 13:32:53 Running ["artisan" invoices:generate-monthly] .................................... 421.03ms DONE
+  ⇂ "D:\OneDrive\laragon\bin\php\php-8.2.22-nts-Win32-vs16-x64\php.exe" "artisan" invoices:generate-monthly >> "D:\OneDrive\laragon\www\ucms\storage\logs/invoice-generation.log" 2>&1  
+
+
+  2025-06-02 13:33:53 Running ["artisan" invoices:generate-monthly] .................................... 419.64ms DONE
+  ⇂ "D:\OneDrive\laragon\bin\php\php-8.2.22-nts-Win32-vs16-x64\php.exe" "artisan" invoices:generate-monthly >> "D:\OneDrive\laragon\www\ucms\storage\logs/invoice-generation.log" 2>&1  
+
+
+  2025-06-02 13:34:53 Running ["artisan" invoices:generate-monthly] .................................... 422.83ms DONE
+  ⇂ "D:\OneDrive\laragon\bin\php\php-8.2.22-nts-Win32-vs16-x64\php.exe" "artisan" invoices:generate-monthly >> "D:\OneDrive\laragon\www\ucms\storage\logs/invoice-generation.log" 2>&1  
+
+
+  2025-06-02 13:35:53 Running ["artisan" invoices:generate-monthly] .................................... 416.69ms DONE
+  ⇂ "D:\OneDrive\laragon\bin\php\php-8.2.22-nts-Win32-vs16-x64\php.exe" "artisan" invoices:generate-monthly >> "D:\OneDrive\laragon\www\ucms\storage\logs/invoice-generation.log" 2>&1  
+
+
+  2025-06-02 13:36:53 Running ["artisan" invoices:generate-monthly] .................................... 418.46ms DONE
+  ⇂ "D:\OneDrive\laragon\bin\php\php-8.2.22-nts-Win32-vs16-x64\php.exe" "artisan" invoices:generate-monthly >> "D:\OneDrive\laragon\www\ucms\storage\logs/invoice-generation.log" 2>&1  
+
+
+  2025-06-02 13:37:53 Running ["artisan" invoices:generate-monthly] .................................... 422.10ms DONE
+  ⇂ "D:\OneDrive\laragon\bin\php\php-8.2.22-nts-Win32-vs16-x64\php.exe" "artisan" invoices:generate-monthly >> "D:\OneDrive\laragon\www\ucms\storage\logs/invoice-generation.log" 2>&1  
+
