@@ -12,6 +12,6 @@ Artisan::command('inspire', function () {
 
 
 Schedule::command('invoices:generate-monthly')
-    // ->monthlyOn(1, '00:30') // Run on 1st day of month at 12:30 AM
-    ->everyMinute()
+    ->monthlyOn(1, '00:30') // Run on 1st day of month at 12:30 AM
+    // ->everyMinute()
     ->appendOutputTo(storage_path('logs/invoice-generation.log'));
