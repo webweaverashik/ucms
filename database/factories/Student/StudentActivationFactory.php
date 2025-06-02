@@ -15,7 +15,7 @@ class StudentActivationFactory extends Factory
     {
         return [
             'student_id' => null, // ✅ Will be set from StudentFactory
-            'active_status' => $this->faker->randomElement(['active', 'inactive']),
+            'active_status' => 'active',
             'reason' => $this->faker->sentence(),
             'updated_by' => User::inRandomOrder()->first()->id,
         ];
