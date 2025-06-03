@@ -289,7 +289,10 @@ var KTUsersAddUser = function () {
                                         if (data.success) {
                                              toastr.success(data.message || 'User created successfully');
                                              modal.hide();
-                                             window.location.reload();
+                                             setTimeout(() => {
+                                                  window.location.reload();
+                                             }, 1500); // 1000ms = 1 second delay
+
                                         } else {
                                              throw new Error(data.message || 'User creation failed');
                                         }
