@@ -123,10 +123,13 @@
                                 <!--begin::user details-->
                             </td>
                             <td>
-                                @if ($user->branch_id !== 0)
+                                @if ($user->branch)
                                     {{ $user->branch->branch_name }}
+                                @else
+                                    <span class="text-muted">-</span>
                                 @endif
                             </td>
+
                             <td>
                                 @php
                                     $role = $user->getRoleNames()->first(); // safer than [0], returns null if empty
