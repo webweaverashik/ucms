@@ -14,9 +14,9 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // Step 1: Create Roles
-        $adminRole      = Role::firstOrCreate(['name' => 'Admin']);
-        $managerRole    = Role::firstOrCreate(['name' => 'Manager']);
-        $accountantRole = Role::firstOrCreate(['name' => 'Accountant']);
+        $adminRole      = Role::firstOrCreate(['name' => 'admin']);
+        $managerRole    = Role::firstOrCreate(['name' => 'manager']);
+        $accountantRole = Role::firstOrCreate(['name' => 'accountant']);
 
         // Step 2: Create Users and Assign Roles
 

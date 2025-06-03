@@ -123,28 +123,26 @@
                                 <!--begin::user details-->
                             </td>
                             <td>
-                                @if ($user->branch)
-                                    @php
-                                        $branchColors = [
-                                            1 => 'primary', // Blue for Branch ID 1
-                                            2 => 'success', // Green for Branch ID 2
-                                            3 => 'danger', // Red for Branch ID 3
-                                        ];
-                                        $badgeColor = $branchColors[$user->branch->id] ?? 'secondary'; // Default color
-                                    @endphp
-
-                                    <span class="badge badge-{{ $badgeColor }}">{{ $user->branch->branch_name }}</span>
-                                @else
-                                    <span class="text-muted">-</span>
+                                @if ($user->branch_id !== 0)
+                                    {{ $user->branch->branch_name }}
                                 @endif
                             </td>
                             <td>
-                                @if ($user->role == 'staff')
-                                    <div class="badge badge-light-warning fw-bold">Staff</div>
-                                @elseif ($user->role == 'admin')
-                                    <div class="badge badge-light-success fw-bold">Admin</div>
-                                @endif
+                                @php
+                                    $role = $user->getRoleNames()->first(); // safer than [0], returns null if empty
+
+                                    $badgeClasses = [
+                                        'admin' => 'badge badge-light-danger fw-bold',
+                                        'manager' => 'badge badge-light-success fw-bold',
+                                        'accountant' => 'badge badge-light-info fw-bold',
+                                    ];
+
+                                    $badgeClass = $badgeClasses[$role] ?? 'badge badge-light-secondary fw-bold';
+                                @endphp
+
+                                <div class="{{ $badgeClass }}">{{ ucfirst($role) }}</div>
                             </td>
+
                             <td>
                                 {!! optional($user->loginActivities()->latest()->first())->created_at
                                     ? optional($user->loginActivities()->latest()->first())->created_at->format('d-M-Y') .
@@ -170,7 +168,8 @@
                                 </a>
 
                                 <a href="#" title="Reset Passsword" data-bs-toggle="modal"
-                                    data-bs-target="#kt_modal_edit_password" data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}"
+                                    data-bs-target="#kt_modal_edit_password" data-user-id="{{ $user->id }}"
+                                    data-user-name="{{ $user->name }}"
                                     class="btn btn-icon text-hover-primary w-30px h-30px change-password-btn">
                                     <i class="ki-outline ki-key fs-2"></i>
                                 </a>
@@ -198,7 +197,7 @@
     <div class="modal fade" id="kt_modal_add_user" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
         data-bs-keyboard="false">
         <!--begin::Modal dialog-->
-        <div class="modal-dialog modal-dialog-centered mw-650px">
+        <div class="modal-dialog modal-dialog-centered mw-750px">
             <!--begin::Modal content-->
             <div class="modal-content">
                 <!--begin::Modal header-->
@@ -207,7 +206,7 @@
                     <h2 class="fw-bold">Add New User</h2>
                     <!--end::Modal title-->
                     <!--begin::Close-->
-                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-users-modal-action="close">
+                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-add-users-modal-action="close">
                         <i class="ki-outline ki-cross fs-1">
                         </i>
                     </div>
@@ -217,183 +216,148 @@
                 <!--begin::Modal body-->
                 <div class="modal-body px-5 my-7">
                     <!--begin::Form-->
-                    <form id="kt_modal_add_user_form" class="form" action="{{ route('users.store') }}"
-                        enctype="multipart/form-data" method="POST">
-                        @csrf
+                    <form id="kt_modal_add_user_form" class="form" action="#" novalidate="novalidate">
                         <!--begin::Scroll-->
                         <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_add_user_scroll"
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_add_user_header"
                             data-kt-scroll-wrappers="#kt_modal_add_user_scroll" data-kt-scroll-offset="300px">
-                            <!--begin::Input group-->
-                            <div class="fv-row mb-7">
-                                <!--begin::Label-->
-                                <label class="d-block fw-semibold fs-6 mb-5">Profile Photo</label>
-                                <!--end::Label-->
-                                <!--begin::Image placeholder-->
-                                <style>
-                                    .image-input-placeholder {
-                                        background-image: url('{{ asset('assets/media/svg/files/blank-image.svg') }}');
-                                    }
-
-                                    [data-bs-theme="dark"] .image-input-placeholder {
-                                        background-image: url('{{ asset('assets/media/svg/files/blank-image-dark.svg') }}');
-                                    }
-                                </style>
-                                <!--end::Image placeholder-->
-                                <!--begin::Image input-->
-                                <div class="image-input image-input-empty image-input-outline image-input-placeholder"
-                                    data-kt-image-input="true">
-                                    <!--begin::Preview existing avatar-->
-                                    <div class="image-input-wrapper w-125px h-125px"></div>
-                                    <!--end::Preview existing avatar-->
-                                    <!--begin::Label-->
-                                    <label
-                                        class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                        data-kt-image-input-action="change" data-bs-toggle="tooltip"
-                                        title="Change avatar">
-                                        <i class="ki-outline ki-pencil fs-7">
-                                        </i>
-                                        <!--begin::Inputs-->
-                                        <input type="file" name="avatar" accept=".png, .jpg, .jpeg" />
-                                        <input type="hidden" name="avatar_remove" />
-                                        <!--end::Inputs-->
-                                    </label>
-                                    <!--end::Label-->
-                                    <!--begin::Cancel-->
-                                    <span
-                                        class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                        data-kt-image-input-action="cancel" data-bs-toggle="tooltip"
-                                        title="Cancel avatar">
-                                        <i class="ki-outline ki-cross fs-2">
-                                        </i>
-                                    </span>
-                                    <!--end::Cancel-->
-                                    <!--begin::Remove-->
-                                    <span
-                                        class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                        data-kt-image-input-action="remove" data-bs-toggle="tooltip"
-                                        title="Remove avatar">
-                                        <i class="ki-outline ki-cross fs-2">
-                                        </i>
-                                    </span>
-                                    <!--end::Remove-->
-                                </div>
-                                <!--end::Image input-->
-                                <!--begin::Hint-->
-                                <div class="form-text">Allowed file types: png, jpg, jpeg. Max 200kB</div>
-                                <!--end::Hint-->
-                            </div>
-                            <!--end::Input group-->
-
-                            <!--begin::Input group-->
-                            <div class="fv-row mb-7">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">Name</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <input type="text" name="user_name"
-                                    class="form-control form-control-solid mb-3 mb-lg-0" placeholder="Write full name"
-                                    value="{{ old('user_name') }}" required />
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Input group-->
-
-                            <!--begin::Input group-->
-                            <div class="fv-row mb-7">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">Email</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <input type="email" name="user_email"
-                                    class="form-control form-control-solid mb-3 mb-lg-0" placeholder="test@mail.com"
-                                    value="{{ old('user_email') }}" required />
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Input group-->
-
-                            <!--begin::Input group-->
-                            <div class="mb-5">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-5">Role</label>
-                                <!--end::Label-->
-                                <!--begin::Roles-->
-                                <!--begin::Input row-->
-                                <div class="d-flex fv-row">
-                                    <!--begin::Radio-->
-                                    <div class="form-check form-check-custom form-check-solid">
-                                        <!--begin::Input-->
-                                        <input class="form-check-input me-3" name="user_role" type="radio"
-                                            value="admin" id="kt_modal_add_role_admin" />
-                                        <!--end::Input-->
+                            <div class="row">
+                                <!--begin::User name input-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row mb-7">
                                         <!--begin::Label-->
-                                        <label class="form-check-label" for="kt_modal_add_role_admin">
-                                            <div class="fw-bold text-gray-800">এডমিন</div>
-                                            <div class="text-gray-600">খামার অনুমোদন ও সংশোধন, প্রেস্ক্রিপশন অনুমোদন ও
-                                                সংশোধন, সিস্টেম সেটিংস
-                                            </div>
-                                        </label>
+                                        <label class="required fw-semibold fs-6 mb-2">Name</label>
                                         <!--end::Label-->
-                                    </div>
-                                    <!--end::Radio-->
-                                </div>
-                                <!--end::Input row-->
-                                <div class='separator separator-dashed my-5'></div>
-                                <!--begin::Input row-->
-                                <div class="d-flex fv-row">
-                                    <!--begin::Radio-->
-                                    <div class="form-check form-check-custom form-check-solid">
                                         <!--begin::Input-->
-                                        <input class="form-check-input me-3" name="user_role" type="radio"
-                                            value="staff" id="kt_modal_add_role_staff" checked />
+                                        <input type="text" name="user_name"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="Write full name" value="{{ old('user_name') }}" required />
                                         <!--end::Input-->
-                                        <!--begin::Label-->
-                                        <label class="form-check-label" for="kt_modal_add_role_staff">
-                                            <div class="fw-bold text-gray-800">স্টাফ</div>
-                                            <div class="text-gray-600">খামার নিবন্ধন, রেজিস্টার এন্ট্রি, প্রেস্ক্রিপশন
-                                                এন্ট্রি</div>
-                                        </label>
-                                        <!--end::Label-->
                                     </div>
-                                    <!--end::Radio-->
                                 </div>
-                                <!--end::Input row-->
-                                <!--end::Roles-->
-                            </div>
-                            <!--end::Input group-->
+                                <!--end::User name input-->
 
-                            <!--end::Input group-->
-                            <div class="mb-5">
-                                <!--begin::Col-->
-                                <div class="fv-row">
-                                    <!--begin::Label-->
-                                    <label class="required fs-6 fw-semibold form-label mb-2">Assign Branch</label>
-                                    <!--end::Label-->
-                                    <!--begin::Row-->
-                                    <div class="fv-row">
-                                        <!--begin::Col-->
-                                        <select name="user_branch" class="form-select form-select-solid"
-                                            data-control="select2" data-hide-search="true"
-                                            data-placeholder="Select branch" required>
-                                            <option></option>
-                                            @foreach ($branches as $branch)
-                                                <option value="{{ $branch->id }}">{{ $branch->branch_name }}</option>
-                                            @endforeach
-                                        </select>
-                                        <!--end::Col-->
+                                <!--begin::User email input-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row mb-7">
+                                        <label class="required fw-semibold fs-6 mb-2">Email</label>
+
+                                        <input type="email" name="user_email"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="test@mail.com" value="{{ old('user_email') }}" required />
                                     </div>
-                                    <!--end::Row-->
                                 </div>
-                                <!--end::Col-->
+                                <!--end::User email input-->
+
+                                <!--begin::User mobile input-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row mb-7">
+                                        <label class="required fw-semibold fs-6 mb-2">Mobile No.</label>
+
+                                        <input type="text" name="user_mobile"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="e.g. 01812345678" value="{{ old('user_mobile') }}" required />
+                                    </div>
+                                </div>
+                                <!--end::User mobile input-->
+
+                                <!--begin::Branch Input-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row mb-5">
+                                        <!--begin::Label-->
+                                        <label class="required fs-6 fw-semibold form-label mb-2">Assign to Branch</label>
+                                        <!--end::Label-->
+                                        <!--begin::Row-->
+                                        <div class="fv-row">
+                                            <!--begin::Col-->
+                                            <select name="user_branch" class="form-select form-select-solid"
+                                                data-control="select2" data-hide-search="true"
+                                                data-placeholder="Select branch" required>
+                                                <option></option>
+                                                @foreach ($branches as $branch)
+                                                    <option value="{{ $branch->id }}">{{ $branch->branch_name }} Branch
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <!--end::Col-->
+                                        </div>
+                                        <!--end::Row-->
+                                    </div>
+                                </div>
+                                <!--end::Branch Input-->
                             </div>
+
+
+                            <!--begin::Role Input-->
+                            <div class="fv-row mb-7">
+                                <label class="d-flex align-items-center form-label mb-3 required">Role</label>
+
+                                <!--begin::Row-->
+                                <div class="row">
+                                    <div class="col-lg-4">
+                                        <!--begin::Option-->
+                                        <input type="radio" class="btn-check" name="user_role" value="admin"
+                                            checked="checked" id="role_admin_input" />
+                                        <label
+                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                            for="role_admin_input">
+                                            <i class="las la-user-secret fs-2x me-5"></i>
+                                            <!--begin::Info-->
+                                            <span class="d-block fw-semibold text-start">
+                                                <span class="text-gray-900 fw-bold d-block fs-6">Admin</span>
+                                            </span>
+                                            <!--end::Info-->
+                                        </label>
+                                        <!--end::Option-->
+                                    </div>
+
+                                    <div class="col-lg-4">
+                                        <!--begin::Option-->
+                                        <input type="radio" class="btn-check" name="user_role" value="manager"
+                                            id="role_mananger_input" />
+                                        <label
+                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                            for="role_mananger_input">
+                                            <i class="las la-user-ninja fs-2x me-5"></i>
+                                            <!--begin::Info-->
+                                            <span class="d-block fw-semibold text-start">
+                                                <span class="text-gray-900 fw-bold d-block fs-6">Manager</span>
+                                            </span>
+                                            <!--end::Info-->
+                                        </label>
+                                        <!--end::Option-->
+                                    </div>
+
+                                    <div class="col-lg-4">
+                                        <!--begin::Option-->
+                                        <input type="radio" class="btn-check" name="user_role" value="accountant"
+                                            id="role_accountant_input" />
+                                        <label
+                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                            for="role_accountant_input">
+                                            <i class="las la-user fs-2x me-5"></i>
+                                            <!--begin::Info-->
+                                            <span class="d-block fw-semibold text-start">
+                                                <span class="text-gray-900 fw-bold d-block fs-6">Accountant</span>
+                                            </span>
+                                            <!--end::Info-->
+                                        </label>
+                                        <!--end::Option-->
+                                    </div>
+                                </div>
+                                <!--end::Row-->
+                            </div>
+                            <!--end::Role Input -->
 
                         </div>
                         <!--end::Scroll-->
+
                         <!--begin::Actions-->
                         <div class="text-center pt-10">
                             <button type="reset" class="btn btn-light me-3"
-                                data-kt-users-modal-action="cancel">Discard</button>
-                            <button type="submit" class="btn btn-primary" data-kt-users-modal-action="submit">
+                                data-add-users-modal-action="cancel">Discard</button>
+                            <button type="submit" class="btn btn-primary" data-add-users-modal-action="submit">
                                 <span class="indicator-label">Submit</span>
                                 <span class="indicator-progress">Please wait...
                                     <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
@@ -415,7 +379,7 @@
     <div class="modal fade" id="kt_modal_edit_user" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
         data-bs-keyboard="false">
         <!--begin::Modal dialog-->
-        <div class="modal-dialog modal-dialog-centered mw-650px">
+        <div class="modal-dialog modal-dialog-centered mw-750px">
             <!--begin::Modal content-->
             <div class="modal-content">
                 <!--begin::Modal header-->
@@ -424,7 +388,7 @@
                     <h2 class="fw-bold">Update User</h2>
                     <!--end::Modal title-->
                     <!--begin::Close-->
-                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-users-modal-action="close">
+                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-edit-users-modal-action="close">
                         <i class="ki-outline ki-cross fs-1">
                         </i>
                     </div>
@@ -434,155 +398,138 @@
                 <!--begin::Modal body-->
                 <div class="modal-body px-5 my-7">
                     <!--begin::Form-->
-                    <form id="kt_modal_edit_user_form" class="form" action="#" enctype="multipart/form-data"
-                        method="POST">
+                    <form id="kt_modal_edit_user_form" class="form" action="#" method="POST">
                         @csrf
                         @method('PUT')
                         <!--begin::Scroll-->
-                        <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_add_user_scroll"
+                        <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_edit_user_scroll"
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_edit_user_header"
                             data-kt-scroll-wrappers="#kt_modal_edit_user_scroll" data-kt-scroll-offset="300px">
-                            <!--begin::Input group-->
-                            <div class="fv-row mb-7">
-                                <!--begin::Label-->
-                                <label class="d-block fw-semibold fs-6 mb-5">প্রোফাইল ছবি</label>
-                                <!--end::Label-->
-                                <!--begin::Image placeholder-->
-                                <style>
-                                    .image-input-placeholder {
-                                        background-image: url('{{ asset('assets/media/svg/files/blank-image.svg') }}');
-                                    }
 
-                                    [data-bs-theme="dark"] .image-input-placeholder {
-                                        background-image: url('{{ asset('assets/media/svg/files/blank-image-dark.svg') }}');
-                                    }
-                                </style>
-                                <!--end::Image placeholder-->
-                                <!--begin::Image input-->
-                                <div class="image-input image-input-empty image-input-outline image-input-placeholder"
-                                    data-kt-image-input="true">
-                                    <!--begin::Preview existing avatar-->
-                                    <div class="image-input-wrapper w-125px h-125px"></div>
-                                    <!--end::Preview existing avatar-->
-                                    <!--begin::Label-->
-                                    <label
-                                        class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                        data-kt-image-input-action="change" data-bs-toggle="tooltip"
-                                        title="Change avatar">
-                                        <i class="ki-outline ki-pencil fs-7">
-                                        </i>
-                                        <!--begin::Inputs-->
-                                        <input type="file" name="avatar" accept=".png, .jpg, .jpeg" />
-                                        <input type="hidden" name="avatar_remove" />
-                                        <!--end::Inputs-->
-                                    </label>
-                                    <!--end::Label-->
-                                    <!--begin::Cancel-->
-                                    <span
-                                        class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                        data-kt-image-input-action="cancel" data-bs-toggle="tooltip"
-                                        title="Cancel avatar">
-                                        <i class="ki-outline ki-cross fs-2">
-                                        </i>
-                                    </span>
-                                    <!--end::Cancel-->
-                                    <!--begin::Remove-->
-                                    <span
-                                        class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                        data-kt-image-input-action="remove" data-bs-toggle="tooltip"
-                                        title="Remove avatar">
-                                        <i class="ki-outline ki-cross fs-2">
-                                        </i>
-                                    </span>
-                                    <!--end::Remove-->
+                            <div class="row">
+                                <!--begin::User name input-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row mb-7">
+                                        <!--begin::Label-->
+                                        <label class="required fw-semibold fs-6 mb-2">Name</label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <input type="text" name="user_name"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="Write full name" required />
+                                        <!--end::Input-->
+                                    </div>
                                 </div>
-                                <!--end::Image input-->
-                                <!--begin::Hint-->
-                                <div class="form-text">Allowed file types: png, jpg, jpeg. Max 200kB</div>
-                                <!--end::Hint-->
+                                <!--end::User name input-->
+
+                                <!--begin::User email input-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row mb-7">
+                                        <label class="required fw-semibold fs-6 mb-2">Email</label>
+
+                                        <input type="email" name="user_email_edit"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="test@mail.com" />
+                                    </div>
+                                </div>
+                                <!--end::User email input-->
                             </div>
-                            <!--end::Input group-->
-                            <!--begin::Input group-->
+
+                            <!--begin::Role Input-->
                             <div class="fv-row mb-7">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">নাম</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <input type="text" name="user_name"
-                                    class="form-control form-control-solid mb-3 mb-lg-0" placeholder="সম্পূর্ণ নাম লিখুন"
-                                    value="{{ old('user_name') }}" required />
-                                <!--end::Input-->
+                                <label class="d-flex align-items-center form-label mb-3 required">Role</label>
+
+                                <!--begin::Row-->
+                                <div class="row">
+                                    <div class="col-lg-4">
+                                        <!--begin::Option-->
+                                        <input type="radio" class="btn-check" name="user_role_edit" value="admin"
+                                            checked="checked" id="role_admin_edit" />
+                                        <label
+                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                            for="role_admin_edit">
+                                            <i class="las la-user-secret fs-2x me-5"></i>
+                                            <!--begin::Info-->
+                                            <span class="d-block fw-semibold text-start">
+                                                <span class="text-gray-900 fw-bold d-block fs-6">Admin</span>
+                                            </span>
+                                            <!--end::Info-->
+                                        </label>
+                                        <!--end::Option-->
+                                    </div>
+
+                                    <div class="col-lg-4">
+                                        <!--begin::Option-->
+                                        <input type="radio" class="btn-check" name="user_role_edit" value="manager"
+                                            id="role_mananger_edit" />
+                                        <label
+                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                            for="role_mananger_edit">
+                                            <i class="las la-user-ninja fs-2x me-5"></i>
+                                            <!--begin::Info-->
+                                            <span class="d-block fw-semibold text-start">
+                                                <span class="text-gray-900 fw-bold d-block fs-6">Manager</span>
+                                            </span>
+                                            <!--end::Info-->
+                                        </label>
+                                        <!--end::Option-->
+                                    </div>
+
+                                    <div class="col-lg-4">
+                                        <!--begin::Option-->
+                                        <input type="radio" class="btn-check" name="user_role_edit" value="accountant"
+                                            id="role_accountant_edit" />
+                                        <label
+                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                            for="role_accountant_edit">
+                                            <i class="las la-user fs-2x me-5"></i>
+                                            <!--begin::Info-->
+                                            <span class="d-block fw-semibold text-start">
+                                                <span class="text-gray-900 fw-bold d-block fs-6">Accountant</span>
+                                            </span>
+                                            <!--end::Info-->
+                                        </label>
+                                        <!--end::Option-->
+                                    </div>
+                                </div>
+                                <!--end::Row-->
                             </div>
-                            <!--end::Input group-->
-                            <!--begin::Input group-->
-                            <div class="fv-row mb-7">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">ইমেইল</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <input type="email" name="user_email"
-                                    class="form-control form-control-solid mb-3 mb-lg-0" placeholder="test@gmail.com"
-                                    value="{{ old('user_email') }}" required />
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Input group-->
-                            <!--begin::Input group-->
+                            <!--end::Role Input -->
+
+                            <!--begin::Branch Input-->
                             <div class="mb-5">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-5">Role</label>
-                                <!--end::Label-->
-                                <!--begin::Roles-->
-                                <!--begin::Input row-->
-                                <div class="d-flex fv-row">
-                                    <!--begin::Radio-->
-                                    <div class="form-check form-check-custom form-check-solid">
-                                        <!--begin::Input-->
-                                        <input class="form-check-input me-3" name="user_role" type="radio"
-                                            value="admin" id="kt_modal_update_role_admin" />
-                                        <!--end::Input-->
-                                        <!--begin::Label-->
-                                        <label class="form-check-label" for="kt_modal_update_role_admin">
-                                            <div class="fw-bold text-gray-800">এডমিন</div>
-                                            <div class="text-gray-600">খামার অনুমোদন ও সংশোধন, প্রেস্ক্রিপশন অনুমোদন ও
-                                                সংশোধন, সিস্টেম সেটিংস
-                                            </div>
-                                        </label>
-                                        <!--end::Label-->
+                                <!--begin::Col-->
+                                <div class="fv-row">
+                                    <!--begin::Label-->
+                                    <label class="required fs-6 fw-semibold form-label mb-2">Assign Branch</label>
+                                    <!--end::Label-->
+                                    <!--begin::Row-->
+                                    <div class="fv-row">
+                                        <!--begin::Col-->
+                                        <select name="user_branch_edit" class="form-select form-select-solid"
+                                            data-control="select2" data-hide-search="true"
+                                            data-placeholder="Select branch" required>
+                                            <option></option>
+                                            @foreach ($branches as $branch)
+                                                <option value="{{ $branch->id }}">{{ $branch->branch_name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <!--end::Col-->
                                     </div>
-                                    <!--end::Radio-->
+                                    <!--end::Row-->
                                 </div>
-                                <!--end::Input row-->
-                                <div class='separator separator-dashed my-5'></div>
-                                <!--begin::Input row-->
-                                <div class="d-flex fv-row">
-                                    <!--begin::Radio-->
-                                    <div class="form-check form-check-custom form-check-solid">
-                                        <!--begin::Input-->
-                                        <input class="form-check-input me-3" name="user_role" type="radio"
-                                            value="staff" id="kt_modal_update_role_staff" />
-                                        <!--end::Input-->
-                                        <!--begin::Label-->
-                                        <label class="form-check-label" for="kt_modal_update_role_staff">
-                                            <div class="fw-bold text-gray-800">স্টাফ</div>
-                                            <div class="text-gray-600">খামার নিবন্ধন, রেজিস্টার এন্ট্রি, প্রেস্ক্রিপশন
-                                                এন্ট্রি</div>
-                                        </label>
-                                        <!--end::Label-->
-                                    </div>
-                                    <!--end::Radio-->
-                                </div>
-                                <!--end::Input row-->
-                                <!--end::Roles-->
+                                <!--end::Col-->
                             </div>
-                            <!--end::Input group-->
+                            <!--end::Branch Input-->
                         </div>
                         <!--end::Scroll-->
+
                         <!--begin::Actions-->
                         <div class="text-center pt-10">
                             <button type="reset" class="btn btn-light me-3"
-                                data-kt-users-modal-action="cancel">Discard</button>
-                            <button type="submit" class="btn btn-primary" data-kt-users-modal-action="submit">
+                                data-edit-users-modal-action="cancel">Discard</button>
+                            <button type="submit" class="btn btn-primary" data-edit-users-modal-action="submit">
                                 <span class="indicator-label">Update</span>
                                 <span class="indicator-progress">Please wait...
                                     <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
@@ -687,6 +634,8 @@
 
 @push('page-js')
     <script>
+        var storeUserRoute = "{{ route('users.store') }}";
+
         const routeDeleteUser = "{{ route('users.destroy', ':id') }}";
         const routeToggleActive = "{{ route('users.toggleActive', ':id') }}";
     </script>

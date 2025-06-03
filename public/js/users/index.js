@@ -155,6 +155,14 @@ var KTUsersList = function () {
 var KTUsersAddUser = function () {
      // Shared variables
      const element = document.getElementById('kt_modal_add_user');
+     // Early return if element doesn't exist
+     if (!element) {
+          console.error('Modal element not found');
+          return {
+               init: function () { }
+          };
+     }
+
      const form = element.querySelector('#kt_modal_add_user_form');
      const modal = new bootstrap.Modal(element);
 
@@ -162,7 +170,7 @@ var KTUsersAddUser = function () {
      var initAddUser = () => {
 
           // Cancel button handler
-          const cancelButton = element.querySelector('[data-kt-users-modal-action="cancel"]');
+          const cancelButton = element.querySelector('[data-add-users-modal-action="cancel"]');
           cancelButton.addEventListener('click', e => {
                e.preventDefault();
 
@@ -171,7 +179,7 @@ var KTUsersAddUser = function () {
           });
 
           // Close button handler
-          const closeButton = element.querySelector('[data-kt-users-modal-action="close"]');
+          const closeButton = element.querySelector('[data-add-users-modal-action="close"]');
           closeButton.addEventListener('click', e => {
                e.preventDefault();
 
@@ -180,10 +188,132 @@ var KTUsersAddUser = function () {
           });
      }
 
+     // Form validation
+     var initValidation = function () {
+          if (!form) return;
+
+          var validator = FormValidation.formValidation(
+               form,
+               {
+                    fields: {
+                         'user_name': {
+                              validators: {
+                                   notEmpty: {
+                                        message: 'Username is required'
+                                   }
+                              }
+                         },
+                         'user_email': {
+                              validators: {
+                                   notEmpty: {
+                                        message: 'Email is required'
+                                   },
+                                   emailAddress: {
+                                        message: 'Enter a valid email address',
+                                   },
+                              }
+                         },
+                         'user_mobile': {
+                              validators: {
+                                   notEmpty: {
+                                        message: 'Mobile no. is required'
+                                   },
+                                   regexp: {
+                                        regexp: /^01[3-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
+                                        message: 'Please enter a valid Bangladeshi mobile number'
+                                   },
+                                   stringLength: {
+                                        min: 11,
+                                        max: 11,
+                                        message: 'The mobile number must be exactly 11 digits'
+                                   }
+                              }
+                         },
+                         'user_branch': {
+                              validators: {
+                                   notEmpty: {
+                                        message: 'Branch is required'
+                                   }
+                              }
+                         },
+                         'user_role': {
+                              validators: {
+                                   notEmpty: {
+                                        message: 'Role is required'
+                                   }
+                              }
+                         },
+                    },
+                    plugins: {
+                         trigger: new FormValidation.plugins.Trigger(),
+                         bootstrap: new FormValidation.plugins.Bootstrap5({
+                              rowSelector: '.fv-row',
+                              eleInvalidClass: '',
+                              eleValidClass: ''
+                         })
+                    }
+               }
+          );
+
+          const submitButton = element.querySelector('[data-add-users-modal-action="submit"]');
+
+          if (submitButton && validator) {
+               submitButton.addEventListener('click', function (e) {
+                    e.preventDefault(); // Prevent default button behavior
+
+                    validator.validate().then(function (status) {
+                         if (status === 'Valid') {
+                              // Show loading indicator
+                              submitButton.setAttribute('data-kt-indicator', 'on');
+                              submitButton.disabled = true;
+
+                              const formData = new FormData(form);
+                              formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+
+                              fetch(storeUserRoute, {
+                                   method: "POST",
+                                   body: formData,
+                                   headers: {
+                                        'Accept': 'application/json', // Explicitly ask for JSON
+                                        'X-Requested-With': 'XMLHttpRequest'
+                                   }
+                              })
+                                   .then(response => {
+                                        if (!response.ok) throw new Error('Network response was not ok');
+                                        return response.json();
+                                   })
+                                   .then(data => {
+                                        submitButton.removeAttribute('data-kt-indicator');
+                                        submitButton.disabled = false;
+
+                                        if (data.success) {
+                                             toastr.success(data.message || 'User created successfully');
+                                             modal.hide();
+                                             window.location.reload();
+                                        } else {
+                                             throw new Error(data.message || 'User creation failed');
+                                        }
+                                   })
+                                   .catch(error => {
+                                        submitButton.removeAttribute('data-kt-indicator');
+                                        submitButton.disabled = false;
+                                        toastr.error(error.message || 'Failed to update invoice');
+                                        console.error('Error:', error);
+                                   });
+                         } else {
+                              toastr.warning('Please fill all fields correctly');
+                         }
+                    });
+               });
+          }
+
+     }
+
      return {
           // Public functions
           init: function () {
                initAddUser();
+               initValidation();
           }
      };
 }();
@@ -198,7 +328,7 @@ var KTUsersEditUser = function () {
      var initEditUser = () => {
 
           // Cancel button handler
-          const cancelButton = element.querySelector('[data-kt-users-modal-action="cancel"]');
+          const cancelButton = element.querySelector('[data-edit-users-modal-action="cancel"]');
           cancelButton.addEventListener('click', e => {
                e.preventDefault();
 
@@ -207,7 +337,7 @@ var KTUsersEditUser = function () {
           });
 
           // Close button handler
-          const closeButton = element.querySelector('[data-kt-users-modal-action="close"]');
+          const closeButton = element.querySelector('[data-edit-users-modal-action="close"]');
           closeButton.addEventListener('click', e => {
                e.preventDefault();
 

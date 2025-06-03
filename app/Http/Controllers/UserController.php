@@ -1,9 +1,8 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\Branch;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -14,7 +13,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::withoutTrashed()->orderby('id', 'desc')->get();
+        $users    = User::withoutTrashed()->orderby('id', 'desc')->get();
         $branches = Branch::all();
 
         return view('users.index', compact('users', 'branches'));
@@ -33,7 +32,29 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // return $request;
+
+        $validated = $request->validate([
+            'user_name'   => 'required|string|max:255',
+            'user_email'  => 'required|string|email|max:255|unique:users,email',
+            'user_branch' => 'required',
+            'user_role'   => 'required',
+        ]);
+
+        $user = User::create([
+            'name'          => $request->user_name,
+            'email'         => $request->user_email,
+            'mobile_number' => $request->user_mobile,
+            'password'      => Hash::make('ucms@123'),
+            'branch_id'     => $request->user_branch,
+        ]);
+
+        $user->assignRole($request->user_role);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User created successfully',
+        ]);
     }
 
     /**
@@ -70,13 +91,13 @@ class UserController extends Controller
     }
 
     /**
-     * Toggle active and inactive farms
+     * Toggle active and inactive users
      */
     public function toggleActive(Request $request)
     {
         $user = User::find($request->user_id);
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['success' => false, 'message' => 'Error. Please, contact support.']);
         }
 
@@ -86,6 +107,9 @@ class UserController extends Controller
         return response()->json(['success' => true, 'message' => 'User activation status updated.']);
     }
 
+    /**
+     * Reset user password
+     */
     public function userPasswordReset(Request $request)
     {
         $user = User::findOrFail($request->user_id);
