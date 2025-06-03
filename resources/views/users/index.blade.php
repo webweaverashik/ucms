@@ -501,10 +501,10 @@
                                     <div class="col-lg-4">
                                         <!--begin::Option-->
                                         <input type="radio" class="btn-check" name="user_role_edit" value="manager"
-                                            id="role_mananger_edit" />
+                                            id="role_manager_edit" />
                                         <label
                                             class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
-                                            for="role_mananger_edit">
+                                            for="role_manager_edit">
                                             <i class="las la-user-ninja fs-2x me-5"></i>
                                             <!--begin::Info-->
                                             <span class="d-block fw-semibold text-start">

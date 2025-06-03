@@ -398,7 +398,15 @@ var KTUsersEditUser = function () {
 
                                         // Populate form fields
                                         setSelect2Value("user_branch_edit", user.branch_id);
-                                        setSelect2Value("user_role_edit", user.role);
+
+                                        // Role radio input fields
+                                        if (user.role === 'admin') {
+                                             document.getElementById("role_admin_edit").checked = true;
+                                        } else if (user.role === 'manager') {
+                                             document.getElementById("role_manager_edit").checked = true;
+                                        } else if (user.role === 'accountant') {
+                                             document.getElementById("role_accountant_edit").checked = true;
+                                        }
 
                                         // Show modal (assumes Bootstrap modal)
                                         modal.show();
