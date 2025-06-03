@@ -327,6 +327,8 @@ var KTUsersEditUser = function () {
      const form = element.querySelector('#kt_modal_edit_user_form');
      const modal = new bootstrap.Modal(element);
 
+     let userId = null; // Declare globally
+
      // Init add schedule modal
      var initEditUser = () => {
 
@@ -347,12 +349,192 @@ var KTUsersEditUser = function () {
                form.reset(); // Reset form			
                modal.hide();
           });
+
+
+          // AJAX form data load
+          const editButtons = document.querySelectorAll("[data-bs-target='#kt_modal_edit_user']");
+          if (editButtons.length) {
+               editButtons.forEach((button) => {
+                    button.addEventListener("click", function () {
+                         userId = this.getAttribute("data-user-id"); // Assign value globally
+                         console.log("User ID:", userId);
+                         if (!userId) return;
+
+                         // Clear form
+                         if (form) form.reset();
+
+                         fetch(`/users/${userId}`)
+                              .then(response => {
+                                   if (!response.ok) throw new Error('Network response was not ok');
+                                   return response.json();
+                              })
+                              .then(data => {
+                                   if (data.success && data.data) {
+                                        if (!data.success || !data.data) {
+                                             throw new Error("Invalid response data");
+                                        }
+
+                                        const user = data.data;
+
+                                        // Set modal title
+                                        const titleEl = document.getElementById("kt_modal_edit_user_title");
+                                        if (titleEl) {
+                                             titleEl.textContent = `Update user ${user.name}`;
+                                        }
+
+
+                                        // Populate regular input fields
+                                        document.querySelector("input[name='user_name_edit']").value = user.name;
+                                        document.querySelector("input[name='user_email_edit']").value = user.email;
+                                        document.querySelector("input[name='user_mobile_edit']").value = user.mobile_number;
+
+                                        // Set Select2 values and trigger change
+                                        const setSelect2Value = (name, value) => {
+                                             const el = $(`select[name="${name}"]`);
+                                             if (el.length) {
+                                                  el.val(value).trigger('change');
+                                             }
+                                        };
+
+                                        // Populate form fields
+                                        setSelect2Value("user_branch_edit", user.branch_id);
+                                        setSelect2Value("user_role_edit", user.role);
+
+                                        // Show modal (assumes Bootstrap modal)
+                                        modal.show();
+                                   } else {
+                                        throw new Error(data.message || 'Invalid response data');
+                                   }
+                              })
+                              .catch(error => {
+                                   console.error("Error:", error);
+                                   toastr.error(error.message || "Failed to load user details");
+                              });
+                    });
+               });
+          }
+     }
+
+
+     // Form validation
+     var initEditFormValidation = function () {
+          if (!form) return;
+
+          var validator = FormValidation.formValidation(
+               form,
+               {
+                    fields: {
+                         'user_name_edit': {
+                              validators: {
+                                   notEmpty: {
+                                        message: 'Username is required'
+                                   }
+                              }
+                         },
+                         'user_mobile_edit': {
+                              validators: {
+                                   notEmpty: {
+                                        message: 'Mobile no. is required'
+                                   },
+                                   regexp: {
+                                        regexp: /^01[3-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
+                                        message: 'Please enter a valid Bangladeshi mobile number'
+                                   },
+                                   stringLength: {
+                                        min: 11,
+                                        max: 11,
+                                        message: 'The mobile number must be exactly 11 digits'
+                                   }
+                              }
+                         },
+                         'user_branch_edit': {
+                              validators: {
+                                   notEmpty: {
+                                        message: 'Branch is required'
+                                   }
+                              }
+                         },
+                         'user_role_edit': {
+                              validators: {
+                                   notEmpty: {
+                                        message: 'Role is required'
+                                   }
+                              }
+                         },
+                    },
+                    plugins: {
+                         trigger: new FormValidation.plugins.Trigger(),
+                         bootstrap: new FormValidation.plugins.Bootstrap5({
+                              rowSelector: '.fv-row',
+                              eleInvalidClass: '',
+                              eleValidClass: ''
+                         })
+                    }
+               }
+          );
+
+          const submitButton = element.querySelector('[data-edit-users-modal-action="submit"]');
+
+          if (submitButton && validator) {
+               submitButton.addEventListener('click', function (e) {
+                    e.preventDefault(); // Prevent default button behavior
+
+                    validator.validate().then(function (status) {
+                         if (status === 'Valid') {
+                              // Show loading indicator
+                              submitButton.setAttribute('data-kt-indicator', 'on');
+                              submitButton.disabled = true;
+
+                              const formData = new FormData(form);
+                              formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+
+                              fetch(storeUserRoute, {
+                                   method: "get",
+                                   body: formData,
+                                   headers: {
+                                        'Accept': 'application/json', // Explicitly ask for JSON
+                                        'X-Requested-With': 'XMLHttpRequest'
+                                   }
+                              })
+                                   .then(response => {
+                                        if (!response.ok) throw new Error('Network response was not ok');
+                                        return response.json();
+                                   })
+                                   .then(data => {
+                                        submitButton.removeAttribute('data-kt-indicator');
+                                        submitButton.disabled = false;
+
+                                        if (data.success) {
+                                             toastr.success(data.message || 'User updated successfully');
+                                             modal.hide();
+                                             setTimeout(() => {
+                                                  window.location.reload();
+                                             }, 1500); // 1000ms = 1 second delay
+
+                                        } else {
+                                             throw new Error(data.message || 'User updated failed');
+                                        }
+                                   })
+                                   .catch(error => {
+                                        submitButton.removeAttribute('data-kt-indicator');
+                                        submitButton.disabled = false;
+                                        toastr.error(error.message || 'Failed to update invoice');
+                                        console.error('Error:', error);
+                                   });
+                         } else {
+                              toastr.warning('Please fill all fields correctly');
+                         }
+                    });
+               });
+          }
+
      }
 
      return {
           // Public functions
           init: function () {
                initEditUser();
+               initEditFormValidation();
           }
      };
 }();

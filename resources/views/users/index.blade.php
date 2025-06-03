@@ -301,7 +301,7 @@
                                     <div class="col-lg-4">
                                         <!--begin::Option-->
                                         <input type="radio" class="btn-check" name="user_role" value="admin"
-                                            checked="checked" id="role_admin_input" />
+                                            id="role_admin_input" />
                                         <label
                                             class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                             for="role_admin_input">
@@ -335,7 +335,7 @@
                                     <div class="col-lg-4">
                                         <!--begin::Option-->
                                         <input type="radio" class="btn-check" name="user_role" value="accountant"
-                                            id="role_accountant_input" />
+                                            id="role_accountant_input" checked="checked" />
                                         <label
                                             class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                             for="role_accountant_input">
@@ -386,9 +386,9 @@
             <!--begin::Modal content-->
             <div class="modal-content">
                 <!--begin::Modal header-->
-                <div class="modal-header" id="kt_modal_edit_user_header">
+                <div class="modal-header" >
                     <!--begin::Modal title-->
-                    <h2 class="fw-bold">Update User</h2>
+                    <h2 class="fw-bold" id="kt_modal_edit_user_title">Update User</h2>
                     <!--end::Modal title-->
                     <!--begin::Close-->
                     <div class="btn btn-icon btn-sm btn-active-icon-primary" data-edit-users-modal-action="close">
@@ -418,7 +418,7 @@
                                         <label class="required fw-semibold fs-6 mb-2">Name</label>
                                         <!--end::Label-->
                                         <!--begin::Input-->
-                                        <input type="text" name="user_name"
+                                        <input type="text" name="user_name_edit"
                                             class="form-control form-control-solid mb-3 mb-lg-0"
                                             placeholder="Write full name" required />
                                         <!--end::Input-->
@@ -429,14 +429,51 @@
                                 <!--begin::User email input-->
                                 <div class="col-lg-6">
                                     <div class="fv-row mb-7">
-                                        <label class="required fw-semibold fs-6 mb-2">Email</label>
+                                        <label class="fw-semibold fs-6 mb-2">Email <span class="text-muted fst-italic">(cannot be changed)</span></label>
 
                                         <input type="email" name="user_email_edit"
                                             class="form-control form-control-solid mb-3 mb-lg-0"
-                                            placeholder="test@mail.com" />
+                                            placeholder="test@mail.com" disabled/>
                                     </div>
                                 </div>
                                 <!--end::User email input-->
+
+                                <!--begin::User mobile input-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row mb-7">
+                                        <label class="required fw-semibold fs-6 mb-2">Mobile No.</label>
+
+                                        <input type="text" name="user_mobile_edit"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="e.g. 01812345678" required />
+                                    </div>
+                                </div>
+                                <!--end::User mobile input-->
+
+                                <!--begin::Branch Input-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row mb-5">
+                                        <!--begin::Label-->
+                                        <label class="required fs-6 fw-semibold form-label mb-2">Assign to Branch</label>
+                                        <!--end::Label-->
+                                        <!--begin::Row-->
+                                        <div class="fv-row">
+                                            <!--begin::Col-->
+                                            <select name="user_branch_edit" class="form-select form-select-solid"
+                                                data-control="select2" data-hide-search="true"
+                                                data-placeholder="Select branch" required>
+                                                <option></option>
+                                                @foreach ($branches as $branch)
+                                                    <option value="{{ $branch->id }}">{{ $branch->branch_name }} Branch
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            <!--end::Col-->
+                                        </div>
+                                        <!--end::Row-->
+                                    </div>
+                                </div>
+                                <!--end::Branch Input-->
                             </div>
 
                             <!--begin::Role Input-->
@@ -447,8 +484,7 @@
                                 <div class="row">
                                     <div class="col-lg-4">
                                         <!--begin::Option-->
-                                        <input type="radio" class="btn-check" name="user_role_edit" value="admin"
-                                            checked="checked" id="role_admin_edit" />
+                                        <input type="radio" class="btn-check" name="user_role_edit" value="admin" id="role_admin_edit" />
                                         <label
                                             class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                             for="role_admin_edit">
@@ -499,32 +535,6 @@
                                 <!--end::Row-->
                             </div>
                             <!--end::Role Input -->
-
-                            <!--begin::Branch Input-->
-                            <div class="mb-5">
-                                <!--begin::Col-->
-                                <div class="fv-row">
-                                    <!--begin::Label-->
-                                    <label class="required fs-6 fw-semibold form-label mb-2">Assign Branch</label>
-                                    <!--end::Label-->
-                                    <!--begin::Row-->
-                                    <div class="fv-row">
-                                        <!--begin::Col-->
-                                        <select name="user_branch_edit" class="form-select form-select-solid"
-                                            data-control="select2" data-hide-search="true"
-                                            data-placeholder="Select branch" required>
-                                            <option></option>
-                                            @foreach ($branches as $branch)
-                                                <option value="{{ $branch->id }}">{{ $branch->branch_name }}</option>
-                                            @endforeach
-                                        </select>
-                                        <!--end::Col-->
-                                    </div>
-                                    <!--end::Row-->
-                                </div>
-                                <!--end::Col-->
-                            </div>
-                            <!--end::Branch Input-->
                         </div>
                         <!--end::Scroll-->
 

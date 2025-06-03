@@ -60,9 +60,19 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(User $user)
     {
-        //
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'id'            => $user->id,
+                'name'          => $user->name,
+                'email'         => $user->email,
+                'mobile_number' => $user->mobile_number,
+                'branch_id'     => $user->branch_id,
+                'role'          => $user->getRoleNames()->first(),
+            ],
+        ]);
     }
 
     /**
