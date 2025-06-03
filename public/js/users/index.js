@@ -88,6 +88,47 @@ var KTUsersList = function () {
           });
      };
 
+     // Filter Datatable
+    var handleFilter = function () {
+        // Select filter options
+        const filterForm = document.querySelector('[data-users-table-filter="form"]');
+        const filterButton = filterForm.querySelector('[data-users-table-filter="filter"]');
+        const resetButton = filterForm.querySelector('[data-users-table-filter="reset"]');
+        const selectOptions = filterForm.querySelectorAll('select');
+
+        // Filter datatable on submit
+        filterButton.addEventListener('click', function () {
+            var filterString = '';
+
+            // Get filter values
+            selectOptions.forEach((item, index) => {
+                if (item.value && item.value !== '') {
+                    if (index !== 0) {
+                        filterString += ' ';
+                    }
+
+                    // Build filter value options
+                    filterString += item.value;
+                }
+            });
+
+            // Filter datatable --- official docs reference: https://datatables.net/reference/api/search()
+            datatable.search(filterString).draw();
+        });
+
+        // Reset datatable
+        resetButton.addEventListener('click', function () {
+            // Reset filter form
+            selectOptions.forEach((item, index) => {
+                // Reset Select2 dropdown --- official docs reference: https://select2.org/programmatic-control/add-select-clear-items
+                $(item).val(null).trigger('change');
+            });
+
+            // Filter datatable --- official docs reference: https://datatables.net/reference/api/search()
+            datatable.search('').draw();
+        });
+    }
+
      // Toggle activation
      var handleToggleActivation = function () {
           const toggleInputs = document.querySelectorAll('.toggle-active');
@@ -146,6 +187,7 @@ var KTUsersList = function () {
 
                initDatatable();
                handleSearch();
+               handleFilter();
                handleDeletion();
                handleToggleActivation();
           }
