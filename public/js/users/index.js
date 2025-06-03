@@ -495,12 +495,13 @@ var KTUsersEditUser = function () {
 
                               const formData = new FormData(form);
                               formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+                              formData.append('_method', 'PUT');
 
-                              fetch(storeUserRoute, {
-                                   method: "get",
+                              fetch(`/users/${userId}`, {
+                                   method: 'POST',
                                    body: formData,
                                    headers: {
-                                        'Accept': 'application/json', // Explicitly ask for JSON
+                                        'Accept': 'application/json',
                                         'X-Requested-With': 'XMLHttpRequest'
                                    }
                               })
@@ -515,12 +516,9 @@ var KTUsersEditUser = function () {
                                         if (data.success) {
                                              toastr.success(data.message || 'User updated successfully');
                                              modal.hide();
-                                             setTimeout(() => {
-                                                  window.location.reload();
-                                             }, 1500); // 1000ms = 1 second delay
-
+                                             window.location.reload();
                                         } else {
-                                             throw new Error(data.message || 'User updated failed');
+                                             throw new Error(data.message || 'User Update failed');
                                         }
                                    })
                                    .catch(error => {
@@ -530,7 +528,7 @@ var KTUsersEditUser = function () {
                                         console.error('Error:', error);
                                    });
                          } else {
-                              toastr.warning('Please fill all fields correctly');
+                              toastr.warning('Fill all required fields correctly');
                          }
                     });
                });

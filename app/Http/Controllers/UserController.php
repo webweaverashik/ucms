@@ -37,8 +37,9 @@ class UserController extends Controller
         $validated = $request->validate([
             'user_name'   => 'required|string|max:255',
             'user_email'  => 'required|string|email|max:255|unique:users,email',
-            'user_branch' => 'required',
-            'user_role'   => 'required',
+            'user_branch' => 'required|integer|exists:branches,id',
+            'user_mobile' => 'required|string|size:11',
+            'user_role'   => 'required|string|in:admin,manager,accountant',
         ]);
 
         $user = User::create([
@@ -88,7 +89,31 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        return back()->with('success', 'User updated!');
+        $user = User::findOrFail($id);
+
+        $request->validate([
+            'user_name_edit'   => 'required|string|max:255',
+            'user_email_edit'  => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'user_mobile_edit' => 'required|string|size:11',
+            'user_branch_edit' => 'required|integer|exists:branches,id',
+            'user_role_edit'   => 'required|string|in:admin,manager,accountant',
+        ]);
+
+
+        // Update the user record
+        $user->update([
+            'name'          => $request->user_name_edit,
+            'email'         => $request->user_email_edit,
+            'mobile_number' => $request->user_mobile_edit,
+            'branch_id'     => $request->user_branch_edit,
+        ]);
+
+        $user->syncRoles($request->user_role_edit);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User updated successfully',
+        ]);
     }
 
     /**

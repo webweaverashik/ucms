@@ -92,10 +92,11 @@
                     <tr class="fw-bold fs-7 text-uppercase gs-0">
                         <th class="w-50px">SL</th>
                         <th class="min-w-125px">User Info</th>
-                        <th class="min-w-125px">Branch</th>
-                        <th class="min-w-125px">Role</th>
+                        <th>Mobile No.</th>
+                        <th class="w-150px">Branch</th>
+                        <th class="w-100px">Role</th>
                         <th class="min-w-125px">Last Login</th>
-                        <th class="min-w-125px">Active/Inactive</th>
+                        <th class="min-w-100px">Active/Inactive</th>
                         <th class="min-w-100px">Actions</th>
                     </tr>
                 </thead>
@@ -104,24 +105,27 @@
                     @foreach ($users as $user)
                         <tr>
                             <td>{{ $loop->index + 1 }}</td>
-                            <td class="d-flex align-items-center">
-                                <!--begin:: Avatar -->
-                                <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
-                                    <a href="#">
-                                        <div class="symbol-label">
-                                            <img src="{{ $user->photo_url ? asset($user->photo_url) : asset('assets/img/dummy.png') }}"
-                                                alt="{{ $user->name }}" class="w-100" />
-                                        </div>
-                                    </a>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <!--begin:: Avatar -->
+                                    <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
+                                        <a href="#">
+                                            <div class="symbol-label">
+                                                <img src="{{ $user->photo_url ? asset($user->photo_url) : asset('assets/img/dummy.png') }}"
+                                                    alt="{{ $user->name }}" class="w-100" />
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <!--end::Avatar-->
+                                    <!--begin::user details-->
+                                    <div class="d-flex flex-column text-start">
+                                        <a href="#" class="text-gray-800 mb-1">{{ $user->name }}</a>
+                                        <span class="fw-bold fs-base">{{ $user->email }}</span>
+                                    </div>
+                                    <!--begin::user details-->
                                 </div>
-                                <!--end::Avatar-->
-                                <!--begin::user details-->
-                                <div class="d-flex flex-column text-start">
-                                    <a href="#" class="text-gray-800 mb-1">{{ $user->name }}</a>
-                                    <span class="fw-bold fs-base">{{ $user->email }}</span>
-                                </div>
-                                <!--begin::user details-->
                             </td>
+                            <td>{{ $user->mobile_number }}</td>
                             <td>
                                 @if ($user->branch)
                                     {{ $user->branch->branch_name }}
@@ -386,7 +390,7 @@
             <!--begin::Modal content-->
             <div class="modal-content">
                 <!--begin::Modal header-->
-                <div class="modal-header" >
+                <div class="modal-header">
                     <!--begin::Modal title-->
                     <h2 class="fw-bold" id="kt_modal_edit_user_title">Update User</h2>
                     <!--end::Modal title-->
@@ -401,9 +405,7 @@
                 <!--begin::Modal body-->
                 <div class="modal-body px-5 my-7">
                     <!--begin::Form-->
-                    <form id="kt_modal_edit_user_form" class="form" action="#" method="POST">
-                        @csrf
-                        @method('PUT')
+                    <form id="kt_modal_edit_user_form" class="form" action="#" novalidate="novalidate">
                         <!--begin::Scroll-->
                         <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_edit_user_scroll"
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
@@ -429,11 +431,11 @@
                                 <!--begin::User email input-->
                                 <div class="col-lg-6">
                                     <div class="fv-row mb-7">
-                                        <label class="fw-semibold fs-6 mb-2">Email <span class="text-muted fst-italic">(cannot be changed)</span></label>
+                                        <label class="fw-semibold fs-6 mb-2 required">Email</label>
 
                                         <input type="email" name="user_email_edit"
                                             class="form-control form-control-solid mb-3 mb-lg-0"
-                                            placeholder="test@mail.com" disabled/>
+                                            placeholder="test@mail.com" required />
                                     </div>
                                 </div>
                                 <!--end::User email input-->
@@ -484,7 +486,8 @@
                                 <div class="row">
                                     <div class="col-lg-4">
                                         <!--begin::Option-->
-                                        <input type="radio" class="btn-check" name="user_role_edit" value="admin" id="role_admin_edit" />
+                                        <input type="radio" class="btn-check" name="user_role_edit" value="admin"
+                                            id="role_admin_edit" />
                                         <label
                                             class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                             for="role_admin_edit">
