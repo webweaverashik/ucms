@@ -320,10 +320,27 @@ var KTUsersAddUser = function () {
                                         'X-Requested-With': 'XMLHttpRequest'
                                    }
                               })
-                                   .then(response => {
-                                        if (!response.ok) throw new Error('Network response was not ok');
-                                        return response.json();
+                                   .then(async response => {
+                                        const data = await response.json();
+
+                                        if (!response.ok) {
+                                             const message = data.message || 'Something went wrong';
+                                             const errors = data.errors
+                                                  ? [...new Set(Object.values(data.errors).flat())].join('<br>')
+                                                  : '';
+                                             throw {
+                                                  message: data.message || 'User creation failed',
+                                                  response: new Response(JSON.stringify(data), {
+                                                       status: 422,
+                                                       headers: { 'Content-type': 'application/json' }
+                                                  })
+                                             };
+
+                                        }
+
+                                        return data;
                                    })
+
                                    .then(data => {
                                         submitButton.removeAttribute('data-kt-indicator');
                                         submitButton.disabled = false;
@@ -333,18 +350,18 @@ var KTUsersAddUser = function () {
                                              modal.hide();
                                              setTimeout(() => {
                                                   window.location.reload();
-                                             }, 1500); // 1000ms = 1 second delay
-
+                                             }, 1500);
                                         } else {
-                                             throw new Error(data.message || 'User creation failed');
+                                             toastr.error(data.message || 'User creation failed');
                                         }
                                    })
                                    .catch(error => {
                                         submitButton.removeAttribute('data-kt-indicator');
                                         submitButton.disabled = false;
-                                        toastr.error(error.message || 'Failed to update invoice');
+                                        toastr.error(error.message || 'Failed to create user');
                                         console.error('Error:', error);
                                    });
+
                          } else {
                               toastr.warning('Please fill all fields correctly');
                          }
@@ -589,9 +606,25 @@ var KTUsersEditUser = function () {
                                         'X-Requested-With': 'XMLHttpRequest'
                                    }
                               })
-                                   .then(response => {
-                                        if (!response.ok) throw new Error('Network response was not ok');
-                                        return response.json();
+                                   .then(async response => {
+                                        const data = await response.json();
+
+                                        if (!response.ok) {
+                                             const message = data.message || 'Something went wrong';
+                                             const errors = data.errors
+                                                  ? [...new Set(Object.values(data.errors).flat())].join('<br>')
+                                                  : '';
+                                             throw {
+                                                  message: data.message || 'User creation failed',
+                                                  response: new Response(JSON.stringify(data), {
+                                                       status: 422,
+                                                       headers: { 'Content-type': 'application/json' }
+                                                  })
+                                             };
+
+                                        }
+
+                                        return data;
                                    })
                                    .then(data => {
                                         submitButton.removeAttribute('data-kt-indicator');
