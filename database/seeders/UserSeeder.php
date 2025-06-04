@@ -14,9 +14,9 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // Step 1: Create Roles
-        $adminRole      = Role::firstOrCreate(['name' => 'admin']);
-        $managerRole    = Role::firstOrCreate(['name' => 'manager']);
-        $accountantRole = Role::firstOrCreate(['name' => 'accountant']);
+        // $adminRole      = Role::firstOrCreate(['name' => 'admin']);
+        // $managerRole    = Role::firstOrCreate(['name' => 'manager']);
+        // $accountantRole = Role::firstOrCreate(['name' => 'accountant']);
 
         // Step 2: Create Users and Assign Roles
 
@@ -28,7 +28,7 @@ class UserSeeder extends Seeder
             'password'      => Hash::make('admin123'),
             'branch_id'     => 0,
         ]);
-        $admin->assignRole($adminRole);
+        $admin->assignRole('admin');
 
         // Goran Branch Manager
         $manager1 = User::create([
@@ -38,7 +38,8 @@ class UserSeeder extends Seeder
             'password'      => Hash::make('manager123'),
             'branch_id'     => 1,
         ]);
-        $manager1->assignRole($managerRole);
+        $manager1->assignRole('manager');
+
 
         // Goran Branch Accountant
         $accountant1 = User::create([
@@ -48,7 +49,7 @@ class UserSeeder extends Seeder
             'password'      => Hash::make('accountant123'),
             'branch_id'     => 1,
         ]);
-        $accountant1->assignRole($accountantRole);
+        $accountant1->assignRole('accountant');
 
         // Khilgaon Branch Manager
         $manager2 = User::create([
@@ -58,7 +59,8 @@ class UserSeeder extends Seeder
             'password'      => Hash::make('manager123'),
             'branch_id'     => 2,
         ]);
-        $manager2->assignRole($managerRole);
+        $manager2->assignRole('manager');
+
 
         // Khilgaon Branch Accountant
         $accountant2 = User::create([
@@ -68,6 +70,6 @@ class UserSeeder extends Seeder
             'password'      => Hash::make('accountant123'),
             'branch_id'     => 2,
         ]);
-        $accountant2->assignRole($accountantRole);
+        $accountant2->assignRole('accountant');
     }
 }

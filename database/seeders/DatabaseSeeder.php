@@ -30,16 +30,17 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             BranchSeeder::class,
+            RolePermissionSeeder::class,
             UserSeeder::class,
             ClassNameSeeder::class,
             ShiftSeeder::class,
             InstitutionSeeder::class,
             TeacherSeeder::class,
             ReferenceSeeder::class,
-            StudentSeeder::class,
-            GuardianSeeder::class,
-            MobileNumberSeeder::class,
-            SiblingSeeder::class,
+            // StudentSeeder::class,
+            // GuardianSeeder::class,
+            // MobileNumberSeeder::class,
+            // SiblingSeeder::class,
             // StudentActivationSeeder::class, // will be called by StudentFactory
             SubjectSeeder::class,
             SubjectTakenSeeder::class,
