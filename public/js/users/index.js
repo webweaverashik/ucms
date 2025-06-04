@@ -89,45 +89,45 @@ var KTUsersList = function () {
      };
 
      // Filter Datatable
-    var handleFilter = function () {
-        // Select filter options
-        const filterForm = document.querySelector('[data-users-table-filter="form"]');
-        const filterButton = filterForm.querySelector('[data-users-table-filter="filter"]');
-        const resetButton = filterForm.querySelector('[data-users-table-filter="reset"]');
-        const selectOptions = filterForm.querySelectorAll('select');
+     var handleFilter = function () {
+          // Select filter options
+          const filterForm = document.querySelector('[data-users-table-filter="form"]');
+          const filterButton = filterForm.querySelector('[data-users-table-filter="filter"]');
+          const resetButton = filterForm.querySelector('[data-users-table-filter="reset"]');
+          const selectOptions = filterForm.querySelectorAll('select');
 
-        // Filter datatable on submit
-        filterButton.addEventListener('click', function () {
-            var filterString = '';
+          // Filter datatable on submit
+          filterButton.addEventListener('click', function () {
+               var filterString = '';
 
-            // Get filter values
-            selectOptions.forEach((item, index) => {
-                if (item.value && item.value !== '') {
-                    if (index !== 0) {
-                        filterString += ' ';
+               // Get filter values
+               selectOptions.forEach((item, index) => {
+                    if (item.value && item.value !== '') {
+                         if (index !== 0) {
+                              filterString += ' ';
+                         }
+
+                         // Build filter value options
+                         filterString += item.value;
                     }
+               });
 
-                    // Build filter value options
-                    filterString += item.value;
-                }
-            });
+               // Filter datatable --- official docs reference: https://datatables.net/reference/api/search()
+               datatable.search(filterString).draw();
+          });
 
-            // Filter datatable --- official docs reference: https://datatables.net/reference/api/search()
-            datatable.search(filterString).draw();
-        });
+          // Reset datatable
+          resetButton.addEventListener('click', function () {
+               // Reset filter form
+               selectOptions.forEach((item, index) => {
+                    // Reset Select2 dropdown --- official docs reference: https://select2.org/programmatic-control/add-select-clear-items
+                    $(item).val(null).trigger('change');
+               });
 
-        // Reset datatable
-        resetButton.addEventListener('click', function () {
-            // Reset filter form
-            selectOptions.forEach((item, index) => {
-                // Reset Select2 dropdown --- official docs reference: https://select2.org/programmatic-control/add-select-clear-items
-                $(item).val(null).trigger('change');
-            });
-
-            // Filter datatable --- official docs reference: https://datatables.net/reference/api/search()
-            datatable.search('').draw();
-        });
-    }
+               // Filter datatable --- official docs reference: https://datatables.net/reference/api/search()
+               datatable.search('').draw();
+          });
+     }
 
      // Toggle activation
      var handleToggleActivation = function () {
@@ -352,6 +352,33 @@ var KTUsersAddUser = function () {
                });
           }
 
+
+          // Role-based layout and validation logic
+          const roleInputs = document.querySelectorAll('input[name="user_role"]');
+          const branchDiv = document.getElementById('branch_input_div');
+          const userNameDiv = document.getElementById('user_name_input_div');
+
+          roleInputs.forEach(roleInput => {
+               roleInput.addEventListener('change', function () {
+                    if (this.id === 'role_admin_input') {
+                         // Admin selected
+                         if (branchDiv) branchDiv.style.display = 'none';
+                         if (userNameDiv) {
+                              userNameDiv.classList.remove('col-lg-6');
+                              userNameDiv.classList.add('col-lg-12');
+                         }
+                         validator.disableValidator('user_branch', 'notEmpty');
+                    } else {
+                         // Manager or Accountant selected
+                         if (branchDiv) branchDiv.style.display = '';
+                         if (userNameDiv) {
+                              userNameDiv.classList.remove('col-lg-12');
+                              userNameDiv.classList.add('col-lg-6');
+                         }
+                         validator.enableValidator('user_branch', 'notEmpty');
+                    }
+               });
+          });
      }
 
      return {
@@ -369,40 +396,61 @@ var KTUsersEditUser = function () {
      const form = element.querySelector('#kt_modal_edit_user_form');
      const modal = new bootstrap.Modal(element);
 
-     let userId = null; // Declare globally
+     let userId = null;
+     let validator = null; // Declare validator globally
 
-     // Init add schedule modal
+     // Function to toggle branch field visibility and validation
+     const toggleBranchValidation = (role) => {
+          const branchDiv = document.getElementById('branch_edit_div');
+          const userNameDiv = document.getElementById('user_name_edit_div');
+
+          if (role === 'admin') {
+               if (branchDiv) branchDiv.style.display = 'none';
+               if (userNameDiv) {
+                    userNameDiv.classList.remove('col-lg-6');
+                    userNameDiv.classList.add('col-lg-12');
+               }
+               if (validator) {
+                    validator.disableValidator('user_branch_edit', 'notEmpty');
+               }
+          } else {
+               if (branchDiv) branchDiv.style.display = '';
+               if (userNameDiv) {
+                    userNameDiv.classList.remove('col-lg-12');
+                    userNameDiv.classList.add('col-lg-6');
+               }
+               if (validator) {
+                    validator.enableValidator('user_branch_edit', 'notEmpty');
+               }
+          }
+     };
+
+     // Init Edit User Modal
      var initEditUser = () => {
-
-          // Cancel button handler
+          // Cancel button
           const cancelButton = element.querySelector('[data-edit-users-modal-action="cancel"]');
           cancelButton.addEventListener('click', e => {
                e.preventDefault();
-
-               form.reset(); // Reset form			
+               form.reset();
                modal.hide();
           });
 
-          // Close button handler
+          // Close button
           const closeButton = element.querySelector('[data-edit-users-modal-action="close"]');
           closeButton.addEventListener('click', e => {
                e.preventDefault();
-
-               form.reset(); // Reset form			
+               form.reset();
                modal.hide();
           });
 
-
-          // AJAX form data load
+          // Button click to load data
           const editButtons = document.querySelectorAll("[data-bs-target='#kt_modal_edit_user']");
           if (editButtons.length) {
                editButtons.forEach((button) => {
                     button.addEventListener("click", function () {
-                         userId = this.getAttribute("data-user-id"); // Assign value globally
-                         console.log("User ID:", userId);
+                         userId = this.getAttribute("data-user-id");
                          if (!userId) return;
 
-                         // Clear form
                          if (form) form.reset();
 
                          fetch(`/users/${userId}`)
@@ -412,46 +460,43 @@ var KTUsersEditUser = function () {
                               })
                               .then(data => {
                                    if (data.success && data.data) {
-                                        if (!data.success || !data.data) {
-                                             throw new Error("Invalid response data");
-                                        }
-
                                         const user = data.data;
 
-                                        // Set modal title
                                         const titleEl = document.getElementById("kt_modal_edit_user_title");
                                         if (titleEl) {
                                              titleEl.textContent = `Update user ${user.name}`;
                                         }
 
-
-                                        // Populate regular input fields
                                         document.querySelector("input[name='user_name_edit']").value = user.name;
                                         document.querySelector("input[name='user_email_edit']").value = user.email;
                                         document.querySelector("input[name='user_mobile_edit']").value = user.mobile_number;
 
-                                        // Set Select2 values and trigger change
                                         const setSelect2Value = (name, value) => {
                                              const el = $(`select[name="${name}"]`);
                                              if (el.length) {
                                                   el.val(value).trigger('change');
                                              }
                                         };
-
-                                        // Populate form fields
                                         setSelect2Value("user_branch_edit", user.branch_id);
 
-                                        // Role radio input fields
-                                        if (user.role === 'admin') {
-                                             document.getElementById("role_admin_edit").checked = true;
-                                        } else if (user.role === 'manager') {
-                                             document.getElementById("role_manager_edit").checked = true;
-                                        } else if (user.role === 'accountant') {
-                                             document.getElementById("role_accountant_edit").checked = true;
-                                        }
+                                        // Set role radio
+                                        const roleRadio = document.querySelector(`input[name='user_role_edit'][value="${user.role}"]`);
+                                        if (roleRadio) roleRadio.checked = true;
 
-                                        // Show modal (assumes Bootstrap modal)
+                                        // Call layout/validation logic based on current role
+                                        toggleBranchValidation(user.role);
+
+                                        // Show modal
                                         modal.show();
+
+                                        // Attach event listeners to role radios after modal is shown
+                                        const roleRadios = form.querySelectorAll('input[name="user_role_edit"]');
+                                        roleRadios.forEach((radio) => {
+                                             radio.addEventListener('change', function () {
+                                                  toggleBranchValidation(this.value);
+                                             });
+                                        });
+
                                    } else {
                                         throw new Error(data.message || 'Invalid response data');
                                    }
@@ -463,14 +508,13 @@ var KTUsersEditUser = function () {
                     });
                });
           }
-     }
-
+     };
 
      // Form validation
      var initEditFormValidation = function () {
           if (!form) return;
 
-          var validator = FormValidation.formValidation(
+          validator = FormValidation.formValidation(
                form,
                {
                     fields: {
@@ -524,14 +568,12 @@ var KTUsersEditUser = function () {
           );
 
           const submitButton = element.querySelector('[data-edit-users-modal-action="submit"]');
-
           if (submitButton && validator) {
                submitButton.addEventListener('click', function (e) {
-                    e.preventDefault(); // Prevent default button behavior
+                    e.preventDefault();
 
                     validator.validate().then(function (status) {
                          if (status === 'Valid') {
-                              // Show loading indicator
                               submitButton.setAttribute('data-kt-indicator', 'on');
                               submitButton.disabled = true;
 
@@ -566,8 +608,7 @@ var KTUsersEditUser = function () {
                                    .catch(error => {
                                         submitButton.removeAttribute('data-kt-indicator');
                                         submitButton.disabled = false;
-                                        toastr.error(error.message || 'Failed to update invoice');
-                                        console.error('Error:', error);
+                                        toastr.error(error.message || 'Failed to update user');
                                    });
                          } else {
                               toastr.warning('Fill all required fields correctly');
@@ -575,11 +616,9 @@ var KTUsersEditUser = function () {
                     });
                });
           }
-
-     }
+     };
 
      return {
-          // Public functions
           init: function () {
                initEditUser();
                initEditFormValidation();

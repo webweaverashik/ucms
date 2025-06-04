@@ -32,22 +32,28 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        // return $request;
-
-        $validated = $request->validate([
+        $commonRules = [
             'user_name'   => 'required|string|max:255',
             'user_email'  => 'required|string|email|max:255|unique:users,email',
-            'user_branch' => 'required|integer|exists:branches,id',
             'user_mobile' => 'required|string|size:11',
             'user_role'   => 'required|string|in:admin,manager,accountant',
-        ]);
+        ];
+
+        // Only validate branch if role is NOT admin
+        if ($request->user_role !== 'admin') {
+            $commonRules['user_branch'] = 'required|integer|exists:branches,id';
+        }
+
+        $request->validate($commonRules);
+
+        $branch_id = $request->user_role === 'admin' ? 0 : $request->user_branch;
 
         $user = User::create([
             'name'          => $request->user_name,
             'email'         => $request->user_email,
             'mobile_number' => $request->user_mobile,
             'password'      => Hash::make('ucms@123'),
-            'branch_id'     => $request->user_branch,
+            'branch_id'     => $branch_id,
         ]);
 
         $user->assignRole($request->user_role);
@@ -91,21 +97,28 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        $request->validate([
+        $commonRules = [
             'user_name_edit'   => 'required|string|max:255',
             'user_email_edit'  => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'user_mobile_edit' => 'required|string|size:11',
-            'user_branch_edit' => 'required|integer|exists:branches,id',
             'user_role_edit'   => 'required|string|in:admin,manager,accountant',
-        ]);
+        ];
 
+        // Only validate branch if role is NOT admin
+        if ($request->user_role_edit !== 'admin') {
+            $commonRules['user_branch_edit'] = 'required|integer|exists:branches,id';
+        }
+
+        $request->validate($commonRules);
+
+        $branch_id = $request->user_role_edit === 'admin' ? 0 : $request->user_branch_edit;
 
         // Update the user record
         $user->update([
             'name'          => $request->user_name_edit,
             'email'         => $request->user_email_edit,
             'mobile_number' => $request->user_mobile_edit,
-            'branch_id'     => $request->user_branch_edit,
+            'branch_id'     => $branch_id,
         ]);
 
         $user->syncRoles($request->user_role_edit);

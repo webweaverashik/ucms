@@ -470,7 +470,7 @@
                                         <label class="form-label fs-6 fw-semibold">Billing Month:</label>
                                         <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                             data-placeholder="Select option" data-allow-clear="true"
-                                            data-kt-subscription-table-filter="status" data-hide-search="true">
+                                            data-kt-subscription-table-filter="status">
                                             <option></option>
                                             @foreach ($paidMonths as $paidMonth)
                                                 @php

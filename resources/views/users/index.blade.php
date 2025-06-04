@@ -288,8 +288,71 @@
                             data-kt-scroll-dependencies="#kt_modal_add_user_header"
                             data-kt-scroll-wrappers="#kt_modal_add_user_scroll" data-kt-scroll-offset="300px">
                             <div class="row">
+                                <!--begin::Role Input-->
+                                <div class="col-lg-12">
+                                    <div class="fv-row mb-7">
+                                        <label class="required fw-semibold fs-6 mb-2">Role</label>
+
+                                        <!--begin::Row-->
+                                        <div class="row">
+                                            <div class="col-lg-4">
+                                                <!--begin::Option-->
+                                                <input type="radio" class="btn-check" name="user_role" value="admin"
+                                                    id="role_admin_input" />
+                                                <label
+                                                    class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                                    for="role_admin_input">
+                                                    <i class="las la-user-secret fs-2x me-5"></i>
+                                                    <!--begin::Info-->
+                                                    <span class="d-block fw-semibold text-start">
+                                                        <span class="text-gray-900 fw-bold d-block fs-6">Admin</span>
+                                                    </span>
+                                                    <!--end::Info-->
+                                                </label>
+                                                <!--end::Option-->
+                                            </div>
+
+                                            <div class="col-lg-4">
+                                                <!--begin::Option-->
+                                                <input type="radio" class="btn-check" name="user_role" value="manager"
+                                                    id="role_mananger_input" />
+                                                <label
+                                                    class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                                    for="role_mananger_input">
+                                                    <i class="las la-user-ninja fs-2x me-5"></i>
+                                                    <!--begin::Info-->
+                                                    <span class="d-block fw-semibold text-start">
+                                                        <span class="text-gray-900 fw-bold d-block fs-6">Manager</span>
+                                                    </span>
+                                                    <!--end::Info-->
+                                                </label>
+                                                <!--end::Option-->
+                                            </div>
+
+                                            <div class="col-lg-4">
+                                                <!--begin::Option-->
+                                                <input type="radio" class="btn-check" name="user_role"
+                                                    value="accountant" id="role_accountant_input" checked="checked" />
+                                                <label
+                                                    class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                                    for="role_accountant_input">
+                                                    <i class="las la-user fs-2x me-5"></i>
+                                                    <!--begin::Info-->
+                                                    <span class="d-block fw-semibold text-start">
+                                                        <span class="text-gray-900 fw-bold d-block fs-6">Accountant</span>
+                                                    </span>
+                                                    <!--end::Info-->
+                                                </label>
+                                                <!--end::Option-->
+                                            </div>
+                                        </div>
+                                        <!--end::Row-->
+                                    </div>
+                                </div>
+                                <!--end::Role Input -->
+
                                 <!--begin::User name input-->
-                                <div class="col-lg-6">
+                                <div class="col-lg-6" id="user_name_input_div">
                                     <div class="fv-row mb-7">
                                         <!--begin::Label-->
                                         <label class="required fw-semibold fs-6 mb-2">Name</label>
@@ -328,7 +391,7 @@
                                 <!--end::User mobile input-->
 
                                 <!--begin::Branch Input-->
-                                <div class="col-lg-6">
+                                <div class="col-lg-6" id="branch_input_div">
                                     <div class="fv-row mb-5">
                                         <!--begin::Label-->
                                         <label class="required fs-6 fw-semibold form-label mb-2">Assign to Branch</label>
@@ -354,66 +417,7 @@
                             </div>
 
 
-                            <!--begin::Role Input-->
-                            <div class="fv-row mb-7">
-                                <label class="d-flex align-items-center form-label mb-3 required">Role</label>
 
-                                <!--begin::Row-->
-                                <div class="row">
-                                    <div class="col-lg-4">
-                                        <!--begin::Option-->
-                                        <input type="radio" class="btn-check" name="user_role" value="admin"
-                                            id="role_admin_input" />
-                                        <label
-                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
-                                            for="role_admin_input">
-                                            <i class="las la-user-secret fs-2x me-5"></i>
-                                            <!--begin::Info-->
-                                            <span class="d-block fw-semibold text-start">
-                                                <span class="text-gray-900 fw-bold d-block fs-6">Admin</span>
-                                            </span>
-                                            <!--end::Info-->
-                                        </label>
-                                        <!--end::Option-->
-                                    </div>
-
-                                    <div class="col-lg-4">
-                                        <!--begin::Option-->
-                                        <input type="radio" class="btn-check" name="user_role" value="manager"
-                                            id="role_mananger_input" />
-                                        <label
-                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
-                                            for="role_mananger_input">
-                                            <i class="las la-user-ninja fs-2x me-5"></i>
-                                            <!--begin::Info-->
-                                            <span class="d-block fw-semibold text-start">
-                                                <span class="text-gray-900 fw-bold d-block fs-6">Manager</span>
-                                            </span>
-                                            <!--end::Info-->
-                                        </label>
-                                        <!--end::Option-->
-                                    </div>
-
-                                    <div class="col-lg-4">
-                                        <!--begin::Option-->
-                                        <input type="radio" class="btn-check" name="user_role" value="accountant"
-                                            id="role_accountant_input" checked="checked" />
-                                        <label
-                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
-                                            for="role_accountant_input">
-                                            <i class="las la-user fs-2x me-5"></i>
-                                            <!--begin::Info-->
-                                            <span class="d-block fw-semibold text-start">
-                                                <span class="text-gray-900 fw-bold d-block fs-6">Accountant</span>
-                                            </span>
-                                            <!--end::Info-->
-                                        </label>
-                                        <!--end::Option-->
-                                    </div>
-                                </div>
-                                <!--end::Row-->
-                            </div>
-                            <!--end::Role Input -->
 
                         </div>
                         <!--end::Scroll-->
@@ -471,8 +475,71 @@
                             data-kt-scroll-wrappers="#kt_modal_edit_user_scroll" data-kt-scroll-offset="300px">
 
                             <div class="row">
+                                <!--begin::Role Input-->
+                                <div class="col-lg-12">
+                                    <div class="fv-row mb-7">
+                                        <label class="required fw-semibold fs-6 mb-2">Role</label>
+
+                                        <!--begin::Row-->
+                                        <div class="row">
+                                            <div class="col-lg-4">
+                                                <!--begin::Option-->
+                                                <input type="radio" class="btn-check" name="user_role_edit"
+                                                    value="admin" id="role_admin_edit" />
+                                                <label
+                                                    class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                                    for="role_admin_edit">
+                                                    <i class="las la-user-secret fs-2x me-5"></i>
+                                                    <!--begin::Info-->
+                                                    <span class="d-block fw-semibold text-start">
+                                                        <span class="text-gray-900 fw-bold d-block fs-6">Admin</span>
+                                                    </span>
+                                                    <!--end::Info-->
+                                                </label>
+                                                <!--end::Option-->
+                                            </div>
+
+                                            <div class="col-lg-4">
+                                                <!--begin::Option-->
+                                                <input type="radio" class="btn-check" name="user_role_edit"
+                                                    value="manager" id="role_manager_edit" />
+                                                <label
+                                                    class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                                    for="role_manager_edit">
+                                                    <i class="las la-user-ninja fs-2x me-5"></i>
+                                                    <!--begin::Info-->
+                                                    <span class="d-block fw-semibold text-start">
+                                                        <span class="text-gray-900 fw-bold d-block fs-6">Manager</span>
+                                                    </span>
+                                                    <!--end::Info-->
+                                                </label>
+                                                <!--end::Option-->
+                                            </div>
+
+                                            <div class="col-lg-4">
+                                                <!--begin::Option-->
+                                                <input type="radio" class="btn-check" name="user_role_edit"
+                                                    value="accountant" id="role_accountant_edit" />
+                                                <label
+                                                    class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                                    for="role_accountant_edit">
+                                                    <i class="las la-user fs-2x me-5"></i>
+                                                    <!--begin::Info-->
+                                                    <span class="d-block fw-semibold text-start">
+                                                        <span class="text-gray-900 fw-bold d-block fs-6">Accountant</span>
+                                                    </span>
+                                                    <!--end::Info-->
+                                                </label>
+                                                <!--end::Option-->
+                                            </div>
+                                        </div>
+                                        <!--end::Row-->
+                                    </div>
+                                </div>
+                                <!--end::Role Input -->
+
                                 <!--begin::User name input-->
-                                <div class="col-lg-6">
+                                <div class="col-lg-6" id="user_name_edit_div">
                                     <div class="fv-row mb-7">
                                         <!--begin::Label-->
                                         <label class="required fw-semibold fs-6 mb-2">Name</label>
@@ -511,7 +578,7 @@
                                 <!--end::User mobile input-->
 
                                 <!--begin::Branch Input-->
-                                <div class="col-lg-6">
+                                <div class="col-lg-6" id="branch_edit_div">
                                     <div class="fv-row mb-5">
                                         <!--begin::Label-->
                                         <label class="required fs-6 fw-semibold form-label mb-2">Assign to Branch</label>
@@ -535,67 +602,6 @@
                                 </div>
                                 <!--end::Branch Input-->
                             </div>
-
-                            <!--begin::Role Input-->
-                            <div class="fv-row mb-7">
-                                <label class="d-flex align-items-center form-label mb-3 required">Role</label>
-
-                                <!--begin::Row-->
-                                <div class="row">
-                                    <div class="col-lg-4">
-                                        <!--begin::Option-->
-                                        <input type="radio" class="btn-check" name="user_role_edit" value="admin"
-                                            id="role_admin_edit" />
-                                        <label
-                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
-                                            for="role_admin_edit">
-                                            <i class="las la-user-secret fs-2x me-5"></i>
-                                            <!--begin::Info-->
-                                            <span class="d-block fw-semibold text-start">
-                                                <span class="text-gray-900 fw-bold d-block fs-6">Admin</span>
-                                            </span>
-                                            <!--end::Info-->
-                                        </label>
-                                        <!--end::Option-->
-                                    </div>
-
-                                    <div class="col-lg-4">
-                                        <!--begin::Option-->
-                                        <input type="radio" class="btn-check" name="user_role_edit" value="manager"
-                                            id="role_manager_edit" />
-                                        <label
-                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
-                                            for="role_manager_edit">
-                                            <i class="las la-user-ninja fs-2x me-5"></i>
-                                            <!--begin::Info-->
-                                            <span class="d-block fw-semibold text-start">
-                                                <span class="text-gray-900 fw-bold d-block fs-6">Manager</span>
-                                            </span>
-                                            <!--end::Info-->
-                                        </label>
-                                        <!--end::Option-->
-                                    </div>
-
-                                    <div class="col-lg-4">
-                                        <!--begin::Option-->
-                                        <input type="radio" class="btn-check" name="user_role_edit" value="accountant"
-                                            id="role_accountant_edit" />
-                                        <label
-                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
-                                            for="role_accountant_edit">
-                                            <i class="las la-user fs-2x me-5"></i>
-                                            <!--begin::Info-->
-                                            <span class="d-block fw-semibold text-start">
-                                                <span class="text-gray-900 fw-bold d-block fs-6">Accountant</span>
-                                            </span>
-                                            <!--end::Info-->
-                                        </label>
-                                        <!--end::Option-->
-                                    </div>
-                                </div>
-                                <!--end::Row-->
-                            </div>
-                            <!--end::Role Input -->
                         </div>
                         <!--end::Scroll-->
 
