@@ -106,11 +106,13 @@
                     </div>
                     <!--end::Menu 1-->
 
-                    <!--begin::Add subscription-->
-                    <a href="#" class="btn btn-primary" data-bs-toggle="modal"
-                        data-bs-target="#kt_modal_add_transaction">
-                        <i class="ki-outline ki-plus fs-2"></i>New Transaction</a>
-                    <!--end::Add subscription-->
+                    @can('transactions.create')
+                        <!--begin::Add subscription-->
+                        <a href="#" class="btn btn-primary" data-bs-toggle="modal"
+                            data-bs-target="#kt_modal_add_transaction">
+                            <i class="ki-outline ki-plus fs-2"></i>New Transaction</a>
+                        <!--end::Add subscription-->
+                    @endcan
 
                     <!--end::Filter-->
                 </div>
@@ -182,11 +184,13 @@
                             </td>
 
                             <td>
+                                @can('transactions.payslip.download')
                                 <a href="{{ route('transactions.download', $transaction->id) }}" target="_blank"
                                     data-bs-toggle="tooltip" title="Download Payslip"
                                     class="btn btn-icon btn-active-light-primary w-30px h-30px me-3">
                                     <i class="bi bi-download fs-2"></i>
                                 </a>
+                                @endcan
                             </td>
                         </tr>
                     @endforeach

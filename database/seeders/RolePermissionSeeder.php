@@ -113,7 +113,7 @@ class RolePermissionSeeder extends Seeder
             'reports.view',
 
             // 🖥️ dashboard
-            'dashboard.access',
+            'dashboard.view',
         ];
 
         // Create all permissions
@@ -124,9 +124,77 @@ class RolePermissionSeeder extends Seeder
             ]);
         }
 
-
         // Assign all permissions to admin
         $admin = Role::where('name', 'admin')->first();
         $admin->syncPermissions(Permission::all());
+
+        // Optionally, assign limited permissions to other roles
+        $manager = Role::where('name', 'manager')->first();
+        $manager->syncPermissions([
+            // 🎓 students
+            'students.view',
+            'students.create',
+            'students.edit',
+            'students.approve',
+            'students.deactivate',
+            'students.form.download',
+
+            // 👨‍👩‍👧 guardians
+            'guardians.view',
+            'guardians.create',
+            'guardians.edit',
+            'guardians.delete',
+
+            // 👨‍👧‍👦 siblings
+            'siblings.view',
+            'siblings.edit',
+            'siblings.delete',
+
+            // 💸 invoices
+            'invoices.view',
+            'invoices.create',
+            'invoices.edit',
+            'invoices.delete',
+
+            // 💸 transactions
+            'transactions.view',
+            'transactions.create',
+            'transactions.payslip.download',
+
+        ]);
+
+        $accountant = Role::where('name', 'accountant')->first();
+        $accountant->syncPermissions([
+            // 🎓 students
+            'students.view',
+            'students.create',
+            'students.edit',
+            'students.form.download',
+
+            // 👨‍👩‍👧 guardians
+            'guardians.view',
+            'guardians.create',
+            'guardians.edit',
+
+            // 👨‍👧‍👦 siblings
+            'siblings.view',
+            'siblings.edit',
+            'siblings.delete',
+
+            // 💸 invoices
+            'invoices.view',
+            'invoices.create',
+            'invoices.edit',
+
+            // 💸 transactions
+            'transactions.view',
+            'transactions.create',
+            'transactions.payslip.download',
+
+
+            // 🖥️ dashboard
+            'dashboard.view',
+            
+        ]);
     }
 }

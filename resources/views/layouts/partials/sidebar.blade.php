@@ -233,9 +233,9 @@
                         <div class="menu-sub menu-sub-accordion">
                             <!--begin:Menu item-->
                             <div class="menu-item">
-                                <!--begin:Menu link--><a class="menu-link" id="all_sheets_link"
-                                    href="#"><span class="menu-bullet"><span
-                                            class="bullet bullet-dot"></span></span><span class="menu-title">All
+                                <!--begin:Menu link--><a class="menu-link" id="all_sheets_link" href="#"><span
+                                        class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
+                                        class="menu-title">All
                                         Sheets</span></a>
                                 <!--end:Menu link-->
                             </div>
@@ -243,9 +243,9 @@
 
                             <!--begin:Menu item-->
                             <div class="menu-item">
-                                <!--begin:Menu link--><a class="menu-link" id="sheet_fee_link"
-                                    href="#"><span class="menu-bullet"><span
-                                            class="bullet bullet-dot"></span></span><span class="menu-title">Sheet
+                                <!--begin:Menu link--><a class="menu-link" id="sheet_fee_link" href="#"><span
+                                        class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
+                                        class="menu-title">Sheet
                                         Fee</span></a>
                                 <!--end:Menu link-->
                             </div>
@@ -377,44 +377,44 @@
                     </div>
                     <!--end:Salary Tracking Menu item-->
 
-
-                    {{-- ----------------- Settings Modules ----------------- --}}
-                    <!--begin:Systems Info Menu Heading-->
-                    <div class="menu-item pt-5">
-                        <!--begin:Menu content-->
-                        <div class="menu-content"><span
-                                class="menu-heading fw-bold text-uppercase fs-7">Systems</span>
+                    @can('users.manage')
+                        {{-- ----------------- Settings Modules ----------------- --}}
+                        <!--begin:Systems Info Menu Heading-->
+                        <div class="menu-item pt-5">
+                            <!--begin:Menu content-->
+                            <div class="menu-content"><span
+                                    class="menu-heading fw-bold text-uppercase fs-7">Systems</span>
+                            </div>
+                            <!--end:Menu content-->
                         </div>
-                        <!--end:Menu content-->
-                    </div>
-                    <!--end:Systems Info Menu Heading-->
+                        <!--end:Systems Info Menu Heading-->
 
-                    <!--begin:Users Menu item-->
-                    <div class="menu-item">
-                        <!--begin:Menu link-->
-                        <a class="menu-link" href="{{ route('users.index') }}" id="users_link">
-                            <span class="menu-icon">
-                                <i class="ki-outline ki-user fs-2"></i>
-                            </span>
-                            <span class="menu-title">Users</span>
-                        </a>
-                        <!--end:Menu link-->
-                    </div>
-                    <!--end:Users Menu item-->
+                        <!--begin:Users Menu item-->
+                        <div class="menu-item">
+                            <!--begin:Menu link-->
+                            <a class="menu-link" href="{{ route('users.index') }}" id="users_link">
+                                <span class="menu-icon">
+                                    <i class="ki-outline ki-user fs-2"></i>
+                                </span>
+                                <span class="menu-title">Users</span>
+                            </a>
+                            <!--end:Menu link-->
+                        </div>
+                        <!--end:Users Menu item-->
 
-
-                    <!--begin:Settings Tracking Menu item-->
-                    <div class="menu-item">
-                        <!--begin:Menu link-->
-                        <a class="menu-link" href="#" id="settings_link">
-                            <span class="menu-icon">
-                                <i class="ki-outline ki-setting-2 fs-2"></i>
-                            </span>
-                            <span class="menu-title">Settings</span>
-                        </a>
-                        <!--end:Menu link-->
-                    </div>
-                    <!--end:Settings Tracking Menu item-->
+                        <!--begin:Settings Tracking Menu item-->
+                        <div class="menu-item">
+                            <!--begin:Menu link-->
+                            <a class="menu-link" href="#" id="settings_link">
+                                <span class="menu-icon">
+                                    <i class="ki-outline ki-setting-2 fs-2"></i>
+                                </span>
+                                <span class="menu-title">Settings</span>
+                            </a>
+                            <!--end:Menu link-->
+                        </div>
+                        <!--end:Settings Tracking Menu item-->
+                    @endcan
                 </div>
                 <!--end::Menu-->
             </div>

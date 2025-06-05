@@ -239,21 +239,25 @@
 
                                 <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-semibold w-150px py-3"
                                     data-kt-menu="true">
-                                    <div class="menu-item px-3">
-                                        <a href="#" class="menu-link px-3 text-hover-primary"
-                                            data-invoice-id="{{ $invoice->id }}" data-bs-toggle="modal"
-                                            data-bs-target="#kt_modal_edit_invoice"><i class="las la-pen fs-2 me-2"></i>
-                                            Edit</a>
-                                    </div>
+                                    @can('invoices.edit')
+                                        <div class="menu-item px-3">
+                                            <a href="#" class="menu-link px-3 text-hover-primary"
+                                                data-invoice-id="{{ $invoice->id }}" data-bs-toggle="modal"
+                                                data-bs-target="#kt_modal_edit_invoice"><i class="las la-pen fs-2 me-2"></i>
+                                                Edit</a>
+                                        </div>
+                                    @endcan
 
                                     @if (optional($invoice->student->studentActivation)->active_status == 'active' && $invoice->status == 'due')
-                                        <!--begin::Menu item-->
-                                        <div class="menu-item px-3">
-                                            <a href="#" class="menu-link text-hover-danger px-3 delete-invoice"
-                                                data-invoice-id={{ $invoice->id }}><i class="las la-trash fs-2 me-2"></i>
-                                                Delete</a>
-                                        </div>
-                                        <!--end::Menu item-->
+                                        @can('invoices.delete')
+                                            <!--begin::Menu item-->
+                                            <div class="menu-item px-3">
+                                                <a href="#" class="menu-link text-hover-danger px-3 delete-invoice"
+                                                    data-invoice-id={{ $invoice->id }}><i class="las la-trash fs-2 me-2"></i>
+                                                    Delete</a>
+                                            </div>
+                                            <!--end::Menu item-->
+                                        @endcan
                                     @endif
                                 </div>
                                 <!--end::Menu 3-->
@@ -283,9 +287,11 @@
             <div class="card-toolbar">
                 <!--begin::Add user-->
                 @if ($invoice->amount_due != 0)
-                    <a href="#" class="btn btn-primary" data-bs-toggle="modal"
-                        data-bs-target="#kt_modal_add_transaction">
-                        <i class="ki-outline ki-plus fs-2"></i>Transaction</a>
+                    @can('transactions.create')
+                        <a href="#" class="btn btn-primary" data-bs-toggle="modal"
+                            data-bs-target="#kt_modal_add_transaction">
+                            <i class="ki-outline ki-plus fs-2"></i>Transaction</a>
+                    @endcan
                 @endif
                 <!--end::Add user-->
             </div>
