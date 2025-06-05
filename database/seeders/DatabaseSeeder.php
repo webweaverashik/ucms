@@ -40,7 +40,7 @@ class DatabaseSeeder extends Seeder
             // StudentSeeder::class,
             // GuardianSeeder::class,
             // MobileNumberSeeder::class,
-            SiblingSeeder::class,
+            // SiblingSeeder::class,
             // StudentActivationSeeder::class, // will be called by StudentFactory
             SubjectSeeder::class,
             // SubjectTakenSeeder::class,
