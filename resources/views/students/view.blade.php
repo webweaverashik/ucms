@@ -71,39 +71,44 @@
                         <!--begin::Menu-->
                         <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-6 w-175px py-4"
                             data-kt-menu="true">
-                            <!--begin::Menu item-->
-                            <div class="menu-item px-3">
-                                @if (optional($student->studentActivation)->active_status == 'active')
-                                    <a href="#" class="menu-link text-hover-warning px-3" data-bs-toggle="modal"
-                                        data-bs-target="#kt_toggle_activation_student_modal"
-                                        data-student-unique-id="{{ $student->student_unique_id }}"
-                                        data-student-name="{{ $student->name }}" data-student-id="{{ $student->id }}"
-                                        data-active-status="{{ optional($student->studentActivation)->active_status }}"><i
-                                            class="bi bi-person-slash fs-2 me-2"></i> Deactivate</a>
-                                @else
-                                    <a href="#" class="menu-link text-hover-success px" data-bs-toggle="modal"
-                                        data-bs-target="#kt_toggle_activation_student_modal"
-                                        data-student-unique-id="{{ $student->student_unique_id }}"
-                                        data-student-name="{{ $student->name }}" data-student-id="{{ $student->id }}"
-                                        data-active-status="{{ optional($student->studentActivation)->active_status }}"><i
-                                            class="bi bi-person-check fs-3 me-2"></i> Activate</a>
-                                @endif
+                            @can('students.deactivate')
+                                <div class="menu-item px-3">
+                                    @if (optional($student->studentActivation)->active_status == 'active')
+                                        <a href="#" class="menu-link text-hover-warning px-3" data-bs-toggle="modal"
+                                            data-bs-target="#kt_toggle_activation_student_modal"
+                                            data-student-unique-id="{{ $student->student_unique_id }}"
+                                            data-student-name="{{ $student->name }}" data-student-id="{{ $student->id }}"
+                                            data-active-status="{{ optional($student->studentActivation)->active_status }}"><i
+                                                class="bi bi-person-slash fs-2 me-2"></i> Deactivate</a>
+                                    @else
+                                        <a href="#" class="menu-link text-hover-success px" data-bs-toggle="modal"
+                                            data-bs-target="#kt_toggle_activation_student_modal"
+                                            data-student-unique-id="{{ $student->student_unique_id }}"
+                                            data-student-name="{{ $student->name }}" data-student-id="{{ $student->id }}"
+                                            data-active-status="{{ optional($student->studentActivation)->active_status }}"><i
+                                                class="bi bi-person-check fs-3 me-2"></i> Activate</a>
+                                    @endif
+                                </div>
+                            @endcan
 
-                            </div>
-                            <!--end::Menu item-->
-                            <!--begin::Menu item-->
-                            <div class="menu-item px-3">
-                                <a href="{{ route('students.edit', $student->id) }}"
-                                    class="menu-link text-hover-primary px-3"><i class="las la-pen fs-3 me-2"></i> Edit</a>
-                            </div>
-                            <!--end::Menu item-->
-                            <!--begin::Menu item-->
-                            <div class="menu-item px-3">
-                                <a href="#" class="menu-link text-hover-danger px-3 delete-student"
-                                    data-student-id="{{ $student->id }}"><i class="bi bi-trash fs-3 me-2"></i>
-                                    Delete</a>
-                            </div>
-                            <!--end::Menu item-->
+                            @can('students.edit')
+                                <!--begin::Menu item-->
+                                <div class="menu-item px-3">
+                                    <a href="{{ route('students.edit', $student->id) }}"
+                                        class="menu-link text-hover-primary px-3"><i class="las la-pen fs-3 me-2"></i> Edit</a>
+                                </div>
+                                <!--end::Menu item-->
+                            @endcan
+
+                            @can('students.delete')
+                                <!--begin::Menu item-->
+                                <div class="menu-item px-3">
+                                    <a href="#" class="menu-link text-hover-danger px-3 delete-student"
+                                        data-student-id="{{ $student->id }}"><i class="bi bi-trash fs-3 me-2"></i>
+                                        Delete</a>
+                                </div>
+                                <!--end::Menu item-->
+                            @endcan
                         </div>
                         <!--end::Menu-->
                         <!--end::More options-->
@@ -414,48 +419,58 @@
                             <div class="menu-content text-muted pb-2 px-5 fs-7 text-uppercase">Account</div>
                         </div>
                         <!--end::Menu item-->
-                        <!--begin::Menu item-->
-                        <div class="menu-item px-5">
-                            @if (optional($student->studentActivation)->active_status == 'active')
-                                <a href="#" class="menu-link px-5 text-hover-warning" data-bs-toggle="modal"
-                                    data-bs-target="#kt_toggle_activation_student_modal"
-                                    data-student-unique-id="{{ $student->student_unique_id }}"
-                                    data-student-name="{{ $student->name }}" data-student-id="{{ $student->id }}"
-                                    data-active-status="{{ optional($student->studentActivation)->active_status }}"><i
-                                        class="bi bi-person-slash fs-2 me-2"></i> Deactivate Student</a>
-                            @else
-                                <a href="#" class="menu-link px-5 text-hover-success" data-bs-toggle="modal"
-                                    data-bs-target="#kt_toggle_activation_student_modal"
-                                    data-student-unique-id="{{ $student->student_unique_id }}"
-                                    data-student-name="{{ $student->name }}" data-student-id="{{ $student->id }}"
-                                    data-active-status="{{ optional($student->studentActivation)->active_status }}"><i
-                                        class="bi bi-person-check fs-2 me-2"></i> Activate Student</a>
-                            @endif
-                        </div>
-                        <!--end::Menu item-->
 
-                        @if (optional($student->studentActivation)->active_status == 'active')
+                        @can('students.deactivate')
+                            <!--begin::Menu item-->
                             <div class="menu-item px-5">
-                                <a href="{{ route('students.download', $student->id) }}" target="_blank"
-                                    class="menu-link text-hover-primary px-5"><i class="bi bi-download fs-2 me-2"></i>
-                                    Download Form</a>
+                                @if (optional($student->studentActivation)->active_status == 'active')
+                                    <a href="#" class="menu-link px-5 text-hover-warning" data-bs-toggle="modal"
+                                        data-bs-target="#kt_toggle_activation_student_modal"
+                                        data-student-unique-id="{{ $student->student_unique_id }}"
+                                        data-student-name="{{ $student->name }}" data-student-id="{{ $student->id }}"
+                                        data-active-status="{{ optional($student->studentActivation)->active_status }}"><i
+                                            class="bi bi-person-slash fs-2 me-2"></i> Deactivate Student</a>
+                                @else
+                                    <a href="#" class="menu-link px-5 text-hover-success" data-bs-toggle="modal"
+                                        data-bs-target="#kt_toggle_activation_student_modal"
+                                        data-student-unique-id="{{ $student->student_unique_id }}"
+                                        data-student-name="{{ $student->name }}" data-student-id="{{ $student->id }}"
+                                        data-active-status="{{ optional($student->studentActivation)->active_status }}"><i
+                                            class="bi bi-person-check fs-2 me-2"></i> Activate Student</a>
+                                @endif
                             </div>
-                        @endif
+                            <!--end::Menu item-->
+                        @endcan
 
-                        <!--begin::Menu item-->
-                        <div class="menu-item px-5 my-1">
-                            <a href="{{ route('students.edit', $student->id) }}"
-                                class="menu-link px-5 text-hover-primary"><i class="las la-pen fs-3 me-2"></i> Edit
-                                Students</a>
-                        </div>
-                        <!--end::Menu item-->
-                        <!--begin::Menu item-->
-                        <div class="menu-item px-5">
-                            <a href="#" class="menu-link text-hover-danger px-5 delete-student"
-                                data-student-id="{{ $student->id }}"><i class="bi bi-trash fs-3 me-2"></i>
-                                Delete Student</a>
-                        </div>
-                        <!--end::Menu item-->
+                        @can('students.form.download')
+                            @if (optional($student->studentActivation)->active_status == 'active')
+                                <div class="menu-item px-5">
+                                    <a href="{{ route('students.download', $student->id) }}" target="_blank"
+                                        class="menu-link text-hover-primary px-5"><i class="bi bi-download fs-2 me-2"></i>
+                                        Download Form</a>
+                                </div>
+                            @endif
+                        @endcan
+
+                        @can('students.edit')
+                            <!--begin::Menu item-->
+                            <div class="menu-item px-5 my-1">
+                                <a href="{{ route('students.edit', $student->id) }}"
+                                    class="menu-link px-5 text-hover-primary"><i class="las la-pen fs-3 me-2"></i> Edit
+                                    Student</a>
+                            </div>
+                            <!--end::Menu item-->
+                        @endcan
+
+                        @can('students.delete')
+                            <!--begin::Menu item-->
+                            <div class="menu-item px-5">
+                                <a href="#" class="menu-link text-hover-danger px-5 delete-student"
+                                    data-student-id="{{ $student->id }}"><i class="bi bi-trash fs-3 me-2"></i>
+                                    Delete Student</a>
+                            </div>
+                            <!--end::Menu item-->
+                        @endcan
                     </div>
                     <!--end::Menu-->
                     <!--end::Menu-->

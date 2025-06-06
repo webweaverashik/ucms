@@ -24,11 +24,11 @@ class GuardianController extends Controller
             })
                 ->get();
 
-            $students = Student::where('branch_id', $userBranchId)->orderby('student_unique_id', 'asc')->get();
+            $students = Student::where('branch_id', $userBranchId)->orderby('student_unique_id')->get();
         } else {
             $guardians = Guardian::all(); // SuperAdmin can view everything
 
-            $students = Student::orderby('student_unique_id', 'asc')->get();
+            $students = Student::orderby('student_unique_id')->get();
         }
 
         $branches = Branch::all();
@@ -88,8 +88,8 @@ class GuardianController extends Controller
         // return $request;
 
         $validated = $request->validate([
-            // 'guardian_student'       => 'required|exists:students,id', // Must be a valid student ID
-            'guardian_name'          => 'required|string|max:255',     // Required, must be a string, max length 255
+                                                                   // 'guardian_student'       => 'required|exists:students,id', // Must be a valid student ID
+            'guardian_name'          => 'required|string|max:255', // Required, must be a string, max length 255
             'guardian_mobile_number' => 'required|string|max:11',
             'guardian_gender'        => 'required|in:male,female',                                    // Must be male or female
             'guardian_relationship'  => 'required|string|in:father,mother,brother,sister,uncle,aunt', // Required, string, max 50 chars

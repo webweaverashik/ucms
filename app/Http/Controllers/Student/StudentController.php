@@ -26,21 +26,18 @@ class StudentController extends Controller
      */
     public function index()
     {
-        if (auth()->user()->branch_id != 0) {
-            $students = Student::where('student_activation_id', '!=', null)
+        if (! auth()->user()->hasRole('admin')) {
+            $students = Student::whereNotNull('student_activation_id')
                 ->where('branch_id', auth()->user()->branch_id)
-                ->withoutTrashed()
-                ->orderby('updated_at', 'desc')
+                ->latest('updated_at')
                 ->get();
         } else {
-            $students = Student::where('student_activation_id', '!=', null)->withoutTrashed()->orderby('id', 'desc')->get();
+            $students = Student::whereNotNull('student_activation_id')->latest('updated_at')->get();
         }
 
-        $classnames = ClassName::withoutTrashed()->get();
-        $shifts     = Shift::where('branch_id', auth()->user()->branch_id)
-            ->withoutTrashed()
-            ->get();
-        $institutions = Institution::withoutTrashed()->get();
+        $classnames   = ClassName::all();
+        $shifts       = Shift::where('branch_id', auth()->user()->branch_id)->get();
+        $institutions = Institution::all();
         // return response()->json($students);
 
         return view('students.index', compact('students', 'classnames', 'shifts', 'institutions'));
@@ -49,20 +46,17 @@ class StudentController extends Controller
     public function pending()
     {
         if (auth()->user()->branch_id != 0) {
-            $students = Student::where('student_activation_id', null)
+            $students = Student::whereNull('student_activation_id')
                 ->where('branch_id', auth()->user()->branch_id)
-                ->withoutTrashed()
-                ->orderby('created_at', 'desc')
+                ->latest()
                 ->get();
         } else {
-            $students = Student::where('student_activation_id', null)->withoutTrashed()->orderby('created_at', 'desc')->get();
+            $students = Student::whereNull('student_activation_id')->latest()->get();
         }
 
-        $classnames = ClassName::withoutTrashed()->get();
-        $shifts     = Shift::where('branch_id', auth()->user()->branch_id)
-            ->withoutTrashed()
-            ->get();
-        $institutions = Institution::withoutTrashed()->get();
+        $classnames   = ClassName::all();
+        $shifts       = Shift::where('branch_id', auth()->user()->branch_id)->all();
+        $institutions = Institution::all();
         // return response()->json($students);
 
         return view('students.pending', compact('students', 'classnames', 'shifts', 'institutions'));
@@ -73,14 +67,12 @@ class StudentController extends Controller
      */
     public function create()
     {
-        $students   = Student::withoutTrashed()->get();
-        $guardians  = Guardian::withoutTrashed()->get();
-        $classnames = ClassName::withoutTrashed()->get();
-        $subjects   = Subject::withoutTrashed()->get();
-        $shifts     = Shift::where('branch_id', auth()->user()->branch_id)
-            ->withoutTrashed()
-            ->get();
-        $institutions = Institution::withoutTrashed()->get();
+        $students     = Student::all();
+        $guardians    = Guardian::all();
+        $classnames   = ClassName::all();
+        $subjects     = Subject::all();
+        $shifts       = Shift::where('branch_id', auth()->user()->branch_id)->get();
+        $institutions = Institution::all();
 
         return view('students.create', compact('students', 'guardians', 'classnames', 'subjects', 'shifts', 'institutions'));
     }
@@ -368,7 +360,7 @@ class StudentController extends Controller
     public function edit(string $id)
     {
         // Try to find the student including trashed ones (if soft deletes are enabled)
-        $student = Student::with('reference.referer')->withTrashed()->findOrFail($id);
+        $student = Student::with('reference.referer')->withTrashed()->find($id);
 
         // If not found or trashed, redirect with warning
         if (! $student || $student->trashed()) {
@@ -381,7 +373,7 @@ class StudentController extends Controller
         }
 
         // Fetch students based on branch access
-        $studentsQuery = Student::where('student_activation_id', '!=', null)->withoutTrashed()->orderby('id', 'desc');
+        $studentsQuery = Student::whereNotNull('student_activation_id')->latest('id');
 
         if (auth()->user()->branch_id != 0) {
             $studentsQuery->where('branch_id', auth()->user()->branch_id);
@@ -389,9 +381,9 @@ class StudentController extends Controller
 
         $students = $studentsQuery->get();
 
-        $classnames   = ClassName::withoutTrashed()->get();
+        $classnames   = ClassName::all();
         $shifts       = Shift::where('branch_id', auth()->user()->branch_id)->get();
-        $institutions = Institution::withoutTrashed()->get();
+        $institutions = Institution::all();
 
         return view('students.edit', compact('student', 'students', 'classnames', 'shifts', 'institutions'));
     }
@@ -552,8 +544,6 @@ class StudentController extends Controller
      */
     public function destroy(Student $student)
     {
-        $deletedBy = Auth::id(); // Get the authenticated user's ID
-
         // Update 'deleted_by' for guardians before deleting
         $student->guardians()->update(['deleted_by' => $deletedBy]);
 
@@ -561,7 +551,7 @@ class StudentController extends Controller
         $student->siblings()->update(['deleted_by' => $deletedBy]);
 
         // Update 'deleted_by' for student before deleting
-        $student->update(['deleted_by' => $deletedBy]);
+        $student->update(['deleted_by' => Auth::id()]);
 
         // Now delete all records
         $student->guardians()->delete();
@@ -576,8 +566,8 @@ class StudentController extends Controller
         $refererType = $request->get('referer_type');
 
         if ($refererType == 'teacher') {
-                                                          // Fetch teacher data (no unique_id)
-            $teachers = Teacher::withoutTrashed()->get(); // Adjust according to your data model
+                                        // Fetch teacher data (no unique_id)
+            $teachers = Teacher::all(); // Adjust according to your data model
             return response()->json(
                 $teachers->map(function ($teacher) {
                     return [
@@ -587,8 +577,8 @@ class StudentController extends Controller
                 }),
             );
         } elseif ($refererType == 'student') {
-                                                          // Fetch student data
-            $students = Student::withoutTrashed()->get(); // Adjust according to your data model
+                                        // Fetch student data
+            $students = Student::all(); // Adjust according to your data model
             return response()->json(
                 $students->map(function ($student) {
                     return [

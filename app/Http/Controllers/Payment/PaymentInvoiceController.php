@@ -24,7 +24,7 @@ class PaymentInvoiceController extends Controller
                         })->orWhereNull('student_activation_id');
                     });
             })
-            ->orderBy('id', 'desc')
+            ->latest('id')
             ->get();
 
 
@@ -32,7 +32,7 @@ class PaymentInvoiceController extends Controller
             ->whereHas('student', function ($query) {
                 $query->withoutTrashed()->where('branch_id', auth()->user()->branch_id);
             })
-            ->orderBy('id', 'desc')
+            ->latest('id')
             ->get();
             
             // return count($paid_invoices);
@@ -70,7 +70,6 @@ class PaymentInvoiceController extends Controller
                         $q->where('active_status', 'active');
                     });
                 })
-                ->withoutTrashed()
                 ->orderby('student_unique_id', 'asc')
                 ->get();
         } else {
@@ -79,7 +78,6 @@ class PaymentInvoiceController extends Controller
                     $q->where('active_status', 'active');
                 });
             })
-                ->withoutTrashed()
                 ->orderby('student_unique_id', 'asc')
                 ->get();
         }
@@ -141,7 +139,7 @@ class PaymentInvoiceController extends Controller
 
         // Fetch the last invoice for the same prefix and month
         $lastInvoice = PaymentInvoice::where('invoice_number', 'like', "{$prefix}{$yearSuffix}{$month}_%")
-            ->orderBy('invoice_number', 'desc')
+            ->latest('invoice_number')
             ->first();
 
         if ($lastInvoice) {
@@ -187,7 +185,7 @@ class PaymentInvoiceController extends Controller
                         $q->where('active_status', 'active');
                     });
                 })
-                ->orderby('student_unique_id', 'asc')
+                ->orderby('student_unique_id')
                 ->get();
         } else {
             $students = Student::where(function ($query) {
@@ -195,7 +193,7 @@ class PaymentInvoiceController extends Controller
                     $q->where('active_status', 'active');
                 });
             })
-                ->orderby('student_unique_id', 'asc')
+                ->orderby('student_unique_id')
                 ->get();
         }
 
@@ -284,7 +282,6 @@ class PaymentInvoiceController extends Controller
     {
         $dueInvoices = PaymentInvoice::where('student_id', $studentId)
             ->where('status', '!=', 'paid')
-            ->withoutTrashed()
             ->get(['id', 'invoice_number', 'total_amount', 'amount_due'])
             ->map(function ($invoice) {
                 $invoice->total_amount = (int) $invoice->total_amount;

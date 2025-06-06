@@ -698,6 +698,7 @@
                         <div class="separator my-2"></div>
                         <!--end::Menu separator-->
 
+                        @can('settings.manage')
                         <!--begin::Menu item-->
                         <div class="menu-item px-5 my-1">
                             <a href="#" class="menu-link px-5">
@@ -705,6 +706,8 @@
                             </a>
                         </div>
                         <!--end::Menu item-->
+                        @endcan
+                        
                         <!--begin::Menu item-->
                         <div class="menu-item px-5">
                             <a href="{{ route('logout') }}" class="menu-link px-5"

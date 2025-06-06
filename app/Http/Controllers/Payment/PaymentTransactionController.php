@@ -16,7 +16,7 @@ class PaymentTransactionController extends Controller
     {
         $transactions = PaymentTransaction::whereHas('student', function ($query) {
             $query->where('branch_id', auth()->user()->branch_id);
-        })->orderBy('id', 'desc')->get();
+        })->latest('id')->get();
 
         if (auth()->user()->branch_id != 0) {
             $students = Student::where('branch_id', auth()->user()->branch_id)
@@ -26,7 +26,7 @@ class PaymentTransactionController extends Controller
                             $q->where('active_status', 'active');
                         });
                 })
-                ->orderby('student_unique_id', 'asc')
+                ->orderby('student_unique_id')
                 ->get();
         } else {
             $students = Student::where(function ($query) {
@@ -34,7 +34,7 @@ class PaymentTransactionController extends Controller
                     $q->where('active_status', 'active');
                 });
             })
-                ->orderby('student_unique_id', 'asc')
+                ->orderby('student_unique_id')
                 ->get();
         }
 

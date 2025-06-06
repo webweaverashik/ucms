@@ -23,11 +23,11 @@ class SiblingController extends Controller
             })
                 ->get();
 
-            $students = Student::where('branch_id', $userBranchId)->withoutTrashed()->orderby('student_unique_id', 'asc')->get();
+            $students = Student::where('branch_id', $userBranchId)->orderby('student_unique_id')->get();
         } else {
             $siblings = Sibling::all(); // SuperAdmin can view everything
 
-            $students = Student::orderby('student_unique_id', 'asc')->get();
+            $students = Student::orderBy('student_unique_id')->get();
         }
 
         $branches     = Branch::all();

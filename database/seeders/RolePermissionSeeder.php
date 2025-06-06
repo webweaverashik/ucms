@@ -111,9 +111,6 @@ class RolePermissionSeeder extends Seeder
 
             // 📊 reports
             'reports.view',
-
-            // 🖥️ dashboard
-            'dashboard.view',
         ];
 
         // Create all permissions
@@ -138,6 +135,7 @@ class RolePermissionSeeder extends Seeder
             'students.approve',
             'students.deactivate',
             'students.form.download',
+            'students.promote',
 
             // 👨‍👩‍👧 guardians
             'guardians.view',
@@ -169,6 +167,7 @@ class RolePermissionSeeder extends Seeder
             'students.view',
             'students.create',
             'students.edit',
+            'students.approve',
             'students.form.download',
 
             // 👨‍👩‍👧 guardians
@@ -191,10 +190,6 @@ class RolePermissionSeeder extends Seeder
             'transactions.create',
             'transactions.payslip.download',
 
-
-            // 🖥️ dashboard
-            'dashboard.view',
-            
         ]);
     }
 }

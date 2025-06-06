@@ -143,113 +143,124 @@
         <!--begin::Card body-->
         <div class="card-body py-4">
             <!--begin::Table-->
-                <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_students_table">
-                    <thead>
-                        <tr class="fw-bold fs-7 text-uppercase gs-0">
-                            <th class="w-25px">SL</th>
-                            <th class="min-w-200px">Student</th>
-                            <th class="d-none">Class (filter)</th>
-                            <th>Class</th>
-                            <th>Shift</th>
-                            <th class="w-300px">School</th>
-                            <th>Guardians</th>
-                            <th>Mobile<br>(Home)</th>
-                            <th>Fee (৳)</th>
-                            <th>Payment<br>Type</th>
-                            <th>Admission<br>Date</th>
-                            <th class="d-none">Remarks</th>
-                            <th class="min-w-70px">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-gray-600 fw-semibold">
-                        @foreach ($students as $student)
-                            <tr>
-                                <td class="pe-2">{{ $loop->index + 1 }}</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <!--begin:: Avatar -->
-                                        <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
-                                            <a href="{{ route('students.show', $student->id) }}">
-                                                <div class="symbol-label">
-                                                    <img src="{{ $student->photo_url ? asset($student->photo_url) : asset('assets/img/dummy.png') }}"
-                                                        alt="{{ $student->name }}" class="w-100" />
-                                                </div>
-                                            </a>
-                                        </div>
-                                        <!--end::Avatar-->
-
-                                        <!--begin::user details-->
-                                        <div class="d-flex flex-column text-start">
-                                            <a href="{{ route('students.show', $student->id) }}"
-                                                class="text-gray-800 text-hover-primary mb-1">{{ $student->name }}
-                                            </a>
-                                            <span class="fw-bold fs-base">{{ $student->student_unique_id }}</span>
-                                        </div>
-                                        <!--begin::user details-->
+            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_students_table">
+                <thead>
+                    <tr class="fw-bold fs-7 text-uppercase gs-0">
+                        <th class="w-25px">SL</th>
+                        <th class="min-w-200px">Student</th>
+                        <th class="d-none">Class (filter)</th>
+                        <th>Class</th>
+                        <th>Shift</th>
+                        <th class="w-300px">School</th>
+                        <th>Guardians</th>
+                        <th>Mobile<br>(Home)</th>
+                        <th>Fee (৳)</th>
+                        <th>Payment<br>Type</th>
+                        <th>Admission<br>Date</th>
+                        <th class="d-none">Remarks</th>
+                        <th class="min-w-70px">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-600 fw-semibold">
+                    @foreach ($students as $student)
+                        <tr>
+                            <td class="pe-2">{{ $loop->index + 1 }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <!--begin:: Avatar -->
+                                    <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
+                                        <a href="{{ route('students.show', $student->id) }}">
+                                            <div class="symbol-label">
+                                                <img src="{{ $student->photo_url ? asset($student->photo_url) : asset('assets/img/dummy.png') }}"
+                                                    alt="{{ $student->name }}" class="w-100" />
+                                            </div>
+                                        </a>
                                     </div>
-                                </td>
-                                <td class="d-none">{{ $student->class->class_numeral }}_ucms</td>
-                                <td>{{ $student->class->name }}</td>
-                                <td>{{ $student->shift->name }}</td>
-                                <td>{{ $student->institution->name }}
-                                    (EIIN: {{ $student->institution->eiin_number }})</td>
-                                <td>
-                                    @foreach ($student->guardians as $guardian)
-                                        <a href="{{ route('guardians.show', $guardian->id) }}"><span
-                                                class="badge badge-light-primary text-hover-success">{{ $guardian->name }},
-                                                {{ ucfirst($guardian->relationship) }}</span></a><br>
-                                    @endforeach
-                                </td>
-                                <td>
-                                    {!! $student->mobileNumbers->where('number_type', 'home')->pluck('mobile_number')->implode('<br>') ?: '-' !!}
-                                </td>
-                                <td>
-                                    @if ($student->payments)
-                                        {{ $student->payments->tuition_fee }}
-                                    @endif
-                                </td>
-                                <td>
-                                    @if ($student->payments)
-                                        {{ ucfirst($student->payments->payment_style) }}-1/{{ $student->payments->due_date }}
-                                    @endif
-                                </td>
-                                <td>{{ $student->created_at->format('d-M-Y') }}</td>
-                                <td class="d-none">{{ $student->remarks }}</td>
-                                <td>
+                                    <!--end::Avatar-->
+
+                                    <!--begin::user details-->
+                                    <div class="d-flex flex-column text-start">
+                                        <a href="{{ route('students.show', $student->id) }}"
+                                            class="text-gray-800 text-hover-primary mb-1">{{ $student->name }}
+                                        </a>
+                                        <span class="fw-bold fs-base">{{ $student->student_unique_id }}</span>
+                                    </div>
+                                    <!--begin::user details-->
+                                </div>
+                            </td>
+                            <td class="d-none">{{ $student->class->class_numeral }}_ucms</td>
+                            <td>{{ $student->class->name }}</td>
+                            <td>{{ $student->shift->name }}</td>
+                            <td>{{ $student->institution->name }}
+                                (EIIN: {{ $student->institution->eiin_number }})</td>
+                            <td>
+                                @foreach ($student->guardians as $guardian)
+                                    <a href="{{ route('guardians.show', $guardian->id) }}"><span
+                                            class="badge badge-light-primary text-hover-success">{{ $guardian->name }},
+                                            {{ ucfirst($guardian->relationship) }}</span></a><br>
+                                @endforeach
+                            </td>
+                            <td>
+                                {!! $student->mobileNumbers->where('number_type', 'home')->pluck('mobile_number')->implode('<br>') ?: '-' !!}
+                            </td>
+                            <td>
+                                @if ($student->payments)
+                                    {{ $student->payments->tuition_fee }}
+                                @endif
+                            </td>
+                            <td>
+                                @if ($student->payments)
+                                    {{ ucfirst($student->payments->payment_style) }}-1/{{ $student->payments->due_date }}
+                                @endif
+                            </td>
+                            <td>{{ $student->created_at->format('d-M-Y') }}</td>
+                            <td class="d-none">{{ $student->remarks }}</td>
+                            <td>
+                                @canany(['students.approve', 'students.delete', 'students.edit'])
                                     <a href="#" class="btn btn-light btn-active-light-primary btn-sm"
                                         data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions
                                         <i class="ki-outline ki-down fs-5 m-0"></i></a>
                                     <!--begin::Menu-->
                                     <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-150px py-4"
                                         data-kt-menu="true">
-                                        <!--begin::Menu item-->
-                                        <div class="menu-item px-3">
-                                            <a href="#" class="menu-link px-3 text-hover-success approve-student"
-                                                data-student-id="{{ $student->id }}"><i
-                                                    class="bi bi-person-check fs-3 me-2"></i> Approve</a>
-                                        </div>
-                                        <!--end::Menu item-->
-                                        <!--begin::Menu item-->
-                                        <div class="menu-item px-3">
-                                            <a href="{{ route('students.edit', $student->id) }}"
-                                                class="menu-link text-hover-primary px-3"><i
-                                                    class="las la-pen fs-3 me-2"></i> Edit</a>
-                                        </div>
-                                        <!--end::Menu item-->
-                                        <!--begin::Menu item-->
-                                        <div class="menu-item px-3">
-                                            <a href="#" class="menu-link text-hover-danger px-3 delete-student"
-                                                data-student-id="{{ $student->id }}"><i
-                                                    class="bi bi-trash fs-3 me-2"></i> Delete</a>
-                                        </div>
-                                        <!--end::Menu item-->
+
+                                        @hasanyrole('admin|manager')
+                                            <!--begin::Menu item-->
+                                            <div class="menu-item px-3">
+                                                <a href="#" class="menu-link px-3 text-hover-success approve-student"
+                                                    data-student-id="{{ $student->id }}"><i
+                                                        class="bi bi-person-check fs-3 me-2"></i> Approve</a>
+                                            </div>
+                                            <!--end::Menu item-->
+                                        @endhasanyrole
+
+                                        @can('students.edit')
+                                            <!--begin::Menu item-->
+                                            <div class="menu-item px-3">
+                                                <a href="{{ route('students.edit', $student->id) }}"
+                                                    class="menu-link text-hover-primary px-3"><i class="las la-pen fs-3 me-2"></i>
+                                                    Edit</a>
+                                            </div>
+                                            <!--end::Menu item-->
+                                        @endcan
+
+                                        @can('students.delete')
+                                            <!--begin::Menu item-->
+                                            <div class="menu-item px-3">
+                                                <a href="#" class="menu-link text-hover-danger px-3 delete-student"
+                                                    data-student-id="{{ $student->id }}"><i class="bi bi-trash fs-3 me-2"></i>
+                                                    Delete</a>
+                                            </div>
+                                            <!--end::Menu item-->
+                                        @endcan
                                     </div>
                                     <!--end::Menu-->
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                                @endcanany
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
             <!--end::Table-->
         </div>
         <!--end::Card body-->
