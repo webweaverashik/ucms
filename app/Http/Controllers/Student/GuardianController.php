@@ -18,18 +18,13 @@ class GuardianController extends Controller
     {
         $userBranchId = auth()->user()->branch_id;
 
-        if (auth()->user()->branch_id != 0) {
-            $guardians = Guardian::whereHas('student', function ($query) use ($userBranchId) {
-                $query->where('branch_id', $userBranchId);
-            })
-                ->get();
+        $guardians = $userBranchId != 0
+        ? Guardian::whereHas('student', fn($q) => $q->where('branch_id', $userBranchId))->get()
+        : Guardian::all();
 
-            $students = Student::where('branch_id', $userBranchId)->orderby('student_unique_id')->get();
-        } else {
-            $guardians = Guardian::all(); // SuperAdmin can view everything
-
-            $students = Student::orderby('student_unique_id')->get();
-        }
+        $students = Student::when($userBranchId != 0, fn($q) => $q->where('branch_id', $userBranchId))
+            ->orderBy('student_unique_id')
+            ->get();
 
         $branches = Branch::all();
 

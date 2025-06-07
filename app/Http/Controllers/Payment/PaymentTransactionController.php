@@ -14,29 +14,28 @@ class PaymentTransactionController extends Controller
      */
     public function index()
     {
-        $transactions = PaymentTransaction::whereHas('student', function ($query) {
-            $query->where('branch_id', auth()->user()->branch_id);
-        })->latest('id')->get();
+        $branchId = auth()->user()->branch_id;
 
-        if (auth()->user()->branch_id != 0) {
-            $students = Student::where('branch_id', auth()->user()->branch_id)
-                ->where(function ($query) {
-                    $query->whereNull('student_activation_id')
-                        ->orWhereHas('studentActivation', function ($q) {
-                            $q->where('active_status', 'active');
-                        });
-                })
-                ->orderby('student_unique_id')
-                ->get();
-        } else {
-            $students = Student::where(function ($query) {
+        // Simplified transactions query
+        $transactions = PaymentTransaction::whereHas('student', function ($query) use ($branchId) {
+            if ($branchId != 0) {
+                $query->where('branch_id', $branchId);
+            }
+        })
+            ->latest('id')
+            ->get();
+
+        // Simplified students query
+        $students = Student::when($branchId != 0, function ($query) use ($branchId) {
+            $query->where('branch_id', $branchId);
+        })
+            ->where(function ($query) {
                 $query->whereNull('student_activation_id')->orWhereHas('studentActivation', function ($q) {
                     $q->where('active_status', 'active');
                 });
             })
-                ->orderby('student_unique_id')
-                ->get();
-        }
+            ->orderBy('student_unique_id')
+            ->get();
 
         return view('transactions.index', compact('transactions', 'students'));
     }
@@ -59,8 +58,8 @@ class PaymentTransactionController extends Controller
         $validated = $request->validate([
             'transaction_student' => 'required|exists:students,id',
             'transaction_invoice' => 'required|exists:payment_invoices,id',
-            'transaction_type'    => 'required|in:full,partial,discounted',
-            'transaction_amount'  => 'required|numeric|min:1',
+            'transaction_type' => 'required|in:full,partial,discounted',
+            'transaction_amount' => 'required|numeric|min:1',
             'transaction_remarks' => 'nullable|string|max:1000',
         ]);
 
@@ -73,36 +72,32 @@ class PaymentTransactionController extends Controller
 
         // Combined validation for all payment types
         $paymentType = $validated['transaction_type'];
-        $amount      = $validated['transaction_amount'];
+        $amount = $validated['transaction_amount'];
 
-        if (($paymentType === 'full' && $amount != $maxAmount) ||
-            (in_array($paymentType, ['partial', 'discounted']) && $amount >= $maxAmount)) {
-
+        if (($paymentType === 'full' && $amount != $maxAmount) || (in_array($paymentType, ['partial', 'discounted']) && $amount >= $maxAmount)) {
             $errorMessage = match ($paymentType) {
                 'full' => "For full payments, the amount must equal the due amount (৳{$maxAmount}).",
                 'partial' => "Partial payment must be less than the due amount (৳{$maxAmount}).",
                 'discounted' => "Discounted payment must be less than the due amount (৳{$maxAmount}).",
             };
 
-            return redirect()
-                ->back()
-                ->with('warning', $errorMessage);
+            return redirect()->back()->with('warning', $errorMessage);
         }
 
         // Count existing transactions for this invoice to get next sequence number
         $transactionCount = PaymentTransaction::where('payment_invoice_id', $invoice->id)->count();
-        $sequence         = str_pad($transactionCount + 1, 2, '0', STR_PAD_LEFT);
-        $voucherNo        = 'TXN_' . $invoice->invoice_number . '_' . $sequence;
+        $sequence = str_pad($transactionCount + 1, 2, '0', STR_PAD_LEFT);
+        $voucherNo = 'TXN_' . $invoice->invoice_number . '_' . $sequence;
 
         // Create transaction
         $transaction = PaymentTransaction::create([
-            'student_id'         => $validated['transaction_student'],
+            'student_id' => $validated['transaction_student'],
             'payment_invoice_id' => $invoice->id,
-            'amount_paid'        => $validated['transaction_amount'],
-            'payment_type'       => $validated['transaction_type'],
-            'voucher_no'         => $voucherNo,
-            'created_by'         => auth()->user()->id,
-            'remarks'            => $validated['transaction_remarks'],
+            'amount_paid' => $validated['transaction_amount'],
+            'payment_type' => $validated['transaction_type'],
+            'voucher_no' => $voucherNo,
+            'created_by' => auth()->user()->id,
+            'remarks' => $validated['transaction_remarks'],
         ]);
 
         // Update invoice status and amount_due
@@ -112,21 +107,22 @@ class PaymentTransactionController extends Controller
             // For discounted payments, mark as fully paid regardless of amount
             $invoice->update([
                 'amount_due' => 0,
-                'status'     => 'paid',
+                'status' => 'paid',
             ]);
         } elseif ($newAmountDue <= 0) {
             // Full payment (regular case)
             $invoice->update([
                 'amount_due' => 0,
-                'status'     => 'paid',
+                'status' => 'paid',
             ]);
         } else {
             // Partial payment
             $invoice->update([
                 'amount_due' => $newAmountDue,
-                'status'     => $invoice->amount_due == $invoice->total_amount
-                ? 'partially_paid'  // First partial payment
-                : $invoice->status, // Keep existing status if already partially paid
+                'status' =>
+                    $invoice->amount_due == $invoice->total_amount
+                        ? 'partially_paid' // First partial payment
+                        : $invoice->status, // Keep existing status if already partially paid
             ]);
         }
 

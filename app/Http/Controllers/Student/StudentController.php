@@ -26,17 +26,17 @@ class StudentController extends Controller
      */
     public function index()
     {
-        if (! auth()->user()->hasRole('admin')) {
-            $students = Student::whereNotNull('student_activation_id')
-                ->where('branch_id', auth()->user()->branch_id)
-                ->latest('updated_at')
-                ->get();
-        } else {
-            $students = Student::whereNotNull('student_activation_id')->latest('updated_at')->get();
-        }
+        $branchId = auth()->user()->branch_id;
+
+        $students = Student::whereNotNull('student_activation_id')
+            ->when($branchId != 0, function ($query) use ($branchId) {
+                $query->where('branch_id', $branchId);
+            })
+            ->latest('updated_at')
+            ->get();
 
         $classnames   = ClassName::all();
-        $shifts       = Shift::where('branch_id', auth()->user()->branch_id)->get();
+        $shifts       = Shift::where('branch_id', $branchId)->get();
         $institutions = Institution::all();
         // return response()->json($students);
 
@@ -45,17 +45,17 @@ class StudentController extends Controller
 
     public function pending()
     {
-        if (auth()->user()->branch_id != 0) {
-            $students = Student::whereNull('student_activation_id')
-                ->where('branch_id', auth()->user()->branch_id)
-                ->latest()
-                ->get();
-        } else {
-            $students = Student::whereNull('student_activation_id')->latest()->get();
-        }
+        $branchId = auth()->user()->branch_id;
+
+        $students = Student::whereNull('student_activation_id')
+            ->when($branchId != 0, function ($query) use ($branchId) {
+                $query->where('branch_id', $branchId);
+            })
+            ->latest()
+            ->get();
 
         $classnames   = ClassName::all();
-        $shifts       = Shift::where('branch_id', auth()->user()->branch_id)->all();
+        $shifts       = Shift::where('branch_id', $branchId)->get();
         $institutions = Institution::all();
         // return response()->json($students);
 
@@ -348,7 +348,7 @@ class StudentController extends Controller
 
         // Restrict access: Only allow editing if the user belongs to the same branch
         if (auth()->user()->branch_id != 0 && auth()->user()->branch_id != $student->branch_id) {
-            return redirect()->route('students.index')->with('error', 'Student is not available on this branch.');
+            return redirect()->route('students.index')->with('error', 'Student not found in this branch.');
         }
 
         return view('students.view', compact('student'));

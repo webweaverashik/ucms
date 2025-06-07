@@ -14,75 +14,62 @@ class PaymentInvoiceController extends Controller
      */
     public function index()
     {
-        $unpaid_invoices = PaymentInvoice::where('status', '!=', 'paid')
-            ->whereHas('student', function ($query) {
-                $query
-                    ->where('branch_id', auth()->user()->branch_id)
-                    ->where(function ($q) {
-                        $q->whereHas('studentActivation', function ($q2) {
-                            $q2->where('active_status', 'active');
-                        })->orWhereNull('student_activation_id');
-                    });
-            })
-            ->latest('id')
-            ->get();
+        $branchId = auth()->user()->branch_id;
 
+        $unpaid_query = PaymentInvoice::where('status', '!=', 'paid')->whereHas('student', function ($query) use ($branchId) {
+            if ($branchId != 0) {
+                $query->where('branch_id', $branchId);
+            }
+            $query->where(function ($q) {
+                $q->whereHas('studentActivation', function ($q2) {
+                    $q2->where('active_status', 'active');
+                })->orWhereNull('student_activation_id');
+            });
+        });
 
-        $paid_invoices = PaymentInvoice::where('status', 'paid')
-            ->whereHas('student', function ($query) {
-                $query->withoutTrashed()->where('branch_id', auth()->user()->branch_id);
-            })
-            ->latest('id')
-            ->get();
-            
-            // return count($paid_invoices);
+        $paid_query = PaymentInvoice::where('status', 'paid')->whereHas('student', function ($query) use ($branchId) {
+            if ($branchId != 0) {
+                $query->where('branch_id', $branchId);
+            }
+        });
 
-        $dueMonths = PaymentInvoice::where('status', '!=', 'paid')
-            ->whereNotNull('month_year') // avoid nulls
-            ->pluck('month_year')
-            ->filter(function ($value) {
-                // ensure format matches 'm_Y' and is parseable
-                return preg_match('/^\d{2}_\d{4}$/', $value) && Carbon::hasFormat($value, 'm_Y');
-            })
-            ->unique()
-            ->sortBy(function ($value) {
-                return Carbon::createFromFormat('m_Y', $value);
-            })
-            ->values();
+        $unpaid_invoices = $unpaid_query->latest('id')->get();
+        $paid_invoices   = $paid_query->latest('id')->get();
 
-        $paidMonths = PaymentInvoice::where('status', 'paid')
-            ->whereNotNull('month_year') // Filter out nulls
-            ->pluck('month_year')
-            ->filter(function ($value) {
-                // Ensure the value is in correct format like "01_2025"
-                return preg_match('/^\d{2}_\d{4}$/', $value) && Carbon::hasFormat($value, 'm_Y');
-            })
-            ->unique()
-            ->sortBy(function ($value) {
-                return Carbon::createFromFormat('m_Y', $value);
-            })
-            ->values();
+        // return count($paid_invoices);
 
-        if (auth()->user()->branch_id != 0) {
-            $students = Student::where('branch_id', auth()->user()->branch_id)
-                ->where(function ($query) {
-                    $query->whereNull('student_activation_id')->orWhereHas('studentActivation', function ($q) {
-                        $q->where('active_status', 'active');
-                    });
-                })
-                ->orderby('student_unique_id', 'asc')
-                ->get();
-        } else {
-            $students = Student::where(function ($query) {
+        // Fetching months for filters
+        $dueMonths  = $this->getFilteredMonths('!=', 'paid');
+        $paidMonths = $this->getFilteredMonths('=', 'paid');
+
+        // Fetching students for invoice creation modal
+        $students = Student::when($branchId != 0, function ($query) use ($branchId) {
+            $query->where('branch_id', $branchId);
+        })
+            ->where(function ($query) {
                 $query->whereNull('student_activation_id')->orWhereHas('studentActivation', function ($q) {
                     $q->where('active_status', 'active');
                 });
             })
-                ->orderby('student_unique_id', 'asc')
-                ->get();
-        }
+            ->orderBy('student_unique_id')
+            ->get();
 
         return view('invoices.index', compact('unpaid_invoices', 'paid_invoices', 'dueMonths', 'paidMonths', 'students'));
+    }
+
+    private function getFilteredMonths(string $operator, string $value)
+    {
+        return PaymentInvoice::where('status', $operator, $value)
+            ->whereNotNull('month_year')
+            ->pluck('month_year')
+            ->filter(function ($month) {
+                return preg_match('/^\d{2}_\d{4}$/', $month) && Carbon::hasFormat($month, 'm_Y');
+            })
+            ->unique()
+            ->sortBy(function ($month) {
+                return Carbon::createFromFormat('m_Y', $month);
+            })
+            ->values();
     }
 
     /**
@@ -119,16 +106,13 @@ class PaymentInvoiceController extends Controller
         $request->validate($rules);
 
         // when actually creating the invoice to prevent duplicates
-        $exists = PaymentInvoice::where('student_id', $request->invoice_student)
-            ->where('month_year', $request->invoice_month_year)
-            ->where('invoice_type', 'tuition_fee')
-            ->exists();
+        $exists = PaymentInvoice::where('student_id', $request->invoice_student)->where('month_year', $request->invoice_month_year)->where('invoice_type', 'tuition_fee')->exists();
 
         if ($exists) {
             return back()->with('warning', 'Invoice Already Exists');
         }
 
-        // Code for generating invoice number starts
+                                          // Code for generating invoice number starts
         $yearSuffix = now()->format('y'); // '25'
         $month      = now()->format('m'); // '05'
 
@@ -178,24 +162,17 @@ class PaymentInvoiceController extends Controller
             return redirect()->route('invoices.index')->with('warning', 'Invoice not found');
         }
 
-        if (auth()->user()->branch_id != 0) {
-            $students = Student::where('branch_id', auth()->user()->branch_id)
-                ->where(function ($query) {
-                    $query->whereNull('student_activation_id')->orWhereHas('studentActivation', function ($q) {
+        $students = Student::when(auth()->user()->branch_id != 0, function ($query) {
+            $query->where('branch_id', auth()->user()->branch_id);
+        })
+            ->where(function ($query) {
+                $query->whereNull('student_activation_id')
+                    ->orWhereHas('studentActivation', function ($q) {
                         $q->where('active_status', 'active');
                     });
-                })
-                ->orderby('student_unique_id')
-                ->get();
-        } else {
-            $students = Student::where(function ($query) {
-                $query->whereNull('student_activation_id')->orWhereHas('studentActivation', function ($q) {
-                    $q->where('active_status', 'active');
-                });
             })
-                ->orderby('student_unique_id')
-                ->get();
-        }
+            ->orderBy('student_unique_id')
+            ->get();
 
         return view('invoices.view', compact('invoice', 'students'));
     }
