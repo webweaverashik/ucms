@@ -89,7 +89,7 @@ class PaymentInvoiceController extends Controller
 
         $rules = [
             'invoice_student' => 'required|exists:students,id',
-            'invoice_type'    => 'required|in:tuition_fee,exam_fee,model_test_fee,others_fee',
+            'invoice_type'    => 'required|in:tuition_fee,exam_fee,model_test_fee,others_fee,sheet_fee',
             'invoice_amount'  => 'required|numeric|min:500',
         ];
 

@@ -1572,6 +1572,7 @@
                                             <option value="tuition_fee">Tuition Fee</option>
                                             <option value="exam_fee">Exam Fee</option>
                                             <option value="model_test_fee">Model Test Fee</option>
+                                            <option value="sheet_fee">Sheet Fee</option>
                                             <option value="others_fee">Others</option>
                                         </select>
                                     </div>

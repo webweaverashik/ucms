@@ -17,18 +17,13 @@ class SiblingController extends Controller
     {
         $userBranchId = auth()->user()->branch_id;
 
-        if (auth()->user()->branch_id != 0) {
-            $siblings = Sibling::whereHas('student', function ($query) use ($userBranchId) {
-                $query->where('branch_id', $userBranchId);
-            })
-                ->get();
+        $siblings = $userBranchId != 0
+        ? Sibling::whereHas('student', fn($q) => $q->where('branch_id', $userBranchId))->get()
+        : Sibling::all();
 
-            $students = Student::where('branch_id', $userBranchId)->orderby('student_unique_id')->get();
-        } else {
-            $siblings = Sibling::all(); // SuperAdmin can view everything
-
-            $students = Student::orderBy('student_unique_id')->get();
-        }
+        $students = Student::when($userBranchId != 0, fn($q) => $q->where('branch_id', $userBranchId))
+            ->orderBy('student_unique_id')
+            ->get();
 
         $branches     = Branch::all();
         $institutions = Institution::all();

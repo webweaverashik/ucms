@@ -158,8 +158,9 @@
                                             data-kt-subscription-table-filter="product" data-hide-search="true">
                                             <option></option>
                                             <option value="tuition_fee">Tuition Fee</option>
-                                            <option value="model_test_fee">Model Test Fee</option>
                                             <option value="exam_fee">Exam Fee</option>
+                                            <option value="model_test_fee">Model Test Fee</option>
+                                            <option value="sheet_fee">Sheet Fee</option>
                                             <option value="others_fee">Others Fee</option>
                                         </select>
                                     </div>
@@ -449,8 +450,9 @@
                                             data-kt-subscription-table-filter="product" data-hide-search="true">
                                             <option></option>
                                             <option value="tuition_fee">Tuition Fee</option>
-                                            <option value="model_test_fee">Model Test Fee</option>
                                             <option value="exam_fee">Exam Fee</option>
+                                            <option value="model_test_fee">Model Test Fee</option>
+                                            <option value="sheet_fee">Sheet Fee</option>
                                             <option value="others_fee">Others Fee</option>
                                         </select>
                                     </div>
@@ -690,7 +692,8 @@
                                             <option value="tuition_fee" selected>Tuition Fee</option>
                                             <option value="exam_fee">Exam Fee</option>
                                             <option value="model_test_fee">Model Test Fee</option>
-                                            <option value="others_fee">Others</option>
+                                            <option value="sheet_fee">Sheet Fee</option>
+                                            <option value="others_fee">Others Fee</option>
                                         </select>
                                     </div>
                                 </div>
@@ -847,6 +850,7 @@
                                             <option value="tuition_fee">Tuition Fee</option>
                                             <option value="exam_fee">Exam Fee</option>
                                             <option value="model_test_fee">Model Test Fee</option>
+                                            <option value="sheet_fee">Sheet Fee</option>
                                             <option value="others_fee">Others</option>
                                         </select>
                                     </div>
