@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Database\Seeders\Sheet\SheetSeeder;
 use Database\Seeders\Academic\ShiftSeeder;
 use Database\Seeders\Payment\PaymentSeeder;
 use Database\Seeders\Student\SiblingSeeder;
@@ -35,18 +36,19 @@ class DatabaseSeeder extends Seeder
             ClassNameSeeder::class,
             ShiftSeeder::class,
             InstitutionSeeder::class,
-            // TeacherSeeder::class,
-            // ReferenceSeeder::class,
-            // StudentSeeder::class,
-            // GuardianSeeder::class,
-            // MobileNumberSeeder::class,
-            // SiblingSeeder::class,
+            TeacherSeeder::class,
+            ReferenceSeeder::class,
+            StudentSeeder::class,
+            GuardianSeeder::class,
+            MobileNumberSeeder::class,
+            SiblingSeeder::class,
             // StudentActivationSeeder::class, // will be called by StudentFactory
             SubjectSeeder::class,
-            // SubjectTakenSeeder::class,
-            // PaymentSeeder::class,
-            // PaymentInvoiceSeeder::class,
-            // PaymentTransactionSeeder::class,
+            SubjectTakenSeeder::class,
+            PaymentSeeder::class,
+            PaymentInvoiceSeeder::class,
+            PaymentTransactionSeeder::class,
+            SheetSeeder::class,
         ]);
     }
 }

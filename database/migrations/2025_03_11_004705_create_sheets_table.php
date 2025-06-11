@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('sheets', function (Blueprint $table) {
             $table->id();
-            $table->string('sheet_name');
             $table->foreignId('class_id');
             $table->integer('price'); // Price for all sheets in this class
             $table->timestamps();

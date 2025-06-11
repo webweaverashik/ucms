@@ -62,34 +62,32 @@
                         $branchName = $shift->branch->branch_name;
                         $badgeColor = $branchColors[$branchName] ?? 'badge-light-info'; // Default color if not found
                     @endphp
-                        <!--begin::Col-->
-                        <div class="col-md-4">
-                            <a href="{{ url('students/?shift=') . $shift->id }}">
-                            <!--begin::Card-->
-                            <div class="card card-flush h-md-100">
-                                <!--begin::Card header-->
-                                <div class="card-header">
-                                    <!--begin::Card title-->
-                                    <div class="card-title">
-                                        <h2>{{ $shift->name }} &nbsp;</h2>
-                                        <span class="badge {{ $badgeColor }}">{{ $branchName }}</span>
-                                    </div>
-                                    <!--end::Card title-->
+                    <!--begin::Col-->
+                    <div class="col-md-4">
+                        <!--begin::Card-->
+                        <div class="card card-flush h-md-100">
+                            <!--begin::Card header-->
+                            <div class="card-header">
+                                <!--begin::Card title-->
+                                <div class="card-title">
+                                    <h2>{{ $shift->name }} &nbsp;</h2>
+                                    <span class="badge {{ $badgeColor }}">{{ $branchName }}</span>
                                 </div>
-                                <!--end::Card header-->
-                                <!--begin::Card body-->
-                                <div class="card-body pt-1">
-                                    <!--begin::Users-->
-                                    <div class="fw-bold text-gray-600 mb-5">Total active students on this shift:
-                                        {{ count($shift->activeStudents) }}</div>
-                                    <!--end::Users-->
-                                </div>
-                                <!--end::Card body-->
+                                <!--end::Card title-->
                             </div>
-                            <!--end::Card-->
-                        </a>
+                            <!--end::Card header-->
+                            <!--begin::Card body-->
+                            <div class="card-body pt-1">
+                                <!--begin::Users-->
+                                <div class="fw-bold text-gray-600 mb-5">Total active students on this shift:
+                                    {{ count($shift->activeStudents) }}</div>
+                                <!--end::Users-->
+                            </div>
+                            <!--end::Card body-->
                         </div>
-                        <!--end::Col-->
+                        <!--end::Card-->
+                    </div>
+                    <!--end::Col-->
                 @endforeach
 
             </div>

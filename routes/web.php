@@ -6,6 +6,7 @@ use App\Http\Controllers\PdfController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AutoInvoiceController;
+use App\Http\Controllers\Sheet\SheetController;
 use App\Http\Controllers\Academic\ShiftController;
 use App\Http\Controllers\Student\SiblingController;
 use App\Http\Controllers\Student\StudentController;
@@ -84,6 +85,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::resource('subjects', SubjectController::class);
     Route::resource('invoices', PaymentInvoiceController::class);
     Route::resource('transactions', PaymentTransactionController::class);
+    Route::resource('sheets', SheetController::class);
 });
 
 // Handle GET /logout for logged-out users (redirect to login)

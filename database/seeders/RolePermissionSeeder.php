@@ -159,6 +159,10 @@ class RolePermissionSeeder extends Seeder
             'transactions.create',
             'transactions.payslip.download',
 
+            // 📦 sheets
+            'sheets.view',
+            'sheets.distribute',
+
         ]);
 
         $accountant = Role::where('name', 'accountant')->first();
@@ -189,6 +193,11 @@ class RolePermissionSeeder extends Seeder
             'transactions.view',
             'transactions.create',
             'transactions.payslip.download',
+
+
+            // 📦 sheets
+            'sheets.view',
+            'sheets.distribute',
 
         ]);
     }

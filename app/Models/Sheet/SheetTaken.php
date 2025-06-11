@@ -1,24 +1,23 @@
 <?php
 
-namespace App\Models\Sheets;
+namespace App\Models\Sheet;
 
 use App\Models\Student\Student;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class SheetPayment extends Model
+class SheetTaken extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'sheet_id',
+        'sheet_topic_id',
         'student_id',
-        'amount_paid',
     ];
 
-    public function sheet()
+    public function sheetTopic()
     {
-        return $this->belongsTo(Sheet::class, 'sheet_id');
+        return $this->belongsTo(SheetTopic::class, 'sheet_topic_id');
     }
 
     public function student()

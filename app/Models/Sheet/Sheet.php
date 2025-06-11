@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Sheets;
+namespace App\Models\Sheet;
 
 use App\Models\Academic\ClassName;
 use Illuminate\Database\Eloquent\Model;
@@ -18,10 +18,5 @@ class Sheet extends Model
     public function class()
     {
         return $this->belongsTo(ClassName::class, 'class_id');
-    }
-
-    public function payments()
-    {
-        return $this->hasMany(SheetPayment::class, 'sheet_id');
     }
 }

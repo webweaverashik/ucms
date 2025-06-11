@@ -232,54 +232,59 @@
                     @endcanany
 
 
-                    <!--begin:Notes & Sheets Menu item-->
-                    <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="notes_sheets_menu">
-                        <!--begin:Menu link-->
-                        <span class="menu-link">
-                            <span class="menu-icon">
-                                {{-- <i class="ki-outline ki-notepad-bookmark fs-2"></i> --}}
-                                <i class="fa-solid fa-book fs-2"></i>
+                    @canany(['sheets.view', 'sheets.distribute'])
+                        <!--begin:Notes & Sheets Menu item-->
+                        <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="notes_sheets_menu">
+                            <!--begin:Menu link-->
+                            <span class="menu-link">
+                                <span class="menu-icon">
+                                    {{-- <i class="ki-outline ki-notepad-bookmark fs-2"></i> --}}
+                                    <i class="fa-solid fa-book fs-2"></i>
+                                </span>
+                                <span class="menu-title">Notes & Sheets</span>
+                                <span class="menu-arrow"></span>
                             </span>
-                            <span class="menu-title">Notes & Sheets</span>
-                            <span class="menu-arrow"></span>
-                        </span>
-                        <!--end:Menu link-->
+                            <!--end:Menu link-->
 
-                        <!--begin:Menu sub-->
-                        <div class="menu-sub menu-sub-accordion">
-                            <!--begin:Menu item-->
-                            <div class="menu-item">
-                                <!--begin:Menu link--><a class="menu-link" id="all_sheets_link" href="#"><span
-                                        class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
-                                        class="menu-title">All
-                                        Sheets</span></a>
-                                <!--end:Menu link-->
-                            </div>
-                            <!--end:Menu item-->
+                            <!--begin:Menu sub-->
+                            <div class="menu-sub menu-sub-accordion">
+                                @can('sheets.view')
+                                    <!--begin:Menu item-->
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <a class="menu-link" id="all_sheets_link" href="{{ route('sheets.index') }}"><span
+                                                class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
+                                                class="menu-title">All
+                                                Sheets</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                    <!--end:Menu item-->
+                                @endcan
 
-                            <!--begin:Menu item-->
-                            <div class="menu-item">
+                                <!--begin:Menu item-->
+                                {{-- <div class="menu-item">
                                 <!--begin:Menu link--><a class="menu-link" id="sheet_fee_link" href="#"><span
                                         class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
-                                        class="menu-title">Sheet
-                                        Fee</span></a>
+                                        class="menu-title">Sheet Topics</span></a>
                                 <!--end:Menu link-->
-                            </div>
-                            <!--end:Menu item-->
+                            </div> --}}
+                                <!--end:Menu item-->
 
-                            <!--begin:Menu item-->
-                            <div class="menu-item">
-                                <!--begin:Menu link--><a class="menu-link" id="sheet_distribution_link"
-                                    href="#"><span class="menu-bullet"><span
-                                            class="bullet bullet-dot"></span></span><span class="menu-title">Sheet
-                                        Distribution</span></a>
-                                <!--end:Menu link-->
+                                <!--begin:Menu item-->
+                                <div class="menu-item">
+                                    <!--begin:Menu link--><a class="menu-link" id="sheet_distribution_link"
+                                        href="#"><span class="menu-bullet"><span
+                                                class="bullet bullet-dot"></span></span><span class="menu-title">Sheet
+                                            Distribution</span></a>
+                                    <!--end:Menu link-->
+                                </div>
+                                <!--end:Menu item-->
                             </div>
-                            <!--end:Menu item-->
+                            <!--end:Menu sub-->
                         </div>
-                        <!--end:Menu sub-->
-                    </div>
-                    <!--end: Notes & Sheets Menu item-->
+                        <!--end: Notes & Sheets Menu item-->
+                    @endcanany
 
 
                     @can('guardians.view')
