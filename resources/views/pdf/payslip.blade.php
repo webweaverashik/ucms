@@ -118,6 +118,10 @@
                     <td style="text-align: center;">@if ($transaction->paymentInvoice->invoice_type == 'others_fee') {{ $transaction->paymentInvoice->total_amount }} @endif</td>
                 </tr>
                 <tr>
+                    <td>Sheet Fee</td>
+                    <td style="text-align: center;">@if ($transaction->paymentInvoice->invoice_type == 'sheet_fee') {{ $transaction->paymentInvoice->total_amount }} @endif</td>
+                </tr>
+                <tr>
                     <td>Exam Fee</td>
                     <td style="text-align: center;">@if ($transaction->paymentInvoice->invoice_type == 'exam_fee') {{ $transaction->paymentInvoice->total_amount }} @endif</td>
                 </tr>

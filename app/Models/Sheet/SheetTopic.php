@@ -23,6 +23,6 @@ class SheetTopic extends Model
 
     public function sheetsTaken()
     {
-        return $this->hasMany(SheetTaken::class, 'sheet_topic_id');
+        return $this->hasMany(SheetTopicTaken::class, 'sheet_topic_id');
     }
 }

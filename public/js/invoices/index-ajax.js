@@ -136,11 +136,40 @@ $(document).ready(function () {
       // 3. Handle invoice type change
       $('select[name="invoice_type"]').on('change', function () {
             const selectedType = $(this).val();
+            const studentId = $('select[name="invoice_student"]').val();
             const monthYearSection = $('#month_year_id');
             const monthYearSelect = $('select[name="invoice_month_year"]');
             const invoiceAmountInput = $('input[name="invoice_amount"]');
 
-            if (selectedType !== 'tuition_fee') {
+            if (selectedType === 'sheet_fee') {
+                  // Hide and disable month/year
+                  monthYearSection.hide();
+                  monthYearSelect.prop('required', false);
+
+                  invoiceAmountInput.prop('disabled', true).val('');
+
+                  if (studentId) {
+                        // Fetch sheet fee amount from backend
+                        $.ajax({
+                              url: `/students/${studentId}/sheet-fee`,
+                              method: 'GET',
+                              success: function (response) {
+                                    if (response.sheet_fee) {
+                                          invoiceAmountInput.val(response.sheet_fee).prop('disabled', false);
+                                    } else {
+                                          invoiceAmountInput.val('0').prop('disabled', false);
+                                          toastr.warning('No sheet fee found for the student\'s class.');
+                                    }
+                              },
+                              error: function () {
+                                    invoiceAmountInput.val('').prop('disabled', false);
+                                    toastr.error('Failed to fetch sheet fee.');
+                              }
+                        });
+                  } else {
+                        invoiceAmountInput.val('').prop('disabled', true);
+                  }
+            } else if (selectedType !== 'tuition_fee') {
                   monthYearSection.hide();
                   monthYearSelect.prop('required', false);
                   invoiceAmountInput.prop('disabled', false).val('');
@@ -149,12 +178,12 @@ $(document).ready(function () {
                   monthYearSelect.prop('required', true);
                   invoiceAmountInput.prop('disabled', !monthYearSelect.val());
 
-                  // Auto-fill amount if month is already selected
                   if (monthYearSelect.val()) {
                         invoiceAmountInput.val(invoiceAmountInput.data('tuition-fee'));
                   }
             }
       });
+
 
       // 4. Form reset handling
       function resetInvoiceForm() {

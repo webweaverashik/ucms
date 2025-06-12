@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Sheet;
 use App\Http\Controllers\Controller;
 use App\Models\Academic\ClassName;
 use App\Models\Sheet\Sheet;
+use App\Models\Sheet\SheetPayment;
 use Illuminate\Http\Request;
 
 class SheetController extends Controller
@@ -95,4 +96,22 @@ class SheetController extends Controller
     {
         //
     }
+
+    public function sheetPayments()
+    {
+        $user = auth()->user();
+
+        $payments = SheetPayment::query()
+            ->when(
+                ! $user->hasRole('admin'),
+                fn($query) => $query->whereHas('student', function ($q) use ($user) {
+                    $q->where('branch_id', $user->branch_id);
+                })
+            )
+            ->latest()
+            ->get();
+
+        return view('sheets.sheet-payments', compact('payments'));
+    }
+
 }

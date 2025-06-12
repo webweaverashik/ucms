@@ -143,7 +143,7 @@
 
                 <div class="col-md-3">
                     <!--begin::Details-->
-                    <table class="table fs-6 fw-semibold gs-0 gy-1 gx-0 mt-10">
+                    <table class="table fs-6 fw-semibold gs-0 gy-1 gx-0 mt-5">
                         @if ($invoice->invoice_type == 'tuition_fee')
                             <tr class="">
                                 <td class="text-gray-500">Due Date:</td>
@@ -159,6 +159,16 @@
                                 {{ ucwords(str_replace('_', ' ', $invoice->invoice_type)) }}
                             </td>
                         </tr>
+
+                        @if ($invoice->invoice_type == 'sheet_fee')
+                            <tr class="">
+                                <td class="text-gray-500">Sheet Group:</td>
+                                <td class="text-gray-800">
+                                    {{ $invoice->sheetPayment->sheet->class->name }}
+                                    ({{ $invoice->sheetPayment->sheet->class->class_numeral }})
+                                </td>
+                            </tr>
+                        @endif
 
                         @php
                             $status = $invoice->status;

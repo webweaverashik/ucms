@@ -6,7 +6,7 @@ use App\Models\Student\Student;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class SheetTaken extends Model
+class SheetTopicTaken extends Model
 {
     use HasFactory;
 

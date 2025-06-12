@@ -624,4 +624,14 @@ class StudentController extends Controller
             'tuition_fee'                  => $student->payments->tuition_fee,
         ]);
     }
+
+    /* Get the sheet fee for a student */
+    public function getSheetFee($id)
+    {
+        $student  = Student::with('class.sheet')->findOrFail($id);
+        $sheetFee = optional($student->class->sheet)->price;
+
+        return response()->json(['sheet_fee' => $sheetFee]);
+    }
+
 }

@@ -51,7 +51,7 @@ class PdfController extends Controller
 
         $pdf = new Mpdf([
             'mode'             => 'utf-8',
-            'format'           => [80, 115], // width: 80mm, height: auto or fixed like 297mm
+            'format'           => [80, 120], // width: 80mm, height: auto or fixed like 297mm
             'tempDir'          => $tempDir,
             'default_font'     => 'arial',
             'autoScriptToLang' => true,

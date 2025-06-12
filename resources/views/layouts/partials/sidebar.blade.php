@@ -260,16 +260,22 @@
                                         <!--end:Menu link-->
                                     </div>
                                     <!--end:Menu item-->
-                                @endcan
 
-                                <!--begin:Menu item-->
-                                {{-- <div class="menu-item">
-                                <!--begin:Menu link--><a class="menu-link" id="sheet_fee_link" href="#"><span
-                                        class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
-                                        class="menu-title">Sheet Topics</span></a>
-                                <!--end:Menu link-->
-                            </div> --}}
-                                <!--end:Menu item-->
+
+                                    <!--begin:Menu item-->
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <a class="menu-link" id="sheet_payments_link" href="{{ route('sheet.payments') }}">
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot">
+                                                </span>
+                                            </span>
+                                            <span class="menu-title">Sheet Payments</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                    <!--end:Menu item-->
+                                @endcan
 
                                 <!--begin:Menu item-->
                                 <div class="menu-item">

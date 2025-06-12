@@ -9,7 +9,7 @@ use App\Models\Branch;
 use App\Models\Payment\Payment;
 use App\Models\Payment\PaymentInvoice;
 use App\Models\Payment\PaymentTransaction;
-use App\Models\Sheets\SheetTaken;
+use App\Models\Sheets\SheetTopicTaken;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -92,12 +92,6 @@ class Student extends Model
         return $this->hasMany(SubjectTaken::class);
     }
 
-    // Get all the sheets taken by the student
-    public function sheetsTaken()
-    {
-        return $this->hasMany(SheetTaken::class);
-    }
-
     // Add the payment relationship
     public function payments()
     {
@@ -115,7 +109,12 @@ class Student extends Model
     {
         return $this->hasMany(PaymentTransaction::class);
     }
-    
+
+    // Get all the sheets taken by the student
+    public function sheetsTaken()
+    {
+        return $this->hasMany(SheetTopicTaken::class);
+    }
 
     /*
         Get all the sheet payments for this invoice

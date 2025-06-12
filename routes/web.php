@@ -49,6 +49,8 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::post('students/toggle-active', [StudentActivationController::class, 'toggleActive'])->name('students.toggleActive');
     Route::get('students/{id}/download-form', [PdfController::class, 'downloadAdmissionForm'])->name('students.download');
     Route::get('/students/{student}/last-invoice-month', [StudentController::class, 'getLastInvoiceMonth']);
+    Route::get('/students/{id}/sheet-fee', [StudentController::class, 'getSheetFee']);
+
 
     // Invoices
     Route::get('students/{student}/due-invoices', [PaymentInvoiceController::class, 'getDueInvoices'])->name('students.due.invoices');
@@ -61,6 +63,9 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     // Subjects
     Route::get('get-subjects', [SubjectController::class, 'getSubjects']);
     Route::get('get-taken-subjects', [SubjectController::class, 'getTakenSubjects']);
+
+    // Sheets
+    Route::get('sheet-payments', [SheetController::class, 'sheetPayments'])->name('sheet.payments');
     
     // ------- Custom routes end -------
 

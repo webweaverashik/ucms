@@ -133,7 +133,8 @@ class PaymentInvoiceController extends Controller
         $month      = now()->format('m');
         $prefix     = $student->branch->branch_prefix;
 
-        $lastInvoice = PaymentInvoice::where('invoice_number', 'like', "{$prefix}{$yearSuffix}{$month}_%")
+        $lastInvoice = PaymentInvoice::withTrashed()
+            ->where('invoice_number', 'like', "{$prefix}{$yearSuffix}{$month}_%")
             ->latest('invoice_number')
             ->first();
 
@@ -174,10 +175,15 @@ class PaymentInvoiceController extends Controller
      */
     public function show(string $id)
     {
-        $invoice = PaymentInvoice::find($id);
+        $invoice = PaymentInvoice::with('student')->find($id);
 
         if (! $invoice || $invoice->student === null || $invoice->student->trashed()) {
             return redirect()->route('invoices.index')->with('warning', 'Invoice not found');
+        }
+
+        // Restrict view based on branch unless admin
+        if (auth()->user()->branch_id != 0 && $invoice->student->branch_id != auth()->user()->branch_id) {
+            return redirect()->route('invoices.index')->with('warning', 'Invoice not found.');
         }
 
         $students = Student::when(auth()->user()->branch_id != 0, function ($query) {
@@ -242,14 +248,22 @@ class PaymentInvoiceController extends Controller
             return response()->json(['error' => 'Cannot delete paid invoice'], 422);
         }
 
-        if ($invoice->student->branch_id !== auth()->user()->branch_id) {
-            return response()->json(['error' => 'Unauthorized Access'], 403);
-        }
+        // Optional: check if current user belongs to the same branch
+        // if ($invoice->student->branch_id !== auth()->user()->branch_id) {
+        //     return response()->json(['error' => 'Unauthorized Access'], 403);
+        // }
 
+        // Mark who deleted it
         $invoice->update([
             'deleted_by' => auth()->id(),
         ]);
 
+        // Delete related sheet payment, if exists
+        if ($invoice->sheetPayment) {
+            $invoice->sheetPayment->delete();
+        }
+
+        // Soft delete the invoice
         $invoice->delete();
 
         return response()->json(['success' => true]);

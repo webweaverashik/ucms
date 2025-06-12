@@ -151,7 +151,7 @@
                             </td>
 
                             <td>{{ $transaction->voucher_no }}</td>
-                            <td>{{ intval($transaction->amount_paid) }}</td>
+                            <td>{{ $transaction->amount_paid }}</td>
                             <td class="d-none">
                                 @if ($transaction->payment_type === 'partial')
                                     T_partial

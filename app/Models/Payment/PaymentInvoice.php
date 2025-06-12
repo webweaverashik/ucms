@@ -42,9 +42,9 @@ class PaymentInvoice extends Model
     /*
         Get all the sheet payments for this invoice
     */
-    public function sheetPayments()
+    public function sheetPayment()
     {
-        return $this->hasMany(SheetPayment::class);
+        return $this->hasOne(SheetPayment::class, 'invoice_id');
     }
 
 }
