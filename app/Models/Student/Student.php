@@ -33,7 +33,7 @@ class Student extends Model
     }
 
     // Get the current academic class of this student
-    public function class()
+    public function class ()
     {
         return $this->belongsTo(ClassName::class, 'class_id');
     }
@@ -115,4 +115,17 @@ class Student extends Model
     {
         return $this->hasMany(PaymentTransaction::class);
     }
+    
+
+    /*
+        Get all the sheet payments for this invoice
+    */
+    public function sheetPayments()
+    {
+        return $this->hasMany(SheetPayment::class)
+            ->whereHas('invoice', function ($query) {
+                $query->where('invoice_type', 'sheet_fee');
+            });
+    }
+
 }

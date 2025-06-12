@@ -58,7 +58,7 @@ class SheetController extends Controller
      */
     public function show(string $id)
     {
-        //
+        return response()->json(Sheet::find($id));
     }
 
     /**
@@ -74,7 +74,18 @@ class SheetController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $validated = $request->validate([
+            'sheet_price_edit' => 'required|numeric|min:100',
+        ]);
+
+        $sheet = Sheet::findOrFail($id);
+
+        $sheet->update([
+            'price' => $validated['sheet_price_edit'],
+        ]);
+
+        // Return JSON response
+        return response()->json(['success' => true]);
     }
 
     /**

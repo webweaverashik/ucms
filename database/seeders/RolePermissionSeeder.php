@@ -198,7 +198,6 @@ class RolePermissionSeeder extends Seeder
             // 📦 sheets
             'sheets.view',
             'sheets.distribute',
-
         ]);
     }
 }

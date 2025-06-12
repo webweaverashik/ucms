@@ -229,7 +229,10 @@ var KTAddSheet = function () {
                                                 if (data.success) {
                                                       toastr.success(data.message || 'Sheet added successfully');
                                                       modal.hide();
-                                                      window.location.reload();
+
+                                                      setTimeout(() => {
+                                                            window.location.reload();
+                                                      }, 2000);
                                                 } else {
                                                       throw new Error(data.message || 'Update failed');
                                                 }
@@ -296,57 +299,37 @@ var KTEditSheet = function () {
                   });
             }
 
-            // AJAX form data load
             const editButtons = document.querySelectorAll("[data-bs-target='#kt_modal_edit_sheet']");
             if (editButtons.length) {
                   editButtons.forEach((button) => {
                         button.addEventListener("click", function () {
-                              sheetId = this.getAttribute("data-sheet-id"); // Assign value globally
-                              console.log("sheet ID:", sheetId);
-                              if (!sheetId) return;
+                              sheetId = this.getAttribute("data-sheet-id");
+                              const sheetClass = this.getAttribute("data-sheet-class");
+                              const sheetPrice = this.getAttribute("data-sheet-price");
 
-                              // Clear form
+                              console.log("Sheet ID:", sheetId);
+
+                              // Clear form if needed
                               if (form) form.reset();
 
-                              fetch(`/sheets/${sheetId}`)
-                                    .then(response => {
-                                          if (!response.ok) throw new Error('Network response was not ok');
-                                          return response.json();
-                                    })
-                                    .then(data => {
-                                          if (data.success && data.data) {
-                                                const institution = data.data;
+                              // Set modal title
+                              const modalTitle = document.getElementById("kt_modal_edit_sheet_title");
+                              if (modalTitle) {
+                                    modalTitle.textContent = `Update - ${sheetClass} - sheet group`;
+                              }
 
-                                                // Helper function to safely set values
-                                                const setValue = (selector, value) => {
-                                                      const el = document.querySelector(selector);
-                                                      if (el) el.value = value;
-                                                };
+                              // Set sheet price input value
+                              const priceInput = document.querySelector("input[name='sheet_price_edit']");
+                              if (priceInput) {
+                                    priceInput.value = sheetPrice;
+                              }
 
-                                                // Helper function to safely check radio buttons
-                                                const checkRadio = (name, value) => {
-                                                      const radio = document.querySelector(`input[name='${name}'][value='${value}']`);
-                                                      if (radio) radio.checked = true;
-                                                };
-
-                                                // Populate form fields
-                                                setValue("input[name='institution_name_edit']", institution.name);
-                                                setValue("input[name='eiin_number_edit']", institution.eiin_number);
-                                                checkRadio('institution_type_edit', institution.type);
-
-                                                // Show modal
-                                                modal.show();
-                                          } else {
-                                                throw new Error(data.message || 'Invalid response data');
-                                          }
-                                    })
-                                    .catch(error => {
-                                          console.error("Error:", error);
-                                          toastr.error(error.message || "Failed to load institution details");
-                                    });
+                              // Show modal (if not using Bootstrap's auto show via data-bs attributes)
+                              // modal.show(); // Uncomment if showing programmatically
                         });
                   });
             }
+
       }
 
       // Form validation
@@ -357,13 +340,6 @@ var KTEditSheet = function () {
                   form,
                   {
                         fields: {
-                              'sheet_class_id_edit': {
-                                    validators: {
-                                          notEmpty: {
-                                                message: 'Name is required'
-                                          }
-                                    }
-                              },
                               'sheet_price_edit': {
                                     validators: {
                                           notEmpty: {
@@ -390,7 +366,7 @@ var KTEditSheet = function () {
                   }
             );
 
-            const submitButton = element.querySelector('[data-kt-institutions-modal-action="submit"]');
+            const submitButton = element.querySelector('[data-kt-sheet-modal-action="submit"]');
             if (submitButton && validator) {
                   submitButton.addEventListener('click', function (e) {
                         e.preventDefault();
@@ -409,7 +385,7 @@ var KTEditSheet = function () {
                                     formData.append('_method', 'PUT'); // For Laravel resource route
 
                                     // Submit via AJAX
-                                    fetch(`/institutions/${institutionId}`, {
+                                    fetch(`/sheets/${sheetId}`, {
                                           method: 'POST', // Laravel expects POST for PUT routes
                                           body: formData,
                                           headers: {
@@ -426,11 +402,13 @@ var KTEditSheet = function () {
                                                 submitButton.disabled = false;
 
                                                 if (data.success) {
-                                                      toastr.success(data.message || 'institution updated successfully');
+                                                      toastr.success(data.message || 'Sheet group updated successfully');
                                                       modal.hide();
 
-                                                      // Reload the page
-                                                      window.location.reload();
+                                                      setTimeout(() => {
+                                                            window.location.reload();
+                                                      }, 2000);
+
                                                 } else {
                                                       throw new Error(data.message || 'Update failed');
                                                 }
@@ -438,11 +416,11 @@ var KTEditSheet = function () {
                                           .catch(error => {
                                                 submitButton.removeAttribute('data-kt-indicator');
                                                 submitButton.disabled = false;
-                                                toastr.error(error.message || 'Failed to update institution');
+                                                toastr.error(error.message || 'Failed to update sheet');
                                                 console.error('Error:', error);
                                           });
                               } else {
-                                    toastr.warning('Please fill all required fields correctly');
+                                    toastr.warning('Please fill all required fields');
                               }
                         });
                   });

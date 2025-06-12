@@ -1,11 +1,12 @@
 <?php
 namespace App\Models\Payment;
 
-use App\Models\User;
+use App\Models\Sheet\SheetPayment;
 use App\Models\Student\Student;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PaymentInvoice extends Model
 {
@@ -36,6 +37,14 @@ class PaymentInvoice extends Model
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /*
+        Get all the sheet payments for this invoice
+    */
+    public function sheetPayments()
+    {
+        return $this->hasMany(SheetPayment::class);
     }
 
 }

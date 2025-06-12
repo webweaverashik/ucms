@@ -65,12 +65,14 @@
                 <div class="card-toolbar">
                     <!--begin::Toolbar-->
                     <div class="d-flex justify-content-end" data-kt-subscription-table-toolbar="base">
-                        <!--begin::Add New Guardian-->
-                        <a href="#" class="btn btn-primary" data-bs-toggle="modal"
-                            data-bs-target="#kt_modal_add_sheet">
-                            <i class="ki-outline ki-plus fs-2"></i>Sheet Group
-                        </a>
-                        <!--end::Add New Guardian-->
+                        @can('sheets.create')
+                            <!--begin::Add New Guardian-->
+                            <a href="#" class="btn btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#kt_modal_add_sheet">
+                                <i class="ki-outline ki-plus fs-2"></i>Sheet Group
+                            </a>
+                            <!--end::Add New Guardian-->
+                        @endcan
                     </div>
                     <!--end::Toolbar-->
 
@@ -108,18 +110,18 @@
                                 <td>
                                     @can('sheets.edit')
                                         <a href="#" title="Edit Sheet Group" data-bs-toggle="modal"
-                                            data-bs-target="#kt_modal_edit_sheet" data-sheet-id="{{ $sheet->id }}"
-                                            class="btn btn-icon text-hover-primary w-30px h-30px me-3">
+                                            data-bs-target="#kt_modal_edit_sheet" data-sheet-id="{{ $sheet->id }}" data-sheet-price="{{ $sheet->price }}" data-sheet-class="{{ $sheet->class->name }} ({{ $sheet->class->class_numeral }})"
+                                            class="btn btn-icon text-hover-primary w-30px h-30px">
                                             <i class="ki-outline ki-pencil fs-2"></i>
                                         </a>
                                     @endcan
 
                                     @can('sheets.delete')
-                                        <a href="#" title="Delete Sheet Group" data-bs-toggle="tooltip"
-                                            class="btn btn-icon text-hover-danger w-30px h-30px me-3 delete-sheet"
+                                        {{-- <a href="#" title="Delete Sheet Group" data-bs-toggle="tooltip"
+                                            class="btn btn-icon text-hover-danger w-30px h-30px delete-sheet"
                                             data-sheet-id="{{ $sheet->id }}">
                                             <i class="ki-outline ki-trash fs-2"></i>
-                                        </a>
+                                        </a> --}}
                                     @endcan
                                 </td>
                             </tr>
@@ -139,7 +141,7 @@
     <div class="modal fade" id="kt_modal_add_sheet" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
         data-bs-keyboard="false">
         <!--begin::Modal dialog-->
-        <div class="modal-dialog modal-dialog-centered mw-650px">
+        <div class="modal-dialog modal-dialog-centered mw-500px">
             <!--begin::Modal content-->
             <div class="modal-content">
                 <!--begin::Modal header-->
@@ -164,7 +166,7 @@
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_edit_sheet_header"
                             data-kt-scroll-wrappers="#kt_modal_add_sheet_scroll" data-kt-scroll-offset="300px">
-                            <p class="text-gray-600 fs-5">Make sure the same sheet should not be added twice.</p>
+                            <p class="text-gray-600 fs-5">Make sure the same sheet group should not be added twice.</p>
 
                             <!--begin::Class Input group-->
                             <div class="fv-row mb-7">
@@ -192,8 +194,7 @@
                                 <!--end::Label-->
                                 <!--begin::Input-->
                                 <input type="number" name="sheet_price" min="100"
-                                    class="form-control form-control-solid mb-3 mb-lg-0" placeholder="e.g. 2000"
-                                    required />
+                                    class="form-control form-control-solid mb-3 mb-lg-0" placeholder="e.g. 2000" required />
                                 <!--end::Input-->
                             </div>
                             <!--end::Price Input group-->
@@ -227,13 +228,13 @@
     <div class="modal fade" id="kt_modal_edit_sheet" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
         data-bs-keyboard="false">
         <!--begin::Modal dialog-->
-        <div class="modal-dialog modal-dialog-centered mw-650px">
+        <div class="modal-dialog modal-dialog-centered mw-500px">
             <!--begin::Modal content-->
             <div class="modal-content">
                 <!--begin::Modal header-->
                 <div class="modal-header" id="kt_modal_edit_sheet_header">
                     <!--begin::Modal title-->
-                    <h2 class="fw-bold">Update Sheet Price</h2>
+                    <h2 class="fw-bold" id="kt_modal_edit_sheet_title">Update Sheet Price</h2>
                     <!--end::Modal title-->
                     <!--begin::Close-->
                     <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-sheet-modal-action="close">
@@ -253,29 +254,10 @@
                             data-kt-scroll-dependencies="#kt_modal_edit_sheet_header"
                             data-kt-scroll-wrappers="#kt_modal_edit_sheet_scroll" data-kt-scroll-offset="300px">
 
-                            <!--begin::Class Input group-->
-                            <div class="fv-row mb-7">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">Select Class</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <select name="sheet_class_id_edit" class="form-select form-select-solid"
-                                    data-control="select2" data-placeholder="Select class" required disabled>
-                                    <option></option>
-                                    @foreach ($classes as $class)
-                                        <option value="{{ $class->id }}">{{ $class->name }}
-                                            ({{ $class->class_numeral }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Class Input group-->
-
                             <!--begin::Price Input group-->
                             <div class="fv-row mb-7">
                                 <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">Set Price</label>
+                                <label class="required fw-semibold fs-6 mb-2">Update Price</label>
                                 <!--end::Label-->
                                 <!--begin::Input-->
                                 <input type="number" name="sheet_price_edit" min="100"
