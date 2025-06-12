@@ -85,90 +85,89 @@ class PaymentInvoiceController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-{
-    $rules = [
-        'invoice_student' => 'required|exists:students,id',
-        'invoice_type'    => 'required|in:tuition_fee,exam_fee,model_test_fee,others_fee,sheet_fee',
-        'invoice_amount'  => 'required|numeric|min:500',
-    ];
+    {
+        $rules = [
+            'invoice_student' => 'required|exists:students,id',
+            'invoice_type'    => 'required|in:tuition_fee,exam_fee,model_test_fee,others_fee,sheet_fee',
+            'invoice_amount'  => 'required|numeric|min:500',
+        ];
 
-    // Tuition fees require month/year
-    if ($request->invoice_type === 'tuition_fee') {
-        $rules['invoice_month_year'] = 'required|string';
-        $validatedMonthYear = $request->invoice_month_year;
-    } else {
-        $validatedMonthYear = null;
-    }
+        // Tuition fees require month/year
+        if ($request->invoice_type === 'tuition_fee') {
+            $rules['invoice_month_year'] = 'required|string';
+            $validatedMonthYear          = $request->invoice_month_year;
+        } else {
+            $validatedMonthYear = null;
+        }
 
-    $request->validate($rules);
+        $request->validate($rules);
 
-    // Fetch student with class and branch
-    $student = Student::with(['class', 'branch'])->findOrFail($request->invoice_student);
-    $classId = optional($student->class)->id;
+        // Fetch student with class and branch
+        $student = Student::with(['class', 'branch'])->findOrFail($request->invoice_student);
+        $classId = optional($student->class)->id;
 
-    // ✅ Prevent duplicate tuition_fee invoice (same student + same month_year)
-    if (
-        $request->invoice_type === 'tuition_fee' &&
-        PaymentInvoice::where('student_id', $student->id)
+        // ✅ Prevent duplicate tuition_fee invoice (same student + same month_year)
+        if (
+            $request->invoice_type === 'tuition_fee' &&
+            PaymentInvoice::where('student_id', $student->id)
             ->where('invoice_type', 'tuition_fee')
             ->where('month_year', $validatedMonthYear)
             ->exists()
-    ) {
-        return back()->with('warning', 'Tuition fee invoice already exists for this student and month.');
-    }
-
-    // ✅ Prevent duplicate sheet_fee for same student + class
-    if ($request->invoice_type === 'sheet_fee') {
-        $alreadyPaid = SheetPayment::where('student_id', $student->id)
-            ->whereHas('sheet', fn ($q) => $q->where('class_id', $classId))
-            ->exists();
-
-        if ($alreadyPaid) {
-            return back()->with('warning', 'Sheet invoice already exists for this student.');
+        ) {
+            return back()->with('warning', 'Tuition fee invoice already exists for this student and month.');
         }
-    }
 
-    // ✅ Generate unique invoice number
-    $yearSuffix = now()->format('y');
-    $month      = now()->format('m');
-    $prefix     = $student->branch->branch_prefix;
+        // ✅ Prevent duplicate sheet_fee for same student + class
+        if ($request->invoice_type === 'sheet_fee') {
+            $alreadyPaid = SheetPayment::where('student_id', $student->id)
+                ->whereHas('sheet', fn($q) => $q->where('class_id', $classId))
+                ->exists();
 
-    $lastInvoice = PaymentInvoice::where('invoice_number', 'like', "{$prefix}{$yearSuffix}{$month}_%")
-        ->latest('invoice_number')
-        ->first();
+            if ($alreadyPaid) {
+                return back()->with('warning', 'Sheet invoice already exists for this student.');
+            }
+        }
 
-    $nextSequence = $lastInvoice
+        // ✅ Generate unique invoice number
+        $yearSuffix = now()->format('y');
+        $month      = now()->format('m');
+        $prefix     = $student->branch->branch_prefix;
+
+        $lastInvoice = PaymentInvoice::where('invoice_number', 'like', "{$prefix}{$yearSuffix}{$month}_%")
+            ->latest('invoice_number')
+            ->first();
+
+        $nextSequence = $lastInvoice
         ? ((int) substr($lastInvoice->invoice_number, strrpos($lastInvoice->invoice_number, '_') + 1)) + 1
         : 1001;
 
-    $invoiceNumber = "{$prefix}{$yearSuffix}{$month}_{$nextSequence}";
+        $invoiceNumber = "{$prefix}{$yearSuffix}{$month}_{$nextSequence}";
 
-    // ✅ Create invoice
-    $invoice = PaymentInvoice::create([
-        'invoice_number' => $invoiceNumber,
-        'student_id'     => $student->id,
-        'invoice_type'   => $request->invoice_type,
-        'total_amount'   => $request->invoice_amount,
-        'amount_due'     => $request->invoice_amount,
-        'month_year'     => $validatedMonthYear,
-        'created_by'     => auth()->id(),
-    ]);
+        // ✅ Create invoice
+        $invoice = PaymentInvoice::create([
+            'invoice_number' => $invoiceNumber,
+            'student_id'     => $student->id,
+            'invoice_type'   => $request->invoice_type,
+            'total_amount'   => $request->invoice_amount,
+            'amount_due'     => $request->invoice_amount,
+            'month_year'     => $validatedMonthYear,
+            'created_by'     => auth()->id(),
+        ]);
 
-    // ✅ Create SheetPayment after invoice is stored
-    if ($request->invoice_type === 'sheet_fee') {
-        $sheet = optional($student->class)->sheet;
-        if ($sheet) {
-            SheetPayment::create([
-                'sheet_id'   => $sheet->id,
-                'invoice_id' => $invoice->id,
-                'student_id' => $student->id,
-            ]);
+        // ✅ Create SheetPayment after invoice is stored
+        if ($request->invoice_type === 'sheet_fee') {
+            $sheet = optional($student->class)->sheet;
+            if ($sheet) {
+                SheetPayment::create([
+                    'sheet_id'   => $sheet->id,
+                    'invoice_id' => $invoice->id,
+                    'student_id' => $student->id,
+                ]);
+            }
         }
+
+        return redirect()->back()->with('success', 'Invoice created successfully.');
     }
-
-    return redirect()->back()->with('success', 'Invoice created successfully.');
-}
-
 
     /**
      * Display the specified resource.
