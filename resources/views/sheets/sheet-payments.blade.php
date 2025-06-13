@@ -53,7 +53,7 @@
                 <div class="d-flex align-items-center position-relative my-1">
                     <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
                         data-sheet-payments-table-filter="search" class="form-control form-control-solid w-350px ps-12"
-                        placeholder="Search in transactions">
+                        placeholder="Search in payments">
                 </div>
                 <!--end::Search-->
             </div>
@@ -128,7 +128,7 @@
                         <th class="d-none">Status (Filter)</th>
                         <th>Status</th>
                         <th class="w-350px">Student</th>
-                        <th>Payment Date</th>
+                        <th>Billing Date</th>
                     </tr>
                 </thead>
                 <tbody class="text-gray-600 fw-semibold">

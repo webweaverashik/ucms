@@ -98,14 +98,14 @@
         <!--end:::Tab item-->
 
         @can('invoices.create')
-        <!--begin:::Tab item-->
-        <li class="nav-item ms-auto">
-            <!--begin::Action menu-->
-            <a href="#" class="btn btn-primary ps-7" data-bs-toggle="modal"
-                data-bs-target="#kt_modal_create_invoice"><i class="ki-outline ki-plus fs-2 me-0"></i> Create Invoice</a>
-            <!--end::Menu-->
-        </li>
-        <!--end:::Tab item-->
+            <!--begin:::Tab item-->
+            <li class="nav-item ms-auto">
+                <!--begin::Action menu-->
+                <a href="#" class="btn btn-primary ps-7" data-bs-toggle="modal"
+                    data-bs-target="#kt_modal_create_invoice"><i class="ki-outline ki-plus fs-2 me-0"></i> Create Invoice</a>
+                <!--end::Menu-->
+            </li>
+            <!--end:::Tab item-->
         @endcan
     </ul>
     <!--end:::Tabs-->
@@ -354,22 +354,19 @@
                                     </td>
 
                                     <td>
-                                        @if ($invoice->invoice_type == 'tuition_fee')
-                                            @if ($status === 'due')
-                                                @if ($isOverdue)
-                                                    <span class="badge badge-danger">Overdue</span>
-                                                @else
-                                                    <span class="badge badge-warning">Due</span>
-                                                @endif
-                                            @elseif ($status === 'partially_paid')
-                                                <span class="badge badge-info">Partial</span>
-                                                @if ($isOverdue)
-                                                    <span class="badge badge-danger ms-1">Overdue</span>
-                                                @endif
+                                        @if ($status === 'due')
+                                            @if ($isOverdue)
+                                                <span class="badge badge-danger">Overdue</span>
+                                            @else
+                                                <span class="badge badge-warning">Due</span>
                                             @endif
-                                        @else
-                                            <span class="badge badge-warning">Due</span>
+                                        @elseif ($status === 'partially_paid')
+                                            <span class="badge badge-info">Partial</span>
+                                            @if ($isOverdue)
+                                                <span class="badge badge-danger ms-1">Overdue</span>
+                                            @endif
                                         @endif
+
                                     </td>
 
                                     <td>

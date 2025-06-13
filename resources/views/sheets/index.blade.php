@@ -100,13 +100,12 @@
                             <tr>
                                 <td class="pe-2">{{ $loop->index + 1 }}</td>
                                 <td class="mb-1">
-                                    <a href="{{ route('sheets.show', $sheet->id) }}"
-                                        class="text-gray-700 text-hover-primary">{{ $sheet->class->name }}
+                                    <a href="{{ route('sheets.show', $sheet->id) }}">{{ $sheet->class->name }}
                                         ({{ $sheet->class->class_numeral }})
                                     </a>
                                 </td>
                                 <td>{{ $sheet->price }}</td>
-                                <td>10</td>
+                                <td>{{ $sheet->sheetPayments->count() }}</td>
                                 <td>
                                     @can('sheets.edit')
                                         <a href="#" title="Edit Sheet Group" data-bs-toggle="modal"
