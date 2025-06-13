@@ -1,11 +1,12 @@
 <?php
 namespace App\Http\Controllers\Sheet;
 
-use App\Http\Controllers\Controller;
-use App\Models\Academic\ClassName;
 use App\Models\Sheet\Sheet;
-use App\Models\Sheet\SheetPayment;
 use Illuminate\Http\Request;
+use App\Models\Student\Student;
+use App\Models\Academic\ClassName;
+use App\Models\Sheet\SheetPayment;
+use App\Http\Controllers\Controller;
 
 class SheetController extends Controller
 {
@@ -59,7 +60,14 @@ class SheetController extends Controller
      */
     public function show(string $id)
     {
-        return response()->json(Sheet::find($id));
+        $sheet = Sheet::find($id);
+        $student = Student::find($id);
+
+        if (! $sheet) {
+            return redirect()->route('sheets.index')->with('warning', 'Sheet group not found.');
+        }
+
+        return view('sheets.view', compact('sheet', 'student'));
     }
 
     /**
