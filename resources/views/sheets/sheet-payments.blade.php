@@ -127,6 +127,7 @@
                         <th>Amount (৳)</th>
                         <th class="d-none">Status (Filter)</th>
                         <th>Status</th>
+                        <th>Paid (৳)</th>
                         <th class="w-350px">Student</th>
                         <th>Billing Date</th>
                     </tr>
@@ -150,23 +151,26 @@
                             <td>{{ $payment->invoice->total_amount }}</td>
                             <td class="d-none">
                                 @if ($payment->invoice->status === 'due')
-                                    T_due
+                                T_due
                                 @elseif ($payment->invoice->status === 'partially_paid')
-                                    T_partially_paid
+                                T_partially_paid
                                 @elseif ($payment->invoice->status === 'paid')
-                                    T_paid
+                                T_paid
                                 @endif
                             </td>
 
+                            
                             <td>
                                 @if ($payment->invoice->status === 'due')
-                                    <span class="badge badge-warning">Due</span>
+                                <span class="badge badge-warning">Due</span>
                                 @elseif ($payment->invoice->status === 'partially_paid')
-                                    <span class="badge badge-info">Partial</span>
+                                <span class="badge badge-info">Partial</span>
                                 @elseif ($payment->invoice->status === 'paid')
-                                    <span class="badge badge-success">Paid</span>
+                                <span class="badge badge-success">Paid</span>
                                 @endif
                             </td>
+                            
+                            <td>{{ $payment->invoice->paymentTransactions->sum('amount_paid') }}</td>
 
                             <td>
                                 <a href="{{ route('students.show', $payment->student->id) }}">

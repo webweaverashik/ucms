@@ -89,7 +89,7 @@
                     <thead>
                         <tr class="fw-bold fs-7 text-uppercase gs-0">
                             <th class="w-30px">SL</th>
-                            <th class="w-500px">Class Name</th>
+                            <th class="w-500px">Sheet Group</th>
                             <th>Price (৳)</th>
                             <th>No. of sale</th>
                             <th class="w-100px">Actions</th>
