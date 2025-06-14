@@ -56,7 +56,7 @@
                 <div class="card-header">
                     <!--begin::Card title-->
                     <div class="card-title">
-                        <h2>Sheet Info</h2>
+                        <h3 class="text-gray-600">Sheet Group Info</h3>
                     </div>
                     <!--end::Card title-->
                 </div>
@@ -71,7 +71,7 @@
                             <!--begin::Info-->
                             <div class="d-flex flex-column">
                                 <!--begin::Name-->
-                                <span class="fs-4 fw-bold text-gray-900 me-2">{{ $sheet->class->name }}
+                                <span class="fs-1 fw-bold text-gray-900 me-2">{{ $sheet->class->name }}
                                     ({{ $sheet->class->class_numeral }})</span>
                                 <!--end::Name-->
                             </div>
@@ -121,90 +121,6 @@
                     <!--end::Seperator-->
 
                     <!--begin::Section-->
-                    <div class="mb-7">
-                        <!--begin::Title-->
-                        <h5 class="mb-4">Payment Info
-                        </h5>
-                        <!--end::Title-->
-                        <!--begin::Details-->
-                        <div class="mb-0">
-                            <!--begin::Details-->
-                            <table class="table fs-6 fw-semibold gs-0 gy-2 gx-2">
-                                <!--begin::Row-->
-                                <tr class="">
-                                    <td class="text-gray-500">Payment Style:</td>
-                                    <td class="text-gray-800">
-                                        @if ($student->payments)
-                                            {{ ucfirst($student->payments->payment_style) }}
-                                        @else
-                                            Current
-                                        @endif
-                                    </td>
-                                </tr>
-                                <!--end::Row-->
-
-                                <!--begin::Row-->
-                                <tr class="">
-                                    <td class="text-gray-500">Monthly Fee:</td>
-                                    <td>
-                                        @if ($student->payments)
-                                            ৳ {{ $student->payments->tuition_fee }}
-                                        @else
-                                            N/A
-                                        @endif
-                                    </td>
-                                </tr>
-                                <!--end::Row-->
-
-                                <!--begin::Row-->
-                                <tr class="">
-                                    <td class="text-gray-500">Due Date:</td>
-                                    <td class="text-gray-800">1 to @if ($student->payments)
-                                            {{ $student->payments->due_date }}
-                                        @else
-                                            7
-                                        @endif
-                                    </td>
-                                </tr>
-                                <!--end::Row-->
-
-                                <!--begin::Row-->
-                                <tr>
-                                    <td class="text-gray-500">Reference:</td>
-                                    @if ($student->reference && $student->reference->referer)
-                                        <td class="text-gray-800">
-                                            @php
-                                                $referer = $student->reference->referer;
-                                                $type = strtolower($student->reference->referer_type);
-                                                $route =
-                                                    $type === 'student'
-                                                        ? route('students.show', $referer->id)
-                                                        : route('teachers.show', $referer->id);
-                                            @endphp
-
-                                            <a href="{{ $route }}" class="fw-bold text-gray-800 text-hover-primary">
-                                                {{ $referer->name ?? 'N/A' }}
-                                                @if ($type === 'student')
-                                                    ({{ $referer->student_unique_id }})
-                                                @endif
-                                            </a>
-                                    @endif
-                                    </td>
-                                </tr>
-                                <!--end::Row-->
-
-                            </table>
-                            <!--end::Details-->
-                        </div>
-                        <!--end::Details-->
-                    </div>
-                    <!--end::Section-->
-
-                    <!--begin::Seperator-->
-                    <div class="separator separator-dashed mb-7"></div>
-                    <!--end::Seperator-->
-
-                    <!--begin::Section-->
                     <div class="mb-0">
                         <!--begin::Title-->
                         <h5 class="mb-4">Activation Details</h5>
@@ -213,68 +129,15 @@
                         <table class="table fs-6 fw-semibold gs-0 gy-2 gx-2">
                             <!--begin::Row-->
                             <tr class="">
-                                <td class="text-gray-500">Status:</td>
-                                <td>
-                                    @php
-                                        $status = $student->studentActivation?->active_status;
-                                    @endphp
+                                    <td class="text-gray-500">Created Since:</td>
 
-                                    @if ($status === 'inactive')
-                                        <span class="badge badge-light-danger">{{ ucfirst($status) }}</span>
-                                    @elseif ($status === 'active')
-                                        <span class="badge badge-light-success">{{ ucfirst($status) }}</span>
-                                    @else
-                                        <span class="badge badge-light-info">Pending Approval</span>
-                                    @endif
-
-                                </td>
-                            </tr>
-                            <!--end::Row-->
-
-                            <!--begin::Row-->
-                            <tr class="">
-                                @if (optional($student->studentActivation)->active_status == 'active')
-                                    <td class="text-gray-500">Active Since:</td>
-                                @elseif (optional($student->studentActivation)->active_status == 'inactive')
-                                    <td class="text-gray-500">Inactive Since:</td>
-                                @endif
-
-                                @if ($student->studentActivation)
                                     <td class="text-gray-800">
-                                        {{ $student->studentActivation->created_at->diffForHumans() }}
+                                        {{ $sheet->created_at->diffForHumans() }}
                                         <span class="ms-1" data-bs-toggle="tooltip"
-                                            title="{{ $student->studentActivation->created_at->format('d-M-Y h:m:s A') }}">
+                                            title="{{ $sheet->created_at->format('d-M-Y h:m:s A') }}">
                                             <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
                                         </span>
                                     </td>
-                                @endif
-                            </tr>
-                            <!--end::Row-->
-
-                            <!--begin::Row-->
-                            <tr class="">
-                                <td class="text-gray-500">Admission Date:</td>
-                                <td class="text-gray-800">
-                                    {{ $student->created_at->format('d-M-Y') }}
-                                    <span class="ms-1" data-bs-toggle="tooltip"
-                                        title="{{ $student->created_at->format('d-M-Y h:m:s A') }}">
-                                        <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
-                                    </span>
-
-                                </td>
-                            </tr>
-                            <!--end::Row-->
-
-                            <!--begin::Row-->
-                            <tr class="">
-                                <td class="text-gray-500">Remarks:</td>
-                                <td class="text-gray-800">
-                                    @if ($student->remarks)
-                                        {{ $student->remarks }}
-                                    @else
-                                        <span class="text-gray-600">-</span>
-                                    @endif
-                                </td>
                             </tr>
                             <!--end::Row-->
                         </table>
@@ -295,7 +158,7 @@
                 <!--begin:::Tab item-->
                 <li class="nav-item">
                     <a class="nav-link text-active-primary pb-4 active" data-bs-toggle="tab"
-                        href="#kt_student_view_enrolled_subjects_tab"><i
+                        href="#kt_sheet_notes_tab"><i
                             class="ki-outline ki-book-open fs-3 me-2"></i>Notes</a>
                 </li>
                 <!--end:::Tab item-->
@@ -303,7 +166,7 @@
                 <!--begin:::Tab item-->
                 <li class="nav-item">
                     <a class="nav-link text-active-primary pb-4" data-kt-countup-tabs="true" data-bs-toggle="tab"
-                        href="#kt_student_view_transactions_tab"><i
+                        href="#kt_sheet_payments_tab"><i
                             class="ki-outline ki-credit-cart fs-3 me-2"></i>Payments</a>
                 </li>
                 <!--end:::Tab item-->
@@ -322,17 +185,14 @@
             <!--begin:::Tab content-->
             <div class="tab-content" id="myTabContent">
                 <!--begin:::Tab pane-->
-                <div class="tab-pane fade show active" id="kt_student_view_enrolled_subjects_tab" role="tabpanel">
+                <div class="tab-pane fade show active" id="kt_sheet_notes_tab" role="tabpanel">
                     <!--begin::Card-->
                     <div class="card pt-4 mb-6 mb-xl-9">
                         <!--begin::Card header-->
                         <div class="card-header border-0">
                             <!--begin::Card title-->
                             <div class="card-title">
-                                <h2>{{ $student->class->name }} ({{ $student->class->class_numeral }}) @if ($student->academic_group != 'General')
-                                        - {{ $student->academic_group }}
-                                    @endif
-                                </h2>
+                                <h2>Notes</h2>
                             </div>
                             <!--end::Card title-->
                         </div>
@@ -395,7 +255,7 @@
                 <!--end:::Tab pane-->
 
                 <!--begin:::Tab pane-->
-                <div class="tab-pane fade" id="kt_student_view_transactions_tab" role="tabpanel">
+                <div class="tab-pane fade" id="kt_sheet_payments_tab" role="tabpanel">
                     <!--begin::Earnings-->
                     <div class="card mb-6 mb-xl-9">
                         <!--begin::Header-->
