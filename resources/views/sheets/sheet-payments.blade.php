@@ -81,6 +81,20 @@
                         <div class="px-7 py-5" data-sheet-payments-table-filter="form">
                             <!--begin::Input group-->
                             <div class="mb-10">
+                                <label class="form-label fs-6 fw-semibold">Sheet Group:</label>
+                                <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
+                                    data-placeholder="Select option" data-allow-clear="true"
+                                    data-sheet-payments-table-filter="status" data-hide-search="true">
+                                    <option></option>
+                                    @foreach ($sheet_groups as $sheet)
+                                        <option value="{{ $sheet->class->name }} ({{ $sheet->class->class_numeral }})">{{ $sheet->class->name }} ({{ $sheet->class->class_numeral }})</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <!--end::Input group-->
+
+                            <!--begin::Input group-->
+                            <div class="mb-10">
                                 <label class="form-label fs-6 fw-semibold">Payment Type:</label>
                                 <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                     data-placeholder="Select option" data-allow-clear="true"

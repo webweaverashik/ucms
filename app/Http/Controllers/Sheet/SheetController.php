@@ -119,7 +119,9 @@ class SheetController extends Controller
             ->latest()
             ->get();
 
-        return view('sheets.sheet-payments', compact('payments'));
+        $sheet_groups = Sheet::all();
+
+        return view('sheets.sheet-payments', compact('payments', 'sheet_groups'));
     }
 
 }
