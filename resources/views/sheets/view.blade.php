@@ -59,6 +59,44 @@
                         <h3 class="text-gray-600">Sheet Group Info</h3>
                     </div>
                     <!--end::Card title-->
+
+                    <!--begin::Card toolbar-->
+                    <div class="card-toolbar">
+                        <!--begin::More options-->
+                        <a href="#" class="btn btn-sm btn-light btn-icon" data-kt-menu-trigger="click"
+                            data-kt-menu-placement="bottom-end">
+                            <i class="ki-outline ki-dots-horizontal fs-3">
+                            </i>
+                        </a>
+                        <!--begin::Menu-->
+                        <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-6 w-175px py-4"
+                            data-kt-menu="true">
+                            @can('sheets.edit')
+                                <!--begin::Menu item-->
+                                <div class="menu-item px-3">
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#kt_modal_edit_sheet"
+                                        data-sheet-id="{{ $sheet->id }}" data-sheet-price="{{ $sheet->price }}"
+                                        data-sheet-class="{{ $sheet->class->name }} ({{ $sheet->class->class_numeral }})"
+                                        class="menu-link text-hover-primary px-3"><i class="las la-pen fs-3 me-2"></i> Update
+                                        Sheet</a>
+                                </div>
+                                <!--end::Menu item-->
+                            @endcan
+
+                            @can('sheets.create')
+                                <!--begin::Menu item-->
+                                <div class="menu-item px-3">
+                                    <a href="#" class="menu-link text-hover-primary px-3" data-bs-toggle="modal"
+                                        data-bs-target="#kt_modal_add_notes"><i class="ki-outline ki-plus fs-3 me-2"></i>
+                                        New Notes</a>
+                                </div>
+                                <!--end::Menu item-->
+                            @endcan
+                        </div>
+                        <!--end::Menu-->
+                        <!--end::More options-->
+                    </div>
+                    <!--end::Card toolbar-->
                 </div>
                 <!--end::Card header-->
 
@@ -509,15 +547,16 @@
                                 <label class="required fw-semibold fs-6 mb-2">Select Subject</label>
                                 <!--end::Label-->
                                 <!--begin::Input-->
-                                <select name="sheet_subject_id" class="form-select form-select-solid"
+                                <select name="sheet_subject_id" class="form-select form-select-solid" data-dropdown-parent="#kt_modal_add_notes"
                                     data-control="select2" data-placeholder="Select class" required>
                                     <option></option>
                                     @foreach ($sheet->class->subjects as $subject)
-                                        <option value="{{ $subject->id }}">{{ $subject->name }}
-                                            ({{ $subject->academic_group }})
+                                        <option value="{{ $subject->id }}">
+                                            {{ $subject->name }}{{ $subject->academic_group !== 'General' ? " ({$subject->academic_group})" : '' }}
                                         </option>
                                     @endforeach
                                 </select>
+
                                 <!--end::Input-->
                             </div>
                             <!--end::Subject Input group-->
@@ -559,6 +598,75 @@
     </div>
     <!--end::Modal - Add Notes-->
 
+
+
+
+    <!--begin::Modal - Edit Sheet-->
+    <div class="modal fade" id="kt_modal_edit_sheet" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+        data-bs-keyboard="false">
+        <!--begin::Modal dialog-->
+        <div class="modal-dialog modal-dialog-centered mw-500px">
+            <!--begin::Modal content-->
+            <div class="modal-content">
+                <!--begin::Modal header-->
+                <div class="modal-header" id="kt_modal_edit_sheet_header">
+                    <!--begin::Modal title-->
+                    <h2 class="fw-bold" id="kt_modal_edit_sheet_title">Update Sheet Price</h2>
+                    <!--end::Modal title-->
+                    <!--begin::Close-->
+                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-sheet-modal-action="close">
+                        <i class="ki-outline ki-cross fs-1">
+                        </i>
+                    </div>
+                    <!--end::Close-->
+                </div>
+                <!--end::Modal header-->
+                <!--begin::Modal body-->
+                <div class="modal-body px-5 my-7">
+                    <!--begin::Form-->
+                    <form id="kt_modal_edit_sheet_form" class="form" action="#" novalidate="novalidate">
+                        <!--begin::Scroll-->
+                        <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_edit_sheet_scroll"
+                            data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
+                            data-kt-scroll-dependencies="#kt_modal_edit_sheet_header"
+                            data-kt-scroll-wrappers="#kt_modal_edit_sheet_scroll" data-kt-scroll-offset="300px">
+
+                            <!--begin::Price Input group-->
+                            <div class="fv-row mb-7">
+                                <!--begin::Label-->
+                                <label class="required fw-semibold fs-6 mb-2">Update Price</label>
+                                <!--end::Label-->
+                                <!--begin::Input-->
+                                <input type="number" name="sheet_price_edit" min="100"
+                                    class="form-control form-control-solid mb-3 mb-lg-0" placeholder="e.g. 2000"
+                                    required />
+                                <!--end::Input-->
+                            </div>
+                            <!--end::Price Input group-->
+
+                        </div>
+                        <!--end::Scroll-->
+                        <!--begin::Actions-->
+                        <div class="text-center pt-10">
+                            <button type="reset" class="btn btn-light me-3"
+                                data-kt-sheet-modal-action="cancel">Discard</button>
+                            <button type="submit" class="btn btn-primary" data-kt-sheet-modal-action="submit">
+                                <span class="indicator-label">Update</span>
+                                <span class="indicator-progress">Please wait...
+                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                            </button>
+                        </div>
+                        <!--end::Actions-->
+                    </form>
+                    <!--end::Form-->
+                </div>
+                <!--end::Modal body-->
+            </div>
+            <!--end::Modal content-->
+        </div>
+        <!--end::Modal dialog-->
+    </div>
+    <!--end::Modal - Edit Sheet-->
 @endsection
 
 
@@ -568,6 +676,12 @@
 
 @push('page-js')
     <script src="{{ asset('js/sheets/view.js') }}"></script>
+
+    <script>
+        $('select[data-control="select2"]').select2({
+            width: 'resolve'
+        });
+    </script>
 
     <script>
         document.getElementById("notes_sheets_menu").classList.add("here", "show");

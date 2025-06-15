@@ -164,8 +164,10 @@
                             <tr class="">
                                 <td class="text-gray-500">Sheet Group:</td>
                                 <td class="text-gray-800">
+                                    <a href="{{ route('sheets.show', $invoice->sheetPayment->sheet->id) }}" target="_blank">
                                     {{ $invoice->sheetPayment->sheet->class->name }}
                                     ({{ $invoice->sheetPayment->sheet->class->class_numeral }})
+                                    </a>
                                 </td>
                             </tr>
                         @endif

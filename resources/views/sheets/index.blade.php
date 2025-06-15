@@ -173,7 +173,7 @@
                                 <label class="required fw-semibold fs-6 mb-2">Select Class</label>
                                 <!--end::Label-->
                                 <!--begin::Input-->
-                                <select name="sheet_class_id" class="form-select form-select-solid" data-control="select2"
+                                <select name="sheet_class_id" class="form-select form-select-solid" data-control="select2" data-dropdown-parent="#kt_modal_add_sheet"
                                     data-placeholder="Select class" required>
                                     <option></option>
                                     @foreach ($classes as $class)

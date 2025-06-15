@@ -237,8 +237,185 @@ var KTAddNotes = function () {
 }();
 
 
+var KTEditSheet = function () {
+      // Shared variables
+      const element = document.getElementById('kt_modal_edit_sheet');
+
+      // Early return if element doesn't exist
+      if (!element) {
+            console.error('Modal element not found');
+            return {
+                  init: function () { }
+            };
+      }
+
+      const form = element.querySelector('#kt_modal_edit_sheet_form');
+      const modal = bootstrap.Modal.getOrCreateInstance(element);
+
+      let sheetId = null; // Declare globally
+
+      // Init edit institution modal
+      var initEditSheet = () => {
+            // Cancel button handler
+            const cancelButton = element.querySelector('[data-kt-sheet-modal-action="cancel"]');
+            if (cancelButton) {
+                  cancelButton.addEventListener('click', e => {
+                        e.preventDefault();
+                        if (form) form.reset();
+                        modal.hide();
+                  });
+            }
+
+            // Close button handler
+            const closeButton = element.querySelector('[data-kt-sheet-modal-action="close"]');
+            if (closeButton) {
+                  closeButton.addEventListener('click', e => {
+                        e.preventDefault();
+                        if (form) form.reset();
+                        modal.hide();
+                  });
+            }
+
+            const editButtons = document.querySelectorAll("[data-bs-target='#kt_modal_edit_sheet']");
+            if (editButtons.length) {
+                  editButtons.forEach((button) => {
+                        button.addEventListener("click", function () {
+                              sheetId = this.getAttribute("data-sheet-id");
+                              const sheetClass = this.getAttribute("data-sheet-class");
+                              const sheetPrice = this.getAttribute("data-sheet-price");
+
+                              console.log("Sheet ID:", sheetId);
+
+                              // Clear form if needed
+                              if (form) form.reset();
+
+                              // Set modal title
+                              const modalTitle = document.getElementById("kt_modal_edit_sheet_title");
+                              if (modalTitle) {
+                                    modalTitle.textContent = `Update - ${sheetClass} - sheet group`;
+                              }
+
+                              // Set sheet price input value
+                              const priceInput = document.querySelector("input[name='sheet_price_edit']");
+                              if (priceInput) {
+                                    priceInput.value = sheetPrice;
+                              }
+
+                              // Show modal (if not using Bootstrap's auto show via data-bs attributes)
+                              // modal.show(); // Uncomment if showing programmatically
+                        });
+                  });
+            }
+
+      }
+
+      // Form validation
+      var initValidation = function () {
+            if (!form) return;
+
+            var validator = FormValidation.formValidation(
+                  form,
+                  {
+                        fields: {
+                              'sheet_price_edit': {
+                                    validators: {
+                                          notEmpty: {
+                                                message: 'Price is required'
+                                          },
+                                          numeric: {
+                                                message: 'The value must be a number'
+                                          },
+                                          greaterThan: {
+                                                min: 100,
+                                                message: 'The price must be at least 100'
+                                          }
+                                    }
+                              },
+                        },
+                        plugins: {
+                              trigger: new FormValidation.plugins.Trigger(),
+                              bootstrap: new FormValidation.plugins.Bootstrap5({
+                                    rowSelector: '.fv-row',
+                                    eleInvalidClass: '',
+                                    eleValidClass: ''
+                              })
+                        }
+                  }
+            );
+
+            const submitButton = element.querySelector('[data-kt-sheet-modal-action="submit"]');
+            if (submitButton && validator) {
+                  submitButton.addEventListener('click', function (e) {
+                        e.preventDefault();
+
+                        validator.validate().then(function (status) {
+                              if (status == 'Valid') {
+                                    // Show loading indication
+                                    submitButton.setAttribute('data-kt-indicator', 'on');
+                                    submitButton.disabled = true;
+
+                                    // Prepare form data
+                                    const formData = new FormData(form);
+
+                                    // Add CSRF token for Laravel
+                                    formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+                                    formData.append('_method', 'PUT'); // For Laravel resource route
+
+                                    // Submit via AJAX
+                                    fetch(`/sheets/${sheetId}`, {
+                                          method: 'POST', // Laravel expects POST for PUT routes
+                                          body: formData,
+                                          headers: {
+                                                'Accept': 'application/json',
+                                                'X-Requested-With': 'XMLHttpRequest'
+                                          }
+                                    })
+                                          .then(response => {
+                                                if (!response.ok) throw new Error('Network response was not ok');
+                                                return response.json();
+                                          })
+                                          .then(data => {
+                                                submitButton.removeAttribute('data-kt-indicator');
+                                                submitButton.disabled = false;
+
+                                                if (data.success) {
+                                                      toastr.success(data.message || 'Sheet group updated successfully');
+                                                      modal.hide();
+
+                                                      setTimeout(() => {
+                                                            window.location.reload();
+                                                      }, 1500);
+
+                                                } else {
+                                                      throw new Error(data.message || 'Update failed');
+                                                }
+                                          })
+                                          .catch(error => {
+                                                submitButton.removeAttribute('data-kt-indicator');
+                                                submitButton.disabled = false;
+                                                toastr.error(error.message || 'Failed to update sheet');
+                                                console.error('Error:', error);
+                                          });
+                              } else {
+                                    toastr.warning('Please fill all required fields');
+                              }
+                        });
+                  });
+            }
+      }
+
+      return {
+            init: function () {
+                  initEditSheet();
+                  initValidation();
+            }
+      };
+}();
+
+
 // On document ready
 KTUtil.onDOMContentLoaded(function () {
       KTSheetPaymentsList.init();
       KTAddNotes.init();
+      KTEditSheet.init();
 });
