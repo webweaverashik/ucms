@@ -232,15 +232,15 @@ var KTAddSheet = function () {
 
                                                       setTimeout(() => {
                                                             window.location.reload();
-                                                      }, 2000);
+                                                      }, 1500);
                                                 } else {
-                                                      throw new Error(data.message || 'Update failed');
+                                                      throw new Error(data.message || 'Creation failed');
                                                 }
                                           })
                                           .catch(error => {
                                                 submitButton.removeAttribute('data-kt-indicator');
                                                 submitButton.disabled = false;
-                                                toastr.error(error.message || 'Failed to update institution');
+                                                toastr.error(error.message || 'Failed to add sheet');
                                                 console.error('Error:', error);
                                           });
 
@@ -407,7 +407,7 @@ var KTEditSheet = function () {
 
                                                       setTimeout(() => {
                                                             window.location.reload();
-                                                      }, 2000);
+                                                      }, 1500);
 
                                                 } else {
                                                       throw new Error(data.message || 'Update failed');

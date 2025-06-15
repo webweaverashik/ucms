@@ -127,19 +127,29 @@
                         <!--end::Title-->
                         <!--begin::Details-->
                         <table class="table fs-6 fw-semibold gs-0 gy-2 gx-2">
-                            <!--begin::Row-->
                             <tr class="">
-                                    <td class="text-gray-500">Created Since:</td>
+                                <td class="text-gray-500">Created Since:</td>
 
-                                    <td class="text-gray-800">
-                                        {{ $sheet->created_at->diffForHumans() }}
-                                        <span class="ms-1" data-bs-toggle="tooltip"
-                                            title="{{ $sheet->created_at->format('d-M-Y h:m:s A') }}">
-                                            <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
-                                        </span>
-                                    </td>
+                                <td class="text-gray-800">
+                                    {{ $sheet->created_at->diffForHumans() }}
+                                    <span class="ms-1" data-bs-toggle="tooltip"
+                                        title="{{ $sheet->created_at->format('d-M-Y h:m:s A') }}">
+                                        <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
+                                    </span>
+                                </td>
                             </tr>
-                            <!--end::Row-->
+
+                            <tr class="">
+                                <td class="text-gray-500">Updated Since:</td>
+
+                                <td class="text-gray-800">
+                                    {{ $sheet->updated_at->diffForHumans() }}
+                                    <span class="ms-1" data-bs-toggle="tooltip"
+                                        title="{{ $sheet->updated_at->format('d-M-Y h:m:s A') }}">
+                                        <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
+                                    </span>
+                                </td>
+                            </tr>
                         </table>
                         <!--end::Details-->
                     </div>
@@ -157,8 +167,7 @@
             <ul class="nav nav-custom nav-tabs nav-line-tabs nav-line-tabs-2x border-0 fs-4 fw-semibold mb-8">
                 <!--begin:::Tab item-->
                 <li class="nav-item">
-                    <a class="nav-link text-active-primary pb-4 active" data-bs-toggle="tab"
-                        href="#kt_sheet_notes_tab"><i
+                    <a class="nav-link text-active-primary pb-4 active" data-bs-toggle="tab" href="#kt_sheet_notes_tab"><i
                             class="ki-outline ki-book-open fs-3 me-2"></i>Notes</a>
                 </li>
                 <!--end:::Tab item-->
@@ -166,15 +175,15 @@
                 <!--begin:::Tab item-->
                 <li class="nav-item">
                     <a class="nav-link text-active-primary pb-4" data-kt-countup-tabs="true" data-bs-toggle="tab"
-                        href="#kt_sheet_payments_tab"><i
-                            class="ki-outline ki-credit-cart fs-3 me-2"></i>Payments</a>
+                        href="#kt_sheet_payments_tab"><i class="ki-outline ki-credit-cart fs-3 me-2"></i>Payments</a>
                 </li>
                 <!--end:::Tab item-->
 
                 <!--begin:::Tab item-->
                 <li class="nav-item ms-auto">
                     <!--begin::Action menu-->
-                    <a href="#" class="btn btn-primary ps-7"><i class="ki-outline ki-plus fs-2 me-0"></i>New Notes
+                    <a href="#" class="btn btn-primary ps-7" data-bs-toggle="modal"
+                        data-bs-target="#kt_modal_add_notes"><i class="ki-outline ki-plus fs-2 me-0"></i>New Notes
                     </a>
                     <!--end::Action Menu-->
                 </li>
@@ -464,76 +473,83 @@
     </div>
     <!--end::Layout-->
 
-    <!--begin::Modal - Toggle Activation Student-->
-    <div class="modal fade" id="kt_toggle_activation_student_modal" tabindex="-1" aria-hidden="true"
-        data-bs-backdrop="static" data-bs-keyboard="false">
+    <!--begin::Modal - Add Notes-->
+    <div class="modal fade" id="kt_modal_add_notes" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+        data-bs-keyboard="false">
         <!--begin::Modal dialog-->
-        <div class="modal-dialog modal-dialog-centered mw-650px">
+        <div class="modal-dialog modal-dialog-centered mw-500px">
             <!--begin::Modal content-->
             <div class="modal-content">
                 <!--begin::Modal header-->
-                <div class="modal-header">
+                <div class="modal-header" id="kt_modal_add_notes_header">
                     <!--begin::Modal title-->
-                    <h2 id="toggle-activation-modal-title">Activation/Deactivation Student</h2>
+                    <h2 class="fw-bold">Create a new note</h2>
                     <!--end::Modal title-->
                     <!--begin::Close-->
-                    <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
+                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-add-note-modal-action="close">
                         <i class="ki-outline ki-cross fs-1">
                         </i>
                     </div>
                     <!--end::Close-->
                 </div>
                 <!--end::Modal header-->
-
                 <!--begin::Modal body-->
-                <div class="modal-body py-lg-5">
-                    <!--begin::Content-->
-                    <div class="flex-row-fluid p-lg-5">
-                        <div>
-                            <form action="{{ route('students.toggleActive') }}" class="form d-flex flex-column"
-                                method="POST">
-                                @csrf
-                                <!--begin::Left column-->
-                                <div class="d-flex flex-column">
+                <div class="modal-body px-5 my-5">
+                    <!--begin::Form-->
+                    <form id="kt_modal_add_notes_form" class="form" action="#" novalidate="novalidate">
+                        <!--begin::Scroll-->
+                        <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_add_notes_scroll"
+                            data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
+                            data-kt-scroll-dependencies="#kt_modal_edit_sheet_header"
+                            data-kt-scroll-wrappers="#kt_modal_add_notes_scroll" data-kt-scroll-offset="300px">
 
-                                    <input type="hidden" name="student_id" id="student_id" />
-                                    <input type="hidden" name="active_status" id="activation_status" />
+                            <!--begin::Subject Input group-->
+                            <div class="fv-row mb-7">
+                                <!--begin::Label-->
+                                <label class="required fw-semibold fs-6 mb-2">Select Subject</label>
+                                <!--end::Label-->
+                                <!--begin::Input-->
+                                <select name="sheet_subject_id" class="form-select form-select-solid"
+                                    data-control="select2" data-placeholder="Select class" required>
+                                    <option></option>
+                                    @foreach ($sheet->class->subjects as $subject)
+                                        <option value="{{ $subject->id }}">{{ $subject->name }}
+                                            ({{ $subject->academic_group }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <!--end::Input-->
+                            </div>
+                            <!--end::Subject Input group-->
 
-                                    <div class="row">
-                                        <div class="col-lg-12">
-                                            <!--begin::Input group-->
-                                            <div class="d-flex flex-column mb-5 fv-row">
-                                                <!--begin::Label-->
-                                                <label class="fs-5 fw-semibold mb-2 required"
-                                                    id="reason_label">Activation/Deactivation Reason</label>
-                                                <!--end::Label-->
-
-                                                <!--begin::Input-->
-                                                <textarea class="form-control" rows="3" name="reason" placeholder="Write the reason for this update"
-                                                    required></textarea>
-                                                <!--end::Input-->
-                                            </div>
-                                            <!--end::Input group-->
-                                        </div>
-                                    </div>
-
-                                    <div class="d-flex justify-content-end">
-                                        <!--begin::Button-->
-                                        <button type="reset" class="btn btn-secondary me-5"
-                                            data-bs-dismiss="modal">Cancel</button>
-                                        <!--end::Button-->
-                                        <!--begin::Button-->
-                                        <button type="submit" class="btn btn-primary">
-                                            Submit
-                                        </button>
-                                        <!--end::Button-->
-                                    </div>
-                                </div>
-                                <!--end::Left column-->
-                            </form>
+                            <!--begin::Note name Input group-->
+                            <div class="fv-row mb-7">
+                                <!--begin::Label-->
+                                <label class="required fw-semibold fs-6 mb-2">Note name</label>
+                                <!--end::Label-->
+                                <!--begin::Input-->
+                                <input type="text" name="notes_name"
+                                    class="form-control form-control-solid mb-3 mb-lg-0"
+                                    placeholder="e.g. Chapter 1 Notes" required />
+                                <!--end::Input-->
+                            </div>
+                            <!--end::Note name Input group-->
                         </div>
-                    </div>
-                    <!--end::Content-->
+                        <!--end::Scroll-->
+
+                        <!--begin::Actions-->
+                        <div class="text-center pt-10">
+                            <button type="reset" class="btn btn-light me-3"
+                                data-kt-add-note-modal-action="cancel">Discard</button>
+                            <button type="submit" class="btn btn-primary" data-kt-add-note-modal-action="submit">
+                                <span class="indicator-label">Submit</span>
+                                <span class="indicator-progress">Please wait...
+                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                            </button>
+                        </div>
+                        <!--end::Actions-->
+                    </form>
+                    <!--end::Form-->
                 </div>
                 <!--end::Modal body-->
             </div>
@@ -541,7 +557,7 @@
         </div>
         <!--end::Modal dialog-->
     </div>
-    <!--end::Modal - Toggle Activation Student-->
+    <!--end::Modal - Add Notes-->
 
 @endsection
 

@@ -43,16 +43,6 @@
 
 
 @section('content')
-    @if ($errors->any())
-        <div class="alert alert-danger fs-4">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
     <!--begin::Card-->
     <div class="card">
         <!--begin::Card header-->

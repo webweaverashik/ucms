@@ -1,8 +1,8 @@
 <?php
-
 namespace App\Http\Controllers\Sheet;
 
 use App\Http\Controllers\Controller;
+use App\Models\Sheet\SheetTopic;
 use Illuminate\Http\Request;
 
 class SheetTopicController extends Controller
@@ -28,7 +28,17 @@ class SheetTopicController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'sheet_subject_id' => 'required|integer|exists:subjects,id',
+            'notes_name'       => 'required|string|max:255',
+        ]);
+
+        SheetTopic::create([
+            'subject_id' => $validated['sheet_subject_id'],
+            'topic_name' => $validated['notes_name'],
+        ]);
+
+        return response()->json(['success' => true]);
     }
 
     /**

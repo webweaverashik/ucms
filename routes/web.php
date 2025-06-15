@@ -12,6 +12,7 @@ use App\Http\Controllers\Student\SiblingController;
 use App\Http\Controllers\Student\StudentController;
 use App\Http\Controllers\Teacher\TeacherController;
 use App\Http\Controllers\Academic\SubjectController;
+use App\Http\Controllers\Sheet\SheetTopicController;
 use App\Http\Controllers\Student\GuardianController;
 use App\Http\Controllers\Student\ReferenceController;
 use App\Http\Controllers\Academic\ClassNameController;
@@ -66,6 +67,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
 
     // Sheets
     Route::get('sheet-payments', [SheetController::class, 'sheetPayments'])->name('sheet.payments');
+
     
     // ------- Custom routes end -------
 
@@ -91,6 +93,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::resource('invoices', PaymentInvoiceController::class);
     Route::resource('transactions', PaymentTransactionController::class);
     Route::resource('sheets', SheetController::class);
+    Route::resource('notes', SheetTopicController::class);
 });
 
 // Handle GET /logout for logged-out users (redirect to login)

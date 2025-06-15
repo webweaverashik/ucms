@@ -36,6 +36,38 @@
                         <div id="kt_app_content" class="app-content flex-column-fluid">
                             <!--begin::Content container-->
                             <div id="kt_app_content_container" class="app-container container-fluid">
+                                @if ($errors->any())
+                                    <div
+                                        class="alert alert-dismissible bg-light-danger border border-danger border-dashed d-flex flex-column flex-sm-row w-100 p-5 mb-10">
+                                        <!--begin::Icon-->
+                                        <i class="ki-duotone ki-message-text-2 fs-2hx text-danger me-4 mb-5 mb-sm-0">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                            <span class="path3"></span>
+                                        </i>
+                                        <!--end::Icon-->
+
+                                        <!--begin::Content-->
+                                        <div class="d-flex flex-column pe-0 pe-sm-10">
+                                            <h5 class="mb-1 text-danger">The following errors have been found.</h5>
+                                            <ul>
+                                                @foreach ($errors->all() as $error)
+                                                    <li class="text-danger">{{ $error }}</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                        <!--end::Content-->
+
+                                        <!--begin::Close-->
+                                        <button type="button"
+                                            class="position-absolute position-sm-relative m-2 m-sm-0 top-0 end-0 btn btn-icon ms-sm-auto"
+                                            data-bs-dismiss="alert">
+                                            <i class="ki-outline ki-cross fs-1 text-danger"></i>
+                                        </button>
+                                        <!--end::Close-->
+                                    </div>
+                                @endif
+                                
                                 @yield('content')
                             </div>
                         </div>
