@@ -83,7 +83,7 @@
                                 <!--end::Menu item-->
                             @endcan
 
-                            @can('sheets.create')
+                            @can('notes.manage')
                                 <!--begin::Menu item-->
                                 <div class="menu-item px-3">
                                     <a href="#" class="menu-link text-hover-primary px-3" data-bs-toggle="modal"
@@ -264,29 +264,35 @@
                                                                 <div class="flex-grow-1">
                                                                     <span
                                                                         class="topic-text text-gray-700 fs-6 @if ($topic->status == 'inactive') text-decoration-line-through @endif">
-                                                                        {{ $topic->topic_name }} ({{ $topic->sheetsTaken->count() }})
+                                                                        {{ $topic->topic_name }}
+                                                                        ({{ $topic->sheetsTaken->count() }})
                                                                     </span>
                                                                     <input type="text"
                                                                         class="topic-input form-control form-control-sm d-none fs-6"
                                                                         value="{{ $topic->topic_name }}" />
                                                                 </div>
-                                                                <div class="action-icons ms-2 d-flex align-items-center">
-                                                                    <div class="form-check form-switch d-flex align-items-center m-0">
-                                                                        <input class="form-check-input status-toggle h-15px w-30px" data-bs-toggle="tooltip"
-                                                                        title="Active/Inactive"
-                                                                            type="checkbox" data-id="{{ $topic->id }}"
-                                                                            @if ($topic->status == 'active') checked @endif>
+                                                                @can('notes.manage')
+                                                                    <div class="action-icons ms-2 d-flex align-items-center">
+                                                                        <div
+                                                                            class="form-check form-switch d-flex align-items-center m-0">
+                                                                            <input
+                                                                                class="form-check-input status-toggle h-15px w-30px"
+                                                                                data-bs-toggle="tooltip"
+                                                                                title="Active/Inactive" type="checkbox"
+                                                                                data-id="{{ $topic->id }}"
+                                                                                @if ($topic->status == 'active') checked @endif>
+                                                                        </div>
+                                                                        <i class="ki-outline ki-pencil fs-3 text-muted edit-icon text-hover-primary"
+                                                                            role="button" data-bs-toggle="tooltip"
+                                                                            title="Edit"></i>
+                                                                        <i class="bi bi-check-circle fs-3 text-success check-icon d-none"
+                                                                            role="button" data-bs-toggle="tooltip"
+                                                                            title="Save"></i>
+                                                                        <i class="bi bi-x-circle fs-3 text-danger cancel-icon d-none ms-2"
+                                                                            role="button" data-bs-toggle="tooltip"
+                                                                            title="Cancel"></i>
                                                                     </div>
-                                                                    <i class="ki-outline ki-pencil fs-3 text-muted edit-icon text-hover-primary"
-                                                                        role="button" data-bs-toggle="tooltip"
-                                                                        title="Edit"></i>
-                                                                    <i class="bi bi-check-circle fs-3 text-success check-icon d-none"
-                                                                        role="button" data-bs-toggle="tooltip"
-                                                                        title="Save"></i>
-                                                                    <i class="bi bi-x-circle fs-3 text-danger cancel-icon d-none ms-2"
-                                                                        role="button" data-bs-toggle="tooltip"
-                                                                        title="Cancel"></i>
-                                                                </div>
+                                                                @endcan
                                                             </div>
                                                         </div>
                                                     </div>

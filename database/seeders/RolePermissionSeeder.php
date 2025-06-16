@@ -62,7 +62,11 @@ class RolePermissionSeeder extends Seeder
             'sheets.create',
             'sheets.edit',
             'sheets.delete',
-            'sheets.distribute',
+            
+            // 📝 notes
+            'notes.manage',
+            'notes.distribute',
+            
 
             // 🗓️ attendance
             'attendance.mark',
