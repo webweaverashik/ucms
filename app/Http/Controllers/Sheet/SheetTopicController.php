@@ -60,9 +60,17 @@ class SheetTopicController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, SheetTopic $note)
     {
-        //
+        $request->validate([
+            'topic_name' => 'required|string|max:255',
+        ]);
+
+        $note->update([
+            'topic_name' => $request->topic_name,
+        ]);
+
+        return response()->json(['success' => true]);
     }
 
     /**

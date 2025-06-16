@@ -26,4 +26,17 @@ class Sheet extends Model
                 $query->where('invoice_type', 'sheet_fee');
             });
     }
+
+    public function sheetTopics()
+    {
+        return $this->hasManyThrough(
+            SheetTopic::class,
+            Subject::class,
+            'class_id',   // Foreign key on Subject table
+            'subject_id', // Foreign key on SheetTopic table
+            'class_id',   // Local key on Sheet table
+            'id'          // Local key on Subject table
+        );
+    }
+
 }

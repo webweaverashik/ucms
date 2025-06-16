@@ -247,52 +247,38 @@
                         <!--begin::Card body-->
                         <div class="card-body py-0">
                             <!--begin::Table wrapper-->
-                            @php
-                                $groupedSubjects = $student->subjectsTaken->groupBy(
-                                    fn($item) => $item->subject->academic_group ?? 'Unknown',
-                                );
-                            @endphp
-
                             <div class="row">
-                                {{-- Render priority groups first --}}
-                                @foreach (['General', 'Science', 'Commerce'] as $priorityGroup)
-                                    @if ($groupedSubjects->has($priorityGroup))
-                                        <div class="col-12 mb-2">
-                                            <h5 class="fw-bold">{{ $priorityGroup }}</h5>
-                                            <div class="row">
-                                                @foreach ($groupedSubjects[$priorityGroup] as $subjectTaken)
-                                                    <div class="col-md-3 mb-3">
-                                                        <h6 class="text-gray-600">
-                                                            <i class="bi bi-check2-circle fs-3 text-success"></i>
-                                                            {{ $subjectTaken->subject->name ?? 'N/A' }}
-                                                        </h6>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    @endif
-                                @endforeach
 
-                                {{-- Render remaining non-priority groups --}}
-                                @foreach ($groupedSubjects as $group => $subjects)
-                                    @if (!in_array($group, ['General', 'Science', 'Commerce']))
-                                        <div class="col-12 mb-2">
-                                            <h4 class="fw-bold">{{ $group }}</h4>
-                                            <div class="row">
-                                                @foreach ($subjects as $subjectTaken)
-                                                    <div class="col-md-3 mb-3">
-                                                        <h5 class="text-gray-700">
-                                                            <i class="bi bi-check2-circle fs-3 text-success"></i>
-                                                            {{ $subjectTaken->subject->name ?? 'N/A' }}
-                                                        </h5>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    @endif
-                                @endforeach
+                                @foreach ($sheet->class->subjects as $subject)
+    @if ($subject->sheetTopics->isNotEmpty())
+        <div class="col-12 mb-4">
+            <h5 class="fw-bold text-dark mb-3">{{ $subject->name }}</h5>
+            <div class="row">
+                @foreach ($subject->sheetTopics as $topic)
+                    <div class="col-md-3 mb-3">
+                        <div class="topic-editable py-2 px-3" data-id="{{ $topic->id }}">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-dot fs-3 text-info me-2"></i>
+                                <div class="flex-grow-1">
+                                    <span class="topic-text text-gray-700">{{ $topic->topic_name }}</span>
+                                    <input type="text" class="topic-input form-control form-control-sm d-none" 
+                                           value="{{ $topic->topic_name }}" />
+                                </div>
+                                <div class="action-icons ms-2">
+                                    <i class="bi bi-pencil-square fs-6 text-muted edit-icon" role="button" 
+                                       data-bs-toggle="tooltip" title="Edit"></i>
+                                    <i class="bi bi-check-circle fs-5 text-success check-icon d-none" role="button"></i>
+                                    <i class="bi bi-x-circle fs-5 text-danger cancel-icon d-none" role="button"></i>
+                                </div>
                             </div>
-
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+@endforeach
+                            </div>
                             <!--end::Table wrapper-->
                         </div>
                         <!--end::Card body-->
@@ -547,8 +533,9 @@
                                 <label class="required fw-semibold fs-6 mb-2">Select Subject</label>
                                 <!--end::Label-->
                                 <!--begin::Input-->
-                                <select name="sheet_subject_id" class="form-select form-select-solid" data-dropdown-parent="#kt_modal_add_notes"
-                                    data-control="select2" data-placeholder="Select class" required>
+                                <select name="sheet_subject_id" class="form-select form-select-solid"
+                                    data-dropdown-parent="#kt_modal_add_notes" data-control="select2"
+                                    data-placeholder="Select class" required>
                                     <option></option>
                                     @foreach ($sheet->class->subjects as $subject)
                                         <option value="{{ $subject->id }}">
@@ -597,8 +584,6 @@
         <!--end::Modal dialog-->
     </div>
     <!--end::Modal - Add Notes-->
-
-
 
 
     <!--begin::Modal - Edit Sheet-->
