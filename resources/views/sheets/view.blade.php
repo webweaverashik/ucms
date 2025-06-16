@@ -60,15 +60,15 @@
                     </div>
                     <!--end::Card title-->
 
-                    <!--begin::Card toolbar-->
-                    <div class="card-toolbar">
-                        <!--begin::More options-->
-                        <a href="#" class="btn btn-sm btn-light btn-icon" data-kt-menu-trigger="click"
-                            data-kt-menu-placement="bottom-end">
-                            <i class="ki-outline ki-dots-horizontal fs-3">
-                            </i>
-                        </a>
-                        @canany(['sheets.edit', 'notes.manage'])
+                    @canany(['sheets.edit', 'notes.manage'])
+                        <!--begin::Card toolbar-->
+                        <div class="card-toolbar">
+                            <!--begin::More options-->
+                            <a href="#" class="btn btn-sm btn-light btn-icon" data-kt-menu-trigger="click"
+                                data-kt-menu-placement="bottom-end">
+                                <i class="ki-outline ki-dots-horizontal fs-3">
+                                </i>
+                            </a>
                             <!--begin::Menu-->
                             <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-6 w-175px py-4"
                                 data-kt-menu="true">
@@ -95,10 +95,10 @@
                                 @endcan
                             </div>
                             <!--end::Menu-->
-                        @endcanany
-                        <!--end::More options-->
-                    </div>
-                    <!--end::Card toolbar-->
+                            <!--end::More options-->
+                        </div>
+                        <!--end::Card toolbar-->
+                    @endcanany
                 </div>
                 <!--end::Card header-->
 
