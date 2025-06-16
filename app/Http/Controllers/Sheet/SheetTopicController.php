@@ -80,4 +80,18 @@ class SheetTopicController extends Controller
     {
         //
     }
+
+    /**
+     * Update the notes status
+     */
+    public function updateStatus(SheetTopic $sheetTopic, Request $request)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        $sheetTopic->update(['status' => $validated['status']]);
+
+        return response()->json(['success' => true]);
+    }
 }

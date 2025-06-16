@@ -250,34 +250,52 @@
                             <div class="row">
 
                                 @foreach ($sheet->class->subjects as $subject)
-    @if ($subject->sheetTopics->isNotEmpty())
-        <div class="col-12 mb-4">
-            <h5 class="fw-bold text-dark mb-3">{{ $subject->name }}</h5>
-            <div class="row">
-                @foreach ($subject->sheetTopics as $topic)
-                    <div class="col-md-3 mb-3">
-                        <div class="topic-editable py-2 px-3" data-id="{{ $topic->id }}">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-dot fs-3 text-info me-2"></i>
-                                <div class="flex-grow-1">
-                                    <span class="topic-text text-gray-700">{{ $topic->topic_name }}</span>
-                                    <input type="text" class="topic-input form-control form-control-sm d-none" 
-                                           value="{{ $topic->topic_name }}" />
-                                </div>
-                                <div class="action-icons ms-2">
-                                    <i class="bi bi-pencil-square fs-6 text-muted edit-icon" role="button" 
-                                       data-bs-toggle="tooltip" title="Edit"></i>
-                                    <i class="bi bi-check-circle fs-5 text-success check-icon d-none" role="button"></i>
-                                    <i class="bi bi-x-circle fs-5 text-danger cancel-icon d-none" role="button"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    @endif
-@endforeach
+                                    @if ($subject->sheetTopics->isNotEmpty())
+                                        <div class="col-12 mb-4">
+                                            <h5 class="fw-bold text-dark mb-3">{{ $subject->name }}</h5>
+                                            <div class="row">
+
+                                                @foreach ($subject->sheetTopics as $topic)
+                                                    <div class="col-lg-4 mb-3">
+                                                        <div class="topic-editable py-2 px-3"
+                                                            data-id="{{ $topic->id }}">
+                                                            <div class="d-flex align-items-center">
+                                                                <i class="bi bi-dot fs-3 text-info me-2"></i>
+                                                                <div class="flex-grow-1">
+                                                                    <span
+                                                                        class="topic-text text-gray-700 fs-6 @if ($topic->status == 'inactive') text-decoration-line-through @endif">
+                                                                        {{ $topic->topic_name }} ({{ $topic->sheetsTaken->count() }})
+                                                                    </span>
+                                                                    <input type="text"
+                                                                        class="topic-input form-control form-control-sm d-none fs-6"
+                                                                        value="{{ $topic->topic_name }}" />
+                                                                </div>
+                                                                <div class="action-icons ms-2 d-flex align-items-center">
+                                                                    <div class="form-check form-switch d-flex align-items-center m-0">
+                                                                        <input class="form-check-input status-toggle h-15px w-30px" data-bs-toggle="tooltip"
+                                                                        title="Active/Inactive"
+                                                                            type="checkbox" data-id="{{ $topic->id }}"
+                                                                            @if ($topic->status == 'active') checked @endif>
+                                                                    </div>
+                                                                    <i class="ki-outline ki-pencil fs-3 text-muted edit-icon text-hover-primary"
+                                                                        role="button" data-bs-toggle="tooltip"
+                                                                        title="Edit"></i>
+                                                                    <i class="bi bi-check-circle fs-3 text-success check-icon d-none"
+                                                                        role="button" data-bs-toggle="tooltip"
+                                                                        title="Save"></i>
+                                                                    <i class="bi bi-x-circle fs-3 text-danger cancel-icon d-none ms-2"
+                                                                        role="button" data-bs-toggle="tooltip"
+                                                                        title="Cancel"></i>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+
+                                            </div>
+                                        </div>
+                                    @endif
+                                @endforeach
                             </div>
                             <!--end::Table wrapper-->
                         </div>

@@ -10,6 +10,8 @@ class SheetTopicTaken extends Model
 {
     use HasFactory;
 
+    protected $table = 'sheet_topics_taken';
+
     protected $fillable = [
         'sheet_topic_id',
         'student_id',

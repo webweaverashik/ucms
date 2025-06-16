@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('topic_name');
             $table->foreignId('subject_id');
-            $table->boolean('is_active')->default(true);
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->softDeletes();
             $table->timestamps();
         });

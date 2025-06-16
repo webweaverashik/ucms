@@ -238,189 +238,182 @@ var KTAddNotes = function () {
 
 
 var KTEditNotes = function () {
-    // Initialize tooltips
-    const initTooltips = () => {
-        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
-            let tooltip = null;
-            const title = el.getAttribute('title') || el.dataset.bsOriginalTitle;
-            
-            if (!title) return;
-            
-            el.addEventListener('mouseenter', (e) => {
-                tooltip = document.createElement('div');
-                tooltip.className = 'custom-tooltip';
-                tooltip.textContent = title;
-                document.body.appendChild(tooltip);
-                
-                const rect = el.getBoundingClientRect();
-                const tooltipWidth = tooltip.offsetWidth;
-                
-                tooltip.style.left = `${rect.left + rect.width/2 - tooltipWidth/2}px`;
-                tooltip.style.top = `${rect.top - tooltip.offsetHeight - 8}px`;
-                tooltip.style.opacity = '1';
-            });
-            
-            el.addEventListener('mouseleave', () => {
-                if (tooltip) {
-                    tooltip.style.opacity = '0';
-                    setTimeout(() => tooltip.remove(), 300);
-                }
-            });
-        });
-    };
+      // Main topic editing functionality
+      const setupTopicEditing = () => {
+            document.querySelectorAll('.topic-editable').forEach(wrapper => {
+                  const card = wrapper;
+                  const topicText = wrapper.querySelector('.topic-text');
+                  const topicInput = wrapper.querySelector('.topic-input');
+                  const editIcon = wrapper.querySelector('.edit-icon');
+                  const checkIcon = wrapper.querySelector('.check-icon');
+                  const cancelIcon = wrapper.querySelector('.cancel-icon');
+                  const statusToggle = wrapper.querySelector('.status-toggle');
+                  const originalValue = topicInput.value;
 
-    // Main topic editing functionality
-    const setupTopicEditing = () => {
-        document.querySelectorAll('.topic-editable').forEach(wrapper => {
-            const card = wrapper;
-            const topicText = wrapper.querySelector('.topic-text');
-            const topicInput = wrapper.querySelector('.topic-input');
-            const editIcon = wrapper.querySelector('.edit-icon');
-            const checkIcon = wrapper.querySelector('.check-icon');
-            const cancelIcon = wrapper.querySelector('.cancel-icon');
-            const originalValue = topicInput.value;
+                  // Hover effects
+                  card.addEventListener('mouseenter', () => {
+                        card.classList.add('border-primary', 'shadow-sm');
+                  });
 
-            // Hover effects
-            card.addEventListener('mouseenter', () => {
-                card.classList.add('border-primary', 'shadow-sm');
-            });
-            
-            card.addEventListener('mouseleave', () => {
-                if (!topicInput.classList.contains('d-none')) return;
-                card.classList.remove('border-primary', 'shadow-sm');
-            });
+                  card.addEventListener('mouseleave', () => {
+                        if (!topicInput.classList.contains('d-none')) return;
+                        card.classList.remove('border-primary', 'shadow-sm');
+                  });
 
-            // Edit handler
-            editIcon.addEventListener('click', (e) => {
-                e.stopPropagation();
-                enterEditMode();
-            });
+                  // Edit handler
+                  editIcon.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        enterEditMode();
+                  });
 
-            // Cancel handler
-            cancelIcon.addEventListener('click', (e) => {
-                e.stopPropagation();
-                exitEditMode();
-                topicInput.value = originalValue;
-            });
-
-            // Save handler
-            checkIcon.addEventListener('click', (e) => {
-                e.stopPropagation();
-                saveChanges();
-            });
-
-            // Handle Enter/Escape keys
-            topicInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    saveChanges();
-                } else if (e.key === 'Escape') {
-                    exitEditMode();
-                    topicInput.value = originalValue;
-                }
-            });
-
-            const enterEditMode = () => {
-                topicText.classList.add('d-none');
-                topicInput.classList.remove('d-none');
-                editIcon.classList.add('d-none');
-                checkIcon.classList.remove('d-none');
-                cancelIcon.classList.remove('d-none');
-                topicInput.focus();
-                topicInput.select();
-                card.classList.add('border-primary', 'shadow-sm');
-            };
-
-            const exitEditMode = () => {
-                topicText.classList.remove('d-none');
-                topicInput.classList.add('d-none');
-                editIcon.classList.remove('d-none');
-                checkIcon.classList.add('d-none');
-                cancelIcon.classList.add('d-none');
-                card.classList.remove('border-primary', 'shadow-sm');
-            };
-
-            const saveChanges = async () => {
-                const updatedValue = topicInput.value.trim();
-                const topicId = wrapper.dataset.id;
-
-                if (!updatedValue) {
-                    showError(wrapper, "Topic name cannot be empty");
-                    topicInput.focus();
-                    return;
-                }
-
-                if (updatedValue === originalValue) {
-                    exitEditMode();
-                    return;
-                }
-
-                // Show loading state
-                checkIcon.classList.replace('bi-check-circle', 'bi-arrow-repeat');
-                checkIcon.classList.add('spinning');
-
-                try {
-                    const response = await fetch(`/notes/${topicId}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        },
-                        body: JSON.stringify({ topic_name: updatedValue })
-                    });
-
-                    if (!response.ok) {
-                        const error = await response.json().catch(() => ({}));
-                        throw new Error(error.message || 'Update failed');
-                    }
-
-                    const data = await response.json();
-                    if (data.success) {
-                        topicText.textContent = updatedValue;
+                  // Cancel handler
+                  cancelIcon.addEventListener('click', (e) => {
+                        e.stopPropagation();
                         exitEditMode();
-                        showSuccess(wrapper, "Changes saved successfully");
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    showError(wrapper, error.message || 'Failed to save changes');
-                    topicInput.value = originalValue;
-                } finally {
-                    checkIcon.classList.replace('bi-arrow-repeat', 'bi-check-circle');
-                    checkIcon.classList.remove('spinning');
-                }
-            };
-        });
-    };
+                        topicInput.value = originalValue;
+                  });
 
-    // Helper functions for showing messages
-    const showSuccess = (element, message) => {
-        showAlert(element, message, 'success');
-    };
+                  // Save handler
+                  checkIcon.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        saveChanges();
+                  });
 
-    const showError = (element, message) => {
-        showAlert(element, message, 'danger');
-    };
+                  // Status toggle handler
+                  statusToggle.addEventListener('change', (e) => {
+                        e.stopPropagation();
+                        updateStatus();
+                  });
 
-    const showAlert = (element, message, type) => {
-        const existingAlert = element.querySelector(`.alert-${type}`);
-        if (existingAlert) existingAlert.remove();
+                  // Handle Enter/Escape keys
+                  topicInput.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                              saveChanges();
+                        } else if (e.key === 'Escape') {
+                              exitEditMode();
+                              topicInput.value = originalValue;
+                        }
+                  });
 
-        const alert = document.createElement('div');
-        alert.className = `alert alert-${type} py-1 px-2 mt-2 fade-in`;
-        alert.innerHTML = `
-            <i class="bi ${type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill'} me-1"></i> 
-            ${message}
-        `;
-        element.appendChild(alert);
+                  const enterEditMode = () => {
+                        topicText.classList.add('d-none');
+                        topicInput.classList.remove('d-none');
+                        editIcon.classList.add('d-none');
+                        checkIcon.classList.remove('d-none');
+                        cancelIcon.classList.remove('d-none');
+                        statusToggle.disabled = true;
+                        topicInput.focus();
+                        topicInput.select();
+                        card.classList.add('border-primary', 'shadow-sm');
+                  };
 
-        setTimeout(() => {
-            alert.classList.add('fade-out');
-            setTimeout(() => alert.remove(), 500);
-        }, 3000);
-    };
+                  const exitEditMode = () => {
+                        topicText.classList.remove('d-none');
+                        topicInput.classList.add('d-none');
+                        editIcon.classList.remove('d-none');
+                        checkIcon.classList.add('d-none');
+                        cancelIcon.classList.add('d-none');
+                        statusToggle.disabled = false;
+                        card.classList.remove('border-primary', 'shadow-sm');
+                  };
 
-    // Initialize everything
-//     initTooltips();
-    setupTopicEditing();
+                  const saveChanges = async () => {
+                        const updatedValue = topicInput.value.trim();
+                        const topicId = wrapper.dataset.id;
+
+                        if (!updatedValue) {
+                              toastr.error("Topic name cannot be empty");
+                              topicInput.focus();
+                              return;
+                        }
+
+                        if (updatedValue === originalValue) {
+                              exitEditMode();
+                              return;
+                        }
+
+                        // Show loading state
+                        checkIcon.classList.replace('bi-check-circle', 'bi-arrow-repeat');
+                        checkIcon.classList.add('spinning');
+
+                        try {
+                              const response = await fetch(`/notes/${topicId}`, {
+                                    method: 'PUT',
+                                    headers: {
+                                          'Content-Type': 'application/json',
+                                          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                    },
+                                    body: JSON.stringify({ topic_name: updatedValue })
+                              });
+
+                              if (!response.ok) {
+                                    const error = await response.json().catch(() => ({}));
+                                    throw new Error(error.message || 'Update failed');
+                              }
+
+                              const data = await response.json();
+                              if (data.success) {
+                                    topicText.textContent = updatedValue;
+                                    exitEditMode();
+                                    toastr.success("Note updated successfully");
+                              }
+                        } catch (error) {
+                              console.error('Error:', error);
+                              toastr.error(error.message || 'Failed to update note');
+                              topicInput.value = originalValue;
+                        } finally {
+                              checkIcon.classList.replace('bi-arrow-repeat', 'bi-check-circle');
+                              checkIcon.classList.remove('spinning');
+                        }
+                  };
+
+                  const updateStatus = async () => {
+                        const topicId = wrapper.dataset.id;
+                        const newStatus = statusToggle.checked ? 'active' : 'inactive';
+
+                        // Show loading state on toggle
+                        const originalToggleState = statusToggle.checked;
+                        statusToggle.disabled = true;
+
+                        try {
+                              const response = await fetch(`/notes/${topicId}/status`, {
+                                    method: 'PUT',
+                                    headers: {
+                                          'Content-Type': 'application/json',
+                                          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                    },
+                                    body: JSON.stringify({ status: newStatus })
+                              });
+
+                              if (!response.ok) {
+                                    throw new Error('Status update failed');
+                              }
+
+                              const data = await response.json();
+                              if (data.success) {
+                                    if (newStatus === 'inactive') {
+                                          topicText.classList.add('text-decoration-line-through');
+                                    } else {
+                                          topicText.classList.remove('text-decoration-line-through');
+                                    }
+                                    toastr.success(`Notes marked as ${newStatus}`);
+                              }
+                        } catch (error) {
+                              console.error('Error:', error);
+                              statusToggle.checked = !originalToggleState;
+                              toastr.error('Failed to update status');
+                        } finally {
+                              statusToggle.disabled = false;
+                        }
+                  };
+            });
+      };
+
+      return {
+            init: function () {
+                  setupTopicEditing();
+            }
+      };
 }();
 
 

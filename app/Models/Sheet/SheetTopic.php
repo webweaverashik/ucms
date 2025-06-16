@@ -14,6 +14,7 @@ class SheetTopic extends Model
     protected $fillable = [
         'topic_name',
         'subject_id',
+        'status',
     ];
 
     public function subject()

@@ -68,6 +68,8 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     // Sheets
     Route::get('sheet-payments', [SheetController::class, 'sheetPayments'])->name('sheet.payments');
 
+    // Notes
+    Route::put('notes/{sheetTopic}/status', [SheetTopicController::class, 'updateStatus'])->name('notes.updateStatus');
     
     // ------- Custom routes end -------
 
