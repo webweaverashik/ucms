@@ -68,32 +68,34 @@
                             <i class="ki-outline ki-dots-horizontal fs-3">
                             </i>
                         </a>
-                        <!--begin::Menu-->
-                        <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-6 w-175px py-4"
-                            data-kt-menu="true">
-                            @can('sheets.edit')
-                                <!--begin::Menu item-->
-                                <div class="menu-item px-3">
-                                    <a href="#" data-bs-toggle="modal" data-bs-target="#kt_modal_edit_sheet"
-                                        data-sheet-id="{{ $sheet->id }}" data-sheet-price="{{ $sheet->price }}"
-                                        data-sheet-class="{{ $sheet->class->name }} ({{ $sheet->class->class_numeral }})"
-                                        class="menu-link text-hover-primary px-3"><i class="las la-pen fs-3 me-2"></i> Update
-                                        Sheet</a>
-                                </div>
-                                <!--end::Menu item-->
-                            @endcan
+                        @canany(['sheets.edit', 'notes.manage'])
+                            <!--begin::Menu-->
+                            <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-6 w-175px py-4"
+                                data-kt-menu="true">
+                                @can('sheets.edit')
+                                    <!--begin::Menu item-->
+                                    <div class="menu-item px-3">
+                                        <a href="#" data-bs-toggle="modal" data-bs-target="#kt_modal_edit_sheet"
+                                            data-sheet-id="{{ $sheet->id }}" data-sheet-price="{{ $sheet->price }}"
+                                            data-sheet-class="{{ $sheet->class->name }} ({{ $sheet->class->class_numeral }})"
+                                            class="menu-link text-hover-primary px-3"><i class="las la-pen fs-3 me-2"></i> Update
+                                            Sheet</a>
+                                    </div>
+                                    <!--end::Menu item-->
+                                @endcan
 
-                            @can('notes.manage')
-                                <!--begin::Menu item-->
-                                <div class="menu-item px-3">
-                                    <a href="#" class="menu-link text-hover-primary px-3" data-bs-toggle="modal"
-                                        data-bs-target="#kt_modal_add_notes"><i class="ki-outline ki-plus fs-3 me-2"></i>
-                                        New Notes</a>
-                                </div>
-                                <!--end::Menu item-->
-                            @endcan
-                        </div>
-                        <!--end::Menu-->
+                                @can('notes.manage')
+                                    <!--begin::Menu item-->
+                                    <div class="menu-item px-3">
+                                        <a href="#" class="menu-link text-hover-primary px-3" data-bs-toggle="modal"
+                                            data-bs-target="#kt_modal_add_notes"><i class="ki-outline ki-plus fs-3 me-2"></i>
+                                            New Notes</a>
+                                    </div>
+                                    <!--end::Menu item-->
+                                @endcan
+                            </div>
+                            <!--end::Menu-->
+                        @endcanany
                         <!--end::More options-->
                     </div>
                     <!--end::Card toolbar-->
@@ -217,15 +219,17 @@
                 </li>
                 <!--end:::Tab item-->
 
-                <!--begin:::Tab item-->
-                <li class="nav-item ms-auto">
-                    <!--begin::Action menu-->
-                    <a href="#" class="btn btn-primary ps-7" data-bs-toggle="modal"
-                        data-bs-target="#kt_modal_add_notes"><i class="ki-outline ki-plus fs-2 me-0"></i>New Notes
-                    </a>
-                    <!--end::Action Menu-->
-                </li>
-                <!--end:::Tab item-->
+                @can('notes.manage')
+                    <!--begin:::Tab item-->
+                    <li class="nav-item ms-auto">
+                        <!--begin::Action menu-->
+                        <a href="#" class="btn btn-primary ps-7" data-bs-toggle="modal"
+                            data-bs-target="#kt_modal_add_notes"><i class="ki-outline ki-plus fs-2 me-0"></i>New Notes
+                        </a>
+                        <!--end::Action Menu-->
+                    </li>
+                    <!--end:::Tab item-->
+                @endcan
             </ul>
             <!--end:::Tabs-->
 
