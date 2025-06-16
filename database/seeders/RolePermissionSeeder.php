@@ -62,11 +62,10 @@ class RolePermissionSeeder extends Seeder
             'sheets.create',
             'sheets.edit',
             'sheets.delete',
-            
+
             // 📝 notes
             'notes.manage',
             'notes.distribute',
-            
 
             // 🗓️ attendance
             'attendance.mark',
@@ -165,7 +164,9 @@ class RolePermissionSeeder extends Seeder
 
             // 📦 sheets
             'sheets.view',
-            'sheets.distribute',
+
+            // 📝 notes
+            'notes.distribute',
 
         ]);
 
@@ -198,10 +199,11 @@ class RolePermissionSeeder extends Seeder
             'transactions.create',
             'transactions.payslip.download',
 
-
             // 📦 sheets
             'sheets.view',
-            'sheets.distribute',
+
+            // 📝 notes
+            'notes.distribute',
         ]);
     }
 }
