@@ -77,7 +77,7 @@
                             <span class="menu-link">
                                 <span class="menu-icon">
                                     {{-- <i class="ki-outline ki-address-book fs-2"></i> --}}
-                                    <i class="fa-solid fa-graduation-cap fs-2"></i>
+                                    <i class="las la-graduation-cap fs-1"></i>
                                 </span>
                                 <span class="menu-title">Student Info</span>
                                 <span class="menu-arrow"></span>
@@ -134,7 +134,8 @@
                             <!--begin:Menu link-->
                             <span class="menu-link">
                                 <span class="menu-icon">
-                                    <i class="fa-solid fa-building-columns fs-2"></i>
+                                    {{-- <i class="fa-solid fa-building-columns fs-2"></i> --}}
+                                    <i class="ki-outline ki-bank fs-2"></i>
                                 </span>
                                 <span class="menu-title">Admission</span>
                                 <span class="menu-arrow"></span>
@@ -179,8 +180,8 @@
                             <!--begin:Menu link-->
                             <span class="menu-link">
                                 <span class="menu-icon">
-                                    {{-- <i class="ki-outline ki-address-book fs-2"></i> --}}
-                                    <i class="fa-solid fa-school fs-2"></i>
+                                    <i class="ki-outline ki-book fs-2"></i>
+                                    {{-- <i class="fa-solid fa-school fs-2"></i> --}}
                                 </span>
                                 <span class="menu-title">Academic</span>
                                 <span class="menu-arrow"></span>
@@ -238,8 +239,8 @@
                             <!--begin:Menu link-->
                             <span class="menu-link">
                                 <span class="menu-icon">
-                                    {{-- <i class="ki-outline ki-notepad-bookmark fs-2"></i> --}}
-                                    <i class="fa-solid fa-book fs-2"></i>
+                                    <i class="ki-outline ki-note-2 fs-2"></i>
+                                    {{-- <i class="fa-solid fa-book fs-2"></i> --}}
                                 </span>
                                 <span class="menu-title">Notes & Sheets</span>
                                 <span class="menu-arrow"></span>
@@ -281,7 +282,7 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link--><a class="menu-link" id="notes_distribution_link"
-                                            href="#"><span class="menu-bullet"><span
+                                            href="{{ route('notes.index') }}"><span class="menu-bullet"><span
                                                     class="bullet bullet-dot"></span></span><span class="menu-title">Notes
                                                 Distribution</span></a>
                                         <!--end:Menu link-->
@@ -348,8 +349,8 @@
                             <!--begin:Menu link-->
                             <a class="menu-link" href="{{ route('invoices.index') }}" id="invoices_link">
                                 <span class="menu-icon">
-                                    {{-- <i class="ki-outline ki-calendar-8 fs-2"></i> --}}
-                                    <i class="fa-solid fa-file-invoice-dollar fs-2"></i>
+                                    <i class="las la-file-invoice-dollar fs-2"></i>
+                                    {{-- <i class="fa-solid fa-file-invoice-dollar fs-2"></i> --}}
                                 </span>
                                 <span class="menu-title">Invoices</span>
                             </a>
@@ -365,8 +366,8 @@
                             <!--begin:Menu link-->
                             <a class="menu-link" href="{{ route('transactions.index') }}" id="transactions_link">
                                 <span class="menu-icon">
-                                    {{-- <i class="ki-outline ki-calendar-8 fs-2"></i> --}}
-                                    <i class="fa-solid fa-comments-dollar fs-2"></i>
+                                    <i class="ki-outline ki-dollar fs-2"></i>
+                                    {{-- <i class="fa-solid fa-comments-dollar fs-2"></i> --}}
                                 </span>
                                 <span class="menu-title">Transactions</span>
                             </a>
@@ -407,8 +408,8 @@
                         <!--begin:Menu link-->
                         <a class="menu-link" href="{{ route('teachers.index') }}" id="salary_tracking_link">
                             <span class="menu-icon">
-                                {{-- <i class="ki-outline ki-calendar-8 fs-2"></i> --}}
-                                <i class="fa-solid fa-money-check-dollar fs-2"></i>
+                                <i class="las la-money-check-alt fs-1"></i>
+                                {{-- <i class="fa-solid fa-money-check-dollar fs-2"></i> --}}
                             </span>
                             <span class="menu-title">Salary Tracking</span>
                         </a>
@@ -434,7 +435,7 @@
                                 <!--begin:Menu link-->
                                 <a class="menu-link" href="{{ route('users.index') }}" id="users_link">
                                     <span class="menu-icon">
-                                        <i class="ki-outline ki-user fs-2"></i>
+                                        <i class="ki-outline ki-profile-user fs-2"></i>
                                     </span>
                                     <span class="menu-title">Users</span>
                                 </a>

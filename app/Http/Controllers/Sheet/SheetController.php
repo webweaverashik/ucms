@@ -61,13 +61,12 @@ class SheetController extends Controller
     public function show(string $id)
     {
         $sheet = Sheet::find($id);
-        $student = Student::find($id);
 
         if (! $sheet) {
             return redirect()->route('sheets.index')->with('warning', 'Sheet group not found.');
         }
 
-        return view('sheets.view', compact('sheet', 'student'));
+        return view('sheets.view', compact('sheet'));
     }
 
     /**

@@ -245,7 +245,7 @@
                                 <!--begin::Solid input group style-->
                                 <div class="input-group input-group-solid flex-nowrap">
                                     <span class="input-group-text">
-                                        <i class="las la-graduation-cap fs-3"></i>
+                                        <i class="ki-outline ki-faceid fs-3"></i>
                                     </span>
                                     <div class="overflow-hidden flex-grow-1">
                                         <select name="transaction_student"
