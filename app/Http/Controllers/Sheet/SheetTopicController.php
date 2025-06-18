@@ -1,11 +1,9 @@
 <?php
 namespace App\Http\Controllers\Sheet;
 
-use Illuminate\Http\Request;
-use App\Models\Student\Student;
-use App\Models\Sheet\SheetTopic;
 use App\Http\Controllers\Controller;
-use App\Models\Payment\PaymentTransaction;
+use App\Models\Sheet\SheetTopic;
+use Illuminate\Http\Request;
 
 class SheetTopicController extends Controller
 {
@@ -14,30 +12,7 @@ class SheetTopicController extends Controller
      */
     public function index()
     {
-        $branchId = auth()->user()->branch_id;
 
-        // Simplified transactions query
-        $transactions = PaymentTransaction::whereHas('student', function ($query) use ($branchId) {
-            if ($branchId != 0) {
-                $query->where('branch_id', $branchId);
-            }
-        })
-            ->latest('id')
-            ->get();
-
-        // Simplified students query
-        $students = Student::when($branchId != 0, function ($query) use ($branchId) {
-            $query->where('branch_id', $branchId);
-        })
-            ->where(function ($query) {
-                $query->whereNull('student_activation_id')->orWhereHas('studentActivation', function ($q) {
-                    $q->where('active_status', 'active');
-                });
-            })
-            ->orderBy('student_unique_id')
-            ->get();
-
-        return view('sheets.distribution', compact('transactions', 'students'));
     }
 
     /**

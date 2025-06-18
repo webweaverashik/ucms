@@ -282,7 +282,7 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link--><a class="menu-link" id="notes_distribution_link"
-                                            href="{{ route('notes.index') }}"><span class="menu-bullet"><span
+                                            href="{{ route('notes.distribution') }}"><span class="menu-bullet"><span
                                                     class="bullet bullet-dot"></span></span><span class="menu-title">Notes
                                                 Distribution</span></a>
                                         <!--end:Menu link-->

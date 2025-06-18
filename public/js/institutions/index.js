@@ -16,8 +16,7 @@ var KTinstitutionsList = function () {
             "lengthChange": true,
             "autoWidth": false,  // Disable auto width
             'columnDefs': [
-                { orderable: false, targets: 3 }, // Disable ordering on column institution                
-                { orderable: false, targets: 5 }, // Disable ordering on column Actions                
+                { orderable: false, targets: 6 }, // Disable ordering on column Actions                
             ]
         });
 

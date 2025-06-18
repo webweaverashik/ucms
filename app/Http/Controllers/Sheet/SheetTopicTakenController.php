@@ -1,9 +1,12 @@
 <?php
-
 namespace App\Http\Controllers\Sheet;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Student\Student;
+use App\Models\Academic\Subject;
+use App\Models\Academic\ClassName;
+use App\Http\Controllers\Controller;
+use App\Models\Sheet\SheetTopicTaken;
 
 class SheetTopicTakenController extends Controller
 {
@@ -12,7 +15,16 @@ class SheetTopicTakenController extends Controller
      */
     public function index()
     {
-        //
+        $notes_taken = SheetTopicTaken::whereHas('student', function ($query) {
+            if (auth()->user()->branch_id != 0) {
+                $query->where('branch_id', auth()->user()->branch_id);
+            }
+        })->get();
+
+        $class_names  = ClassName::select('name', 'class_numeral')->get();
+        $subjectNames = Subject::select('name')->distinct()->orderBy('name')->pluck('name');
+
+        return view('notes.index', compact('notes_taken', 'class_names', 'subjectNames'));
     }
 
     /**
@@ -20,7 +32,22 @@ class SheetTopicTakenController extends Controller
      */
     public function create()
     {
-        //
+        $branchId = auth()->user()->branch_id;
+
+        // Simplified students query
+        return $students = Student::when($branchId != 0, function ($query) use ($branchId) {
+            $query->where('branch_id', $branchId);
+        })
+            ->where(function ($query) {
+                $query->whereNull('student_activation_id')->orWhereHas('studentActivation', function ($q) {
+                    $q->where('active_status', 'active');
+                });
+            })
+            ->orderBy('student_unique_id')
+            ->select('id', 'name', 'student_unique_id')
+            ->get();
+
+        return view('notes.distribution', compact('students'));
     }
 
     /**

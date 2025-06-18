@@ -1,10 +1,9 @@
 <?php
-
 namespace App\Models\Sheet;
 
 use App\Models\Student\Student;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class SheetTopicTaken extends Model
 {
@@ -25,5 +24,10 @@ class SheetTopicTaken extends Model
     public function student()
     {
         return $this->belongsTo(Student::class, 'student_id');
+    }
+
+    public function getClassAttribute()
+    {
+        return $this->sheetTopic->subject->class ?? null;
     }
 }

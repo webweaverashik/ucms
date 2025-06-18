@@ -131,6 +131,7 @@
                             <tr class="fw-bold fs-7 text-uppercase gs-0">
                                 <th class="w-30px">SL</th>
                                 <th class="w-500px">Institution Name</th>
+                                <th>No. of Students</th>
                                 <th>EIIN Number</th>
                                 <th class="d-none">Type (Filter)</th>
                                 <th>Type</th>
@@ -141,11 +142,12 @@
                             @foreach ($institutions as $institution)
                                 <tr>
                                     <td class="pe-2">{{ $loop->index + 1 }}</td>
-                                    <td class="text-gray-800 text-hover-primary mb-1">{{ $institution->name }}</td>
-                                    <td class="text-center">{{ $institution->eiin_number }}</td>
+                                    <td class="text-gray-800 mb-1">{{ $institution->name }}</td>
+                                    <td>{{ $institution->students->count() }}</td>
+                                    <td>{{ $institution->eiin_number }}</td>
                                     <td class="d-none">ucms_{{ $institution->type }}</td>
-                                    <td class="text-center">{{ ucfirst($institution->type) }}</td>
-                                    <td class="text-center">
+                                    <td>{{ ucfirst($institution->type) }}</td>
+                                    <td>
                                         <a href="#" title="Edit Institution" data-bs-toggle="modal"
                                             data-bs-target="#kt_modal_edit_institution"
                                             data-institution-id="{{ $institution->id }}"

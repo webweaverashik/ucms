@@ -1,25 +1,26 @@
 <?php
 
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PdfController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\AutoInvoiceController;
-use App\Http\Controllers\Sheet\SheetController;
-use App\Http\Controllers\Academic\ShiftController;
-use App\Http\Controllers\Student\SiblingController;
-use App\Http\Controllers\Student\StudentController;
-use App\Http\Controllers\Teacher\TeacherController;
-use App\Http\Controllers\Academic\SubjectController;
-use App\Http\Controllers\Sheet\SheetTopicController;
-use App\Http\Controllers\Student\GuardianController;
-use App\Http\Controllers\Student\ReferenceController;
 use App\Http\Controllers\Academic\ClassNameController;
 use App\Http\Controllers\Academic\InstitutionController;
+use App\Http\Controllers\Academic\ShiftController;
+use App\Http\Controllers\Academic\SubjectController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AutoInvoiceController;
 use App\Http\Controllers\Payment\PaymentInvoiceController;
-use App\Http\Controllers\Student\StudentActivationController;
 use App\Http\Controllers\Payment\PaymentTransactionController;
+use App\Http\Controllers\PdfController;
+use App\Http\Controllers\Sheet\SheetController;
+use App\Http\Controllers\Sheet\SheetTopicController;
+use App\Http\Controllers\Sheet\SheetTopicTakenController;
+use App\Http\Controllers\Student\GuardianController;
+use App\Http\Controllers\Student\ReferenceController;
+use App\Http\Controllers\Student\SiblingController;
+use App\Http\Controllers\Student\StudentActivationController;
+use App\Http\Controllers\Student\StudentController;
+use App\Http\Controllers\Teacher\TeacherController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AuthController::class, 'showLogin'])->name('home');
 
@@ -43,15 +44,14 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     // Users
     Route::post('users/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggleActive');
     Route::post('users/password', [UserController::class, 'userPasswordReset'])->name('users.password.reset');
-    
+
     // Students
     Route::get('students/pending', [StudentController::class, 'pending'])->name('students.pending');
     Route::post('students/{id}/approve', [StudentActivationController::class, 'approve'])->name('students.activate');
     Route::post('students/toggle-active', [StudentActivationController::class, 'toggleActive'])->name('students.toggleActive');
     Route::get('students/{id}/download-form', [PdfController::class, 'downloadAdmissionForm'])->name('students.download');
-    Route::get('/students/{student}/last-invoice-month', [StudentController::class, 'getLastInvoiceMonth']);
-    Route::get('/students/{id}/sheet-fee', [StudentController::class, 'getSheetFee']);
-
+    Route::get('students/{student}/last-invoice-month', [StudentController::class, 'getLastInvoiceMonth']);
+    Route::get('students/{id}/sheet-fee', [StudentController::class, 'getSheetFee']);
 
     // Invoices
     Route::get('students/{student}/due-invoices', [PaymentInvoiceController::class, 'getDueInvoices'])->name('students.due.invoices');
@@ -66,21 +66,21 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('get-taken-subjects', [SubjectController::class, 'getTakenSubjects']);
 
     // Sheets
-    Route::get('sheet-payments', [SheetController::class, 'sheetPayments'])->name('sheet.payments');
+    Route::get('sheets/payments', [SheetController::class, 'sheetPayments'])->name('sheet.payments');
 
     // Notes
     Route::put('notes/{sheetTopic}/status', [SheetTopicController::class, 'updateStatus'])->name('notes.updateStatus');
-    
-    // ------- Custom routes end -------
+    Route::get('notes/distribution', [SheetTopicTakenController::class, 'index'])->name('notes.distribution');
+    Route::get('notes/distribution/create', [SheetTopicTakenController::class, 'create'])->name('notes.distribution.create');
+    Route::post('notes/distribution', [SheetTopicTakenController::class, 'store'])->name('notes.distribution.store');
 
+    // ------- Custom routes end -------
 
     // AJAX Routes
     Route::prefix('admin')->group(function () {
         Route::get('/referrers/teachers', [ReferenceController::class, 'getTeachers'])->name('admin.referrers.teachers');
         Route::get('/referrers/students', [ReferenceController::class, 'getStudents'])->name('admin.referrers.students');
     });
-
-
 
     // Resource Routes
     Route::resource('users', UserController::class);
