@@ -1,12 +1,13 @@
 <?php
 namespace App\Http\Controllers\Sheet;
 
-use Illuminate\Http\Request;
-use App\Models\Student\Student;
-use App\Models\Academic\Subject;
-use App\Models\Academic\ClassName;
 use App\Http\Controllers\Controller;
+use App\Models\Academic\ClassName;
+use App\Models\Academic\Subject;
+use App\Models\Sheet\Sheet;
 use App\Models\Sheet\SheetTopicTaken;
+use App\Models\Student\Student;
+use Illuminate\Http\Request;
 
 class SheetTopicTakenController extends Controller
 {
@@ -35,7 +36,7 @@ class SheetTopicTakenController extends Controller
         $branchId = auth()->user()->branch_id;
 
         // Simplified students query
-        return $students = Student::when($branchId != 0, function ($query) use ($branchId) {
+        $students = Student::when($branchId != 0, function ($query) use ($branchId) {
             $query->where('branch_id', $branchId);
         })
             ->where(function ($query) {
@@ -53,9 +54,45 @@ class SheetTopicTakenController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+    // In NoteDistributionController.php
     public function store(Request $request)
     {
-        //
+        $studentId = $request->student_id;
+        $sheetId   = $request->sheet_id;
+        $topics    = $request->topics ?? [];
+
+        // Get the sheet to verify class
+        $sheet = Sheet::find($sheetId);
+        if (! $sheet) {
+            return response()->json(['message' => 'Sheet not found'], 404);
+        }
+
+        // Get already taken topics
+        $existing = SheetTopicTaken::where('student_id', $studentId)
+            ->whereHas('sheetTopic', function ($query) use ($sheet) {
+                $query->whereHas('subject', function ($q) use ($sheet) {
+                    $q->where('class_id', $sheet->class_id);
+                });
+            })
+            ->pluck('sheet_topic_id')
+            ->toArray();
+
+        // Filter out topics that are already taken
+        $newTopics = array_diff($topics, $existing);
+
+        // Create new records
+        foreach ($newTopics as $topicId) {
+            SheetTopicTaken::create([
+                'sheet_topic_id' => $topicId,
+                'student_id'     => $studentId,
+                'created_at'     => now(),
+                'updated_at'     => now(),
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Sheet topics distribution saved successfully',
+        ]);
     }
 
     /**
