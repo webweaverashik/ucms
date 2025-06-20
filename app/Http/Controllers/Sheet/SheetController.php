@@ -1,13 +1,15 @@
 <?php
 namespace App\Http\Controllers\Sheet;
 
-use App\Models\Sheet\Sheet;
-use Illuminate\Http\Request;
-use App\Models\Sheet\SheetTopic;
-use App\Models\Academic\ClassName;
-use App\Models\Sheet\SheetPayment;
 use App\Http\Controllers\Controller;
+use App\Models\Academic\ClassName;
+use App\Models\Academic\Subject;
+use App\Models\Sheet\Sheet;
+use App\Models\Sheet\SheetPayment;
+use App\Models\Sheet\SheetTopic;
 use App\Models\Sheet\SheetTopicTaken;
+use App\Models\Student\Student;
+use Illuminate\Http\Request;
 
 class SheetController extends Controller
 {
@@ -147,23 +149,47 @@ class SheetController extends Controller
 
     public function getSheetTopics(Sheet $sheet, $studentId)
     {
-        // Get all active topics for the sheet's class subjects
-        $topics = SheetTopic::whereHas('subject', function ($query) use ($sheet) {
-            $query->where('class_id', $sheet->class_id);
-        })
+        $student = Student::with('class')->findOrFail($studentId);
+
+        // Debugging - uncomment if needed
+        \Log::debug("Student Data", [
+            'class_numeral'  => $student->class->class_numeral,
+            'academic_group' => $student->academic_group,
+        ]);
+
+        $subjects = Subject::where('class_id', $sheet->class_id)
+            ->where(function ($query) use ($student) {
+                $query->where('academic_group', 'General');
+
+                if (in_array($student->class->class_numeral, ['09', '10', '11', '12'])) {
+                    $query->orWhere('academic_group', $student->academic_group);
+                }
+            })
+            ->get();
+
+        // Debug subjects query
+        \Log::debug("Subjects Query Results", $subjects->toArray());
+
+        $topics = SheetTopic::whereIn('subject_id', $subjects->pluck('id'))
             ->with('subject')
             ->get();
 
         $distributedTopics = SheetTopicTaken::where('student_id', $studentId)
-            ->whereHas('sheetTopic.subject', function ($query) use ($sheet) {
-                $query->where('class_id', $sheet->class_id);
-            })
+            ->whereIn('sheet_topic_id', $topics->pluck('id'))
             ->pluck('sheet_topic_id')
             ->toArray();
 
         return response()->json([
             'topics'            => $topics,
             'distributedTopics' => $distributedTopics,
+            'studentGroup'      => $student->academic_group,
+            'classNumeral'      => $student->class->class_numeral,
+            'debug'             => [ // Temporary debug info
+                'student_group'    => $student->academic_group,
+                'class_numeral'    => $student->class->class_numeral,
+                'subject_count'    => $subjects->count(),
+                'science_subjects' => $subjects->where('academic_group', 'Science')->count(),
+            ],
         ]);
     }
 

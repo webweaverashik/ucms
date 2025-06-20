@@ -68,25 +68,38 @@ $(document).ready(function () {
 
       // Render function
       function renderNotesDistribution(data) {
+            console.log("Debug Data:", data.debug); // Check debug output
+
             const $container = $('#student_notes_distribution');
             $container.empty();
 
             if (data.topics.length === 0) {
-                  $container.html('<div class="alert alert-info">No topics found for this sheet</div>');
+                  $container.html(`
+            <div class="alert alert-warning">
+                No topics found. Debug info: 
+                Class ${data.classNumeral}, 
+                Group ${data.studentGroup}, 
+                Subjects: ${data.debug.subject_count},
+                Science Subjects: ${data.debug.science_subjects}
+            </div>
+        `);
                   return;
             }
 
-            // Group topics by subject
+            // Group topics by subject (including all filtered topics)
             const subjects = {};
             data.topics.forEach(topic => {
                   const subjectName = topic.subject?.name || 'Uncategorized';
                   if (!subjects[subjectName]) {
-                        subjects[subjectName] = [];
+                        subjects[subjectName] = {
+                              academicGroup: topic.subject?.academic_group || 'General',
+                              topics: []
+                        };
                   }
-                  subjects[subjectName].push(topic);
+                  subjects[subjectName].topics.push(topic);
             });
 
-            // Build calendar header (subject names)
+            // Build calendar header
             let html = `
         <div class="sheet-calendar">
             <div class="calendar-header">
@@ -94,22 +107,24 @@ $(document).ready(function () {
     `;
 
             // Add subject headers
-            Object.keys(subjects).forEach(subject => {
-                  html += `<div class="header-cell subject-header">${subject}</div>`;
+            Object.entries(subjects).forEach(([subject, subjectData]) => {
+                  const groupBadge = subjectData.academicGroup !== 'General'
+                        ? `<span class="subject-group-badge ${subjectData.academicGroup.toLowerCase()}">${subjectData.academicGroup}</span>`
+                        : '';
+
+                  html += `<div class="header-cell subject-header">${subject}${groupBadge}</div>`;
             });
 
             html += `</div><div class="calendar-body">`;
 
-            // Find the subject with most topics to determine row count
-            const maxTopics = Math.max(...Object.values(subjects).map(s => s.length));
+            // Build rows
+            const maxTopics = Math.max(...Object.values(subjects).map(s => s.topics.length));
 
-            // Build calendar rows
             for (let i = 0; i < maxTopics; i++) {
-                  html += `<div class="calendar-row">`;
-                  html += `<div class="row-header">Topic ${i + 1}</div>`;
+                  html += `<div class="calendar-row"><div class="row-header">Topic ${i + 1}</div>`;
 
-                  Object.entries(subjects).forEach(([subject, topics]) => {
-                        const topic = topics[i];
+                  Object.entries(subjects).forEach(([subject, subjectData]) => {
+                        const topic = subjectData.topics[i];
                         if (topic) {
                               const isTaken = data.distributedTopics.includes(topic.id);
                               const isActive = topic.status === 'active';
@@ -126,8 +141,6 @@ $(document).ready(function () {
                          data-topic-name="${topic.name}"
                          data-subject="${subject}">
                         ${topic.name}
-                        ${isTaken ? '<div class="status-badge taken-badge">✓</div>' : ''}
-                        ${!isActive ? '<div class="status-badge inactive-badge">✗</div>' : ''}
                     </div>
                 `;
                         } else {
@@ -138,9 +151,12 @@ $(document).ready(function () {
                   html += `</div>`;
             }
 
+            // Show group legend only for classes 06-12
+            const showGroupLegend = ['06', '07', '08', '09', '10', '11', '12'].includes(data.classNumeral);
+
             html += `</div></div>
         <div class="mt-4">
-            <button type="button" id="reset_notes_distribution" class="btn btn-light">Reset</button>
+            <button type="button" id="reset_notes_distribution" class="btn btn-light">Clear Selection</button>
             <button type="button" id="save_notes_distribution" class="btn btn-primary">Save Distribution</button>
         </div>
         <div class="calendar-legend mt-3">
@@ -148,12 +164,16 @@ $(document).ready(function () {
             <div><span class="legend-color taken"></span> Already Taken</div>
             <div><span class="legend-color inactive"></span> Inactive</div>
             <div><span class="legend-color selected"></span> Selected</div>
+            ${showGroupLegend ? `
+                <div><span class="subject-group-badge science"></span> Science</div>
+                <div><span class="subject-group-badge commerce"></span> Commerce</div>
+                <div><span class="subject-group-badge arts"></span> Arts</div>
+            ` : ''}
         </div>
     `;
 
             $container.html(html);
 
-            // Add click handler for selectable cells
             $('.calendar-cell.selectable').on('click', function () {
                   $(this).toggleClass('selected');
             });
@@ -196,13 +216,16 @@ $(document).ready(function () {
             });
       }
 
-      // Reset button handler
+      // Reset button handler - clears only selected topics
       $(document).on('click', '#reset_notes_distribution', function () {
-            $('#student_select_id').val(null).trigger('change');
-            $('#student_paid_sheet_group').val(null).trigger('change').prop('disabled', true);
-            $('#student_notes_distribution').empty();
+            // Clear all selected topics
+            $('.calendar-cell.selected').removeClass('selected');
+
+            // Show feedback
+            toastr.info('Selection cleared', '', { timeOut: 1000 });
       });
 
+      // Save button handler
       $(document).on('click', '#save_notes_distribution', function () {
             saveDistribution();
       });

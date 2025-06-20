@@ -240,7 +240,7 @@ table.ucms-table td {
 
 /* Selected Cells */
 .calendar-cell.selected {
-    background-color: #c3e6cb !important;
+    background-color: #cee85a !important;
     color: #155724;
     font-weight: 500;
 }
@@ -258,27 +258,6 @@ table.ucms-table td {
     color: #721c24;
     cursor: not-allowed;
     opacity: 0.8;
-}
-
-/* Status Badges */
-.status-badge {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    font-size: 10px;
-    padding: 2px 5px;
-    border-radius: 10px;
-    line-height: 1;
-}
-
-.taken-badge {
-    background-color: #28a745;
-    color: white;
-}
-
-.inactive-badge {
-    background-color: #dc3545;
-    color: white;
 }
 
 /* Legend */
@@ -310,8 +289,8 @@ table.ucms-table td {
 }
 
 .legend-color.selected {
-    background-color: #c3e6cb;
-    border-color: #b1dfbb;
+    background-color: #cee85a;
+    border-color: #cee85a;
 }
 
 .legend-color.taken {
@@ -370,6 +349,44 @@ table.ucms-table td {
 
 .calendar-cell.selected {
     animation: pulseSelect 0.3s ease;
+}
+
+/* ---Additional CSS for Academic Groups--- */
+/* Subject Group Badges */
+.subject-group-badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 5px;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.subject-group-badge.science {
+    background-color: #17a2b8;
+}
+
+.subject-group-badge.commerce {
+    background-color: #6f42c1;
+}
+
+.subject-group-badge.arts {
+    background-color: #fd7e14;
+}
+
+/* Highlight group-specific subjects */
+.subject-header.science {
+    background-color: #e2f6fa;
+}
+
+.subject-header.commerce {
+    background-color: #f0e6ff;
+}
+
+.subject-header.arts {
+    background-color: #ffeedf;
 }
 
 /****** Topic Assigning Styling : End ******/
