@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Sheet;
 
 use App\Models\Sheet\Sheet;
 use Illuminate\Http\Request;
+use App\Models\Sheet\SheetTopic;
 use App\Models\Academic\ClassName;
 use App\Models\Sheet\SheetPayment;
 use App\Http\Controllers\Controller;
@@ -144,32 +145,24 @@ class SheetController extends Controller
         return response()->json(['sheets' => $sheets]);
     }
 
-    public function getSheetTopics($sheetId, $studentId)
+    public function getSheetTopics(Sheet $sheet, $studentId)
     {
-        // Get the sheet with its topics through subjects
-        $sheet = Sheet::with(['sheetTopics' => function ($query) {
-            $query->with('subject');
-        }])->find($sheetId);
+        // Get all active topics for the sheet's class subjects
+        $topics = SheetTopic::whereHas('subject', function ($query) use ($sheet) {
+            $query->where('class_id', $sheet->class_id);
+        })
+            ->with('subject')
+            ->get();
 
-        if (! $sheet) {
-            return response()->json([
-                'topics'            => [],
-                'distributedTopics' => [],
-            ]);
-        }
-
-        // Get already taken topics for this student
         $distributedTopics = SheetTopicTaken::where('student_id', $studentId)
-            ->whereHas('sheetTopic', function ($query) use ($sheetId) {
-                $query->whereHas('subject', function ($q) use ($sheetId) {
-                    $q->where('class_id', Sheet::find($sheetId)->class_id);
-                });
+            ->whereHas('sheetTopic.subject', function ($query) use ($sheet) {
+                $query->where('class_id', $sheet->class_id);
             })
             ->pluck('sheet_topic_id')
             ->toArray();
 
         return response()->json([
-            'topics'            => $sheet->sheetTopics,
+            'topics'            => $topics,
             'distributedTopics' => $distributedTopics,
         ]);
     }

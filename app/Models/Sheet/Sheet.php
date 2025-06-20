@@ -2,7 +2,6 @@
 namespace App\Models\Sheet;
 
 use App\Models\Academic\Subject;
-use App\Models\Sheet\SheetTopic;
 use App\Models\Academic\ClassName;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

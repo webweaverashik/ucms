@@ -76,51 +76,86 @@ $(document).ready(function () {
                   return;
             }
 
-            let html = `
-            <div class="table-responsive">
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th width="50px">Select</th>
-                            <th>Topic</th>
-                            <th>Subject</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-        `;
-
-            data.topics.forEach(function (topic) {
-                  const isTaken = data.distributedTopics.includes(topic.id);
-                  html += `
-                <tr>
-                    <td>
-                        <input type="checkbox" name="topics[]" value="${topic.id}" 
-                            ${isTaken ? 'checked disabled' : ''}
-                            ${isTaken ? '' : 'checked'}>
-                    </td>
-                    <td>${topic.name}</td>
-                    <td>${topic.subject?.name ?? 'N/A'}</td>
-                    <td>${isTaken ? '<span class="badge badge-success">Already Taken</span>' : '<span class="badge badge-primary">Available</span>'}</td>
-                </tr>
-            `;
+            // Group topics by subject
+            const subjects = {};
+            data.topics.forEach(topic => {
+                  const subjectName = topic.subject?.name || 'Uncategorized';
+                  if (!subjects[subjectName]) {
+                        subjects[subjectName] = [];
+                  }
+                  subjects[subjectName].push(topic);
             });
 
-            html += `
-                    </tbody>
-                </table>
-            </div>
-            <div class="mt-4">
-                <button type="button" id="reset_notes_distribution" class="btn btn-light">Reset</button>
-                <button type="button" id="save_notes_distribution" class="btn btn-primary">Save Distribution</button>
-            </div>
-        `;
+            // Build calendar header (subject names)
+            let html = `
+        <div class="sheet-calendar">
+            <div class="calendar-header">
+                <div class="header-cell corner-cell"></div>
+    `;
+
+            // Add subject headers
+            Object.keys(subjects).forEach(subject => {
+                  html += `<div class="header-cell subject-header">${subject}</div>`;
+            });
+
+            html += `</div><div class="calendar-body">`;
+
+            // Find the subject with most topics to determine row count
+            const maxTopics = Math.max(...Object.values(subjects).map(s => s.length));
+
+            // Build calendar rows
+            for (let i = 0; i < maxTopics; i++) {
+                  html += `<div class="calendar-row">`;
+                  html += `<div class="row-header">Topic ${i + 1}</div>`;
+
+                  Object.entries(subjects).forEach(([subject, topics]) => {
+                        const topic = topics[i];
+                        if (topic) {
+                              const isTaken = data.distributedTopics.includes(topic.id);
+                              const isActive = topic.status === 'active';
+                              const isSelectable = isActive && !isTaken;
+
+                              let cellClass = 'calendar-cell';
+                              if (isTaken) cellClass += ' taken';
+                              if (!isActive) cellClass += ' inactive';
+                              if (isSelectable) cellClass += ' selectable';
+
+                              html += `
+                    <div class="${cellClass}" 
+                         data-topic-id="${topic.id}"
+                         data-topic-name="${topic.name}"
+                         data-subject="${subject}">
+                        ${topic.name}
+                        ${isTaken ? '<div class="status-badge taken-badge">✓</div>' : ''}
+                        ${!isActive ? '<div class="status-badge inactive-badge">✗</div>' : ''}
+                    </div>
+                `;
+                        } else {
+                              html += `<div class="calendar-cell empty-cell"></div>`;
+                        }
+                  });
+
+                  html += `</div>`;
+            }
+
+            html += `</div></div>
+        <div class="mt-4">
+            <button type="button" id="reset_notes_distribution" class="btn btn-light">Reset</button>
+            <button type="button" id="save_notes_distribution" class="btn btn-primary">Save Distribution</button>
+        </div>
+        <div class="calendar-legend mt-3">
+            <div><span class="legend-color available"></span> Available</div>
+            <div><span class="legend-color taken"></span> Already Taken</div>
+            <div><span class="legend-color inactive"></span> Inactive</div>
+            <div><span class="legend-color selected"></span> Selected</div>
+        </div>
+    `;
 
             $container.html(html);
 
-            // Rebind the save button
-            $('#save_notes_distribution').off('click').on('click', function () {
-                  saveDistribution();
+            // Add click handler for selectable cells
+            $('.calendar-cell.selectable').on('click', function () {
+                  $(this).toggleClass('selected');
             });
       }
 
@@ -135,8 +170,8 @@ $(document).ready(function () {
             }
 
             const selectedTopics = [];
-            $('input[name="topics[]"]:checked:not(:disabled)').each(function () {
-                  selectedTopics.push($(this).val());
+            $('.calendar-cell.selected').each(function () {
+                  selectedTopics.push($(this).data('topic-id'));
             });
 
             $.ajax({
@@ -166,5 +201,9 @@ $(document).ready(function () {
             $('#student_select_id').val(null).trigger('change');
             $('#student_paid_sheet_group').val(null).trigger('change').prop('disabled', true);
             $('#student_notes_distribution').empty();
+      });
+
+      $(document).on('click', '#save_notes_distribution', function () {
+            saveDistribution();
       });
 });

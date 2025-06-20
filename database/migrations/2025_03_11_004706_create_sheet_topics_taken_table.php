@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('sheet_topic_id');
             $table->foreignId('student_id');
+            $table->foreignId('distributed_by');
             $table->timestamps();
         });
     }

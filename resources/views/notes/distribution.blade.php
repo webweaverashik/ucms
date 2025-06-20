@@ -121,6 +121,7 @@
 
 @push('page-js')
     <script src="{{ asset('js/notes/distribution.js') }}"></script>
+    
 
     <script>
         document.getElementById("notes_sheets_menu").classList.add("here", "show");

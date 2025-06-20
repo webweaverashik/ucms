@@ -85,8 +85,7 @@ class SheetTopicTakenController extends Controller
             SheetTopicTaken::create([
                 'sheet_topic_id' => $topicId,
                 'student_id'     => $studentId,
-                'created_at'     => now(),
-                'updated_at'     => now(),
+                'distributed_by' => auth()->user()->id,
             ]);
         }
 
