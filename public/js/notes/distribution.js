@@ -151,9 +151,6 @@ $(document).ready(function () {
                   html += `</div>`;
             }
 
-            // Show group legend only for classes 06-12
-            const showGroupLegend = ['06', '07', '08', '09', '10', '11', '12'].includes(data.classNumeral);
-
             html += `</div></div>
         <div class="mt-4">
             <button type="button" id="reset_notes_distribution" class="btn btn-light">Clear Selection</button>
@@ -164,11 +161,6 @@ $(document).ready(function () {
             <div><span class="legend-color taken"></span> Already Taken</div>
             <div><span class="legend-color inactive"></span> Inactive</div>
             <div><span class="legend-color selected"></span> Selected</div>
-            ${showGroupLegend ? `
-                <div><span class="subject-group-badge science"></span> Science</div>
-                <div><span class="subject-group-badge commerce"></span> Commerce</div>
-                <div><span class="subject-group-badge arts"></span> Arts</div>
-            ` : ''}
         </div>
     `;
 
