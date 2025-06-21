@@ -1,18 +1,19 @@
 <?php
 namespace App\Models\Student;
 
-use App\Models\Academic\ClassName;
-use App\Models\Academic\Institution;
-use App\Models\Academic\Shift;
-use App\Models\Academic\SubjectTaken;
 use App\Models\Branch;
+use App\Models\Academic\Shift;
 use App\Models\Payment\Payment;
+use App\Models\Academic\ClassName;
+use App\Models\Sheet\SheetPayment;
+use App\Models\Academic\Institution;
+use App\Models\Academic\SubjectTaken;
+use App\Models\Sheet\SheetTopicTaken;
 use App\Models\Payment\PaymentInvoice;
-use App\Models\Payment\PaymentTransaction;
-use App\Models\Sheets\SheetTopicTaken;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Payment\PaymentTransaction;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Student extends Model
 {
@@ -111,7 +112,7 @@ class Student extends Model
     }
 
     // Get all the sheets taken by the student
-    public function sheetsTaken()
+    public function sheetsTopicTaken()
     {
         return $this->hasMany(SheetTopicTaken::class);
     }

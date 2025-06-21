@@ -505,9 +505,51 @@ var KTStudentsSheetsView = function () {
 
     // Search Datatable --- official docs reference: https://datatables.net/reference/api/search()
     var handleSearch = function () {
-        const filterSearch = document.querySelector('[data-kt-subscription-table-filter="search"]');
+        const filterSearch = document.querySelector('[data-kt-notes-distribution-table-filter="search"]');
         filterSearch.addEventListener('keyup', function (e) {
             datatable.search(e.target.value).draw();
+        });
+    }
+
+
+    // Filter Datatable
+    var handleFilter = function () {
+        // Select filter options
+        const filterForm = document.querySelector('[data-kt-notes-distribution-table-filter="form"]');
+        const filterButton = filterForm.querySelector('[data-kt-notes-distribution-table-filter="filter"]');
+        const resetButton = filterForm.querySelector('[data-kt-notes-distribution-table-filter="reset"]');
+        const selectOptions = filterForm.querySelectorAll('select');
+
+        // Filter datatable on submit
+        filterButton.addEventListener('click', function () {
+            var filterString = '';
+
+            // Get filter values
+            selectOptions.forEach((item, index) => {
+                if (item.value && item.value !== '') {
+                    if (index !== 0) {
+                        filterString += ' ';
+                    }
+
+                    // Build filter value options
+                    filterString += item.value;
+                }
+            });
+
+            // Filter datatable --- official docs reference: https://datatables.net/reference/api/search()
+            datatable.search(filterString).draw();
+        });
+
+        // Reset datatable
+        resetButton.addEventListener('click', function () {
+            // Reset filter form
+            selectOptions.forEach((item, index) => {
+                // Reset Select2 dropdown --- official docs reference: https://select2.org/programmatic-control/add-select-clear-items
+                $(item).val(null).trigger('change');
+            });
+
+            // Filter datatable --- official docs reference: https://datatables.net/reference/api/search()
+            datatable.search('').draw();
         });
     }
 
@@ -521,7 +563,8 @@ var KTStudentsSheetsView = function () {
             }
 
             initDatatable();
-            // handleSearch();
+            handleSearch();
+            handleFilter();
         }
     }
 }();

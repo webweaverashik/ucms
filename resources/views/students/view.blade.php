@@ -1094,7 +1094,7 @@
                 <!--begin:::Tab pane-->
                 <div class="tab-pane fade" id="kt_student_view_sheets_tab" role="tabpanel">
                     <!--begin::Earnings-->
-                    <div class="card mb-6 mb-xl-9">
+                    {{-- <div class="card mb-6 mb-xl-9">
                         <!--begin::Header-->
                         <div class="card-header border-0">
                             <div class="card-title">
@@ -1142,17 +1142,100 @@
                             <!--end::Left Section-->
                         </div>
                         <!--end::Body-->
-                    </div>
+                    </div> --}}
                     <!--end::Earnings-->
+
                     <!--begin::Statements-->
                     <div class="card mb-6 mb-xl-9">
                         <!--begin::Header-->
                         <div class="card-header">
                             <!--begin::Title-->
                             <div class="card-title">
-                                <h2>Statement</h2>
+                                <!--begin::Search-->
+                                <div class="d-flex align-items-center position-relative my-1">
+                                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input
+                                        type="text" data-kt-notes-distribution-table-filter="search"
+                                        class="form-control form-control-solid w-350px ps-12"
+                                        placeholder="Search in Notes Distribution">
+                                </div>
+                                <!--end::Search-->
                             </div>
                             <!--end::Title-->
+
+                            <!--begin::Card toolbar-->
+                            <div class="card-toolbar">
+
+                                <!--begin::Toolbar-->
+                                <div class="d-flex justify-content-end" data-kt-notes-distribution-table-filter="base">
+                                    <!--begin::Filter-->
+                                    <button type="button" class="btn btn-light-primary me-3"
+                                        data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
+                                        <i class="ki-outline ki-filter fs-2"></i>Filter</button>
+                                    <!--begin::Menu 1-->
+                                    <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
+                                        <!--begin::Header-->
+                                        <div class="px-7 py-5">
+                                            <div class="fs-5 text-gray-900 fw-bold">Filter Options</div>
+                                        </div>
+                                        <!--end::Header-->
+                                        <!--begin::Separator-->
+                                        <div class="separator border-gray-200"></div>
+                                        <!--end::Separator-->
+                                        <!--begin::Content-->
+                                        <div class="px-7 py-5" data-kt-notes-distribution-table-filter="form">
+                                            <!--begin::Input group-->
+                                            <div class="mb-10">
+                                                <label class="form-label fs-6 fw-semibold">Sheet Group:</label>
+                                                <select class="form-select form-select-solid fw-bold"
+                                                    data-kt-select2="true" data-placeholder="Select option"
+                                                    data-allow-clear="true"
+                                                    data-kt-notes-distribution-table-filter="product">
+                                                    <option></option>
+                                                    @foreach ($class_names as $class)
+                                                        <option
+                                                            value="{{ $class->name }} ({{ $class->class_numeral }})">
+                                                            {{ $class->name }} ({{ $class->class_numeral }})</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <!--end::Input group-->
+
+                                            <!--begin::Input group-->
+                                            <div class="mb-10">
+                                                <label class="form-label fs-6 fw-semibold">Subject:</label>
+                                                <select class="form-select form-select-solid fw-bold"
+                                                    data-kt-select2="true" data-placeholder="Select option"
+                                                    data-allow-clear="true"
+                                                    data-kt-notes-distribution-table-filter="product">
+                                                    <option></option>
+                                                    {{-- @foreach ($subjectNames as $subject)
+                                                        <option value="{{ $subject }}">
+                                                            {{ $subject }}</option>
+                                                    @endforeach --}}
+                                                </select>
+                                            </div>
+                                            <!--end::Input group-->
+
+                                            <!--begin::Actions-->
+                                            <div class="d-flex justify-content-end">
+                                                <button type="reset"
+                                                    class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
+                                                    data-kt-menu-dismiss="true"
+                                                    data-kt-notes-distribution-table-filter="reset">Reset</button>
+                                                <button type="submit" class="btn btn-primary fw-semibold px-6"
+                                                    data-kt-menu-dismiss="true"
+                                                    data-kt-notes-distribution-table-filter="filter">Apply</button>
+                                            </div>
+                                            <!--end::Actions-->
+                                        </div>
+                                        <!--end::Content-->
+                                    </div>
+                                    <!--end::Menu 1-->
+                                    <!--end::Filter-->
+                                </div>
+                                <!--end::Toolbar-->
+                            </div>
+                            <!--end::Card toolbar-->
                         </div>
                         <!--end::Header-->
                         <!--begin::Card body-->
@@ -1161,213 +1244,36 @@
                             <table id="kt_student_view_sheets_table"
                                 class="table align-middle table-row-dashed fs-6 text-gray-600 fw-semibold gy-4">
                                 <thead class="border-bottom border-gray-200">
-                                    <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
-                                        <th class="w-125px">Date</th>
-                                        <th class="w-100px">Order ID</th>
-                                        <th class="w-300px">Details</th>
-                                        <th class="w-100px">Amount</th>
-                                        <th class="w-100px text-end pe-7">Invoice</th>
+                                    <tr class="fw-bold fs-7 text-uppercase gs-0">
+                                        <th class="w-30px">SL</th>
+                                        <th>Topic Name</th>
+                                        <th>Sujbect</th>
+                                        <th class="w-200px">Sheet Group</th>
+                                        <th class="w-150px">Received Date</th>
+                                        <th class="w-150px">Distributed By</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>Nov 01, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">102445788</a>
-                                        </td>
-                                        <td>Darknight transparency 36 Icons Pack</td>
-                                        <td class="text-success">$38.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Oct 24, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">423445721</a>
-                                        </td>
-                                        <td>Seller Fee</td>
-                                        <td class="text-danger">$-2.60</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Oct 08, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">312445984</a>
-                                        </td>
-                                        <td>Cartoon Mobile Emoji Phone Pack</td>
-                                        <td class="text-success">$76.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Sep 15, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">312445984</a>
-                                        </td>
-                                        <td>Iphone 12 Pro Mockup Mega Bundle</td>
-                                        <td class="text-success">$5.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>May 30, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">523445943</a>
-                                        </td>
-                                        <td>Seller Fee</td>
-                                        <td class="text-danger">$-1.30</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Apr 22, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">231445943</a>
-                                        </td>
-                                        <td>Parcel Shipping / Delivery Service App</td>
-                                        <td class="text-success">$204.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Feb 09, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">426445943</a>
-                                        </td>
-                                        <td>Visual Design Illustration</td>
-                                        <td class="text-success">$31.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Nov 01, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">984445943</a>
-                                        </td>
-                                        <td>Abstract Vusial Pack</td>
-                                        <td class="text-success">$52.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Jan 04, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">324442313</a>
-                                        </td>
-                                        <td>Seller Fee</td>
-                                        <td class="text-danger">$-0.80</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Nov 01, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">102445788</a>
-                                        </td>
-                                        <td>Darknight transparency 36 Icons Pack</td>
-                                        <td class="text-success">$38.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Oct 24, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">423445721</a>
-                                        </td>
-                                        <td>Seller Fee</td>
-                                        <td class="text-danger">$-2.60</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Oct 08, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">312445984</a>
-                                        </td>
-                                        <td>Cartoon Mobile Emoji Phone Pack</td>
-                                        <td class="text-success">$76.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Sep 15, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">312445984</a>
-                                        </td>
-                                        <td>Iphone 12 Pro Mockup Mega Bundle</td>
-                                        <td class="text-success">$5.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>May 30, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">523445943</a>
-                                        </td>
-                                        <td>Seller Fee</td>
-                                        <td class="text-danger">$-1.30</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Apr 22, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">231445943</a>
-                                        </td>
-                                        <td>Parcel Shipping / Delivery Service App</td>
-                                        <td class="text-success">$204.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Feb 09, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">426445943</a>
-                                        </td>
-                                        <td>Visual Design Illustration</td>
-                                        <td class="text-success">$31.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Nov 01, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">984445943</a>
-                                        </td>
-                                        <td>Abstract Vusial Pack</td>
-                                        <td class="text-success">$52.00</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Jan 04, 2021</td>
-                                        <td>
-                                            <a href="#" class="text-gray-600 text-hover-primary">324442313</a>
-                                        </td>
-                                        <td>Seller Fee</td>
-                                        <td class="text-danger">$-0.80</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-sm btn-light btn-active-light-primary">Download</button>
-                                        </td>
-                                    </tr>
+                                <tbody class="text-gray-600 fw-semibold">
+                                    @foreach ($student->sheetsTopicTaken->sortByDesc('created_at') as $note)
+                                        <tr>
+                                            <td class="pe-2">{{ $loop->index + 1 }}</td>
+                                            <td class="text-gray-800 mb-1">{{ $note->sheetTopic->topic_name }}</td>
+                                            <td>{{ $note->sheetTopic->subject->name }}</td>
+                                            <td>
+                                                <a href="{{ route('sheets.show', $note->class->sheet->id) }}"
+                                                    target="_blank">
+                                                    {{ $note->class->name }} ({{ $note->class->class_numeral }})
+                                                </a>
+                                            </td>
+                                            <td>{{ $note->created_at->format('d-m-Y') }}
+                                                <span class="ms-1" data-bs-toggle="tooltip"
+                                                    title="{{ $note->created_at->format('d-M-Y h:m:s A') }}">
+                                                    <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
+                                                </span>
+                                            </td>
+                                            <td>{{ $note->distributedBy->name }}</td>
+                                        </tr>
+                                    @endforeach
                                 </tbody>
                             </table>
                             <!--end::Table-->

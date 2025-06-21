@@ -351,6 +351,10 @@ class StudentController extends Controller
             return redirect()->route('students.index')->with('error', 'Student not found in this branch.');
         }
 
+        // $sheet_class_names  = ClassName::select('name', 'class_numeral')->get();
+        $sheet_class_names  = ClassName::select('name', 'class_numeral')->get();
+        $sheet_subjectNames = Subject::select('name')->distinct()->orderBy('name')->pluck('name');
+
         return view('students.view', compact('student'));
     }
 
