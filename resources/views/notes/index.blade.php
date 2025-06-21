@@ -43,7 +43,7 @@
 
 
 @section('content')
-    <!--begin::Institutions List-->
+    <!--begin::Distributed Notes List-->
     <div class="container-xxl">
         <!--begin::Card-->
         <div class="card">
@@ -189,7 +189,7 @@
         </div>
         <!--end::Card-->
     </div>
-    <!--end::Institutions List-->
+    <!--end::Distributed Notes List-->
 @endsection
 
 

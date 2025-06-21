@@ -152,10 +152,10 @@ class SheetController extends Controller
         $student = Student::with('class')->findOrFail($studentId);
 
         // Debugging - uncomment if needed
-        \Log::debug("Student Data", [
-            'class_numeral'  => $student->class->class_numeral,
-            'academic_group' => $student->academic_group,
-        ]);
+        // \Log::debug("Student Data", [
+        //     'class_numeral'  => $student->class->class_numeral,
+        //     'academic_group' => $student->academic_group,
+        // ]);
 
         $subjects = Subject::where('class_id', $sheet->class_id)
             ->where(function ($query) use ($student) {
@@ -168,7 +168,7 @@ class SheetController extends Controller
             ->get();
 
         // Debug subjects query
-        \Log::debug("Subjects Query Results", $subjects->toArray());
+        // \Log::debug("Subjects Query Results", $subjects->toArray());
 
         $topics = SheetTopic::whereIn('subject_id', $subjects->pluck('id'))
             ->with('subject')
