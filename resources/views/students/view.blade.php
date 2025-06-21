@@ -1191,10 +1191,10 @@
                                                     data-allow-clear="true"
                                                     data-kt-notes-distribution-table-filter="product">
                                                     <option></option>
-                                                    @foreach ($class_names as $class)
+                                                    @foreach ($sheet_class_names as $class)
                                                         <option
-                                                            value="{{ $class->name }} ({{ $class->class_numeral }})">
-                                                            {{ $class->name }} ({{ $class->class_numeral }})</option>
+                                                            value="{{ $class['name'] }} ({{ $class['class_numeral'] }})">
+                                                            {{ $class['name'] }} ({{ $class['class_numeral'] }})</option>
                                                     @endforeach
                                                 </select>
                                             </div>
@@ -1208,10 +1208,10 @@
                                                     data-allow-clear="true"
                                                     data-kt-notes-distribution-table-filter="product">
                                                     <option></option>
-                                                    {{-- @foreach ($subjectNames as $subject)
+                                                    @foreach ($sheet_subjectNames as $subject)
                                                         <option value="{{ $subject }}">
                                                             {{ $subject }}</option>
-                                                    @endforeach --}}
+                                                    @endforeach
                                                 </select>
                                             </div>
                                             <!--end::Input group-->

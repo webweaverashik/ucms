@@ -351,11 +351,27 @@ class StudentController extends Controller
             return redirect()->route('students.index')->with('error', 'Student not found in this branch.');
         }
 
-        // $sheet_class_names  = ClassName::select('name', 'class_numeral')->get();
-        $sheet_class_names  = ClassName::select('name', 'class_numeral')->get();
-        $sheet_subjectNames = Subject::select('name')->distinct()->orderBy('name')->pluck('name');
+        // Get all sheet payments of the student
+        $sheetPayments = $student->sheetPayments()->with(['sheet.class.subjects'])->get();
 
-        return view('students.view', compact('student'));
+        // Extract unique class names
+        $sheet_class_names = $sheetPayments->pluck('sheet.class')->unique('id')->map(function ($class) {
+            return [
+                'name'          => $class->name,
+                'class_numeral' => $class->class_numeral,
+            ];
+        });
+
+        // Extract unique subject names from those classes
+        $sheet_subjectNames = $sheetPayments
+            ->pluck('sheet.class.subjects') // get subjects collections
+            ->flatten()
+            ->unique('name')
+            ->pluck('name')
+            ->sort()
+            ->values();
+
+        return view('students.view', compact('student', 'sheet_class_names', 'sheet_subjectNames'));
     }
 
     /**
