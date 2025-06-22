@@ -154,7 +154,7 @@ $(document).ready(function () {
             html += `</div></div>
         <div class="mt-4">
             <button type="button" id="reset_notes_distribution" class="btn btn-light">Clear Selection</button>
-            <button type="button" id="save_notes_distribution" class="btn btn-primary">Save Distribution</button>
+            <button type="button" id="save_notes_distribution" class="btn btn-primary ms-2">Save Distribution</button>
         </div>
         <div class="calendar-legend mt-3">
             <div><span class="legend-color available"></span> Available</div>

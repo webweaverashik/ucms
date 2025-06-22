@@ -72,12 +72,9 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::put('notes/{sheetTopic}/status', [SheetTopicController::class, 'updateStatus'])->name('notes.updateStatus');
     Route::get('notes/distribution', [SheetTopicTakenController::class, 'index'])->name('notes.distribution');
     Route::get('notes/distribution/create', [SheetTopicTakenController::class, 'create'])->name('notes.distribution.create');
-    // Route::post('notes/distribution', [SheetTopicTakenController::class, 'store'])->name('notes.distribution.store');
+    Route::post('sheet-topics/distribute', [SheetTopicTakenController::class, 'store'])->name('sheet-topics.distribute');
 
-
-
-    Route::post('/sheet-topics/distribute', [SheetTopicTakenController::class, 'store'])->name('sheet-topics.distribute');
-
+    /* AJAX Route */
     // Get paid sheets for a student
     Route::get('/sheets/paid/{student}', [SheetController::class, 'getPaidSheets'])->name('sheets.paid');
     // Get topics for a sheet with distribution status

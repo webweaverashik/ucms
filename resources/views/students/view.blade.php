@@ -416,6 +416,23 @@
                         data-kt-menu="true">
                         <!--begin::Menu item-->
                         <div class="menu-item px-5">
+                            <div class="menu-content text-muted pb-2 px-5 fs-7 text-uppercase">Sheet</div>
+                        </div>
+                        <!--end::Menu item-->
+                        @can('notes.distribute')
+                            <div class="menu-item px-5">
+                                <a href="{{ route('notes.distribution.create') }}"
+                                    class="menu-link text-hover-primary px-5"><i class="ki-outline ki-note-2 fs-2 me-2"></i>
+                                    Note Distribution</a>
+                            </div>
+                        @endcan
+
+                        <!--begin::Menu separator-->
+                        <div class="separator my-3"></div>
+                        <!--end::Menu separator-->
+
+                        <!--begin::Menu item-->
+                        <div class="menu-item px-5">
                             <div class="menu-content text-muted pb-2 px-5 fs-7 text-uppercase">Account</div>
                         </div>
                         <!--end::Menu item-->
@@ -1194,7 +1211,8 @@
                                                     @foreach ($sheet_class_names as $class)
                                                         <option
                                                             value="{{ $class['name'] }} ({{ $class['class_numeral'] }})">
-                                                            {{ $class['name'] }} ({{ $class['class_numeral'] }})</option>
+                                                            {{ $class['name'] }} ({{ $class['class_numeral'] }})
+                                                        </option>
                                                     @endforeach
                                                 </select>
                                             </div>
