@@ -409,9 +409,65 @@ var KTEditNotes = function () {
             });
       };
 
+
+      // Delete pending students
+      const handleTopicDeletion = function () {
+            document.querySelectorAll('.delete-note').forEach(item => {
+                  item.addEventListener('click', function (e) {
+                        e.preventDefault();
+
+                        let noteId = this.getAttribute('data-topic-id');
+                        console.log('Note ID:', noteId);
+                        
+                        let url = routeDeleteNote.replace(':id', noteId);  // Replace ':id' with actual student ID
+
+                        Swal.fire({
+                              title: "Are you sure to delete this note?",
+                              text: "This action cannot be undone!",
+                              icon: "warning",
+                              showCancelButton: true,
+                              confirmButtonColor: "#d33",
+                              cancelButtonColor: "#3085d6",
+                              confirmButtonText: "Yes, delete!",
+                        }).then((result) => {
+                              if (result.isConfirmed) {
+                                    fetch(url, {
+                                          method: "DELETE",
+                                          headers: {
+                                                "Content-Type": "application/json",
+                                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                                          },
+                                    })
+                                          .then(response => response.json())
+                                          .then(data => {
+                                                if (data.success) {
+                                                      toastr.success('Note deleted successfully');
+
+                                                      setTimeout(() => {
+                                                            window.location.reload();
+                                                      }, 1500);
+                                                } else {
+                                                      toastr.error(data.message);
+                                                }
+                                          })
+                                          .catch(error => {
+                                                console.error("Fetch Error:", error);
+                                                Swal.fire({
+                                                      title: "Error!",
+                                                      text: "Something went wrong. Please try again.",
+                                                      icon: "error",
+                                                });
+                                          });
+                              }
+                        });
+                  });
+            });
+      };
+
       return {
             init: function () {
                   setupTopicEditing();
+                  handleTopicDeletion();
             }
       };
 }();

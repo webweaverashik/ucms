@@ -289,6 +289,12 @@
                                                                         <i class="ki-outline ki-pencil fs-3 text-muted edit-icon text-hover-primary"
                                                                             role="button" data-bs-toggle="tooltip"
                                                                             title="Edit"></i>
+                                                                        @if ($topic->sheetsTaken->count() == 0)
+                                                                            <i class="ki-outline ki-trash fs-3 text-muted delete-note text-hover-danger ms-3"
+                                                                                role="button"
+                                                                                data-topic-id="{{ $topic->id }}"
+                                                                                data-bs-toggle="tooltip" title="Delete"></i>
+                                                                        @endif
                                                                         <i class="bi bi-check-circle fs-3 text-success check-icon d-none"
                                                                             role="button" data-bs-toggle="tooltip"
                                                                             title="Save"></i>
@@ -688,6 +694,10 @@
 @endpush
 
 @push('page-js')
+    <script>
+        const routeDeleteNote = "{{ route('notes.destroy', ':id') }}";
+    </script>
+
     <script src="{{ asset('js/sheets/view.js') }}"></script>
 
     <script>
