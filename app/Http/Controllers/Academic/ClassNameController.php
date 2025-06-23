@@ -1,10 +1,9 @@
 <?php
-
 namespace App\Http\Controllers\Academic;
 
-use Illuminate\Http\Request;
-use App\Models\Academic\ClassName;
 use App\Http\Controllers\Controller;
+use App\Models\Academic\ClassName;
+use Illuminate\Http\Request;
 
 class ClassNameController extends Controller
 {
@@ -13,7 +12,7 @@ class ClassNameController extends Controller
      */
     public function index()
     {
-        $classnames = ClassName::withoutTrashed()->orderby('id', 'desc')->get();
+        $classnames = ClassName::latest('id')->get();
 
         return view('classnames.index', compact('classnames'));
     }
@@ -31,7 +30,22 @@ class ClassNameController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'class_name_add'    => 'required|string|max:255',
+            'class_numeral_add' => [
+                'required',
+                'regex:/^(0[4-9]|1[0-2])$/', // Allows only 04 to 12
+            ],
+            'description_add'   => 'nullable|string|max:1000',
+        ]);
+
+        ClassName::create([
+            'name'          => $validated['class_name_add'],
+            'class_numeral' => $validated['class_numeral_add'],
+            'description'   => $validated['description_add'] ?? null,
+        ]);
+
+        return response()->json(['success' => true]);
     }
 
     /**
@@ -55,7 +69,20 @@ class ClassNameController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $validated = $request->validate([
+            'class_name_edit'  => 'required|string|max:255',
+            'description_edit' => 'nullable|string|max:1000',
+        ]);
+
+        $class = ClassName::findOrFail($id);
+
+        $class->update([
+            'name'        => $validated['class_name_edit'],
+            'description' => $validated['description_edit'],
+        ]);
+
+        // Return JSON response
+        return response()->json(['success' => true]);
     }
 
     /**
@@ -64,5 +91,21 @@ class ClassNameController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    /**
+     * Get class names by class ID using AJAX request
+     */
+    public function getClassName(ClassName $class)
+    {
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'class_id'          => $class->id,
+                'class_name'        => $class->name,
+                'class_numeral'     => $class->class_numeral,
+                'class_description' => $class->description,
+            ],
+        ]);
     }
 }

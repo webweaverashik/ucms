@@ -67,6 +67,10 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
 
     // Sheets
     Route::get('sheets/payments', [SheetController::class, 'sheetPayments'])->name('sheet.payments');
+    Route::get('/sheets/paid/{student}', [SheetController::class, 'getPaidSheets'])->name('sheets.paid');
+    Route::get('/sheets/{sheet}/topics/{student}', [SheetController::class, 'getSheetTopics'])->name('sheets.topics');
+
+
 
     // Notes
     Route::put('notes/{sheetTopic}/status', [SheetTopicController::class, 'updateStatus'])->name('notes.updateStatus');
@@ -74,11 +78,12 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('notes/distribution/create', [SheetTopicTakenController::class, 'create'])->name('notes.distribution.create');
     Route::post('sheet-topics/distribute', [SheetTopicTakenController::class, 'store'])->name('sheet-topics.distribute');
 
-    /* AJAX Route */
-    // Get paid sheets for a student
-    Route::get('/sheets/paid/{student}', [SheetController::class, 'getPaidSheets'])->name('sheets.paid');
-    // Get topics for a sheet with distribution status
-    Route::get('/sheets/{sheet}/topics/{student}', [SheetController::class, 'getSheetTopics'])->name('sheets.topics');
+
+    // Class Names
+    Route::get('classnames/ajax-data/{class}', [ClassNameController::class, 'getClassName'])->name('classnames.ajax');
+
+
+
 
 
     

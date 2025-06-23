@@ -12,7 +12,7 @@ class InstitutionController extends Controller
      */
     public function index()
     {
-        $institutions = Institution::all();
+        $institutions = Institution::orderBy('name')->get();
 
         return view('institutions.index', compact('institutions'));
     }

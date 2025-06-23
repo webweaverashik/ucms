@@ -394,7 +394,12 @@ var KTEditSheet = function () {
                                           }
                                     })
                                           .then(response => {
-                                                if (!response.ok) throw new Error('Network response was not ok');
+                                                if (!response.ok) {
+                                                      return response.json().then(errorData => {
+                                                            // Show error from Laravel if available
+                                                            throw new Error(errorData.message || 'Network response was not ok');
+                                                      });
+                                                }
                                                 return response.json();
                                           })
                                           .then(data => {

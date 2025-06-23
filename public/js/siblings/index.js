@@ -198,6 +198,7 @@ var KTSiblingsEditSibling = function () {
                 button.addEventListener("click", function () {
                     siblingId = this.getAttribute("data-sibling-id"); // Assign value globally
                     console.log("Sibling ID:", siblingId);
+
                     if (!siblingId) return;
 
                     // Clear form
@@ -205,7 +206,12 @@ var KTSiblingsEditSibling = function () {
 
                     fetch(`/siblings/${siblingId}`)
                         .then(response => {
-                            if (!response.ok) throw new Error('Network response was not ok');
+                            if (!response.ok) {
+                                return response.json().then(errorData => {
+                                    // Show error from Laravel if available
+                                    throw new Error(errorData.message || 'Network response was not ok');
+                                });
+                            }
                             return response.json();
                         })
                         .then(data => {
@@ -216,12 +222,6 @@ var KTSiblingsEditSibling = function () {
                                 const setValue = (selector, value) => {
                                     const el = document.querySelector(selector);
                                     if (el) el.value = value;
-                                };
-
-                                // Helper function to safely check radio buttons
-                                const checkRadio = (name, value) => {
-                                    const radio = document.querySelector(`input[name='${name}'][value='${value}']`);
-                                    if (radio) radio.checked = true;
                                 };
 
                                 // Populate form fields

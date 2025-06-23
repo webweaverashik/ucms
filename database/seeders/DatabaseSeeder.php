@@ -12,6 +12,7 @@ use Database\Seeders\Student\SiblingSeeder;
 use Database\Seeders\Student\StudentSeeder;
 use Database\Seeders\Teacher\TeacherSeeder;
 use Database\Seeders\Academic\SubjectSeeder;
+use Database\Seeders\Sheet\SheetTopicSeeder;
 use Database\Seeders\Student\GuardianSeeder;
 use Database\Seeders\Student\ReferenceSeeder;
 use Database\Seeders\Academic\ClassNameSeeder;
@@ -49,6 +50,7 @@ class DatabaseSeeder extends Seeder
             PaymentInvoiceSeeder::class,
             PaymentTransactionSeeder::class,
             SheetSeeder::class,
+            SheetTopicSeeder::class,
         ]);
     }
 }
