@@ -85,7 +85,7 @@
                     <!--end::Card header-->
                     <!--begin::Card body-->
                     <div class="card-body pt-1">
-                        <div class="fw-bold text-gray-700 mb-5">{{ $classname->description ?? 'This is a sample description' }}</div>
+                        <div class="fw-bold text-gray-700 mb-5">{{ $classname->description ?? 'This is a sample description. Update the class description to change this.' }}</div>
                         
                         <div class="fw-bold text-gray-600 mb-5"><i class="fas fa-users me-2"></i>Total active students:
                             {{ $classname->activeStudents->count() }}</div>

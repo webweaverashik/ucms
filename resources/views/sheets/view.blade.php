@@ -294,6 +294,9 @@
                                                                                 role="button"
                                                                                 data-topic-id="{{ $topic->id }}"
                                                                                 data-bs-toggle="tooltip" title="Delete"></i>
+                                                                        @else
+                                                                            {{-- Just for placeholder purpose --}}
+                                                                            <span class="delete-note"></span>
                                                                         @endif
                                                                         <i class="bi bi-check-circle fs-3 text-success check-icon d-none"
                                                                             role="button" data-bs-toggle="tooltip"

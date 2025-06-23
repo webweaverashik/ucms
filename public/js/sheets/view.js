@@ -245,6 +245,7 @@ var KTEditNotes = function () {
                   const topicText = wrapper.querySelector('.topic-text');
                   const topicInput = wrapper.querySelector('.topic-input');
                   const editIcon = wrapper.querySelector('.edit-icon');
+                  const deleteIcon = wrapper.querySelector('.delete-note');
                   const checkIcon = wrapper.querySelector('.check-icon');
                   const cancelIcon = wrapper.querySelector('.cancel-icon');
                   const statusToggle = wrapper.querySelector('.status-toggle');
@@ -299,6 +300,7 @@ var KTEditNotes = function () {
                         topicText.classList.add('d-none');
                         topicInput.classList.remove('d-none');
                         editIcon.classList.add('d-none');
+                        deleteIcon.classList.add('d-none');
                         checkIcon.classList.remove('d-none');
                         cancelIcon.classList.remove('d-none');
                         statusToggle.disabled = true;
@@ -311,6 +313,7 @@ var KTEditNotes = function () {
                         topicText.classList.remove('d-none');
                         topicInput.classList.add('d-none');
                         editIcon.classList.remove('d-none');
+                        deleteIcon.classList.remove('d-none');
                         checkIcon.classList.add('d-none');
                         cancelIcon.classList.add('d-none');
                         statusToggle.disabled = false;
@@ -418,7 +421,7 @@ var KTEditNotes = function () {
 
                         let noteId = this.getAttribute('data-topic-id');
                         console.log('Note ID:', noteId);
-                        
+
                         let url = routeDeleteNote.replace(':id', noteId);  // Replace ':id' with actual student ID
 
                         Swal.fire({
