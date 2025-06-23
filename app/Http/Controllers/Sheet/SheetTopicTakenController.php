@@ -81,6 +81,7 @@ class SheetTopicTakenController extends Controller
 
         // Get the sheet to verify class
         $sheet = Sheet::find($sheetId);
+        
         if (! $sheet) {
             return response()->json(['message' => 'Sheet not found'], 404);
         }

@@ -229,7 +229,6 @@ class PaymentInvoiceController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Invoice updated successfully',
-            // 'data'    => $invoice,
         ]);
     }
 

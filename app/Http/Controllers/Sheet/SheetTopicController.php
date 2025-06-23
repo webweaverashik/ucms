@@ -78,7 +78,7 @@ class SheetTopicController extends Controller
      */
     public function destroy(string $id)
     {
-        $note = SheetTopic::find($id);
+        $note = SheetTopic::findOrFail($id);
         $note->delete();
 
         return response()->json(['success' => true]);

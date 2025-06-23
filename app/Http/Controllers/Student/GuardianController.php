@@ -52,19 +52,19 @@ class GuardianController extends Controller
      */
     public function show(Guardian $guardian)
     {
-        // return response()->json([
-        //     'success' => true,
-        //     'data'    => [
-        //         'id'            => $guardian->id,
-        //         'student_id'    => $guardian->student_id,
-        //         'name'          => $guardian->name,
-        //         'mobile_number' => $guardian->mobile_number,
-        //         'gender'        => $guardian->gender,
-        //         'relationship'  => $guardian->relationship,
-        //     ],
-        // ]);
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'id'            => $guardian->id,
+                'student_id'    => $guardian->student_id,
+                'name'          => $guardian->name,
+                'mobile_number' => $guardian->mobile_number,
+                'gender'        => $guardian->gender,
+                'relationship'  => $guardian->relationship,
+            ],
+        ]);
 
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        // return redirect()->back()->with('warning', 'Activity Not Allowed');
     }
 
     /**
@@ -83,7 +83,6 @@ class GuardianController extends Controller
         // return $request;
 
         $validated = $request->validate([
-                                                                   // 'guardian_student'       => 'required|exists:students,id', // Must be a valid student ID
             'guardian_name'          => 'required|string|max:255', // Required, must be a string, max length 255
             'guardian_mobile_number' => 'required|string|max:11',
             'guardian_gender'        => 'required|in:male,female',                                    // Must be male or female

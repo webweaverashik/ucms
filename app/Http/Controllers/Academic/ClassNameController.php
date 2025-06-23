@@ -53,7 +53,13 @@ class ClassNameController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $classname = ClassName::find($id);
+
+        if (! $classname) {
+            return redirect()->route('classnames.index')->with('warning', 'Class not found.');
+        }
+
+        return view('classnames.view', compact('classname'));
     }
 
     /**
