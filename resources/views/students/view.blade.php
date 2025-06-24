@@ -490,7 +490,7 @@
                         @endcan
                     </div>
                     <!--end::Menu-->
-                    <!--end::Menu-->
+                    <!--end::Action Menu-->
                 </li>
                 <!--end:::Tab item-->
             </ul>

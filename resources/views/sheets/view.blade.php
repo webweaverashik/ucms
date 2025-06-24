@@ -260,14 +260,14 @@
                                             <div class="row">
 
                                                 @foreach ($subject->sheetTopics as $topic)
-                                                    <div class="col-lg-4 mb-3">
+                                                    <div class="col-md-6 col-xxl-4 mb-3">
                                                         <div class="topic-editable py-2 px-3"
                                                             data-id="{{ $topic->id }}">
                                                             <div class="d-flex align-items-center">
                                                                 <i class="bi bi-dot fs-3 text-info me-2"></i>
                                                                 <div class="flex-grow-1">
                                                                     <span
-                                                                        class="topic-text text-gray-700 fs-6 @if ($topic->status == 'inactive') text-decoration-line-through @endif">
+                                                                        class="topic-text text-gray-700 fs-6 @if ($topic->status == 'inactive') text-decoration-line-through @endif" title="{{ $topic->sheetsTaken->count() }} students taken this topic" data-bs-toggle="tooltip">
                                                                         {{ $topic->topic_name }}
                                                                         ({{ $topic->sheetsTaken->count() }})
                                                                     </span>

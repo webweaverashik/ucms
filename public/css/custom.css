@@ -16,14 +16,14 @@ table.ucms-table td {
 
 /****** Topic Creation Styling : Start ******/
 /* Topic card styling */
-.topic-editable {
+.topic-editable, .subject-editable {
     transition: all 0.2s ease;
     border: 1px solid transparent;
     border-radius: 6px;
     cursor: pointer;
 }
 
-.topic-editable:hover {
+.topic-editable:hover, .subject-editable:hover {
     /* background-color: #f8f9fa; */
     box-shadow: none !important;
 }
@@ -34,12 +34,12 @@ table.ucms-table td {
     transition: opacity 0.2s ease;
 }
 
-.topic-editable:hover .action-icons {
+.topic-editable:hover .action-icons, .subject-editable:hover .action-icons {
     opacity: 1;
 }
 
 /* Input styling */
-.topic-input {
+.topic-input, .subject-input {
     border: none !important;
     padding: 0rem 0.5rem !important;
     border-radius: 4px;

@@ -1,10 +1,10 @@
 <?php
 namespace App\Http\Controllers\Academic;
 
-use Illuminate\Http\Request;
-use App\Models\Academic\Subject;
 use App\Http\Controllers\Controller;
+use App\Models\Academic\Subject;
 use App\Models\Academic\SubjectTaken;
+use Illuminate\Http\Request;
 
 class SubjectController extends Controller
 {
@@ -23,7 +23,7 @@ class SubjectController extends Controller
      */
     public function create()
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        return redirect()->back();
     }
 
     /**
@@ -31,7 +31,19 @@ class SubjectController extends Controller
      */
     public function store(Request $request)
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        $validated = $request->validate([
+            'subject_class' => 'required|exists:class_names,id',
+            'subject_name'  => 'required|string|max:255',
+            'subject_group' => 'required|string|in:General,Science,Commerce,Arts',
+        ]);
+
+        Subject::create([
+            'class_id'       => $validated['subject_class'],
+            'name'           => $validated['subject_name'],
+            'academic_group' => $validated['subject_group'],
+        ]);
+
+        return response()->json(['success' => true]);
     }
 
     /**
@@ -39,7 +51,7 @@ class SubjectController extends Controller
      */
     public function show(string $id)
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        return redirect()->back();
     }
 
     /**
@@ -47,7 +59,7 @@ class SubjectController extends Controller
      */
     public function edit(string $id)
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        return redirect()->back();
     }
 
     /**
@@ -55,7 +67,7 @@ class SubjectController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+
     }
 
     /**
@@ -63,7 +75,7 @@ class SubjectController extends Controller
      */
     public function destroy(string $id)
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+
     }
 
     /**
@@ -72,8 +84,8 @@ class SubjectController extends Controller
     public function getSubjects(Request $request)
     {
         $validated = $request->validate([
-            'class_id' => 'required|exists:class_names,id',
-            'group' => 'required|in:General,Science,Commerce,Arts', // Changed to 'group'
+            'class_id'        => 'required|exists:class_names,id',
+            'group'           => 'required|in:General,Science,Commerce,Arts', // Changed to 'group'
             'include_general' => 'required|boolean',
         ]);
 
@@ -93,7 +105,7 @@ class SubjectController extends Controller
             ->orderBy('name');
 
         return response()->json([
-            'success' => true,
+            'success'  => true,
             'subjects' => $query->get(),
         ]);
     }
@@ -104,10 +116,10 @@ class SubjectController extends Controller
     public function getTakenSubjects(Request $request)
     {
         $validated = $request->validate([
-            'class_id' => 'required|exists:class_names,id',
-            'group' => 'required|in:General,Science,Commerce,Arts',
+            'class_id'        => 'required|exists:class_names,id',
+            'group'           => 'required|in:General,Science,Commerce,Arts',
             'include_general' => 'required|boolean',
-            'student_id' => 'required|exists:students,id', // Ensure student_id is valid
+            'student_id'      => 'required|exists:students,id', // Ensure student_id is valid
         ]);
 
         // Fetch subjects based on class_id and academic group
@@ -130,8 +142,8 @@ class SubjectController extends Controller
         $takenSubjects = SubjectTaken::where('student_id', $request->student_id)->pluck('subject_id')->toArray();
 
         return response()->json([
-            'success' => true,
-            'subjects' => $query->get(),
+            'success'        => true,
+            'subjects'       => $query->get(),
             'taken_subjects' => $takenSubjects,
         ]);
     }

@@ -105,7 +105,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::resource('institutions', InstitutionController::class);
     Route::resource('classnames', ClassNameController::class);
     Route::resource('shifts', ShiftController::class);
-    Route::resource('subjects', SubjectController::class);
+    Route::resource('subjects', SubjectController::class);  
     Route::resource('invoices', PaymentInvoiceController::class);
     Route::resource('transactions', PaymentTransactionController::class);
     Route::resource('sheets', SheetController::class);

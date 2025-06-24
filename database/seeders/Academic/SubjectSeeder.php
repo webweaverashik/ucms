@@ -47,10 +47,10 @@ class SubjectSeeder extends Seeder
                 ['name' => 'General Science', 'group' => 'Commerce'],
 
                 // Arts
-                ['name' => 'Geography', 'group' => 'Arts'],
-                ['name' => 'Civics', 'group' => 'Arts'],
-                ['name' => 'Economics', 'group' => 'Arts'],
-                ['name' => 'History', 'group' => 'Arts'],
+                // ['name' => 'Geography', 'group' => 'Arts'],
+                // ['name' => 'Civics', 'group' => 'Arts'],
+                // ['name' => 'Economics', 'group' => 'Arts'],
+                // ['name' => 'History', 'group' => 'Arts'],
             ],
             '10' => 'same_as_09',
 
