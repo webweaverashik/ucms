@@ -199,25 +199,25 @@
                     {{ $student->academic_group }}</div>
             </div>
 
-            <div class="mb-1 flex flex-wrap items-center">
-                <label class="w-full md:w-[125px] font-normal">Father's Name</label>:
-                <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[400px] mx-2">
-                    {{ optional($student->guardians->where('relationship', 'father')->first())->name ?? '' }}</div>
-                <label class="font-normal mr-2">Phone :</label>
-                <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[100px]">
-                    {{ optional($student->guardians->where('relationship', 'father')->first())->mobile_number ?? '' }}
-                </div>
-            </div>
+            @php
+                $guardians = $student->guardians;
+            @endphp
 
-            <div class="mb-1 flex flex-wrap items-center">
-                <label class="w-full md:w-[125px] font-normal">Mother's Name</label>:
-                <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[400px] mx-2">
-                    {{ optional($student->guardians->where('relationship', 'mother')->first())->name ?? '' }}</div>
-                <label class="font-normal mr-2">Phone :</label>
-                <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[100px]">
-                    {{ optional($student->guardians->where('relationship', 'father')->first())->mobile_number ?? '' }}
+            @foreach ($guardians as $index => $guardian)
+                <div class="mb-1 flex flex-wrap items-center">
+                    <label class="w-full md:w-[125px] font-normal">
+                        {{ ucfirst($guardian->relationship) }}'s Name
+                    </label>:
+                    <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[400px] mx-2">
+                        {{ $guardian->name }}
+                    </div>
+                    <label class="font-normal mr-2">Phone :</label>
+                    <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[100px]">
+                        {{ $guardian->mobile_number }}
+                    </div>
                 </div>
-            </div>
+            @endforeach
+
 
             <div class="mt-2 mb-1 font-bold text-[15px]">&#9884; About Brothers & Sisters (Full Description of their
                 Education):</div>
@@ -310,7 +310,7 @@
                 @foreach ($groupedSubjects as $group => $subjects)
                     <div class="mb-2">
                         <div class="font-semibold text-gray-600 mb-1">{{ $group ?? 'Others' }}:</div>
-                        <div class="grid grid-cols-5 gap-2">
+                        <div class="grid grid-cols-4 gap-2">
                             @foreach ($subjects as $subject)
                                 <label class="flex items-center space-x-1">
                                     <input type="checkbox" class="form-checkbox" name="subjects[]"
