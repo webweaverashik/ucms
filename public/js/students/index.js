@@ -89,98 +89,101 @@ var KTStudentsList = function () {
         });
     }
 
-    // Delete pending students
+    // Delete students
     const handleDeletion = function () {
-        document.querySelectorAll('.delete-student').forEach(item => {
-            item.addEventListener('click', function (e) {
-                e.preventDefault();
+        document.addEventListener('click', function (e) {
+            const deleteBtn = e.target.closest('.delete-student');
+            if (!deleteBtn) return;
 
-                let studentId = this.getAttribute('data-student-id');
-                console.log('Student ID:', studentId);
+            e.preventDefault();
 
-                let url = routeDeleteStudent.replace(':id', studentId);  // Replace ':id' with actual student ID
+            let studentId = deleteBtn.getAttribute('data-student-id');
+            console.log('Student ID:', studentId);
 
-                Swal.fire({
-                    title: "Are you sure to delete this student?",
-                    text: "This action cannot be undone!",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#d33",
-                    cancelButtonColor: "#3085d6",
-                    confirmButtonText: "Yes, delete!",
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        fetch(url, {
-                            method: "DELETE",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                            },
-                        })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    Swal.fire({
-                                        title: "Deleted!",
-                                        text: "The student has been removed successfully.",
-                                        icon: "success",
-                                    }).then(() => {
-                                        location.reload(); // Reload to reflect changes
-                                    });
-                                } else {
-                                    Swal.fire({
-                                        title: "Error!",
-                                        text: data.message,
-                                        icon: "error",
-                                    });
-                                }
-                            })
-                            .catch(error => {
-                                console.error("Fetch Error:", error);
+            let url = routeDeleteStudent.replace(':id', studentId);
+
+            Swal.fire({
+                title: "Are you sure to delete this student?",
+                text: "This action cannot be undone!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, delete!",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(url, {
+                        method: "DELETE",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                        },
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: "Deleted!",
+                                    text: "The student has been removed successfully.",
+                                    icon: "success",
+                                }).then(() => {
+                                    location.reload(); // Reload to reflect changes
+                                });
+                            } else {
                                 Swal.fire({
                                     title: "Error!",
-                                    text: "Something went wrong. Please try again.",
+                                    text: data.message,
                                     icon: "error",
                                 });
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Fetch Error:", error);
+                            Swal.fire({
+                                title: "Error!",
+                                text: "Something went wrong. Please try again.",
+                                icon: "error",
                             });
-                    }
-                });
+                        });
+                }
             });
         });
     };
 
+
     // Toggle activation modal AJAX
     const handleToggleActivationAJAX = function () {
-        const toggleButtons = document.querySelectorAll('[data-bs-target="#kt_toggle_activation_student_modal"]');
+        document.addEventListener('click', function (e) {
+            const toggleButton = e.target.closest('[data-bs-target="#kt_toggle_activation_student_modal"]');
+            if (!toggleButton) return;
 
-        toggleButtons.forEach(button => {
-            button.addEventListener('click', function (e) {
-                e.preventDefault();
+            e.preventDefault();
 
-                const studentId = this.getAttribute('data-student-id');
-                const studentName = this.getAttribute('data-student-name');
-                const studentUniqueId = this.getAttribute('data-student-unique-id');
-                const activeStatus = this.getAttribute('data-active-status');
+            const studentId = toggleButton.getAttribute('data-student-id');
+            console.log('Student ID:', studentId);
+            
+            const studentName = toggleButton.getAttribute('data-student-name');
+            const studentUniqueId = toggleButton.getAttribute('data-student-unique-id');
+            const activeStatus = toggleButton.getAttribute('data-active-status');
 
-                // Set hidden field values
-                document.getElementById('student_id').value = studentId;
-                document.getElementById('activation_status').value = (activeStatus === 'active') ? 'inactive' : 'active';
+            // Set hidden input values
+            document.getElementById('student_id').value = studentId;
+            document.getElementById('activation_status').value = (activeStatus === 'active') ? 'inactive' : 'active';
 
+            // Update modal text
+            const modalTitle = document.getElementById('toggle-activation-modal-title');
+            const reasonLabel = document.getElementById('reason_label');
 
-                // Update modal title and label
-                const modalTitle = document.getElementById('toggle-activation-modal-title');
-                const reasonLabel = document.getElementById('reason_label');
-
-                if (activeStatus === 'active') {
-                    modalTitle.textContent = `Deactivate Student - ${studentName} (${studentUniqueId})`;
-                    reasonLabel.textContent = 'Deactivation Reason';
-                } else {
-                    modalTitle.textContent = `Activate Student - ${studentName} (${studentUniqueId})`;
-                    reasonLabel.textContent = 'Activation Reason';
-                }
-            });
+            if (activeStatus === 'active') {
+                modalTitle.textContent = `Deactivate Student - ${studentName} (${studentUniqueId})`;
+                reasonLabel.textContent = 'Deactivation Reason';
+            } else {
+                modalTitle.textContent = `Activate Student - ${studentName} (${studentUniqueId})`;
+                reasonLabel.textContent = 'Activation Reason';
+            }
         });
-    }
+    };
+
 
     return {
         // Public functions  

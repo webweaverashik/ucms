@@ -1,6 +1,7 @@
 <?php
 namespace App\Models\Student;
 
+use App\Models\User;
 use App\Models\Branch;
 use App\Models\Academic\Shift;
 use App\Models\Payment\Payment;
@@ -126,6 +127,12 @@ class Student extends Model
             ->whereHas('invoice', function ($query) {
                 $query->where('invoice_type', 'sheet_fee');
             });
+    }
+
+    /* Deleted by user */
+    public function deletedBy()
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
     }
 
 }

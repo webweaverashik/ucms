@@ -34,64 +34,6 @@ var KTSheetsList = function () {
             });
       }
 
-      // Delete pending students
-      const handleDeletion = function () {
-            document.querySelectorAll('.delete-sheet').forEach(item => {
-                  item.addEventListener('click', function (e) {
-                        e.preventDefault();
-
-                        let sheetId = this.getAttribute('data-sheet-id');
-                        let url = routeDeleteSheet.replace(':id', sheetId);  // Replace ':id' with actual student ID
-
-                        Swal.fire({
-                              title: "Are you sure to delete this institution?",
-                              text: "This action cannot be undone!",
-                              icon: "warning",
-                              showCancelButton: true,
-                              confirmButtonColor: "#d33",
-                              cancelButtonColor: "#3085d6",
-                              confirmButtonText: "Yes, delete!",
-                        }).then((result) => {
-                              if (result.isConfirmed) {
-                                    fetch(url, {
-                                          method: "DELETE",
-                                          headers: {
-                                                "Content-Type": "application/json",
-                                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                                          },
-                                    })
-                                          .then(response => response.json())
-                                          .then(data => {
-                                                if (data.success) {
-                                                      Swal.fire({
-                                                            title: "Deleted!",
-                                                            text: "The institution has been removed successfully.",
-                                                            icon: "success",
-                                                      }).then(() => {
-                                                            location.reload(); // Reload to reflect changes
-                                                      });
-                                                } else {
-                                                      Swal.fire({
-                                                            title: "Error!",
-                                                            text: data.message,
-                                                            icon: "error",
-                                                      });
-                                                }
-                                          })
-                                          .catch(error => {
-                                                console.error("Fetch Error:", error);
-                                                Swal.fire({
-                                                      title: "Error!",
-                                                      text: "Something went wrong. Please try again.",
-                                                      icon: "error",
-                                                });
-                                          });
-                              }
-                        });
-                  });
-            });
-      };
-
       return {
             // Public functions  
             init: function () {
@@ -103,7 +45,6 @@ var KTSheetsList = function () {
 
                   initDatatable();
                   handleSearch();
-                  handleDeletion();
             }
       }
 }();
@@ -278,8 +219,8 @@ var KTEditSheet = function () {
       let sheetId = null; // Declare globally
 
       // Init edit institution modal
-      var initEditSheet = () => {
-            // Cancel button handler
+      const initEditSheet = () => {
+            // Cancel button
             const cancelButton = element.querySelector('[data-kt-sheet-modal-action="cancel"]');
             if (cancelButton) {
                   cancelButton.addEventListener('click', e => {
@@ -289,7 +230,7 @@ var KTEditSheet = function () {
                   });
             }
 
-            // Close button handler
+            // Close button
             const closeButton = element.querySelector('[data-kt-sheet-modal-action="close"]');
             if (closeButton) {
                   closeButton.addEventListener('click', e => {
@@ -299,38 +240,35 @@ var KTEditSheet = function () {
                   });
             }
 
-            const editButtons = document.querySelectorAll("[data-bs-target='#kt_modal_edit_sheet']");
-            if (editButtons.length) {
-                  editButtons.forEach((button) => {
-                        button.addEventListener("click", function () {
-                              sheetId = this.getAttribute("data-sheet-id");
-                              const sheetClass = this.getAttribute("data-sheet-class");
-                              const sheetPrice = this.getAttribute("data-sheet-price");
+            // Delegated edit button click handler
+            document.addEventListener("click", function (e) {
+                  const button = e.target.closest("[data-bs-target='#kt_modal_edit_sheet']");
+                  if (!button) return;
 
-                              console.log("Sheet ID:", sheetId);
+                  const sheetId = button.getAttribute("data-sheet-id");
+                  const sheetClass = button.getAttribute("data-sheet-class");
+                  const sheetPrice = button.getAttribute("data-sheet-price");
 
-                              // Clear form if needed
-                              if (form) form.reset();
+                  // Clear form if needed
+                  if (form) form.reset();
 
-                              // Set modal title
-                              const modalTitle = document.getElementById("kt_modal_edit_sheet_title");
-                              if (modalTitle) {
-                                    modalTitle.textContent = `Update - ${sheetClass} - sheet group`;
-                              }
+                  // Set modal title
+                  const modalTitle = document.getElementById("kt_modal_edit_sheet_title");
+                  if (modalTitle) {
+                        modalTitle.textContent = `Update - ${sheetClass} - sheet group`;
+                  }
 
-                              // Set sheet price input value
-                              const priceInput = document.querySelector("input[name='sheet_price_edit']");
-                              if (priceInput) {
-                                    priceInput.value = sheetPrice;
-                              }
+                  // Set sheet price input value
+                  const priceInput = document.querySelector("input[name='sheet_price_edit']");
+                  if (priceInput) {
+                        priceInput.value = sheetPrice;
+                  }
 
-                              // Show modal (if not using Bootstrap's auto show via data-bs attributes)
-                              // modal.show(); // Uncomment if showing programmatically
-                        });
-                  });
-            }
+                  // Show modal if not auto-triggered
+                  modal.show();
+            });
+      };
 
-      }
 
       // Form validation
       var initValidation = function () {

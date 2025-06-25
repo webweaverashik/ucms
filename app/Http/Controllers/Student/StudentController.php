@@ -615,6 +615,8 @@ class StudentController extends Controller
      */
     public function destroy(Student $student)
     {
+        $deletedBy = auth()->user()->id;
+
         // Update 'deleted_by' for guardians before deleting
         $student->guardians()->update(['deleted_by' => $deletedBy]);
 
@@ -622,7 +624,7 @@ class StudentController extends Controller
         $student->siblings()->update(['deleted_by' => $deletedBy]);
 
         // Update 'deleted_by' for student before deleting
-        $student->update(['deleted_by' => Auth::id()]);
+        $student->update(['deleted_by' => $deletedBy]);
 
         // Now delete all records
         $student->guardians()->delete();
