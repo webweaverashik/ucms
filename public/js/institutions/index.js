@@ -75,63 +75,67 @@ var KTinstitutionsList = function () {
         });
     }
 
-    // Delete pending students
+    // Delete institution
     const handleDeletion = function () {
-        document.querySelectorAll('.delete-institution').forEach(item => {
-            item.addEventListener('click', function (e) {
-                e.preventDefault();
+        document.addEventListener('click', function (e) {
+            const deleteBtn = e.target.closest('.delete-institution');
+            if (!deleteBtn) return;
 
-                let institutionId = this.getAttribute('data-institution-id');
-                let url = routeDeleteInstitution.replace(':id', institutionId);  // Replace ':id' with actual student ID
+            e.preventDefault();
 
-                Swal.fire({
-                    title: "Are you sure to delete this institution?",
-                    text: "This action cannot be undone!",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#d33",
-                    cancelButtonColor: "#3085d6",
-                    confirmButtonText: "Yes, delete!",
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        fetch(url, {
-                            method: "DELETE",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                            },
-                        })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    Swal.fire({
-                                        title: "Deleted!",
-                                        text: "The institution has been removed successfully.",
-                                        icon: "success",
-                                    }).then(() => {
-                                        location.reload(); // Reload to reflect changes
-                                    });
-                                } else {
-                                    Swal.fire({
-                                        title: "Error!",
-                                        text: data.message,
-                                        icon: "error",
-                                    });
-                                }
-                            })
-                            .catch(error => {
-                                console.error("Fetch Error:", error);
+            const institutionId = deleteBtn.getAttribute('data-institution-id');
+            console.log("institution ID:", institutionId);
+
+            const url = routeDeleteInstitution.replace(':id', institutionId);
+
+            Swal.fire({
+                title: "Are you sure to delete this institution?",
+                text: "This action cannot be undone!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, delete!",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(url, {
+                        method: "DELETE",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                        },
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: "Deleted!",
+                                    text: "The institution has been removed successfully.",
+                                    icon: "success",
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
                                 Swal.fire({
                                     title: "Error!",
-                                    text: "Something went wrong. Please try again.",
+                                    text: data.message || "Something went wrong.",
                                     icon: "error",
                                 });
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Fetch Error:", error);
+                            Swal.fire({
+                                title: "Error!",
+                                text: "Something went wrong. Please try again.",
+                                icon: "error",
                             });
-                    }
-                });
+                        });
+                }
             });
         });
     };
+
 
     return {
         // Public functions  
@@ -151,7 +155,7 @@ var KTinstitutionsList = function () {
 }();
 
 
-var KTinstitutionsEditinstitution = function () {
+var KTEditinstitution = function () {
     // Shared variables
     const element = document.getElementById('kt_modal_edit_institution');
 
@@ -190,63 +194,57 @@ var KTinstitutionsEditinstitution = function () {
             });
         }
 
-        // AJAX form data load
-        const editButtons = document.querySelectorAll("[data-bs-target='#kt_modal_edit_institution']");
-        if (editButtons.length) {
-            editButtons.forEach((button) => {
-                button.addEventListener("click", function () {
-                    institutionId = this.getAttribute("data-institution-id"); // Assign value globally
-                    console.log("institution ID:", institutionId);
-                    if (!institutionId) return;
+        // Delegated click for edit buttons
+        document.addEventListener("click", function (e) {
+            const button = e.target.closest("[data-bs-target='#kt_modal_edit_institution']");
+            if (!button) return;
 
-                    // Clear form
-                    if (form) form.reset();
+            institutionId = button.getAttribute("data-institution-id");
+            if (!institutionId) return;
 
-                    fetch(`/institutions/${institutionId}`)
-                        .then(response => {
-                            if (!response.ok) {
-                                return response.json().then(errorData => {
-                                    // Show error from Laravel if available
-                                    throw new Error(errorData.message || 'Network response was not ok');
-                                });
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data.success && data.data) {
-                                const institution = data.data;
+            // Clear form
+            if (form) form.reset();
 
-                                // Helper function to safely set values
-                                const setValue = (selector, value) => {
-                                    const el = document.querySelector(selector);
-                                    if (el) el.value = value;
-                                };
-
-                                // Helper function to safely check radio buttons
-                                const checkRadio = (name, value) => {
-                                    const radio = document.querySelector(`input[name='${name}'][value='${value}']`);
-                                    if (radio) radio.checked = true;
-                                };
-
-                                // Populate form fields
-                                setValue("input[name='institution_name_edit']", institution.name);
-                                setValue("input[name='eiin_number_edit']", institution.eiin_number);
-                                checkRadio('institution_type_edit', institution.type);
-
-                                // Show modal
-                                modal.show();
-                            } else {
-                                throw new Error(data.message || 'Invalid response data');
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Error:", error);
-                            toastr.error(error.message || "Failed to load institution details");
+            fetch(`/institutions/${institutionId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errorData => {
+                            throw new Error(errorData.message || 'Network response was not ok');
                         });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success && data.data) {
+                        const institution = data.data;
+
+                        // Set values
+                        const setValue = (selector, value) => {
+                            const el = document.querySelector(selector);
+                            if (el) el.value = value;
+                        };
+
+                        const checkRadio = (name, value) => {
+                            const radio = document.querySelector(`input[name='${name}'][value='${value}']`);
+                            if (radio) radio.checked = true;
+                        };
+
+                        setValue("input[name='institution_name_edit']", institution.name);
+                        setValue("input[name='eiin_number_edit']", institution.eiin_number);
+                        checkRadio('institution_type_edit', institution.type);
+
+                        modal.show();
+                    } else {
+                        throw new Error(data.message || 'Invalid response data');
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    toastr.error(error.message || "Failed to load institution details");
                 });
-            });
-        }
-    }
+        });
+    };
+
 
     // Form validation
     var initValidation = function () {
@@ -361,7 +359,7 @@ var KTinstitutionsEditinstitution = function () {
     };
 }();
 
-var KTinstitutionsAddinstitution = function () {
+var KTAddinstitution = function () {
     // Shared variables
     const element = document.getElementById('kt_modal_add_institution');
 
@@ -473,11 +471,11 @@ var KTinstitutionsAddinstitution = function () {
                         })
                             .then(response => {
                                 if (!response.ok) {
-                                return response.json().then(errorData => {
-                                    // Show error from Laravel if available
-                                    throw new Error(errorData.message || 'Network response was not ok');
-                                });
-                            }
+                                    return response.json().then(errorData => {
+                                        // Show error from Laravel if available
+                                        throw new Error(errorData.message || 'Network response was not ok');
+                                    });
+                                }
                                 return response.json();
                             })
                             .then(data => {
@@ -519,6 +517,6 @@ var KTinstitutionsAddinstitution = function () {
 // On document ready
 KTUtil.onDOMContentLoaded(function () {
     KTinstitutionsList.init();
-    KTinstitutionsAddinstitution.init();
-    KTinstitutionsEditinstitution.init();
+    KTAddinstitution.init();
+    KTEditinstitution.init();
 });

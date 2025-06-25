@@ -78,61 +78,63 @@ var KTSiblingsList = function () {
 
     // Delete siblings
     const handleDeletion = function () {
-        document.querySelectorAll('.delete-sibling').forEach(item => {
-            item.addEventListener('click', function (e) {
-                e.preventDefault();
+        document.addEventListener('click', function (e) {
+            const deleteBtn = e.target.closest('.delete-sibling');
+            if (!deleteBtn) return;
 
-                let siblingId = this.getAttribute('data-sibling-id');
-                let url = routeDeleteSibling.replace(':id', siblingId);  // Replace ':id' with actual student ID
+            e.preventDefault();
 
-                Swal.fire({
-                    title: "Are you sure to delete this sibling?",
-                    text: "This action cannot be undone!",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#d33",
-                    cancelButtonColor: "#3085d6",
-                    confirmButtonText: "Yes, delete!",
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        fetch(url, {
-                            method: "DELETE",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                            },
-                        })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    Swal.fire({
-                                        title: "Deleted!",
-                                        text: "The sibling has been removed successfully.",
-                                        icon: "success",
-                                    }).then(() => {
-                                        location.reload(); // Reload to reflect changes
-                                    });
-                                } else {
-                                    Swal.fire({
-                                        title: "Error!",
-                                        text: data.message,
-                                        icon: "error",
-                                    });
-                                }
-                            })
-                            .catch(error => {
-                                console.error("Fetch Error:", error);
+            let siblingId = deleteBtn.getAttribute('data-sibling-id');
+            let url = routeDeleteSibling.replace(':id', siblingId);
+
+            Swal.fire({
+                title: "Are you sure to delete this sibling?",
+                text: "This action cannot be undone!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, delete!",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(url, {
+                        method: "DELETE",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                        },
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: "Deleted!",
+                                    text: "The sibling has been removed successfully.",
+                                    icon: "success",
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
                                 Swal.fire({
                                     title: "Error!",
-                                    text: "Something went wrong. Please try again.",
+                                    text: data.message,
                                     icon: "error",
                                 });
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Fetch Error:", error);
+                            Swal.fire({
+                                title: "Error!",
+                                text: "Something went wrong. Please try again.",
+                                icon: "error",
                             });
-                    }
-                });
+                        });
+                }
             });
         });
     };
+
 
     return {
         // Public functions  
@@ -170,7 +172,7 @@ var KTSiblingsEditSibling = function () {
     let siblingId = null; // Declare globally
 
     // Init edit sibling modal
-    var initEditsibling = () => {
+    var initEditSibling = () => {
         // Cancel button handler
         const cancelButton = element.querySelector('[data-kt-siblings-modal-action="cancel"]');
         if (cancelButton) {
@@ -191,70 +193,62 @@ var KTSiblingsEditSibling = function () {
             });
         }
 
-        // AJAX form data load
-        const editButtons = document.querySelectorAll("[data-bs-target='#kt_modal_edit_sibling']");
-        if (editButtons.length) {
-            editButtons.forEach((button) => {
-                button.addEventListener("click", function () {
-                    siblingId = this.getAttribute("data-sibling-id"); // Assign value globally
-                    console.log("Sibling ID:", siblingId);
+        // Edit button click (using delegation)
+        document.addEventListener("click", function (e) {
+            const button = e.target.closest("[data-bs-target='#kt_modal_edit_sibling']");
+            if (!button) return;
 
-                    if (!siblingId) return;
+            siblingId = button.getAttribute("data-sibling-id");
+            if (!siblingId) return;
 
-                    // Clear form
-                    if (form) form.reset();
+            // Clear form
+            if (form) form.reset();
 
-                    fetch(`/siblings/${siblingId}`)
-                        .then(response => {
-                            if (!response.ok) {
-                                return response.json().then(errorData => {
-                                    // Show error from Laravel if available
-                                    throw new Error(errorData.message || 'Network response was not ok');
-                                });
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data.success && data.data) {
-                                const sibling = data.data;
-
-                                // Helper function to safely set values
-                                const setValue = (selector, value) => {
-                                    const el = document.querySelector(selector);
-                                    if (el) el.value = value;
-                                };
-
-                                // Populate form fields
-                                setValue("select[name='sibling_student']", sibling.student_id);
-                                setValue("input[name='sibling_name']", sibling.name);
-                                setValue("input[name='sibling_age']", sibling.age);
-                                setValue("input[name='sibling_class']", sibling.class);
-                                setValue("select[name='sibling_institution']", sibling.institution_id);
-                                setValue("select[name='sibling_relationship']", sibling.relationship);
-
-                                // Trigger change events
-                                const studentSelect = document.querySelector("select[name='sibling_student']");
-                                const institutionSelect = document.querySelector("select[name='sibling_institution']");
-                                const relationshipSelect = document.querySelector("select[name='sibling_relationship']");
-                                if (studentSelect) studentSelect.dispatchEvent(new Event("change"));
-                                if (relationshipSelect) relationshipSelect.dispatchEvent(new Event("change"));
-                                if (institutionSelect) institutionSelect.dispatchEvent(new Event("change"));
-
-                                // Show modal
-                                modal.show();
-                            } else {
-                                throw new Error(data.message || 'Invalid response data');
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Error:", error);
-                            toastr.error(error.message || "Failed to load sibling details");
+            fetch(`/siblings/${siblingId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errorData => {
+                            throw new Error(errorData.message || 'Network response was not ok');
                         });
-                });
-            });
-        }
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success && data.data) {
+                        const sibling = data.data;
 
-    }
+                        // Helper function to safely set values
+                        const setValue = (selector, value) => {
+                            const el = document.querySelector(selector);
+                            if (el) el.value = value;
+                        };
+
+                        setValue("select[name='sibling_student']", sibling.student_id);
+                        setValue("input[name='sibling_name']", sibling.name);
+                        setValue("input[name='sibling_age']", sibling.age);
+                        setValue("input[name='sibling_class']", sibling.class);
+                        setValue("select[name='sibling_institution']", sibling.institution_id);
+                        setValue("select[name='sibling_relationship']", sibling.relationship);
+
+                        // Trigger change events
+                        ["sibling_student", "sibling_institution", "sibling_relationship"].forEach(name => {
+                            const el = document.querySelector(`select[name='${name}']`);
+                            if (el) el.dispatchEvent(new Event("change"));
+                        });
+
+                        // Show modal
+                        modal.show();
+                    } else {
+                        throw new Error(data.message || 'Invalid response data');
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    toastr.error(error.message || "Failed to load sibling details");
+                });
+        });
+    };
+
 
     // Form validation
     var initValidation = function () {
@@ -379,7 +373,7 @@ var KTSiblingsEditSibling = function () {
 
     return {
         init: function () {
-            initEditsibling();
+            initEditSibling();
             initValidation();
         }
     };

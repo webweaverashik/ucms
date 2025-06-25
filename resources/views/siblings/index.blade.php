@@ -103,19 +103,6 @@
                                 </select>
                             </div>
                             <!--end::Input group-->
-                            <!--begin::Input group-->
-                            {{-- <div class="mb-10">
-                                <label class="form-label fs-6 fw-semibold">Gender:</label>
-                                <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                    data-placeholder="Select option" data-allow-clear="true"
-                                    data-kt-siblings-table-filter="product" data-hide-search="true">
-                                    <option></option>
-                                    <option value="gd_brother">Male</option>
-                                    <option value="gd_sister">Female</option>
-                                </select>
-                            </div> --}}
-                            <!--end::Input group-->
-
                             <!--begin::Actions-->
                             <div class="d-flex justify-content-end">
                                 <button type="reset" class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
@@ -129,12 +116,6 @@
                     </div>
                     <!--end::Menu 1-->
                     <!--end::Filter-->
-
-                    <!--begin::Add New Guardian-->
-                    {{-- <a href="{{ route('guardians.create') }}" class="btn btn-primary">
-                        <i class="ki-outline ki-plus fs-2"></i>New Guardian
-                    </a> --}}
-                    <!--end::Add New Guardian-->
                 </div>
                 <!--end::Toolbar-->
 
@@ -146,21 +127,20 @@
         <!--begin::Card body-->
         <div class="card-body pt-0">
             <!--begin::Table-->
-            <div class="table-responsive">
-                <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_siblings_table">
+                <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_siblings_table">
                     <thead>
-                        <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+                        <tr class="fw-bold fs-7 text-uppercase gs-0">
                             <th class="w-10px pe-2">SL</th>
                             <th class="min-w-200px">Name</th>
                             <th class="d-none">Gender (filter)</th>
-                            <th class="text-center">Gender</th>
-                            <th class="text-center">Students</th>
-                            <th class="text-center">Age</th>
-                            <th class="text-center">Class</th>
-                            <th class="text-center">Institution</th>
-                            <th class="text-center">Relationship</th>
-                            <th class="text-center">Branch</th>
-                            <th class="text-center">Actions</th>
+                            <th>Gender</th>
+                            <th>Students</th>
+                            <th>Age</th>
+                            <th>Class</th>
+                            <th>Institution</th>
+                            <th>Relationship</th>
+                            <th class="@if (!auth()->user()->hasRole('admin')) d-none @endif">Branch</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody class="text-gray-600 fw-semibold">
@@ -173,7 +153,7 @@
                                     <!--begin::user details-->
                                 </td>
                                 <td class="d-none">gd_{{ $sibling->relationship }}</td>
-                                <td class="text-center">
+                                <td>
                                     @if ($sibling->relationship == 'brother')
                                         <i class="las la-mars"></i>
                                         Male
@@ -182,7 +162,7 @@
                                         Female
                                     @endif
                                 </td>
-                                <td class="text-center">
+                                <td>
                                     @if ($sibling->student)
                                         <a href="{{ route('students.show', $sibling->student->id) }}">
                                             <span class="text-hover-success fs-6">
@@ -194,20 +174,20 @@
                                         <span class="badge badge-light-danger">-</span>
                                     @endif
                                 </td>
-                                <td class="text-center">
+                                <td>
                                     {{ $sibling->age }}
                                 </td>
-                                <td class="text-center">
+                                <td>
                                     {{ $sibling->class }}
                                 </td>
-                                <td class="text-center">
+                                <td>
                                     {{ $sibling->institution->name }} (EIIN: {{ $sibling->institution->eiin_number }})
                                 </td>
-                                <td class="text-center">
+                                <td>
                                     {{ ucfirst($sibling->relationship) }}
                                 </td>
 
-                                <td class="text-center">
+                                <td class="@if (!auth()->user()->hasRole('admin')) d-none @endif">
                                     @if ($sibling->student && $sibling->student->branch)
                                         @php
                                             $branchName = $sibling->student->branch->branch_name;
@@ -218,7 +198,7 @@
                                         <span class="badge badge-light-danger">-</span>
                                     @endif
                                 </td>
-                                <td class="text-center">
+                                <td>
                                     <a href="#" title="Edit Sibling" data-bs-toggle="modal"
                                         data-bs-target="#kt_modal_edit_sibling" data-sibling-id="{{ $sibling->id }}"
                                         class="btn btn-icon text-hover-primary w-30px h-30px">
@@ -234,7 +214,6 @@
                         @endforeach
                     </tbody>
                 </table>
-            </div>
             <!--end::Table-->
         </div>
         <!--end::Card body-->

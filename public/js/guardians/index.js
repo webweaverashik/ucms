@@ -76,63 +76,65 @@ var KTGuardiansList = function () {
         });
     }
 
-    // Delete pending students
+    // Delete guardian using event delegation
     const handleDeletion = function () {
-        document.querySelectorAll('.delete-guardian').forEach(item => {
-            item.addEventListener('click', function (e) {
-                e.preventDefault();
+        document.addEventListener('click', function (e) {
+            const deleteBtn = e.target.closest('.delete-guardian');
+            if (!deleteBtn) return;
 
-                let guardianId = this.getAttribute('data-guardian-id');
-                let url = routeDeleteGuardian.replace(':id', guardianId);  // Replace ':id' with actual student ID
+            e.preventDefault();
 
-                Swal.fire({
-                    title: "Are you sure to delete this guardian?",
-                    text: "This action cannot be undone!",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#d33",
-                    cancelButtonColor: "#3085d6",
-                    confirmButtonText: "Yes, delete!",
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        fetch(url, {
-                            method: "DELETE",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                            },
-                        })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    Swal.fire({
-                                        title: "Deleted!",
-                                        text: "The guardian has been removed successfully.",
-                                        icon: "success",
-                                    }).then(() => {
-                                        location.reload(); // Reload to reflect changes
-                                    });
-                                } else {
-                                    Swal.fire({
-                                        title: "Error!",
-                                        text: data.message,
-                                        icon: "error",
-                                    });
-                                }
-                            })
-                            .catch(error => {
-                                console.error("Fetch Error:", error);
+            const guardianId = deleteBtn.getAttribute('data-guardian-id');
+            const url = routeDeleteGuardian.replace(':id', guardianId);
+
+            Swal.fire({
+                title: "Are you sure to delete this guardian?",
+                text: "This action cannot be undone!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, delete!",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(url, {
+                        method: "DELETE",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                        },
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: "Deleted!",
+                                    text: "The guardian has been removed successfully.",
+                                    icon: "success",
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
                                 Swal.fire({
                                     title: "Error!",
-                                    text: "Something went wrong. Please try again.",
+                                    text: data.message,
                                     icon: "error",
                                 });
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Fetch Error:", error);
+                            Swal.fire({
+                                title: "Error!",
+                                text: "Something went wrong. Please try again.",
+                                icon: "error",
                             });
-                    }
-                });
+                        });
+                }
             });
         });
     };
+
 
     return {
         // Public functions  
@@ -191,67 +193,63 @@ var KTGuardiansEditGuardian = function () {
             });
         }
 
-        // AJAX form data load
-        const editButtons = document.querySelectorAll("[data-bs-target='#kt_modal_edit_guardian']");
-        if (editButtons.length) {
-            editButtons.forEach((button) => {
-                button.addEventListener("click", function () {
-                    guardianId = this.getAttribute("data-guardian-id"); // Assign value globally
-                    console.log("Guardian ID:", guardianId);
-                    if (!guardianId) return;
+        // Delegate edit button click
+        document.addEventListener("click", function (e) {
+            const button = e.target.closest("[data-bs-target='#kt_modal_edit_guardian']");
+            if (!button) return;
 
-                    // Clear form
-                    if (form) form.reset();
+            guardianId = button.getAttribute("data-guardian-id");
+            if (!guardianId) return;
 
-                    fetch(`/guardians/${guardianId}`)
-                        .then(response => {
-                            if (!response.ok) throw new Error('Network response was not ok');
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data.success && data.data) {
-                                const guardian = data.data;
+            // Clear form
+            if (form) form.reset();
 
-                                // Helper function to safely set values
-                                const setValue = (selector, value) => {
-                                    const el = document.querySelector(selector);
-                                    if (el) el.value = value;
-                                };
+            fetch(`/guardians/${guardianId}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success && data.data) {
+                        const guardian = data.data;
 
-                                // Helper function to safely check radio buttons
-                                const checkRadio = (name, value) => {
-                                    const radio = document.querySelector(`input[name='${name}'][value='${value}']`);
-                                    if (radio) radio.checked = true;
-                                };
+                        // Helper function to safely set values
+                        const setValue = (selector, value) => {
+                            const el = document.querySelector(selector);
+                            if (el) el.value = value;
+                        };
 
-                                // Populate form fields
-                                setValue("select[name='guardian_student']", guardian.student_id);
-                                setValue("input[name='guardian_name']", guardian.name);
-                                setValue("input[name='guardian_mobile_number']", guardian.mobile_number);
-                                checkRadio('guardian_gender', guardian.gender);
-                                setValue("select[name='guardian_relationship']", guardian.relationship);
+                        const checkRadio = (name, value) => {
+                            const radio = document.querySelector(`input[name='${name}'][value='${value}']`);
+                            if (radio) radio.checked = true;
+                        };
 
-                                // Trigger change events
-                                const studentSelect = document.querySelector("select[name='guardian_student']");
-                                const relationshipSelect = document.querySelector("select[name='guardian_relationship']");
-                                if (studentSelect) studentSelect.dispatchEvent(new Event("change"));
-                                if (relationshipSelect) relationshipSelect.dispatchEvent(new Event("change"));
+                        // Populate form fields
+                        setValue("select[name='guardian_student']", guardian.student_id);
+                        setValue("input[name='guardian_name']", guardian.name);
+                        setValue("input[name='guardian_mobile_number']", guardian.mobile_number);
+                        checkRadio('guardian_gender', guardian.gender);
+                        setValue("select[name='guardian_relationship']", guardian.relationship);
 
-                                // Show modal
-                                modal.show();
-                            } else {
-                                throw new Error(data.message || 'Invalid response data');
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Error:", error);
-                            toastr.error(error.message || "Failed to load guardian details");
-                        });
+                        // Dispatch change events
+                        const studentSelect = document.querySelector("select[name='guardian_student']");
+                        const relationshipSelect = document.querySelector("select[name='guardian_relationship']");
+                        if (studentSelect) studentSelect.dispatchEvent(new Event("change"));
+                        if (relationshipSelect) relationshipSelect.dispatchEvent(new Event("change"));
+
+                        // Show modal
+                        modal.show();
+                    } else {
+                        throw new Error(data.message || 'Invalid response data');
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    toastr.error(error.message || "Failed to load guardian details");
                 });
-            });
-        }
-        
-    }
+        });
+    };
+
 
     // Form validation
     var initValidation = function () {

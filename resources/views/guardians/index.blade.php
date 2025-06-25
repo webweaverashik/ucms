@@ -155,7 +155,7 @@
                         <th>Mobile</th>
                         <th>Relationship</th>
                         <th>Monthly<br>Payment (৳)</th>
-                        <th>Branch</th>
+                        <th class="@if (!auth()->user()->hasRole('admin')) d-none @endif">Branch</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -214,7 +214,7 @@
                             <td>
                                 {{ intval(optional(optional($guardian->student)->payments)->tuition_fee) }}
                             </td>
-                            <td>
+                            <td class="@if (!auth()->user()->hasRole('admin')) d-none @endif">
                                 @if ($guardian->student && $guardian->student->branch)
                                     @php
                                         $branchName = $guardian->student->branch->branch_name;
