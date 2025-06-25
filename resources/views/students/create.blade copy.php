@@ -4,7 +4,7 @@
 
 @extends('layouts.app')
 
-@section('title', 'Edit Student')
+@section('title', 'New Admission')
 
 @section('header-title')
     <div data-kt-swapper="true" data-kt-swapper-mode="{default: 'prepend', lg: 'prepend'}"
@@ -12,7 +12,7 @@
         class="page-title d-flex align-items-center flex-wrap me-3 mb-5 mb-lg-0">
         <!--begin::Title-->
         <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 align-items-center my-0">
-            Edit Student - {{ $student->name }}, {{ $student->student_unique_id }}
+            Admission Form
         </h1>
         <!--end::Title-->
         <!--begin::Separator-->
@@ -44,17 +44,9 @@
 @section('content')
     <div id="error-container"></div>
 
-    @php
-        $bloodGroups = ['A+', 'B+', 'AB+', 'O+', 'A-', 'B-', 'AB-', 'O-'];
-        $relationships = ['father', 'mother', 'brother', 'sister', 'uncle', 'aunt'];
-        $dueDates = [7 => '1 to 7', 10 => '1 to 10', 15 => '1 to 15', 30 => '1 to 30'];
-        $refererType = $student->reference->referer_type ?? 'teacher'; // Default to 'teacher' if not set
-    @endphp
-    <input type="hidden" id="student_id_input" name="student_id" value="{{ $student->id }}">
-
     <!--begin::Stepper-->
     <div class="stepper stepper-pills stepper-column d-flex flex-column flex-xl-row flex-row-fluid gap-10"
-        id="kt_update_student_stepper">
+        id="kt_create_student_stepper">
 
         <!--begin::Aside-->
         <div class="card d-flex justify-content-center justify-content-xl-start flex-row-auto w-100 w-xl-300px w-xxl-400px">
@@ -170,8 +162,8 @@
                             <!--end::Icon-->
                             <!--begin::Label-->
                             <div class="stepper-label">
-                                <h3 class="stepper-title">Update Completed</h3>
-                                <div class="stepper-desc fw-semibold">Verify the modification</div>
+                                <h3 class="stepper-title">Admission Done</h3>
+                                <div class="stepper-desc fw-semibold">Branch Manager approval</div>
                             </div>
                             <!--end::Label-->
                         </div>
@@ -190,7 +182,7 @@
         <div class="card d-flex flex-row-fluid flex-center">
             <!--begin::Form-->
             <form class="card-body py-20 w-100 px-9" novalidate="novalidate" enctype="multipart/form-data"
-                id="kt_update_student_form">
+                id="kt_create_student_form">
                 <!--begin::Step 1-->
                 <div class="current" data-kt-stepper-element="content">
                     <!--begin::Wrapper-->
@@ -199,15 +191,15 @@
                         <div class="pb-10 pb-lg-15">
                             <!--begin::Title-->
                             <h2 class="fw-bold d-flex align-items-center text-gray-900">Student Personal Information
-                                <span class="ms-1" data-bs-toggle="tooltip" title="Do modification if needed.">
+                                <span class="ms-1" data-bs-toggle="tooltip"
+                                    title="Student ID will be generated automatically.">
                                     <i class="ki-outline ki-information-5 text-gray-500 fs-6">
                                     </i>
                                 </span>
                             </h2>
                             <!--end::Title-->
                             <!--begin::Notice-->
-                            <div class="text-muted fw-semibold fs-6">If you need to change anything, just update that and
-                                keep others unchanged.
+                            <div class="text-muted fw-semibold fs-6">If you need more info, please check out
                             </div>
                             <!--end::Notice-->
                         </div>
@@ -225,7 +217,7 @@
                                     <!--begin::Input-->
                                     <input type="text" name="student_name"
                                         class="form-control form-control-solid mb-3 mb-lg-0" placeholder="Write full name"
-                                        required value="{{ $student->name }}" />
+                                        required />
                                     <!--end::Input-->
                                 </div>
                                 <!--end::Name Input group-->
@@ -238,8 +230,7 @@
                                     <!--begin::Input-->
                                     <input type="text" name="student_home_address"
                                         class="form-control form-control-solid mb-3 mb-lg-0"
-                                        placeholder="Write student home address" value="{{ $student->home_address }}"
-                                        required />
+                                        placeholder="Write student home address" required />
                                     <!--end::Input-->
                                 </div>
                                 <!--end::Address Input group-->
@@ -255,8 +246,7 @@
                                             <!--begin::Input-->
                                             <input type="text" name="student_phone_home"
                                                 class="form-control form-control-solid mb-3 mb-lg-0" maxlength="11"
-                                                placeholder="e.g. 01771-334334" required
-                                                value="{{ $student->mobileNumbers->where('number_type', 'home')->pluck('mobile_number')->implode('') }}" />
+                                                placeholder="e.g. 01771-334334" required />
                                             <!--end::Input-->
                                         </div>
                                         <!--end::Input group-->
@@ -271,8 +261,7 @@
                                             <!--begin::Input-->
                                             <input type="text" name="student_phone_sms"
                                                 class="form-control form-control-solid mb-3 mb-lg-0" maxlength="11"
-                                                placeholder="For result and notice" required
-                                                value="{{ $student->mobileNumbers->where('number_type', 'sms')->pluck('mobile_number')->implode('') }}" />
+                                                placeholder="For result and notice" required />
                                             <!--end::Input-->
                                         </div>
                                         <!--end::Input group-->
@@ -288,8 +277,7 @@
                                             <!--begin::Input-->
                                             <input type="text" name="student_phone_whatsapp" maxlength="11"
                                                 class="form-control form-control-solid mb-3 mb-lg-0"
-                                                placeholder="Write WhatsApp number (if any)"
-                                                value="{{ $student->mobileNumbers->where('number_type', 'whatsapp')->pluck('mobile_number')->implode('') }}" />
+                                                placeholder="Write WhatsApp number (if any)" />
                                             <!--end::Input-->
                                         </div>
                                         <!--end::Input group-->
@@ -308,8 +296,7 @@
                                             <!--begin::Input-->
                                             <input type="email" name="student_email"
                                                 class="form-control form-control-solid mb-3 mb-lg-0"
-                                                placeholder="Write student email (if any)"
-                                                value="{{ $student->email }}" />
+                                                placeholder="Write student email (if any)" />
                                             <!--end::Input-->
                                         </div>
                                         <!--end::Email Input group-->
@@ -329,8 +316,7 @@
                                                 <div class="overflow-hidden flex-grow-1">
                                                     <input name="birth_date" id="student_birth_date"
                                                         placeholder="Select a date"
-                                                        class="form-control form-control-solid" required
-                                                        value="{{ $student->date_of_birth->format('d-m-Y') }}" />
+                                                        class="form-control form-control-solid" required />
                                                 </div>
                                             </div>
                                             <!--end::Editor-->
@@ -348,56 +334,61 @@
                                     <label class="d-block fw-semibold fs-6 mb-5">Profile Photo <span
                                             class="text-muted">(optional)</span></label>
                                     <!--end::Label-->
+                                    <!--begin::Image placeholder-->
+                                    <style>
+                                        .image-input-placeholder {
+                                            background-image: url('{{ asset('assets/media/svg/files/blank-image.svg') }}');
+                                        }
 
+                                        [data-bs-theme="dark"] .image-input-placeholder {
+                                            background-image: url('{{ asset('assets/media/svg/files/blank-image-dark.svg') }}');
+                                        }
+                                    </style>
+                                    <!--end::Image placeholder-->
                                     <!--begin::Image input-->
-                                    <div class="image-input image-input-circle image-input-outline {{ $student->photo_url ? '' : 'image-input-empty image-input-placeholder' }}"
+                                    <div class="image-input image-input-circle image-input-empty image-input-outline image-input-placeholder"
                                         data-kt-image-input="true">
-
                                         <!--begin::Preview existing avatar-->
-                                        <div class="image-input-wrapper w-125px h-125px"
-                                            style="background-image: url('{{ $student->photo_url ? asset($student->photo_url) : asset('assets/media/svg/files/blank-image.svg') }}');">
-                                        </div>
+                                        <div class="image-input-wrapper w-125px h-125px"></div>
                                         <!--end::Preview existing avatar-->
-
                                         <!--begin::Label-->
                                         <label
                                             class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
                                             data-kt-image-input-action="change" data-bs-toggle="tooltip"
                                             title="Change avatar">
-                                            <i class="ki-outline ki-pencil fs-7"></i>
+                                            <i class="ki-outline ki-pencil fs-7">
+                                            </i>
                                             <!--begin::Inputs-->
                                             <input type="file" name="avatar" accept=".png, .jpg, .jpeg" />
                                             <input type="hidden" name="avatar_remove" />
                                             <!--end::Inputs-->
                                         </label>
                                         <!--end::Label-->
-
                                         <!--begin::Cancel-->
                                         <span
                                             class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
                                             data-kt-image-input-action="cancel" data-bs-toggle="tooltip"
                                             title="Cancel avatar">
-                                            <i class="ki-outline ki-cross fs-2"></i>
+                                            <i class="ki-outline ki-cross fs-2">
+                                            </i>
                                         </span>
                                         <!--end::Cancel-->
-
                                         <!--begin::Remove-->
                                         <span
                                             class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
                                             data-kt-image-input-action="remove" data-bs-toggle="tooltip"
                                             title="Remove avatar">
-                                            <i class="ki-outline ki-cross fs-2"></i>
+                                            <i class="ki-outline ki-cross fs-2">
+                                            </i>
                                         </span>
                                         <!--end::Remove-->
                                     </div>
                                     <!--end::Image input-->
-
                                     <!--begin::Hint-->
                                     <div class="form-text">Allowed file types: png, jpg, jpeg. Max 100kB</div>
                                     <!--end::Hint-->
                                 </div>
                                 <!--end::Photo Input group-->
-
 
                                 <!--begin::Gender Input group-->
                                 <div class="fv-row mb-7">
@@ -410,8 +401,7 @@
                                         <div class="col-lg-6">
                                             <!--begin::Option-->
                                             <input type="radio" class="btn-check" name="student_gender" value="male"
-                                                @if ($student->gender == 'male') checked="checked" @endif
-                                                id="gender_male_input" />
+                                                checked="checked" id="gender_male_input" />
                                             <label
                                                 class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                                 for="gender_male_input">
@@ -429,8 +419,7 @@
                                         <div class="col-lg-6">
                                             <!--begin::Option-->
                                             <input type="radio" class="btn-check" name="student_gender" value="female"
-                                                id="gender_female_input"
-                                                @if ($student->gender == 'female') checked="checked" @endif />
+                                                id="gender_female_input" />
                                             <label
                                                 class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                                 for="gender_female_input">
@@ -465,12 +454,9 @@
                                                 class="form-select form-select-solid rounded-start-0 border-start"
                                                 data-control="select2" data-placeholder="Select an option">
                                                 <option></option>
-                                                <option value="Islam" @if ($student->religion == 'Islam') selected @endif>
-                                                    Islam</option>
-                                                <option value="Hinduism" @if ($student->religion == 'Hinduism') selected @endif>
-                                                    Hinduism</option>
-                                                <option value="Others" @if ($student->religion == 'Others') selected @endif>
-                                                    Others</option>
+                                                <option value="Islam">Islam</option>
+                                                <option value="Hinduism">Hinduism</option>
+                                                <option value="Others">Others</option>
                                             </select>
                                         </div>
                                     </div>
@@ -495,12 +481,14 @@
                                                 class="form-select form-select-solid rounded-start-0 border-start"
                                                 data-control="select2" data-placeholder="Select an option">
                                                 <option></option>
-                                                @foreach ($bloodGroups as $group)
-                                                    <option value="{{ $group }}"
-                                                        {{ isset($student->blood_group) && $student->blood_group == $group ? 'selected' : '' }}>
-                                                        {{ $group }}
-                                                    </option>
-                                                @endforeach
+                                                <option value="A+">A+</option>
+                                                <option value="B+">B+</option>
+                                                <option value="AB+">AB+</option>
+                                                <option value="O+">O+</option>
+                                                <option value="A-">A-</option>
+                                                <option value="B-">B-</option>
+                                                <option value="AB-">AB-</option>
+                                                <option value="O-">O-</option>
                                             </select>
                                         </div>
                                     </div>
@@ -529,13 +517,6 @@
                             <!--end::Notice-->
                         </div>
                         <!--end::Heading-->
-                        
-                        {{-- Hidden Inputs - Guardian IDs --}}
-                        <input type="hidden" name="guardian_1_id" value="{{ $student->guardians[0]->id }}">
-                        @if ($student->guardians->get(1))
-                            <input type="hidden" name="guardian_2_id" value="{{ $student->guardians[1]->id }}">
-                        @endif
-
 
                         <!--begin::Parents Input group-->
                         <div class="mb-15">
@@ -548,15 +529,13 @@
                                 <div class="col-md fv-row">
                                     <label class="form-label required">Guardian-1 Name</label>
                                     <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
-                                        placeholder="Enter full name" name="guardian_1_name" required
-                                        value="{{ isset($student->guardians[0]) ? $student->guardians[0]->name : '' }}" />
+                                        placeholder="Enter full name" name="guardian_1_name" required />
                                 </div>
                                 <div class="col-md fv-row">
                                     <label class="form-label required">Guardian-1 Mobile No.</label>
                                     <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
                                         maxlength="11" placeholder="Enter contact number" name="guardian_1_mobile"
-                                        required
-                                        value="{{ isset($student->guardians[0]) ? $student->guardians[0]->mobile_number : '' }}" />
+                                        required />
                                 </div>
                                 <div class="col-md-2 fv-row">
                                     <!--begin::Label-->
@@ -568,12 +547,8 @@
                                         class="form-select form-select-solid" data-control="select2"
                                         data-placeholder="Select" required>
                                         <option></option>
-                                        <option value="male"
-                                            {{ isset($student->guardians[0]) && $student->guardians[0]->gender == 'male' ? 'selected' : '' }}>
-                                            Male</option>
-                                        <option value="female"
-                                            {{ isset($student->guardians[0]) && $student->guardians[0]->gender == 'female' ? 'selected' : '' }}>
-                                            Female</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
                                     </select>
                                     <!--end::Solid input group style-->
                                 </div>
@@ -587,12 +562,12 @@
                                         class="form-select form-select-solid" data-control="select2"
                                         data-placeholder="Select" required>
                                         <option></option>
-                                        @foreach ($relationships as $relationship)
-                                            <option value="{{ $relationship }}"
-                                                {{ isset($student->guardians[0]) && $student->guardians[0]->relationship == $relationship ? 'selected' : '' }}>
-                                                {{ ucfirst($relationship) }}
-                                            </option>
-                                        @endforeach
+                                        <option value="father">Father</option>
+                                        <option value="mother">Mother</option>
+                                        <option value="brother">Brother</option>
+                                        <option value="sister">Sister</option>
+                                        <option value="uncle">Uncle</option>
+                                        <option value="aunt">Aunt</option>
                                     </select>
                                     <!--end::Solid input group style-->
                                 </div>
@@ -604,14 +579,12 @@
                                 <div class="col-md fv-row">
                                     <label class="form-label">Guardian-2 Name</label>
                                     <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
-                                        placeholder="Enter full name" name="guardian_2_name"
-                                        value="{{ isset($student->guardians[1]) ? $student->guardians[1]->name : '' }}" />
+                                        placeholder="Enter full name" name="guardian_2_name" />
                                 </div>
                                 <div class="col-md fv-row">
                                     <label class="form-label">Guardian-2 Mobile No.</label>
                                     <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
-                                        maxlength="11" placeholder="Enter contact number" name="guardian_2_mobile"
-                                        value="{{ isset($student->guardians[1]) ? $student->guardians[1]->mobile_number : '' }}" />
+                                        maxlength="11" placeholder="Enter contact number" name="guardian_2_mobile" />
                                 </div>
                                 <div class="col-md-2 fv-row">
                                     <!--begin::Label-->
@@ -621,14 +594,10 @@
                                     <!--begin::Solid input group style-->
                                     <select name="guardian_2_gender" data-hide-search="true"
                                         class="form-select form-select-solid" data-control="select2"
-                                        data-allow-clear="true" data-placeholder="Select">
+                                        data-placeholder="Select">
                                         <option></option>
-                                        <option value="male"
-                                            {{ isset($student->guardians[1]) && $student->guardians[1]->gender == 'male' ? 'selected' : '' }}>
-                                            Male</option>
-                                        <option value="female"
-                                            {{ isset($student->guardians[1]) && $student->guardians[1]->gender == 'female' ? 'selected' : '' }}>
-                                            Female</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
                                     </select>
                                     <!--end::Solid input group style-->
                                 </div>
@@ -640,19 +609,68 @@
                                     <!--begin::Solid input group style-->
                                     <select name="guardian_2_relationship" data-hide-search="true"
                                         class="form-select form-select-solid" data-control="select2"
-                                        data-allow-clear="true" data-placeholder="Select">
+                                        data-placeholder="Select">
                                         <option></option>
-                                        @foreach ($relationships as $relationship)
-                                            <option value="{{ $relationship }}"
-                                                {{ isset($student->guardians[1]) && $student->guardians[1]->relationship == $relationship ? 'selected' : '' }}>
-                                                {{ ucfirst($relationship) }}
-                                            </option>
-                                        @endforeach
+                                        <option value="father">Father</option>
+                                        <option value="mother">Mother</option>
+                                        <option value="brother">Brother</option>
+                                        <option value="sister">Sister</option>
+                                        <option value="uncle">Uncle</option>
+                                        <option value="aunt">Aunt</option>
                                     </select>
                                     <!--end::Solid input group style-->
                                 </div>
                             </div>
                             <!--end::Guardian 2-->
+
+                            <!--begin::Guardian 3-->
+                            <div class="form-group row mb-3 border border-dashed rounded px-2 py-3">
+                                <div class="col-md fv-row">
+                                    <label class="form-label">Guardian-3 Name</label>
+                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
+                                        placeholder="Enter full name" name="guardian_3_name" />
+                                </div>
+                                <div class="col-md fv-row">
+                                    <label class="form-label">Guardian-3 Mobile No.</label>
+                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
+                                        maxlength="11" placeholder="Enter contact number" name="guardian_3_mobile" />
+                                </div>
+                                <div class="col-md-2 fv-row">
+                                    <!--begin::Label-->
+                                    <label class="form-label">Gender</label>
+                                    <!--end::Label-->
+
+                                    <!--begin::Solid input group style-->
+                                    <select name="guardian_3_gender" data-hide-search="true"
+                                        class="form-select form-select-solid" data-control="select2"
+                                        data-placeholder="Select">
+                                        <option></option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                    </select>
+                                    <!--end::Solid input group style-->
+                                </div>
+                                <div class="col-md-2 fv-row">
+                                    <!--begin::Label-->
+                                    <label class="form-label">Relationship</label>
+                                    <!--end::Label-->
+
+                                    <!--begin::Solid input group style-->
+                                    <select name="guardian_3_relationship" data-hide-search="true"
+                                        class="form-select form-select-solid" data-control="select2"
+                                        data-placeholder="Select">
+                                        <option></option>
+                                        <option value="father">Father</option>
+                                        <option value="mother">Mother</option>
+                                        <option value="brother">Brother</option>
+                                        <option value="sister">Sister</option>
+                                        <option value="uncle">Uncle</option>
+                                        <option value="aunt">Aunt</option>
+                                    </select>
+                                    <!--end::Solid input group style-->
+                                </div>
+                            </div>
+                            <!--end::Guardian 3-->
                         </div>
                         <!--end::Parents group-->
 
@@ -661,47 +679,31 @@
                             <!--begin::Label-->
                             <label class="form-label fs-3">Siblings (if any)</label>
                             <!--end::Label-->
-
-                            {{-- Hidden Inputs - Sibling IDs --}}
-                            @if ($student->siblings->get(0))
-                                <input type="hidden" name="sibling_1_id" value="{{ $student->siblings[0]->id }}">
-                            @endif
-
-                            @if ($student->siblings->get(1))
-                                <input type="hidden" name="sibling_2_id" value="{{ $student->siblings[1]->id }}">
-                            @endif
-
-
                             {{-- Sibling - 1 --}}
                             <div class="form-group row mb-3 border border-dashed px-2 py-3 rounded">
                                 <div class="col-md-4 fv-row">
                                     <label class="form-label">Name</label>
                                     <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
-                                        placeholder="Enter full name" name="sibling_1_name"
-                                        value="{{ isset($student->siblings[0]) ? $student->siblings[0]->name : '' }}" />
+                                        placeholder="Enter full name" name="sibling_1_name" />
                                 </div>
                                 <div class="col-md-1 fv-row">
                                     <label class="form-label">Age (Y)</label>
                                     <input type="number" class="form-control form-control-solid mb-2 mb-md-0"
-                                        min="6" max="20" name="sibling_1_age"
-                                        value="{{ isset($student->siblings[0]) ? $student->siblings[0]->age : '' }}" />
+                                        min="6" max="20" name="sibling_1_age" />
                                 </div>
                                 <div class="col-md-1 fv-row">
                                     <label class="form-label">Class</label>
                                     <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
-                                        name="sibling_1_class"
-                                        value="{{ isset($student->siblings[0]) ? $student->siblings[0]->class : '' }}" />
+                                        name="sibling_1_class" />
                                 </div>
                                 <div class="col-md-4 fv-row">
                                     <label class="form-label">Instituition</label>
                                     <select name="sibling_1_institution" class="form-select form-select-solid"
-                                        data-allow-clear="true" data-control="select2"
-                                        data-placeholder="Select an instituition">
+                                        data-control="select2" data-placeholder="Select an instituition">
                                         <option></option>
                                         @foreach ($institutions as $institution)
-                                            <option value="{{ $institution->id }}"
-                                                {{ isset($student->siblings[0]) && $student->siblings[0]->institution_id == $institution->id ? 'selected' : '' }}>
-                                                {{ $institution->name }} (EIIN: {{ $institution->eiin_number }})
+                                            <option value="{{ $institution->id }}">{{ $institution->name }}
+                                                (EIIN: {{ $institution->eiin_number }})
                                             </option>
                                         @endforeach
                                     </select>
@@ -714,14 +716,10 @@
                                     <!--begin::Solid input group style-->
                                     <select name="sibling_1_relationship" data-hide-search="true"
                                         class="form-select form-select-solid" data-control="select2"
-                                        data-allow-clear="true" data-placeholder="Select">
+                                        data-placeholder="Select">
                                         <option></option>
-                                        <option value="brother"
-                                            {{ isset($student->siblings[0]) && $student->siblings[0]->relationship == 'brother' ? 'selected' : '' }}>
-                                            Brother</option>
-                                        <option value="sister"
-                                            {{ isset($student->siblings[0]) && $student->siblings[0]->relationship == 'sister' ? 'selected' : '' }}>
-                                            Sister</option>
+                                        <option value="brother">Brother</option>
+                                        <option value="sister">Sister</option>
                                     </select>
                                     <!--end::Solid input group style-->
                                 </div>
@@ -733,31 +731,26 @@
                                 <div class="col-md-4 fv-row">
                                     <label class="form-label">Name</label>
                                     <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
-                                        placeholder="Enter full name" name="sibling_2_name"
-                                        value="{{ isset($student->siblings[1]) ? $student->siblings[1]->name : '' }}" />
+                                        placeholder="Enter full name" name="sibling_2_name" />
                                 </div>
                                 <div class="col-md-1 fv-row">
                                     <label class="form-label">Age (Y)</label>
                                     <input type="number" class="form-control form-control-solid mb-2 mb-md-0"
-                                        min="6" max="20" name="sibling_2_age"
-                                        value="{{ isset($student->siblings[1]) ? $student->siblings[1]->age : '' }}" />
+                                        min="6" max="20" name="sibling_2_age" />
                                 </div>
                                 <div class="col-md-1 fv-row">
                                     <label class="form-label">Class</label>
                                     <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
-                                        name="sibling_2_class"
-                                        value="{{ isset($student->siblings[1]) ? $student->siblings[1]->class : '' }}" />
+                                        name="sibling_2_class" />
                                 </div>
                                 <div class="col-md-4 fv-row">
                                     <label class="form-label">Instituition</label>
                                     <select name="sibling_2_institution" class="form-select form-select-solid"
-                                        data-allow-clear="true" data-control="select2"
-                                        data-placeholder="Select an instituition">
+                                        data-control="select2" data-placeholder="Select an instituition">
                                         <option></option>
                                         @foreach ($institutions as $institution)
-                                            <option value="{{ $institution->id }}"
-                                                {{ isset($student->siblings[1]) && $student->siblings[1]->institution_id == $institution->id ? 'selected' : '' }}>
-                                                {{ $institution->name }} (EIIN: {{ $institution->eiin_number }})
+                                            <option value="{{ $institution->id }}">{{ $institution->name }}
+                                                (EIIN: {{ $institution->eiin_number }})
                                             </option>
                                         @endforeach
                                     </select>
@@ -770,14 +763,10 @@
                                     <!--begin::Solid input group style-->
                                     <select name="sibling_2_relationship" data-hide-search="true"
                                         class="form-select form-select-solid" data-control="select2"
-                                        data-allow-clear="true" data-placeholder="Select">
+                                        data-placeholder="Select">
                                         <option></option>
-                                        <option value="brother"
-                                            {{ isset($student->siblings[1]) && $student->siblings[1]->relationship == 'brother' ? 'selected' : '' }}>
-                                            Brother</option>
-                                        <option value="sister"
-                                            {{ isset($student->siblings[1]) && $student->siblings[1]->relationship == 'sister' ? 'selected' : '' }}>
-                                            Sister</option>
+                                        <option value="brother">Brother</option>
+                                        <option value="sister">Sister</option>
                                     </select>
                                     <!--end::Solid input group style-->
                                 </div>
@@ -823,9 +812,8 @@
                                         data-control="select2" data-placeholder="Select an instituition" required>
                                         <option></option>
                                         @foreach ($institutions as $institution)
-                                            <option value="{{ $institution->id }}"
-                                                {{ $student->institution_id == $institution->id ? 'selected' : '' }}>
-                                                {{ $institution->name }} (EIIN: {{ $institution->eiin_number }})
+                                            <option value="{{ $institution->id }}">{{ $institution->name }}
+                                                (EIIN: {{ $institution->eiin_number }})
                                             </option>
                                         @endforeach
                                     </select>
@@ -851,8 +839,7 @@
                                         <option></option>
                                         @foreach ($classnames as $classname)
                                             <option value="{{ $classname->id }}"
-                                                data-class-numeral="{{ $classname->class_numeral }}"
-                                                {{ $student->class_id == $classname->id ? 'selected' : '' }}>
+                                                data-class-numeral="{{ $classname->class_numeral }}">
                                                 {{ $classname->name }}
                                             </option>
                                         @endforeach
@@ -876,8 +863,8 @@
                                         <div class="col-lg-6">
                                             <!--begin::Option-->
                                             <input type="radio" class="btn-check" name="student_academic_group"
-                                                value="Science" @if ($student->academic_group == 'Science' || $student->academic_group == 'General') checked="checked" @endif
-                                                id="academic_group_science_input" required />
+                                                value="Science" checked="checked" id="academic_group_science_input"
+                                                required />
                                             <label
                                                 class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                                 for="academic_group_science_input">
@@ -896,8 +883,7 @@
                                         <div class="col-lg-6">
                                             <!--begin::Option-->
                                             <input type="radio" class="btn-check" name="student_academic_group"
-                                                value="Commerce" @if ($student->academic_group == 'Commerce') checked="checked" @endif
-                                                id="academic_group_commerce_input" required />
+                                                value="Commerce" id="academic_group_commerce_input" required />
                                             <label
                                                 class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                                 for="academic_group_commerce_input">
@@ -952,9 +938,7 @@
                         <!--begin::Heading-->
                         <div class="pb-10 pb-lg-15">
                             <!--begin::Title-->
-                            <h2 class="fw-bold text-gray-900">Administrative <span
-                                    class="badge badge-danger badge-lg">{{ $student->branch->branch_name }}
-                                    Branch</span></h2>
+                            <h2 class="fw-bold text-gray-900">Administrative</h2>
                             <!--end::Title-->
                             <!--begin::Notice-->
                             <div class="text-muted fw-semibold fs-6">Set shift, tuition fee, type, due date etc.</div>
@@ -962,46 +946,78 @@
                         </div>
                         <!--end::Heading-->
 
-                        <!--begin::Input group-->
+                        <!--begin::Branch radio-->
+                        <div class="fv-row mb-7  ">
+                            <!--begin::Label-->
+                            <label class="fs-6 fw-semibold mb-2 required">Branch
+                            </label>
+                            <!--End::Label-->
+                            <!--begin::Row-->
+                            <div class="row row-cols-1 row-cols-md-3 row-cols-lg-1 row-cols-xl-3 g-9"
+                                data-kt-buttons="true" data-kt-buttons-target="[data-kt-button='true']">
+                                @foreach ($branches as $branch)
+                                    <div class="col">
+                                        <!--begin::Option-->
+                                        <label
+                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary @if ($loop->first) active @endif d-flex text-start p-6"
+                                            data-kt-button="true">
+                                            <!--begin::Radio-->
+                                            <span
+                                                class="form-check form-check-custom form-check-solid form-check-sm align-items-start mt-1">
+                                                <input class="form-check-input branch-radio" type="radio"
+                                                    name="student_branch" value="{{ $branch->id }}" required
+                                                    @if ($loop->first) checked="checked" @endif />
+                                            </span>
+                                            <!--end::Radio-->
+                                            <!--begin::Info-->
+                                            <span class="ms-5">
+                                                <span
+                                                    class="fs-4 fw-bold text-gray-800 d-block">{{ $branch->branch_name }}</span>
+                                            </span>
+                                            <!--end::Info-->
+                                        </label>
+                                        <!--end::Option-->
+                                    </div>
+                                @endforeach
+                            </div>
+                            <!--end::Row-->
+                        </div>
+                        <!--end::Branch radio-->
+
+                        <!--begin::Shift radio-->
                         <div class="fv-row mb-7">
                             <!--begin::Label-->
                             <label class="fs-6 fw-semibold mb-2 required">Shift
                             </label>
                             <!--End::Label-->
                             <!--begin::Row-->
-                            <div class="row row-cols-1 row-cols-md-3 row-cols-lg-1 row-cols-xl-3 g-9"
-                                data-kt-buttons="true" data-kt-buttons-target="[data-kt-button='true']">
-                                @foreach ($shifts as $shift)
-                                    <!--begin::Col-->
-                                    <div class="col">
-                                        <!--begin::Option-->
-                                        <label
-                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary @if ($student->shift_id == $shift->id) active @endif d-flex text-start p-6"
-                                            data-kt-button="true">
-                                            <!--begin::Radio-->
-                                            <span
-                                                class="form-check form-check-custom form-check-solid form-check-sm align-items-start mt-1">
-                                                <input class="form-check-input" type="radio" name="student_shift"
-                                                    value="{{ $shift->id }}" required
-                                                    @if ($student->shift_id == $shift->id) checked="checked" @endif />
-                                            </span>
-                                            <!--end::Radio-->
-                                            <!--begin::Info-->
-                                            <span class="ms-5">
+                            <div id="shift-container"
+                                class="row row-cols-1 row-cols-md-3 row-cols-lg-1 row-cols-xl-3 g-9">
+                                @foreach ($branches as $branch)
+                                    @foreach ($shifts->where('branch_id', $branch->id) as $shift)
+                                        <div class="col shift-option" data-branch="{{ $branch->id }}"
+                                            style="display: none;">
+                                            <label
+                                                class="btn btn-outline btn-outline-dashed btn-active-light-primary d-flex text-start p-6"
+                                                data-kt-button="true">
                                                 <span
-                                                    class="fs-4 fw-bold text-gray-800 d-block">{{ $shift->name }}</span>
-                                            </span>
-                                            <!--end::Info-->
-                                        </label>
-                                        <!--end::Option-->
-                                    </div>
-                                    <!--end::Col-->
+                                                    class="form-check form-check-custom form-check-solid form-check-sm align-items-start mt-1">
+                                                    <input class="form-check-input" type="radio" name="student_shift"
+                                                        value="{{ $shift->id }}" required />
+                                                </span>
+                                                <span class="ms-5">
+                                                    <span
+                                                        class="fs-4 fw-bold text-gray-800 d-block">{{ $shift->name }}</span>
+                                                </span>
+                                            </label>
+                                        </div>
+                                    @endforeach
                                 @endforeach
-
                             </div>
+
                             <!--end::Row-->
                         </div>
-                        <!--end::Input group-->
+                        <!--end::Shift radio-->
 
                         {{-- Tuition fee, type, due date Row --}}
                         <div class="row">
@@ -1015,7 +1031,7 @@
                                     {{-- <div class="input-group input-group-solid mb-5 flex-nowrap"> --}}
                                     <input type="number" class="form-control form-control-solid"
                                         name="student_tuition_fee" min="0" placeholder="Write tuition fee"
-                                        required value="{{ $student->payments->tuition_fee }}" />
+                                        required />
                                     {{-- <span class="input-group-text">
                                             Tk
                                         </span>
@@ -1037,15 +1053,14 @@
                                         <!--begin::Radio-->
                                         <div class="form-check form-check-custom form-check-solid me-5">
                                             <input class="form-check-input" type="radio" value="current"
-                                                name="payment_style" id="payment_style_current" required
-                                                @if ($student->payments->payment_style == 'current') checked="checked" @endif />
+                                                name="payment_style" id="payment_style_current" checked="checked"
+                                                required />
                                             <label class="form-check-label fs-6 fw-medium"
                                                 for="payment_style_current">Current</label>
                                         </div>
                                         <div class="form-check form-check-custom form-check-solid">
                                             <input class="form-check-input" type="radio" value="due"
-                                                name="payment_style" id="payment_style_due" required
-                                                @if ($student->payments->payment_style == 'due') checked="checked" @endif />
+                                                name="payment_style" id="payment_style_due" required />
                                             <label class="form-check-label fs-6 fw-medium"
                                                 for="payment_style_due">Due</label>
                                         </div>
@@ -1067,12 +1082,10 @@
                                         data-control="select2" data-hide-search="true" data-placeholder="Select due date"
                                         required>
                                         <option></option>
-                                        @foreach ($dueDates as $value => $label)
-                                            <option value="{{ $value }}"
-                                                {{ $student->payments->due_date == $value ? 'selected' : '' }}>
-                                                {{ $label }}
-                                            </option>
-                                        @endforeach
+                                        <option value="7">1 to 7</option>
+                                        <option value="10">1 to 10</option>
+                                        <option value="15">1 to 15</option>
+                                        <option value="30">1 to 30</option>
                                     </select>
                                     <!--end::Input-->
                                 </div>
@@ -1080,9 +1093,9 @@
                             </div>
                         </div>
 
-                        {{-- Referrer & Remarks Row --}}
+                        {{-- Referrer Row --}}
                         <div class="row">
-                            {{-- <div class="col-md-4">
+                            <div class="col-md-4">
                                 <!--begin::Input group-->
                                 <div class="fv-row mb-7">
                                     <!--begin::Label-->
@@ -1095,13 +1108,13 @@
                                         <!--begin::Radio-->
                                         <div class="form-check form-check-custom form-check-solid me-5">
                                             <input class="form-check-input" type="radio" value="teacher"
-                                                name="referer_type" id="referer_type_teacher" {{ $refererType == 'teacher' ? 'checked' : '' }} />
+                                                name="referer_type" id="referer_type_teacher" checked="checked" />
                                             <label class="form-check-label fs-6 fw-medium"
                                                 for="referer_type_teacher">Teacher</label>
                                         </div>
 
                                         <div class="form-check form-check-custom form-check-solid">
-                                            <input class="form-check-input" type="radio" value="student" {{ $refererType == 'teacher' ? 'checked' : '' }}
+                                            <input class="form-check-input" type="radio" value="student"
                                                 name="referer_type" id="referer_type_student" />
                                             <label class="form-check-label fs-6 fw-medium"
                                                 for="referer_type_student">Student</label>
@@ -1128,14 +1141,12 @@
                                     <!--end::Input-->
                                 </div>
                                 <!--end::Input group-->
-                            </div> --}}
+                            </div>
 
-                            {{-- Remarks Row --}}
                             <div class="col-md-12">
                                 <label class="form-label">Remarks <span class="text-muted">(optional)</span></label>
                                 <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
-                                    placeholder="Write remarks (if any)" name="student_remarks"
-                                    value="{{ $student->remarks }}" />
+                                    placeholder="Write remarks (if any)" name="student_remarks" />
                             </div>
                         </div>
 
@@ -1151,11 +1162,12 @@
                         <!--begin::Heading-->
                         <div class="pb-8 pb-lg-10">
                             <!--begin::Title-->
-                            <h2 class="fw-bold text-gray-900">Update Done!</h2>
+                            <h2 class="fw-bold text-gray-900">Admission Done!</h2>
                             <!--end::Title-->
 
                             <!--begin::Notice-->
-                            <div class="text-muted fw-semibold fs-6">Student data has been updated successfully.
+                            <div class="text-muted fw-semibold fs-6">Now, it requires Branch Manager approval to activate
+                                student account.
                             </div>
                             <!--end::Notice-->
                         </div>
@@ -1171,9 +1183,9 @@
 
                             <!--begin::Alert-->
                             <!--begin::Notice-->
-                            <div class="notice d-flex bg-light-success rounded border-success border border-dashed p-6">
+                            <div class="notice d-flex bg-light-warning rounded border-warning border border-dashed p-6">
                                 <!--begin::Icon-->
-                                <i class="ki-outline ki-information fs-2tx text-success me-4">
+                                <i class="ki-outline ki-information fs-2tx text-warning me-4">
                                 </i>
                                 <!--end::Icon-->
                                 <!--begin::Wrapper-->
@@ -1182,7 +1194,8 @@
                                     <div class="fw-semibold">
                                         <h4 class="text-gray-900 fw-bold"><span id="admitted_name">Ashikur Rahman</span>,
                                             ID: <span id="admitted_id">G-250905</span></h4>
-                                        <div class="fs-6 text-gray-700">Please, recheck student data if everything is ok.
+                                        <div class="fs-6 text-gray-700">You can download the admission form after manager
+                                            approval.
                                         </div>
                                     </div>
                                     <!--end::Content-->
@@ -1239,30 +1252,24 @@
 
 @push('page-js')
     <script>
-        document.getElementById("student_info_menu").classList.add("here", "show");
-        document.getElementById("all_students_link").classList.add("active");
+        document.getElementById("admission_menu").classList.add("here", "show");
+        document.getElementById("new_admission_link").classList.add("active");
     </script>
 
     <script>
-        var studentId = document.getElementById('student_id_input').value;
-
-        var updateStudentRoute = function(studentId) {
-            return "{{ route('students.update', ':id') }}".replace(':id', studentId);
-        };
+        var storeStudentRoute = "{{ route('students.store') }}";
         var csrfToken = "{{ csrf_token() }}";
 
-        // --- For reference ajax request ---
-        // var ajaxTeacherRoute = "{{ route('admin.referrers.teachers') }}";
-        // var ajaxStudentRoute = "{{ route('admin.referrers.students') }}";
+        var ajaxTeacherRoute = "{{ route('admin.referrers.teachers') }}";
+        var ajaxStudentRoute = "{{ route('admin.referrers.students') }}";
     </script>
 
-
     {{-- AJAX Teacher or Student Data loading : Referred By --}}
-    {{-- <script src="{{ asset('js/students/ajax-reference.js') }}"></script> --}}
+    <script src="{{ asset('js/students/ajax-reference.js') }}"></script>
 
     {{-- Dynamically show subject list and group --}}
-    <script src="{{ asset('js/students/ajax-subjects-update.js') }}"></script>
+    <script src="{{ asset('js/students/ajax-subjects.js') }}"></script>
 
     {{-- Student admission form ajax activities --}}
-    <script src="{{ asset('js/students/update.js') }}"></script>
+    <script src="{{ asset('js/students/create.js') }}"></script>
 @endpush

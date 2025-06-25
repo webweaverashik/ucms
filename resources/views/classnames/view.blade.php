@@ -256,7 +256,7 @@
                                                         <div class="d-flex align-items-center">
                                                             <i class="bi bi-dot fs-2 text-info me-2"></i>
                                                             <div class="flex-grow-1">
-                                                                <span class="subject-text text-gray-700 fs-6" title="{{ $subject->students->count() }} students taken this subject" data-bs-toggle="tooltip">
+                                                                <span class="subject-text text-gray-700 fs-6" title="{{ $subject->students->count() }} students enrolled this subject" data-bs-toggle="tooltip">
                                                                     {{ $subject->name }}
                                                                     ({{ $subject->students->count() }})
                                                                 </span>
@@ -493,7 +493,7 @@
 
 @push('page-js')
     <script>
-        const routeDeleteNote = "{{ route('notes.destroy', ':id') }}";
+        const routeDeleteSubject = "{{ route('subjects.destroy', ':id') }}";
     </script>
 
     <script src="{{ asset('js/classnames/view.js') }}"></script>

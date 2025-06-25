@@ -150,13 +150,13 @@ var KTEditSubject = function () {
       const setupTopicEditing = () => {
             document.querySelectorAll('.subject-editable').forEach(wrapper => {
                   const card = wrapper;
-                  const topicText = wrapper.querySelector('.subject-text');
-                  const topicInput = wrapper.querySelector('.subject-input');
+                  const subjectText = wrapper.querySelector('.subject-text');
+                  const subjectInput = wrapper.querySelector('.subject-input');
                   const editIcon = wrapper.querySelector('.edit-icon');
                   const deleteIcon = wrapper.querySelector('.delete-subject');
                   const checkIcon = wrapper.querySelector('.check-icon');
                   const cancelIcon = wrapper.querySelector('.cancel-icon');
-                  const originalValue = topicInput.value;
+                  const originalValue = subjectInput.value;
 
                   // Hover effects
                   card.addEventListener('mouseenter', () => {
@@ -164,7 +164,7 @@ var KTEditSubject = function () {
                   });
 
                   card.addEventListener('mouseleave', () => {
-                        if (!topicInput.classList.contains('d-none')) return;
+                        if (!subjectInput.classList.contains('d-none')) return;
                         card.classList.remove('border-primary', 'shadow-sm');
                   });
 
@@ -178,7 +178,7 @@ var KTEditSubject = function () {
                   cancelIcon.addEventListener('click', (e) => {
                         e.stopPropagation();
                         exitEditMode();
-                        topicInput.value = originalValue;
+                        subjectInput.value = originalValue;
                   });
 
                   // Save handler
@@ -188,30 +188,30 @@ var KTEditSubject = function () {
                   });
 
                   // Handle Enter/Escape keys
-                  topicInput.addEventListener('keydown', (e) => {
+                  subjectInput.addEventListener('keydown', (e) => {
                         if (e.key === 'Enter') {
                               saveChanges();
                         } else if (e.key === 'Escape') {
                               exitEditMode();
-                              topicInput.value = originalValue;
+                              subjectInput.value = originalValue;
                         }
                   });
 
                   const enterEditMode = () => {
-                        topicText.classList.add('d-none');
-                        topicInput.classList.remove('d-none');
+                        subjectText.classList.add('d-none');
+                        subjectInput.classList.remove('d-none');
                         editIcon.classList.add('d-none');
                         deleteIcon.classList.add('d-none');
                         checkIcon.classList.remove('d-none');
                         cancelIcon.classList.remove('d-none');
-                        topicInput.focus();
-                        topicInput.select();
+                        subjectInput.focus();
+                        subjectInput.select();
                         card.classList.add('border-primary', 'shadow-sm');
                   };
 
                   const exitEditMode = () => {
-                        topicText.classList.remove('d-none');
-                        topicInput.classList.add('d-none');
+                        subjectText.classList.remove('d-none');
+                        subjectInput.classList.add('d-none');
                         editIcon.classList.remove('d-none');
                         deleteIcon.classList.remove('d-none');
                         checkIcon.classList.add('d-none');
@@ -220,12 +220,12 @@ var KTEditSubject = function () {
                   };
 
                   const saveChanges = async () => {
-                        const updatedValue = topicInput.value.trim();
+                        const updatedValue = subjectInput.value.trim();
                         const topicId = wrapper.dataset.id;
 
                         if (!updatedValue) {
                               toastr.error("Subject name cannot be empty");
-                              topicInput.focus();
+                              subjectInput.focus();
                               return;
                         }
 
@@ -245,7 +245,7 @@ var KTEditSubject = function () {
                                           'Content-Type': 'application/json',
                                           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                                     },
-                                    body: JSON.stringify({ topic_name: updatedValue })
+                                    body: JSON.stringify({ subject_name: updatedValue })
                               });
 
                               if (!response.ok) {
@@ -255,14 +255,14 @@ var KTEditSubject = function () {
 
                               const data = await response.json();
                               if (data.success) {
-                                    topicText.textContent = updatedValue;
+                                    subjectText.textContent = updatedValue;
                                     exitEditMode();
                                     toastr.success("Subject updated successfully");
                               }
                         } catch (error) {
                               console.error('Error:', error);
                               toastr.error(error.message || 'Failed to update subject');
-                              topicInput.value = originalValue;
+                              subjectInput.value = originalValue;
                         } finally {
                               checkIcon.classList.replace('bi-arrow-repeat', 'bi-check-circle');
                               checkIcon.classList.remove('spinning');
@@ -279,12 +279,12 @@ var KTEditSubject = function () {
                         e.preventDefault();
 
                         let noteId = this.getAttribute('data-subject-id');
-                        console.log('Note ID:', noteId);
+                        console.log('Subject ID:', noteId);
 
-                        let url = routeDeleteNote.replace(':id', noteId);  // Replace ':id' with actual student ID
+                        let url = routeDeleteSubject.replace(':id', noteId);  // Replace ':id' with actual student ID
 
                         Swal.fire({
-                              title: "Are you sure to delete this note?",
+                              title: "Are you sure to delete this subject?",
                               text: "This action cannot be undone!",
                               icon: "warning",
                               showCancelButton: true,
@@ -303,7 +303,7 @@ var KTEditSubject = function () {
                                           .then(response => response.json())
                                           .then(data => {
                                                 if (data.success) {
-                                                      toastr.success('Note deleted successfully');
+                                                      toastr.success('Subject deleted successfully');
 
                                                       setTimeout(() => {
                                                             window.location.reload();

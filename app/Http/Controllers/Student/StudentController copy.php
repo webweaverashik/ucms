@@ -103,7 +103,6 @@ class StudentController extends Controller
             'student_blood_group'     => 'nullable|string',
             'student_class'           => 'required|integer|exists:class_names,id',
             'student_academic_group'  => 'nullable|string|in:General,Science,Commerce,Arts',
-            'student_branch'          => 'required|integer|exists:branches,id',
             'student_shift'           => 'required|integer|exists:shifts,id',
             'student_institution'     => 'required|integer|exists:institutions,id',
             'subjects'                => 'required|array',
@@ -121,7 +120,7 @@ class StudentController extends Controller
             'payment_style'           => 'required|in:current,due',
             'payment_due_date'        => 'required|integer|in:7,10,15,30',
 
-            // Guardians Table Fields (Up to 2)
+            // Guardians Table Fields (Up to 3)
             'guardian_1_name'         => 'required|string|max:255',
             'guardian_1_mobile'       => 'required|string|max:11',
             'guardian_1_gender'       => 'required|in:male,female',
@@ -130,6 +129,10 @@ class StudentController extends Controller
             'guardian_2_mobile'       => 'nullable|string|max:11',
             'guardian_2_gender'       => 'nullable|in:male,female',
             'guardian_2_relationship' => 'nullable|string|in:father,mother,brother,sister,uncle,aunt',
+            'guardian_3_name'         => 'nullable|string|max:255',
+            'guardian_3_mobile'       => 'nullable|string|max:11',
+            'guardian_3_gender'       => 'nullable|in:male,female',
+            'guardian_3_relationship' => 'nullable|string|in:father,mother,brother,sister,uncle,aunt',
 
             // Siblings Table Fields (Up to 2)
             'sibling_1_name'          => 'nullable|string|max:255',
@@ -166,7 +169,7 @@ class StudentController extends Controller
 
         return DB::transaction(function () use ($validated) {
             // Fetch branch and class details
-            $branch = Branch::findOrFail($validated['student_branch']);
+            $branch = auth()->user()->branch;
             $class  = ClassName::findOrFail($validated['student_class']);
             $year   = Carbon::now()->format('y');
 
@@ -232,7 +235,7 @@ class StudentController extends Controller
             }
 
             // Insert guardians
-            for ($i = 1; $i <= 2; $i++) {
+            for ($i = 1; $i <= 3; $i++) {
                 if (! empty($validated["guardian_{$i}_name"])) {
                     Guardian::create([
                         'student_id'    => $student->id,
@@ -407,7 +410,7 @@ class StudentController extends Controller
         $students = $studentsQuery->get();
 
         $classnames   = ClassName::all();
-        $shifts       = Shift::where('branch_id', $student->branch_id)->get();
+        $shifts       = Shift::where('branch_id', auth()->user()->branch_id)->get();
         $institutions = Institution::all();
 
         return view('students.edit', compact('student', 'students', 'classnames', 'shifts', 'institutions'));
@@ -448,27 +451,25 @@ class StudentController extends Controller
             'payment_due_date'        => 'required|integer|in:7,10,15,30',
 
             // Guardians Table Fields (Up to 3)
-            'guardian_1_id'           => 'required|integer|exists:guardians,id',
             'guardian_1_name'         => 'required|string|max:255',
             'guardian_1_mobile'       => 'required|string|max:11',
             'guardian_1_gender'       => 'required|in:male,female',
             'guardian_1_relationship' => 'required|string|in:father,mother,brother,sister,uncle,aunt',
-
-            'guardian_2_id'           => 'nullable|integer|exists:guardians,id',
             'guardian_2_name'         => 'nullable|string|max:255',
             'guardian_2_mobile'       => 'nullable|string|max:11',
             'guardian_2_gender'       => 'nullable|in:male,female',
             'guardian_2_relationship' => 'nullable|string|in:father,mother,brother,sister,uncle,aunt',
+            'guardian_3_name'         => 'nullable|string|max:255',
+            'guardian_3_mobile'       => 'nullable|string|max:11',
+            'guardian_3_gender'       => 'nullable|in:male,female',
+            'guardian_3_relationship' => 'nullable|string|in:father,mother,brother,sister,uncle,aunt',
 
             // Siblings Table Fields (Up to 2)
-            'sibling_1_id'            => 'nullable|integer|exists:siblings,id',
             'sibling_1_name'          => 'nullable|string|max:255',
             'sibling_1_age'           => 'nullable|integer|min:1|max:20',
             'sibling_1_class'         => 'nullable|string',
             'sibling_1_institution'   => 'nullable|integer|exists:institutions,id',
             'sibling_1_relationship'  => 'nullable|string|in:brother,sister',
-
-            'sibling_2_id'            => 'nullable|integer|exists:siblings,id',
             'sibling_2_name'          => 'nullable|string|max:255',
             'sibling_2_age'           => 'nullable|integer|min:1|max:20',
             'sibling_2_class'         => 'nullable|string',
@@ -513,75 +514,31 @@ class StudentController extends Controller
             }
 
             // Update guardians
-            foreach ([1, 2] as $i) {
-                $guardianId = $validated["guardian_{$i}_id"] ?? null;
-                $name       = $validated["guardian_{$i}_name"] ?? null;
-                $mobile     = $validated["guardian_{$i}_mobile"] ?? null;
-                $gender     = $validated["guardian_{$i}_gender"] ?? null;
-                $relation   = $validated["guardian_{$i}_relationship"] ?? null;
-
-                $allFieldsEmpty = ! $name && ! $mobile && ! $gender && ! $relation;
-
-                if ($guardianId && ! $allFieldsEmpty) {
-                    // Update existing guardian
-                    $guardian = Guardian::find($guardianId);
-                    if ($guardian) {
-                        $guardian->update([
-                            'name'          => $name,
-                            'mobile_number' => $mobile,
-                            'gender'        => $gender,
-                            'relationship'  => $relation,
-                        ]);
-                    }
-                } elseif ($guardianId && $allFieldsEmpty) {
-                    // Delete if ID exists but all fields are empty
-                    Guardian::find($guardianId)?->delete();
-                } elseif (! $guardianId && ! $allFieldsEmpty) {
-                    // Create new guardian if no ID but fields are filled
-                    $student->guardians()->create([
-                        'name'          => $name,
-                        'mobile_number' => $mobile,
-                        'gender'        => $gender,
-                        'relationship'  => $relation,
-                    ]);
+            foreach ([1, 2, 3] as $i) {
+                if (! empty($validated["guardian_{$i}_name"])) {
+                    $student->guardians()->updateOrCreate(
+                        ['relationship' => $validated["guardian_{$i}_relationship"]],
+                        [
+                            'name'          => $validated["guardian_{$i}_name"],
+                            'mobile_number' => $validated["guardian_{$i}_mobile"],
+                            'gender'        => $validated["guardian_{$i}_gender"],
+                        ],
+                    );
                 }
             }
 
             // Update siblings
             foreach ([1, 2] as $i) {
-                $siblingId   = $validated["sibling_{$i}_id"] ?? null;
-                $name        = $validated["sibling_{$i}_name"] ?? null;
-                $age         = $validated["sibling_{$i}_age"] ?? null;
-                $class       = $validated["sibling_{$i}_class"] ?? null;
-                $institution = $validated["sibling_{$i}_institution"] ?? null;
-                $relation    = $validated["sibling_{$i}_relationship"] ?? null;
-
-                $allFieldsEmpty = ! $name && ! $age && ! $class && ! $institution && ! $relation;
-
-                if ($siblingId && ! $allFieldsEmpty) {
-                    // Update existing sibling
-                    $sibling = Sibling::find($siblingId);
-                    if ($sibling) {
-                        $sibling->update([
-                            'name'           => $name,
-                            'age'            => $age,
-                            'class'          => $class,
-                            'institution_id' => $institution,
-                            'relationship'   => $relation,
-                        ]);
-                    }
-                } elseif ($siblingId && $allFieldsEmpty) {
-                    // Delete sibling if ID exists but all fields are blank
-                    Sibling::find($siblingId)?->delete();
-                } elseif (! $siblingId && ! $allFieldsEmpty) {
-                    // Create new sibling if no ID but fields are filled
-                    $student->siblings()->create([
-                        'name'           => $name,
-                        'age'            => $age,
-                        'class'          => $class,
-                        'institution_id' => $institution,
-                        'relationship'   => $relation,
-                    ]);
+                if (! empty($validated["sibling_{$i}_name"])) {
+                    $student->siblings()->updateOrCreate(
+                        ['name' => $validated["sibling_{$i}_name"]],
+                        [
+                            'age'            => $validated["sibling_{$i}_age"],
+                            'class'          => $validated["sibling_{$i}_class"],
+                            'institution_id' => $validated["sibling_{$i}_institution"],
+                            'relationship'   => $validated["sibling_{$i}_relationship"],
+                        ],
+                    );
                 }
             }
 

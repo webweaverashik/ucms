@@ -521,7 +521,7 @@
                         <!--begin::Parents Input group-->
                         <div class="mb-15">
                             <!--begin::Label-->
-                            <label class="form-label fs-3">Guardians (at least one guardian)</label>
+                            <label class="form-label fs-3">Guardians <span class="text-muted">(at least one guardian)</span></label>
                             <!--end::Label-->
 
                             <!--begin::Guardian 1-->
@@ -576,24 +576,24 @@
 
                             <!--begin::Guardian 2-->
                             <div class="form-group row mb-3 border border-dashed rounded px-2 py-3">
-                                <div class="col-md">
+                                <div class="col-md fv-row">
                                     <label class="form-label">Guardian-2 Name</label>
                                     <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
                                         placeholder="Enter full name" name="guardian_2_name" />
                                 </div>
-                                <div class="col-md">
+                                <div class="col-md fv-row">
                                     <label class="form-label">Guardian-2 Mobile No.</label>
                                     <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
                                         maxlength="11" placeholder="Enter contact number" name="guardian_2_mobile" />
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-2 fv-row">
                                     <!--begin::Label-->
                                     <label class="form-label">Gender</label>
                                     <!--end::Label-->
 
                                     <!--begin::Solid input group style-->
                                     <select name="guardian_2_gender" data-hide-search="true"
-                                        class="form-select form-select-solid" data-control="select2"
+                                        class="form-select form-select-solid" data-control="select2" data-allow-clear="true"
                                         data-placeholder="Select">
                                         <option></option>
                                         <option value="male">Male</option>
@@ -601,14 +601,14 @@
                                     </select>
                                     <!--end::Solid input group style-->
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-2 fv-row">
                                     <!--begin::Label-->
                                     <label class="form-label">Relationship</label>
                                     <!--end::Label-->
 
                                     <!--begin::Solid input group style-->
                                     <select name="guardian_2_relationship" data-hide-search="true"
-                                        class="form-select form-select-solid" data-control="select2"
+                                        class="form-select form-select-solid" data-control="select2" data-allow-clear="true"
                                         data-placeholder="Select">
                                         <option></option>
                                         <option value="father">Father</option>
@@ -622,83 +622,34 @@
                                 </div>
                             </div>
                             <!--end::Guardian 2-->
-
-                            <!--begin::Guardian 3-->
-                            <div class="form-group row mb-3 border border-dashed rounded px-2 py-3">
-                                <div class="col-md">
-                                    <label class="form-label">Guardian-3 Name</label>
-                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
-                                        placeholder="Enter full name" name="guardian_3_name" />
-                                </div>
-                                <div class="col-md">
-                                    <label class="form-label">Guardian-3 Mobile No.</label>
-                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
-                                        maxlength="11" placeholder="Enter contact number" name="guardian_3_mobile" />
-                                </div>
-                                <div class="col-md-2">
-                                    <!--begin::Label-->
-                                    <label class="form-label">Gender</label>
-                                    <!--end::Label-->
-
-                                    <!--begin::Solid input group style-->
-                                    <select name="guardian_3_gender" data-hide-search="true"
-                                        class="form-select form-select-solid" data-control="select2"
-                                        data-placeholder="Select">
-                                        <option></option>
-                                        <option value="male">Male</option>
-                                        <option value="female">Female</option>
-                                    </select>
-                                    <!--end::Solid input group style-->
-                                </div>
-                                <div class="col-md-2">
-                                    <!--begin::Label-->
-                                    <label class="form-label">Relationship</label>
-                                    <!--end::Label-->
-
-                                    <!--begin::Solid input group style-->
-                                    <select name="guardian_3_relationship" data-hide-search="true"
-                                        class="form-select form-select-solid" data-control="select2"
-                                        data-placeholder="Select">
-                                        <option></option>
-                                        <option value="father">Father</option>
-                                        <option value="mother">Mother</option>
-                                        <option value="brother">Brother</option>
-                                        <option value="sister">Sister</option>
-                                        <option value="uncle">Uncle</option>
-                                        <option value="aunt">Aunt</option>
-                                    </select>
-                                    <!--end::Solid input group style-->
-                                </div>
-                            </div>
-                            <!--end::Guardian 3-->
                         </div>
                         <!--end::Parents group-->
 
                         <!--begin::Siblings Input group-->
-                        <div class="fv-row">
+                        <div class="mb-10">
                             <!--begin::Label-->
                             <label class="form-label fs-3">Siblings (if any)</label>
                             <!--end::Label-->
                             {{-- Sibling - 1 --}}
                             <div class="form-group row mb-3 border border-dashed px-2 py-3 rounded">
-                                <div class="col-md-4">
+                                <div class="col-md-4 fv-row">
                                     <label class="form-label">Name</label>
                                     <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
                                         placeholder="Enter full name" name="sibling_1_name" />
                                 </div>
-                                <div class="col-md-1">
+                                <div class="col-md-1 fv-row">
                                     <label class="form-label">Age (Y)</label>
                                     <input type="number" class="form-control form-control-solid mb-2 mb-md-0"
                                         min="6" max="20" name="sibling_1_age" />
                                 </div>
-                                <div class="col-md-1">
+                                <div class="col-md-1 fv-row">
                                     <label class="form-label">Class</label>
-                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
+                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0" maxlength="15"
                                         name="sibling_1_class" />
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-4 fv-row">
                                     <label class="form-label">Instituition</label>
-                                    <select name="sibling_1_institution" class="form-select form-select-solid"
+                                    <select name="sibling_1_institution" class="form-select form-select-solid" data-allow-clear="true"
                                         data-control="select2" data-placeholder="Select an instituition">
                                         <option></option>
                                         @foreach ($institutions as $institution)
@@ -708,14 +659,14 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-2 fv-row">
                                     <!--begin::Label-->
                                     <label class="form-label">Relationship</label>
                                     <!--end::Label-->
 
                                     <!--begin::Solid input group style-->
                                     <select name="sibling_1_relationship" data-hide-search="true"
-                                        class="form-select form-select-solid" data-control="select2"
+                                        class="form-select form-select-solid" data-control="select2" data-allow-clear="true"
                                         data-placeholder="Select">
                                         <option></option>
                                         <option value="brother">Brother</option>
@@ -728,24 +679,24 @@
 
                             {{-- Sibling - 2 --}}
                             <div class="form-group row mb-3 border border-dashed px-2 py-3 rounded">
-                                <div class="col-md-4">
+                                <div class="col-md-4 fv-row">
                                     <label class="form-label">Name</label>
                                     <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
                                         placeholder="Enter full name" name="sibling_2_name" />
                                 </div>
-                                <div class="col-md-1">
+                                <div class="col-md-1 fv-row">
                                     <label class="form-label">Age (Y)</label>
                                     <input type="number" class="form-control form-control-solid mb-2 mb-md-0"
                                         min="6" max="20" name="sibling_2_age" />
                                 </div>
-                                <div class="col-md-1">
+                                <div class="col-md-1 fv-row">
                                     <label class="form-label">Class</label>
-                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
+                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0" maxlength="15"
                                         name="sibling_2_class" />
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-4 fv-row">
                                     <label class="form-label">Instituition</label>
-                                    <select name="sibling_2_institution" class="form-select form-select-solid"
+                                    <select name="sibling_2_institution" class="form-select form-select-solid" data-allow-clear="true"
                                         data-control="select2" data-placeholder="Select an instituition">
                                         <option></option>
                                         @foreach ($institutions as $institution)
@@ -755,14 +706,14 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-2 fv-row">
                                     <!--begin::Label-->
                                     <label class="form-label">Relationship</label>
                                     <!--end::Label-->
 
                                     <!--begin::Solid input group style-->
                                     <select name="sibling_2_relationship" data-hide-search="true"
-                                        class="form-select form-select-solid" data-control="select2"
+                                        class="form-select form-select-solid" data-control="select2" data-allow-clear="true"
                                         data-placeholder="Select">
                                         <option></option>
                                         <option value="brother">Brother</option>
@@ -938,9 +889,7 @@
                         <!--begin::Heading-->
                         <div class="pb-10 pb-lg-15">
                             <!--begin::Title-->
-                            <h2 class="fw-bold text-gray-900">Administrative <span
-                                    class="badge badge-danger badge-lg">{{ auth()->user()->branch->branch_name }}
-                                    Branch</span></h2>
+                            <h2 class="fw-bold text-gray-900">Administrative</h2>
                             <!--end::Title-->
                             <!--begin::Notice-->
                             <div class="text-muted fw-semibold fs-6">Set shift, tuition fee, type, due date etc.</div>
@@ -948,17 +897,16 @@
                         </div>
                         <!--end::Heading-->
 
-                        <!--begin::Input group-->
-                        <div class="fv-row mb-7">
+                        <!--begin::Branch radio-->
+                        <div class="fv-row mb-7  ">
                             <!--begin::Label-->
-                            <label class="fs-6 fw-semibold mb-2 required">Shift
+                            <label class="fs-6 fw-semibold mb-2 required">Branch
                             </label>
                             <!--End::Label-->
                             <!--begin::Row-->
                             <div class="row row-cols-1 row-cols-md-3 row-cols-lg-1 row-cols-xl-3 g-9"
                                 data-kt-buttons="true" data-kt-buttons-target="[data-kt-button='true']">
-                                @foreach ($shifts as $shift)
-                                    <!--begin::Col-->
+                                @foreach ($branches as $branch)
                                     <div class="col">
                                         <!--begin::Option-->
                                         <label
@@ -967,27 +915,60 @@
                                             <!--begin::Radio-->
                                             <span
                                                 class="form-check form-check-custom form-check-solid form-check-sm align-items-start mt-1">
-                                                <input class="form-check-input" type="radio" name="student_shift"
-                                                    value="{{ $shift->id }}" required
+                                                <input class="form-check-input branch-radio" type="radio"
+                                                    name="student_branch" value="{{ $branch->id }}" required
                                                     @if ($loop->first) checked="checked" @endif />
                                             </span>
                                             <!--end::Radio-->
                                             <!--begin::Info-->
                                             <span class="ms-5">
                                                 <span
-                                                    class="fs-4 fw-bold text-gray-800 d-block">{{ $shift->name }}</span>
+                                                    class="fs-4 fw-bold text-gray-800 d-block">{{ $branch->branch_name }}</span>
                                             </span>
                                             <!--end::Info-->
                                         </label>
                                         <!--end::Option-->
                                     </div>
-                                    <!--end::Col-->
                                 @endforeach
-
                             </div>
                             <!--end::Row-->
                         </div>
-                        <!--end::Input group-->
+                        <!--end::Branch radio-->
+
+                        <!--begin::Shift radio-->
+                        <div class="fv-row mb-7">
+                            <!--begin::Label-->
+                            <label class="fs-6 fw-semibold mb-2 required">Shift
+                            </label>
+                            <!--End::Label-->
+                            <!--begin::Row-->
+                            <div id="shift-container"
+                                class="row row-cols-1 row-cols-md-3 row-cols-lg-1 row-cols-xl-3 g-9">
+                                @foreach ($branches as $branch)
+                                    @foreach ($shifts->where('branch_id', $branch->id) as $shift)
+                                        <div class="col shift-option" data-branch="{{ $branch->id }}"
+                                            style="display: none;">
+                                            <label
+                                                class="btn btn-outline btn-outline-dashed btn-active-light-primary d-flex text-start p-6"
+                                                data-kt-button="true">
+                                                <span
+                                                    class="form-check form-check-custom form-check-solid form-check-sm align-items-start mt-1">
+                                                    <input class="form-check-input" type="radio" name="student_shift"
+                                                        value="{{ $shift->id }}" required />
+                                                </span>
+                                                <span class="ms-5">
+                                                    <span
+                                                        class="fs-4 fw-bold text-gray-800 d-block">{{ $shift->name }}</span>
+                                                </span>
+                                            </label>
+                                        </div>
+                                    @endforeach
+                                @endforeach
+                            </div>
+
+                            <!--end::Row-->
+                        </div>
+                        <!--end::Shift radio-->
 
                         {{-- Tuition fee, type, due date Row --}}
                         <div class="row">
