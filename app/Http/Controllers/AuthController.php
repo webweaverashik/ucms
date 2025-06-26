@@ -1,13 +1,10 @@
 <?php
-
 namespace App\Http\Controllers;
 
+use App\Models\LoginActivity;
 use App\Models\User;
 use Illuminate\Http\Request;
-use App\Models\LoginActivity;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -24,25 +21,25 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
+            'email'    => 'required|email',
             'password' => 'required',
         ]);
 
         // Check if user exists (including soft-deleted users)
         $user = User::withTrashed()->where('email', $request->email)->first();
 
-        if (!$user) {
-            return back()->with('error', 'User not found.');
+        if (! $user) {
+            return back()->with('error', 'Invalid Account Details');
         }
 
         // Step 1: Check if the user is soft-deleted
         if ($user->trashed()) {
-            return back()->with('error', 'You are not allowed to login.');
+            return back()->with('error', 'No associated user found.');
         }
 
         // Step 2: Check if the user is active
         if ($user->is_active == 0) {
-            return back()->with('error', 'You account is deactivated. Please, contact your admin.');
+            return back()->with('error', 'Login disabled. Please, contact admin.');
         }
 
         // Step 3: Attempt login if both checks pass
@@ -51,10 +48,10 @@ class AuthController extends Controller
 
             // Log login activity
             LoginActivity::create([
-                'user_id' => $user->id,
+                'user_id'    => $user->id,
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->header('User-Agent'),
-                'device' => $this->detectDevice($request->header('User-Agent')),
+                'device'     => $this->detectDevice($request->header('User-Agent')),
             ]);
 
             return redirect()->route('dashboard')->with('success', 'Login successful');
