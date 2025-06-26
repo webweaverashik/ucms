@@ -129,61 +129,65 @@ var KTStudentsInvoicesView = function () {
 
 
     var handleDeletion = function () {
-        document.querySelectorAll('.delete-invoice').forEach(item => {
-            item.addEventListener('click', function (e) {
-                e.preventDefault();
+        document.addEventListener('click', function (e) {
+            const target = e.target.closest('.delete-invoice');
+            if (!target) return;
 
-                let invoiceId = this.getAttribute('data-invoice-id');
-                let url = routeDeleteInvoice.replace(':id', invoiceId);  // Replace ':id' with actual invoice ID
+            e.preventDefault();
 
-                Swal.fire({
-                    title: "Are you sure to delete this invoice?",
-                    text: "This action cannot be undone!",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#d33",
-                    cancelButtonColor: "#3085d6",
-                    confirmButtonText: "Yes, delete!",
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        fetch(url, {
-                            method: "DELETE",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                            },
-                        })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    Swal.fire({
-                                        title: "Deleted!",
-                                        text: "The invoice has been deleted successfully.",
-                                        icon: "success",
-                                    }).then(() => {
-                                        location.reload(); // Reload to reflect changes
-                                    });
-                                } else {
-                                    Swal.fire({
-                                        title: "Error!",
-                                        text: data.error,
-                                        icon: "error",
-                                    });
-                                }
-                            })
-                            .catch(error => {
-                                console.error("Fetch Error:", error);
+            const invoiceId = target.getAttribute('data-invoice-id');
+            console.log('Invoice to be deleted: ', invoiceId);
+
+            const url = routeDeleteInvoice.replace(':id', invoiceId);  // Replace ':id' with actual invoice ID
+
+            Swal.fire({
+                title: "Are you sure to delete this invoice?",
+                text: "This action cannot be undone!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, delete!",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(url, {
+                        method: "DELETE",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                        },
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: "Deleted!",
+                                    text: "The invoice has been deleted successfully.",
+                                    icon: "success",
+                                }).then(() => {
+                                    location.reload(); // Refresh to reflect changes
+                                });
+                            } else {
                                 Swal.fire({
                                     title: "Error!",
-                                    text: "Something went wrong. Please try again.",
+                                    text: data.error || "Deletion failed.",
                                     icon: "error",
                                 });
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Fetch Error:", error);
+                            Swal.fire({
+                                title: "Error!",
+                                text: "Something went wrong. Please try again.",
+                                icon: "error",
                             });
-                    }
-                });
+                        });
+                }
             });
         });
     };
+
 
     return {
         // Public functions  
@@ -219,132 +223,90 @@ var KTEditInvoiceModal = function () {
 
     // Init edit invoice modal
     var initEditInvoice = () => {
-        // Cancel button handler
-        const cancelButton = element.querySelector('[data-kt-edit-invoice-modal-action="cancel"]');
-        if (cancelButton) {
-            cancelButton.addEventListener('click', e => {
-                e.preventDefault();
-                if (form) form.reset();
-                modal.hide();
-            });
-        }
-
-        // Close button handler
-        const closeButton = element.querySelector('[data-kt-edit-invoice-modal-action="close"]');
-        if (closeButton) {
-            closeButton.addEventListener('click', e => {
-                e.preventDefault();
-                if (form) form.reset();
-                modal.hide();
-            });
-        }
-
-        // AJAX form data load
-        const editButtons = document.querySelectorAll("[data-bs-target='#kt_modal_edit_invoice']");
-        if (editButtons.length) {
-            editButtons.forEach((button) => {
-                button.addEventListener("click", function () {
-                    invoiceId = this.getAttribute("data-invoice-id"); // Assign value globally
-                    console.log("Invoice ID:", invoiceId);
-                    if (!invoiceId) return;
-
-                    // Clear form
+        // Cancel and close button handlers
+        ['cancel', 'close'].forEach(action => {
+            const btn = element.querySelector(`[data-kt-edit-invoice-modal-action="${action}"]`);
+            if (btn) {
+                btn.addEventListener('click', e => {
+                    e.preventDefault();
                     if (form) form.reset();
-
-                    fetch(`/invoices/${invoiceId}/view-ajax`)
-                        .then(response => {
-                            if (!response.ok) throw new Error('Network response was not ok');
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data.success && data.data) {
-                                if (!data.success || !data.data) {
-                                    throw new Error("Invalid response data");
-                                }
-
-                                const invoice = data.data;
-
-                                // Set modal title
-                                const titleEl = document.getElementById("kt_modal_edit_invoice_title");
-                                if (titleEl) {
-                                    titleEl.textContent = `Update Invoice ${invoice.invoice_number}`;
-                                }
-
-                                // Show/hide #invoice_type_id_edit based on invoice_type
-                                const monthYearWrapper = document.querySelector("#month_year_id_edit");
-                                if (monthYearWrapper) {
-                                    if (invoice.invoice_type !== 'tuition_fee') {
-                                        monthYearWrapper.style.display = 'none';
-                                    } else {
-                                        monthYearWrapper.style.display = '';
-                                    }
-                                }
-
-                                // Populate regular input fields
-                                document.querySelector("input[name='invoice_amount_edit']").value = invoice.total_amount;
-
-                                // Set Select2 values and trigger change
-                                const setSelect2Value = (name, value) => {
-                                    const el = $(`select[name="${name}"]`);
-                                    if (el.length) {
-                                        el.val(value).trigger('change');
-                                    }
-                                };
-
-                                // Populate form fields
-                                // setSelect2Value("invoice_student_edit", invoice.student_id);
-                                setSelect2Value("invoice_type_edit", invoice.invoice_type);
-
-                                // Handle month_year select field differently
-                                const monthYearSelect = $("select[name='invoice_month_year_edit']");
-                                if (monthYearSelect.length) {
-                                    // Clear existing options
-                                    monthYearSelect.empty();
-
-                                    // Convert "MM_YYYY" to "Month YYYY"
-                                    const formatMonthYear = (monthYear) => {
-                                        if (!monthYear) return '';
-
-                                        const [month, year] = monthYear.split('_');
-                                        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                                            'July', 'August', 'September', 'October', 'November', 'December'];
-                                        const monthName = monthNames[parseInt(month) - 1] || month;
-                                        return `${monthName} ${year}`;
-                                    };
-
-                                    const formattedMonthYear = formatMonthYear(invoice.month_year);
-
-                                    // Create and append new option with formatted display text
-                                    const option = new Option(
-                                        formattedMonthYear,    // Display text (April 2025)
-                                        invoice.month_year,    // Original value (04_2025)
-                                        true,                 // selected
-                                        true                  // selected
-                                    );
-
-                                    monthYearSelect.append(option).trigger('change');
-
-                                    // If you need to add more options, format them similarly
-                                    // Example:
-                                    // const option2 = new Option(formatMonthYear('05_2025'), '05_2025');
-                                    // monthYearSelect.append(option2);
-                                }
-
-                                // Show modal (assumes Bootstrap modal)
-                                modal.show();
-                            } else {
-                                throw new Error(data.message || 'Invalid response data');
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Error:", error);
-                            toastr.error(error.message || "Failed to load invoice details");
-                        });
+                    modal.hide();
                 });
-            });
-        }
+            }
+        });
 
-    }
+        // Delegate edit button click using document
+        document.addEventListener('click', function (e) {
+            const button = e.target.closest("[data-bs-target='#kt_modal_edit_invoice']");
+            if (!button) return;
+
+            invoiceId = button.getAttribute("data-invoice-id");
+            if (!invoiceId) return;
+
+            console.log("Invoice ID:", invoiceId);
+            if (form) form.reset();
+
+            fetch(`/invoices/${invoiceId}/view-ajax`)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errorData => {
+                            // Show error from Laravel if available
+                            throw new Error(errorData.message || 'Network response was not ok');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data.success || !data.data) throw new Error(data.message || 'Invalid response data');
+
+                    const invoice = data.data;
+
+                    // Set modal title
+                    const titleEl = document.getElementById("kt_modal_edit_invoice_title");
+                    if (titleEl) {
+                        titleEl.textContent = `Update Invoice ${invoice.invoice_number}`;
+                    }
+
+                    // Show/hide #month_year_id_edit based on invoice_type
+                    const monthYearWrapper = document.querySelector("#month_year_id_edit");
+                    if (monthYearWrapper) {
+                        monthYearWrapper.style.display = (invoice.invoice_type === 'tuition_fee') ? '' : 'none';
+                    }
+
+                    // Populate inputs
+                    document.querySelector("input[name='invoice_amount_edit']").value = invoice.total_amount;
+
+                    // Helper for select2 values
+                    const setSelect2Value = (name, value) => {
+                        const el = $(`select[name="${name}"]`);
+                        if (el.length) {
+                            el.val(value).trigger('change');
+                        }
+                    };
+
+                    setSelect2Value("invoice_type_edit", invoice.invoice_type);
+
+                    // Month-year handling
+                    const monthYearSelect = $("select[name='invoice_month_year_edit']");
+                    if (monthYearSelect.length) {
+                        monthYearSelect.empty();
+                        const [month, year] = (invoice.month_year || '').split('_');
+                        const monthName = new Date(`${year}-${month}-01`).toLocaleString('default', { month: 'long' });
+
+                        const formatted = `${monthName} ${year}`;
+                        const option = new Option(formatted, invoice.month_year, true, true);
+                        monthYearSelect.append(option).trigger('change');
+                    }
+
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    toastr.error(error.message || "Failed to load invoice details");
+                });
+        });
+    };
+
 
     // Form validation
     var initValidation = function () {

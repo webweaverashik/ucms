@@ -12,7 +12,7 @@ var KTUsersList = function () {
                "info": true,
                'order': [],
                "lengthMenu": [10, 25, 50, 100],
-               "pageLength": 2,
+               "pageLength": 10,
                "lengthChange": true,
                "autoWidth": false,  // Disable auto width
                'columnDefs': [{ orderable: false, targets: [5, 6] }]
