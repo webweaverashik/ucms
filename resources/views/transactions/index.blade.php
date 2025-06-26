@@ -137,6 +137,7 @@
                         <th>Payment Type</th>
                         <th class="w-350px">Student</th>
                         <th>Payment Date</th>
+                        <th>Received By</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -181,6 +182,10 @@
 
                             <td>
                                 {{ $transaction->created_at->format('h:i A, d-M-Y') }}
+                            </td>
+
+                            <td>
+                                {{ $transaction->createdBy->name ?? 'System' }}
                             </td>
 
                             <td>

@@ -35,6 +35,6 @@ class SheetTopicTaken extends Model
 
     public function distributedBy()
     {
-        return $this->belongsTo(User::class, 'distributed_by');
+        return $this->belongsTo(User::class, 'distributed_by')->withTrashed();
     }
 }

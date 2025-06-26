@@ -36,7 +36,7 @@ class PaymentInvoice extends Model
 
     public function createdBy()
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->belongsTo(User::class, 'created_by')->withTrashed();
     }
 
     /*
