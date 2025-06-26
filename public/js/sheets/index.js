@@ -245,7 +245,9 @@ var KTEditSheet = function () {
                   const button = e.target.closest("[data-bs-target='#kt_modal_edit_sheet']");
                   if (!button) return;
 
-                  const sheetId = button.getAttribute("data-sheet-id");
+                  sheetId = button.getAttribute("data-sheet-id");
+                  console.log('Sheet ID:', sheetId);
+                  
                   const sheetClass = button.getAttribute("data-sheet-class");
                   const sheetPrice = button.getAttribute("data-sheet-price");
 

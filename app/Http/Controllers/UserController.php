@@ -158,21 +158,19 @@ class UserController extends Controller
     /**
      * Reset user password
      */
-    public function userPasswordReset(Request $request)
+    public function userPasswordReset(Request $request, User $user)
     {
-        $user = User::findOrFail($request->user_id);
-
         $request->validate([
             'new_password' => 'required|string|min:6',
         ]);
 
         if (! $user) {
-            return redirect()->back()->with('error', 'User not found');
+            return response()->json(['success' => false, 'message' => 'User not found.']);
         }
 
         $user->password = Hash::make($request->new_password);
         $user->save();
 
-        return redirect()->back()->with('success', 'Successfully updated password.');
+        return response()->json(['success' => true]);
     }
 }

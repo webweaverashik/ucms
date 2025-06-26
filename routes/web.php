@@ -43,7 +43,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     // ------- Custom routes start -------
     // Users
     Route::post('users/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggleActive');
-    Route::post('users/password', [UserController::class, 'userPasswordReset'])->name('users.password.reset');
+    Route::put('users/{user}/password', [UserController::class, 'userPasswordReset'])->name('users.password.reset');
 
     // Students
     Route::get('students/pending', [StudentController::class, 'pending'])->name('students.pending');

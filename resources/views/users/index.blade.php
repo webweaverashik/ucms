@@ -640,9 +640,7 @@
                 <!--begin::Modal body-->
                 <div class="modal-body px-5 my-7">
                     <!--begin::Form-->
-                    <form id="kt_modal_edit_password_form" class="form" action="{{ route('users.password.reset') }}"
-                        method="POST">
-                        @csrf
+                    <form id="kt_modal_edit_password_form" class="form" action="#" novalidate="novalidate">
                         <!--begin::Scroll-->
                         <div class="d-flex flex-column scroll-y px-5" id="kt_modal_edit_password_scroll"
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
@@ -653,8 +651,6 @@
                                     <!--begin::Input group-->
                                     <div class="fv-row mb-7">
                                         <!--begin::Label-->
-                                        <input type="hidden" name="user_id" id="user_id_input">
-
                                         <label class="required fw-semibold fs-6 mb-2">Write New Password</label>
                                         <!--end::Label-->
 
@@ -666,6 +662,13 @@
                                                 style="cursor: pointer;" title="See Password" data-bs-toggle="tooltip">
                                                 <i class="ki-outline ki-eye fs-3"></i>
                                             </span>
+                                        </div>
+
+                                        <!-- Password strength meter -->
+                                        <div id="password-strength-text" class="mt-1 fw-bold small text-muted"></div>
+                                        <div class="progress mt-1" style="height: 5px;">
+                                            <div id="password-strength-bar" class="progress-bar" role="progressbar"
+                                                style="width: 0%"></div>
                                         </div>
                                     </div>
                                     <!--end::Input group-->
@@ -714,39 +717,5 @@
 
     <script>
         document.getElementById("users_link").classList.add("active");
-    </script>
-
-
-    {{-- Toggle show/hide password --}}
-    <script>
-        document.querySelectorAll('.toggle-password').forEach(toggle => {
-            toggle.addEventListener('click', function() {
-                const inputId = this.getAttribute('data-target');
-                const input = document.getElementById(inputId);
-                const icon = this.querySelector('i');
-
-                const isPassword = input.type === 'password';
-                input.type = isPassword ? 'text' : 'password';
-
-                icon.classList.toggle('ki-eye');
-                icon.classList.toggle('ki-eye-slash');
-            });
-        });
-    </script>
-
-
-    {{-- AJAX data load for edit password button to hidden input field --}}
-    <script>
-        $(document).ready(function() {
-            $('.change-password-btn').on('click', function() {
-                const userId = $(this).data('user-id');
-                const userName = $(this).data('user-name');
-
-                $('#user_id_input').val(userId);
-                setTimeout(function() {
-                    $('#kt_modal_edit_password_title').text(`Password Reset of ${userName}`);
-                }, 50);
-            });
-        });
     </script>
 @endpush
