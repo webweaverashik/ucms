@@ -114,7 +114,7 @@
                                     data-kt-subscription-table-filter="status">
                                     <option></option>
                                     @foreach ($classnames as $classname)
-                                        <option value="{{ $classname->class_numeral }}_ucms">{{ $classname->name }}
+                                        <option value="{{ $classname->id }}_{{ $classname->class_numeral }}_ucms">{{ $classname->name }} ({{ $classname->class_numeral }})
                                         </option>
                                     @endforeach
                                 </select>
@@ -188,15 +188,15 @@
                                     <!--begin::user details-->
                                 </div>
                             </td>
-                            <td class="d-none">{{ $student->class->class_numeral }}_ucms</td>
+                            <td class="d-none">{{ $student->class_id }}_{{ $student->class->class_numeral }}_ucms</td>
                             <td>{{ $student->class->name }}</td>
                             <td>{{ $student->shift->name }}</td>
                             <td>{{ $student->institution->name }}
                                 (EIIN: {{ $student->institution->eiin_number }})</td>
                             <td>
                                 @foreach ($student->guardians as $guardian)
-                                    <a href="{{ route('guardians.show', $guardian->id) }}"><span
-                                            class="badge badge-light-primary text-hover-success">{{ $guardian->name }},
+                                    <a href="#"><span
+                                            class="badge badge-light-primary text-hover-success fs-7">{{ $guardian->name }},
                                             {{ ucfirst($guardian->relationship) }}</span></a><br>
                                 @endforeach
                             </td>

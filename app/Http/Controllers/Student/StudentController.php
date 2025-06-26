@@ -99,7 +99,6 @@ class StudentController extends Controller
             'birth_date'              => 'required',
             'student_gender'          => 'required|in:male,female',
             'student_religion'        => 'nullable|string|in:Islam,Hinduism,Christianity,Buddhism,Others',
-            // 'student_blood_group'     => 'nullable|string|in:A+,B+,AB+,O+,A-,B-,AB-,O-',
             'student_blood_group'     => 'nullable|string',
             'student_class'           => 'required|integer|exists:class_names,id',
             'student_academic_group'  => 'nullable|string|in:General,Science,Commerce,Arts',
@@ -357,15 +356,21 @@ class StudentController extends Controller
         }
 
         // Get all sheet payments of the student
-        $sheetPayments = $student->sheetPayments()->with(['sheet.class.subjects'])->get();
+        $sheetPayments = $student
+            ->sheetPayments()
+            ->with(['sheet.class.subjects'])
+            ->get();
 
         // Extract unique class names
-        $sheet_class_names = $sheetPayments->pluck('sheet.class')->unique('id')->map(function ($class) {
-            return [
-                'name'          => $class->name,
-                'class_numeral' => $class->class_numeral,
-            ];
-        });
+        $sheet_class_names = $sheetPayments
+            ->pluck('sheet.class')
+            ->unique('id')
+            ->map(function ($class) {
+                return [
+                    'name'          => $class->name,
+                    'class_numeral' => $class->class_numeral,
+                ];
+            });
 
         // Extract unique subject names from those classes
         $sheet_subjectNames = $sheetPayments
@@ -418,6 +423,8 @@ class StudentController extends Controller
      */
     public function update(Request $request, Student $student)
     {
+        $isAccountant = auth()->user()->hasRole('accountant');
+
         // Validate request data
         $validated = $request->validate([
             // Student Table Fields
@@ -428,10 +435,10 @@ class StudentController extends Controller
             'student_gender'          => 'required|in:male,female',
             'student_religion'        => 'nullable|string|in:Islam,Hinduism,Christianity,Buddhism,Others',
             'student_blood_group'     => 'nullable|string',
-            'student_class'           => 'required|integer|exists:class_names,id',
+            'student_class'           => $isAccountant ? 'nullable' : 'required|integer|exists:class_names,id',
             'student_academic_group'  => 'nullable|string|in:General,Science,Commerce,Arts',
-            'student_shift'           => 'required|integer|exists:shifts,id',
-            'student_institution'     => 'required|integer|exists:institutions,id',
+            'student_shift'           => $isAccountant ? 'nullable' : 'required|integer|exists:shifts,id',
+            'student_institution'     => $isAccountant ? 'nullable' : 'required|integer|exists:institutions,id',
             'subjects'                => 'required|array',
             'subjects.*'              => 'integer|exists:subjects,id',
             'student_remarks'         => 'nullable|string|max:1000',
@@ -443,12 +450,12 @@ class StudentController extends Controller
             'student_phone_whatsapp'  => ['nullable', 'regex:/^01[3-9]\d{8}$/'],
 
             // Payment Table Fields
-            'student_tuition_fee'     => 'required|numeric|min:0',
-            'payment_style'           => 'required|in:current,due',
-            'payment_due_date'        => 'required|integer|in:7,10,15,30',
+            'student_tuition_fee'     => $isAccountant ? 'nullable' : 'required|numeric|min:0',
+            'payment_style'           => $isAccountant ? 'nullable' : 'required|in:current,due',
+            'payment_due_date'        => $isAccountant ? 'nullable' : 'required|integer|in:7,10,15,30',
 
             // Guardians Table Fields (Up to 3)
-            'guardian_1_id'           => 'required|integer|exists:guardians,id',
+            'guardian_1_id'           => 'nullable|integer|exists:guardians,id',
             'guardian_1_name'         => 'required|string|max:255',
             'guardian_1_mobile'       => 'required|string|max:11',
             'guardian_1_gender'       => 'required|in:male,female',
@@ -476,21 +483,21 @@ class StudentController extends Controller
             'sibling_2_relationship'  => 'nullable|string|in:brother,sister',
         ]);
 
-        return DB::transaction(function () use ($validated, $student) {
+        return DB::transaction(function () use ($validated, $student, $isAccountant) {
             // Update student record
             $student->update([
-                'name'           => $validated['student_name'],
-                'date_of_birth'  => Carbon::createFromFormat('d-m-Y', $validated['birth_date'])->format('Y-m-d'),
-                'gender'         => $validated['student_gender'],
-                'class_id'       => $validated['student_class'],
-                'academic_group' => $validated['student_academic_group'] ?? 'General',
-                'shift_id'       => $validated['student_shift'],
-                'institution_id' => $validated['student_institution'],
-                'religion'       => $validated['student_religion'] ?? null,
-                'blood_group'    => $validated['student_blood_group'] ?? null,
-                'home_address'   => $validated['student_home_address'] ?? null,
-                'email'          => $validated['student_email'] ?? null,
-                'remarks'        => $validated['student_remarks'] ?? null,
+                'name'          => $validated['student_name'],
+                'date_of_birth' => Carbon::createFromFormat('d-m-Y', $validated['birth_date'])->format('Y-m-d'),
+                'gender'        => $validated['student_gender'],
+                // 'class_id'       => $validated['student_class'],
+                // 'academic_group' => $validated['student_academic_group'] ?? 'General',
+                // 'shift_id'       => $validated['student_shift'],
+                // 'institution_id' => $validated['student_institution'],
+                'religion'      => $validated['student_religion'] ?? null,
+                'blood_group'   => $validated['student_blood_group'] ?? null,
+                'home_address'  => $validated['student_home_address'] ?? null,
+                'email'         => $validated['student_email'] ?? null,
+                'remarks'       => $validated['student_remarks'] ?? null,
             ]);
 
             // Handle avatar update
@@ -522,6 +529,18 @@ class StudentController extends Controller
 
                 $allFieldsEmpty = ! $name && ! $mobile && ! $gender && ! $relation;
 
+                if (! $allFieldsEmpty && $relation) {
+                    // 🔍 Check if the same relationship is already assigned to another guardian
+                    $exists = $student->guardians()->where('relationship', $relation)->when($guardianId, fn($q) => $q->where('id', '!=', $guardianId))->exists();
+
+                    if ($exists) {
+                        throw \Illuminate\Validation\ValidationException::withMessages([
+                            "guardian_{$i}_relationship" => 'Cannot add another ' . $relation. ' type guardian.',
+                        ]);
+                    }
+                }
+
+                // Rest of your logic continues below
                 if ($guardianId && ! $allFieldsEmpty) {
                     // Update existing guardian
                     $guardian = Guardian::find($guardianId);
@@ -585,13 +604,6 @@ class StudentController extends Controller
                 }
             }
 
-            // Update payment details
-            $student->payments()->update([
-                'payment_style' => $validated['payment_style'],
-                'due_date'      => $validated['payment_due_date'],
-                'tuition_fee'   => $validated['student_tuition_fee'],
-            ]);
-
             // Update mobile numbers
             $student->mobileNumbers()->updateOrCreate(['number_type' => 'home'], ['mobile_number' => $validated['student_phone_home']]);
 
@@ -604,6 +616,23 @@ class StudentController extends Controller
                 } else {
                     MobileNumber::create(['student_id' => $student->id, 'mobile_number' => $validated['student_phone_whatsapp'], 'number_type' => 'whatsapp']);
                 }
+            }
+
+            // Accountant cannot update step 3 and step 4
+            if (! $isAccountant) {
+                $student->update([
+                    'class_id'       => $validated['student_class'],
+                    'academic_group' => $validated['student_academic_group'] ?? 'General',
+                    'shift_id'       => $validated['student_shift'],
+                    'institution_id' => $validated['student_institution'],
+                ]);
+
+                // Update payment details
+                $student->payments()->update([
+                    'payment_style' => $validated['payment_style'],
+                    'due_date'      => $validated['payment_due_date'],
+                    'tuition_fee'   => $validated['student_tuition_fee'],
+                ]);
             }
 
             return response()->json(['success' => true, 'student' => $student, 'message' => 'Student updated successfully']);
@@ -677,23 +706,15 @@ class StudentController extends Controller
         $currentMonthYear = "{$currentMonth}_{$currentYear}";
 
         // Check if current month invoice exists
-        $currentMonthInvoice = $student->paymentInvoices()
-            ->where('month_year', $currentMonthYear)
-            ->where('invoice_type', 'tuition_fee')
-            ->withoutTrashed()
-            ->exists();
+        $currentMonthInvoice = $student->paymentInvoices()->where('month_year', $currentMonthYear)->where('invoice_type', 'tuition_fee')->withoutTrashed()->exists();
 
         // Get last invoice regardless of month
-        $lastInvoice = $student->paymentInvoices()
-            ->where('invoice_type', 'tuition_fee')
-            ->withoutTrashed()
-            ->orderByRaw("SUBSTRING_INDEX(month_year, '_', -1) DESC, SUBSTRING_INDEX(month_year, '_', 1) DESC")
-            ->first();
+        $lastInvoice = $student->paymentInvoices()->where('invoice_type', 'tuition_fee')->withoutTrashed()->orderByRaw("SUBSTRING_INDEX(month_year, '_', -1) DESC, SUBSTRING_INDEX(month_year, '_', 1) DESC")->first();
 
         return response()->json([
             'last_invoice_month'           => $lastInvoice ? $lastInvoice->month_year : null,
             'current_month_invoice_exists' => $currentMonthInvoice,
-            'should_show_next_month'       => ($currentDate->day >= 25 && $currentMonthInvoice),
+            'should_show_next_month'       => $currentDate->day >= 25 && $currentMonthInvoice,
             'tuition_fee'                  => $student->payments->tuition_fee,
         ]);
     }
@@ -706,5 +727,4 @@ class StudentController extends Controller
 
         return response()->json(['sheet_fee' => $sheetFee]);
     }
-
 }

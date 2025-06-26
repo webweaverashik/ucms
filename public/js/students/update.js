@@ -239,7 +239,7 @@ var KTUpdateStudent = function () {
                               <!--begin::Content-->
                               <div class="d-flex flex-column pe-0 pe-sm-10">
                               <h5 class="mb-1 text-danger">The following errors have been found.</h5>
-                              <span class="text-danger">${error}</span>
+                              <span class="text-danger fs-7">${error}</span>
                               </div>
                               <!--end::Content-->
 

@@ -531,7 +531,10 @@
                         <!--end::Heading-->
                         
                         {{-- Hidden Inputs - Guardian IDs --}}
+                        @if ($student->guardians->get(0))
                         <input type="hidden" name="guardian_1_id" value="{{ $student->guardians[0]->id }}">
+                        @endif
+
                         @if ($student->guardians->get(1))
                             <input type="hidden" name="guardian_2_id" value="{{ $student->guardians[1]->id }}">
                         @endif
@@ -820,7 +823,7 @@
                                 <div class="overflow-hidden flex-grow-1">
                                     <select name="student_institution"
                                         class="form-select form-select-solid rounded-start-0 border-start"
-                                        data-control="select2" data-placeholder="Select an instituition" required>
+                                        data-control="select2" data-placeholder="Select an instituition" required @if(auth()->user()->hasRole('accountant')) disabled @endif>
                                         <option></option>
                                         @foreach ($institutions as $institution)
                                             <option value="{{ $institution->id }}"
@@ -847,7 +850,7 @@
                                     <!--begin::Solid input group style-->
                                     <select name="student_class" id="student_class_input"
                                         class="form-select form-select-solid" data-control="select2"
-                                        data-placeholder="Assign to a class" required>
+                                        data-placeholder="Assign to a class" required @if(auth()->user()->hasRole('accountant')) disabled @endif>
                                         <option></option>
                                         @foreach ($classnames as $classname)
                                             <option value="{{ $classname->id }}"
@@ -877,9 +880,9 @@
                                             <!--begin::Option-->
                                             <input type="radio" class="btn-check" name="student_academic_group"
                                                 value="Science" @if ($student->academic_group == 'Science' || $student->academic_group == 'General') checked="checked" @endif
-                                                id="academic_group_science_input" required />
+                                                id="academic_group_science_input" required @if(auth()->user()->hasRole('accountant')) disabled @endif/>
                                             <label
-                                                class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                                class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center @if(auth()->user()->hasRole('accountant')) disabled @endif"
                                                 for="academic_group_science_input">
                                                 <i class="las la-flask fs-2x me-5"></i>
                                                 <!--begin::Info-->
@@ -897,9 +900,9 @@
                                             <!--begin::Option-->
                                             <input type="radio" class="btn-check" name="student_academic_group"
                                                 value="Commerce" @if ($student->academic_group == 'Commerce') checked="checked" @endif
-                                                id="academic_group_commerce_input" required />
+                                                id="academic_group_commerce_input" required @if(auth()->user()->hasRole('accountant')) disabled @endif/>
                                             <label
-                                                class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                                class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center @if(auth()->user()->hasRole('accountant')) disabled @endif"
                                                 for="academic_group_commerce_input">
                                                 <i class="las la-business-time fs-2x me-5"></i>
                                                 <!--begin::Info-->
@@ -976,13 +979,13 @@
                                     <div class="col">
                                         <!--begin::Option-->
                                         <label
-                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary @if ($student->shift_id == $shift->id) active @endif d-flex text-start p-6"
+                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary @if ($student->shift_id == $shift->id) active @endif d-flex text-start p-6 @if(auth()->user()->hasRole('accountant')) disabled @endif"
                                             data-kt-button="true">
                                             <!--begin::Radio-->
                                             <span
                                                 class="form-check form-check-custom form-check-solid form-check-sm align-items-start mt-1">
                                                 <input class="form-check-input" type="radio" name="student_shift"
-                                                    value="{{ $shift->id }}" required
+                                                    value="{{ $shift->id }}" required @if(auth()->user()->hasRole('accountant')) disabled @endif
                                                     @if ($student->shift_id == $shift->id) checked="checked" @endif />
                                             </span>
                                             <!--end::Radio-->
@@ -1009,17 +1012,12 @@
                                 <!--begin::Input group-->
                                 <div class="mb-7 fv-row">
                                     <!--begin::Label-->
-                                    <label class="required fw-semibold fs-6 mb-2">Tuition Fee</label>
+                                    <label class="required fw-semibold fs-6 mb-2">Tuition Fee (Tk)</label>
                                     <!--end::Label-->
                                     <!--begin::Input group-->
-                                    {{-- <div class="input-group input-group-solid mb-5 flex-nowrap"> --}}
                                     <input type="number" class="form-control form-control-solid"
                                         name="student_tuition_fee" min="0" placeholder="Write tuition fee"
-                                        required value="{{ $student->payments->tuition_fee }}" />
-                                    {{-- <span class="input-group-text">
-                                            Tk
-                                        </span>
-                                    </div> --}}
+                                        required value="{{ $student->payments->tuition_fee }}" @if(auth()->user()->hasRole('accountant')) disabled @endif/>
                                     <!--end::Input group-->
                                 </div>
                                 <!--end::Input group-->
@@ -1037,16 +1035,16 @@
                                         <!--begin::Radio-->
                                         <div class="form-check form-check-custom form-check-solid me-5">
                                             <input class="form-check-input" type="radio" value="current"
-                                                name="payment_style" id="payment_style_current" required
+                                                name="payment_style" id="payment_style_current" required @if(auth()->user()->hasRole('accountant')) disabled @endif
                                                 @if ($student->payments->payment_style == 'current') checked="checked" @endif />
-                                            <label class="form-check-label fs-6 fw-medium"
+                                            <label class="form-check-label fs-6 fw-medium @if(auth()->user()->hasRole('accountant')) disabled @endif"
                                                 for="payment_style_current">Current</label>
                                         </div>
                                         <div class="form-check form-check-custom form-check-solid">
                                             <input class="form-check-input" type="radio" value="due"
-                                                name="payment_style" id="payment_style_due" required
+                                                name="payment_style" id="payment_style_due" required @if(auth()->user()->hasRole('accountant')) disabled @endif
                                                 @if ($student->payments->payment_style == 'due') checked="checked" @endif />
-                                            <label class="form-check-label fs-6 fw-medium"
+                                            <label class="form-check-label fs-6 fw-medium @if(auth()->user()->hasRole('accountant')) disabled @endif"
                                                 for="payment_style_due">Due</label>
                                         </div>
                                         <!--end::Radio-->
@@ -1065,7 +1063,7 @@
                                     <!--begin::Input-->
                                     <select name="payment_due_date" class="form-select form-select-solid"
                                         data-control="select2" data-hide-search="true" data-placeholder="Select due date"
-                                        required>
+                                        required @if(auth()->user()->hasRole('accountant')) disabled @endif>
                                         <option></option>
                                         @foreach ($dueDates as $value => $label)
                                             <option value="{{ $value }}"

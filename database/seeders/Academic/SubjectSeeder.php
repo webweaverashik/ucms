@@ -94,19 +94,21 @@ class SubjectSeeder extends Seeder
             }
 
             $class = ClassName::where('class_numeral', $classNumeral)->first();
-            if (!$class) continue;
+            if (! $class) {
+                continue;
+            }
 
             foreach ($subjects as $subject) {
                 if (is_string($subject)) {
                     Subject::firstOrCreate([
-                        'name' => $subject,
-                        'class_id' => $class->id,
+                        'name'           => $subject,
+                        'class_id'       => $class->id,
                         'academic_group' => 'General',
                     ]);
                 } else {
                     Subject::firstOrCreate([
-                        'name' => $subject['name'],
-                        'class_id' => $class->id,
+                        'name'           => $subject['name'],
+                        'class_id'       => $class->id,
                         'academic_group' => $subject['group'],
                     ]);
                 }
@@ -114,4 +116,3 @@ class SubjectSeeder extends Seeder
         }
     }
 }
-
