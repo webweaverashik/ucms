@@ -50,7 +50,7 @@ class DatabaseSeeder extends Seeder
             PaymentInvoiceSeeder::class,
             PaymentTransactionSeeder::class,
             SheetSeeder::class,
-            SheetTopicSeeder::class,
+            // SheetTopicSeeder::class,
         ]);
     }
 }
