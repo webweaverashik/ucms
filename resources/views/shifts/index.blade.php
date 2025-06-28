@@ -137,8 +137,7 @@
                                     <!--end::Label-->
 
                                     <!--begin::Solid input group style-->
-                                    <div class="input-group input-group-solid flex-nowrap">
-                                        <div class="overflow-hidden flex-grow-1">
+                                    <div class="flex-nowrap">
                                             <select name="shift_branch" data-hide-search="true"
                                                 class="form-select form-select-solid" data-control="select2"
                                                 data-placeholder="Select branch" required>
@@ -147,7 +146,6 @@
                                                     <option value="{{ $branch->id }}">{{ $branch->branch_name }}</option>
                                                 @endforeach
                                             </select>
-                                        </div>
                                         @error('shift_branch')
                                             <p style="color: red;">{{ $message }}</p>
                                         @enderror

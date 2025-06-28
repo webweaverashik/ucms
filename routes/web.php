@@ -52,6 +52,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('students/{id}/download-form', [PdfController::class, 'downloadAdmissionForm'])->name('students.download');
     Route::get('students/{student}/last-invoice-month', [StudentController::class, 'getLastInvoiceMonth']);
     Route::get('students/{id}/sheet-fee', [StudentController::class, 'getSheetFee']);
+    Route::get('students/transfer', [StudentController::class, 'transferStudent'])->name('students.transfer');
 
     // Invoices
     Route::get('students/{student}/due-invoices', [PaymentInvoiceController::class, 'getDueInvoices'])->name('students.due.invoices');

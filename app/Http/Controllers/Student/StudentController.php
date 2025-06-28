@@ -5,7 +5,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Academic\ClassName;
 use App\Models\Academic\Institution;
 use App\Models\Academic\Shift;
-use App\Models\Academic\Subject;
 use App\Models\Branch;
 use App\Models\Payment\Payment;
 use App\Models\Payment\PaymentInvoice;
@@ -68,21 +67,21 @@ class StudentController extends Controller
      */
     public function create()
     {
-        $students     = Student::all();
-        $guardians    = Guardian::all();
-        $classnames   = ClassName::all();
-        $subjects     = Subject::all();
-        $institutions = Institution::all();
+        // $students     = Student::all();
+        // $guardians    = Guardian::all();
+        // $subjects     = Subject::all();
+        $classnames   = ClassName::select('id', 'name', 'class_numeral')->get();
+        $institutions = Institution::select('id', 'name', 'eiin_number')->get();
 
         $shifts = Shift::when(auth()->user()->branch_id != 0, function ($query) {
             $query->where('branch_id', auth()->user()->branch_id);
-        })->get();
+        })->select('id', 'name', 'branch_id')->get();
 
         $branches = Branch::when(auth()->user()->branch_id != 0, function ($query) {
             $query->where('id', auth()->user()->branch_id);
-        })->get();
+        })->select('id', 'branch_name', 'branch_prefix')->get();
 
-        return view('students.create', compact('students', 'guardians', 'classnames', 'subjects', 'shifts', 'institutions', 'branches'));
+        return view('students.create', compact('classnames', 'shifts', 'institutions', 'branches'));
     }
 
     /**
@@ -531,7 +530,7 @@ class StudentController extends Controller
 
                     if ($exists) {
                         throw \Illuminate\Validation\ValidationException::withMessages([
-                            "guardian_{$i}_relationship" => 'Cannot add another ' . $relation. ' type guardian.',
+                            "guardian_{$i}_relationship" => 'Cannot add another ' . $relation . ' type guardian.',
                         ]);
                     }
                 }
@@ -722,5 +721,17 @@ class StudentController extends Controller
         $sheetFee = optional($student->class->sheet)->price;
 
         return response()->json(['sheet_fee' => $sheetFee]);
+    }
+
+    /* Transfer a student from one branch to another */
+    public function transferStudent()
+    {
+        $students = Student::whereHas('studentActivation', function ($query) {
+            $query->where('active_status', 'active');
+        })->select('id', 'name', 'student_unique_id', 'branch_id', 'class_id', 'shift_id')->get();
+
+        $branches = Branch::all();
+
+        return view('students.transfer', compact('students', 'branches'));
     }
 }

@@ -4,7 +4,7 @@
 
 @extends('layouts.app')
 
-@section('title', 'Assign Notes')
+@section('title', 'Transfer Student')
 
 @section('header-title')
     <div data-kt-swapper="true" data-kt-swapper-mode="{default: 'prepend', lg: 'prepend'}"
@@ -12,7 +12,7 @@
         class="page-title d-flex align-items-center flex-wrap me-3 mb-5 mb-lg-0">
         <!--begin::Title-->
         <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 align-items-center my-0">
-            Notes Distribution
+            Transfer Student
         </h1>
         <!--end::Title-->
         <!--begin::Separator-->
@@ -22,8 +22,8 @@
         <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 ">
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                <a href="#" class="text-muted text-hover-primary">
-                    Notes & Sheets </a>
+                <a href="" class="text-muted text-hover-primary">
+                    All Students </a>
             </li>
             <!--end::Item-->
             <!--begin::Item-->
@@ -33,7 +33,7 @@
             <!--end::Item-->
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                Assign Notes </li>
+                Transfer </li>
             <!--end::Item-->
         </ul>
         <!--end::Breadcrumb-->
@@ -49,12 +49,10 @@
             <!--begin::Card title-->
             <div class="card-title">
                 <!--begin::Search-->
-                <div class="d-flex align-items-center position-relative">
+                <div class="d-flex align-items-center">
                     <!--begin::Student selection-->
                     <div class="fv-row mb-7 w-400px">
-                        <!--begin::Label-->
                         <label class="required fw-semibold fs-6 mb-2">Select Student</label>
-                        <!--end::Label-->
 
                         <!--begin::Solid input group style-->
                         <div class="input-group input-group-solid flex-nowrap">
@@ -63,8 +61,8 @@
                             </span>
                             <div class="overflow-hidden flex-grow-1">
                                 <!-- Student Select -->
-                                <select class="form-select form-select-solid rounded-start-0 border-start" data-control="select2"
-                                    data-placeholder="Select a student" id="student_select_id">
+                                <select class="form-select form-select-solid rounded-start-0 border-start"
+                                    data-control="select2" data-placeholder="Select a student" id="student_select_id">
                                     <option></option>
                                     @foreach ($students as $student)
                                         <option value="{{ $student->id }}">
@@ -78,28 +76,32 @@
                     </div>
                     <!--end::Student selection-->
 
-                    <!--begin::Sheet Group Input-->
-                    <div class="fv-row mb-7 w-350px ">
-                        <!--begin::Label-->
-                        <label class="required fw-semibold fs-6 mb-2">Sheet Group</label>
-                        <!--end::Label-->
+                    <!--begin::Branch selection-->
+                    <div class="fv-row mb-7 ps-5 w-400px">
+                        <label class="required fw-semibold fs-6 mb-2">Branch</label>
 
                         <!--begin::Solid input group style-->
                         <div class="input-group input-group-solid flex-nowrap">
                             <span class="input-group-text">
-                                <i class="ki-outline ki-note-2 fs-3"></i>
+                                <i class="ki-outline ki-faceid fs-3"></i>
                             </span>
                             <div class="overflow-hidden flex-grow-1">
-                                <!-- Sheet Group Select (Initially Disabled) -->
-                                <select id="student_paid_sheet_group" class="form-select form-select-solid rounded-start-0 border-start"
-                                    data-control="select2" data-placeholder="Select a sheet" disabled>
+                                <!-- Student Select -->
+                                <select name="transfer_branch" class="form-select form-select-solid rounded-start-0 border-start"
+                                    data-control="select2" data-hide-search="true" data-placeholder="Select branch" id="transfer_branch_select">
                                     <option></option>
+                                    @foreach ($branches as $branch)
+                                        <option value="{{ $branch->id }}">
+                                            {{ $branch->branch_name }}
+                                        </option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
                         <!--end::Solid input group style-->
                     </div>
-                    <!--end::Sheet Group Input-->
+                    <!--end::Student selection-->
+
                 </div>
                 <!--end::Search-->
             </div>
@@ -121,10 +123,10 @@
 
 @push('page-js')
     <script src="{{ asset('js/notes/distribution.js') }}"></script>
-    
+
 
     <script>
-        document.getElementById("notes_sheets_menu").classList.add("here", "show");
-        document.getElementById("notes_distribution_link").classList.add("active");
+        document.getElementById("student_info_menu").classList.add("here", "show");
+        document.getElementById("transfer_students_link").classList.add("active");
     </script>
 @endpush
