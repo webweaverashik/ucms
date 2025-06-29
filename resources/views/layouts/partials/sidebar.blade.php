@@ -102,7 +102,7 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link--><a class="menu-link" id="promote_students_link"
-                                            href="#"><span class="menu-bullet"><span
+                                            href="{{ route('students.promote') }}"><span class="menu-bullet"><span
                                                     class="bullet bullet-dot"></span></span><span class="menu-title">Promote
                                                 Students</span></a>
                                         <!--end:Menu link-->

@@ -734,4 +734,16 @@ class StudentController extends Controller
 
         return view('students.transfer', compact('students', 'branches'));
     }
+
+    /* Transfer a student from one branch to another */
+    public function promoteStudents()
+    {
+        $students = Student::whereHas('studentActivation', function ($query) {
+            $query->where('active_status', 'active');
+        })->select('id', 'name', 'student_unique_id', 'branch_id', 'class_id', 'shift_id')->get();
+
+        $classes = ClassName::all();
+
+        return view('students.promote', compact('students', 'classes'));
+    }
 }
