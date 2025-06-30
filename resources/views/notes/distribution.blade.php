@@ -79,7 +79,7 @@
                     <!--end::Student selection-->
 
                     <!--begin::Sheet Group Input-->
-                    <div class="fv-row mb-7 w-350px ps-2">
+                    <div class="fv-row mb-7 w-350px ps-4">
                         <!--begin::Label-->
                         <label class="required fw-semibold fs-6 mb-2">Sheet Group</label>
                         <!--end::Label-->
