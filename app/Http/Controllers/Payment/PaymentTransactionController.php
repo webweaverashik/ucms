@@ -14,6 +14,11 @@ class PaymentTransactionController extends Controller
      */
     public function index()
     {
+        if (! auth()->user()->can('transactions.view')) {
+            return redirect()->back()->with('warning', 'No permission to view transactions.');
+        }
+
+
         $branchId = auth()->user()->branch_id;
 
         // Simplified transactions query
@@ -45,7 +50,7 @@ class PaymentTransactionController extends Controller
      */
     public function create()
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        return redirect()->back()->with('warning', 'URL Not Allowed');
     }
 
     /**
@@ -134,7 +139,7 @@ class PaymentTransactionController extends Controller
      */
     public function show(string $id)
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        return redirect()->back()->with('warning', 'URL Not Allowed');
     }
 
     /**
@@ -142,7 +147,7 @@ class PaymentTransactionController extends Controller
      */
     public function edit(string $id)
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        return redirect()->back()->with('warning', 'URL Not Allowed');
     }
 
     /**
@@ -150,7 +155,7 @@ class PaymentTransactionController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        return redirect()->back()->with('warning', 'URL Not Allowed');
     }
 
     /**
@@ -158,6 +163,6 @@ class PaymentTransactionController extends Controller
      */
     public function destroy(string $id)
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        return redirect()->back()->with('warning', 'URL Not Allowed');
     }
 }

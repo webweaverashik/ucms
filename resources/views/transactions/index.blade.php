@@ -190,11 +190,11 @@
 
                             <td>
                                 @can('transactions.payslip.download')
-                                <a href="{{ route('transactions.download', $transaction->id) }}" target="_blank"
-                                    data-bs-toggle="tooltip" title="Download Payslip"
-                                    class="btn btn-icon btn-active-light-primary w-30px h-30px me-3">
-                                    <i class="bi bi-download fs-2"></i>
-                                </a>
+                                    <a href="{{ route('transactions.download', $transaction->id) }}" target="_blank"
+                                        data-bs-toggle="tooltip" title="Download Payslip"
+                                        class="btn btn-icon btn-active-light-primary w-30px h-30px me-3">
+                                        <i class="bi bi-download fs-2"></i>
+                                    </a>
                                 @endcan
                             </td>
                         </tr>

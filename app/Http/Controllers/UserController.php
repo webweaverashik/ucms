@@ -13,6 +13,10 @@ class UserController extends Controller
      */
     public function index()
     {
+        if (! auth()->user()->can('users.manage')) {
+            return redirect()->back()->with('warning', 'Not Allowed.');
+        }
+
         $users    = User::withoutTrashed()->orderby('id', 'desc')->get();
         $branches = Branch::all();
 

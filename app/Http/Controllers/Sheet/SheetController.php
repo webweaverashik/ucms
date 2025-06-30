@@ -18,6 +18,10 @@ class SheetController extends Controller
      */
     public function index()
     {
+        if (! auth()->user()->can('sheets.view')) {
+            return redirect()->back()->with('warning', 'No permission to view sheets.');
+        }
+
         $sheets  = Sheet::latest()->get();
         $classes = ClassName::all();
 
@@ -63,6 +67,10 @@ class SheetController extends Controller
      */
     public function show(string $id)
     {
+        if (! auth()->user()->can('sheets.view')) {
+            return redirect()->back()->with('warning', 'No permission to view sheets.');
+        }
+
         $sheet = Sheet::find($id);
 
         if (! $sheet) {
@@ -77,7 +85,7 @@ class SheetController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        return redirect()->back()->with('warning', 'URL Not Allowed');
     }
 
     /**
@@ -104,7 +112,7 @@ class SheetController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        return redirect()->back()->with('warning', 'URL Not Allowed');
     }
 
     public function sheetPayments()

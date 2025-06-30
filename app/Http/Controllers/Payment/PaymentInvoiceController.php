@@ -15,6 +15,10 @@ class PaymentInvoiceController extends Controller
      */
     public function index()
     {
+        if (! auth()->user()->can('invoices.view')) {
+            return redirect()->back()->with('warning', 'No permission to view invoices.');
+        }
+
         $branchId = auth()->user()->branch_id;
 
         $unpaid_query = PaymentInvoice::where('status', '!=', 'paid')->whereHas('student', function ($query) use ($branchId) {
@@ -78,7 +82,7 @@ class PaymentInvoiceController extends Controller
      */
     public function create()
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        return redirect()->back()->with('warning', 'Not Allowed');
     }
 
     /**
@@ -175,6 +179,10 @@ class PaymentInvoiceController extends Controller
      */
     public function show(string $id)
     {
+        if (! auth()->user()->can('invoices.view')) {
+            return redirect()->back()->with('warning', 'No permission to view invoices.');
+        }
+
         $invoice = PaymentInvoice::with('student')->find($id);
 
         if (! $invoice || $invoice->student === null || $invoice->student->trashed()) {
@@ -206,7 +214,7 @@ class PaymentInvoiceController extends Controller
      */
     public function edit(string $id)
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        return redirect()->back()->with('warning', 'Not Allowed');
     }
 
     /**

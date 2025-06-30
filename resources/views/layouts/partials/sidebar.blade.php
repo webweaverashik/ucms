@@ -174,7 +174,7 @@
                     @endcanany
 
 
-                    @canany(['institutions.manage', 'classes.manage', 'shifts.manage'])
+                    @canany(['institutions.view', 'classes.view', 'shifts.manage'])
                         <!--begin:Academic Menu item-->
                         <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="academic_menu">
                             <!--begin:Menu link-->
@@ -190,7 +190,7 @@
 
                             <!--begin:Menu sub-->
                             <div class="menu-sub menu-sub-accordion">
-                                @can('institutions.manage')
+                                @can('institutions.view')
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link--><a class="menu-link" id="institutions_link"
@@ -202,7 +202,7 @@
                                     <!--end:Menu item-->
                                 @endcan
 
-                                @can('classes.manage')
+                                @can('classes.view')
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link--><a class="menu-link" id="class_link"

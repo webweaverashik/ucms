@@ -109,12 +109,14 @@
                         <!--end::Menu 1-->
                         <!--end::Filter-->
 
-                        <!--begin::Add New Guardian-->
-                        <a href="#" class="btn btn-primary" data-bs-toggle="modal"
-                            data-bs-target="#kt_modal_add_institution">
-                            <i class="ki-outline ki-plus fs-2"></i>New Institution
-                        </a>
-                        <!--end::Add New Guardian-->
+                        @can('institutions.create')
+                            <!--begin::Add New Institution-->
+                            <a href="#" class="btn btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#kt_modal_add_institution">
+                                <i class="ki-outline ki-plus fs-2"></i>New Institution
+                            </a>
+                            <!--end::Add New Institution-->
+                        @endcan
                     </div>
                     <!--end::Toolbar-->
 
@@ -126,44 +128,50 @@
             <!--begin::Card body-->
             <div class="card-body pt-0">
                 <!--begin::Table-->
-                    <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_institutions_table">
-                        <thead>
-                            <tr class="fw-bold fs-7 text-uppercase gs-0">
-                                <th class="w-30px">SL</th>
-                                <th class="w-500px">Institution Name</th>
-                                <th>No. of Students</th>
-                                <th>EIIN Number</th>
-                                <th class="d-none">Type (Filter)</th>
-                                <th>Type</th>
-                                <th class="w-100px">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-gray-600 fw-semibold">
-                            @foreach ($institutions as $institution)
-                                <tr>
-                                    <td class="pe-2">{{ $loop->index + 1 }}</td>
-                                    <td class="text-gray-800 mb-1">{{ $institution->name }}</td>
-                                    <td>{{ $institution->students->count() }}</td>
-                                    <td>{{ $institution->eiin_number }}</td>
-                                    <td class="d-none">ucms_{{ $institution->type }}</td>
-                                    <td>{{ ucfirst($institution->type) }}</td>
-                                    <td>
+                <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table"
+                    id="kt_institutions_table">
+                    <thead>
+                        <tr class="fw-bold fs-7 text-uppercase gs-0">
+                            <th class="w-30px">SL</th>
+                            <th class="w-500px">Institution Name</th>
+                            <th>No. of Students</th>
+                            <th>EIIN Number</th>
+                            <th class="d-none">Type (Filter)</th>
+                            <th>Type</th>
+                            <th class="w-100px">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-600 fw-semibold">
+                        @foreach ($institutions as $institution)
+                            <tr>
+                                <td class="pe-2">{{ $loop->index + 1 }}</td>
+                                <td class="text-gray-800 mb-1">{{ $institution->name }}</td>
+                                <td>{{ $institution->students->count() }}</td>
+                                <td>{{ $institution->eiin_number }}</td>
+                                <td class="d-none">ucms_{{ $institution->type }}</td>
+                                <td>{{ ucfirst($institution->type) }}</td>
+                                <td>
+                                    @can('institutions.edit')
                                         <a href="#" title="Edit Institution" data-bs-toggle="modal"
                                             data-bs-target="#kt_modal_edit_institution"
                                             data-institution-id="{{ $institution->id }}"
                                             class="btn btn-icon text-hover-primary w-30px h-30px me-3">
                                             <i class="ki-outline ki-pencil fs-2"></i>
                                         </a>
+                                    @endcan
+
+                                    @can('institutions.delete')
                                         <a href="#" title="Delete Institution" data-bs-toggle="tooltip"
                                             class="btn btn-icon text-hover-danger w-30px h-30px me-3 delete-institution"
                                             data-institution-id="{{ $institution->id }}">
                                             <i class="ki-outline ki-trash fs-2"></i>
                                         </a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                                    @endcan
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
                 <!--end::Table-->
             </div>
             <!--end::Card body-->
@@ -239,8 +247,8 @@
                                     <!--begin::Col-->
                                     <div class="col-lg-6">
                                         <!--begin::Option-->
-                                        <input type="radio" class="btn-check" name="institution_type_add" value="school"
-                                            checked="checked" id="school_input_add" />
+                                        <input type="radio" class="btn-check" name="institution_type_add"
+                                            value="school" checked="checked" id="school_input_add" />
                                         <label
                                             class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                             for="school_input_add">
@@ -257,8 +265,8 @@
                                     <!--begin::Col-->
                                     <div class="col-lg-6">
                                         <!--begin::Option-->
-                                        <input type="radio" class="btn-check" name="institution_type_add" value="college"
-                                            id="college_input" />
+                                        <input type="radio" class="btn-check" name="institution_type_add"
+                                            value="college" id="college_input" />
                                         <label
                                             class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                             for="college_input">
@@ -368,8 +376,8 @@
                                     <!--begin::Col-->
                                     <div class="col-lg-6">
                                         <!--begin::Option-->
-                                        <input type="radio" class="btn-check" name="institution_type_edit" value="school"
-                                            checked="checked" id="school_input_edit" />
+                                        <input type="radio" class="btn-check" name="institution_type_edit"
+                                            value="school" checked="checked" id="school_input_edit" />
                                         <label
                                             class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                             for="school_input_edit">
@@ -386,8 +394,8 @@
                                     <!--begin::Col-->
                                     <div class="col-lg-6">
                                         <!--begin::Option-->
-                                        <input type="radio" class="btn-check" name="institution_type_edit" value="college"
-                                            id="college_input_edit" />
+                                        <input type="radio" class="btn-check" name="institution_type_edit"
+                                            value="college" id="college_input_edit" />
                                         <label
                                             class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                             for="college_input_edit">

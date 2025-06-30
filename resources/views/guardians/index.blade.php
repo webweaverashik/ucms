@@ -226,16 +226,21 @@
                                 @endif
                             </td>
                             <td>
-                                <a href="#" title="Edit Guardian" data-bs-toggle="modal"
-                                    data-bs-target="#kt_modal_edit_guardian" data-guardian-id="{{ $guardian->id }}"
-                                    class="btn btn-icon text-hover-primary w-30px h-30px">
-                                    <i class="ki-outline ki-pencil fs-2"></i>
-                                </a>
-                                <a href="#" title="Delete Guardian" data-bs-toggle="tooltip"
-                                    class="btn btn-icon text-hover-danger w-30px h-30px delete-guardian"
-                                    data-guardian-id="{{ $guardian->id }}">
-                                    <i class="ki-outline ki-trash fs-2"></i>
-                                </a>
+                                @can('guardians.edit')
+                                    <a href="#" title="Edit Guardian" data-bs-toggle="modal"
+                                        data-bs-target="#kt_modal_edit_guardian" data-guardian-id="{{ $guardian->id }}"
+                                        class="btn btn-icon text-hover-primary w-30px h-30px">
+                                        <i class="ki-outline ki-pencil fs-2"></i>
+                                    </a>
+                                @endcan
+
+                                @can('guardians.delete')
+                                    <a href="#" title="Delete Guardian" data-bs-toggle="tooltip"
+                                        class="btn btn-icon text-hover-danger w-30px h-30px delete-guardian"
+                                        data-guardian-id="{{ $guardian->id }}">
+                                        <i class="ki-outline ki-trash fs-2"></i>
+                                    </a>
+                                @endcan
                             </td>
                         </tr>
                     @endforeach

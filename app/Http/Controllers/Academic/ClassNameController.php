@@ -12,6 +12,10 @@ class ClassNameController extends Controller
      */
     public function index()
     {
+        if (! auth()->user()->can('classes.view')) {
+            return redirect()->back()->with('warning', 'No permission to view classes.');
+        }
+
         $classnames = ClassName::latest('id')->get();
 
         return view('classnames.index', compact('classnames'));
@@ -22,7 +26,7 @@ class ClassNameController extends Controller
      */
     public function create()
     {
-        //
+        return redirect()->back()->with('warning', 'URL Not Allowed');
     }
 
     /**
@@ -53,6 +57,10 @@ class ClassNameController extends Controller
      */
     public function show(string $id)
     {
+        if (! auth()->user()->can('classes.view')) {
+            return redirect()->back()->with('warning', 'No permission to view classes.');
+        }
+
         $classname = ClassName::find($id);
 
         if (! $classname) {
@@ -67,7 +75,7 @@ class ClassNameController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        return redirect()->back()->with('warning', 'URL Not Allowed');
     }
 
     /**
@@ -96,7 +104,7 @@ class ClassNameController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        return redirect()->back()->with('warning', 'URL Not Allowed');
     }
 
     /**

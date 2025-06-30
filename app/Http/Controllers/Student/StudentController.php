@@ -726,6 +726,10 @@ class StudentController extends Controller
     /* Transfer a student from one branch to another */
     public function transferStudent()
     {
+        if (! auth()->user()->can('students.transfer')) {
+            return redirect()->back()->with('warning', 'No permission to transfer students.');
+        }
+
         $students = Student::whereHas('studentActivation', function ($query) {
             $query->where('active_status', 'active');
         })->select('id', 'name', 'student_unique_id', 'branch_id', 'class_id', 'shift_id')->get();
@@ -738,6 +742,10 @@ class StudentController extends Controller
     /* Transfer a student from one branch to another */
     public function promoteStudents()
     {
+        if (! auth()->user()->can('students.promote')) {
+            return redirect()->back()->with('warning', 'No permission to promote students.');
+        }
+
         $students = Student::whereHas('studentActivation', function ($query) {
             $query->where('active_status', 'active');
         })->select('id', 'name', 'student_unique_id', 'branch_id', 'class_id', 'shift_id')->get();

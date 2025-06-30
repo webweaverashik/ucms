@@ -15,6 +15,11 @@ class SiblingController extends Controller
      */
     public function index()
     {
+        if (! auth()->user()->can('siblings.view')) {
+            return redirect()->back()->with('warning', 'No permission to view siblings.');
+        }
+
+
         $userBranchId = auth()->user()->branch_id;
 
         $siblings = $userBranchId != 0
@@ -36,7 +41,7 @@ class SiblingController extends Controller
      */
     public function create()
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        return redirect()->back()->with('warning', 'Not Allowed');
     }
 
     /**
@@ -44,7 +49,7 @@ class SiblingController extends Controller
      */
     public function store(Request $request)
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        return redirect()->back()->with('warning', 'Not Allowed');
     }
 
     /**
@@ -52,6 +57,10 @@ class SiblingController extends Controller
      */
     public function show(Sibling $sibling)
     {
+        if (! auth()->user()->can('siblings.view')) {
+            return redirect()->back()->with('warning', 'No permission to view siblings.');
+        }
+
         return response()->json([
             'success' => true,
             'data'    => [
@@ -71,7 +80,7 @@ class SiblingController extends Controller
      */
     public function edit(string $id)
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        return redirect()->back()->with('warning', 'Not Allowed');
     }
 
     /**

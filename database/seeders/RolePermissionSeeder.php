@@ -75,7 +75,10 @@ class RolePermissionSeeder extends Seeder
             'subjects.manage',
 
             // 🏷️ classes
-            'classes.manage',
+            'classes.view',
+            'classes.create',
+            'classes.edit',
+            'classes.delete',
 
             // 🕑 shifts
             'shifts.manage',
@@ -90,7 +93,10 @@ class RolePermissionSeeder extends Seeder
             'teachers.class.track',
 
             // 🏫 institutions
-            'institutions.manage',
+            'institutions.view',
+            'institutions.create',
+            'institutions.edit',
+            'institutions.delete',
 
             // 🏢 branches
             'branches.manage',
@@ -151,6 +157,13 @@ class RolePermissionSeeder extends Seeder
             'siblings.edit',
             'siblings.delete',
 
+            // 🏫 institutions
+            'institutions.view',
+            'institutions.create',
+
+            // 🏷️ classes
+            'classes.view',
+
             // 💸 invoices
             'invoices.view',
             'invoices.create',
@@ -187,7 +200,12 @@ class RolePermissionSeeder extends Seeder
             // 👨‍👧‍👦 siblings
             'siblings.view',
             'siblings.edit',
-            'siblings.delete',
+
+            // 🏫 institutions
+            'institutions.view',
+
+            // 🏷️ classes
+            'classes.view',
 
             // 💸 invoices
             'invoices.view',

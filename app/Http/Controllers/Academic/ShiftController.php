@@ -13,6 +13,10 @@ class ShiftController extends Controller
      */
     public function index()
     {
+        if (! auth()->user()->can('shifts.manage')) {
+            return redirect()->back()->with('warning', 'No permission to view shifts.');
+        }
+
         $shifts = Shift::all();
         $branches = Branch::all();
 
@@ -24,7 +28,7 @@ class ShiftController extends Controller
      */
     public function create()
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        return redirect()->back()->with('warning', 'No permission to create shifts.');
     }
 
     /**
@@ -53,7 +57,7 @@ class ShiftController extends Controller
      */
     public function show(string $id)
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        return redirect()->back()->with('warning', 'URL Not Allowed');
     }
 
     /**
@@ -61,7 +65,7 @@ class ShiftController extends Controller
      */
     public function edit(string $id)
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        return redirect()->back()->with('warning', 'URL Not Allowed');
     }
 
     /**
@@ -69,7 +73,7 @@ class ShiftController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        return redirect()->back()->with('warning', 'URL Not Allowed');
     }
 
     /**
@@ -77,6 +81,6 @@ class ShiftController extends Controller
      */
     public function destroy(string $id)
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        return redirect()->back()->with('warning', 'URL Not Allowed');
     }
 }

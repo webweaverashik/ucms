@@ -44,30 +44,32 @@
 @section('content')
     <!--begin::Row-->
     <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-5 g-xl-9">
-        <!--begin::Add new card-->
-        <div class="col-md-4">
-            <!--begin::Card-->
-            <div class="card h-md-100">
-                <!--begin::Card body-->
-                <div class="card-body d-flex flex-center">
-                    <!--begin::Button-->
-                    <button type="button" class="btn btn-clear d-flex flex-column flex-center" data-bs-toggle="modal"
-                        data-bs-target="#kt_modal_add_class">
-                        <!--begin::Illustration-->
-                        <img src="{{ asset('assets/media/illustrations/sketchy-1/4.png') }}" alt=""
-                            class="mw-100 mh-150px mb-7" />
-                        <!--end::Illustration-->
-                        <!--begin::Label-->
-                        <div class="btn btn-primary fw-bold fs-5">Add New Class</div>
-                        <!--end::Label-->
-                    </button>
-                    <!--begin::Button-->
+        <!--begin::Add new class-->
+        @can('classes.create')
+            <div class="col-md-4">
+                <!--begin::Card-->
+                <div class="card h-md-100">
+                    <!--begin::Card body-->
+                    <div class="card-body d-flex flex-center">
+                        <!--begin::Button-->
+                        <button type="button" class="btn btn-clear d-flex flex-column flex-center" data-bs-toggle="modal"
+                            data-bs-target="#kt_modal_add_class">
+                            <!--begin::Illustration-->
+                            <img src="{{ asset('assets/media/illustrations/sketchy-1/4.png') }}" alt=""
+                                class="mw-100 mh-150px mb-7" />
+                            <!--end::Illustration-->
+                            <!--begin::Label-->
+                            <div class="btn btn-primary fw-bold fs-5">Add New Class</div>
+                            <!--end::Label-->
+                        </button>
+                        <!--begin::Button-->
+                    </div>
+                    <!--begin::Card body-->
                 </div>
-                <!--begin::Card body-->
+                <!--begin::Card-->
             </div>
-            <!--begin::Card-->
-        </div>
-        <!--begin::Add new card-->
+        @endcan
+        <!--begin::Add new class-->
 
         @foreach ($classnames as $classname)
             <!--begin::Col-->
@@ -85,8 +87,10 @@
                     <!--end::Card header-->
                     <!--begin::Card body-->
                     <div class="card-body pt-1">
-                        <div class="fw-bold text-gray-700 mb-5">{{ $classname->description ?? 'This is a sample description. Update the class description to change this.' }}</div>
-                        
+                        <div class="fw-bold text-gray-700 mb-5">
+                            {{ $classname->description ?? 'This is a sample description. Update the class description to change this.' }}
+                        </div>
+
                         <div class="fw-bold text-gray-600 mb-5"><i class="fas fa-users me-2"></i>Total active students:
                             {{ $classname->activeStudents->count() }}</div>
                     </div>
@@ -95,8 +99,10 @@
                     <div class="card-footer flex-wrap pt-0">
                         <a href="{{ route('classnames.show', $classname->id) }}"
                             class="btn btn-light btn-active-primary my-1 me-2">View Class</a>
+                            @can('classes.edit')
                         <button type="button" class="btn btn-light btn-active-light-primary my-1" data-bs-toggle="modal"
                             data-bs-target="#kt_modal_edit_class" data-class-id="{{ $classname->id }}">Edit Class</button>
+                            @endcan
                     </div>
                     <!--end::Card footer-->
                 </div>
@@ -150,9 +156,9 @@
                             <!--begin::Name Input group-->
                             <div class="fv-row mb-7">
                                 <label class="fw-semibold fs-6 mb-2 required">Class Numeral</label>
-                                <select name="class_numeral_add" class="form-select form-select-solid" data-control="select2"
-                                    data-hide-search="true" data-dropdown-parent="#kt_modal_add_class"
-                                    data-placeholder="Select numeral" required>
+                                <select name="class_numeral_add" class="form-select form-select-solid"
+                                    data-control="select2" data-hide-search="true"
+                                    data-dropdown-parent="#kt_modal_add_class" data-placeholder="Select numeral" required>
                                     <option></option>
                                     @for ($i = 12; $i >= 4; $i--)
                                         <option value="{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}">
@@ -239,10 +245,12 @@
 
                             <!--begin::Name Input group-->
                             <div class="fv-row mb-7">
-                                <label class="fw-semibold fs-6 mb-2">Class Numeral <span class="text-muted">(Cannot change)</span></label>
-                                <select name="class_numeral_edit" class="form-select form-select-solid" data-control="select2"
-                                    data-hide-search="true" data-dropdown-parent="#kt_modal_edit_class"
-                                    data-placeholder="Select numeral" disabled>
+                                <label class="fw-semibold fs-6 mb-2">Class Numeral <span class="text-muted">(Cannot
+                                        change)</span></label>
+                                <select name="class_numeral_edit" class="form-select form-select-solid"
+                                    data-control="select2" data-hide-search="true"
+                                    data-dropdown-parent="#kt_modal_edit_class" data-placeholder="Select numeral"
+                                    disabled>
                                     <option></option>
                                     @for ($i = 12; $i >= 4; $i--)
                                         <option value="{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}">

@@ -12,6 +12,10 @@ class InstitutionController extends Controller
      */
     public function index()
     {
+        if (! auth()->user()->can('institutions.view')) {
+            return redirect()->back()->with('warning', 'No permission to view institutions.');
+        }
+
         $institutions = Institution::orderBy('name')->get();
 
         return view('institutions.index', compact('institutions'));
@@ -22,7 +26,7 @@ class InstitutionController extends Controller
      */
     public function create()
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        return redirect()->back();
     }
 
     /**
@@ -67,7 +71,7 @@ class InstitutionController extends Controller
      */
     public function edit(string $id)
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        return redirect()->back();
     }
 
     /**

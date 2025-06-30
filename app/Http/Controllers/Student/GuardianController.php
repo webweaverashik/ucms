@@ -16,6 +16,10 @@ class GuardianController extends Controller
      */
     public function index()
     {
+        if (! auth()->user()->can('guardians.view')) {
+            return redirect()->back()->with('warning', 'No permission to view guardians.');
+        }
+
         $userBranchId = auth()->user()->branch_id;
 
         $guardians = $userBranchId != 0
@@ -36,7 +40,7 @@ class GuardianController extends Controller
      */
     public function create()
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        return redirect()->back()->with('warning', 'Not Allowed');
     }
 
     /**
@@ -44,7 +48,8 @@ class GuardianController extends Controller
      */
     public function store(Request $request)
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        return redirect()->back()->with('warning', 'Not Allowed');
+
     }
 
     /**
@@ -52,6 +57,10 @@ class GuardianController extends Controller
      */
     public function show(Guardian $guardian)
     {
+        if (! auth()->user()->can('guardians.view')) {
+            return redirect()->back()->with('warning', 'No permission to view guardians.');
+        }
+
         return response()->json([
             'success' => true,
             'data'    => [
@@ -64,7 +73,6 @@ class GuardianController extends Controller
             ],
         ]);
 
-        // return redirect()->back()->with('warning', 'Activity Not Allowed');
     }
 
     /**
@@ -72,7 +80,7 @@ class GuardianController extends Controller
      */
     public function edit(string $id)
     {
-        return redirect()->back()->with('warning', 'Activity Not Allowed');
+        return redirect()->back()->with('warning', 'URL Not Allowed');
     }
 
     /**
