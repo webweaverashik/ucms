@@ -11,5 +11,5 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('invoices:generate-monthly')
-    ->everyFiveSeconds() // Run on 1st day of month at 12:30 AM
+    ->everyTenSeconds() // Run on 1st day of month at 12:30 AM
     ->appendOutputTo(storage_path('logs/invoice-generation.log'));
