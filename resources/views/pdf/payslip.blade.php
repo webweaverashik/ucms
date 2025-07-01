@@ -107,23 +107,43 @@
                             ({{ \Carbon\Carbon::createFromFormat('m_Y', $transaction->paymentInvoice->month_year)->format('F Y') }})
                         @endif
                     </td>
-                    <td style="text-align: center;">@if ($transaction->paymentInvoice->invoice_type == 'tuition_fee') {{ $transaction->paymentInvoice->total_amount }} @endif</td>
+                    <td style="text-align: center;">
+                        @if ($transaction->paymentInvoice->invoice_type == 'tuition_fee')
+                            {{ $transaction->paymentInvoice->total_amount }}
+                        @endif
+                    </td>
                 </tr>
                 <tr>
                     <td>Model Test Fee</td>
-                    <td style="text-align: center;">@if ($transaction->paymentInvoice->invoice_type == 'model_test_fee') {{ $transaction->paymentInvoice->total_amount }} @endif</td>
+                    <td style="text-align: center;">
+                        @if ($transaction->paymentInvoice->invoice_type == 'model_test_fee')
+                            {{ $transaction->paymentInvoice->total_amount }}
+                        @endif
+                    </td>
                 </tr>
                 <tr>
                     <td>Admission Fee / Others</td>
-                    <td style="text-align: center;">@if ($transaction->paymentInvoice->invoice_type == 'others_fee') {{ $transaction->paymentInvoice->total_amount }} @endif</td>
+                    <td style="text-align: center;">
+                        @if ($transaction->paymentInvoice->invoice_type == 'others_fee')
+                            {{ $transaction->paymentInvoice->total_amount }}
+                        @endif
+                    </td>
                 </tr>
                 <tr>
                     <td>Sheet Fee</td>
-                    <td style="text-align: center;">@if ($transaction->paymentInvoice->invoice_type == 'sheet_fee') {{ $transaction->paymentInvoice->total_amount }} @endif</td>
+                    <td style="text-align: center;">
+                        @if ($transaction->paymentInvoice->invoice_type == 'sheet_fee')
+                            {{ $transaction->paymentInvoice->total_amount }}
+                        @endif
+                    </td>
                 </tr>
                 <tr>
                     <td>Exam Fee</td>
-                    <td style="text-align: center;">@if ($transaction->paymentInvoice->invoice_type == 'exam_fee') {{ $transaction->paymentInvoice->total_amount }} @endif</td>
+                    <td style="text-align: center;">
+                        @if ($transaction->paymentInvoice->invoice_type == 'exam_fee')
+                            {{ $transaction->paymentInvoice->total_amount }}
+                        @endif
+                    </td>
                 </tr>
                 <tr>
                     <th>Total Payable</th>
@@ -156,8 +176,17 @@
             <tr>
                 <td style="text-align: left;">
                     <div style="text-align: left;">
-                        <span
-                            style="font-style: italic; font-weight: bold;">{{ explode(' ', $transaction->createdBy->name)[1] }}</span><br>
+                        <span style="font-style: italic; font-weight: bold;">
+                            @if ($transaction->createdBy && !empty($transaction->createdBy->name))
+                                @php
+                                    $nameParts = explode(' ', $transaction->createdBy->name);
+                                    $secondName = $nameParts[1] ?? $nameParts[0];
+                                @endphp
+                                {{ $secondName }}
+                            @else
+                                System
+                            @endif
+                        </span><br>
                         <div class="signature-line">Payment Collector</div>
                     </div>
                 </td>
