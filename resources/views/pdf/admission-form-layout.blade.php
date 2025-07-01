@@ -97,7 +97,7 @@
     </style>
 </head>
 
-<body class="p-2">
+<body class="p-1">
     <div class="max-w-[1000px] h-full mx-auto outer-frame p-4 relative">
         <!-- Corner decorations -->
         <div class="corner tl"></div>
@@ -136,83 +136,117 @@
         <div class="inline-block mb-2 text-[15px] font-bold">&#9884; Student Information</div>
 
         <form class="text-[15px]">
-            <div class="mb-2 flex flex-wrap">
-                <label class="w-full md:w-[125px]">Full Name</label>:
-                <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[200px] ml-2">
-                    {{ $student->name }}</div>
-            </div>
-
-            <div class="mb-2 flex flex-wrap">
-                <label class="w-full md:w-[125px] font-normal">Home Address</label>:
-                <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[200px] ml-2">
-                    {{ $student->home_address }}</div>
-            </div>
-
-            <div class="mb-2 flex flex-wrap items-center">
-                <label class="w-full md:w-[125px] font-normal">Phone (Home)</label>:
-                <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[200px] mx-2">
-                    {{ $student->mobileNumbers->where('number_type', 'home')->first()->mobile_number }}</div>
-
-                <span class="mx-2 font-normal">(Whatsapp)</span>
-                <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[200px]">
-                    {{ optional($student->mobileNumbers->where('number_type', 'whatsapp')->first())->mobile_number ?? '' }}
+            <div class="mb-2 flex items-start print:flex-nowrap">
+                <label class="w-[125px] shrink-0 whitespace-nowrap">Full Name</label>
+                <span class="mr-1 shrink-0">:</span>
+                <div class="flex-1 min-w-0 border-b border-dotted border-black dotted-underline ml-2">
+                    {{ $student->name }}
                 </div>
             </div>
 
-            <div class="mb-2 flex flex-wrap items-center">
-                <label class="w-full md:w-[125px] font-normal">Phone (SMS)</label>:
-                <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[200px] mx-2">
-                    {{ $student->mobileNumbers->where('number_type', 'sms')->first()->mobile_number }}</div>
 
-                <span class="ml-2 font-normal">Religion :</span>
-                <label class="ml-2 flex items-center font-normal"><input type="checkbox" class="mr-1"
-                        {{ $student->religion == 'Islam' ? 'checked' : '' }} />Islam</label>
-                <label class="ml-2 flex items-center font-normal"><input type="checkbox" class="mr-1"
-                        {{ $student->religion == 'Hindu' ? 'checked' : '' }} />Hindu</label>
-                <label class="ml-2 flex items-center font-normal"><input type="checkbox" class="mr-1"
-                        {{ $student->religion == 'Others' ? 'checked' : '' }} />Others</label>
+            <div class="mb-2 flex items-start print:flex-nowrap">
+                <label class="w-[125px] shrink-0 whitespace-nowrap font-normal">Home Address</label>
+                <span class="mr-1 shrink-0">:</span>
+                <div class="flex-1 min-w-0 border-b border-dotted border-black dotted-underline ml-2">
+                    {{ $student->home_address }}
+                </div>
             </div>
 
-            <div class="mb-2 flex flex-wrap items-center">
-                <label class="w-full md:w-[125px] font-normal">Class</label>:
-                <div class="flex-1 border-b border-dotted border-black dotted-underline w-[75px] mx-2">
-                    {{ $student->class->class_numeral }}</div>
-                <label class="font-normal mr-2">Blood Group :</label>
-                <div class="border-b border-dotted border-black dotted-underline min-w-[50px] mr-2">
-                    {{ $student->blood_group }}</div>
-                <label class="font-normal mr-2">Date of Birth :</label>
-                <div class="border-b border-dotted border-black dotted-underline min-w-[50px] mr-2">
-                    {{ $student->date_of_birth->format('d/m/Y') }}</div>
-                <label class="ml-2 font-normal">Gender :</label>
-                <label class="ml-2 flex items-center font-normal"><input type="checkbox" class="mr-1"
-                        {{ $student->gender == 'male' ? 'checked' : '' }} />Male</label>
-                <label class="ml-2 flex items-center font-normal"><input type="checkbox" class="mr-1"
-                        {{ $student->gender == 'female' ? 'checked' : '' }} />Female</label>
+
+            <div class="mb-2 flex items-start print:flex-nowrap">
+                <label class="w-[125px] shrink-0 whitespace-nowrap font-normal">Phone (Home)</label>
+                <span class="shrink-0 mr-1">:</span>
+                <div class="shrink-0 border-b border-dotted border-black dotted-underline min-w-[200px] mx-2">
+                    {{ $student->mobileNumbers->where('number_type', 'home')->first()->mobile_number }}
+                </div>
+
+                <span class="shrink-0 mx-2 font-normal whitespace-nowrap">(Whatsapp)</span>
+                <div class="flex-1 min-w-0 border-b border-dotted border-black dotted-underline">
+                    {{ optional($student->mobileNumbers->where('number_type', 'whatsapp')->first())->mobile_number ?? '.' }}
+                </div>
             </div>
 
-            <div class="mb-2 flex flex-wrap items-center">
-                <label class="w-full md:w-[125px] font-normal">School/College</label>:
-                <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[200px] mx-2">
-                    {{ $student->institution->name }} (EIIN: {{ $student->institution->eiin_number }})</div>
-                <label class="font-normal mr-2">Group :</label>
-                <div class="border-b border-dotted border-black dotted-underline min-w-[100px]">
-                    {{ $student->academic_group }}</div>
+
+            <div class="mb-2 flex items-start print:flex-nowrap">
+                <label class="w-[125px] shrink-0 whitespace-nowrap font-normal">Phone (SMS)</label>
+                <span class="shrink-0 mr-1">:</span>
+                <div class="shrink-0 border-b border-dotted border-black dotted-underline min-w-[200px] mx-2">
+                    {{ $student->mobileNumbers->where('number_type', 'sms')->first()->mobile_number }}
+                </div>
+
+                <span class="shrink-0 ml-2 font-normal whitespace-nowrap">Religion :</span>
+
+                <label class="ml-2 shrink-0 flex items-center font-normal whitespace-nowrap">
+                    <input type="checkbox" class="mr-1" {{ $student->religion == 'Islam' ? 'checked' : '' }} /> Islam
+                </label>
+                <label class="ml-2 shrink-0 flex items-center font-normal whitespace-nowrap">
+                    <input type="checkbox" class="mr-1" {{ $student->religion == 'Hindu' ? 'checked' : '' }} /> Hindu
+                </label>
+                <label class="ml-2 shrink-0 flex items-center font-normal whitespace-nowrap">
+                    <input type="checkbox" class="mr-1" {{ $student->religion == 'Others' ? 'checked' : '' }} />
+                    Others
+                </label>
             </div>
+
+
+            <div class="mb-2 flex items-start print:flex-nowrap">
+                <label class="w-[125px] shrink-0 whitespace-nowrap font-normal">Class</label>
+                <span class="shrink-0 mr-1">:</span>
+                <div class="shrink-0 border-b border-dotted border-black dotted-underline w-[75px] mx-2">
+                    {{ $student->class->class_numeral }}
+                </div>
+
+                <label class="shrink-0 font-normal mr-2 whitespace-nowrap">Blood Group :</label>
+                <div class="shrink-0 border-b border-dotted border-black dotted-underline min-w-[50px] mr-2">
+                    {{ $student->blood_group ?? '.' }}
+                </div>
+
+                <label class="shrink-0 font-normal mr-2 whitespace-nowrap">DoB :</label>
+                <div class="shrink-0 border-b border-dotted border-black dotted-underline min-w-[70px] mr-2">
+                    {{ $student->date_of_birth->format('d/m/Y') }}
+                </div>
+
+                <label class="shrink-0 ml-2 font-normal whitespace-nowrap">Gender :</label>
+                <label class="ml-2 shrink-0 flex items-center font-normal whitespace-nowrap">
+                    <input type="checkbox" class="mr-1" {{ $student->gender == 'male' ? 'checked' : '' }} /> Male
+                </label>
+                <label class="ml-2 shrink-0 flex items-center font-normal whitespace-nowrap">
+                    <input type="checkbox" class="mr-1" {{ $student->gender == 'female' ? 'checked' : '' }} /> Female
+                </label>
+            </div>
+
+
+            <div class="mb-2 flex items-start print:flex-nowrap">
+                <label class="w-[125px] shrink-0 whitespace-nowrap font-normal">School/College</label>
+                <span class="shrink-0 mr-1">:</span>
+                <div class="shrink-0 border-b border-dotted border-black dotted-underline min-w-[200px] mx-2">
+                    {{ $student->institution->name }} (EIIN: {{ $student->institution->eiin_number }})
+                </div>
+
+                <label class="shrink-0 font-normal mr-2 whitespace-nowrap">Group :</label>
+                <div class="flex-1 min-w-0 border-b border-dotted border-black dotted-underline">
+                    {{ $student->academic_group }}
+                </div>
+            </div>
+
 
             @php
                 $guardians = $student->guardians;
             @endphp
 
             @foreach ($guardians as $index => $guardian)
-                <div class="mb-1 flex flex-wrap items-center">
-                    <label class="w-full md:w-[125px] font-normal">
+                <div class="mb-1 flex items-start print:flex-nowrap">
+                    <label class="w-[125px] shrink-0 whitespace-nowrap font-normal">
                         {{ ucfirst($guardian->relationship) }}'s Name
-                    </label>:
-                    <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[400px] mx-2">
+                    </label>
+                    <span class="shrink-0 mr-1">:</span>
+                    <div class="shrink-0 border-b border-dotted border-black dotted-underline min-w-[400px] mx-2">
                         {{ $guardian->name }}
                     </div>
-                    <label class="font-normal mr-2">Phone :</label>
-                    <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[100px]">
+
+                    <label class="shrink-0 font-normal mr-2 whitespace-nowrap">Phone :</label>
+                    <div class="flex-1 min-w-0 border-b border-dotted border-black dotted-underline">
                         {{ $guardian->mobile_number }}
                     </div>
                 </div>
@@ -398,11 +432,13 @@
                             @else
                                 {{ $referer->name }}
                             @endif
+                        @else
+                            .
                         @endif
                     </div>
                     <label class="font-normal mx-2">Others Note :</label>
                     <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[200px]">
-                        {{ $student->remarks }}</div>
+                        {{ $student->remarks ?? '-' }}</div>
                 </div>
 
                 <div class="flex justify-between text-[12px] font-normal mt-10">
@@ -418,7 +454,9 @@
 
 <script>
     window.onload = function() {
-        window.print();
+        setTimeout(function() {
+            window.print();
+        }, 500); // Delay to allow layout and images to load
     };
 
     window.onafterprint = function() {

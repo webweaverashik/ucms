@@ -23,7 +23,7 @@
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
                 <a href="" class="text-muted text-hover-primary">
-                    All Students </a>
+                    Student Info </a>
             </li>
             <!--end::Item-->
             <!--begin::Item-->
@@ -128,7 +128,7 @@
 
 
     <script>
-        document.getElementById("student_info_menu").classList.add("here", "show");
+        document.getElementById("admission_menu").classList.add("here", "show");
         document.getElementById("promote_students_link").classList.add("active");
     </script>
 @endpush

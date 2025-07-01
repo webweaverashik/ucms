@@ -70,7 +70,7 @@
                     @endhasanyrole
 
 
-                    @canany(['students.view', 'students.promote', 'students.transfer'])
+                    @canany(['students.view', 'guardians.view', 'siblings.view'])
                         <!--begin:Student Info Menu item-->
                         <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="student_info_menu">
                             <!--begin:Menu link-->
@@ -98,29 +98,28 @@
                                     <!--end:Menu item-->
                                 @endcan
 
-                                @can('students.promote')
-                                    <!--begin:Menu item-->
-                                    <div class="menu-item">
-                                        <!--begin:Menu link--><a class="menu-link" id="promote_students_link"
-                                            href="{{ route('students.promote') }}"><span class="menu-bullet"><span
-                                                    class="bullet bullet-dot"></span></span><span class="menu-title">Promote
-                                                Students</span></a>
-                                        <!--end:Menu link-->
-                                    </div>
-                                    <!--end:Menu item-->
-                                @endcan
+                                
 
-                                @can('students.transfer')
-                                    <!--begin:Menu item-->
+                                <!--begin:Guardians Menu item-->
+                                @can('guardians.view')
                                     <div class="menu-item">
-                                        <!--begin:Menu link--><a class="menu-link" id="transfer_students_link"
-                                            href="{{ route('students.transfer') }}"><span class="menu-bullet"><span
-                                                    class="bullet bullet-dot"></span></span><span class="menu-title">Transfer
-                                                Students</span></a>
-                                        <!--end:Menu link-->
+                                        <a class="menu-link" id="guardians_link" href="{{ route('guardians.index') }}"><span
+                                                class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
+                                                class="menu-title">Guardians</span></a>
                                     </div>
-                                    <!--end:Menu item-->
                                 @endcan
+                                <!--end:Guardians Menu item-->
+
+                                <!--begin:Siblings Menu item-->
+                                @can('siblings.view')
+                                    <div class="menu-item">
+                                        <a class="menu-link" id="siblings_link" href="{{ route('siblings.index') }}"><span
+                                                class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
+                                                class="menu-title">Siblings</span></a>
+                                    </div>
+                                @endcan
+                                <!--end:Siblings Menu item-->
+
                             </div>
                             <!--end:Menu sub-->
                         </div>
@@ -128,7 +127,7 @@
                     @endcanany
 
 
-                    @canany(['students.create', 'students.approve'])
+                    @canany(['students.create', 'students.approve', 'students.promote', 'students.transfer'])
                         <!--begin:Admission Menu item-->
                         <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="admission_menu">
                             <!--begin:Menu link-->
@@ -163,6 +162,30 @@
                                             href="{{ route('students.pending') }}"><span class="menu-bullet"><span
                                                     class="bullet bullet-dot"></span></span><span class="menu-title">Pending
                                                 Approval</span></a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                    <!--end:Menu item-->
+                                @endcan
+
+                                @can('students.promote')
+                                    <!--begin:Menu item-->
+                                    <div class="menu-item">
+                                        <!--begin:Menu link--><a class="menu-link" id="promote_students_link"
+                                            href="{{ route('students.promote') }}"><span class="menu-bullet"><span
+                                                    class="bullet bullet-dot"></span></span><span class="menu-title">Promote
+                                                Students</span></a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                    <!--end:Menu item-->
+                                @endcan
+
+                                @can('students.transfer')
+                                    <!--begin:Menu item-->
+                                    <div class="menu-item">
+                                        <!--begin:Menu link--><a class="menu-link" id="transfer_students_link"
+                                            href="{{ route('students.transfer') }}"><span class="menu-bullet"><span
+                                                    class="bullet bullet-dot"></span></span><span class="menu-title">Transfer
+                                                Students</span></a>
                                         <!--end:Menu link-->
                                     </div>
                                     <!--end:Menu item-->
@@ -296,38 +319,7 @@
                     @endcanany
 
 
-                    @can('guardians.view')
-                        <!--begin:Guardians Menu item-->
-                        <div class="menu-item">
-                            <!--begin:Menu link-->
-                            <a class="menu-link" href="{{ route('guardians.index') }}" id="guardians_link">
-                                <span class="menu-icon">
-                                    {{-- <i class="ki-outline ki-calendar-8 fs-2"></i> --}}
-                                    <i class="fa-solid fa-hands-holding-child fs-2"></i>
-                                </span>
-                                <span class="menu-title">Guardians</span>
-                            </a>
-                            <!--end:Menu link-->
-                        </div>
-                        <!--end:Guardians Menu item-->
-                    @endcan
 
-
-                    @can('siblings.view')
-                        <!--begin:Siblings Menu item-->
-                        <div class="menu-item">
-                            <!--begin:Menu link-->
-                            <a class="menu-link" href="{{ route('siblings.index') }}" id="siblings_link">
-                                <span class="menu-icon">
-                                    {{-- <i class="ki-outline ki-calendar-8 fs-2"></i> --}}
-                                    <i class="fa-solid fa-children fs-2"></i>
-                                </span>
-                                <span class="menu-title">Siblings</span>
-                            </a>
-                            <!--end:Menu link-->
-                        </div>
-                        <!--end:Siblings Menu item-->
-                    @endcan
 
 
                     @canany(['invoices.view', 'transactions.view'])

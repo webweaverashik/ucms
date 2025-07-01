@@ -416,6 +416,7 @@
 
 
     <script>
+        document.getElementById("student_info_menu").classList.add("here", "show");
         document.getElementById("siblings_link").classList.add("active");
     </script>
 @endpush
