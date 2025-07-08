@@ -1,11 +1,10 @@
 <?php
-
 namespace App\Models\Payment;
 
-use App\Models\User;
 use App\Models\Student\Student;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class PaymentTransaction extends Model
 {
@@ -19,6 +18,12 @@ class PaymentTransaction extends Model
         'voucher_no',
         'created_by',
         'remarks',
+        'is_approved',
+    ];
+
+    protected $casts = [
+        // other casts...
+        'is_approved' => 'boolean',
     ];
 
     public function paymentInvoice()
@@ -36,4 +41,3 @@ class PaymentTransaction extends Model
         return $this->belongsTo(User::class, 'created_by')->withTrashed();
     }
 }
-
