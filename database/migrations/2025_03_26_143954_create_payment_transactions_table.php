@@ -19,6 +19,7 @@ return new class extends Migration
             $table->integer('amount_paid');
             $table->string('voucher_no')->unique();
             $table->text('remarks')->nullable();
+            $table->boolean('is_approved')->default(true)->after('remarks');
             $table->foreignId('created_by')->nullable();
             $table->timestamps();
         });
