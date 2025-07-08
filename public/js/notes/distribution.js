@@ -126,9 +126,13 @@ $(document).ready(function () {
                   Object.entries(subjects).forEach(([subject, subjectData]) => {
                         const topic = subjectData.topics[i];
                         if (topic) {
-                              const isTaken = data.distributedTopics.includes(topic.id);
+                              // const isTaken = data.distributedTopics.includes(topic.id);
+                              const isTaken = data.distributedTopics.map(String).includes(String(topic.id));
                               const isActive = topic.status === 'active';
                               const isSelectable = isActive && !isTaken;
+
+
+
 
                               let cellClass = 'calendar-cell';
                               if (isTaken) cellClass += ' taken';
@@ -150,6 +154,10 @@ $(document).ready(function () {
 
                   html += `</div>`;
             }
+
+            console.log("Distributed Topics:", data.distributedTopics);
+            console.log("Sample topic.id:", data.topics?.[0]?.id);
+            
 
             html += `</div></div>
         <div class="mt-4">
