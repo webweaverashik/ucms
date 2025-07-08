@@ -38,9 +38,9 @@ class StudentController extends Controller
         $classnames   = ClassName::all();
         $shifts       = Shift::where('branch_id', $branchId)->get();
         $institutions = Institution::all();
-        // return response()->json($students);
+        $branches     = Branch::all();
 
-        return view('students.index', compact('students', 'classnames', 'shifts', 'institutions'));
+        return view('students.index', compact('students', 'classnames', 'shifts', 'institutions', 'branches'));
     }
 
     public function pending()

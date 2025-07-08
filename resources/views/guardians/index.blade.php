@@ -120,6 +120,23 @@
                             </div>
                             <!--end::Input group-->
 
+                            @if (auth()->user()->hasRole('admin'))
+                                <!--begin::Input group-->
+                                <div class="mb-10">
+                                    <label class="form-label fs-6 fw-semibold">Branch:</label>
+                                    <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
+                                        data-placeholder="Select option" data-allow-clear="true"
+                                        data-kt-subscription-table-filter="product" data-hide-search="true">
+                                        <option></option>
+                                        @foreach ($branches as $branch)
+                                            <option value="{{ ucfirst($branch->branch_name) }}">
+                                                {{ ucfirst($branch->branch_name) }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <!--end::Input group-->
+                            @endif
+
                             <!--begin::Actions-->
                             <div class="d-flex justify-content-end">
                                 <button type="reset" class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"

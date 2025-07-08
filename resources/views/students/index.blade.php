@@ -44,6 +44,17 @@
 
 
 @section('content')
+    @php
+        // Define badge colors for different branches
+        $badgeColors = ['badge-light-primary', 'badge-light-success', 'badge-light-warning'];
+
+        // Map branches to badge colors dynamically
+        $branchColors = [];
+        foreach ($branches as $index => $branch) {
+            $branchColors[$branch->branch_name] = $badgeColors[$index % count($badgeColors)];
+        }
+    @endphp
+
     <!--begin::Card-->
     <div class="card">
         <!--begin::Card header-->
@@ -80,6 +91,23 @@
                         <!--end::Separator-->
                         <!--begin::Content-->
                         <div class="px-7 py-5" data-kt-subscription-table-filter="form">
+                            @if (auth()->user()->hasRole('admin'))
+                                <!--begin::Input group-->
+                                <div class="mb-10">
+                                    <label class="form-label fs-6 fw-semibold">Branch:</label>
+                                    <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
+                                        data-placeholder="Select option" data-allow-clear="true"
+                                        data-kt-subscription-table-filter="product" data-hide-search="true">
+                                        <option></option>
+                                        @foreach ($branches as $branch)
+                                            <option value="{{ ucfirst($branch->branch_name) }}">
+                                                {{ ucfirst($branch->branch_name) }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <!--end::Input group-->
+                            @endif
+
                             <!--begin::Input group-->
                             <div class="mb-10">
                                 <label class="form-label fs-6 fw-semibold">Payment Type:</label>
@@ -116,7 +144,8 @@
                                     data-kt-subscription-table-filter="status">
                                     <option></option>
                                     @foreach ($classnames as $classname)
-                                        <option value="{{ $classname->id }}_{{ $classname->class_numeral }}_ucms">{{ $classname->name }} ({{ $classname->class_numeral }})
+                                        <option value="{{ $classname->id }}_{{ $classname->class_numeral }}_ucms">
+                                            {{ $classname->name }} ({{ $classname->class_numeral }})
                                         </option>
                                     @endforeach
                                 </select>
@@ -179,8 +208,8 @@
                         <th>Mobile<br>(Home)</th>
                         <th>Fee (৳)</th>
                         <th>Payment<br>Type</th>
-                        <th>Admission<br>Date</th>
-                        <th class="d-none">Remarks</th>
+                        <th class="d-none">Admission<br>Date</th>
+                        <th class="@if (!auth()->user()->hasRole('admin')) d-none @endif">Branch</th>
                         <th class="min-w-70px">Actions</th>
                     </tr>
                 </thead>
@@ -245,8 +274,19 @@
                                     {{ ucfirst($student->payments->payment_style) }}-1/{{ $student->payments->due_date }}
                                 @endif
                             </td>
-                            <td>{{ $student->created_at->format('d-M-Y') }}</td>
-                            <td class="d-none">{{ $student->remarks }}</td>
+                            <td class="d-none">{{ $student->created_at->format('d-M-Y') }}</td>
+                            <td class="@if (!auth()->user()->hasRole('admin')) d-none @endif">
+                                @if ($student->branch)
+                                    @php
+                                        $branchName = $student->branch->branch_name;
+                                        $badgeColor = $branchColors[$branchName] ?? 'badge-light-secondary';
+                                    @endphp
+                                    <span class="badge {{ $badgeColor }}">{{ $branchName }}</span>
+                                @else
+                                    <span class="badge badge-light-secondary">N/A</span>
+                                @endif
+                            </td>
+
                             <td>
                                 <a href="#" class="btn btn-light btn-active-light-primary btn-sm"
                                     data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions
@@ -397,7 +437,6 @@
         <!--end::Modal dialog-->
     </div>
     <!--end::Modal - Toggle Activation Student-->
-
 @endsection
 
 

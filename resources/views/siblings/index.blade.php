@@ -103,6 +103,24 @@
                                 </select>
                             </div>
                             <!--end::Input group-->
+
+                            @if (auth()->user()->hasRole('admin'))
+                                <!--begin::Input group-->
+                                <div class="mb-10">
+                                    <label class="form-label fs-6 fw-semibold">Branch:</label>
+                                    <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
+                                        data-placeholder="Select option" data-allow-clear="true"
+                                        data-kt-subscription-table-filter="product" data-hide-search="true">
+                                        <option></option>
+                                        @foreach ($branches as $branch)
+                                            <option value="{{ ucfirst($branch->branch_name) }}">
+                                                {{ ucfirst($branch->branch_name) }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <!--end::Input group-->
+                            @endif
+
                             <!--begin::Actions-->
                             <div class="d-flex justify-content-end">
                                 <button type="reset" class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
@@ -127,98 +145,98 @@
         <!--begin::Card body-->
         <div class="card-body pt-0">
             <!--begin::Table-->
-                <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_siblings_table">
-                    <thead>
-                        <tr class="fw-bold fs-7 text-uppercase gs-0">
-                            <th class="w-10px pe-2">SL</th>
-                            <th class="min-w-200px">Name</th>
-                            <th class="d-none">Gender (filter)</th>
-                            <th>Gender</th>
-                            <th>Students</th>
-                            <th>Age</th>
-                            <th>Class</th>
-                            <th>Institution</th>
-                            <th>Relationship</th>
-                            <th class="@if (!auth()->user()->hasRole('admin')) d-none @endif">Branch</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-gray-600 fw-semibold">
-                        @foreach ($siblings as $sibling)
-                            <tr>
-                                <td class="pe-2">{{ $loop->index + 1 }}</td>
-                                <td class="text-gray-800">
-                                    <!--begin::user details-->
-                                    {{ $sibling->name }}
-                                    <!--begin::user details-->
-                                </td>
-                                <td class="d-none">gd_{{ $sibling->relationship }}</td>
-                                <td>
-                                    @if ($sibling->relationship == 'brother')
-                                        <i class="las la-mars"></i>
-                                        Male
-                                    @else
-                                        <i class="las la-venus"></i>
-                                        Female
-                                    @endif
-                                </td>
-                                <td>
-                                    @if ($sibling->student)
-                                        <a href="{{ route('students.show', $sibling->student->id) }}">
-                                            <span class="text-hover-success fs-6">
-                                                {{ $sibling->student->name }},
-                                                {{ $sibling->student->student_unique_id }}
-                                            </span>
-                                        </a>
-                                    @else
-                                        <span class="badge badge-light-danger">-</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    {{ $sibling->age }}
-                                </td>
-                                <td>
-                                    {{ $sibling->class }}
-                                </td>
-                                <td>
-                                    {{ $sibling->institution->name }} (EIIN: {{ $sibling->institution->eiin_number }})
-                                </td>
-                                <td>
-                                    {{ ucfirst($sibling->relationship) }}
-                                </td>
+            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_siblings_table">
+                <thead>
+                    <tr class="fw-bold fs-7 text-uppercase gs-0">
+                        <th class="w-10px pe-2">SL</th>
+                        <th class="min-w-200px">Name</th>
+                        <th class="d-none">Gender (filter)</th>
+                        <th>Gender</th>
+                        <th>Students</th>
+                        <th>Age</th>
+                        <th>Class</th>
+                        <th>Institution</th>
+                        <th>Relationship</th>
+                        <th class="@if (!auth()->user()->hasRole('admin')) d-none @endif">Branch</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-600 fw-semibold">
+                    @foreach ($siblings as $sibling)
+                        <tr>
+                            <td class="pe-2">{{ $loop->index + 1 }}</td>
+                            <td class="text-gray-800">
+                                <!--begin::user details-->
+                                {{ $sibling->name }}
+                                <!--begin::user details-->
+                            </td>
+                            <td class="d-none">gd_{{ $sibling->relationship }}</td>
+                            <td>
+                                @if ($sibling->relationship == 'brother')
+                                    <i class="las la-mars"></i>
+                                    Male
+                                @else
+                                    <i class="las la-venus"></i>
+                                    Female
+                                @endif
+                            </td>
+                            <td>
+                                @if ($sibling->student)
+                                    <a href="{{ route('students.show', $sibling->student->id) }}">
+                                        <span class="text-hover-success fs-6">
+                                            {{ $sibling->student->name }},
+                                            {{ $sibling->student->student_unique_id }}
+                                        </span>
+                                    </a>
+                                @else
+                                    <span class="badge badge-light-danger">-</span>
+                                @endif
+                            </td>
+                            <td>
+                                {{ $sibling->age }}
+                            </td>
+                            <td>
+                                {{ $sibling->class }}
+                            </td>
+                            <td>
+                                {{ $sibling->institution->name }} (EIIN: {{ $sibling->institution->eiin_number }})
+                            </td>
+                            <td>
+                                {{ ucfirst($sibling->relationship) }}
+                            </td>
 
-                                <td class="@if (!auth()->user()->hasRole('admin')) d-none @endif">
-                                    @if ($sibling->student && $sibling->student->branch)
-                                        @php
-                                            $branchName = $sibling->student->branch->branch_name;
-                                            $badgeColor = $branchColors[$branchName] ?? 'badge-light-secondary'; // Default color
-                                        @endphp
-                                        <span class="badge {{ $badgeColor }}">{{ $branchName }}</span>
-                                    @else
-                                        <span class="badge badge-light-danger">-</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @can('siblings.edit')
+                            <td class="@if (!auth()->user()->hasRole('admin')) d-none @endif">
+                                @if ($sibling->student && $sibling->student->branch)
+                                    @php
+                                        $branchName = $sibling->student->branch->branch_name;
+                                        $badgeColor = $branchColors[$branchName] ?? 'badge-light-secondary'; // Default color
+                                    @endphp
+                                    <span class="badge {{ $badgeColor }}">{{ $branchName }}</span>
+                                @else
+                                    <span class="badge badge-light-danger">-</span>
+                                @endif
+                            </td>
+                            <td>
+                                @can('siblings.edit')
                                     <a href="#" title="Edit Sibling" data-bs-toggle="modal"
                                         data-bs-target="#kt_modal_edit_sibling" data-sibling-id="{{ $sibling->id }}"
                                         class="btn btn-icon text-hover-primary w-30px h-30px">
                                         <i class="ki-outline ki-pencil fs-2"></i>
                                     </a>
-                                    @endcan
+                                @endcan
 
-                                    @can('siblings.delete')
+                                @can('siblings.delete')
                                     <a href="#" title="Delete Sibling" data-bs-toggle="tooltip"
                                         class="btn btn-icon text-hover-danger w-30px h-30px delete-sibling"
                                         data-sibling-id="{{ $sibling->id }}">
                                         <i class="ki-outline ki-trash fs-2"></i>
                                     </a>
-                                    @endcan
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                                @endcan
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
             <!--end::Table-->
         </div>
         <!--end::Card body-->
@@ -260,8 +278,7 @@
                                 <!--begin::Label-->
                                 <label class="form-label">
                                     <span>Corrosponding Student</span>
-                                    <span class="ms-1" data-bs-toggle="tooltip"
-                                        title="Student cannot be changed.">
+                                    <span class="ms-1" data-bs-toggle="tooltip" title="Student cannot be changed.">
                                         <i class="ki-outline ki-information-5 text-gray-500 fs-6">
                                         </i>
                                     </span>
@@ -311,8 +328,7 @@
                                 <!--end::Label-->
                                 <!--begin::Input-->
                                 <input type="number" name="sibling_age" min="6" max="20"
-                                    class="form-control form-control-solid mb-3 mb-lg-0" placeholder="e.g. 8"
-                                    required />
+                                    class="form-control form-control-solid mb-3 mb-lg-0" placeholder="e.g. 8" required />
                                 <!--end::Input-->
                             </div>
                             <!--end::Phone Input group-->
@@ -338,23 +354,23 @@
 
                                 <!--begin::Row-->
                                 <div class="input-group input-group-solid flex-nowrap">
-                                   <span class="input-group-text">
-                                       <i class="las la-building fs-3"></i>
-                                   </span>
-                                   <div class="overflow-hidden flex-grow-1">
-                                       <select name="sibling_institution"
-                                           class="form-select form-select-solid rounded-start-0 border-start"
-                                           data-control="select2" data-dropdown-parent="#kt_modal_edit_sibling"
-                                           data-placeholder="Select an institution" data-allow-clear="true" required>
-                                           <option></option>
-                                           @foreach ($institutions as $institution)
-                                               <option value="{{ $institution->id }}">{{ $institution->name }}
-                                                   (EIIN: {{ $institution->eiin_number }})
-                                               </option>
-                                           @endforeach
-                                       </select>
-                                   </div>
-                               </div>
+                                    <span class="input-group-text">
+                                        <i class="las la-building fs-3"></i>
+                                    </span>
+                                    <div class="overflow-hidden flex-grow-1">
+                                        <select name="sibling_institution"
+                                            class="form-select form-select-solid rounded-start-0 border-start"
+                                            data-control="select2" data-dropdown-parent="#kt_modal_edit_sibling"
+                                            data-placeholder="Select an institution" data-allow-clear="true" required>
+                                            <option></option>
+                                            @foreach ($institutions as $institution)
+                                                <option value="{{ $institution->id }}">{{ $institution->name }}
+                                                    (EIIN: {{ $institution->eiin_number }})
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
                                 <!--end::Row-->
                             </div>
                             <!--end::Gender Input group-->
