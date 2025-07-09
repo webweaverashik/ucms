@@ -18,7 +18,6 @@ class PaymentTransactionController extends Controller
             return redirect()->back()->with('warning', 'No permission to view transactions.');
         }
 
-
         $branchId = auth()->user()->branch_id;
 
         // Simplified transactions query
@@ -103,17 +102,20 @@ class PaymentTransactionController extends Controller
             'voucher_no'         => $voucherNo,
             'created_by'         => auth()->user()->id,
             'remarks'            => $validated['transaction_remarks'],
+            'is_approved'        => $validated['transaction_type'] !== 'discounted', // true for full/partial, false for discounted
         ]);
 
         // Update invoice status and amount_due
         $newAmountDue = $invoice->amount_due - $validated['transaction_amount'];
 
         if ($validated['transaction_type'] === 'discounted') {
-            // For discounted payments, mark as fully paid regardless of amount
-            $invoice->update([
-                'amount_due' => 0,
-                'status'     => 'paid',
-            ]);
+            // For discounted payments, mark the payment as pending and is_approved false
+
+            // $invoice->update([
+            //     'amount_due' => 0,
+            //     'status'     => 'paid',
+            // ]);
+            
         } elseif ($newAmountDue <= 0) {
             // Full payment (regular case)
             $invoice->update([
@@ -161,8 +163,23 @@ class PaymentTransactionController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(PaymentTransaction $transaction)
     {
-        return redirect()->back()->with('warning', 'URL Not Allowed');
+        $transaction->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Approve a discounted transaction
+     */
+    public function approve(string $id)
+    {
+        $transaction = PaymentTransaction::findOrFail($id);
+
+        $transaction->update(['is_approved' => true]);
+        $transaction->paymentInvoice->update(['amount_due' => 0, 'status' => 'paid']);
+
+        return response()->json(['success' => true]);
     }
 }

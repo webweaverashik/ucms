@@ -879,7 +879,7 @@
                                     <div class="border border-dashed border-gray-300 w-150px rounded my-3 p-4 me-6">
                                         <span class="fs-1 fw-bold text-gray-800 lh-1">
                                             <span data-kt-countup="true"
-                                                data-kt-countup-value="{{ $student->paymentTransactions->sum('amount_paid') }}"
+                                                data-kt-countup-value="{{ $student->paymentTransactions->where('is_approved', true)->sum('amount_paid') }}"
                                                 data-kt-countup-prefix="৳">0</span>
                                         </span>
                                         <span class="fs-6 fw-semibold text-muted d-block lh-1 pt-2">Total Paid</span>
@@ -1057,7 +1057,7 @@
                                             <th class="w-150px">Amount</th>
                                             <th class="w-150px">Payment Type</th>
                                             <th>Remarks</th>
-                                            <th class="w-100px">Download</th>
+                                            <th class="w-100px">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -1088,12 +1088,38 @@
                                                     @endif
                                                 </td>
                                                 <td>{{ $transaction->remarks }}</td>
-                                                <td class="text-end">
-                                                    <a href="{{ route('transactions.download', $transaction->id) }}"
-                                                        target="_blank" data-bs-toggle="tooltip" title="Download Payslip"
-                                                        class="btn btn-icon btn-active-light-primary w-30px h-30px me-3">
-                                                        <i class="bi bi-download fs-2"></i>
-                                                    </a>
+                                                <td>
+                                                    @if ($transaction->is_approved === false)
+                                                        @can('transactions.approve')
+                                                            <a href="#" title="Approve Transaction"
+                                                                class="btn btn-icon text-hover-success w-30px h-30px approve-txn me-2"
+                                                                data-txn-id={{ $transaction->id }}>
+                                                                <i class="bi bi-check-circle fs-2"></i>
+                                                            </a>
+                                                        @endcan
+
+                                                        @can('transactions.delete')
+                                                            <a href="#" title="Delete Transaction"
+                                                                class="btn btn-icon text-hover-danger w-30px h-30px delete-txn"
+                                                                data-txn-id={{ $transaction->id }}>
+                                                                <i class="bi bi-trash fs-2"></i>
+                                                            </a>
+                                                        @endcan
+
+                                                        {{-- Showing a placeholder text for other users --}}
+                                                        @cannot('transactions.approve')
+                                                            <span class="badge rounded-pill text-bg-secondary">Pending Approval</span>
+                                                        @endcannot
+                                                    @else
+                                                        @can('transactions.payslip.download')
+                                                            <a href="{{ route('transactions.download', $transaction->id) }}"
+                                                                target="_blank" data-bs-toggle="tooltip"
+                                                                title="Download Payslip"
+                                                                class="btn btn-icon text-hover-primary w-30px h-30px">
+                                                                <i class="bi bi-download fs-2"></i>
+                                                            </a>
+                                                        @endcan
+                                                    @endif
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -1110,58 +1136,6 @@
 
                 <!--begin:::Tab pane-->
                 <div class="tab-pane fade" id="kt_student_view_sheets_tab" role="tabpanel">
-                    <!--begin::Earnings-->
-                    {{-- <div class="card mb-6 mb-xl-9">
-                        <!--begin::Header-->
-                        <div class="card-header border-0">
-                            <div class="card-title">
-                                <h2>Sheet Payment Summary</h2>
-                            </div>
-                        </div>
-                        <!--end::Header-->
-                        <!--begin::Body-->
-                        <div class="card-body py-0">
-                            <div class="fs-5 fw-semibold text-gray-500 mb-4">Summary of transacted amount of this student.
-                            </div>
-                            <!--begin::Left Section-->
-                            <div class="d-flex flex-wrap flex-stack mb-5">
-                                <!--begin::Row-->
-                                <div class="d-flex flex-wrap">
-                                    <!--begin::Col-->
-                                    <div class="border border-dashed border-gray-300 w-150px rounded my-3 p-4 me-6">
-                                        <span class="fs-1 fw-bold text-gray-800 lh-1">
-                                            <span data-kt-countup="true" data-kt-countup-value="6,840"
-                                                data-kt-countup-prefix="৳">0</span>
-                                        </span>
-                                        <span class="fs-6 fw-semibold text-muted d-block lh-1 pt-2">Total Paid</span>
-                                    </div>
-                                    <!--end::Col-->
-                                    <!--begin::Col-->
-                                    <div class="border border-dashed border-gray-300 w-125px rounded my-3 p-4 me-6">
-                                        <span class="fs-1 fw-bold text-gray-800 lh-1">
-                                            <span class="" data-kt-countup="true"
-                                                data-kt-countup-value="16">0</span></span>
-                                        <span class="fs-6 fw-semibold text-muted d-block lh-1 pt-2">Invoices</span>
-                                    </div>
-                                    <!--end::Col-->
-                                    <!--begin::Col-->
-                                    <div class="border border-dashed border-warning w-150px rounded my-3 p-4 me-6">
-                                        <span class="fs-1 fw-bold text-gray-800 lh-1">
-                                            <span data-kt-countup="true" data-kt-countup-value="1,240"
-                                                data-kt-countup-prefix="৳">0</span>
-                                        </span>
-                                        <span class="fs-6 fw-semibold text-muted d-block lh-1 pt-2">Due</span>
-                                    </div>
-                                    <!--end::Col-->
-                                </div>
-                                <!--end::Row-->
-                            </div>
-                            <!--end::Left Section-->
-                        </div>
-                        <!--end::Body-->
-                    </div> --}}
-                    <!--end::Earnings-->
-
                     <!--begin::Statements-->
                     <div class="card mb-6 mb-xl-9">
                         <!--begin::Header-->
@@ -1582,6 +1556,8 @@
         const routeDeleteStudent = "{{ route('students.destroy', ':id') }}";
         const routeToggleActive = "{{ route('students.toggleActive', ':id') }}";
         const routeDeleteInvoice = "{{ route('invoices.destroy', ':id') }}";
+        const routeDeleteTxn = "{{ route('transactions.destroy', ':id') }}";
+        const routeApproveTxn = "{{ route('transactions.approve', ':id') }}";
     </script>
 
     <script src="{{ asset('js/students/view.js') }}"></script>

@@ -55,6 +55,8 @@ class RolePermissionSeeder extends Seeder
             // 💸 transactions
             'transactions.view',
             'transactions.create',
+            'transactions.delete',
+            'transactions.approve',
             'transactions.payslip.download',
 
             // 📦 sheets

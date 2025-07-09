@@ -189,13 +189,36 @@
                             </td>
 
                             <td>
-                                @can('transactions.payslip.download')
-                                    <a href="{{ route('transactions.download', $transaction->id) }}" target="_blank"
-                                        data-bs-toggle="tooltip" title="Download Payslip"
-                                        class="btn btn-icon btn-active-light-primary w-30px h-30px me-3">
-                                        <i class="bi bi-download fs-2"></i>
-                                    </a>
-                                @endcan
+                                @if ($transaction->is_approved === false)
+                                    @can('transactions.approve')
+                                        <a href="#" title="Approve Transaction"
+                                            class="btn btn-icon text-hover-success w-30px h-30px approve-txn me-2"
+                                            data-txn-id={{ $transaction->id }}>
+                                            <i class="bi bi-check-circle fs-2"></i>
+                                        </a>
+                                    @endcan
+
+                                    @can('transactions.delete')
+                                        <a href="#" title="Delete Transaction"
+                                            class="btn btn-icon text-hover-danger w-30px h-30px delete-txn"
+                                            data-txn-id={{ $transaction->id }}>
+                                            <i class="bi bi-trash fs-2"></i>
+                                        </a>
+                                    @endcan
+
+                                    {{-- Showing a placeholder text for other users --}}
+                                    @cannot('transactions.approve')
+                                        <span class="badge rounded-pill text-bg-secondary">Pending Approval</span>
+                                    @endcannot
+                                @else
+                                    @can('transactions.payslip.download')
+                                        <a href="{{ route('transactions.download', $transaction->id) }}" target="_blank"
+                                            data-bs-toggle="tooltip" title="Download Payslip"
+                                            class="btn btn-icon text-hover-primary w-30px h-30px">
+                                            <i class="bi bi-download fs-2"></i>
+                                        </a>
+                                    @endcan
+                                @endif
                             </td>
                         </tr>
                     @endforeach
@@ -428,6 +451,11 @@
 @endpush
 
 @push('page-js')
+    <script>
+        const routeDeleteTxn = "{{ route('transactions.destroy', ':id') }}";
+        const routeApproveTxn = "{{ route('transactions.approve', ':id') }}";
+    </script>
+
     <script src="{{ asset('js/transactions/index.js') }}"></script>
     <script src="{{ asset('js/transactions/ajax-form.js') }}"></script>
 

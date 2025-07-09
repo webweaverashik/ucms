@@ -164,9 +164,10 @@
                             <tr class="">
                                 <td class="text-gray-500">Sheet Group:</td>
                                 <td class="text-gray-800">
-                                    <a href="{{ route('sheets.show', $invoice->sheetPayment->sheet->id) }}" target="_blank">
-                                    {{ $invoice->sheetPayment->sheet->class->name }}
-                                    ({{ $invoice->sheetPayment->sheet->class->class_numeral }})
+                                    <a href="{{ route('sheets.show', $invoice->sheetPayment->sheet->id) }}"
+                                        target="_blank">
+                                        {{ $invoice->sheetPayment->sheet->class->name }}
+                                        ({{ $invoice->sheetPayment->sheet->class->class_numeral }})
                                     </a>
                                 </td>
                             </tr>
@@ -327,7 +328,7 @@
                             <th>Payment Type</th>
                             <th>Payment Date</th>
                             <th>Remarks</th>
-                            <th>Download</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody class="text-gray-600 fw-semibold">
@@ -357,11 +358,36 @@
                                 <td>{{ $transaction->remarks }}</td>
 
                                 <td>
-                                    <a href="{{ route('transactions.download', $transaction->id) }}" target="_blank"
-                                        data-bs-toggle="tooltip" title="Download Payslip"
-                                        class="btn btn-icon btn-active-light-primary w-30px h-30px me-3">
-                                        <i class="bi bi-download fs-2"></i>
-                                    </a>
+                                    @if ($transaction->is_approved === false)
+                                        @can('transactions.approve')
+                                            <a href="#" title="Approve Transaction"
+                                                class="btn btn-icon text-hover-success w-30px h-30px approve-txn me-2"
+                                                data-txn-id={{ $transaction->id }}>
+                                                <i class="bi bi-check-circle fs-2"></i>
+                                            </a>
+                                        @endcan
+
+                                        @can('transactions.delete')
+                                            <a href="#" title="Delete Transaction"
+                                                class="btn btn-icon text-hover-danger w-30px h-30px delete-txn"
+                                                data-txn-id={{ $transaction->id }}>
+                                                <i class="bi bi-trash fs-2"></i>
+                                            </a>
+                                        @endcan
+
+                                        {{-- Showing a placeholder text for other users --}}
+                                        @cannot('transactions.approve')
+                                            <span class="badge rounded-pill text-bg-secondary">Pending Approval</span>
+                                        @endcannot
+                                    @else
+                                        @can('transactions.payslip.download')
+                                            <a href="{{ route('transactions.download', $transaction->id) }}" target="_blank"
+                                                data-bs-toggle="tooltip" title="Download Payslip"
+                                                class="btn btn-icon text-hover-primary w-30px h-30px">
+                                                <i class="bi bi-download fs-2"></i>
+                                            </a>
+                                        @endcan
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach
@@ -698,6 +724,8 @@
 @push('page-js')
     <script>
         const routeDeleteInvoice = "{{ route('invoices.destroy', ':id') }}";
+        const routeDeleteTxn = "{{ route('transactions.destroy', ':id') }}";
+        const routeApproveTxn = "{{ route('transactions.approve', ':id') }}";
     </script>
 
     <script src="{{ asset('js/invoices/view.js') }}"></script>

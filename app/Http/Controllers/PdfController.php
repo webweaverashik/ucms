@@ -27,16 +27,14 @@ class PdfController extends Controller
         }
 
         return view('pdf.admission-form-layout', ['student' => $student]);
-
     }
 
     public function downloadPaySlip(string $id)
     {
-
         $transaction = PaymentTransaction::find($id);
 
-        if (! $transaction) {
-            return redirect()->route('transactions.index')->with('warning', 'Transaction not found.');
+        if (! $transaction || ! $transaction->is_approved || (auth()->user()->branch_id != 0 && $transaction->student->branch_id != auth()->user()->branch_id)) {
+            return redirect()->route('transactions.index')->with('warning', 'TXN not found or not approved.');
         }
 
         // -- JS Print --
@@ -67,6 +65,5 @@ class PdfController extends Controller
         $pdf->WriteHTML($html);
 
         return $pdf->Output($transaction->voucher_no . '.pdf', 'I'); // I = Inline view, D = Download
-
     }
 }

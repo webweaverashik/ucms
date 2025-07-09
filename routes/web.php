@@ -62,6 +62,8 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
 
     // Transactions
     Route::get('transactions/{id}/download-payslip', [PdfController::class, 'downloadPaySlip'])->name('transactions.download');
+    Route::post('transactions/{id}/approve', [PaymentTransactionController::class, 'approve'])->name('transactions.approve');
+
 
     // Subjects
     Route::get('get-subjects', [SubjectController::class, 'getSubjects']);
