@@ -622,7 +622,7 @@
                                             <option></option>
                                             @foreach ($students as $student)
                                                 <option value="{{ $student->id }}">{{ $student->name }}
-                                                    ({{ $student->student_unique_id }})
+                                                    ({{ $student->student_unique_id }}) - {{ ucfirst($student->payments->payment_style) }} - 1/{{ $student->payments->due_date }}
                                                 </option>
                                             @endforeach
                                         </select>
@@ -781,7 +781,7 @@
                                             <option></option>
                                             @foreach ($students as $student)
                                                 <option value="{{ $student->id }}">{{ $student->name }}
-                                                    ({{ $student->student_unique_id }})
+                                                    ({{ $student->student_unique_id }}) - {{ ucfirst($student->payments->payment_style) }} - 1/{{ $student->payments->due_date }}
                                                 </option>
                                             @endforeach
                                         </select>

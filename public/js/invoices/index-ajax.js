@@ -16,96 +16,61 @@ $(document).ready(function () {
                   $.ajax({
                         url: `/students/${studentId}/last-invoice-month`,
                         method: 'GET',
-                        success: function (data) {
-                              console.log('Invoice data:', data);
-
-                              // Store tuition fee
-                              invoiceAmountInput.data('tuition-fee', data.tuition_fee);
-
-                              const currentDate = new Date();
-                              const currentMonth = currentDate.getMonth() + 1;
-                              const currentYear = currentDate.getFullYear();
-
-                              let startMonth, startYear;
-
-                              // If it's 25th+ and current month invoice exists, start from next month
-                              if (data.should_show_next_month) {
-                                    startMonth = currentMonth + 1;
-                                    startYear = currentYear;
-
-                                    if (startMonth > 12) {
-                                          startMonth = 1;
-                                          startYear++;
-                                    }
-
-                                    // Generate only the next month with (Advance) label
-                                    monthYearSelect.empty().append('<option value=""></option>');
-                                    const nextMonthDate = new Date(startYear, startMonth - 1, 1);
-                                    const month = nextMonthDate.getMonth() + 1;
-                                    const year = nextMonthDate.getFullYear();
-                                    const monthStr = String(month).padStart(2, '0');
-                                    const monthYear = `${monthStr}_${year}`;
-                                    const monthName = nextMonthDate.toLocaleString('default', { month: 'long' });
-
-                                    monthYearSelect.append(
-                                          $('<option></option>')
-                                                .val(monthYear)
-                                                .text(`${monthName} ${year} (Advance)`)
-                                                .data('is-advance', true)
-                                    );
-
-                              }
-                              // Otherwise use normal logic
-                              else if (data.last_invoice_month) {
-                                    const [lastMonth, lastYear] = data.last_invoice_month.split('_').map(Number);
-                                    startMonth = lastMonth + 1;
-                                    startYear = lastYear;
-
-                                    if (startMonth > 12) {
-                                          startMonth = 1;
-                                          startYear++;
-                                    }
-
-                                    // Generate months from start to current
-                                    monthYearSelect.empty().append('<option value=""></option>');
-                                    let date = new Date(startYear, startMonth - 1, 1);
-                                    const endDate = new Date(currentYear, currentMonth - 1, 1);
-
-                                    while (date <= endDate) {
-                                          const month = date.getMonth() + 1;
-                                          const year = date.getFullYear();
-                                          const monthStr = String(month).padStart(2, '0');
-                                          const monthYear = `${monthStr}_${year}`;
-                                          const monthName = date.toLocaleString('default', { month: 'long' });
-
-                                          monthYearSelect.append(
-                                                $('<option></option>').val(monthYear).text(`${monthName} ${year}`)
-                                          );
-
-                                          date.setMonth(date.getMonth() + 1);
-                                    }
-                              } else {
-                                    // No invoices - start from current month
-                                    startMonth = currentMonth;
-                                    startYear = currentYear;
-
-                                    monthYearSelect.empty().append('<option value=""></option>');
-                                    const monthStr = String(startMonth).padStart(2, '0');
-                                    const monthYear = `${monthStr}_${startYear}`;
-                                    const monthName = new Date(startYear, startMonth - 1, 1)
-                                          .toLocaleString('default', { month: 'long' });
-
-                                    monthYearSelect.append(
-                                          $('<option></option>').val(monthYear).text(`${monthName} ${startYear}`)
-                                    );
-                              }
-
-                              monthYearSelect.prop('disabled', false).trigger('change');
-
-                              if (invoiceTypeSelect.val() === 'tuition_fee' && monthYearSelect.val()) {
-                                    invoiceAmountInput.val(invoiceAmountInput.data('tuition-fee')).prop('disabled', false);
-                              }
-                        },
+                        success: function(data) {
+    console.log('Invoice data:', data);
+    
+    // Store tuition fee
+    invoiceAmountInput.data('tuition-fee', data.tuition_fee);
+    
+    // Clear and prepare dropdown
+    monthYearSelect.empty().append('<option value=""></option>');
+    
+    if (data.last_invoice_month) {
+        // Calculate next month after last invoice
+        const [lastMonth, lastYear] = data.last_invoice_month.split('_').map(Number);
+        let nextMonth = lastMonth + 1;
+        let nextYear = lastYear;
+        
+        // Handle December → January transition
+        if (nextMonth > 12) {
+            nextMonth = 1;
+            nextYear++;
+        }
+        
+        // Format values
+        const monthStr = String(nextMonth).padStart(2, '0');
+        const monthYear = `${monthStr}_${nextYear}`;
+        const monthName = new Date(nextYear, nextMonth - 1, 1)
+            .toLocaleString('default', { month: 'long' });
+        
+        // Add to dropdown
+        monthYearSelect.append(
+            $('<option></option>')
+                .val(monthYear)
+                .text(`${monthName} ${nextYear}`)
+        );
+    } else {
+        // If no invoices exist, show current month
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth() + 1;
+        const currentYear = currentDate.getFullYear();
+        const monthStr = String(currentMonth).padStart(2, '0');
+        const monthYear = `${monthStr}_${currentYear}`;
+        const monthName = currentDate.toLocaleString('default', { month: 'long' });
+        
+        monthYearSelect.append(
+            $('<option></option>')
+                .val(monthYear)
+                .text(`${monthName} ${currentYear}`)
+        );
+    }
+    
+    monthYearSelect.prop('disabled', false).trigger('change');
+    
+    if (invoiceTypeSelect.val() === 'tuition_fee' && monthYearSelect.val()) {
+        invoiceAmountInput.val(invoiceAmountInput.data('tuition-fee')).prop('disabled', false);
+    }
+},
                         error: function (error) {
                               console.error('Error:', error);
                               monthYearSelect.empty().append('<option value="">Error loading months</option>');
@@ -170,10 +135,12 @@ $(document).ready(function () {
                         invoiceAmountInput.val('').prop('disabled', true);
                   }
             } else if (selectedType !== 'tuition_fee') {
+                  // Other than tuition fee and sheet fee
                   monthYearSection.hide();
                   monthYearSelect.prop('required', false);
                   invoiceAmountInput.prop('disabled', false).val('');
             } else {
+                  // Tuition fee is selected
                   monthYearSection.show();
                   monthYearSelect.prop('required', true);
                   invoiceAmountInput.prop('disabled', !monthYearSelect.val());

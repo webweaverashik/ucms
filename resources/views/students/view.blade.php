@@ -1023,17 +1023,21 @@
 
                                                 <td>
                                                     @if (optional($invoice->student->studentActivation)->active_status == 'active' && $invoice->status == 'due')
-                                                        <a href="#" title="Edit invoice"
-                                                            data-invoice-id="{{ $invoice->id }}" data-bs-toggle="modal"
-                                                            data-bs-target="#kt_modal_edit_invoice" title="Edit Invoice"
-                                                            class="btn btn-icon text-hover-primary w-30px h-30px">
-                                                            <i class="ki-outline ki-pencil fs-2"></i>
-                                                        </a>
-                                                        <a href="#" title="Delete invoice" data-bs-toggle="tooltip"
-                                                            class="btn btn-icon text-hover-danger w-30px h-30px delete-invoice"
-                                                            data-invoice-id="{{ $invoice->id }}">
-                                                            <i class="ki-outline ki-trash fs-2"></i>
-                                                        </a>
+                                                        @can('invoices.edit')
+                                                            <a href="#" title="Edit invoice"
+                                                                data-invoice-id="{{ $invoice->id }}" data-bs-toggle="modal"
+                                                                data-bs-target="#kt_modal_edit_invoice" title="Edit Invoice"
+                                                                class="btn btn-icon text-hover-primary w-30px h-30px">
+                                                                <i class="ki-outline ki-pencil fs-2"></i>
+                                                            </a>
+                                                        @endcan
+                                                        @can('invoices.delete')
+                                                            <a href="#" title="Delete invoice" data-bs-toggle="tooltip"
+                                                                class="btn btn-icon text-hover-danger w-30px h-30px delete-invoice"
+                                                                data-invoice-id="{{ $invoice->id }}">
+                                                                <i class="ki-outline ki-trash fs-2"></i>
+                                                            </a>
+                                                        @endcan
                                                     @endif
                                                 </td>
 
@@ -1108,7 +1112,8 @@
 
                                                         {{-- Showing a placeholder text for other users --}}
                                                         @cannot('transactions.approve')
-                                                            <span class="badge rounded-pill text-bg-secondary">Pending Approval</span>
+                                                            <span class="badge rounded-pill text-bg-secondary">Pending
+                                                                Approval</span>
                                                         @endcannot
                                                     @else
                                                         @can('transactions.payslip.download')
