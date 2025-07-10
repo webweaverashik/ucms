@@ -89,7 +89,7 @@ class PaymentTransactionController extends Controller
         }
 
         // Count existing transactions for this invoice to get next sequence number
-        $transactionCount = PaymentTransaction::where('payment_invoice_id', $invoice->id)->count();
+        $transactionCount = PaymentTransaction::where('payment_invoice_id', $invoice->id)->withTrashed()->count();
         $sequence         = str_pad($transactionCount + 1, 2, '0', STR_PAD_LEFT);
         $voucherNo        = 'TXN_' . $invoice->invoice_number . '_' . $sequence;
 
