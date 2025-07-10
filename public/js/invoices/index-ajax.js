@@ -16,61 +16,61 @@ $(document).ready(function () {
                   $.ajax({
                         url: `/students/${studentId}/last-invoice-month`,
                         method: 'GET',
-                        success: function(data) {
-    console.log('Invoice data:', data);
-    
-    // Store tuition fee
-    invoiceAmountInput.data('tuition-fee', data.tuition_fee);
-    
-    // Clear and prepare dropdown
-    monthYearSelect.empty().append('<option value=""></option>');
-    
-    if (data.last_invoice_month) {
-        // Calculate next month after last invoice
-        const [lastMonth, lastYear] = data.last_invoice_month.split('_').map(Number);
-        let nextMonth = lastMonth + 1;
-        let nextYear = lastYear;
-        
-        // Handle December → January transition
-        if (nextMonth > 12) {
-            nextMonth = 1;
-            nextYear++;
-        }
-        
-        // Format values
-        const monthStr = String(nextMonth).padStart(2, '0');
-        const monthYear = `${monthStr}_${nextYear}`;
-        const monthName = new Date(nextYear, nextMonth - 1, 1)
-            .toLocaleString('default', { month: 'long' });
-        
-        // Add to dropdown
-        monthYearSelect.append(
-            $('<option></option>')
-                .val(monthYear)
-                .text(`${monthName} ${nextYear}`)
-        );
-    } else {
-        // If no invoices exist, show current month
-        const currentDate = new Date();
-        const currentMonth = currentDate.getMonth() + 1;
-        const currentYear = currentDate.getFullYear();
-        const monthStr = String(currentMonth).padStart(2, '0');
-        const monthYear = `${monthStr}_${currentYear}`;
-        const monthName = currentDate.toLocaleString('default', { month: 'long' });
-        
-        monthYearSelect.append(
-            $('<option></option>')
-                .val(monthYear)
-                .text(`${monthName} ${currentYear}`)
-        );
-    }
-    
-    monthYearSelect.prop('disabled', false).trigger('change');
-    
-    if (invoiceTypeSelect.val() === 'tuition_fee' && monthYearSelect.val()) {
-        invoiceAmountInput.val(invoiceAmountInput.data('tuition-fee')).prop('disabled', false);
-    }
-},
+                        success: function (data) {
+                              console.log('Invoice data:', data);
+
+                              // Store tuition fee
+                              invoiceAmountInput.data('tuition-fee', data.tuition_fee);
+
+                              // Clear and prepare dropdown
+                              monthYearSelect.empty().append('<option value=""></option>');
+
+                              if (data.last_invoice_month) {
+                                    // Calculate next month after last invoice
+                                    const [lastMonth, lastYear] = data.last_invoice_month.split('_').map(Number);
+                                    let nextMonth = lastMonth + 1;
+                                    let nextYear = lastYear;
+
+                                    // Handle December → January transition
+                                    if (nextMonth > 12) {
+                                          nextMonth = 1;
+                                          nextYear++;
+                                    }
+
+                                    // Format values
+                                    const monthStr = String(nextMonth).padStart(2, '0');
+                                    const monthYear = `${monthStr}_${nextYear}`;
+                                    const monthName = new Date(nextYear, nextMonth - 1, 1)
+                                          .toLocaleString('default', { month: 'long' });
+
+                                    // Add to dropdown
+                                    monthYearSelect.append(
+                                          $('<option></option>')
+                                                .val(monthYear)
+                                                .text(`${monthName} ${nextYear}`)
+                                    );
+                              } else {
+                                    // If no invoices exist, show current month
+                                    const currentDate = new Date();
+                                    const currentMonth = currentDate.getMonth() + 1;
+                                    const currentYear = currentDate.getFullYear();
+                                    const monthStr = String(currentMonth).padStart(2, '0');
+                                    const monthYear = `${monthStr}_${currentYear}`;
+                                    const monthName = currentDate.toLocaleString('default', { month: 'long' });
+
+                                    monthYearSelect.append(
+                                          $('<option></option>')
+                                                .val(monthYear)
+                                                .text(`${monthName} ${currentYear}`)
+                                    );
+                              }
+
+                              monthYearSelect.prop('disabled', false).trigger('change');
+
+                              if (invoiceTypeSelect.val() === 'tuition_fee' && monthYearSelect.val()) {
+                                    invoiceAmountInput.val(invoiceAmountInput.data('tuition-fee')).prop('disabled', false);
+                              }
+                        },
                         error: function (error) {
                               console.error('Error:', error);
                               monthYearSelect.empty().append('<option value="">Error loading months</option>');

@@ -9,26 +9,60 @@ $('#transaction_student_select').on('change', function () {
         url: `/students/${studentId}/due-invoices`,
         method: 'GET',
         success: function (response) {
-            invoices = response;
             const $invoiceSelect = $('#student_due_invoice_select');
-            $invoiceSelect.empty().append(`<option></option>`);
+            $invoiceSelect.empty().append(`<option value="">Select Due Invoice</option>`);
 
-            response.forEach(invoice => {
-                $invoiceSelect.append(
-                    `<option value="${invoice.id}">
-                        ${invoice.invoice_number} - Total: ৳${invoice.total_amount}, Due: ৳${invoice.amount_due}
+            if (response.length === 0) {
+                $invoiceSelect.append(`<option disabled>No due invoices found</option>`);
+            } else {
+                response.forEach(invoice => {
+                    const total = Number(invoice.total_amount).toLocaleString('en-BD');
+                    const due = Number(invoice.amount_due).toLocaleString('en-BD');
+
+                    // If month_year exists, format it; otherwise use invoice_type
+                    const label = invoice.month_year
+                        ? formatMonthYear(invoice.month_year)
+                        : invoice.invoice_type;
+
+                    $invoiceSelect.append(
+                        `<option value="${invoice.id}">
+                        ${invoice.invoice_number} (${label}) - Total: ৳${total}, Due: ৳${due}
                     </option>`
-                );
-            });
+                    );
+                });
+            }
 
-            $('#transaction_amount_input').val('').prop('disabled', true);
-            $('#transaction_amount_input').removeClass('is-invalid');
+            $('#transaction_amount_input')
+                .val('')
+                .prop('disabled', true)
+                .removeClass('is-invalid');
             $('#transaction_amount_error').remove();
-
-            // Reset payment type options
             $('input[name="transaction_type"]').prop('disabled', false);
+        },
+        error: function () {
+            alert('Failed to load due invoices. Please try again.');
         }
     });
+
+    // 📅 Helper function: format "07_2025" to "July 2025"
+    function formatMonthYear(raw) {
+        if (!raw) return '';
+
+        const [monthStr, year] = raw.split('_');
+        const month = parseInt(monthStr, 10);
+
+        const monthNames = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+
+        if (month >= 1 && month <= 12 && year) {
+            return `${monthNames[month - 1]} ${year}`;
+        }
+
+        return raw;
+    }
+
 });
 
 // 2. Populate amount and adjust payment options when invoice selected

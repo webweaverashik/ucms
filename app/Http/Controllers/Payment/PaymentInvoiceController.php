@@ -298,10 +298,11 @@ class PaymentInvoiceController extends Controller
     {
         $dueInvoices = PaymentInvoice::where('student_id', $studentId)
             ->where('status', '!=', 'paid')
-            ->get(['id', 'invoice_number', 'total_amount', 'amount_due'])
+            ->latest('id')
+            ->get(['id', 'invoice_number', 'total_amount', 'amount_due', 'month_year', 'invoice_type'])
             ->map(function ($invoice) {
-                $invoice->total_amount = (int) $invoice->total_amount;
-                $invoice->amount_due   = (int) $invoice->amount_due;
+                $invoice->total_amount = $invoice->total_amount;
+                $invoice->amount_due   = $invoice->amount_due;
                 return $invoice;
             });
 
