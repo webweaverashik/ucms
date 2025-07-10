@@ -9,6 +9,7 @@ $('#transaction_student_select').on('change', function () {
         url: `/students/${studentId}/due-invoices`,
         method: 'GET',
         success: function (response) {
+            invoices = response;  // This is essential
             const $invoiceSelect = $('#student_due_invoice_select');
             $invoiceSelect.empty().append(`<option value="">Select Due Invoice</option>`);
 
@@ -19,10 +20,9 @@ $('#transaction_student_select').on('change', function () {
                     const total = Number(invoice.total_amount).toLocaleString('en-BD');
                     const due = Number(invoice.amount_due).toLocaleString('en-BD');
 
-                    // If month_year exists, format it; otherwise use invoice_type
                     const label = invoice.month_year
                         ? formatMonthYear(invoice.month_year)
-                        : invoice.invoice_type;
+                        : formatInvoiceType(invoice.invoice_type); // Fallback to formatted type
 
                     $invoiceSelect.append(
                         `<option value="${invoice.id}">
@@ -44,7 +44,7 @@ $('#transaction_student_select').on('change', function () {
         }
     });
 
-    // 📅 Helper function: format "07_2025" to "July 2025"
+    // Format "07_2025" to "July 2025"
     function formatMonthYear(raw) {
         if (!raw) return '';
 
@@ -63,6 +63,15 @@ $('#transaction_student_select').on('change', function () {
         return raw;
     }
 
+    // Format invoice_type like "exam_fee" → "Exam Fee"
+    function formatInvoiceType(type) {
+        if (!type) return 'Unknown';
+
+        return type
+            .split('_')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    }
 });
 
 // 2. Populate amount and adjust payment options when invoice selected
