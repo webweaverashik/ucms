@@ -1,26 +1,27 @@
 <?php
 
-use App\Http\Controllers\Academic\ClassNameController;
-use App\Http\Controllers\Academic\InstitutionController;
-use App\Http\Controllers\Academic\ShiftController;
-use App\Http\Controllers\Academic\SubjectController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\AutoInvoiceController;
-use App\Http\Controllers\Payment\PaymentInvoiceController;
-use App\Http\Controllers\Payment\PaymentTransactionController;
-use App\Http\Controllers\PdfController;
-use App\Http\Controllers\Sheet\SheetController;
-use App\Http\Controllers\Sheet\SheetTopicController;
-use App\Http\Controllers\Sheet\SheetTopicTakenController;
-use App\Http\Controllers\Student\GuardianController;
-use App\Http\Controllers\Student\ReferenceController;
-use App\Http\Controllers\Student\SiblingController;
-use App\Http\Controllers\Student\StudentActivationController;
-use App\Http\Controllers\Student\StudentController;
-use App\Http\Controllers\Teacher\TeacherController;
-use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PdfController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\AutoInvoiceController;
+use App\Http\Controllers\Sheet\SheetController;
+use App\Http\Controllers\Academic\ShiftController;
+use App\Http\Controllers\Student\SiblingController;
+use App\Http\Controllers\Student\StudentController;
+use App\Http\Controllers\Teacher\TeacherController;
+use App\Http\Controllers\Academic\SubjectController;
+use App\Http\Controllers\Sheet\SheetTopicController;
+use App\Http\Controllers\Student\GuardianController;
+use App\Http\Controllers\Student\ReferenceController;
+use App\Http\Controllers\Academic\ClassNameController;
+use App\Http\Controllers\Academic\InstitutionController;
+use App\Http\Controllers\Sheet\SheetTopicTakenController;
+use App\Http\Controllers\Payment\PaymentInvoiceController;
+use App\Http\Controllers\Student\StudentActivationController;
+use App\Http\Controllers\Payment\PaymentTransactionController;
 
 Route::get('/', [AuthController::class, 'showLogin'])->name('home');
 
@@ -87,6 +88,8 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('classnames/ajax-data/{class}', [ClassNameController::class, 'getClassName'])->name('classnames.ajax');
 
 
+    // Reports
+    Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
 
 
 

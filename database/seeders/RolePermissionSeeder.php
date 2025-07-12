@@ -183,6 +183,9 @@ class RolePermissionSeeder extends Seeder
             // 📝 notes
             'notes.distribute',
 
+            // 📊 reports
+            'reports.view',
+
         ]);
 
         $accountant = Role::where('name', 'accountant')->first();
@@ -224,6 +227,9 @@ class RolePermissionSeeder extends Seeder
 
             // 📝 notes
             'notes.distribute',
+
+            // 📊 reports
+            'reports.view',
         ]);
     }
 }

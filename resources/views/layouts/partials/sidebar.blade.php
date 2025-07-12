@@ -56,6 +56,21 @@
                     </div>
                     <!--end:Dashboard Menu item-->
 
+                    @can('reports.view')
+                        <!--begin:Settings Tracking Menu item-->
+                        <div class="menu-item">
+                            <!--begin:Menu link-->
+                            <a class="menu-link" href="{{ route('reports.index') }}" id="reports_link">
+                                <span class="menu-icon">
+                                    <i class="ki-outline ki-filter-tablet fs-2"></i>
+                                </span>
+                                <span class="menu-title">Reports</span>
+                            </a>
+                            <!--end:Menu link-->
+                        </div>
+                        <!--end:Settings Tracking Menu item-->
+                    @endcan
+
                     {{-- ----------------- Student & Admission Modules ----------------- --}}
                     @hasanyrole('admin|manager|accountant')
                         <!--begin:Student Menu Heading-->
@@ -98,7 +113,7 @@
                                     <!--end:Menu item-->
                                 @endcan
 
-                                
+
 
                                 <!--begin:Guardians Menu item-->
                                 @can('guardians.view')
@@ -317,9 +332,6 @@
                         </div>
                         <!--end: Notes & Sheets Menu item-->
                     @endcanany
-
-
-
 
 
                     @canany(['invoices.view', 'transactions.view'])
