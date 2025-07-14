@@ -56,6 +56,10 @@
                         placeholder="Search in payments">
                 </div>
                 <!--end::Search-->
+
+                <!--begin::Export hidden buttons-->
+                <div id="kt_hidden_export_buttons" class="d-none"></div>
+                <!--end::Export buttons-->
             </div>
             <!--begin::Card title-->
 
@@ -87,7 +91,8 @@
                                     data-sheet-payments-table-filter="status" data-hide-search="true">
                                     <option></option>
                                     @foreach ($sheet_groups as $sheet)
-                                        <option value="{{ $sheet->class->name }} ({{ $sheet->class->class_numeral }})">{{ $sheet->class->name }} ({{ $sheet->class->class_numeral }})</option>
+                                        <option value="{{ $sheet->class->name }} ({{ $sheet->class->class_numeral }})">
+                                            {{ $sheet->class->name }} ({{ $sheet->class->class_numeral }})</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -119,8 +124,39 @@
                         <!--end::Content-->
                     </div>
                     <!--end::Menu 1-->
-
                     <!--end::Filter-->
+
+                    <!--begin::Export dropdown-->
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
+                            data-kt-menu-placement="bottom-end">
+                            <i class="ki-outline ki-exit-up fs-2"></i>Export
+                        </button>
+
+                        <!--begin::Menu-->
+                        <div id="kt_table_report_dropdown_menu"
+                            class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
+                            data-kt-menu="true">
+                            <!--begin::Menu item-->
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3" data-row-export="copy">Copy to
+                                    clipboard</a>
+                            </div>
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3" data-row-export="excel">Export as
+                                    Excel</a>
+                            </div>
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3" data-row-export="csv">Export as CSV</a>
+                            </div>
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3" data-row-export="pdf">Export as PDF</a>
+                            </div>
+                            <!--end::Menu item-->
+                        </div>
+                        <!--end::Menu-->
+                    </div>
+                    <!--end::Export dropdown-->
                 </div>
                 <!--end::Toolbar-->
 
@@ -132,18 +168,19 @@
         <!--begin::Card body-->
         <div class="card-body py-4">
             <!--begin::Table-->
-            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_sheet_payments_table">
+            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table"
+                id="kt_sheet_payments_table">
                 <thead>
                     <tr class="fw-bold fs-7 text-uppercase gs-0">
                         <th class="w-25px">SL</th>
                         <th class="w-200px">Sheet Group</th>
                         <th class="w-200px">Invoice No.</th>
-                        <th>Amount (৳)</th>
+                        <th>Amount (Tk)</th>
                         <th class="d-none">Status (Filter)</th>
                         <th>Status</th>
-                        <th>Paid (৳)</th>
+                        <th>Paid (Tk)</th>
                         <th class="w-350px">Student</th>
-                        <th>Billing Date</th>
+                        <th>Payment Date</th>
                     </tr>
                 </thead>
                 <tbody class="text-gray-600 fw-semibold">
@@ -165,36 +202,39 @@
                             <td>{{ $payment->invoice->total_amount }}</td>
                             <td class="d-none">
                                 @if ($payment->invoice->status === 'due')
-                                T_due
+                                    T_due
                                 @elseif ($payment->invoice->status === 'partially_paid')
-                                T_partially_paid
+                                    T_partially_paid
                                 @elseif ($payment->invoice->status === 'paid')
-                                T_paid
+                                    T_paid
                                 @endif
                             </td>
 
-                            
+
                             <td>
                                 @if ($payment->invoice->status === 'due')
-                                <span class="badge badge-warning">Due</span>
+                                    <span class="badge badge-warning">Due</span>
                                 @elseif ($payment->invoice->status === 'partially_paid')
-                                <span class="badge badge-info">Partial</span>
+                                    <span class="badge badge-info">Partial</span>
                                 @elseif ($payment->invoice->status === 'paid')
-                                <span class="badge badge-success">Paid</span>
+                                    <span class="badge badge-success">Paid</span>
                                 @endif
                             </td>
-                            
+
                             <td>{{ $payment->invoice->paymentTransactions->sum('amount_paid') }}</td>
 
                             <td>
                                 <a href="{{ route('students.show', $payment->student->id) }}">
-                                    {{ $payment->student->name }},
-                                    {{ $payment->student->student_unique_id }}
+                                    {{ $payment->student->name }}, {{ $payment->student->student_unique_id }}
                                 </a>
                             </td>
 
                             <td>
-                                {{ $payment->created_at->format('h:i A, d-M-Y') }}
+                                {{ $payment->created_at->format('d-M-Y') }}
+                                <span class="ms-1" data-bs-toggle="tooltip"
+                                    title="{{ $payment->created_at->format('d-M-Y h:i:s A') }}">
+                                    <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
+                                </span>
                             </td>
 
                         </tr>

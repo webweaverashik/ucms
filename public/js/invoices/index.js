@@ -26,6 +26,78 @@ var KTDueInvoicesList = function () {
             });
       }
 
+
+      // Hook export buttons
+      var exportButtonsDue = function () {
+            const documentTitle = 'Due Invoices Report';
+
+            var buttons = new $.fn.dataTable.Buttons(datatable, {
+                  buttons: [
+                        {
+                              extend: 'copyHtml5',
+                              className: 'buttons-copy',
+                              title: documentTitle,
+                              exportOptions: {
+                                    columns: ':visible:not(.not-export)'
+                              }
+                        },
+                        {
+                              extend: 'excelHtml5',
+                              className: 'buttons-excel',
+                              title: documentTitle,
+                              exportOptions: {
+                                    columns: ':visible:not(.not-export)'
+                              }
+                        },
+                        {
+                              extend: 'csvHtml5',
+                              className: 'buttons-csv',
+                              title: documentTitle, exportOptions: {
+                                    columns: ':visible:not(.not-export)'
+                              }
+                        },
+                        {
+                              extend: 'pdfHtml5',
+                              className: 'buttons-pdf',
+                              title: documentTitle,
+                              exportOptions: {
+                                    columns: ':visible:not(.not-export)',
+                                    modifier: {
+                                          page: 'all',
+                                          search: 'applied'
+                                    }
+                              },
+                              customize: function (doc) {
+                                    // Set page margins [left, top, right, bottom]
+                                    doc.pageMargins = [20, 20, 20, 40]; // reduce from default 40
+
+                                    // Optional: Set font size globally
+                                    doc.defaultStyle.fontSize = 10;
+
+                                    // Optional: Set header or footer
+                                    doc.footer = getPdfFooterWithPrintTime(); // your custom footer function
+                              }
+                        }
+
+                  ]
+            }).container().appendTo('#kt_hidden_export_buttons'); // or a hidden container
+
+            // Hook dropdown export actions
+            const exportItems = document.querySelectorAll('#kt_table_report_dropdown_menu [data-row-export]');
+            exportItems.forEach(exportItem => {
+                  exportItem.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const exportValue = this.getAttribute('data-row-export');
+                        const target = document.querySelector('.buttons-' + exportValue);
+                        if (target) {
+                              target.click();
+                        } else {
+                              console.warn('Export button not found:', exportValue);
+                        }
+                  });
+            });
+      };
+
       // Search Datatable --- official docs reference: https://datatables.net/reference/api/search()
       var handleSearch = function () {
             const filterSearch = document.querySelector('[data-kt-due-invoice-table-filter="search"]');
@@ -145,6 +217,7 @@ var KTDueInvoicesList = function () {
                   }
 
                   initDatatable();
+                  exportButtonsDue();
                   handleSearch();
                   handleFilter();
                   handleDeletion();
@@ -168,7 +241,7 @@ var KTPaidInvoicesList = function () {
                   "lengthChange": true,
                   "autoWidth": false,  // Disable auto width
                   'columnDefs': [
-                        { orderable: false, targets: 10 }, // Disable ordering on status Guardian                
+                        { orderable: false, targets: 10 }, // Disable ordering on status                
                   ]
             });
 
@@ -177,6 +250,77 @@ var KTPaidInvoicesList = function () {
 
             });
       }
+
+      // Hook export buttons
+      var exportButtonsPaid = function () {
+            const documentTitle = 'Paid Invoices Report';
+
+            var buttons = new $.fn.dataTable.Buttons(datatable, {
+                  buttons: [
+                        {
+                              extend: 'copyHtml5',
+                              className: 'buttons-copy-paid',
+                              title: documentTitle,
+                              exportOptions: {
+                                    columns: ':visible:not(.not-export)'
+                              }
+                        },
+                        {
+                              extend: 'excelHtml5',
+                              className: 'buttons-excel-paid',
+                              title: documentTitle,
+                              exportOptions: {
+                                    columns: ':visible:not(.not-export)'
+                              }
+                        },
+                        {
+                              extend: 'csvHtml5',
+                              className: 'buttons-csv-paid',
+                              title: documentTitle, exportOptions: {
+                                    columns: ':visible:not(.not-export)'
+                              }
+                        },
+                        {
+                              extend: 'pdfHtml5',
+                              className: 'buttons-pdf',
+                              title: documentTitle,
+                              exportOptions: {
+                                    columns: ':visible:not(.not-export)',
+                                    modifier: {
+                                          page: 'all',
+                                          search: 'applied'
+                                    }
+                              },
+                              customize: function (doc) {
+                                    // Set page margins [left, top, right, bottom]
+                                    doc.pageMargins = [20, 20, 20, 40]; // reduce from default 40
+
+                                    // Optional: Set font size globally
+                                    doc.defaultStyle.fontSize = 10;
+
+                                    // Optional: Set header or footer
+                                    doc.footer = getPdfFooterWithPrintTime(); // your custom footer function
+                              }
+                        }
+
+                  ]
+            }).container().appendTo('#kt_hidden_export_buttons_2'); // or a hidden container
+
+            // Hook dropdown export actions
+            const exportItems = document.querySelectorAll('#kt_table_report_dropdown_menu_2 [data-row-export]');
+            exportItems.forEach(exportItem => {
+                  exportItem.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const exportValue = this.getAttribute('data-row-export');
+                        const target = document.querySelector('.buttons-' + exportValue + '-paid');
+                        if (target) {
+                              target.click();
+                        } else {
+                              console.warn('Export button not found:', exportValue);
+                        }
+                  });
+            });
+      };
 
       // Search Datatable --- official docs reference: https://datatables.net/reference/api/search()
       var handleSearch = function () {
@@ -237,6 +381,7 @@ var KTPaidInvoicesList = function () {
                   }
 
                   initDatatable();
+                  exportButtonsPaid();
                   handleSearch();
                   handleFilter();
             }
@@ -487,6 +632,38 @@ var KTEditInvoiceModal = function () {
             }
       };
 }();
+
+// Functions to get the current date and time on pdf footer
+function getPdfFooterWithPrintTime() {
+      const now = new Date();
+
+      const day = String(now.getDate()).padStart(2, '0');
+      const month = String(now.getMonth() + 1).padStart(2, '0'); // Month is zero-based
+      const year = now.getFullYear();
+
+      let hours = now.getHours();
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+
+      const formattedTime = `${hours}:${minutes}:${seconds} ${ampm}`;
+      const formattedDate = `${day}-${month}-${year} ${formattedTime}`;
+      const printTime = `Printed on: ${formattedDate}`;
+
+      return function (currentPage, pageCount) {
+            return {
+                  columns: [
+                        { text: printTime, alignment: 'left', margin: [20, 0] },
+                        { text: `Page ${currentPage} of ${pageCount}`, alignment: 'right', margin: [0, 0, 20, 0] }
+                  ],
+                  fontSize: 8,
+                  margin: [0, 10]
+            };
+      };
+}
+
 
 // On document ready
 KTUtil.onDOMContentLoaded(function () {

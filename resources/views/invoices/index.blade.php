@@ -91,6 +91,10 @@
                                 class="form-control form-control-solid w-350px ps-12" placeholder="Search in due invoices">
                         </div>
                         <!--end::Search-->
+
+                        <!--begin::Export hidden buttons-->
+                        <div id="kt_hidden_export_buttons" class="d-none"></div>
+                        <!--end::Export buttons-->
                     </div>
                     <!--begin::Card title-->
 
@@ -196,6 +200,38 @@
                             </div>
                             <!--end::Menu 1-->
                             <!--end::Filter-->
+
+                            <!--begin::Export dropdown-->
+                            <div class="dropdown">
+                                <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
+                                    data-kt-menu-placement="bottom-end">
+                                    <i class="ki-outline ki-exit-up fs-2"></i>Export
+                                </button>
+
+                                <!--begin::Menu-->
+                                <div id="kt_table_report_dropdown_menu"
+                                    class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
+                                    data-kt-menu="true">
+                                    <!--begin::Menu item-->
+                                    <div class="menu-item px-3">
+                                        <a href="#" class="menu-link px-3" data-row-export="copy">Copy to
+                                            clipboard</a>
+                                    </div>
+                                    <div class="menu-item px-3">
+                                        <a href="#" class="menu-link px-3" data-row-export="excel">Export as
+                                            Excel</a>
+                                    </div>
+                                    <div class="menu-item px-3">
+                                        <a href="#" class="menu-link px-3" data-row-export="csv">Export as CSV</a>
+                                    </div>
+                                    <div class="menu-item px-3">
+                                        <a href="#" class="menu-link px-3" data-row-export="pdf">Export as PDF</a>
+                                    </div>
+                                    <!--end::Menu item-->
+                                </div>
+                                <!--end::Menu-->
+                            </div>
+                            <!--end::Export dropdown-->
                         </div>
                         <!--end::Toolbar-->
 
@@ -218,13 +254,13 @@
                                 <th>Invoice Type</th>
                                 <th class="d-none">Billing Month (filter)</th>
                                 <th>Billing Month</th>
-                                <th>Toal Amount (৳)</th>
-                                <th>Remaining (৳)</th>
+                                <th>Total Amount (Tk)</th>
+                                <th>Remaining (Tk)</th>
                                 <th class="d-none">Due Date (filter)</th>
                                 <th>Due Date</th>
                                 <th class="d-none">Status (filter)</th>
                                 <th>Status</th>
-                                <th class="w-100px">Actions</th>
+                                <th class="w-100px not-export">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="text-gray-600 fw-semibold">
@@ -239,8 +275,7 @@
 
                                     <td>
                                         <a href="{{ route('students.show', $invoice->student->id) }}" target="_blank">
-                                            {{ $invoice->student->name }},
-                                            {{ $invoice->student->student_unique_id }}
+                                            {{ $invoice->student->name }}, {{ $invoice->student->student_unique_id }}
                                         </a>
                                     </td>
 
@@ -380,6 +415,10 @@
                                 placeholder="Search in paid invoices">
                         </div>
                         <!--end::Search-->
+
+                        <!--begin::Export hidden buttons-->
+                        <div id="kt_hidden_export_buttons_2" class="d-none"></div>
+                        <!--end::Export buttons-->
                     </div>
                     <!--begin::Card title-->
 
@@ -471,6 +510,38 @@
                             </div>
                             <!--end::Menu 1-->
                             <!--end::Filter-->
+
+                            <!--begin::Export dropdown-->
+                            <div class="dropdown">
+                                <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
+                                    data-kt-menu-placement="bottom-end">
+                                    <i class="ki-outline ki-exit-up fs-2"></i>Export
+                                </button>
+
+                                <!--begin::Menu-->
+                                <div id="kt_table_report_dropdown_menu_2"
+                                    class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
+                                    data-kt-menu="true">
+                                    <!--begin::Menu item-->
+                                    <div class="menu-item px-3">
+                                        <a href="#" class="menu-link px-3" data-row-export="copy">Copy to
+                                            clipboard</a>
+                                    </div>
+                                    <div class="menu-item px-3">
+                                        <a href="#" class="menu-link px-3" data-row-export="excel">Export as
+                                            Excel</a>
+                                    </div>
+                                    <div class="menu-item px-3">
+                                        <a href="#" class="menu-link px-3" data-row-export="csv">Export as CSV</a>
+                                    </div>
+                                    <div class="menu-item px-3">
+                                        <a href="#" class="menu-link px-3" data-row-export="pdf">Export as PDF</a>
+                                    </div>
+                                    <!--end::Menu item-->
+                                </div>
+                                <!--end::Menu-->
+                            </div>
+                            <!--end::Export dropdown-->
                         </div>
                         <!--end::Toolbar-->
 
@@ -491,7 +562,7 @@
                                 <th class="w-350px">Student</th>
                                 <th class="d-none">Invoice Type (filter)</th>
                                 <th>Invoice Type</th>
-                                <th>Amount (৳)</th>
+                                <th>Amount (Tk)</th>
                                 <th class="d-none">Billing Month (filter)</th>
                                 <th>Billing Month</th>
                                 <th class="d-none">Due Date (filter)</th>
@@ -512,8 +583,7 @@
 
                                     <td>
                                         <a href="{{ route('students.show', $invoice->student->id) }}">
-                                            {{ $invoice->student->name }},
-                                            {{ $invoice->student->student_unique_id }}
+                                            {{ $invoice->student->name }}, {{ $invoice->student->student_unique_id }}
                                         </a>
                                     </td>
 
@@ -622,7 +692,9 @@
                                             <option></option>
                                             @foreach ($students as $student)
                                                 <option value="{{ $student->id }}">{{ $student->name }}
-                                                    ({{ $student->student_unique_id }}) - {{ ucfirst($student->payments->payment_style) }} - 1/{{ $student->payments->due_date }}
+                                                    ({{ $student->student_unique_id }})
+                                                    - {{ ucfirst($student->payments->payment_style) }} -
+                                                    1/{{ $student->payments->due_date }}
                                                 </option>
                                             @endforeach
                                         </select>
@@ -781,7 +853,9 @@
                                             <option></option>
                                             @foreach ($students as $student)
                                                 <option value="{{ $student->id }}">{{ $student->name }}
-                                                    ({{ $student->student_unique_id }}) - {{ ucfirst($student->payments->payment_style) }} - 1/{{ $student->payments->due_date }}
+                                                    ({{ $student->student_unique_id }})
+                                                    - {{ ucfirst($student->payments->payment_style) }} -
+                                                    1/{{ $student->payments->due_date }}
                                                 </option>
                                             @endforeach
                                         </select>

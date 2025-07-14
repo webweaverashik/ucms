@@ -56,6 +56,11 @@
                         placeholder="Search in transactions">
                 </div>
                 <!--end::Search-->
+
+                <!--begin::Export hidden buttons-->
+                <div id="kt_hidden_export_buttons" class="d-none"></div>
+                <!--end::Export buttons-->
+
             </div>
             <!--begin::Card title-->
 
@@ -106,6 +111,37 @@
                     </div>
                     <!--end::Menu 1-->
 
+                    <!--begin::Export dropdown-->
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
+                            data-kt-menu-placement="bottom-end">
+                            <i class="ki-outline ki-exit-up fs-2"></i>Export
+                        </button>
+
+                        <!--begin::Menu-->
+                        <div id="kt_table_report_dropdown_menu"
+                            class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
+                            data-kt-menu="true">
+                            <!--begin::Menu item-->
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3" data-row-export="copy">Copy to
+                                    clipboard</a>
+                            </div>
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3" data-row-export="excel">Export as Excel</a>
+                            </div>
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3" data-row-export="csv">Export as CSV</a>
+                            </div>
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3" data-row-export="pdf">Export as PDF</a>
+                            </div>
+                            <!--end::Menu item-->
+                        </div>
+                        <!--end::Menu-->
+                    </div>
+                    <!--end::Export dropdown-->
+
                     @can('transactions.create')
                         <!--begin::Add subscription-->
                         <a href="#" class="btn btn-primary" data-bs-toggle="modal"
@@ -117,7 +153,6 @@
                     <!--end::Filter-->
                 </div>
                 <!--end::Toolbar-->
-
             </div>
             <!--end::Card toolbar-->
         </div>
@@ -132,13 +167,13 @@
                         <th class="w-25px">SL</th>
                         <th class="w-150px">Invoice No.</th>
                         <th>Voucher No.</th>
-                        <th>Amount (৳)</th>
+                        <th>Amount (Tk)</th>
                         <th class="d-none">Payment Type (Filter)</th>
                         <th>Payment Type</th>
                         <th class="w-350px">Student</th>
                         <th>Payment Date</th>
                         <th>Received By</th>
-                        <th>Actions</th>
+                        <th class="not-export">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="text-gray-600 fw-semibold">
@@ -175,8 +210,7 @@
 
                             <td>
                                 <a href="{{ route('students.show', $transaction->student->id) }}">
-                                    {{ $transaction->student->name }},
-                                    {{ $transaction->student->student_unique_id }}
+                                    {{ $transaction->student->name }}, {{ $transaction->student->student_unique_id }}
                                 </a>
                             </td>
 
