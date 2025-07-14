@@ -68,6 +68,10 @@
                         placeholder="Search Students">
                 </div>
                 <!--end::Search-->
+
+                <!--begin::Export hidden buttons-->
+                <div id="kt_hidden_export_buttons" class="d-none"></div>
+                <!--end::Export buttons-->
             </div>
             <!--begin::Card title-->
 
@@ -178,6 +182,38 @@
                     </div>
                     <!--end::Menu 1-->
 
+                    <!--begin::Export dropdown-->
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
+                            data-kt-menu-placement="bottom-end">
+                            <i class="ki-outline ki-exit-up fs-2"></i>Export
+                        </button>
+
+                        <!--begin::Menu-->
+                        <div id="kt_table_report_dropdown_menu"
+                            class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
+                            data-kt-menu="true">
+                            <!--begin::Menu item-->
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3" data-row-export="copy">Copy to
+                                    clipboard</a>
+                            </div>
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3" data-row-export="excel">Export as
+                                    Excel</a>
+                            </div>
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3" data-row-export="csv">Export as CSV</a>
+                            </div>
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3" data-row-export="pdf">Export as PDF</a>
+                            </div>
+                            <!--end::Menu item-->
+                        </div>
+                        <!--end::Menu-->
+                    </div>
+                    <!--end::Export dropdown-->
+
                     @can('students.create')
                         <!--begin::Add Student-->
                         <a href="{{ route('students.create') }}" class="btn btn-primary">
@@ -206,11 +242,11 @@
                         <th class="w-300px">School</th>
                         <th>Guardians</th>
                         <th>Mobile<br>(Home)</th>
-                        <th>Fee (৳)</th>
+                        <th>Fee (Tk)</th>
                         <th>Payment<br>Type</th>
                         <th class="d-none">Admission<br>Date</th>
                         <th class="@if (!auth()->user()->hasRole('admin')) d-none @endif">Branch</th>
-                        <th class="min-w-70px">Actions</th>
+                        <th class="min-w-70px not-export">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="text-gray-600 fw-semibold">

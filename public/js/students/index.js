@@ -28,6 +28,77 @@ var KTStudentsList = function () {
         });
     }
 
+    // Hook export buttons
+    var exportButtons = () => {
+        const documentTitle = 'Student Lists Report';
+
+        var buttons = new $.fn.dataTable.Buttons(datatable, {
+            buttons: [
+                {
+                    extend: 'copyHtml5',
+                    className: 'buttons-copy',
+                    title: documentTitle,
+                    exportOptions: {
+                        columns: ':visible:not(.not-export)'
+                    }
+                },
+                {
+                    extend: 'excelHtml5',
+                    className: 'buttons-excel',
+                    title: documentTitle,
+                    exportOptions: {
+                        columns: ':visible:not(.not-export)'
+                    }
+                },
+                {
+                    extend: 'csvHtml5',
+                    className: 'buttons-csv',
+                    title: documentTitle, exportOptions: {
+                        columns: ':visible:not(.not-export)'
+                    }
+                },
+                {
+                    extend: 'pdfHtml5',
+                    className: 'buttons-pdf',
+                    title: documentTitle,
+                    exportOptions: {
+                        columns: ':visible:not(.not-export)',
+                        modifier: {
+                            page: 'all',
+                            search: 'applied'
+                        }
+                    },
+                    customize: function (doc) {
+                        // Set page margins [left, top, right, bottom]
+                        doc.pageMargins = [20, 20, 20, 40]; // reduce from default 40
+
+                        // Optional: Set font size globally
+                        doc.defaultStyle.fontSize = 10;
+
+                        // Optional: Set header or footer
+                        doc.footer = getPdfFooterWithPrintTime(); // your custom footer function
+                    }
+                }
+
+            ]
+        }).container().appendTo('#kt_hidden_export_buttons'); // or a hidden container
+
+        // Hook dropdown export actions
+        const exportItems = document.querySelectorAll('#kt_table_report_dropdown_menu [data-row-export]');
+        exportItems.forEach(exportItem => {
+            exportItem.addEventListener('click', function (e) {
+                e.preventDefault();
+                const exportValue = this.getAttribute('data-row-export');
+                const target = document.querySelector('.buttons-' + exportValue);
+                if (target) {
+                    target.click();
+                } else {
+                    console.warn('Export button not found:', exportValue);
+                }
+            });
+        });
+    };
+
     // Search Datatable --- official docs reference: https://datatables.net/reference/api/search()
     var handleSearch = function () {
         const filterSearch = document.querySelector('[data-kt-subscription-table-filter="search"]');
@@ -149,7 +220,7 @@ var KTStudentsList = function () {
 
             const studentId = toggleButton.getAttribute('data-student-id');
             console.log('Student ID:', studentId);
-            
+
             const studentName = toggleButton.getAttribute('data-student-name');
             const studentUniqueId = toggleButton.getAttribute('data-student-unique-id');
             const activeStatus = toggleButton.getAttribute('data-active-status');
@@ -183,7 +254,7 @@ var KTStudentsList = function () {
             }
 
             initDatatable();
-            // initToggleToolbar();
+            exportButtons();
 
             handleSearch();
             handleDeletion();

@@ -13,9 +13,47 @@
 
     <!--begin::Custom Javascript(used for this page only)-->
     @stack('page-js')
-    <!--end::Custom Javascript-->
 
     <script>
+        // function to get pdf footer for datatables export
+        function getPdfFooterWithPrintTime() {
+            const now = new Date();
+
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0'); // Month is zero-based
+            const year = now.getFullYear();
+
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+
+            const formattedTime = `${hours}:${minutes}:${seconds} ${ampm}`;
+            const formattedDate = `${day}-${month}-${year} ${formattedTime}`;
+            const printTime = `Printed on: ${formattedDate}`;
+
+            return function(currentPage, pageCount) {
+                return {
+                    columns: [{
+                            text: printTime,
+                            alignment: 'left',
+                            margin: [20, 0]
+                        },
+                        {
+                            text: `Page ${currentPage} of ${pageCount}`,
+                            alignment: 'right',
+                            margin: [0, 0, 20, 0]
+                        }
+                    ],
+                    fontSize: 8,
+                    margin: [0, 10]
+                };
+            };
+        }
+
+        // Toaster configuration
         document.addEventListener("DOMContentLoaded", function() {
             toastr.options = {
                 "closeButton": false,
@@ -48,9 +86,10 @@
             @endif
         });
 
-        // Tooltip Trigger for modal button -- Globally
+        // Tooltip Trigger for modal button also -- Globally
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
         tooltipTriggerList.forEach(function(tooltipTriggerEl) {
             new bootstrap.Tooltip(tooltipTriggerEl);
         });
     </script>
+    <!--end::Custom Javascript-->
