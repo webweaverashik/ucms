@@ -84,10 +84,10 @@ var KTPendingStudentsList = function () {
         document.querySelectorAll('.delete-student').forEach(item => {
             item.addEventListener('click', function (e) {
                 e.preventDefault();
-    
+
                 let studentId = this.getAttribute('data-student-id');
                 let url = routeDeleteStudent.replace(':id', studentId);  // Replace ':id' with actual student ID
-    
+
                 Swal.fire({
                     title: "Are you sure to delete this student?",
                     text: "This action cannot be undone!",
@@ -105,39 +105,37 @@ var KTPendingStudentsList = function () {
                                 "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
                             },
                         })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                Swal.fire({
-                                    title: "Deleted!",
-                                    text: "The student has been removed successfully.",
-                                    icon: "success",
-                                }).then(() => {
-                                    location.reload(); // Reload to reflect changes
-                                });
-                            } else {
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        title: "Deleted!",
+                                        text: "The student has been removed successfully.",
+                                        icon: "success",
+                                    }).then(() => {
+                                        location.reload(); // Reload to reflect changes
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: "Error!",
+                                        text: data.message,
+                                        icon: "error",
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error("Fetch Error:", error);
                                 Swal.fire({
                                     title: "Error!",
-                                    text: data.message,
+                                    text: "Something went wrong. Please try again.",
                                     icon: "error",
                                 });
-                            }
-                        })
-                        .catch(error => {
-                            console.error("Fetch Error:", error);
-                            Swal.fire({
-                                title: "Error!",
-                                text: "Something went wrong. Please try again.",
-                                icon: "error",
                             });
-                        });
                     }
                 });
             });
         });
     };
-
-    
 
     // Student approval AJAX
     const handleApproval = function () {
@@ -201,6 +199,77 @@ var KTPendingStudentsList = function () {
         });
     };
 
+    // Hook export buttons
+    var exportButtons = () => {
+        const documentTitle = 'Pending Student Lists Report';
+
+        var buttons = new $.fn.dataTable.Buttons(datatable, {
+            buttons: [
+                {
+                    extend: 'copyHtml5',
+                    className: 'buttons-copy',
+                    title: documentTitle,
+                    exportOptions: {
+                        columns: ':visible:not(.not-export)'
+                    }
+                },
+                {
+                    extend: 'excelHtml5',
+                    className: 'buttons-excel',
+                    title: documentTitle,
+                    exportOptions: {
+                        columns: ':visible:not(.not-export)'
+                    }
+                },
+                {
+                    extend: 'csvHtml5',
+                    className: 'buttons-csv',
+                    title: documentTitle, exportOptions: {
+                        columns: ':visible:not(.not-export)'
+                    }
+                },
+                {
+                    extend: 'pdfHtml5',
+                    className: 'buttons-pdf',
+                    title: documentTitle,
+                    exportOptions: {
+                        columns: ':visible:not(.not-export)',
+                        modifier: {
+                            page: 'all',
+                            search: 'applied'
+                        }
+                    },
+                    customize: function (doc) {
+                        // Set page margins [left, top, right, bottom]
+                        doc.pageMargins = [20, 20, 20, 40]; // reduce from default 40
+
+                        // Optional: Set font size globally
+                        doc.defaultStyle.fontSize = 10;
+
+                        // Optional: Set header or footer
+                        doc.footer = getPdfFooterWithPrintTime(); // your custom footer function
+                    }
+                }
+
+            ]
+        }).container().appendTo('#kt_hidden_export_buttons'); // or a hidden container
+
+        // Hook dropdown export actions
+        const exportItems = document.querySelectorAll('#kt_table_report_dropdown_menu [data-row-export]');
+        exportItems.forEach(exportItem => {
+            exportItem.addEventListener('click', function (e) {
+                e.preventDefault();
+                const exportValue = this.getAttribute('data-row-export');
+                const target = document.querySelector('.buttons-' + exportValue);
+                if (target) {
+                    target.click();
+                } else {
+                    console.warn('Export button not found:', exportValue);
+                }
+            });
+        });
+    };
+
     return {
         // Public functions
         init: function () {
@@ -211,7 +280,7 @@ var KTPendingStudentsList = function () {
             }
 
             initDatatable();
-            // initToggleToolbar();
+            exportButtons();
             handleSearch();
             handleDeletion();
             handleApproval();
