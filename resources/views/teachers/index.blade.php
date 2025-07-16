@@ -50,6 +50,7 @@
 
 @push('page-js')
     <script>
+        document.getElementById("teachers_menu").classList.add("here", "show");
         document.getElementById("teachers_link").classList.add("active");
     </script>
 @endpush
