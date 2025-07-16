@@ -24,7 +24,7 @@
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
                 <a href="#" class="text-muted text-hover-primary">
-                    Payment Info </a>
+                    Payments Info </a>
             </li>
             <!--end::Item-->
             <!--begin::Item-->
@@ -494,6 +494,7 @@
     <script src="{{ asset('js/transactions/ajax-form.js') }}"></script>
 
     <script>
+        document.getElementById("payments_menu").classList.add("here", "show");
         document.getElementById("transactions_link").classList.add("active");
     </script>
 @endpush

@@ -732,6 +732,7 @@
     <script src="{{ asset('js/invoices/view-ajax.js') }}"></script>
 
     <script>
+        document.getElementById("payments_menu").classList.add("here", "show");
         document.getElementById("invoices_link").classList.add("active");
     </script>
 @endpush

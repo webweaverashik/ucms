@@ -20,7 +20,7 @@ class UserController extends Controller
         $users    = User::withoutTrashed()->orderby('id', 'desc')->get();
         $branches = Branch::all();
 
-        return view('users.index', compact('users', 'branches'));
+        return view('settings.users.index', compact('users', 'branches'));
     }
 
     /**

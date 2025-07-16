@@ -92,6 +92,10 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
 
 
+    // Settings
+    Route::get('settings/branch', function () {
+        echo "Hello";
+    })->name('settings.branch');
 
     
 
@@ -104,7 +108,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     });
 
     // Resource Routes
-    Route::resource('users', UserController::class);
+    Route::resource('settings/users', UserController::class);
     Route::resource('students', StudentController::class);
     Route::resource('guardians', GuardianController::class);
     Route::resource('siblings', SiblingController::class);

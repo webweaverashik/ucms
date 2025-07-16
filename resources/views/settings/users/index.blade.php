@@ -716,6 +716,7 @@
     <script src="{{ asset('js/users/index.js') }}"></script>
 
     <script>
+        document.getElementById("settings_menu").classList.add("here", "show");
         document.getElementById("users_link").classList.add("active");
     </script>
 @endpush
