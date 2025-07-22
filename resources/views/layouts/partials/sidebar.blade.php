@@ -446,6 +446,18 @@
                                     <!--end:Menu item-->
                                 @endcan
 
+                                <!--begin:Roles-->
+                                <div class="menu-item">
+                                    <a class="menu-link" id="roles_link" href="#">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot">
+                                            </span>
+                                        </span>
+                                        <span class="menu-title">Roles</span>
+                                    </a>
+                                </div>
+                                <!--end:Roles-->
+
                                 <!--begin:Menu item-->
                                 <div class="menu-item">
                                     <!--begin:Menu link-->
@@ -460,19 +472,6 @@
                                 </div>
                                 <!--end:Menu item-->
 
-                                <!--begin:Roles-->
-                                <div class="menu-item">
-                                    <!--begin:Menu link-->
-                                    <a class="menu-link" id="roles_link" href="#">
-                                        <span class="menu-bullet">
-                                            <span class="bullet bullet-dot">
-                                            </span>
-                                        </span>
-                                        <span class="menu-title">Roles</span>
-                                    </a>
-                                    <!--end:Roles-->
-                                </div>
-                                <!--end:Menu item-->
                             </div>
                             <!--end:Menu sub-->
                         </div>

@@ -454,7 +454,7 @@ var KTUsersEditUser = function () {
                if (form) form.reset();
 
                // AJAX data fetch
-               fetch(`/users/${userId}`)
+               fetch(`/settings/users/${userId}`)
                     .then(response => {
                          if (!response.ok) throw new Error('Network response was not ok');
                          return response.json();
@@ -593,7 +593,7 @@ var KTUsersEditUser = function () {
                               formData.append('_method', 'PUT');
 
                               console.log(userId);
-                              fetch(`/users/${userId}`, {
+                              fetch(`/settings/users/${userId}`, {
                                    method: 'POST',
                                    body: formData,
                                    headers: {
@@ -831,7 +831,7 @@ var KTUsersResetPassword = function () {
                               formData.append('_method', 'PUT');
 
                               console.log('Updating password for user ID:', userId);
-                              fetch(`/users/${userId}/password`, {
+                              fetch(`/settings/users/${userId}/password`, {
                                    method: 'POST',
                                    body: formData,
                                    headers: {
