@@ -43,7 +43,78 @@
 
 
 @section('content')
+    <!--begin::Card-->
+    <div class="card">
+        <!--begin::Card header-->
+        <div class="card-header border-0 pt-6">
+            <!--begin::Card title-->
+            <div class="card-title">
+                <!--begin::Search-->
+                <div class="d-flex align-items-center position-relative">
+                    <!--begin::Student selection-->
+                    <div class="fv-row mb-7 w-400px">
+                        <!--begin::Label-->
+                        <label class="required fw-semibold fs-6 mb-2">Select Student</label>
+                        <!--end::Label-->
 
+                        <!--begin::Solid input group style-->
+                        <div class="input-group input-group-solid flex-nowrap">
+                            <span class="input-group-text">
+                                <i class="ki-outline ki-faceid fs-3"></i>
+                            </span>
+                            <div class="overflow-hidden flex-grow-1">
+                                <!-- Student Select -->
+                                <select class="form-select form-select-solid rounded-start-0 border-start"
+                                    data-control="select2" data-placeholder="Select a student" id="student_select_id">
+                                    <option></option>
+                                    @foreach ($students as $student)
+                                        <option value="{{ $student->id }}">
+                                            {{ $student->name }} ({{ $student->student_unique_id }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <!--end::Solid input group style-->
+                    </div>
+                    <!--end::Student selection-->
+
+                    <!--begin::Sheet Group Input-->
+                    <div class="fv-row mb-7 w-350px ps-4">
+                        <!--begin::Label-->
+                        <label class="required fw-semibold fs-6 mb-2">Sheet Group</label>
+                        <!--end::Label-->
+
+                        <!--begin::Solid input group style-->
+                        <div class="input-group input-group-solid flex-nowrap">
+                            <span class="input-group-text">
+                                <i class="ki-outline ki-note-2 fs-3"></i>
+                            </span>
+                            <div class="overflow-hidden flex-grow-1">
+                                <!-- Sheet Group Select (Initially Disabled) -->
+                                <select id="student_paid_sheet_group"
+                                    class="form-select form-select-solid rounded-start-0 border-start"
+                                    data-control="select2" data-placeholder="Select a sheet" disabled>
+                                    <option></option>
+                                </select>
+                            </div>
+                        </div>
+                        <!--end::Solid input group style-->
+                    </div>
+                    <!--end::Sheet Group Input-->
+                </div>
+                <!--end::Search-->
+            </div>
+            <!--begin::Card title-->
+        </div>
+        <!--end::Card header-->
+
+        <!--begin::Notes Distribution Panel-->
+        <div class="card-body py-4" id="student_notes_distribution">
+        </div>
+        <!--end::Notes Distribution Panel-->
+    </div>
+    <!--end::Card-->
 @endsection
 
 
