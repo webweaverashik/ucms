@@ -184,7 +184,7 @@
             <form class="card-body py-20 w-100 px-9" novalidate="novalidate" enctype="multipart/form-data"
                 id="kt_create_student_form">
                 <!--begin::Step 1-->
-                <div data-kt-stepper-element="content" class="current">
+                <div class="current" data-kt-stepper-element="content">
                     <!--begin::Wrapper-->
                     <div class="w-100">
                         <!--begin::Heading-->
@@ -521,8 +521,7 @@
                         <!--begin::Parents Input group-->
                         <div class="mb-15">
                             <!--begin::Label-->
-                            <label class="form-label fs-3">Guardians <span class="text-muted">(at least one
-                                    guardian)</span></label>
+                            <label class="form-label fs-3">Guardians <span class="text-muted">(at least one guardian)</span></label>
                             <!--end::Label-->
 
                             <!--begin::Guardian 1-->
@@ -594,8 +593,8 @@
 
                                     <!--begin::Solid input group style-->
                                     <select name="guardian_2_gender" data-hide-search="true"
-                                        class="form-select form-select-solid" data-control="select2"
-                                        data-allow-clear="true" data-placeholder="Select">
+                                        class="form-select form-select-solid" data-control="select2" data-allow-clear="true"
+                                        data-placeholder="Select">
                                         <option></option>
                                         <option value="male">Male</option>
                                         <option value="female">Female</option>
@@ -609,8 +608,8 @@
 
                                     <!--begin::Solid input group style-->
                                     <select name="guardian_2_relationship" data-hide-search="true"
-                                        class="form-select form-select-solid" data-control="select2"
-                                        data-allow-clear="true" data-placeholder="Select">
+                                        class="form-select form-select-solid" data-control="select2" data-allow-clear="true"
+                                        data-placeholder="Select">
                                         <option></option>
                                         <option value="father">Father</option>
                                         <option value="mother">Mother</option>
@@ -645,14 +644,13 @@
                                 </div>
                                 <div class="col-md-1 fv-row">
                                     <label class="form-label">Class</label>
-                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
-                                        maxlength="15" name="sibling_1_class" />
+                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0" maxlength="15"
+                                        name="sibling_1_class" />
                                 </div>
                                 <div class="col-md-4 fv-row">
                                     <label class="form-label">Instituition</label>
-                                    <select name="sibling_1_institution" class="form-select form-select-solid"
-                                        data-allow-clear="true" data-control="select2"
-                                        data-placeholder="Select an instituition">
+                                    <select name="sibling_1_institution" class="form-select form-select-solid" data-allow-clear="true"
+                                        data-control="select2" data-placeholder="Select an instituition">
                                         <option></option>
                                         @foreach ($institutions as $institution)
                                             <option value="{{ $institution->id }}">{{ $institution->name }}
@@ -668,8 +666,8 @@
 
                                     <!--begin::Solid input group style-->
                                     <select name="sibling_1_relationship" data-hide-search="true"
-                                        class="form-select form-select-solid" data-control="select2"
-                                        data-allow-clear="true" data-placeholder="Select">
+                                        class="form-select form-select-solid" data-control="select2" data-allow-clear="true"
+                                        data-placeholder="Select">
                                         <option></option>
                                         <option value="brother">Brother</option>
                                         <option value="sister">Sister</option>
@@ -693,14 +691,13 @@
                                 </div>
                                 <div class="col-md-1 fv-row">
                                     <label class="form-label">Class</label>
-                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
-                                        maxlength="15" name="sibling_2_class" />
+                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0" maxlength="15"
+                                        name="sibling_2_class" />
                                 </div>
                                 <div class="col-md-4 fv-row">
                                     <label class="form-label">Instituition</label>
-                                    <select name="sibling_2_institution" class="form-select form-select-solid"
-                                        data-allow-clear="true" data-control="select2"
-                                        data-placeholder="Select an instituition">
+                                    <select name="sibling_2_institution" class="form-select form-select-solid" data-allow-clear="true"
+                                        data-control="select2" data-placeholder="Select an instituition">
                                         <option></option>
                                         @foreach ($institutions as $institution)
                                             <option value="{{ $institution->id }}">{{ $institution->name }}
@@ -716,8 +713,8 @@
 
                                     <!--begin::Solid input group style-->
                                     <select name="sibling_2_relationship" data-hide-search="true"
-                                        class="form-select form-select-solid" data-control="select2"
-                                        data-allow-clear="true" data-placeholder="Select">
+                                        class="form-select form-select-solid" data-control="select2" data-allow-clear="true"
+                                        data-placeholder="Select">
                                         <option></option>
                                         <option value="brother">Brother</option>
                                         <option value="sister">Sister</option>
@@ -749,9 +746,37 @@
                         </div>
                         <!--end::Heading-->
 
+                        <!--begin::Institution Input group-->
+                        <div class="fv-row mb-7">
+                            <!--begin::Label-->
+                            <label class="form-label required">School/College</label>
+                            <!--end::Label-->
+
+                            <!--begin::Solid input group style-->
+                            <div class="input-group input-group-solid flex-nowrap">
+                                <span class="input-group-text">
+                                    <i class="ki-outline ki-bank fs-3"></i>
+                                </span>
+                                <div class="overflow-hidden flex-grow-1">
+                                    <select name="student_institution"
+                                        class="form-select form-select-solid rounded-start-0 border-start"
+                                        data-control="select2" data-placeholder="Select an instituition" required>
+                                        <option></option>
+                                        @foreach ($institutions as $institution)
+                                            <option value="{{ $institution->id }}">{{ $institution->name }}
+                                                (EIIN: {{ $institution->eiin_number }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <!--end::Solid input group style-->
+                        </div>
+                        <!--end::Institution Input group-->
+
                         {{-- Class & Group --}}
                         <div class="row">
-                            <div class="col-lg-7 fv-row">
+                            <div class="col-lg-8 fv-row">
                                 <!--begin::Class Input group-->
                                 <div class="fv-row mb-7">
                                     <!--begin::Label-->
@@ -776,7 +801,7 @@
                             </div>
 
                             {{-- Group Selection --}}
-                            <div class="col-lg-5 fv-row" id="student-group-selection">
+                            <div class="col-lg-4 fv-row" id="student-group-selection">
                                 <!--begin::Class Input group-->
                                 <div class="mb-7">
                                     <!--begin::Label-->
@@ -829,31 +854,6 @@
                                 <!--end::Class Input group-->
                             </div>
                         </div>
-
-
-                        <!--begin::Institution Input group-->
-                        <div class="fv-row mb-7">
-                            <!--begin::Label-->
-                            <label class="form-label required">School/College</label>
-                            <!--end::Label-->
-
-                            <!--begin::Solid input group style-->
-                            <div class="input-group input-group-solid flex-nowrap">
-                                <span class="input-group-text">
-                                    <i class="ki-outline ki-bank fs-3"></i>
-                                </span>
-                                <div class="overflow-hidden flex-grow-1">
-                                    <select name="student_institution" id="institution_select"
-                                        class="form-select form-select-solid rounded-start-0 border-start"
-                                        data-control="select2" data-placeholder="Select an instituition" required>
-                                        <option></option>
-                                    
-                                    </select>
-                                </div>
-                            </div>
-                            <!--end::Solid input group style-->
-                        </div>
-                        <!--end::Institution Input group-->
 
 
                         <!--begin::Enrolled Subjects-->

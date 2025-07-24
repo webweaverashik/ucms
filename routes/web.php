@@ -1,27 +1,27 @@
 <?php
 
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PdfController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\AutoInvoiceController;
-use App\Http\Controllers\Sheet\SheetController;
-use App\Http\Controllers\Academic\ShiftController;
-use App\Http\Controllers\Student\SiblingController;
-use App\Http\Controllers\Student\StudentController;
-use App\Http\Controllers\Teacher\TeacherController;
-use App\Http\Controllers\Academic\SubjectController;
-use App\Http\Controllers\Sheet\SheetTopicController;
-use App\Http\Controllers\Student\GuardianController;
-use App\Http\Controllers\Student\ReferenceController;
 use App\Http\Controllers\Academic\ClassNameController;
 use App\Http\Controllers\Academic\InstitutionController;
-use App\Http\Controllers\Sheet\SheetTopicTakenController;
+use App\Http\Controllers\Academic\ShiftController;
+use App\Http\Controllers\Academic\SubjectController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AutoInvoiceController;
 use App\Http\Controllers\Payment\PaymentInvoiceController;
-use App\Http\Controllers\Student\StudentActivationController;
 use App\Http\Controllers\Payment\PaymentTransactionController;
+use App\Http\Controllers\PdfController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\Sheet\SheetController;
+use App\Http\Controllers\Sheet\SheetTopicController;
+use App\Http\Controllers\Sheet\SheetTopicTakenController;
+use App\Http\Controllers\Student\GuardianController;
+use App\Http\Controllers\Student\ReferenceController;
+use App\Http\Controllers\Student\SiblingController;
+use App\Http\Controllers\Student\StudentActivationController;
+use App\Http\Controllers\Student\StudentController;
+use App\Http\Controllers\Teacher\TeacherController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AuthController::class, 'showLogin'])->name('home');
 
@@ -65,6 +65,8 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('transactions/{id}/download-payslip', [PdfController::class, 'downloadPaySlip'])->name('transactions.download');
     Route::post('transactions/{id}/approve', [PaymentTransactionController::class, 'approve'])->name('transactions.approve');
 
+    // Institutions
+    Route::get('institutions/by-type/{type}', [InstitutionController::class, 'getByType'])->name('institutions.by-type');
 
     // Subjects
     Route::get('get-subjects', [SubjectController::class, 'getSubjects']);
@@ -75,29 +77,22 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('/sheets/paid/{student}', [SheetController::class, 'getPaidSheets'])->name('sheets.paid');
     Route::get('/sheets/{sheet}/topics/{student}', [SheetController::class, 'getSheetTopics'])->name('sheets.topics');
 
-
-
     // Notes
     Route::put('notes/{sheetTopic}/status', [SheetTopicController::class, 'updateStatus'])->name('notes.updateStatus');
     Route::get('notes/distribution', [SheetTopicTakenController::class, 'index'])->name('notes.distribution');
     Route::get('notes/distribution/create', [SheetTopicTakenController::class, 'create'])->name('notes.distribution.create');
     Route::post('sheet-topics/distribute', [SheetTopicTakenController::class, 'store'])->name('sheet-topics.distribute');
 
-
     // Class Names
     Route::get('classnames/ajax-data/{class}', [ClassNameController::class, 'getClassName'])->name('classnames.ajax');
 
-
     // Reports
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
-
 
     // Settings
     Route::get('settings/branch', function () {
         echo "Hello";
     })->name('settings.branch');
-
-    
 
     // ------- Custom routes end -------
 
@@ -116,7 +111,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::resource('institutions', InstitutionController::class);
     Route::resource('classnames', ClassNameController::class);
     Route::resource('shifts', ShiftController::class);
-    Route::resource('subjects', SubjectController::class);  
+    Route::resource('subjects', SubjectController::class);
     Route::resource('invoices', PaymentInvoiceController::class);
     Route::resource('transactions', PaymentTransactionController::class);
     Route::resource('sheets', SheetController::class);

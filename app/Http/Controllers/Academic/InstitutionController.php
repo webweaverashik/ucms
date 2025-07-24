@@ -111,4 +111,20 @@ class InstitutionController extends Controller
         // Return JSON response
         return response()->json(['success' => true]);
     }
+
+    public function getByType($type)
+    {
+        $institutions = Institution::where('type', $type)
+            ->orderBy('name')
+            ->get(['id', 'name', 'type', 'eiin_number']);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $institutions,
+            'meta'    => [
+                'count' => $institutions->count(),
+                'type'  => $type,
+            ],
+        ]);
+    }
 }

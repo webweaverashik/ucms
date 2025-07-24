@@ -192,7 +192,7 @@
             <form class="card-body py-20 w-100 px-9" novalidate="novalidate" enctype="multipart/form-data"
                 id="kt_update_student_form">
                 <!--begin::Step 1-->
-                <div class="current" data-kt-stepper-element="content">
+                <div data-kt-stepper-element="content" class="current">
                     <!--begin::Wrapper-->
                     <div class="w-100">
                         <!--begin::Heading-->
@@ -529,10 +529,10 @@
                             <!--end::Notice-->
                         </div>
                         <!--end::Heading-->
-                        
+
                         {{-- Hidden Inputs - Guardian IDs --}}
                         @if ($student->guardians->get(0))
-                        <input type="hidden" name="guardian_1_id" value="{{ $student->guardians[0]->id }}">
+                            <input type="hidden" name="guardian_1_id" value="{{ $student->guardians[0]->id }}">
                         @endif
 
                         @if ($student->guardians->get(1))
@@ -809,34 +809,6 @@
                         </div>
                         <!--end::Heading-->
 
-                        <!--begin::Institution Input group-->
-                        <div class="fv-row mb-7">
-                            <!--begin::Label-->
-                            <label class="form-label required">School/College</label>
-                            <!--end::Label-->
-
-                            <!--begin::Solid input group style-->
-                            <div class="input-group input-group-solid flex-nowrap">
-                                <span class="input-group-text">
-                                    <i class="ki-outline ki-bank fs-3"></i>
-                                </span>
-                                <div class="overflow-hidden flex-grow-1">
-                                    <select name="student_institution"
-                                        class="form-select form-select-solid rounded-start-0 border-start"
-                                        data-control="select2" data-placeholder="Select an instituition" required @if(auth()->user()->hasRole('accountant')) disabled @endif>
-                                        <option></option>
-                                        @foreach ($institutions as $institution)
-                                            <option value="{{ $institution->id }}"
-                                                {{ $student->institution_id == $institution->id ? 'selected' : '' }}>
-                                                {{ $institution->name }} (EIIN: {{ $institution->eiin_number }})
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            <!--end::Solid input group style-->
-                        </div>
-                        <!--end::Institution Input group-->
 
                         {{-- Class & Group --}}
                         <div class="row">
@@ -850,7 +822,8 @@
                                     <!--begin::Solid input group style-->
                                     <select name="student_class" id="student_class_input"
                                         class="form-select form-select-solid" data-control="select2"
-                                        data-placeholder="Assign to a class" required @if(auth()->user()->hasRole('accountant')) disabled @endif>
+                                        data-placeholder="Assign to a class" required
+                                        @if (auth()->user()->hasRole('accountant')) disabled @endif>
                                         <option></option>
                                         @foreach ($classnames as $classname)
                                             <option value="{{ $classname->id }}"
@@ -880,9 +853,10 @@
                                             <!--begin::Option-->
                                             <input type="radio" class="btn-check" name="student_academic_group"
                                                 value="Science" @if ($student->academic_group == 'Science' || $student->academic_group == 'General') checked="checked" @endif
-                                                id="academic_group_science_input" required @if(auth()->user()->hasRole('accountant')) disabled @endif/>
+                                                id="academic_group_science_input" required
+                                                @if (auth()->user()->hasRole('accountant')) disabled @endif />
                                             <label
-                                                class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center @if(auth()->user()->hasRole('accountant')) disabled @endif"
+                                                class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center @if (auth()->user()->hasRole('accountant')) disabled @endif"
                                                 for="academic_group_science_input">
                                                 <i class="las la-flask fs-2x me-5"></i>
                                                 <!--begin::Info-->
@@ -899,10 +873,12 @@
                                         <div class="col-lg-6">
                                             <!--begin::Option-->
                                             <input type="radio" class="btn-check" name="student_academic_group"
-                                                value="Commerce" @if ($student->academic_group == 'Commerce') checked="checked" @endif
-                                                id="academic_group_commerce_input" required @if(auth()->user()->hasRole('accountant')) disabled @endif/>
+                                                value="Commerce"
+                                                @if ($student->academic_group == 'Commerce') checked="checked" @endif
+                                                id="academic_group_commerce_input" required
+                                                @if (auth()->user()->hasRole('accountant')) disabled @endif />
                                             <label
-                                                class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center @if(auth()->user()->hasRole('accountant')) disabled @endif"
+                                                class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center @if (auth()->user()->hasRole('accountant')) disabled @endif"
                                                 for="academic_group_commerce_input">
                                                 <i class="las la-business-time fs-2x me-5"></i>
                                                 <!--begin::Info-->
@@ -921,6 +897,35 @@
                             </div>
                         </div>
 
+                        <!--begin::Institution Input group-->
+                        <div class="fv-row mb-7">
+                            <!--begin::Label-->
+                            <label class="form-label required">School/College</label>
+                            <!--end::Label-->
+
+                            <!--begin::Solid input group style-->
+                            <div class="input-group input-group-solid flex-nowrap">
+                                <span class="input-group-text">
+                                    <i class="ki-outline ki-bank fs-3"></i>
+                                </span>
+                                <div class="overflow-hidden flex-grow-1">
+                                    <select name="student_institution" id="institution_select"
+                                        class="form-select form-select-solid rounded-start-0 border-start"
+                                        data-control="select2" data-placeholder="Select an instituition" required
+                                        @if (auth()->user()->hasRole('accountant')) disabled @endif>
+                                        <option></option>
+                                        @foreach ($institutions as $institution)
+                                            <option value="{{ $institution->id }}"
+                                                {{ $student->institution_id == $institution->id ? 'selected' : '' }}>
+                                                {{ $institution->name }} (EIIN: {{ $institution->eiin_number }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <!--end::Solid input group style-->
+                        </div>
+                        <!--end::Institution Input group-->
 
                         <!--begin::Enrolled Subjects-->
                         <div class="fv-row">
@@ -979,13 +984,14 @@
                                     <div class="col">
                                         <!--begin::Option-->
                                         <label
-                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary @if ($student->shift_id == $shift->id) active @endif d-flex text-start p-6 @if(auth()->user()->hasRole('accountant')) disabled @endif"
+                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary @if ($student->shift_id == $shift->id) active @endif d-flex text-start p-6 @if (auth()->user()->hasRole('accountant')) disabled @endif"
                                             data-kt-button="true">
                                             <!--begin::Radio-->
                                             <span
                                                 class="form-check form-check-custom form-check-solid form-check-sm align-items-start mt-1">
                                                 <input class="form-check-input" type="radio" name="student_shift"
-                                                    value="{{ $shift->id }}" required @if(auth()->user()->hasRole('accountant')) disabled @endif
+                                                    value="{{ $shift->id }}" required
+                                                    @if (auth()->user()->hasRole('accountant')) disabled @endif
                                                     @if ($student->shift_id == $shift->id) checked="checked" @endif />
                                             </span>
                                             <!--end::Radio-->
@@ -1017,7 +1023,8 @@
                                     <!--begin::Input group-->
                                     <input type="number" class="form-control form-control-solid"
                                         name="student_tuition_fee" min="0" placeholder="Write tuition fee"
-                                        required value="{{ $student->payments->tuition_fee }}" @if(auth()->user()->hasRole('accountant')) disabled @endif/>
+                                        required value="{{ $student->payments->tuition_fee }}"
+                                        @if (auth()->user()->hasRole('accountant')) disabled @endif />
                                     <!--end::Input group-->
                                 </div>
                                 <!--end::Input group-->
@@ -1035,16 +1042,20 @@
                                         <!--begin::Radio-->
                                         <div class="form-check form-check-custom form-check-solid me-5">
                                             <input class="form-check-input" type="radio" value="current"
-                                                name="payment_style" id="payment_style_current" required @if(auth()->user()->hasRole('accountant')) disabled @endif
+                                                name="payment_style" id="payment_style_current" required
+                                                @if (auth()->user()->hasRole('accountant')) disabled @endif
                                                 @if ($student->payments->payment_style == 'current') checked="checked" @endif />
-                                            <label class="form-check-label fs-6 fw-medium @if(auth()->user()->hasRole('accountant')) disabled @endif"
+                                            <label
+                                                class="form-check-label fs-6 fw-medium @if (auth()->user()->hasRole('accountant')) disabled @endif"
                                                 for="payment_style_current">Current</label>
                                         </div>
                                         <div class="form-check form-check-custom form-check-solid">
                                             <input class="form-check-input" type="radio" value="due"
-                                                name="payment_style" id="payment_style_due" required @if(auth()->user()->hasRole('accountant')) disabled @endif
+                                                name="payment_style" id="payment_style_due" required
+                                                @if (auth()->user()->hasRole('accountant')) disabled @endif
                                                 @if ($student->payments->payment_style == 'due') checked="checked" @endif />
-                                            <label class="form-check-label fs-6 fw-medium @if(auth()->user()->hasRole('accountant')) disabled @endif"
+                                            <label
+                                                class="form-check-label fs-6 fw-medium @if (auth()->user()->hasRole('accountant')) disabled @endif"
                                                 for="payment_style_due">Due</label>
                                         </div>
                                         <!--end::Radio-->
@@ -1063,7 +1074,7 @@
                                     <!--begin::Input-->
                                     <select name="payment_due_date" class="form-select form-select-solid"
                                         data-control="select2" data-hide-search="true" data-placeholder="Select due date"
-                                        required @if(auth()->user()->hasRole('accountant')) disabled @endif>
+                                        required @if (auth()->user()->hasRole('accountant')) disabled @endif>
                                         <option></option>
                                         @foreach ($dueDates as $value => $label)
                                             <option value="{{ $value }}"

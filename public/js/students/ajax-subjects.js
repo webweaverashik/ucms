@@ -3,9 +3,11 @@ $(function () {
      const $classSelect = $('#student_class_input');
      const $groupSection = $('#student-group-selection');
      const $subjectContainer = $('#subject_list');
+     const $institutionSelect = $('#institution_select');
 
      // Initialize
      $classSelect.select2();
+     $institutionSelect.select2();
      initEventHandlers();
      initPage();
 
@@ -20,12 +22,14 @@ $(function () {
           updateGroupVisibility();
           if ($classSelect.val()) {
                loadSubjects();
+               loadInstitutions();
           }
      }
 
      function handleClassChange() {
           updateGroupVisibility();
           loadSubjects();
+          loadInstitutions();
      }
 
      function updateGroupVisibility() {
@@ -49,6 +53,53 @@ $(function () {
           }
      }
 
+     function loadInstitutions() {
+          const classNumeral = getClassNumeral();
+          const institutionType = classNumeral >= 11 ? 'college' : 'school';
+
+          showInstitutionLoading();
+
+          $.ajax({
+               url: `/institutions/by-type/${institutionType}`,
+               method: 'GET',
+               success: function (response) {
+                    if (response?.success && response.data?.length) {
+                         renderInstitutions(response.data);
+                    } else {
+                         showInstitutionMessage(response?.message || `No ${institutionType} institutions found`);
+                         console.log('API Response:', response);
+                    }
+               },
+               error: function (xhr) {
+                    const errorMsg = xhr.responseJSON?.message || 'Error loading institutions';
+                    showInstitutionMessage(errorMsg);
+                    console.error('API Error:', xhr.responseJSON);
+               }
+          });
+     }
+
+     function renderInstitutions(institutions) {
+          const $select = $('#institution_select');
+          $select.empty().append('<option></option>');
+
+          if (institutions.length === 0) {
+               showInstitutionMessage('No institutions available');
+               return;
+          }
+
+          institutions.forEach(institution => {
+               $select.append(
+                    $('<option></option>')
+                         .val(institution.id)
+                         .text(`${institution.name} (EIIN: ${institution.eiin_number || 'N/A'})`)
+               );
+          });
+
+          $select.prop('disabled', false)
+               .trigger('change')
+               .parent().find('.select2-selection').removeClass('disabled');
+     }
+
      function loadSubjects() {
           const classId = $classSelect.val();
           if (!classId) {
@@ -67,8 +118,8 @@ $(function () {
                method: 'GET',
                data: {
                     class_id: classId,
-                    group: academicGroup,  // Changed from academic_group to group
-                    include_general: includeGeneral ? 1 : 0  // Send as 1/0
+                    group: academicGroup,
+                    include_general: includeGeneral ? 1 : 0
                },
                success: function (response) {
                     if (response?.subjects?.length) {
@@ -97,9 +148,7 @@ $(function () {
           const generalSubjects = subjects.filter(s => s.academic_group === 'General');
           const groupSubjects = subjects.filter(s => s.academic_group !== 'General');
 
-          let html = `
-             
-         `;
+          let html = '';
 
           if (generalSubjects.length) {
                html += createSubjectSection('Compulsory', generalSubjects);
@@ -115,23 +164,23 @@ $(function () {
 
      function createSubjectSection(title, subjects) {
           return `
-             <div class="subject-section">
-                 <label class="form-label">${title}</label>
-                 <div class="row">
-                     ${subjects.map(subject => `
-                         <div class="col-md-3 mb-3">
-                             <div class="form-check">
-                                 <input class="form-check-input subject-checkbox" type="checkbox"
-                                        name="subjects[${subject.id}]" value="${subject.id}" id="sub_${subject.id}">
-                                 <label class="form-check-label fs-6" for="sub_${subject.id}">
-                                     ${subject.name}
-                                 </label>
-                             </div>
-                         </div>
-                     `).join('')}
-                 </div>
-             </div>
-         `;
+            <div class="subject-section">
+                <label class="form-label">${title}</label>
+                <div class="row">
+                    ${subjects.map(subject => `
+                        <div class="col-md-3 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input subject-checkbox" type="checkbox"
+                                       name="subjects[${subject.id}]" value="${subject.id}" id="sub_${subject.id}">
+                                <label class="form-check-label fs-6" for="sub_${subject.id}">
+                                    ${subject.name}
+                                </label>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
      }
 
      function toggleSelectAll() {
@@ -152,5 +201,16 @@ $(function () {
 
      function showMessage(msg) {
           $subjectContainer.html(`<div class="alert alert-info">${msg}</div>`);
+     }
+
+     function showInstitutionLoading() {
+          $institutionSelect.prop('disabled', true);
+          $institutionSelect.parent().find('.select2-selection').addClass('disabled');
+     }
+
+     function showInstitutionMessage(msg) {
+          $institutionSelect.empty().append(`<option value="">${msg}</option>`);
+          $institutionSelect.prop('disabled', false);
+          $institutionSelect.parent().find('.select2-selection').removeClass('disabled');
      }
 });
