@@ -59,6 +59,62 @@
             <form id="bulk_admission_form" class="form" action="{{ route('bulk.admission.upload') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="row">
+                    <!--begin::Student selection-->
+                    <div class="fv-row col-lg-6 col-xl-3 mb-4">
+                        <!--begin::Label-->
+                        <label class="required fw-semibold fs-6 mb-2">Select Branch</label>
+                        <!--end::Label-->
+
+                        <!--begin::Solid input group style-->
+                        <div class="input-group input-group-solid flex-nowrap">
+                            <span class="input-group-text">
+                                <i class="ki-outline ki-technology-4 fs-3"></i>
+                            </span>
+                            <div class="overflow-hidden flex-grow-1">
+                                <!-- Student Select -->
+                                <select class="form-select form-select-solid rounded-start-0 border-start"
+                                    data-control="select2" data-placeholder="Select a branch" id="student_branch_id" required>
+                                    <option></option>
+                                    @foreach ($branches as $branch)
+                                        <option value="{{ $branch->id }}">
+                                            {{ $branch->branch_name }} Branch
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <!--end::Solid input group style-->
+                    </div>
+                    <!--end::Student selection-->
+
+                    <!--begin::Sheet Group Input-->
+                    <div class="fv-row col-lg-6 col-xl-3 mb-4">
+                        <!--begin::Label-->
+                        <label class="required fw-semibold fs-6 mb-2">Select Class</label>
+                        <!--end::Label-->
+
+                        <!--begin::Solid input group style-->
+                        <div class="input-group input-group-solid flex-nowrap">
+                            <span class="input-group-text">
+                                <i class="ki-outline ki-binance fs-3"></i>
+                            </span>
+                            <div class="overflow-hidden flex-grow-1">
+                                <select id="student_class_id"
+                                    class="form-select form-select-solid rounded-start-0 border-start"
+                                    data-control="select2" data-placeholder="Select a class" required>
+                                    <option></option>
+                                    @foreach ($classes as $class)
+                                        <option value="{{ $class->id }}">
+                                            {{ $class->name }} ({{ $class->class_numeral }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <!--end::Solid input group style-->
+                    </div>
+                    <!--end::Sheet Group Input-->
+
                     <!--begin::Excel file upload-->
                     <div class="fv-row col-lg-6 col-xl-5 mb-4">
                         <label for="formFile" class="required fw-semibold fs-6 mb-2">Upload Excel file</label>
