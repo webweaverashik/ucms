@@ -3,6 +3,7 @@ namespace App\Imports;
 
 use App\Models\Academic\Subject;
 use App\Models\Academic\SubjectTaken;
+use App\Models\Branch;
 use App\Models\Payment\Payment;
 use App\Models\Student\Guardian;
 use App\Models\Student\MobileNumber;
@@ -38,10 +39,12 @@ class StudentsImport implements ToCollection, WithHeadingRow
 
             DB::beginTransaction();
             try {
+                $branch_prefix = Branch::find($row['branch_id'])->select('branch_prefix')->get();
+
                 // Step 1: Insert into students
                 $student = Student::create([
                     'branch_id'         => $row['branch_id'],
-                    'student_unique_id' => 'G-' . $row['student_unique_id'],
+                    'student_unique_id' => $branch_prefix . '-' . $row['student_unique_id'],
                     'name'              => $row['name'],
                     'date_of_birth'     => $row['date_of_birth'],
                     'gender'            => $row['gender'],
