@@ -41,7 +41,7 @@ class StudentsImport implements ToCollection, WithHeadingRow
                 // Step 1: Insert into students
                 $student = Student::create([
                     'branch_id'         => $row['branch_id'],
-                    'student_unique_id' => $row['student_unique_id'],
+                    'student_unique_id' => 'G-' . $row['student_unique_id'],
                     'name'              => $row['name'],
                     'date_of_birth'     => $row['date_of_birth'],
                     'gender'            => $row['gender'],
@@ -61,11 +61,11 @@ class StudentsImport implements ToCollection, WithHeadingRow
                 foreach ([1, 2] as $index) {
                     if ($row["guardian_{$index}_name"]) {
                         Guardian::create([
-                            'student_id'   => $student->id,
-                            'name'         => $row["guardian_{$index}_name"],
-                            'mobile'       => $row["guardian_{$index}_mobile"],
-                            'gender'       => $row["guardian_{$index}_gender"],
-                            'relationship' => $row["guardian_{$index}_relationship"],
+                            'student_id'    => $student->id,
+                            'name'          => $row["guardian_{$index}_name"],
+                            'mobile_number' => $row["guardian_{$index}_mobile"],
+                            'gender'        => $row["guardian_{$index}_gender"],
+                            'relationship'  => $row["guardian_{$index}_relationship"],
                         ]);
                     }
                 }
