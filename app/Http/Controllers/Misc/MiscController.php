@@ -20,7 +20,7 @@ class MiscController extends Controller
     public function bulkAdmission(Request $request)
     {
         $request->validate([
-            'excel_file' => 'required|file|mimes:xlsx,xls|max:10240',
+            'excel_file' => 'required|file|mimes:xlsx,xls|max:100',
         ]);
 
         if (! $request->hasFile('excel_file')) {
