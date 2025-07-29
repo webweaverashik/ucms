@@ -50,6 +50,7 @@ class InstitutionSeeder extends Seeder
             ['name' => 'Khilgaon Shahjahanpur Railway Government High School', 'type' => 'school'],
             ['name' => 'Lalbag Govt Model College', 'type' => 'college'],
             ['name' => 'Mirza Abbas Mohila College', 'type' => 'college'],
+            ['name' => 'Meradia High School ', 'type' => 'school'],
             ['name' => 'Motijheel Government Boys High School', 'type' => 'school'],
             ['name' => 'Motijheel Government Girls High School', 'type' => 'school'],
             ['name' => 'Motijheel Model School', 'type' => 'school'],

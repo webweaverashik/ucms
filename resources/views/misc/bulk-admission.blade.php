@@ -63,7 +63,7 @@
                     <div class="fv-row col-lg-6 col-xl-5 mb-4">
                         <label for="formFile" class="required fw-semibold fs-6 mb-2">Upload Excel file</label>
                         <div class="input-group flex-nowrap">
-                            <input class="form-control" type="file" id="formFile" accept=".xlsx" name="" required>
+                            <input class="form-control" type="file" id="formFile" accept=".xlsx" name="student_excel_file" required>
                         </div>
                     </div>
                     <!--end::Excel file upload-->
@@ -91,7 +91,6 @@
 @endpush
 
 @push('page-js')
-    <script src="{{ asset('js/misc/bulk-admission.js') }}"></script>
     <script>
         document.getElementById("settings_menu").classList.add("here", "show");
         document.getElementById("bulk_admission_link").classList.add("active");

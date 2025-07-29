@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('siblings', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('age');
+            $table->string('age')->nullable();
             $table->string('class')->nullable();
             $table->foreignId('institution_id')->nullable();
             $table->foreignId('student_id');

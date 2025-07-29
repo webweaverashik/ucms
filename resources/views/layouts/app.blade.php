@@ -52,7 +52,7 @@
                                             <h5 class="mb-1 text-danger">The following errors have been found.</h5>
                                             <ul>
                                                 @foreach ($errors->all() as $error)
-                                                    <li class="text-danger">{{ $error }}</li>
+                                                    <li class="text-danger fs-6">{{ $error }}</li>
                                                 @endforeach
                                             </ul>
                                         </div>
