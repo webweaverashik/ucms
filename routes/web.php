@@ -6,7 +6,7 @@ use App\Http\Controllers\Academic\ShiftController;
 use App\Http\Controllers\Academic\SubjectController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AutoInvoiceController;
-use App\Http\Controllers\Miscellaneous\MiscellaneousController;
+use App\Http\Controllers\Misc\MiscController;
 use App\Http\Controllers\Payment\PaymentInvoiceController;
 use App\Http\Controllers\Payment\PaymentTransactionController;
 use App\Http\Controllers\PdfController;
@@ -96,8 +96,8 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     })->name('settings.branch');
 
     // Miscellaneous
-    Route::get('bulk-admission', [MiscellaneousController::class, 'index'])->name('bulk.admission.index');
-    Route::post('bulk-admission', [MiscellaneousController::class, 'bulkAdmission'])->name('bulk.admission.upload');
+    Route::get('bulk-admission', [MiscController::class, 'index'])->name('bulk.admission.index');
+    Route::post('bulk-admission', [MiscController::class, 'bulkAdmission'])->name('bulk.admission.upload');
 
     // ------- Custom routes end -------
 
