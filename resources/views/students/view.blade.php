@@ -762,7 +762,7 @@
                                                 </div>
                                                 <div class="fs-6 fw-semibold text-gray-600">
                                                     Class: {{ $sibling->class }}<br>
-                                                    School: {{ $sibling->institution->name }}
+                                                    School: @if ($sibling->institution) {{ $sibling->institution->name }} @endif
                                                 </div>
                                             </div>
                                             <!--end::Details-->

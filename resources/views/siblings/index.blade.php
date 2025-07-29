@@ -199,7 +199,7 @@
                                 {{ $sibling->class }}
                             </td>
                             <td>
-                                {{ $sibling->institution->name }} (EIIN: {{ $sibling->institution->eiin_number }})
+                                @if ($sibling->institution) {{ $sibling->institution->name }} (EIIN: {{ $sibling->institution->eiin_number }}) @endif
                             </td>
                             <td>
                                 {{ ucfirst($sibling->relationship) }}
