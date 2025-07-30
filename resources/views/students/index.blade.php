@@ -149,7 +149,7 @@
                                     <option></option>
                                     @foreach ($classnames as $classname)
                                         <option value="{{ $classname->id }}_{{ $classname->class_numeral }}_ucms">
-                                            {{ $classname->name }} ({{ $classname->class_numeral }})
+                                            {{ $classname->name }}
                                         </option>
                                     @endforeach
                                 </select>
