@@ -23,7 +23,7 @@ class StudentsImport implements ToCollection, WithHeadingRow
     public function collection(Collection $rows)
     {
         // Log the first row to check if data is being read
-        Log::info('First row data:', $rows->first()->toArray());
+        // Log::info('First row data:', $rows->first()->toArray());
 
         foreach ($rows as $row) {
             // Skip rows missing required identifiers
