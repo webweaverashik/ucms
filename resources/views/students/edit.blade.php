@@ -331,7 +331,7 @@
                                                     <input name="birth_date" id="student_birth_date"
                                                         placeholder="Select a date"
                                                         class="form-control form-control-solid"
-                                                        value="{{ $student->date_of_birth->format('d-m-Y') }}" />
+                                                        value="{{ optional($student->date_of_birth)->format('d-m-Y') }}" />
                                                 </div>
                                             </div>
                                             <!--end::Editor-->
