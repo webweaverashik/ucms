@@ -306,7 +306,8 @@
                                         <!--begin::Birthday group-->
                                         <div class="fv-row">
                                             <!--begin::Label-->
-                                            <label class="form-label required">Date of Birth</label>
+                                            <label class="form-label">Date of Birth <span
+                                                    class="text-muted">(optional)</span></label>
                                             <!--end::Label-->
                                             <!--begin::Editor-->
                                             <div class="input-group input-group-solid flex-nowrap">
@@ -316,7 +317,7 @@
                                                 <div class="overflow-hidden flex-grow-1">
                                                     <input name="birth_date" id="student_birth_date"
                                                         placeholder="Select a date"
-                                                        class="form-control form-control-solid" required />
+                                                        class="form-control form-control-solid" />
                                                 </div>
                                             </div>
                                             <!--end::Editor-->

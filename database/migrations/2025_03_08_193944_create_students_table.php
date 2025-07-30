@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('student_unique_id')->unique();
             $table->foreignId('branch_id');
             $table->string('name');
-            $table->date('date_of_birth');
+            $table->date('date_of_birth')->nullable();
             $table->enum('gender', ['male', 'female']);
             $table->foreignId('class_id');
             $table->enum('academic_group', ['General', 'Science', 'Commerce', 'Arts'])->default('General');
