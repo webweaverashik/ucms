@@ -80,7 +80,7 @@
                     <div class="card-header">
                         <!--begin::Card title-->
                         <div class="card-title">
-                            <h2>{{ $classname->name }} ({{ $classname->class_numeral }})</h2>
+                            <h2>{{ $classname->name }} <i>(Numeral: {{ $classname->class_numeral }})</i></h2>
                         </div>
                         <!--end::Card title-->
                     </div>
