@@ -1,20 +1,20 @@
 <?php
 namespace App\Imports;
 
+use App\Models\Academic\ClassName;
+use App\Models\Academic\Subject;
+use App\Models\Academic\SubjectTaken;
 use App\Models\Branch;
 use App\Models\Payment\Payment;
+use App\Models\Student\Guardian;
+use App\Models\Student\MobileNumber;
 use App\Models\Student\Sibling;
 use App\Models\Student\Student;
-use App\Models\Academic\Subject;
-use App\Models\Student\Guardian;
-use App\Models\Academic\ClassName;
+use App\Models\Student\StudentActivation;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use App\Models\Student\MobileNumber;
 use Illuminate\Support\Facades\Hash;
-use App\Models\Academic\SubjectTaken;
-use App\Models\Student\StudentActivation;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
@@ -25,16 +25,20 @@ class StudentsImport implements ToCollection, WithHeadingRow
         // Log the first row to check if data is being read
         // Log::info('First row data:', $rows->first()->toArray());
 
+        $rowNumber = 2; // Start from 2 if row 1 is the heading
+
         foreach ($rows as $row) {
             // Skip rows missing required identifiers
             if (empty($row['student_unique_id']) || empty($row['class_id'] || empty($row['branch_id']))) {
-                Log::warning('Skipping row due to missing student_unique_id or class_id or branch_id');
+                Log::warning("Skipping row {$rowNumber}: Missing student_unique_id or class_id or branch_id");
+                $rowNumber++;
                 continue;
             }
 
             // Avoid duplicates
             if (Student::where('student_unique_id', $row['student_unique_id'])->exists()) {
-                Log::info('Student already exists: ' . $row['student_unique_id']);
+                Log::info("Row {$rowNumber} skipped: Student already exists - {$row['student_unique_id']}");
+                $rowNumber++;
                 continue;
             }
 
@@ -151,6 +155,8 @@ class StudentsImport implements ToCollection, WithHeadingRow
                 DB::rollBack();
                 Log::error("Failed to import student: {$row['student_unique_id']} - " . $e->getMessage());
             }
+
+            $rowNumber++;
         }
     }
 }
