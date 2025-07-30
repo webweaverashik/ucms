@@ -568,7 +568,7 @@
                                 <!--begin::Col-->
                                 <div class="col-lg-8 fv-row">
                                     <span
-                                        class="fw-bold text-gray-800 fs-6">{{ $student->date_of_birth->format('d-M-Y') }}</span>
+                                        class="fw-bold text-gray-800 fs-6">{{ optional($student->date_of_birth->format('d-M-Y')) }}</span>
                                 </div>
                                 <!--end::Col-->
                             </div>
