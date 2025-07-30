@@ -27,15 +27,19 @@ class MiscController extends Controller
             return back()->with('error', 'No file uploaded.');
         }
 
-        $file = $request->file('excel_file');
+        $file    = $request->file('excel_file');
+        $results = ['inserted' => [], 'skipped' => []];
 
         try {
-            // ✅ Pass the file object directly (no temp storage needed)
-            Excel::import(new StudentsImport, $file);
+            Excel::import(new StudentsImport($results), $file);
 
-            return back()->with('success', 'Students imported successfully!');
+            $insertedCount = count($results['inserted']);
+            $skippedCount  = count($results['skipped']);
+
+            return back()->with('success', "Import finished: {$insertedCount} inserted, {$skippedCount} skipped.");
         } catch (\Throwable $e) {
             return back()->with('error', 'Import failed: ' . $e->getMessage());
         }
     }
+
 }

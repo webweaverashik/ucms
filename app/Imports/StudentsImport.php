@@ -15,11 +15,21 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
 class StudentsImport implements ToCollection, WithHeadingRow
 {
+    use Importable;
+
+    protected $results;
+
+    public function __construct(&$results)
+    {
+        $this->results = &$results; // Reference to shared result array
+    }
+
     public function collection(Collection $rows)
     {
         // Log the first row to check if data is being read
@@ -29,8 +39,9 @@ class StudentsImport implements ToCollection, WithHeadingRow
 
         foreach ($rows as $row) {
             // Skip rows missing required identifiers
-            if (empty($row['student_unique_id']) || empty($row['class_id'] || empty($row['branch_id']))) {
-                Log::warning("Skipping row {$rowNumber}: Missing student_unique_id or class_id or branch_id");
+            if (empty($row['student_unique_id']) || empty($row['class_id']) || empty($row['branch_id'])) {
+                Log::warning("Skipping row {$rowNumber}: Missing student_unique_id, class_id, or branch_id");
+                $this->results['skipped'][] = $rowNumber;
                 $rowNumber++;
                 continue;
             }
@@ -38,6 +49,7 @@ class StudentsImport implements ToCollection, WithHeadingRow
             // Avoid duplicates
             if (Student::where('student_unique_id', $row['student_unique_id'])->exists()) {
                 Log::info("Row {$rowNumber} skipped: Student already exists - {$row['student_unique_id']}");
+                $this->results['skipped'][] = $rowNumber;
                 $rowNumber++;
                 continue;
             }
@@ -151,9 +163,12 @@ class StudentsImport implements ToCollection, WithHeadingRow
                 }
 
                 DB::commit();
+                $this->results['inserted'][] = $rowNumber;
+
             } catch (\Throwable $e) {
                 DB::rollBack();
-                Log::error("Failed to import student: {$row['student_unique_id']} - " . $e->getMessage());
+                Log::error("Row {$rowNumber} failed: " . $e->getMessage());
+                $this->results['skipped'][] = $rowNumber;
             }
 
             $rowNumber++;
