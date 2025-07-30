@@ -12,7 +12,7 @@
         class="page-title d-flex align-items-center flex-wrap me-3 mb-5 mb-lg-0">
         <!--begin::Title-->
         <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 align-items-center my-0">
-            {{ $classname->name }} ({{ $classname->class_numeral }})
+            {{ $classname->name }} &nbsp;<i class="text-muted"> ({{ $classname->class_numeral }})</i>
         </h1>
         <!--end::Title-->
         <!--begin::Separator-->
@@ -98,7 +98,7 @@
                             <div class="d-flex flex-column mb-3">
                                 <!--begin::Name-->
                                 <span class="fs-1 fw-bold text-gray-900 me-2">{{ $classname->name }}
-                                    ({{ $classname->class_numeral }})</span>
+                                    <i class="text-muted">({{ $classname->class_numeral }})</i></span>
                                 <!--end::Name-->
                             </div>
                             <!--end::Info-->
