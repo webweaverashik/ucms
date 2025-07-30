@@ -53,7 +53,6 @@ class StudentsImport implements ToCollection, WithHeadingRow
                     'shift_id'          => $row['shift_id'],
                     'institution_id'    => $row['institution_id'],
                     'home_address'      => $row['home_address'] ?? null,
-                    'email'             => $row['email'] ?? null,
                     'password'          => Hash::make('12345678'), // Default password
                     'remarks'           => $row['remarks'],
                 ]);
