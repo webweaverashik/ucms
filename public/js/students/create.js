@@ -357,11 +357,7 @@ var KTCreateStudent = function () {
                               }
                          },
                          'birth_date': {
-                              validators: {
-                                   notEmpty: {
-                                        message: 'Birth date is required',
-                                   },
-                              }
+                              
                          },
                     },
                     plugins: {
