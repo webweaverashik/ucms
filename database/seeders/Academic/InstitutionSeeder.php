@@ -78,6 +78,9 @@ class InstitutionSeeder extends Seeder
             ['name' => 'Ilma Nobobi Madrasa', 'type' => 'school'],
             ['name' => 'Frime School and College', 'type' => 'school'],
             ['name' => 'Willes Littel Flower School', 'type' => 'school'],
+            ['name' => 'NO SCHOOL', 'type' => 'school'],
+            ['name' => 'Hafiziya Sunniya Alim Madrasha', 'type' => 'school'],
+            ['name' => 'NO COLLEGE', 'type' => 'school'],
         ];
 
         foreach ($institutions as $institution) {

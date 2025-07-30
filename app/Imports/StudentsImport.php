@@ -120,10 +120,24 @@ class StudentsImport implements ToCollection, WithHeadingRow
                 }
 
                 // Step 7: Subject Enrollment
-                $subjects = Subject::where('class_id', $row['class_id'])
-                    ->where('academic_group', $row['academic_group'])
-                    ->pluck('id');
+                $class_numeral = ClassName::find($row['class_id'])->class_numeral;
 
+                if ($class_numeral >= 9) {
+                    // For classes 9 and above: General + specific academic_group
+                    $subjects = Subject::where('class_id', $row['class_id'])
+                        ->where(function ($query) use ($row) {
+                            $query->where('academic_group', $row['academic_group'])
+                                ->orWhere('academic_group', 'General');
+                        })
+                        ->pluck('id');
+                } else {
+                    // For classes below 9: only matching academic_group
+                    $subjects = Subject::where('class_id', $row['class_id'])
+                        ->where('academic_group', $row['academic_group'])
+                        ->pluck('id');
+                }
+
+                // Enroll subjects
                 foreach ($subjects as $subjectId) {
                     SubjectTaken::create([
                         'student_id' => $student->id,
