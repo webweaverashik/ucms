@@ -42,6 +42,37 @@
 
 
 @section('content')
+    @if (session('success'))
+        <div
+            class="alert alert-dismissible bg-light-success border border-success border-dashed d-flex flex-column flex-sm-row w-100 p-5 mb-10">
+            <!--begin::Icon-->
+            <i class="ki-duotone ki-message-text-2 fs-2hx text-success me-4 mb-5 mb-sm-0">
+                <span class="path1"></span>
+                <span class="path2"></span>
+                <span class="path3"></span>
+            </i>
+            <!--end::Icon-->
+
+            <!--begin::Content-->
+            <div class="d-flex flex-column pe-0 pe-sm-10">
+                <h5 class="mb-1 text-success">Excel file uploaded successfully</h5>
+                <ul>
+                    <li class="text-success fs-6">{{ session('success') }}</li>
+                </ul>
+            </div>
+            <!--end::Content-->
+
+            <!--begin::Close-->
+            <button type="button"
+                class="position-absolute position-sm-relative m-2 m-sm-0 top-0 end-0 btn btn-icon ms-sm-auto"
+                data-bs-dismiss="alert">
+                <i class="ki-outline ki-cross fs-1 text-danger"></i>
+            </button>
+            <!--end::Close-->
+        </div>
+    @endif
+
+
     <!--begin::Card-->
     <div class="card">
         <!--begin::Card header-->
@@ -56,14 +87,16 @@
 
         <!--begin::Notes Distribution Panel-->
         <div class="card-body py-4">
-            <form id="bulk_admission_form" class="form" action="{{ route('bulk.admission.upload') }}" method="POST" enctype="multipart/form-data">
+            <form id="bulk_admission_form" class="form" action="{{ route('bulk.admission.upload') }}" method="POST"
+                enctype="multipart/form-data">
                 @csrf
                 <div class="row">
                     <!--begin::Excel file upload-->
                     <div class="fv-row col-lg-6 col-xl-5 mb-4">
                         <label for="formFile" class="required fw-semibold fs-6 mb-2">Upload Excel file</label>
                         <div class="input-group flex-nowrap">
-                            <input class="form-control" type="file" id="formFile" accept=".xlsx, .xls" name="excel_file" required>
+                            <input class="form-control" type="file" id="formFile" accept=".xlsx, .xls" name="excel_file"
+                                required>
                         </div>
                     </div>
                     <!--end::Excel file upload-->

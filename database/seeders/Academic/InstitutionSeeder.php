@@ -53,7 +53,7 @@ class InstitutionSeeder extends Seeder
             ['name' => 'Meradia High School ', 'type' => 'school'],
             ['name' => 'Motijheel Government Boys High School', 'type' => 'school'],
             ['name' => 'Motijheel Government Girls High School', 'type' => 'school'],
-            ['name' => 'Motijheel Model School', 'type' => 'school'],
+            ['name' => 'Motijheel Model School & College', 'type' => 'school'],
             ['name' => 'Mugdha Ideal School', 'type' => 'school'],
             ['name' => 'National Ideal School and College', 'type' => 'college'],
             ['name' => 'Nazmul Haque Kamil Madrasa', 'type' => 'school'],
@@ -82,6 +82,7 @@ class InstitutionSeeder extends Seeder
             ['name' => 'Hafiziya Sunniya Alim Madrasha', 'type' => 'school'],
             ['name' => 'NO COLLEGE', 'type' => 'school'],
             ['name' => 'Shonaimuri Girls High School', 'type' => 'school'],
+            ['name' => 'Khilgaon Model College', 'type' => 'college'],
         ];
 
         foreach ($institutions as $institution) {
