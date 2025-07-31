@@ -161,11 +161,13 @@
                                     @endcan
 
                                     @can('institutions.delete')
-                                        <a href="#" title="Delete Institution" data-bs-toggle="tooltip"
-                                            class="btn btn-icon text-hover-danger w-30px h-30px me-3 delete-institution"
-                                            data-institution-id="{{ $institution->id }}">
-                                            <i class="ki-outline ki-trash fs-2"></i>
-                                        </a>
+                                        @if ($institution->students->count() == 0)
+                                            <a href="#" title="Delete Institution" data-bs-toggle="tooltip"
+                                                class="btn btn-icon text-hover-danger w-30px h-30px me-3 delete-institution"
+                                                data-institution-id="{{ $institution->id }}">
+                                                <i class="ki-outline ki-trash fs-2"></i>
+                                            </a>
+                                        @endif
                                     @endcan
                                 </td>
                             </tr>
