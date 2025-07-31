@@ -67,7 +67,7 @@ class InstitutionSeeder extends Seeder
             ['name' => 'Shaheed Suhrawardy College', 'type' => 'college'],
             ['name' => 'Shajanpur Railway Government School', 'type' => 'school'],
             ['name' => 'Shantipur High School', 'type' => 'school'],
-            ['name' => 'Shiddheswari Girls\' College', 'type' => 'college'],
+            ['name' => 'Siddheswari Girls\' College', 'type' => 'college'],
             ['name' => 'Shobujbagh Government High School', 'type' => 'school'],
             ['name' => 'South Banasree Model High School and College', 'type' => 'college'],
             ['name' => 'South Point School and College', 'type' => 'college'],
