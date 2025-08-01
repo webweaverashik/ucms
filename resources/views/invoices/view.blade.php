@@ -184,11 +184,14 @@
                                     $monthYearRaw = trim($invoice->month_year);
                                     if (preg_match('/^\d{2}_\d{4}$/', $monthYearRaw)) {
                                         $monthYear = \Carbon\Carbon::createFromFormat('m_Y', $monthYearRaw);
-                                        $dueDate = $monthYear->copy()->day((int) $payment->due_date); // 👈 Cast to int
+                                        $dueDate = $monthYear->copy()->day((int) $payment->due_date);
 
+                                        $today = now();
+                                        // ✅ Only mark overdue if current date > due date **and** month <= current month
                                         if (
                                             in_array($status, ['due', 'partially_paid']) &&
-                                            now()->toDateString() > $dueDate->toDateString()
+                                            $today->gt($dueDate) &&
+                                            $monthYear->lessThanOrEqualTo($today->startOfMonth())
                                         ) {
                                             $isOverdue = true;
                                         }
