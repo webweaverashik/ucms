@@ -3,14 +3,10 @@ namespace App\Providers;
 
 use App\Models\Student\Student;
 use App\Models\Teacher\Teacher;
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Database\Console\Migrations\WipeCommand;
-use Illuminate\Database\Console\Migrations\FreshCommand;
-use Illuminate\Database\Console\Migrations\ResetCommand;
-use Illuminate\Database\Console\Migrations\RefreshCommand;
-use Illuminate\Database\Console\Migrations\RollbackCommand;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -32,12 +28,6 @@ class AppServiceProvider extends ServiceProvider
             'teacher' => Teacher::class,
         ]);
 
-        if (app()->environment('production')) {
-            FreshCommand::preventFromRunning();
-            RefreshCommand::preventFromRunning();
-            ResetCommand::preventFromRunning();
-            RollbackCommand::preventFromRunning();
-            WipeCommand::preventFromRunning();
-        }
+        DB::prohibitDestructiveCommands(app()->isProduction());
     }
 }
