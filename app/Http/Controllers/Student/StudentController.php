@@ -75,11 +75,15 @@ class StudentController extends Controller
 
         $shifts = Shift::when(auth()->user()->branch_id != 0, function ($query) {
             $query->where('branch_id', auth()->user()->branch_id);
-        })->select('id', 'name', 'branch_id')->get();
+        })
+            ->select('id', 'name', 'branch_id')
+            ->get();
 
         $branches = Branch::when(auth()->user()->branch_id != 0, function ($query) {
             $query->where('id', auth()->user()->branch_id);
-        })->select('id', 'branch_name', 'branch_prefix')->get();
+        })
+            ->select('id', 'branch_name', 'branch_prefix')
+            ->get();
 
         return view('students.create', compact('classnames', 'shifts', 'institutions', 'branches'));
     }
@@ -184,7 +188,7 @@ class StudentController extends Controller
                 'student_unique_id' => $studentUniqueId,
                 'branch_id'         => $branch->id,
                 'name'              => $validated['student_name'],
-                'date_of_birth'     => Carbon::createFromFormat('d-m-Y', $validated['birth_date'])->format('Y-m-d'),
+                'date_of_birth'     => ! empty($validated['birth_date']) ? Carbon::createFromFormat('d-m-Y', $validated['birth_date']) : null,
                 'gender'            => $validated['student_gender'],
                 'class_id'          => $validated['student_class'],
                 'academic_group'    => $validated['student_academic_group'] ?? 'General',
@@ -486,7 +490,7 @@ class StudentController extends Controller
             // Update student record
             $student->update([
                 'name'          => $validated['student_name'],
-                'date_of_birth' => Carbon::createFromFormat('d-m-Y', $validated['birth_date'])->format('Y-m-d'),
+                'date_of_birth' => ! empty($validated['birth_date']) ? Carbon::createFromFormat('d-m-Y', $validated['birth_date']) : null,
                 'gender'        => $validated['student_gender'],
                 'religion'      => $validated['student_religion'] ?? null,
                 'blood_group'   => $validated['student_blood_group'] ?? null,
@@ -695,10 +699,7 @@ class StudentController extends Controller
      */
     public function getLastInvoiceMonth(Student $student)
     {
-        $lastInvoice = $student->paymentInvoices()
-            ->where('invoice_type', 'tuition_fee')
-            ->orderByRaw("SUBSTRING_INDEX(month_year, '_', -1) DESC, SUBSTRING_INDEX(month_year, '_', 1) DESC")
-            ->first();
+        $lastInvoice = $student->paymentInvoices()->where('invoice_type', 'tuition_fee')->orderByRaw("SUBSTRING_INDEX(month_year, '_', -1) DESC, SUBSTRING_INDEX(month_year, '_', 1) DESC")->first();
 
         return response()->json([
             'last_invoice_month' => $lastInvoice ? $lastInvoice->month_year : null,
@@ -724,7 +725,9 @@ class StudentController extends Controller
 
         $students = Student::whereHas('studentActivation', function ($query) {
             $query->where('active_status', 'active');
-        })->select('id', 'name', 'student_unique_id', 'branch_id', 'class_id', 'shift_id')->get();
+        })
+            ->select('id', 'name', 'student_unique_id', 'branch_id', 'class_id', 'shift_id')
+            ->get();
 
         $branches = Branch::all();
 
@@ -740,7 +743,9 @@ class StudentController extends Controller
 
         $students = Student::whereHas('studentActivation', function ($query) {
             $query->where('active_status', 'active');
-        })->select('id', 'name', 'student_unique_id', 'branch_id', 'class_id', 'shift_id')->get();
+        })
+            ->select('id', 'name', 'student_unique_id', 'branch_id', 'class_id', 'shift_id')
+            ->get();
 
         $classes = ClassName::all();
 

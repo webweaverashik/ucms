@@ -64,7 +64,7 @@
                 <!--begin::Search-->
                 <div class="d-flex align-items-center position-relative my-1">
                     <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
-                        data-kt-siblings-table-filter="search" class="form-control form-control-solid w-250px ps-12"
+                        data-kt-siblings-table-filter="search" class="form-control form-control-solid w-250px w-sm-400px ps-12"
                         placeholder="Search in sibling">
                 </div>
                 <!--end::Search-->

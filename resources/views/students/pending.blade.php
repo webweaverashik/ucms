@@ -53,7 +53,7 @@
                 <!--begin::Search-->
                 <div class="d-flex align-items-center position-relative my-1">
                     <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
-                        data-kt-subscription-table-filter="search" class="form-control form-control-solid w-450px ps-12"
+                        data-kt-subscription-table-filter="search" class="form-control form-control-solid w-400px ps-12"
                         placeholder="Search Students">
                 </div>
                 <!--end::Search-->
