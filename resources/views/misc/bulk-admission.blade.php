@@ -102,7 +102,7 @@
                     <!--end::Excel file upload-->
 
                     <!--beging::Submit button-->
-                    <div class="col-xl-1 col-lg-2 mt-4 mb-8">
+                    <div class="col-xl-1 col-lg-2 mt-lg-4 mb-8">
                         <button type="submit" class="btn btn-primary mt-4">
                             <span class="indicator-label">Submit</span>
                             <span class="indicator-progress">Please wait...
