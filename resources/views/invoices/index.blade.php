@@ -126,10 +126,12 @@
                                             data-kt-subscription-table-filter="product" data-hide-search="true">
                                             <option></option>
                                             <option value="tuition_fee">Tuition Fee</option>
+                                            <option value="sheet_fee">Sheet Fee</option>
+                                            <option value="diary_fee">Diary Fee</option>
+                                            <option value="book_fee">Book Fee</option>
                                             <option value="exam_fee">Exam Fee</option>
                                             <option value="model_test_fee">Model Test Fee</option>
-                                            <option value="sheet_fee">Sheet Fee</option>
-                                            <option value="others_fee">Others Fee</option>
+                                            <option value="others_fee">Others</option>
                                         </select>
                                     </div>
                                     <!--end::Input group-->
@@ -450,10 +452,12 @@
                                             data-kt-subscription-table-filter="product" data-hide-search="true">
                                             <option></option>
                                             <option value="tuition_fee">Tuition Fee</option>
+                                            <option value="sheet_fee">Sheet Fee</option>
+                                            <option value="diary_fee">Diary Fee</option>
+                                            <option value="book_fee">Book Fee</option>
                                             <option value="exam_fee">Exam Fee</option>
                                             <option value="model_test_fee">Model Test Fee</option>
-                                            <option value="sheet_fee">Sheet Fee</option>
-                                            <option value="others_fee">Others Fee</option>
+                                            <option value="others_fee">Others</option>
                                         </select>
                                     </div>
                                     <!--end::Input group-->
@@ -719,14 +723,16 @@
                                         <select name="invoice_type"
                                             class="form-select form-select-solid rounded-start-0 border-start"
                                             data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
-                                            data-placeholder="Select a invoice type" data-hide-search="true" required
+                                            data-placeholder="Select a invoice type" data-hide-search="false" required
                                             disabled>
                                             <option></option>
                                             <option value="tuition_fee" selected>Tuition Fee</option>
+                                            <option value="sheet_fee">Sheet Fee</option>
+                                            <option value="diary_fee">Diary Fee</option>
+                                            <option value="book_fee">Book Fee</option>
                                             <option value="exam_fee">Exam Fee</option>
                                             <option value="model_test_fee">Model Test Fee</option>
-                                            <option value="sheet_fee">Sheet Fee</option>
-                                            <option value="others_fee">Others Fee</option>
+                                            <option value="others_fee">Others</option>
                                         </select>
                                     </div>
                                 </div>
@@ -770,7 +776,7 @@
                                     </span>
                                     <div class="overflow-hidden flex-grow-1">
                                         <!--begin::Input-->
-                                        <input type="number" name="invoice_amount" min="500"
+                                        <input type="number" name="invoice_amount" min="50"
                                             class="form-control form-control-solid mb-3 mb-lg-0 rounded-start-0 border-start"
                                             placeholder="Enter the amount" disabled required />
                                         <!--end::Input-->
@@ -877,15 +883,17 @@
                                         <i class="ki-outline ki-save-2 fs-3"></i>
                                     </span>
                                     <div class="overflow-hidden flex-grow-1">
-                                        <select name="invoice_type_edit"
+                                        <select name="invoice_type_edit" data-hide-search="false"
                                             class="form-select form-select-solid rounded-start-0 border-start"
                                             data-control="select2" data-dropdown-parent="#kt_modal_edit_invoice"
                                             data-placeholder="Select a invoice type" disabled>
                                             <option></option>
                                             <option value="tuition_fee">Tuition Fee</option>
+                                            <option value="sheet_fee">Sheet Fee</option>
+                                            <option value="diary_fee">Diary Fee</option>
+                                            <option value="book_fee">Book Fee</option>
                                             <option value="exam_fee">Exam Fee</option>
                                             <option value="model_test_fee">Model Test Fee</option>
-                                            <option value="sheet_fee">Sheet Fee</option>
                                             <option value="others_fee">Others</option>
                                         </select>
                                     </div>
@@ -929,7 +937,7 @@
                                     </span>
                                     <div class="overflow-hidden flex-grow-1">
                                         <!--begin::Input-->
-                                        <input type="number" name="invoice_amount_edit" min="500"
+                                        <input type="number" name="invoice_amount_edit" min="50"
                                             class="form-control form-control-solid mb-3 mb-lg-0 rounded-start-0 border-start"
                                             placeholder="Enter the amount" required />
                                         <!--end::Input-->
