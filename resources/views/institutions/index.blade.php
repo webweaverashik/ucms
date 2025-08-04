@@ -146,7 +146,7 @@
                             <tr>
                                 <td class="pe-2">{{ $loop->index + 1 }}</td>
                                 <td class="text-gray-800 mb-1">{{ $institution->name }}</td>
-                                <td>{{ $institution->students->count() }}</td>
+                                <td>{{ $institution->students_count }}</td>
                                 <td>{{ $institution->eiin_number }}</td>
                                 <td class="d-none">ucms_{{ $institution->type }}</td>
                                 <td>{{ ucfirst($institution->type) }}</td>
@@ -161,7 +161,7 @@
                                     @endcan
 
                                     @can('institutions.delete')
-                                        @if ($institution->students->count() == 0)
+                                        @if ($institution->students_count == 0)
                                             <a href="#" title="Delete Institution" data-bs-toggle="tooltip"
                                                 class="btn btn-icon text-hover-danger w-30px h-30px me-3 delete-institution"
                                                 data-institution-id="{{ $institution->id }}">

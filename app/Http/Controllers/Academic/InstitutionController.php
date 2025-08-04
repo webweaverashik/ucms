@@ -16,7 +16,7 @@ class InstitutionController extends Controller
             return redirect()->back()->with('warning', 'No permission to view institutions.');
         }
 
-        $institutions = Institution::orderBy('name')->get();
+        $institutions = Institution::withCount('students')->orderBy('name')->get();
 
         return view('institutions.index', compact('institutions'));
     }
