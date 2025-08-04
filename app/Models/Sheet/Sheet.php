@@ -1,10 +1,10 @@
 <?php
 namespace App\Models\Sheet;
 
-use App\Models\Academic\Subject;
 use App\Models\Academic\ClassName;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Academic\Subject;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Sheet extends Model
 {
@@ -26,6 +26,11 @@ class Sheet extends Model
             ->whereHas('invoice', function ($query) {
                 $query->where('invoice_type', 'sheet_fee');
             });
+    }
+
+    public function sheetPaymentsCount()
+    {
+        return $this->hasMany(SheetPayment::class);
     }
 
     public function sheetTopics()

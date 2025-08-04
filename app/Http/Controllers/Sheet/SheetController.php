@@ -22,7 +22,14 @@ class SheetController extends Controller
             return redirect()->back()->with('warning', 'No permission to view sheets.');
         }
 
-        $sheets  = Sheet::latest()->get();
+        $sheets = Sheet::withCount([
+            'sheetPaymentsCount as sheetPayments_count' => function ($query) {
+                $query->whereHas('invoice', function ($q) {
+                    $q->where('invoice_type', 'sheet_fee');
+                });
+            },
+        ])->with('class')->latest()->get();
+
         $classes = ClassName::all();
 
         return view('sheets.index', compact('sheets', 'classes'));
@@ -120,6 +127,11 @@ class SheetController extends Controller
         $user = auth()->user();
 
         $payments = SheetPayment::query()
+            ->with([
+                'sheet.class',                 // $payment->sheet->class
+                'invoice.paymentTransactions', // $payment->invoice->paymentTransactions
+                'student',                     // $payment->student
+            ])
             ->when(
                 ! $user->hasRole('admin'),
                 fn($query) => $query->whereHas('student', function ($q) use ($user) {
@@ -129,7 +141,7 @@ class SheetController extends Controller
             ->latest()
             ->get();
 
-        $sheet_groups = Sheet::all();
+        $sheet_groups = Sheet::with('class')->get(); // $sheet->class
 
         return view('sheets.sheet-payments', compact('payments', 'sheet_groups'));
     }

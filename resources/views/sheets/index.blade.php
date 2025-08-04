@@ -105,7 +105,7 @@
                                     </a>
                                 </td>
                                 <td>{{ $sheet->price }}</td>
-                                <td>{{ $sheet->sheetPayments->count() }}</td>
+                                <td>{{ $sheet->sheetPayments_count }}</td>
                                 <td>
                                     @can('sheets.edit')
                                         <a href="#" title="Edit Sheet Group" data-bs-toggle="modal"

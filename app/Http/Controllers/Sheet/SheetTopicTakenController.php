@@ -16,34 +16,22 @@ class SheetTopicTakenController extends Controller
      */
     public function index()
     {
-        $notes_taken = SheetTopicTaken::whereHas('student', function ($query) {
-            if (auth()->user()->branch_id != 0) {
-                $query->where('branch_id', auth()->user()->branch_id);
-            }
-        })->get();
+        $notes_taken = SheetTopicTaken::with([
+            'student',
+            'sheetTopic.subject.class.sheet',
+        ])
+            ->whereHas('student', function ($query) {
+                if (auth()->user()->branch_id != 0) {
+                    $query->where('branch_id', auth()->user()->branch_id);
+                }
+            })
+            ->latest('id')
+            ->get();
 
         $class_names  = ClassName::select('name', 'class_numeral')->get();
         $subjectNames = Subject::select('name')->distinct()->orderBy('name')->pluck('name');
 
-
-
-
-        $branchId = auth()->user()->branch_id;
-
-        // Simplified students query
-        $students = Student::when($branchId != 0, function ($query) use ($branchId) {
-            $query->where('branch_id', $branchId);
-        })
-            ->where(function ($query) {
-                $query->whereNull('student_activation_id')->orWhereHas('studentActivation', function ($q) {
-                    $q->where('active_status', 'active');
-                });
-            })
-            ->orderBy('student_unique_id')
-            ->select('id', 'name', 'student_unique_id')
-            ->get();
-
-        return view('notes.index', compact('notes_taken', 'class_names', 'subjectNames', 'students'));
+        return view('notes.index', compact('notes_taken', 'class_names', 'subjectNames'));
     }
 
     /**
@@ -81,7 +69,7 @@ class SheetTopicTakenController extends Controller
 
         // Get the sheet to verify class
         $sheet = Sheet::find($sheetId);
-        
+
         if (! $sheet) {
             return response()->json(['message' => 'Sheet not found'], 404);
         }
