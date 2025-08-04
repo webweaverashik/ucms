@@ -35,8 +35,8 @@ class StudentController extends Controller
             'institution:id,name,eiin_number',
             'studentActivation:id,active_status',
             'guardians:id,name,relationship',
-            'mobileNumbers:id,mobile_number,number_type',
-            'payments:id,payment_style,due_date,tuition_fee'
+            'mobileNumbers:id,student_id,mobile_number,number_type',
+            'payments:id,student_id,payment_style,due_date,tuition_fee'
         ])
             ->whereNotNull('student_activation_id')
             ->when($branchId != 0, function ($query) use ($branchId) {
