@@ -258,10 +258,10 @@
                                     <!--begin:: Avatar -->
                                     <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
                                         <a href="{{ route('students.show', $student->id) }}">
-                                            <div class="symbol-label">
+                                            {{-- <div class="symbol-label">
                                                 <img src="{{ $student->photo_url ? asset($student->photo_url) : asset('assets/img/dummy.png') }}"
                                                     alt="{{ $student->name }}" class="w-100" />
-                                            </div>
+                                            </div> --}}
                                         </a>
                                     </div>
                                     <!--end::Avatar-->
