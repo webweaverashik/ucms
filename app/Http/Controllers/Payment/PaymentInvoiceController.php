@@ -22,9 +22,17 @@ class PaymentInvoiceController extends Controller
         $branchId = auth()->user()->branch_id;
 
         $unpaid_query = PaymentInvoice::with([
-            'student.studentActivation',
-            'student.payments',
+            'student'                   => function ($query) {
+                $query->select('id', 'name', 'student_unique_id', 'student_activation_id');
+            },
+            'student.studentActivation' => function ($query) {
+                $query->select('id', 'active_status');
+            },
+            'student.payments'          => function ($query) {
+                $query->select('id', 'student_id', 'payment_style', 'due_date', 'tuition_fee');
+            },
         ])
+            ->withCount('paymentTransactions')
             ->where('status', '!=', 'paid')
             ->whereHas('student', function ($query) use ($branchId) {
                 if ($branchId != 0) {
@@ -38,7 +46,12 @@ class PaymentInvoiceController extends Controller
             });
 
         $paid_query = PaymentInvoice::with([
-            'student.payments',
+            'student'          => function ($query) {
+                $query->select('id', 'name', 'student_unique_id');
+            },
+            'student.payments' => function ($query) {
+                $query->select('id', 'student_id', 'payment_style', 'due_date', 'tuition_fee');
+            },
         ])
             ->where('status', 'paid')
             ->whereHas('student', function ($query) use ($branchId) {

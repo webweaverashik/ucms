@@ -287,11 +287,12 @@
                                     <td class="d-none">D_{{ $invoice->month_year }}</td>
 
                                     <td>
-                                        @if (preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year, $matches))
+                                        @if ($invoice->invoice_type === 'tuition_fee' && preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year ?? '', $matches))
                                             {{ \Carbon\Carbon::create($matches[2], $matches[1], 1)->format('F Y') }}
                                         @else
                                             N/A
                                         @endif
+
                                     </td>
 
 
@@ -371,7 +372,9 @@
                                     </td>
 
                                     <td>
-                                        @if (optional($invoice->student->studentActivation)->active_status == 'active' && $invoice->status == 'due')
+                                        @if (optional($invoice->student->studentActivation)->active_status == 'active' &&
+                                                $invoice->status == 'due' &&
+                                                $invoice->payment_transactions_count == 0)
                                             @can('invoices.edit')
                                                 <a href="#" title="Edit invoice" data-invoice-id="{{ $invoice->id }}"
                                                     data-bs-toggle="modal" data-bs-target="#kt_modal_edit_invoice"
@@ -599,11 +602,12 @@
                                     <td class="d-none">P_{{ $invoice->month_year }}</td>
 
                                     <td>
-                                        @if (preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year, $matches))
+                                        @if ($invoice->invoice_type === 'tuition_fee' && preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year ?? '', $matches))
                                             {{ \Carbon\Carbon::create($matches[2], $matches[1], 1)->format('F Y') }}
                                         @else
                                             N/A
                                         @endif
+
                                     </td>
 
                                     <td class="d-none">

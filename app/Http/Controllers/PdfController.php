@@ -37,9 +37,6 @@ class PdfController extends Controller
             return redirect()->route('transactions.index')->with('warning', 'TXN not found or not approved.');
         }
 
-        // -- JS Print --
-        // return view('pdf.payslip', ['transaction' => $transaction]);
-
         // -- mPDF Configuration --
         $tempDir = storage_path('app/mpdf');
 
@@ -49,7 +46,7 @@ class PdfController extends Controller
 
         $pdf = new Mpdf([
             'mode'             => 'utf-8',
-            'format'           => [80, 120], // width: 80mm, height: auto or fixed like 297mm
+            'format'           => [80, 100], // width: 80mm, height: auto or fixed like 297mm
             'tempDir'          => $tempDir,
             'default_font'     => 'arial',
             'autoScriptToLang' => true,

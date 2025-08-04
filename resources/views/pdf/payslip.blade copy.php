@@ -87,7 +87,7 @@
 
         <table class="row-table">
             <tr>
-                <td>Class: {{ $transaction->student->class->name ?? '' }}</td>
+                <td>Class: {{ $transaction->student->class->class_numeral ?? '' }}</td>
                 <td>Shift: {{ $transaction->student->shift->name ?? '' }}
                 </td>
             </tr>
@@ -102,14 +102,52 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>{{ ucwords(str_replace('_', ' ', $transaction->paymentInvoice->invoice_type)) }}
-                        @if ($transaction->paymentInvoice->invoice_type == 'tuition_fee')
+                    <td>Tuition Fee
+                        @if (preg_match('/^\d{2}_\d{4}$/', $transaction->paymentInvoice->month_year))
                             ({{ \Carbon\Carbon::createFromFormat('m_Y', $transaction->paymentInvoice->month_year)->format('F Y') }})
                         @endif
                     </td>
                     <td style="text-align: center;">
-                        {{ $transaction->paymentInvoice->total_amount }}
+                        @if ($transaction->paymentInvoice->invoice_type == 'tuition_fee')
+                            {{ $transaction->paymentInvoice->total_amount }}
+                        @endif
                     </td>
+                </tr>
+                <tr>
+                    <td>Model Test Fee</td>
+                    <td style="text-align: center;">
+                        @if ($transaction->paymentInvoice->invoice_type == 'model_test_fee')
+                            {{ $transaction->paymentInvoice->total_amount }}
+                        @endif
+                    </td>
+                </tr>
+                <tr>
+                    <td>Admission Fee / Others</td>
+                    <td style="text-align: center;">
+                        @if ($transaction->paymentInvoice->invoice_type == 'others_fee')
+                            {{ $transaction->paymentInvoice->total_amount }}
+                        @endif
+                    </td>
+                </tr>
+                <tr>
+                    <td>Sheet Fee</td>
+                    <td style="text-align: center;">
+                        @if ($transaction->paymentInvoice->invoice_type == 'sheet_fee')
+                            {{ $transaction->paymentInvoice->total_amount }}
+                        @endif
+                    </td>
+                </tr>
+                <tr>
+                    <td>Exam Fee</td>
+                    <td style="text-align: center;">
+                        @if ($transaction->paymentInvoice->invoice_type == 'exam_fee')
+                            {{ $transaction->paymentInvoice->total_amount }}
+                        @endif
+                    </td>
+                </tr>
+                <tr>
+                    <th>Total Payable</th>
+                    <th style="text-align: center;">{{ $transaction->paymentInvoice->total_amount }}</th>
                 </tr>
                 <tr>
                     <td>(-) Paid Amount</td>
@@ -134,11 +172,11 @@
         </table>
 
 
-        <table class="signature-table" style="width: 100%; margin-top: 50px;">
+        <table class="signature-table" style="width: 100%; margin-top: 20px;">
             <tr>
                 <td style="text-align: left;">
                     <div style="text-align: left;">
-                        <span style="font-style: italic;">
+                        <span style="font-style: italic; font-weight: bold;">
                             @if ($transaction->createdBy && !empty($transaction->createdBy->name))
                                 @php
                                     $nameParts = explode(' ', $transaction->createdBy->name);
@@ -149,13 +187,7 @@
                                 System
                             @endif
                         </span><br>
-                        <div class="signature-line">Received By</div>
-                    </div>
-                </td>
-
-                <td style="text-align: right;">
-                    <div style="text-align: left;">
-                        <div class="signature-line">Signature</div>
+                        <div class="signature-line">Payment Collector</div>
                     </div>
                 </td>
             </tr>
