@@ -25,10 +25,10 @@ class PaymentTransactionController extends Controller
             'paymentInvoice' => function ($query) {
                 $query->select('id', 'invoice_number');
             },
-            'createdBy' => function ($query) {
+            'createdBy'      => function ($query) {
                 $query->select('id', 'name');
             },
-            'student' => function ($query) {
+            'student'        => function ($query) {
                 $query->select('id', 'name', 'student_unique_id');
             },
         ])
@@ -105,20 +105,22 @@ class PaymentTransactionController extends Controller
         $sequence         = str_pad($transactionCount + 1, 2, '0', STR_PAD_LEFT);
         $voucherNo        = 'TXN_' . $invoice->invoice_number . '_' . $sequence;
 
+        // Update invoice status and amount_due
+        $newAmountDue = $invoice->amount_due - $validated['transaction_amount'];
+
         // Create transaction
         $transaction = PaymentTransaction::create([
             'student_id'         => $validated['transaction_student'],
+            'student_classname'  => $invoice->student->class->name,
             'payment_invoice_id' => $invoice->id,
             'amount_paid'        => $validated['transaction_amount'],
+            'remaining_amount'   => $newAmountDue,
             'payment_type'       => $validated['transaction_type'],
             'voucher_no'         => $voucherNo,
             'created_by'         => auth()->user()->id,
             'remarks'            => $validated['transaction_remarks'],
             'is_approved'        => $validated['transaction_type'] !== 'discounted', // true for full/partial, false for discounted
         ]);
-
-        // Update invoice status and amount_due
-        $newAmountDue = $invoice->amount_due - $validated['transaction_amount'];
 
         if ($validated['transaction_type'] === 'discounted') {
             // For discounted payments, mark the payment as pending and is_approved false

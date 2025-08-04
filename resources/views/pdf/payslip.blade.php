@@ -87,7 +87,7 @@
 
         <table class="row-table">
             <tr>
-                <td>Class: {{ $transaction->student->class->name ?? '' }}</td>
+                <td>Class: {{ $transaction->student_classname ?? '' }}</td>
                 <td>Shift: {{ $transaction->student->shift->name ?? '' }}
                 </td>
             </tr>
@@ -128,7 +128,7 @@
                 </tr> --}}
                 <tr>
                     <th>Remaining</th>
-                    <th style="text-align: center;">{{ $transaction->paymentInvoice->amount_due }}</th>
+                    <th style="text-align: center;">{{ $transaction->remaining_amount }}</th>
                 </tr>
             </tbody>
         </table>

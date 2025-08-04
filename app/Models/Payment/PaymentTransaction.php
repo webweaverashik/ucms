@@ -1,11 +1,11 @@
 <?php
 namespace App\Models\Payment;
 
-use App\Models\User;
 use App\Models\Student\Student;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PaymentTransaction extends Model
 {
@@ -13,9 +13,11 @@ class PaymentTransaction extends Model
 
     protected $fillable = [
         'student_id',
+        'student_classname',
         'payment_invoice_id',
         'payment_type',
         'amount_paid',
+        'remaining_amount',
         'voucher_no',
         'created_by',
         'remarks',
@@ -23,7 +25,6 @@ class PaymentTransaction extends Model
     ];
 
     protected $casts = [
-        // other casts...
         'is_approved' => 'boolean',
     ];
 

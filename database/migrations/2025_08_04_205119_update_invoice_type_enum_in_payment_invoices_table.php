@@ -23,9 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Optional: revert to old values (if needed)
-        DB::statement("ALTER TABLE payment_invoices 
-            MODIFY invoice_type ENUM('tuition_fee', 'model_test_fee', 'exam_fee', 'others_fee', 'sheet_fee') 
-            DEFAULT 'tuition_fee'");
+
     }
 };
