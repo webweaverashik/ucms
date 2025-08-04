@@ -28,19 +28,30 @@ class StudentController extends Controller
     {
         $branchId = auth()->user()->branch_id;
 
-        $students = Student::whereNotNull('student_activation_id')
+        $students = Student::with([
+            'class:id,name,class_numeral',
+            'branch:id,branch_name,branch_prefix',
+            'shift:id,name',
+            'institution:id,name,eiin_number',
+            'studentActivation:id,active_status',
+            'guardians:id,name,relationship',
+            'mobileNumbers:id,mobile_number,number_type',
+            'payments:id,payment_style,due_date,tuition_fee'
+        ])
+            ->whereNotNull('student_activation_id')
             ->when($branchId != 0, function ($query) use ($branchId) {
                 $query->where('branch_id', $branchId);
             })
             ->latest('updated_at')
             ->get();
 
-        $classnames   = ClassName::all();
-        $shifts       = Shift::where('branch_id', $branchId)->get();
-        $institutions = Institution::all();
-        $branches     = Branch::all();
+        $classnames = ClassName::all();
+        // $shifts       = Shift::where('branch_id', $branchId)->get();
+        // $institutions = Institution::all();
+        $branches = Branch::all();
 
-        return view('students.index', compact('students', 'classnames', 'shifts', 'institutions', 'branches'));
+        // return view('students.index', compact('students', 'classnames', 'shifts', 'institutions', 'branches'));
+        return view('students.index', compact('students', 'classnames', 'branches'));
     }
 
     public function pending()
