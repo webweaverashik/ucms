@@ -21,12 +21,22 @@ class PaymentTransactionController extends Controller
         $branchId = auth()->user()->branch_id;
 
         // Simplified transactions query
-        $transactions = PaymentTransaction::with('paymentInvoice', 'createdBy', 'student')
-        ->whereHas('student', function ($query) use ($branchId) {
-            if ($branchId != 0) {
-                $query->where('branch_id', $branchId);
-            }
-        })
+        $transactions = PaymentTransaction::with([
+            'paymentInvoice' => function ($query) {
+                $query->select('id', 'invoice_number');
+            },
+            'createdBy' => function ($query) {
+                $query->select('id', 'name');
+            },
+            'student' => function ($query) {
+                $query->select('id', 'name', 'student_unique_id');
+            },
+        ])
+            ->whereHas('student', function ($query) use ($branchId) {
+                if ($branchId != 0) {
+                    $query->where('branch_id', $branchId);
+                }
+            })
             ->latest('id')
             ->get();
 
@@ -39,6 +49,7 @@ class PaymentTransactionController extends Controller
                     $q->where('active_status', 'active');
                 });
             })
+            ->select('id', 'name', 'student_unique_id')
             ->orderBy('student_unique_id')
             ->get();
 
@@ -116,7 +127,7 @@ class PaymentTransactionController extends Controller
             //     'amount_due' => 0,
             //     'status'     => 'paid',
             // ]);
-            
+
         } elseif ($newAmountDue <= 0) {
             // Full payment (regular case)
             $invoice->update([
