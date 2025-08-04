@@ -36,7 +36,7 @@ class StudentController extends Controller
             'studentActivation:id,active_status',
             'guardians:id,name,relationship,student_id',
             'mobileNumbers:id,mobile_number,number_type,student_id',
-            'payments:id,payment_style,due_date,tuition_fee,student_id'
+            'payments:id,payment_style,due_date,tuition_fee,student_id',
         ])
             ->whereNotNull('student_activation_id')
             ->when($branchId != 0, function ($query) use ($branchId) {
@@ -58,19 +58,27 @@ class StudentController extends Controller
     {
         $branchId = auth()->user()->branch_id;
 
-        $students = Student::whereNull('student_activation_id')
+        $students = Student::with([
+            'class:id,name,class_numeral',
+            'branch:id,branch_name,branch_prefix',
+            'shift:id,name',
+            'institution:id,name,eiin_number',
+            'guardians:id,name,relationship,student_id',
+            'mobileNumbers:id,mobile_number,number_type,student_id',
+            'payments:id,payment_style,due_date,tuition_fee,student_id'])
+            ->whereNull('student_activation_id')
             ->when($branchId != 0, function ($query) use ($branchId) {
                 $query->where('branch_id', $branchId);
             })
             ->latest()
             ->get();
 
-        $classnames   = ClassName::all();
-        $shifts       = Shift::where('branch_id', $branchId)->get();
-        $institutions = Institution::all();
+        $classnames = ClassName::all();
+        // $shifts       = Shift::where('branch_id', $branchId)->get();
+        // $institutions = Institution::all();
         // return response()->json($students);
 
-        return view('students.pending', compact('students', 'classnames', 'shifts', 'institutions'));
+        return view('students.pending', compact('students', 'classnames'));
     }
 
     /**
