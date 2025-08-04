@@ -33,7 +33,7 @@ class StudentController extends Controller
             'branch:id,branch_name,branch_prefix',
             'shift:id,name',
             'institution:id,name,eiin_number',
-            'studentActivation:id,active_status,student_id',
+            'studentActivation:id,active_status',
             'guardians:id,name,relationship,student_id',
             'mobileNumbers:id,mobile_number,number_type,student_id',
             'payments:id,payment_style,due_date,tuition_fee,student_id'
