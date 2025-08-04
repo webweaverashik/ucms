@@ -16,7 +16,7 @@ class ClassNameController extends Controller
             return redirect()->back()->with('warning', 'No permission to view classes.');
         }
 
-        $classnames = ClassName::latest('id')->get();
+        $classnames = ClassName::withCount('activeStudents')->latest('id')->get();
 
         return view('classnames.index', compact('classnames'));
     }
@@ -61,7 +61,9 @@ class ClassNameController extends Controller
             return redirect()->back()->with('warning', 'No permission to view classes.');
         }
 
-        $classname = ClassName::find($id);
+        $classname = ClassName::withCount(['activeStudents', 'inactiveStudents'])
+            ->with(['subjects.students']) // Eager load students for each subject
+            ->find($id);
 
         if (! $classname) {
             return redirect()->route('classnames.index')->with('warning', 'Class not found.');

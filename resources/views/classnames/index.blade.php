@@ -92,7 +92,7 @@
                         </div>
 
                         <div class="fw-bold text-gray-600 mb-5"><i class="fas fa-users me-2"></i>Total active students:
-                            {{ $classname->activeStudents->count() }}</div>
+                            {{ $classname->active_students_count  }}</div>
                     </div>
                     <!--end::Card body-->
                     <!--begin::Card footer-->

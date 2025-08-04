@@ -22,7 +22,7 @@
         <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 ">
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                <a href="?page=index" class="text-muted text-hover-primary">
+                <a href="#" class="text-muted text-hover-primary">
                     Academic </a>
             </li>
             <!--end::Item-->
@@ -132,14 +132,14 @@
                                 <!--begin::Row-->
                                 <tr class="">
                                     <td class="text-gray-500">Active Student:</td>
-                                    <td class="text-gray-800">{{ $classname->activeStudents->count() }}</td>
+                                    <td class="text-gray-800">{{ $classname->active_students_count }}</td>
                                 </tr>
                                 <!--end::Row-->
 
                                 <!--begin::Row-->
                                 <tr class="">
                                     <td class="text-gray-500">Deactive Student:</td>
-                                    <td class="text-gray-800">{{ $classname->inactiveStudents->count() }}</td>
+                                    <td class="text-gray-800">{{ $classname->inactive_students_count }}</td>
                                 </tr>
                                 <!--end::Row-->
 
