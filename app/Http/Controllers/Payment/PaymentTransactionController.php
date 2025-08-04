@@ -21,7 +21,8 @@ class PaymentTransactionController extends Controller
         $branchId = auth()->user()->branch_id;
 
         // Simplified transactions query
-        $transactions = PaymentTransaction::whereHas('student', function ($query) use ($branchId) {
+        $transactions = PaymentTransaction::with('paymentInvoice', 'createdBy', 'student')
+        ->whereHas('student', function ($query) use ($branchId) {
             if ($branchId != 0) {
                 $query->where('branch_id', $branchId);
             }
