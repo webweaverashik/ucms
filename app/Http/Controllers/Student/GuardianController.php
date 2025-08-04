@@ -22,9 +22,15 @@ class GuardianController extends Controller
 
         $userBranchId = auth()->user()->branch_id;
 
-        $guardians = $userBranchId != 0
-        ? Guardian::whereHas('student', fn($q) => $q->where('branch_id', $userBranchId))->get()
-        : Guardian::all();
+        $guardians = Guardian::with([
+            'student:id,name,student_unique_id,branch_id',
+            'student.branch:id,branch_name',
+            'student.payments:id,student_id,tuition_fee',
+        ])
+            ->when($userBranchId != 0, function ($query) use ($userBranchId) {
+                $query->whereHas('student', fn($q) => $q->where('branch_id', $userBranchId));
+            })
+            ->get(['id', 'name', 'gender', 'relationship', 'mobile_number', 'student_id']);
 
         $students = Student::when($userBranchId != 0, fn($q) => $q->where('branch_id', $userBranchId))
             ->orderBy('student_unique_id')

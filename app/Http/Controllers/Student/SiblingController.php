@@ -19,12 +19,17 @@ class SiblingController extends Controller
             return redirect()->back()->with('warning', 'No permission to view siblings.');
         }
 
-
         $userBranchId = auth()->user()->branch_id;
 
-        $siblings = $userBranchId != 0
-        ? Sibling::whereHas('student', fn($q) => $q->where('branch_id', $userBranchId))->get()
-        : Sibling::all();
+        $siblings = Sibling::with([
+            'student:id,name,student_unique_id,branch_id',
+            'student.branch:id,branch_name',
+            'institution:id,name,eiin_number',
+        ])
+            ->when($userBranchId != 0, function ($query) use ($userBranchId) {
+                $query->whereHas('student', fn($q) => $q->where('branch_id', $userBranchId));
+            })
+            ->get(['id', 'name', 'age', 'class', 'relationship', 'student_id', 'institution_id']);
 
         $students = Student::when($userBranchId != 0, fn($q) => $q->where('branch_id', $userBranchId))
             ->orderBy('student_unique_id')
