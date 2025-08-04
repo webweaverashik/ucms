@@ -111,7 +111,7 @@ class PaymentTransactionController extends Controller
         // Create transaction
         $transaction = PaymentTransaction::create([
             'student_id'         => $validated['transaction_student'],
-            'student_classname'  => $invoice->student->class->name,
+            'student_classname'  => $invoice->student->class->name . '(' . $invoice->student->class->class_numeral . ')',
             'payment_invoice_id' => $invoice->id,
             'amount_paid'        => $validated['transaction_amount'],
             'remaining_amount'   => $newAmountDue,
