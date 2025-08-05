@@ -1,23 +1,24 @@
 <?php
 namespace App\Http\Controllers\Student;
 
-use App\Http\Controllers\Controller;
-use App\Models\Academic\ClassName;
-use App\Models\Academic\Institution;
-use App\Models\Academic\Shift;
+use Carbon\Carbon;
 use App\Models\Branch;
+use Illuminate\Http\Request;
+use App\Models\Academic\Shift;
 use App\Models\Payment\Payment;
-use App\Models\Payment\PaymentInvoice;
-use App\Models\Student\Guardian;
-use App\Models\Student\MobileNumber;
-use App\Models\Student\Reference;
 use App\Models\Student\Sibling;
 use App\Models\Student\Student;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Student\Guardian;
+use App\Models\Student\Reference;
+use App\Models\Academic\ClassName;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Models\Academic\Institution;
+use App\Models\Student\MobileNumber;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Cache;
+use App\Models\Payment\PaymentInvoice;
 
 class StudentController extends Controller
 {
@@ -28,35 +29,40 @@ class StudentController extends Controller
     {
         $branchId = auth()->user()->branch_id;
 
-        $students = Student::with([
-            'class:id,name,class_numeral',
-            'branch:id,branch_name,branch_prefix',
-            'shift:id,name',
-            'institution:id,name,eiin_number',
-            'studentActivation:id,active_status',
-            'guardians:id,name,relationship,student_id',
-            'mobileNumbers:id,mobile_number,number_type,student_id',
-            'payments:id,payment_style,due_date,tuition_fee,student_id',
-        ])
-            ->whereNotNull('student_activation_id')
-            ->when($branchId != 0, function ($query) use ($branchId) {
-                $query->where('branch_id', $branchId);
-            })
-            ->latest('updated_at')
-            ->get();
+        // Unique cache key per branch (useful when branch_id != 0)
+        $cacheKey = 'students_list_branch_' . $branchId;
+
+        $students = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($branchId) {
+            return Student::with([
+                'class:id,name,class_numeral',
+                'branch:id,branch_name,branch_prefix',
+                'shift:id,name',
+                'institution:id,name,eiin_number',
+                'studentActivation:id,active_status',
+                'guardians:id,name,relationship,student_id',
+                'mobileNumbers:id,mobile_number,number_type,student_id',
+                'payments:id,payment_style,due_date,tuition_fee,student_id',
+            ])
+                ->whereNotNull('student_activation_id')
+                ->when($branchId != 0, function ($query) use ($branchId) {
+                    $query->where('branch_id', $branchId);
+                })
+                ->latest('updated_at')
+                ->get();
+        });
 
         $classnames = ClassName::all();
-        $shifts = Shift::with('branch:id,branch_name')->when(auth()->user()->branch_id != 0, function ($query) {
+        $shifts     = Shift::with('branch:id,branch_name')->when(auth()->user()->branch_id != 0, function ($query) {
             $query->where('branch_id', auth()->user()->branch_id);
         })
             ->select('id', 'name', 'branch_id')
             ->get();
 
         $institutions = Institution::all();
-        $branches = Branch::all();
+        $branches     = Branch::all();
 
         return view('students.index', compact('students', 'classnames', 'shifts', 'institutions', 'branches'));
-        // return view('students.index', compact('students', 'classnames', 'branches'));
+
     }
 
     public function pending()
@@ -355,6 +361,8 @@ class StudentController extends Controller
                     'number_type'   => 'whatsapp',
                 ]);
             }
+
+            Cache::forget('students_list_branch_' . auth()->user()->branch_id);
 
             return response()->json([
                 'success' => true,
@@ -658,6 +666,7 @@ class StudentController extends Controller
                 ]);
             }
 
+            Cache::forget('students_list_branch_' . auth()->user()->branch_id);
             return response()->json(['success' => true, 'student' => $student, 'message' => 'Student updated successfully']);
         });
     }
@@ -683,6 +692,7 @@ class StudentController extends Controller
         $student->siblings()->delete();
         $student->delete();
 
+        Cache::forget('students_list_branch_' . auth()->user()->branch_id);
         return response()->json(['success' => true]);
     }
 

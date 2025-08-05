@@ -1,12 +1,13 @@
 <?php
 namespace App\Http\Controllers\Student;
 
-use App\Http\Controllers\Controller;
-use App\Models\Student\Student;
-use App\Models\Student\StudentActivation;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Student\Student;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use App\Models\Student\StudentActivation;
 
 class StudentActivationController extends Controller
 {
@@ -41,6 +42,7 @@ class StudentActivationController extends Controller
             // Update Student's Activation ID
             $student->update(['student_activation_id' => $activation->id]);
 
+            Cache::forget('students_list_branch_' . auth()->user()->branch_id);
             return response()->json(['success' => true, 'message' => 'Student activation updated successfully']);
         });
     }
@@ -67,6 +69,8 @@ class StudentActivationController extends Controller
 
             // Update Student's Activation ID
             $student->update(['student_activation_id' => $activation->id]);
+
+            Cache::forget('students_list_branch_' . auth()->user()->branch_id);
 
             return redirect()->back()->with('success', 'Student status updated successfully.');
         });
