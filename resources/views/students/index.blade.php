@@ -84,7 +84,7 @@
                         data-kt-menu-placement="bottom-end">
                         <i class="ki-outline ki-filter fs-2"></i>Filter</button>
                     <!--begin::Menu 1-->
-                    <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
+                    <div class="menu menu-sub menu-sub-dropdown w-350px w-md-500px" data-kt-menu="true">
                         <!--begin::Header-->
                         <div class="px-7 py-5">
                             <div class="fs-5 text-gray-900 fw-bold">Filter Options</div>
@@ -95,86 +95,132 @@
                         <!--end::Separator-->
                         <!--begin::Content-->
                         <div class="px-7 py-5" data-kt-subscription-table-filter="form">
-                            @if (auth()->user()->hasRole('admin'))
+                            <div class="row">
+                                @if (auth()->user()->hasRole('admin'))
+                                    <div class="col-6 mb-5">
+                                        <label class="form-label fs-6 fw-semibold">Branch:</label>
+                                        <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
+                                            data-placeholder="Select option" data-allow-clear="true"
+                                            data-kt-subscription-table-filter="product" data-hide-search="true">
+                                            <option></option>
+                                            @foreach ($branches as $branch)
+                                                <option value="{{ ucfirst($branch->branch_name) }}">
+                                                    {{ ucfirst($branch->branch_name) }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                @endif
+
+                                <div class="col-6 mb-5">
+                                    <label class="form-label fs-6 fw-semibold">Student Gender:</label>
+                                    <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
+                                        data-placeholder="Select option" data-allow-clear="true"
+                                        data-kt-subscription-table-filter="status" data-hide-search="true">
+                                        <option></option>
+                                        <option value="student_male">Male</option>
+                                        <option value="student_female">Female</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-6 mb-5">
+                                    <label class="form-label fs-6 fw-semibold">Student Status:</label>
+                                    <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
+                                        data-placeholder="Select option" data-allow-clear="true"
+                                        data-kt-subscription-table-filter="status" data-hide-search="true">
+                                        <option></option>
+                                        <option value="active">Active</option>
+                                        <option value="suspended">Inactive</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-6 mb-5">
+                                    <label class="form-label fs-6 fw-semibold">Payment Type:</label>
+                                    <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
+                                        data-placeholder="Select option" data-allow-clear="true"
+                                        data-kt-subscription-table-filter="billing" data-hide-search="true">
+                                        <option></option>
+                                        <option value="due">Due</option>
+                                        <option value="current">Current</option>
+                                    </select>
+                                </div>
+
                                 <!--begin::Input group-->
-                                <div class="mb-10">
-                                    <label class="form-label fs-6 fw-semibold">Branch:</label>
+                                <div class="col-6 mb-5">
+                                    <label class="form-label fs-6 fw-semibold">Due Date:</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                         data-placeholder="Select option" data-allow-clear="true"
                                         data-kt-subscription-table-filter="product" data-hide-search="true">
                                         <option></option>
-                                        @foreach ($branches as $branch)
-                                            <option value="{{ ucfirst($branch->branch_name) }}">
-                                                {{ ucfirst($branch->branch_name) }}</option>
+                                        <option value="1/7">1-7</option>
+                                        <option value="1/10">1-10</option>
+                                        <option value="1/15">1-15</option>
+                                        <option value="1/30">1-30</option>
+                                    </select>
+                                </div>
+                                <!--end::Input group-->
+
+                                <!--begin::Input group-->
+                                <div class="col-6 mb-5">
+                                    <label class="form-label fs-6 fw-semibold">Shifts:</label>
+                                    <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
+                                        data-placeholder="Select option" data-allow-clear="true"
+                                        data-kt-subscription-table-filter="product" data-hide-search="true">
+                                        <option></option>
+                                        @foreach ($shifts as $shift)
+                                            <option
+                                                value="{{ $shift->id }}_{{ $shift->name }}_{{ $shift->branch->branch_name }}">
+                                                {{ $shift->name }} @if (auth()->user()->hasRole('admin'))
+                                                    ({{ $shift->branch->branch_name }})
+                                                @endif
+                                            </option>
                                         @endforeach
                                     </select>
                                 </div>
                                 <!--end::Input group-->
-                            @endif
 
-                            <!--begin::Input group-->
-                            <div class="mb-10">
-                                <label class="form-label fs-6 fw-semibold">Payment Type:</label>
-                                <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                    data-placeholder="Select option" data-allow-clear="true"
-                                    data-kt-subscription-table-filter="billing" data-hide-search="true">
-                                    <option></option>
-                                    <option value="due">Due</option>
-                                    <option value="current">Current</option>
-                                </select>
-                            </div>
-                            <!--end::Input group-->
+                                <!--begin::Input group-->
+                                <div class="@if (auth()->user()->hasRole('admin')) col-12 @else col-6 @endif mb-5">
+                                    <label class="form-label fs-6 fw-semibold">Class</label>
+                                    <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
+                                        data-placeholder="Select option" data-allow-clear="true"
+                                        data-kt-subscription-table-filter="status">
+                                        <option></option>
+                                        @foreach ($classnames as $classname)
+                                            <option value="{{ $classname->id }}_{{ $classname->class_numeral }}_ucms">
+                                                {{ $classname->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <!--end::Input group-->
 
-                            <!--begin::Input group-->
-                            <div class="mb-10">
-                                <label class="form-label fs-6 fw-semibold">Due Date:</label>
-                                <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                    data-placeholder="Select option" data-allow-clear="true"
-                                    data-kt-subscription-table-filter="product" data-hide-search="true">
-                                    <option></option>
-                                    <option value="1/7">1-7</option>
-                                    <option value="1/10">1-10</option>
-                                    <option value="1/15">1-15</option>
-                                    <option value="1/30">1-30</option>
-                                </select>
-                            </div>
-                            <!--end::Input group-->
+                                <!--begin::Input group-->
+                                <div class="col-12 mb-5">
+                                    <label class="form-label fs-6 fw-semibold">Institutions</label>
+                                    <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
+                                        data-placeholder="Select option" data-allow-clear="true"
+                                        data-kt-subscription-table-filter="status">
+                                        <option></option>
+                                        @foreach ($institutions as $institution)
+                                            <option
+                                                value="{{ $institution->name }} (EIIN: {{ $institution->eiin_number }})">
+                                                {{ $institution->name }} ({{ $institution->eiin_number }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <!--end::Input group-->
 
-                            <!--begin::Input group-->
-                            <div class="mb-10">
-                                <label class="form-label fs-6 fw-semibold">Class</label>
-                                <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                    data-placeholder="Select option" data-allow-clear="true"
-                                    data-kt-subscription-table-filter="status">
-                                    <option></option>
-                                    @foreach ($classnames as $classname)
-                                        <option value="{{ $classname->id }}_{{ $classname->class_numeral }}_ucms">
-                                            {{ $classname->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
                             </div>
-                            <!--end::Input group-->
 
-                            <!--begin::Input group-->
-                            <div class="mb-10">
-                                <label class="form-label fs-6 fw-semibold">Student Status:</label>
-                                <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                    data-placeholder="Select option" data-allow-clear="true"
-                                    data-kt-subscription-table-filter="status" data-hide-search="true">
-                                    <option></option>
-                                    <option value="active">Active</option>
-                                    <option value="suspended">Inactive</option>
-                                </select>
-                            </div>
-                            <!--end::Input group-->
 
                             <!--begin::Actions-->
                             <div class="d-flex justify-content-end">
-                                <button type="reset" class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
+                                <button type="reset"
+                                    class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
                                     data-kt-menu-dismiss="true" data-kt-subscription-table-filter="reset">Reset</button>
-                                <button type="submit" class="btn btn-primary fw-semibold px-6" data-kt-menu-dismiss="true"
-                                    data-kt-subscription-table-filter="filter">Apply</button>
+                                <button type="submit" class="btn btn-primary fw-semibold px-6"
+                                    data-kt-menu-dismiss="true" data-kt-subscription-table-filter="filter">Apply</button>
                             </div>
                             <!--end::Actions-->
                         </div>
@@ -235,9 +281,11 @@
                     <tr class="fw-bold fs-7 text-uppercase gs-0">
                         <th class="w-25px">SL</th>
                         <th class="min-w-200px">Student</th>
+                        <th class="d-none">Gender (filter)</th>
                         <th class="d-none">Active/Inactive (filter)</th>
                         <th class="d-none">Class (filter)</th>
                         <th>Class</th>
+                        <th class="d-none">Shift (Filter)</th>
                         <th>Shift</th>
                         <th class="w-300px">School</th>
                         <th>Guardians</th>
@@ -278,6 +326,8 @@
                                 </div>
                             </td>
 
+                            <td class="d-none">student_{{ $student->gender }}</td>
+
                             <td class="d-none">
                                 @if ($student->studentActivation->active_status == 'active')
                                     active
@@ -287,6 +337,9 @@
                             </td>
                             <td class="d-none">{{ $student->class_id }}_{{ $student->class->class_numeral }}_ucms</td>
                             <td>{{ $student->class->name }}</td>
+                            <td class="d-none">
+                                {{ $student->shift_id }}_{{ $student->shift->name }}_{{ $student->branch->branch_name }}
+                            </td>
                             <td>{{ $student->shift->name }}</td>
                             <td>{{ $student->institution->name }} (EIIN: {{ $student->institution->eiin_number }})
                             </td>
