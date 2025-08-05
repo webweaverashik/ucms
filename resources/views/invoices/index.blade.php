@@ -653,7 +653,7 @@
     <div class="modal fade" id="kt_modal_create_invoice" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
         data-bs-keyboard="false">
         <!--begin::Modal dialog-->
-        <div class="modal-dialog modal-dialog-centered mw-650px">
+        <div class="modal-dialog modal-dialog-centered mw-750px">
             <!--begin::Modal content-->
             <div class="modal-content">
                 <!--begin::Modal header-->
@@ -681,114 +681,166 @@
                             data-kt-scroll-dependencies="#kt_modal_transaction_header"
                             data-kt-scroll-wrappers="#kt_modal_add_invoice_scroll" data-kt-scroll-offset="300px">
 
-                            <!--begin::Name Input group-->
-                            <div class="fv-row mb-7">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">Select Student</label>
-                                <!--end::Label-->
+                            <div class="row">
+                                <!--begin::Name Input group-->
+                                <div class="fv-row mb-7 col-12">
+                                    <!--begin::Label-->
+                                    <label class="required fw-semibold fs-6 mb-2">Select Student</label>
+                                    <!--end::Label-->
 
-                                <!--begin::Solid input group style-->
-                                <div class="input-group input-group-solid flex-nowrap">
-                                    <span class="input-group-text">
-                                        <i class="ki-outline ki-faceid fs-3"></i>
-                                    </span>
-                                    <div class="overflow-hidden flex-grow-1">
-                                        <select name="invoice_student"
-                                            class="form-select form-select-solid rounded-start-0 border-start"
-                                            data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
-                                            data-placeholder="Select a student at first" required>
-                                            <option></option>
-                                            @foreach ($students as $student)
-                                                <option value="{{ $student->id }}">{{ $student->name }}
-                                                    ({{ $student->student_unique_id }})
-                                                    - {{ ucfirst($student->payments->payment_style) }} -
-                                                    1/{{ $student->payments->due_date }}
-                                                </option>
-                                            @endforeach
-                                        </select>
+                                    <!--begin::Solid input group style-->
+                                    <div class="input-group input-group-solid flex-nowrap">
+                                        <span class="input-group-text">
+                                            <i class="ki-outline ki-faceid fs-3"></i>
+                                        </span>
+                                        <div class="overflow-hidden flex-grow-1">
+                                            <select name="invoice_student"
+                                                class="form-select form-select-solid rounded-start-0 border-start"
+                                                data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
+                                                data-placeholder="Select a student at first" required>
+                                                <option></option>
+                                                @foreach ($students as $student)
+                                                    <option value="{{ $student->id }}">{{ $student->name }}
+                                                        ({{ $student->student_unique_id }})
+                                                        - {{ ucfirst($student->payments->payment_style) }} -
+                                                        1/{{ $student->payments->due_date }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
                                     </div>
+                                    <!--end::Solid input group style-->
                                 </div>
-                                <!--end::Solid input group style-->
-                            </div>
-                            <!--end::Name Input group-->
+                                <!--end::Name Input group-->
 
-                            <!--begin::Invoice Type Input group-->
-                            <div class="fv-row mb-7">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">Invoice Type</label>
-                                <!--end::Label-->
+                                <!--begin::Invoice Type Input group-->
+                                <div class="fv-row mb-7 col-12">
+                                    <!--begin::Label-->
+                                    <label class="required fw-semibold fs-6 mb-2">Invoice Type</label>
+                                    <!--end::Label-->
 
-                                <!--begin::Solid input group style-->
-                                <div class="input-group input-group-solid flex-nowrap">
-                                    <span class="input-group-text">
-                                        <i class="ki-outline ki-save-2 fs-3"></i>
-                                    </span>
-                                    <div class="overflow-hidden flex-grow-1">
-                                        <select name="invoice_type"
-                                            class="form-select form-select-solid rounded-start-0 border-start"
-                                            data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
-                                            data-placeholder="Select a invoice type" data-hide-search="false" required
-                                            disabled>
-                                            <option></option>
-                                            <option value="tuition_fee" selected>Tuition Fee</option>
-                                            <option value="sheet_fee">Sheet Fee</option>
-                                            <option value="diary_fee">Diary Fee</option>
-                                            <option value="book_fee">Book Fee</option>
-                                            <option value="exam_fee">Exam Fee</option>
-                                            <option value="model_test_fee">Model Test Fee</option>
-                                            <option value="others_fee">Others</option>
-                                        </select>
+                                    <!--begin::Solid input group style-->
+                                    <div class="input-group input-group-solid flex-nowrap">
+                                        <span class="input-group-text">
+                                            <i class="ki-outline ki-save-2 fs-3"></i>
+                                        </span>
+                                        <div class="overflow-hidden flex-grow-1">
+                                            <select name="invoice_type"
+                                                class="form-select form-select-solid rounded-start-0 border-start"
+                                                data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
+                                                data-placeholder="Select a invoice type" data-hide-search="false" required
+                                                disabled>
+                                                <option></option>
+                                                <option value="tuition_fee" selected>Tuition Fee</option>
+                                                <option value="sheet_fee">Sheet Fee</option>
+                                                <option value="diary_fee">Diary Fee</option>
+                                                <option value="book_fee">Book Fee</option>
+                                                <option value="exam_fee">Exam Fee</option>
+                                                <option value="model_test_fee">Model Test Fee</option>
+                                                <option value="others_fee">Others</option>
+                                            </select>
+                                        </div>
                                     </div>
+                                    <!--end::Solid input group style-->
                                 </div>
-                                <!--end::Solid input group style-->
-                            </div>
-                            <!--end::Invoice Type Input group-->
+                                <!--end::Invoice Type Input group-->
 
-                            <!--begin::Month_Year Input group-->
-                            <div class="fv-row mb-7" id="month_year_id">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">Month Year</label>
-                                <!--end::Label-->
+                                <!--begin::Month_Year Input group-->
+                                <div class="fv-row mb-7 col-6" id="month_year_type_id">
+                                    <!--begin::Label-->
+                                    <label class="required fw-semibold fs-6 mb-2">Billing Type</label>
+                                    <!--end::Label-->
 
-                                <!--begin::Solid input group style-->
-                                <div class="input-group input-group-solid flex-nowrap">
-                                    <span class="input-group-text">
-                                        <i class="ki-outline ki-calendar fs-3"></i>
-                                    </span>
-                                    <div class="overflow-hidden flex-grow-1">
-                                        <select name="invoice_month_year"
-                                            class="form-select form-select-solid rounded-start-0 border-start"
-                                            data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
-                                            data-placeholder="Select billing month" data-hide-search="true" disabled
-                                            required>
-                                            <option></option>
-                                        </select>
+                                    <!--begin::Solid input group style-->
+                                    <div class="row">
+                                        <!--begin::New Month Year-->
+                                        <div class="col-lg-6">
+                                            <!--begin::Option-->
+                                            <input type="radio" class="btn-check" name="month_year_type"
+                                                checked="checked" value="new_invoice" id="new_invoice_input" />
+                                            <label
+                                                class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                                for="new_invoice_input">
+                                                <i class="ki-outline ki-abstract fs-2x me-5"></i>
+                                                <!--begin::Info-->
+                                                <span class="d-block fw-semibold text-start">
+                                                    <span class="text-gray-900 fw-bold d-block fs-6">New</span>
+                                                </span>
+                                                <!--end::Info-->
+                                            </label>
+                                            <!--end::Option-->
+                                        </div>
+                                        <!--end::New Month Year-->
+
+                                        <!--begin::Old Month Year-->
+                                        <div class="col-lg-6">
+                                            <!--begin::Option-->
+                                            <input type="radio" class="btn-check" name="month_year_type"
+                                                value="old_invoice" id="old_invoice_input" />
+                                            <label
+                                                class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                                for="old_invoice_input">
+                                                <i class="ki-outline ki-abstract-20 fs-2x me-5"></i>
+                                                <!--begin::Info-->
+                                                <span class="d-block fw-semibold text-start">
+                                                    <span class="text-gray-900 fw-bold d-block fs-6">Old</span>
+                                                </span>
+                                                <!--end::Info-->
+                                            </label>
+                                            <!--end::Option-->
+                                        </div>
+                                        <!--end::Old Month Year-->
                                     </div>
+                                    <!--end::Solid input group style-->
                                 </div>
-                                <!--end::Solid input group style-->
-                            </div>
-                            <!--end::Month_Year Input group-->
+                                <!--end::Month_Year Input group-->
 
-                            <!--begin::Amount Input group-->
-                            <div class="fv-row mb-7">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">Amount</label>
-                                <!--end::Label-->
-                                <div class="input-group input-group-solid flex-nowrap">
-                                    <span class="input-group-text">
-                                        <i class="ki-outline ki-dollar fs-3"></i>
-                                    </span>
-                                    <div class="overflow-hidden flex-grow-1">
-                                        <!--begin::Input-->
-                                        <input type="number" name="invoice_amount" min="50"
-                                            class="form-control form-control-solid mb-3 mb-lg-0 rounded-start-0 border-start"
-                                            placeholder="Enter the amount" disabled required />
-                                        <!--end::Input-->
+                                <!--begin::Month_Year Input group-->
+                                <div class="fv-row mb-7 col-6" id="month_year_id">
+                                    <!--begin::Label-->
+                                    <label class="required fw-semibold fs-6 mb-2">Billing Month</label>
+                                    <!--end::Label-->
+
+                                    <!--begin::Solid input group style-->
+                                    <div class="input-group input-group-solid flex-nowrap">
+                                        <span class="input-group-text">
+                                            <i class="ki-outline ki-calendar fs-3"></i>
+                                        </span>
+                                        <div class="overflow-hidden flex-grow-1">
+                                            <select name="invoice_month_year"
+                                                class="form-select form-select-solid rounded-start-0 border-start"
+                                                data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
+                                                data-placeholder="Select billing month" data-hide-search="true" disabled
+                                                required>
+                                                <option></option>
+                                            </select>
+                                        </div>
                                     </div>
+                                    <!--end::Solid input group style-->
                                 </div>
-                                <!--end::Input-->
+                                <!--end::Month_Year Input group-->
+
+                                <!--begin::Amount Input group-->
+                                <div class="fv-row mb-7 col-12">
+                                    <!--begin::Label-->
+                                    <label class="required fw-semibold fs-6 mb-2">Amount</label>
+                                    <!--end::Label-->
+                                    <div class="input-group input-group-solid flex-nowrap">
+                                        <span class="input-group-text">
+                                            <i class="ki-outline ki-dollar fs-3"></i>
+                                        </span>
+                                        <div class="overflow-hidden flex-grow-1">
+                                            <!--begin::Input-->
+                                            <input type="number" name="invoice_amount" min="50"
+                                                class="form-control form-control-solid mb-3 mb-lg-0 rounded-start-0 border-start"
+                                                placeholder="Enter the amount" disabled required />
+                                            <!--end::Input-->
+                                        </div>
+                                    </div>
+                                    <!--end::Input-->
+                                </div>
+                                <!--end::Amount Input group-->
                             </div>
-                            <!--end::Amount Input group-->
                         </div>
                         <!--end::Scroll-->
                         <!--begin::Actions-->

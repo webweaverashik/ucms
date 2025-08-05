@@ -52,7 +52,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::post('students/{id}/approve', [StudentActivationController::class, 'approve'])->name('students.activate');
     Route::post('students/toggle-active', [StudentActivationController::class, 'toggleActive'])->name('students.toggleActive');
     Route::get('students/{id}/download-form', [PdfController::class, 'downloadAdmissionForm'])->name('students.download');
-    Route::get('students/{student}/last-invoice-month', [StudentController::class, 'getLastInvoiceMonth']);
+    Route::get('students/{student}/invoice-months-data', [StudentController::class, 'getInvoiceMonthsData']);
     Route::get('students/{id}/sheet-fee', [StudentController::class, 'getSheetFee']);
     Route::get('students/transfer', [StudentController::class, 'transferStudent'])->name('students.transfer');
     Route::get('students/promote', [StudentController::class, 'promoteStudents'])->name('students.promote');

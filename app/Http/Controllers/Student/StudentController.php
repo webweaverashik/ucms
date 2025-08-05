@@ -1,24 +1,24 @@
 <?php
 namespace App\Http\Controllers\Student;
 
-use Carbon\Carbon;
-use App\Models\Branch;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Models\Academic\ClassName;
+use App\Models\Academic\Institution;
 use App\Models\Academic\Shift;
+use App\Models\Branch;
 use App\Models\Payment\Payment;
+use App\Models\Payment\PaymentInvoice;
+use App\Models\Student\Guardian;
+use App\Models\Student\MobileNumber;
+use App\Models\Student\Reference;
 use App\Models\Student\Sibling;
 use App\Models\Student\Student;
-use App\Models\Student\Guardian;
-use App\Models\Student\Reference;
-use App\Models\Academic\ClassName;
-use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
-use App\Models\Academic\Institution;
-use App\Models\Student\MobileNumber;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cache;
-use App\Models\Payment\PaymentInvoice;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class StudentController extends Controller
 {
@@ -729,15 +729,25 @@ class StudentController extends Controller
     }
 
     /**
-     * Get the last invoice month for a student.
+     * Get the invoice month year for a student.
      */
-    public function getLastInvoiceMonth(Student $student)
+    public function getInvoiceMonthsData(Student $student)
     {
-        $lastInvoice = $student->paymentInvoices()->where('invoice_type', 'tuition_fee')->orderByRaw("SUBSTRING_INDEX(month_year, '_', -1) DESC, SUBSTRING_INDEX(month_year, '_', 1) DESC")->first();
+        $lastInvoice = $student->paymentInvoices()
+            ->where('invoice_type', 'tuition_fee')
+            ->orderByRaw("SUBSTRING_INDEX(month_year, '_', -1) DESC, SUBSTRING_INDEX(month_year, '_', 1) DESC")
+            ->first();
+
+        $oldestInvoice = $student->paymentInvoices()
+            ->where('invoice_type', 'tuition_fee')
+            ->orderByRaw("SUBSTRING_INDEX(month_year, '_', -1) ASC, SUBSTRING_INDEX(month_year, '_', 1) ASC")
+            ->first();
 
         return response()->json([
-            'last_invoice_month' => $lastInvoice ? $lastInvoice->month_year : null,
-            'tuition_fee'        => $student->payments->tuition_fee,
+            'last_invoice_month'   => $lastInvoice ? $lastInvoice->month_year : null,
+            'oldest_invoice_month' => $oldestInvoice ? $oldestInvoice->month_year : null,
+            'tuition_fee'          => $student->payments->tuition_fee,
+            'payment_style'        => $student->payments->payment_style,
         ]);
     }
 
