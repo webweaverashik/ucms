@@ -125,7 +125,8 @@
                         <div class="d-flex align-items-center">
                             <!--begin::Avatar-->
                             <div class="symbol symbol-60px symbol-circle me-3">
-                                <img src="{{ $student->photo_url ? asset($student->photo_url) : asset($student->gender == 'male' ? 'img/male.png' : 'img/female.png') }}" alt="{{ $student->name }}" />
+                                <img src="{{ $student->photo_url ? asset($student->photo_url) : asset($student->gender == 'male' ? 'img/male.png' : 'img/female.png') }}"
+                                    alt="{{ $student->name }}" />
                             </div>
                             <!--end::Avatar-->
                             <!--begin::Info-->
@@ -1567,7 +1568,12 @@
     <script src="{{ asset('js/students/view.js') }}"></script>
 
     <script>
-        document.getElementById("student_info_menu").classList.add("here", "show");
-        document.getElementById("all_students_link").classList.add("active");
+        @if ($student->student_activation_id != null)
+            document.getElementById("student_info_menu").classList.add("here", "show");
+            document.getElementById("all_students_link").classList.add("active");
+        @else
+            document.getElementById("admission_menu").classList.add("here", "show");
+            document.getElementById("pending_approval_link").classList.add("active");
+        @endif
     </script>
 @endpush
