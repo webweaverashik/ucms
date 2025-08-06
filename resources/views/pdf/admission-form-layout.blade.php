@@ -204,7 +204,7 @@
 
                 <label class="shrink-0 font-normal mr-2 whitespace-nowrap">DoB :</label>
                 <div class="shrink-0 border-b border-dotted border-black dotted-underline min-w-[70px] mr-2">
-                    {{ optional($student->date_of_birth)->format('d/m/Y') }}
+                    {{ $student->date_of_birth->format('d/m/Y') ?? '.'}}
                 </div>
 
                 <label class="shrink-0 ml-2 font-normal whitespace-nowrap">Gender :</label>
