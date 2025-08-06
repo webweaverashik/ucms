@@ -159,7 +159,7 @@
                                     <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
                                         <a href="#">
                                             <div class="symbol-label">
-                                                <img src="{{ $user->photo_url ? asset($user->photo_url) : asset('assets/img/dummy.png') }}"
+                                                <img src="{{ $user->photo_url ? asset($user->photo_url) : asset('img/male.png') }}"
                                                     alt="{{ $user->name }}" class="w-100" />
                                             </div>
                                         </a>
@@ -184,7 +184,7 @@
 
                             <td>
                                 @php
-                                    $role = $user->getRoleNames()->first(); // safer than [0], returns null if empty
+                                    $role = $user->roles->first()?->name; // Using eager loaded 'roles' relationship
 
                                     $badgeClasses = [
                                         'admin' => 'badge badge-light-danger fw-bold',
@@ -195,17 +195,19 @@
                                     $badgeClass = $badgeClasses[$role] ?? 'badge badge-light-secondary fw-bold';
                                 @endphp
 
-                                <div class="{{ $badgeClass }}">{{ ucfirst($role) }}</div>
+                                <div class="{{ $badgeClass }}">{{ ucfirst($role) ?? '-' }}</div>
                             </td>
+
 
                             <td>
-                                {!! optional($user->loginActivities()->latest()->first())->created_at
-                                    ? optional($user->loginActivities()->latest()->first())->created_at->format('d-M-Y') .
-                                        '<br>' .
-                                        optional($user->loginActivities()->latest()->first())->created_at->format('h:i:s A')
-                                    : '-' !!}
-
+                                @if ($user->latestLoginActivity)
+                                    {{ $user->latestLoginActivity->created_at->format('d-M-Y') }}<br>
+                                    {{ $user->latestLoginActivity->created_at->format('h:i:s A') }}
+                                @else
+                                    -
+                                @endif
                             </td>
+
                             <td>
                                 @if ($user->id != auth()->user()->id)
                                     <div

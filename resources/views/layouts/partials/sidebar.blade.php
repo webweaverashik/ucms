@@ -447,7 +447,7 @@
                                 @endcan
 
                                 <!--begin:Roles-->
-                                <div class="menu-item">
+                                {{-- <div class="menu-item">
                                     <a class="menu-link" id="roles_link" href="#">
                                         <span class="menu-bullet">
                                             <span class="bullet bullet-dot">
@@ -455,10 +455,10 @@
                                         </span>
                                         <span class="menu-title">Roles</span>
                                     </a>
-                                </div>
+                                </div> --}}
                                 <!--end:Roles-->
 
-                                <!--begin:Menu item-->
+                                <!--begin:Branch management item-->
                                 <div class="menu-item">
                                     <!--begin:Menu link-->
                                     <a class="menu-link" id="branch_link" href="#">
@@ -470,12 +470,13 @@
                                     </a>
                                     <!--end:Menu link-->
                                 </div>
-                                <!--end:Menu item-->
+                                <!--end:Branch management item-->
 
-                                <!--begin:Menu item-->
-                                <div class="menu-item">
+                                <!--begin:Bulk Admission item-->
+                                {{-- <div class="menu-item">
                                     <!--begin:Menu link-->
-                                    <a class="menu-link" id="bulk_admission_link" href="{{ route('bulk.admission.index') }}">
+                                    <a class="menu-link" id="bulk_admission_link"
+                                        href="{{ route('bulk.admission.index') }}">
                                         <span class="menu-bullet">
                                             <span class="bullet bullet-dot">
                                             </span>
@@ -483,8 +484,8 @@
                                         <span class="menu-title">Bulk Admission</span>
                                     </a>
                                     <!--end:Menu link-->
-                                </div>
-                                <!--end:Menu item-->
+                                </div> --}}
+                                <!--end:Bulk Admission item-->
 
                             </div>
                             <!--end:Menu sub-->

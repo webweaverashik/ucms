@@ -17,7 +17,8 @@ class UserController extends Controller
             return redirect()->back()->with('warning', 'Not Allowed.');
         }
 
-        $users    = User::withoutTrashed()->orderby('id', 'desc')->get();
+        $users = User::with(['branch:id,branch_name', 'latestLoginActivity', 'roles:name'])->latest('id')->get();
+
         $branches = Branch::all();
 
         return view('settings.users.index', compact('users', 'branches'));
