@@ -33,6 +33,7 @@ class GuardianController extends Controller
                 ->when($userBranchId != 0, function ($query) use ($userBranchId) {
                     $query->whereHas('student', fn($q) => $q->where('branch_id', $userBranchId));
                 })
+                ->latest('id')
                 ->get(['id', 'name', 'gender', 'relationship', 'mobile_number', 'student_id']);
         });
 
