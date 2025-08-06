@@ -54,212 +54,217 @@
             $branchColors[$branch->branch_name] = $badgeColors[$index % count($badgeColors)];
         }
     @endphp
-
-    <!--begin::Card-->
-    <div class="card">
-        <!--begin::Card header-->
-        <div class="card-header border-0 pt-6">
-            <!--begin::Card title-->
-            <div class="card-title">
-                <!--begin::Search-->
-                <div class="d-flex align-items-center position-relative my-1">
-                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
-                        data-kt-subscription-table-filter="search"
-                        class="form-control form-control-solid w-250px w-sm-400px ps-12" placeholder="Search In Guardians">
+    
+    <div class="container-xxl">
+        <!--begin::Card-->
+        <div class="card">
+            <!--begin::Card header-->
+            <div class="card-header border-0 pt-6">
+                <!--begin::Card title-->
+                <div class="card-title">
+                    <!--begin::Search-->
+                    <div class="d-flex align-items-center position-relative my-1">
+                        <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
+                            data-kt-subscription-table-filter="search"
+                            class="form-control form-control-solid w-250px w-sm-400px ps-12"
+                            placeholder="Search In Guardians">
+                    </div>
+                    <!--end::Search-->
                 </div>
-                <!--end::Search-->
-            </div>
-            <!--begin::Card title-->
+                <!--begin::Card title-->
 
-            <!--begin::Card toolbar-->
-            <div class="card-toolbar">
-                <!--begin::Toolbar-->
-                <div class="d-flex justify-content-end" data-kt-subscription-table-toolbar="base">
-                    <!--begin::Filter-->
-                    <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
-                        data-kt-menu-placement="bottom-end">
-                        <i class="ki-outline ki-filter fs-2"></i>Filter</button>
-                    <!--begin::Menu 1-->
-                    <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
-                        <!--begin::Header-->
-                        <div class="px-7 py-5">
-                            <div class="fs-5 text-gray-900 fw-bold">Filter Options</div>
-                        </div>
-                        <!--end::Header-->
-                        <!--begin::Separator-->
-                        <div class="separator border-gray-200"></div>
-                        <!--end::Separator-->
-                        <!--begin::Content-->
-                        <div class="px-7 py-5" data-kt-subscription-table-filter="form">
-                            <!--begin::Input group-->
-                            <div class="mb-10">
-                                <label class="form-label fs-6 fw-semibold">Relationship Type:</label>
-                                <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                    data-placeholder="Select option" data-allow-clear="true"
-                                    data-kt-subscription-table-filter="billing" data-hide-search="true">
-                                    <option></option>
-                                    <option value="Father">Father</option>
-                                    <option value="Mother">Mother</option>
-                                    <option value="Brother">Brother</option>
-                                    <option value="Sister">Sister</option>
-                                    <option value="Uncle">Uncle</option>
-                                    <option value="Aunt">Aunt</option>
-                                </select>
+                <!--begin::Card toolbar-->
+                <div class="card-toolbar">
+                    <!--begin::Toolbar-->
+                    <div class="d-flex justify-content-end" data-kt-subscription-table-toolbar="base">
+                        <!--begin::Filter-->
+                        <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
+                            data-kt-menu-placement="bottom-end">
+                            <i class="ki-outline ki-filter fs-2"></i>Filter</button>
+                        <!--begin::Menu 1-->
+                        <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
+                            <!--begin::Header-->
+                            <div class="px-7 py-5">
+                                <div class="fs-5 text-gray-900 fw-bold">Filter Options</div>
                             </div>
-                            <!--end::Input group-->
-                            <!--begin::Input group-->
-                            <div class="mb-10">
-                                <label class="form-label fs-6 fw-semibold">Gender:</label>
-                                <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                    data-placeholder="Select option" data-allow-clear="true"
-                                    data-kt-subscription-table-filter="product" data-hide-search="true">
-                                    <option></option>
-                                    <option value="gd_male">Male</option>
-                                    <option value="gd_female">Female</option>
-                                </select>
-                            </div>
-                            <!--end::Input group-->
-
-                            @if (auth()->user()->hasRole('admin'))
+                            <!--end::Header-->
+                            <!--begin::Separator-->
+                            <div class="separator border-gray-200"></div>
+                            <!--end::Separator-->
+                            <!--begin::Content-->
+                            <div class="px-7 py-5" data-kt-subscription-table-filter="form">
                                 <!--begin::Input group-->
                                 <div class="mb-10">
-                                    <label class="form-label fs-6 fw-semibold">Branch:</label>
+                                    <label class="form-label fs-6 fw-semibold">Relationship Type:</label>
+                                    <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
+                                        data-placeholder="Select option" data-allow-clear="true"
+                                        data-kt-subscription-table-filter="billing" data-hide-search="true">
+                                        <option></option>
+                                        <option value="Father">Father</option>
+                                        <option value="Mother">Mother</option>
+                                        <option value="Brother">Brother</option>
+                                        <option value="Sister">Sister</option>
+                                        <option value="Uncle">Uncle</option>
+                                        <option value="Aunt">Aunt</option>
+                                    </select>
+                                </div>
+                                <!--end::Input group-->
+                                <!--begin::Input group-->
+                                <div class="mb-10">
+                                    <label class="form-label fs-6 fw-semibold">Gender:</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                         data-placeholder="Select option" data-allow-clear="true"
                                         data-kt-subscription-table-filter="product" data-hide-search="true">
                                         <option></option>
-                                        @foreach ($branches as $branch)
-                                            <option value="{{ ucfirst($branch->branch_name) }}">
-                                                {{ ucfirst($branch->branch_name) }}</option>
-                                        @endforeach
+                                        <option value="gd_male">Male</option>
+                                        <option value="gd_female">Female</option>
                                     </select>
                                 </div>
                                 <!--end::Input group-->
-                            @endif
 
-                            <!--begin::Actions-->
-                            <div class="d-flex justify-content-end">
-                                <button type="reset" class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
-                                    data-kt-menu-dismiss="true" data-kt-subscription-table-filter="reset">Reset</button>
-                                <button type="submit" class="btn btn-primary fw-semibold px-6" data-kt-menu-dismiss="true"
-                                    data-kt-subscription-table-filter="filter">Apply</button>
+                                @if (auth()->user()->hasRole('admin'))
+                                    <!--begin::Input group-->
+                                    <div class="mb-10">
+                                        <label class="form-label fs-6 fw-semibold">Branch:</label>
+                                        <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
+                                            data-placeholder="Select option" data-allow-clear="true"
+                                            data-kt-subscription-table-filter="product" data-hide-search="true">
+                                            <option></option>
+                                            @foreach ($branches as $branch)
+                                                <option value="{{ ucfirst($branch->branch_name) }}">
+                                                    {{ ucfirst($branch->branch_name) }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <!--end::Input group-->
+                                @endif
+
+                                <!--begin::Actions-->
+                                <div class="d-flex justify-content-end">
+                                    <button type="reset"
+                                        class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
+                                        data-kt-menu-dismiss="true" data-kt-subscription-table-filter="reset">Reset</button>
+                                    <button type="submit" class="btn btn-primary fw-semibold px-6"
+                                        data-kt-menu-dismiss="true"
+                                        data-kt-subscription-table-filter="filter">Apply</button>
+                                </div>
+                                <!--end::Actions-->
                             </div>
-                            <!--end::Actions-->
+                            <!--end::Content-->
                         </div>
-                        <!--end::Content-->
+                        <!--end::Menu 1-->
+                        <!--end::Filter-->
                     </div>
-                    <!--end::Menu 1-->
-                    <!--end::Filter-->
+                    <!--end::Toolbar-->
+
                 </div>
-                <!--end::Toolbar-->
-
+                <!--end::Card toolbar-->
             </div>
-            <!--end::Card toolbar-->
-        </div>
-        <!--end::Card header-->
+            <!--end::Card header-->
 
-        <!--begin::Card body-->
-        <div class="card-body pt-0">
-            <!--begin::Table-->
-            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_guardians_table">
-                <thead>
-                    <tr class="fw-bold fs-7 text-uppercase gs-0">
-                        <th class="w-25px">SL</th>
-                        <th class="">Name</th>
-                        <th class="d-none">Gender (filter)</th>
-                        <th>Gender</th>
-                        <th>Students</th>
-                        <th>Relationship</th>
-                        <th class="@if (!auth()->user()->hasRole('admin')) d-none @endif">Branch</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="text-gray-600 fw-semibold">
-                    @foreach ($guardians as $guardian)
-                        <tr>
-                            <td class="pe-2">{{ $loop->index + 1 }}</td>
-                            <td class="text-center align-middle">
-                                <div class="d-inline-flex align-items-center w-200px">
-                                    <!--begin:: Avatar -->
-                                    {{-- <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
+            <!--begin::Card body-->
+            <div class="card-body pt-0">
+                <!--begin::Table-->
+                <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_guardians_table">
+                    <thead>
+                        <tr class="fw-bold fs-7 text-uppercase gs-0">
+                            <th class="w-25px">SL</th>
+                            <th class="">Name</th>
+                            <th class="d-none">Gender (filter)</th>
+                            <th>Gender</th>
+                            <th>Students</th>
+                            <th>Relationship</th>
+                            <th class="@if (!auth()->user()->hasRole('admin')) d-none @endif">Branch</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-600 fw-semibold">
+                        @foreach ($guardians as $guardian)
+                            <tr>
+                                <td class="pe-2">{{ $loop->index + 1 }}</td>
+                                <td class="text-center align-middle">
+                                    <div class="d-inline-flex align-items-center w-200px">
+                                        <!--begin:: Avatar -->
+                                        {{-- <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
                                         <div class="symbol-label">
                                             <img src="{{ asset($guardian->gender == 'male' ? 'img/male.png' : 'img/female.png') }}"
                                                 alt="{{ $guardian->name }}" class="w-100" />
                                         </div>
                                     </div> --}}
-                                    <!--end::Avatar-->
+                                        <!--end::Avatar-->
 
-                                    <!--begin::user details-->
-                                    <div class="d-flex flex-column text-start">
-                                        <span class="text-gray-800 mb-1 fs-5">{{ $guardian->name }}</span>
-                                        <span class="text-gray-600 fs-base">{{ $guardian->mobile_number }}</span>
+                                        <!--begin::user details-->
+                                        <div class="d-flex flex-column text-start">
+                                            <span class="text-gray-800 mb-1 fs-5">{{ $guardian->name }}</span>
+                                            <span class="text-gray-600 fs-base">{{ $guardian->mobile_number }}</span>
+                                        </div>
+                                        <!--end::user details-->
                                     </div>
-                                    <!--end::user details-->
-                                </div>
-                            </td>
+                                </td>
 
-                            <td class="d-none">gd_{{ $guardian->gender }}</td>
-                            <td>
-                                @if ($guardian->gender == 'male')
-                                    <i class="las la-mars"></i>
-                                    {{ ucfirst($guardian->gender) }}
-                                @else
-                                    <i class="las la-venus"></i>
-                                    {{ ucfirst($guardian->gender) }}
-                                @endif
-                            </td>
-                            <td>
-                                @if ($guardian->student)
-                                    <a href="{{ route('students.show', $guardian->student->id) }}">
-                                        <span class="text-hover-success fs-6">
-                                            {{ $guardian->student->name }},
-                                            {{ $guardian->student->student_unique_id }}
-                                        </span>
-                                    </a>
-                                @else
-                                    <span class="badge badge-light-danger">No Student Assigned</span>
-                                @endif
-                            </td>
-                            <td>
-                                {{ ucfirst($guardian->relationship) }}
-                            </td>
-                            <td class="@if (!auth()->user()->hasRole('admin')) d-none @endif">
-                                @if ($guardian->student && $guardian->student->branch)
-                                    @php
-                                        $branchName = $guardian->student->branch->branch_name;
-                                        $badgeColor = $branchColors[$branchName] ?? 'badge-light-secondary'; // Default color
-                                    @endphp
-                                    <span class="badge {{ $badgeColor }}">{{ $branchName }}</span>
-                                @else
-                                    <span class="badge badge-light-danger">No Branch Assigned</span>
-                                @endif
-                            </td>
-                            <td>
-                                @can('guardians.edit')
-                                    <a href="#" title="Edit Guardian" data-bs-toggle="modal"
-                                        data-bs-target="#kt_modal_edit_guardian" data-guardian-id="{{ $guardian->id }}"
-                                        class="btn btn-icon text-hover-primary w-30px h-30px">
-                                        <i class="ki-outline ki-pencil fs-2"></i>
-                                    </a>
-                                @endcan
+                                <td class="d-none">gd_{{ $guardian->gender }}</td>
+                                <td>
+                                    @if ($guardian->gender == 'male')
+                                        <i class="las la-mars"></i>
+                                        {{ ucfirst($guardian->gender) }}
+                                    @else
+                                        <i class="las la-venus"></i>
+                                        {{ ucfirst($guardian->gender) }}
+                                    @endif
+                                </td>
+                                <td>
+                                    @if ($guardian->student)
+                                        <a href="{{ route('students.show', $guardian->student->id) }}">
+                                            <span class="text-hover-success fs-6">
+                                                {{ $guardian->student->name }},
+                                                {{ $guardian->student->student_unique_id }}
+                                            </span>
+                                        </a>
+                                    @else
+                                        <span class="badge badge-light-danger">No Student Assigned</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    {{ ucfirst($guardian->relationship) }}
+                                </td>
+                                <td class="@if (!auth()->user()->hasRole('admin')) d-none @endif">
+                                    @if ($guardian->student && $guardian->student->branch)
+                                        @php
+                                            $branchName = $guardian->student->branch->branch_name;
+                                            $badgeColor = $branchColors[$branchName] ?? 'badge-light-secondary'; // Default color
+                                        @endphp
+                                        <span class="badge {{ $badgeColor }}">{{ $branchName }}</span>
+                                    @else
+                                        <span class="badge badge-light-danger">No Branch Assigned</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @can('guardians.edit')
+                                        <a href="#" title="Edit Guardian" data-bs-toggle="modal"
+                                            data-bs-target="#kt_modal_edit_guardian" data-guardian-id="{{ $guardian->id }}"
+                                            class="btn btn-icon text-hover-primary w-30px h-30px">
+                                            <i class="ki-outline ki-pencil fs-2"></i>
+                                        </a>
+                                    @endcan
 
-                                @can('guardians.delete')
-                                    <a href="#" title="Delete Guardian" data-bs-toggle="tooltip"
-                                        class="btn btn-icon text-hover-danger w-30px h-30px delete-guardian"
-                                        data-guardian-id="{{ $guardian->id }}">
-                                        <i class="ki-outline ki-trash fs-2"></i>
-                                    </a>
-                                @endcan
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-            <!--end::Table-->
+                                    @can('guardians.delete')
+                                        <a href="#" title="Delete Guardian" data-bs-toggle="tooltip"
+                                            class="btn btn-icon text-hover-danger w-30px h-30px delete-guardian"
+                                            data-guardian-id="{{ $guardian->id }}">
+                                            <i class="ki-outline ki-trash fs-2"></i>
+                                        </a>
+                                    @endcan
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                <!--end::Table-->
+            </div>
+            <!--end::Card body-->
         </div>
-        <!--end::Card body-->
+        <!--end::Card-->
     </div>
-    <!--end::Card-->
 
     <!--begin::Modal - Edit Guardian-->
     <div class="modal fade" id="kt_modal_edit_guardian" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
