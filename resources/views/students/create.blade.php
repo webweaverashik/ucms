@@ -634,33 +634,25 @@
                             <!--end::Label-->
                             {{-- Sibling - 1 --}}
                             <div class="form-group row mb-3 border border-dashed px-2 py-3 rounded">
-                                <div class="col-md-4 fv-row">
+                                <div class="col-md-3 fv-row">
                                     <label class="form-label">Name</label>
                                     <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
                                         placeholder="Enter full name" name="sibling_1_name" />
                                 </div>
-                                <div class="col-md-1 fv-row">
-                                    <label class="form-label">Age (Y)</label>
-                                    <input type="number" class="form-control form-control-solid mb-2 mb-md-0"
-                                        min="6" max="20" name="sibling_1_age" />
-                                </div>
-                                <div class="col-md-1 fv-row">
-                                    <label class="form-label">Class</label>
+                                <div class="col-md-2 fv-row">
+                                    <label class="form-label">Class/Age</label>
                                     <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
                                         maxlength="15" name="sibling_1_class" />
                                 </div>
+                                <div class="col-md-1 fv-row">
+                                    <label class="form-label">Year</label>
+                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
+                                        name="sibling_1_year" />
+                                </div>
                                 <div class="col-md-4 fv-row">
                                     <label class="form-label">Instituition</label>
-                                    <select name="sibling_1_institution" class="form-select form-select-solid"
-                                        data-allow-clear="true" data-control="select2"
-                                        data-placeholder="Select an instituition">
-                                        <option></option>
-                                        @foreach ($institutions as $institution)
-                                            <option value="{{ $institution->id }}">{{ $institution->name }}
-                                                (EIIN: {{ $institution->eiin_number }})
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
+                                        placeholder="Enter instituition name" name="sibling_1_institution" />
                                 </div>
                                 <div class="col-md-2 fv-row">
                                     <!--begin::Label-->
@@ -682,33 +674,25 @@
 
                             {{-- Sibling - 2 --}}
                             <div class="form-group row mb-3 border border-dashed px-2 py-3 rounded">
-                                <div class="col-md-4 fv-row">
+                                <div class="col-md-3 fv-row">
                                     <label class="form-label">Name</label>
                                     <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
                                         placeholder="Enter full name" name="sibling_2_name" />
                                 </div>
-                                <div class="col-md-1 fv-row">
-                                    <label class="form-label">Age (Y)</label>
-                                    <input type="number" class="form-control form-control-solid mb-2 mb-md-0"
-                                        min="6" max="20" name="sibling_2_age" />
-                                </div>
-                                <div class="col-md-1 fv-row">
-                                    <label class="form-label">Class</label>
+                                <div class="col-md-2 fv-row">
+                                    <label class="form-label">Class/Age</label>
                                     <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
                                         maxlength="15" name="sibling_2_class" />
                                 </div>
+                                <div class="col-md-1 fv-row">
+                                    <label class="form-label">Year</label>
+                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
+                                        name="sibling_2_year" />
+                                </div>
                                 <div class="col-md-4 fv-row">
                                     <label class="form-label">Instituition</label>
-                                    <select name="sibling_2_institution" class="form-select form-select-solid"
-                                        data-allow-clear="true" data-control="select2"
-                                        data-placeholder="Select an instituition">
-                                        <option></option>
-                                        @foreach ($institutions as $institution)
-                                            <option value="{{ $institution->id }}">{{ $institution->name }}
-                                                (EIIN: {{ $institution->eiin_number }})
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
+                                        placeholder="Enter instituition name" name="sibling_2_institution" />
                                 </div>
                                 <div class="col-md-2 fv-row">
                                     <!--begin::Label-->
@@ -848,7 +832,7 @@
                                         class="form-select form-select-solid rounded-start-0 border-start"
                                         data-control="select2" data-placeholder="Select an instituition" required>
                                         <option></option>
-                                    
+
                                     </select>
                                 </div>
                             </div>

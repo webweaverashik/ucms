@@ -125,7 +125,7 @@
                         <div class="d-flex align-items-center">
                             <!--begin::Avatar-->
                             <div class="symbol symbol-60px symbol-circle me-3">
-                                <img src="{{ $student->photo_url ?? asset($student->gender == 'male' ? 'img/male.png' : 'img/female.png')}}"
+                                <img src="{{ $student->photo_url ?? asset($student->gender == 'male' ? 'img/male.png' : 'img/female.png') }}"
                                     alt="{{ $student->name }}" />
                             </div>
                             <!--end::Avatar-->
@@ -748,7 +748,7 @@
                                         <div class="card card-dashed h-xl-100 flex-row flex-wrap p-6 align-items-center">
                                             <!--begin::Photo-->
                                             <div class="symbol symbol-60px me-5">
-                                                <img src="{{ $sibling->photo_url ?? asset($sibling->relationship == 'brother' ? 'img/male.png' : 'img/female.png') }}"
+                                                <img src="{{ asset($sibling->relationship == 'brother' ? 'img/male.png' : 'img/female.png') }}"
                                                     alt="{{ $sibling->name }}">
                                             </div>
                                             <!--end::Photo-->
@@ -760,8 +760,9 @@
                                                         class="ms-5 text-gray-600 fs-7    fw-semibold">{{ ucfirst($sibling->relationship) }}</span>
                                                 </div>
                                                 <div class="fs-6 fw-semibold text-gray-600">
-                                                    Class: {{ $sibling->class }}<br>
-                                                    School: @if ($sibling->institution) {{ $sibling->institution->name }} @endif
+                                                    Class/Age: {{ $sibling->class }}<br>
+                                                    Year: {{ $sibling->year }}<br>
+                                                    School: {{ $sibling->institution_name }}
                                                 </div>
                                             </div>
                                             <!--end::Details-->

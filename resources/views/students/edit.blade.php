@@ -678,37 +678,29 @@
 
                             {{-- Sibling - 1 --}}
                             <div class="form-group row mb-3 border border-dashed px-2 py-3 rounded">
-                                <div class="col-md-4 fv-row">
+                                <div class="col-md-3 fv-row">
                                     <label class="form-label">Name</label>
                                     <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
                                         placeholder="Enter full name" name="sibling_1_name"
                                         value="{{ isset($student->siblings[0]) ? $student->siblings[0]->name : '' }}" />
                                 </div>
-                                <div class="col-md-1 fv-row">
-                                    <label class="form-label">Age (Y)</label>
-                                    <input type="number" class="form-control form-control-solid mb-2 mb-md-0"
-                                        min="6" max="20" name="sibling_1_age"
-                                        value="{{ isset($student->siblings[0]) ? $student->siblings[0]->age : '' }}" />
-                                </div>
-                                <div class="col-md-1 fv-row">
-                                    <label class="form-label">Class</label>
+                                <div class="col-md-2 fv-row">
+                                    <label class="form-label">Class/Age</label>
                                     <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
                                         name="sibling_1_class"
                                         value="{{ isset($student->siblings[0]) ? $student->siblings[0]->class : '' }}" />
                                 </div>
+                                <div class="col-md-1 fv-row">
+                                    <label class="form-label">Year</label>
+                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
+                                        name="sibling_1_year"
+                                        value="{{ isset($student->siblings[0]) ? $student->siblings[0]->year : '' }}" />
+                                </div>
                                 <div class="col-md-4 fv-row">
                                     <label class="form-label">Instituition</label>
-                                    <select name="sibling_1_institution" class="form-select form-select-solid"
-                                        data-allow-clear="true" data-control="select2"
-                                        data-placeholder="Select an instituition">
-                                        <option></option>
-                                        @foreach ($institutions as $institution)
-                                            <option value="{{ $institution->id }}"
-                                                {{ isset($student->siblings[0]) && $student->siblings[0]->institution_id == $institution->id ? 'selected' : '' }}>
-                                                {{ $institution->name }} (EIIN: {{ $institution->eiin_number }})
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
+                                        placeholder="Enter instituition name" name="sibling_1_institution"
+                                        value="{{ isset($student->siblings[0]) ? $student->siblings[0]->institution_name : '' }}" />
                                 </div>
                                 <div class="col-md-2 fv-row">
                                     <!--begin::Label-->
@@ -734,37 +726,29 @@
 
                             {{-- Sibling - 2 --}}
                             <div class="form-group row mb-3 border border-dashed px-2 py-3 rounded">
-                                <div class="col-md-4 fv-row">
+                                <div class="col-md-3 fv-row">
                                     <label class="form-label">Name</label>
                                     <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
                                         placeholder="Enter full name" name="sibling_2_name"
                                         value="{{ isset($student->siblings[1]) ? $student->siblings[1]->name : '' }}" />
                                 </div>
-                                <div class="col-md-1 fv-row">
-                                    <label class="form-label">Age (Y)</label>
-                                    <input type="number" class="form-control form-control-solid mb-2 mb-md-0"
-                                        min="6" max="20" name="sibling_2_age"
-                                        value="{{ isset($student->siblings[1]) ? $student->siblings[1]->age : '' }}" />
-                                </div>
-                                <div class="col-md-1 fv-row">
-                                    <label class="form-label">Class</label>
+                                <div class="col-md-2 fv-row">
+                                    <label class="form-label">Class/Age</label>
                                     <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
                                         name="sibling_2_class"
                                         value="{{ isset($student->siblings[1]) ? $student->siblings[1]->class : '' }}" />
                                 </div>
+                                <div class="col-md-1 fv-row">
+                                    <label class="form-label">Year</label>
+                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
+                                        name="sibling_2_year"
+                                        value="{{ isset($student->siblings[1]) ? $student->siblings[1]->year : '' }}" />
+                                </div>
                                 <div class="col-md-4 fv-row">
                                     <label class="form-label">Instituition</label>
-                                    <select name="sibling_2_institution" class="form-select form-select-solid"
-                                        data-allow-clear="true" data-control="select2"
-                                        data-placeholder="Select an instituition">
-                                        <option></option>
-                                        @foreach ($institutions as $institution)
-                                            <option value="{{ $institution->id }}"
-                                                {{ isset($student->siblings[1]) && $student->siblings[1]->institution_id == $institution->id ? 'selected' : '' }}>
-                                                {{ $institution->name }} (EIIN: {{ $institution->eiin_number }})
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                    <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
+                                        placeholder="Enter instituition name" name="sibling_2_institution"
+                                        value="{{ isset($student->siblings[1]) ? $student->siblings[1]->institution_name : '' }}" />
                                 </div>
                                 <div class="col-md-2 fv-row">
                                     <!--begin::Label-->
@@ -1274,5 +1258,5 @@
     <script src="{{ asset('js/students/ajax-subjects-update.js') }}"></script>
 
     {{-- Student admission form ajax activities --}}
-    <script src="{{ asset('js/students/update.js') }}"></script>
+    <script src="{{ asset('js/students/edit.js') }}"></script>
 @endpush

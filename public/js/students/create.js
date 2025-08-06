@@ -492,7 +492,7 @@ var KTCreateStudent = function () {
                                         message: 'Name is required',
                                         callback: function (input) {
                                              const name = input.value.trim();
-                                             const age = form.querySelector('[name="sibling_1_age"]').value.trim();
+                                             const age = form.querySelector('[name="sibling_1_year"]').value.trim();
                                              const cls = form.querySelector('[name="sibling_1_class"]').value.trim();
                                              const inst = form.querySelector('[name="sibling_1_institution"]').value.trim();
                                              const rel = form.querySelector('[name="sibling_1_relationship"]').value.trim();
@@ -502,7 +502,7 @@ var KTCreateStudent = function () {
                                    }
                               }
                          },
-                         'sibling_1_age': {
+                         'sibling_1_year': {
                               validators: {
                                    callback: {
                                         message: 'Required',
@@ -524,7 +524,7 @@ var KTCreateStudent = function () {
                                         message: 'Required',
                                         callback: function (input) {
                                              const name = form.querySelector('[name="sibling_1_name"]').value.trim();
-                                             const age = form.querySelector('[name="sibling_1_age"]').value.trim();
+                                             const age = form.querySelector('[name="sibling_1_year"]').value.trim();
                                              const cls = input.value.trim();
                                              const inst = form.querySelector('[name="sibling_1_institution"]').value.trim();
                                              const rel = form.querySelector('[name="sibling_1_relationship"]').value.trim();
@@ -540,7 +540,7 @@ var KTCreateStudent = function () {
                                         message: 'Institution is required',
                                         callback: function (input) {
                                              const name = form.querySelector('[name="sibling_1_name"]').value.trim();
-                                             const age = form.querySelector('[name="sibling_1_age"]').value.trim();
+                                             const age = form.querySelector('[name="sibling_1_year"]').value.trim();
                                              const cls = form.querySelector('[name="sibling_1_class"]').value.trim();
                                              const inst = input.value.trim();
                                              const rel = form.querySelector('[name="sibling_1_relationship"]').value.trim();
@@ -556,7 +556,7 @@ var KTCreateStudent = function () {
                                         message: 'Required',
                                         callback: function (input) {
                                              const name = form.querySelector('[name="sibling_1_name"]').value.trim();
-                                             const age = form.querySelector('[name="sibling_1_age"]').value.trim();
+                                             const age = form.querySelector('[name="sibling_1_year"]').value.trim();
                                              const cls = form.querySelector('[name="sibling_1_class"]').value.trim();
                                              const inst = form.querySelector('[name="sibling_1_institution"]').value.trim();
                                              const rel = input.value.trim();
@@ -574,7 +574,7 @@ var KTCreateStudent = function () {
                                         message: 'Name is required',
                                         callback: function (input) {
                                              const name = input.value.trim();
-                                             const age = form.querySelector('[name="sibling_2_age"]').value.trim();
+                                             const age = form.querySelector('[name="sibling_2_year"]').value.trim();
                                              const cls = form.querySelector('[name="sibling_2_class"]').value.trim();
                                              const inst = form.querySelector('[name="sibling_2_institution"]').value.trim();
                                              const rel = form.querySelector('[name="sibling_2_relationship"]').value.trim();
@@ -584,7 +584,7 @@ var KTCreateStudent = function () {
                                    }
                               }
                          },
-                         'sibling_2_age': {
+                         'sibling_2_year': {
                               validators: {
                                    callback: {
                                         message: 'Required',
@@ -606,7 +606,7 @@ var KTCreateStudent = function () {
                                         message: 'Required',
                                         callback: function (input) {
                                              const name = form.querySelector('[name="sibling_2_name"]').value.trim();
-                                             const age = form.querySelector('[name="sibling_2_age"]').value.trim();
+                                             const age = form.querySelector('[name="sibling_2_year"]').value.trim();
                                              const cls = input.value.trim();
                                              const inst = form.querySelector('[name="sibling_2_institution"]').value.trim();
                                              const rel = form.querySelector('[name="sibling_2_relationship"]').value.trim();
@@ -622,7 +622,7 @@ var KTCreateStudent = function () {
                                         message: 'Institution is required',
                                         callback: function (input) {
                                              const name = form.querySelector('[name="sibling_2_name"]').value.trim();
-                                             const age = form.querySelector('[name="sibling_2_age"]').value.trim();
+                                             const age = form.querySelector('[name="sibling_2_year"]').value.trim();
                                              const cls = form.querySelector('[name="sibling_2_class"]').value.trim();
                                              const inst = input.value.trim();
                                              const rel = form.querySelector('[name="sibling_2_relationship"]').value.trim();
@@ -638,7 +638,7 @@ var KTCreateStudent = function () {
                                         message: 'Required',
                                         callback: function (input) {
                                              const name = form.querySelector('[name="sibling_2_name"]').value.trim();
-                                             const age = form.querySelector('[name="sibling_2_age"]').value.trim();
+                                             const age = form.querySelector('[name="sibling_2_year"]').value.trim();
                                              const cls = form.querySelector('[name="sibling_2_class"]').value.trim();
                                              const inst = form.querySelector('[name="sibling_2_institution"]').value.trim();
                                              const rel = input.value.trim();

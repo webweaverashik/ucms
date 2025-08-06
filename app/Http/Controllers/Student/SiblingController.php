@@ -2,7 +2,6 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
-use App\Models\Academic\Institution;
 use App\Models\Branch;
 use App\Models\Student\Sibling;
 use App\Models\Student\Student;
@@ -24,21 +23,20 @@ class SiblingController extends Controller
         $siblings = Sibling::with([
             'student:id,name,student_unique_id,branch_id',
             'student.branch:id,branch_name',
-            'institution:id,name,eiin_number',
         ])
             ->when($userBranchId != 0, function ($query) use ($userBranchId) {
                 $query->whereHas('student', fn($q) => $q->where('branch_id', $userBranchId));
             })
-            ->get(['id', 'name', 'age', 'class', 'relationship', 'student_id', 'institution_id']);
+            ->latest('id')
+            ->get(['id', 'name', 'year', 'class', 'relationship', 'student_id', 'institution_name']);
 
         $students = Student::when($userBranchId != 0, fn($q) => $q->where('branch_id', $userBranchId))
             ->orderBy('student_unique_id')
             ->get();
 
-        $branches     = Branch::all();
-        $institutions = Institution::all();
+        $branches = Branch::all();
 
-        return view('siblings.index', compact('siblings', 'branches', 'students', 'institutions'));
+        return view('siblings.index', compact('siblings', 'branches', 'students'));
     }
 
     /**
@@ -69,13 +67,13 @@ class SiblingController extends Controller
         return response()->json([
             'success' => true,
             'data'    => [
-                'id'             => $sibling->id,
-                'student_id'     => $sibling->student_id,
-                'name'           => $sibling->name,
-                'age'            => $sibling->age,
-                'class'          => $sibling->class,
-                'institution_id' => $sibling->institution_id,
-                'relationship'   => $sibling->relationship,
+                'id'               => $sibling->id,
+                'student_id'       => $sibling->student_id,
+                'name'             => $sibling->name,
+                'year'             => $sibling->year,
+                'class'            => $sibling->class,
+                'institution_name' => $sibling->institution_name,
+                'relationship'     => $sibling->relationship,
             ],
         ]);
     }
@@ -94,11 +92,10 @@ class SiblingController extends Controller
     public function update(Request $request, string $id)
     {
         $validated = $request->validate([
-                                                                 // 'sibling_student'       => 'required|exists:students,id', // Must be a valid student ID
-            'sibling_name'         => 'required|string|max:255', // Required, must be a string, max length 255
-            'sibling_age'          => 'required|integer|min:1|max:20',
+            'sibling_name'         => 'required|string|max:255',
+            'sibling_year'         => 'required|string',
             'sibling_class'        => 'required|string',
-            'sibling_institution'  => 'required|integer|exists:institutions,id',
+            'sibling_institution'  => 'required|string',
             'sibling_relationship' => 'required|string|in:brother,sister',
         ]);
 
@@ -107,11 +104,11 @@ class SiblingController extends Controller
         // Prepare data for update
         $updateData = [
             // 'student_id'    => $validated['guardian_student'],
-            'name'           => $validated['sibling_name'],
-            'age'            => $validated['sibling_age'],
-            'class'          => $validated['sibling_class'],
-            'institution_id' => $validated['sibling_institution'],
-            'relationship'   => $validated['sibling_relationship'],
+            'name'             => $validated['sibling_name'],
+            'year'             => $validated['sibling_year'],
+            'class'            => $validated['sibling_class'],
+            'institution_name' => $validated['sibling_institution'],
+            'relationship'     => $validated['sibling_relationship'],
         ];
 
         // Update the guardian record

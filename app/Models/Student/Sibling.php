@@ -13,17 +13,11 @@ class Sibling extends Model
 
     protected $table = 'siblings';
 
-    protected $fillable = ['name', 'age', 'class', 'institution_id', 'student_id', 'relationship', 'deleted_by'];
+    protected $fillable = ['name', 'year', 'class', 'institution_name', 'student_id', 'relationship', 'deleted_by'];
 
     // Get the student of the current sibling
     public function student()
     {
         return $this->belongsTo(Student::class, 'student_id');
-    }
-
-    // Get the institution associated with this sibling
-    public function institution()
-    {
-        return $this->belongsTo(Institution::class, 'institution_id');
     }
 }

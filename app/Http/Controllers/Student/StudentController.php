@@ -165,14 +165,14 @@ class StudentController extends Controller
 
             // Siblings Table Fields (Up to 2)
             'sibling_1_name'          => 'nullable|string|max:255',
-            'sibling_1_age'           => 'nullable|integer|min:1|max:20',
+            'sibling_1_year'          => 'nullable|string',
             'sibling_1_class'         => 'nullable|string',
-            'sibling_1_institution'   => 'nullable|integer|exists:institutions,id',
+            'sibling_1_institution'   => 'nullable|string',
             'sibling_1_relationship'  => 'nullable|string|in:brother,sister',
             'sibling_2_name'          => 'nullable|string|max:255',
-            'sibling_2_age'           => 'nullable|integer|min:1|max:20',
+            'sibling_2_year'          => 'nullable|string',
             'sibling_2_class'         => 'nullable|string',
-            'sibling_2_institution'   => 'nullable|integer|exists:institutions,id',
+            'sibling_2_institution'   => 'nullable|string',
             'sibling_2_relationship'  => 'nullable|string|in:brother,sister',
 
             // Reference
@@ -281,12 +281,12 @@ class StudentController extends Controller
             for ($i = 1; $i <= 2; $i++) {
                 if (! empty($validated["sibling_{$i}_name"])) {
                     Sibling::create([
-                        'student_id'     => $student->id,
-                        'name'           => $validated["sibling_{$i}_name"],
-                        'age'            => $validated["sibling_{$i}_age"],
-                        'class'          => $validated["sibling_{$i}_class"],
-                        'institution_id' => $validated["sibling_{$i}_institution"],
-                        'relationship'   => $validated["sibling_{$i}_relationship"],
+                        'student_id'       => $student->id,
+                        'name'             => $validated["sibling_{$i}_name"],
+                        'year'             => $validated["sibling_{$i}_year"],
+                        'class'            => $validated["sibling_{$i}_class"],
+                        'institution_name' => $validated["sibling_{$i}_institution"],
+                        'relationship'     => $validated["sibling_{$i}_relationship"],
                     ]);
                 }
             }
@@ -505,16 +505,16 @@ class StudentController extends Controller
             // Siblings Table Fields (Up to 2)
             'sibling_1_id'            => 'nullable|integer|exists:siblings,id',
             'sibling_1_name'          => 'nullable|string|max:255',
-            'sibling_1_age'           => 'nullable|integer|min:1|max:20',
+            'sibling_1_year'          => 'nullable|string',
             'sibling_1_class'         => 'nullable|string',
-            'sibling_1_institution'   => 'nullable|integer|exists:institutions,id',
+            'sibling_1_institution'   => 'nullable|string',
             'sibling_1_relationship'  => 'nullable|string|in:brother,sister',
 
             'sibling_2_id'            => 'nullable|integer|exists:siblings,id',
             'sibling_2_name'          => 'nullable|string|max:255',
-            'sibling_2_age'           => 'nullable|integer|min:1|max:20',
+            'sibling_2_year'          => 'nullable|string',
             'sibling_2_class'         => 'nullable|string',
-            'sibling_2_institution'   => 'nullable|integer|exists:institutions,id',
+            'sibling_2_institution'   => 'nullable|string',
             'sibling_2_relationship'  => 'nullable|string|in:brother,sister',
         ]);
 
@@ -601,23 +601,23 @@ class StudentController extends Controller
             foreach ([1, 2] as $i) {
                 $siblingId   = $validated["sibling_{$i}_id"] ?? null;
                 $name        = $validated["sibling_{$i}_name"] ?? null;
-                $age         = $validated["sibling_{$i}_age"] ?? null;
+                $year        = $validated["sibling_{$i}_year"] ?? null;
                 $class       = $validated["sibling_{$i}_class"] ?? null;
                 $institution = $validated["sibling_{$i}_institution"] ?? null;
                 $relation    = $validated["sibling_{$i}_relationship"] ?? null;
 
-                $allFieldsEmpty = ! $name && ! $age && ! $class && ! $institution && ! $relation;
+                $allFieldsEmpty = ! $name && ! $year && ! $class && ! $institution && ! $relation;
 
                 if ($siblingId && ! $allFieldsEmpty) {
                     // Update existing sibling
                     $sibling = Sibling::find($siblingId);
                     if ($sibling) {
                         $sibling->update([
-                            'name'           => $name,
-                            'age'            => $age,
-                            'class'          => $class,
-                            'institution_id' => $institution,
-                            'relationship'   => $relation,
+                            'name'             => $name,
+                            'year'             => $year,
+                            'class'            => $class,
+                            'institution_name' => $institution,
+                            'relationship'     => $relation,
                         ]);
                     }
                 } elseif ($siblingId && $allFieldsEmpty) {
@@ -626,11 +626,11 @@ class StudentController extends Controller
                 } elseif (! $siblingId && ! $allFieldsEmpty) {
                     // Create new sibling if no ID but fields are filled
                     $student->siblings()->create([
-                        'name'           => $name,
-                        'age'            => $age,
-                        'class'          => $class,
-                        'institution_id' => $institution,
-                        'relationship'   => $relation,
+                        'name'             => $name,
+                        'year'             => $year,
+                        'class'            => $class,
+                        'institution_name' => $institution,
+                        'relationship'     => $relation,
                     ]);
                 }
             }

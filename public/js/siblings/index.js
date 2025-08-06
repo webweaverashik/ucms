@@ -154,7 +154,7 @@ var KTSiblingsList = function () {
 }();
 
 
-var KTSiblingsEditSibling = function () {
+var KTSiblingsEdit = function () {
     // Shared variables
     const element = document.getElementById('kt_modal_edit_sibling');
 
@@ -225,13 +225,13 @@ var KTSiblingsEditSibling = function () {
 
                         setValue("select[name='sibling_student']", sibling.student_id);
                         setValue("input[name='sibling_name']", sibling.name);
-                        setValue("input[name='sibling_age']", sibling.age);
+                        setValue("input[name='sibling_year']", sibling.year);
                         setValue("input[name='sibling_class']", sibling.class);
-                        setValue("select[name='sibling_institution']", sibling.institution_id);
+                        setValue("input[name='sibling_institution']", sibling.institution_name);
                         setValue("select[name='sibling_relationship']", sibling.relationship);
 
                         // Trigger change events
-                        ["sibling_student", "sibling_institution", "sibling_relationship"].forEach(name => {
+                        ["sibling_student", "sibling_relationship"].forEach(name => {
                             const el = document.querySelector(`select[name='${name}']`);
                             if (el) el.dispatchEvent(new Event("change"));
                         });
@@ -272,7 +272,7 @@ var KTSiblingsEditSibling = function () {
                             }
                         }
                     },
-                    'sibling_age': {
+                    'sibling_year': {
                         validators: {
                             notEmpty: {
                                 message: 'Please, mention the age.'
@@ -382,5 +382,5 @@ var KTSiblingsEditSibling = function () {
 // On document ready
 KTUtil.onDOMContentLoaded(function () {
     KTSiblingsList.init();
-    KTSiblingsEditSibling.init();
+    KTSiblingsEdit.init();
 });

@@ -64,8 +64,8 @@
                 <!--begin::Search-->
                 <div class="d-flex align-items-center position-relative my-1">
                     <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
-                        data-kt-siblings-table-filter="search" class="form-control form-control-solid w-250px w-sm-400px ps-12"
-                        placeholder="Search in sibling">
+                        data-kt-siblings-table-filter="search"
+                        class="form-control form-control-solid w-250px w-sm-400px ps-12" placeholder="Search in sibling">
                 </div>
                 <!--end::Search-->
             </div>
@@ -153,8 +153,8 @@
                         <th class="d-none">Gender (filter)</th>
                         <th>Gender</th>
                         <th>Students</th>
-                        <th>Age</th>
-                        <th>Class</th>
+                        <th>Class/Age</th>
+                        <th>Year</th>
                         <th>Institution</th>
                         <th>Relationship</th>
                         <th class="@if (!auth()->user()->hasRole('admin')) d-none @endif">Branch</th>
@@ -166,9 +166,7 @@
                         <tr>
                             <td class="pe-2">{{ $loop->index + 1 }}</td>
                             <td class="text-gray-800">
-                                <!--begin::user details-->
                                 {{ $sibling->name }}
-                                <!--begin::user details-->
                             </td>
                             <td class="d-none">gd_{{ $sibling->relationship }}</td>
                             <td>
@@ -193,13 +191,13 @@
                                 @endif
                             </td>
                             <td>
-                                {{ $sibling->age }}
-                            </td>
-                            <td>
                                 {{ $sibling->class }}
                             </td>
                             <td>
-                                @if ($sibling->institution) {{ $sibling->institution->name }} (EIIN: {{ $sibling->institution->eiin_number }}) @endif
+                                {{ $sibling->year }}
+                            </td>
+                            <td>
+                                {{ $sibling->institution_name }}
                             </td>
                             <td>
                                 {{ ucfirst($sibling->relationship) }}
@@ -273,126 +271,122 @@
                             data-kt-scroll-dependencies="#kt_modal_edit_sibling_header"
                             data-kt-scroll-wrappers="#kt_modal_edit_sibling_scroll" data-kt-scroll-offset="300px">
 
-                            <!--begin::Student Input group-->
-                            <div class="fv-row mb-7">
-                                <!--begin::Label-->
-                                <label class="form-label">
-                                    <span>Corrosponding Student</span>
-                                    <span class="ms-1" data-bs-toggle="tooltip" title="Student cannot be changed.">
-                                        <i class="ki-outline ki-information-5 text-gray-500 fs-6">
-                                        </i>
-                                    </span>
-                                </label>
-                                <!--end::Label-->
+                            <div class="row">
 
-                                <!--begin::Solid input group style-->
-                                <div class="input-group input-group-solid flex-nowrap">
-                                    <span class="input-group-text">
-                                        <i class="las la-graduation-cap fs-3"></i>
-                                    </span>
-                                    <div class="overflow-hidden flex-grow-1">
-                                        <select name="sibling_student"
-                                            class="form-select form-select-solid rounded-start-0 border-start"
-                                            data-control="select2" data-dropdown-parent="#kt_modal_edit_sibling"
-                                            data-placeholder="Select an option" disabled>
-                                            <option></option>
-                                            @foreach ($students as $student)
-                                                <option value="{{ $student->id }}">{{ $student->name }}
-                                                    (ID: {{ $student->student_unique_id }})
-                                                </option>
-                                            @endforeach
-                                        </select>
+                                <!--begin::Student Input group-->
+                                <div class="col-12 fv-row mb-7">
+                                    <!--begin::Label-->
+                                    <label class="form-label">
+                                        <span>Corrosponding Student</span>
+                                        <span class="ms-1" data-bs-toggle="tooltip" title="Student cannot be changed.">
+                                            <i class="ki-outline ki-information-5 text-gray-500 fs-6">
+                                            </i>
+                                        </span>
+                                    </label>
+                                    <!--end::Label-->
+
+                                    <!--begin::Solid input group style-->
+                                    <div class="input-group input-group-solid flex-nowrap">
+                                        <span class="input-group-text">
+                                            <i class="las la-graduation-cap fs-3"></i>
+                                        </span>
+                                        <div class="overflow-hidden flex-grow-1">
+                                            <select name="sibling_student"
+                                                class="form-select form-select-solid rounded-start-0 border-start"
+                                                data-control="select2" data-dropdown-parent="#kt_modal_edit_sibling"
+                                                data-placeholder="Select an option" disabled>
+                                                <option></option>
+                                                @foreach ($students as $student)
+                                                    <option value="{{ $student->id }}">{{ $student->name }}
+                                                        (ID: {{ $student->student_unique_id }})
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
                                     </div>
+                                    <!--end::Solid input group style-->
                                 </div>
-                                <!--end::Solid input group style-->
-                            </div>
-                            <!--end::Student Input group-->
+                                <!--end::Student Input group-->
 
-                            <!--begin::Name Input group-->
-                            <div class="fv-row mb-7">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">Sibling Name</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <input type="text" name="sibling_name"
-                                    class="form-control form-control-solid mb-3 mb-lg-0" placeholder="Full Name"
-                                    required />
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Name Input group-->
+                                <!--begin::Name Input group-->
+                                <div class="col-12 fv-row mb-7">
+                                    <!--begin::Label-->
+                                    <label class="required fw-semibold fs-6 mb-2">Sibling Name</label>
+                                    <!--end::Label-->
+                                    <!--begin::Input-->
+                                    <input type="text" name="sibling_name"
+                                        class="form-control form-control-solid mb-3 mb-lg-0" placeholder="Full Name"
+                                        required />
+                                    <!--end::Input-->
+                                </div>
+                                <!--end::Name Input group-->
 
-                            <!--begin::Phone Input group-->
-                            <div class="fv-row mb-7">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">Sibling Age (Y)</label>
-                                <!--end::Label-->
-                                <!--begin::Input-->
-                                <input type="number" name="sibling_age" min="6" max="20"
-                                    class="form-control form-control-solid mb-3 mb-lg-0" placeholder="e.g. 8" required />
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Phone Input group-->
+                                <!--begin::Class/Age Input group-->
+                                <div class="col-6 fv-row mb-7">
+                                    <!--begin::Label-->
+                                    <label class="d-flex align-items-center form-label mb-3 required">Class/Age</label>
+                                    <!--end::Label-->
+                                    <!--begin::Row-->
+                                    <input type="text" name="sibling_class"
+                                        class="form-control form-control-solid mb-3 mb-lg-0" placeholder="e.g. Class 2"
+                                        required />
+                                    <!--end::Row-->
+                                </div>
+                                <!--end::Class/Age Input group-->
 
-                            <!--begin::Gender Input group-->
-                            <div class="fv-row mb-7">
-                                <!--begin::Label-->
-                                <label class="d-flex align-items-center form-label mb-3 required">Class</label>
-                                <!--end::Label-->
-                                <!--begin::Row-->
-                                <input type="text" name="sibling_class"
-                                    class="form-control form-control-solid mb-3 mb-lg-0" placeholder="e.g. Class 2"
-                                    required />
-                                <!--end::Row-->
-                            </div>
-                            <!--end::Gender Input group-->
+                                <!--begin::year Input group-->
+                                <div class="col-6 fv-row mb-7">
+                                    <!--begin::Label-->
+                                    <label class="required fw-semibold fs-6 mb-2">Year</label>
+                                    <!--end::Label-->
+                                    <!--begin::Input-->
+                                    <input type="text" name="sibling_year"
+                                        class="form-control form-control-solid mb-3 mb-lg-0" placeholder="e.g. 8"
+                                        required />
+                                    <!--end::Input-->
+                                </div>
+                                <!--end::year Input group-->
 
-                            <!--begin::Gender Input group-->
-                            <div class="fv-row mb-7">
-                                <!--begin::Label-->
-                                <label class="d-flex align-items-center form-label mb-3 required">Institution</label>
-                                <!--end::Label-->
+                                <!--begin::Institution Input group-->
+                                <div class="col-12 fv-row mb-7">
+                                    <!--begin::Label-->
+                                    <label class="d-flex align-items-center form-label mb-3 required">Institution</label>
+                                    <!--end::Label-->
 
-                                <!--begin::Row-->
-                                <div class="input-group input-group-solid flex-nowrap">
-                                    <span class="input-group-text">
-                                        <i class="las la-building fs-3"></i>
-                                    </span>
-                                    <div class="overflow-hidden flex-grow-1">
-                                        <select name="sibling_institution"
-                                            class="form-select form-select-solid rounded-start-0 border-start"
-                                            data-control="select2" data-dropdown-parent="#kt_modal_edit_sibling"
-                                            data-placeholder="Select an institution" data-allow-clear="true" required>
-                                            <option></option>
-                                            @foreach ($institutions as $institution)
-                                                <option value="{{ $institution->id }}">{{ $institution->name }}
-                                                    (EIIN: {{ $institution->eiin_number }})
-                                                </option>
-                                            @endforeach
-                                        </select>
+                                    <!--begin::Row-->
+                                    <div class="input-group input-group-solid flex-nowrap">
+                                        <span class="input-group-text">
+                                            <i class="las la-building fs-3"></i>
+                                        </span>
+                                        <div class="overflow-hidden flex-grow-1">
+                                            <input type="text" name="sibling_institution"
+                                                class="form-control form-control-solid rounded-start-0 border-start"
+                                                placeholder="Sibling institution name" required />
+                                        </div>
                                     </div>
+                                    <!--end::Row-->
                                 </div>
-                                <!--end::Row-->
+                                <!--end::Institution Input group-->
+
+                                <!--begin::Input group-->
+                                <div class="col-12 fv-row">
+                                    <!--begin::Label-->
+                                    <label class="form-label required">Relationship with student</label>
+                                    <!--end::Label-->
+
+                                    <!--begin::Solid input group style-->
+                                    <select name="sibling_relationship" class="form-select form-select-solid"
+                                        data-control="select2" data-hide-search="true"
+                                        data-placeholder="Select relationship" required>
+                                        <option></option>
+                                        <option value="brother">Brother</option>
+                                        <option value="sister">Sister</option>
+                                    </select>
+                                    <!--end::Solid input group style-->
+                                </div>
+                                <!--end::Input group-->
+
                             </div>
-                            <!--end::Gender Input group-->
-
-                            <!--begin::Input group-->
-                            <div class="fv-row">
-                                <!--begin::Label-->
-                                <label class="form-label required">Relationship with student</label>
-                                <!--end::Label-->
-
-                                <!--begin::Solid input group style-->
-                                <select name="sibling_relationship" class="form-select form-select-solid"
-                                    data-control="select2" data-hide-search="true" data-placeholder="Select relationship"
-                                    required>
-                                    <option></option>
-                                    <option value="brother">Brother</option>
-                                    <option value="sister">Sister</option>
-                                </select>
-                                <!--end::Solid input group style-->
-                            </div>
-                            <!--end::Input group-->
-
                         </div>
                         <!--end::Scroll-->
                         <!--begin::Actions-->
