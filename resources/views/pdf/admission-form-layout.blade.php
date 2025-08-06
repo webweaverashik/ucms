@@ -204,7 +204,7 @@
 
                 <label class="shrink-0 font-normal mr-2 whitespace-nowrap">DoB :</label>
                 <div class="shrink-0 border-b border-dotted border-black dotted-underline min-w-[70px] mr-2">
-                    {{ $student->date_of_birth->format('d/m/Y') }}
+                    {{ optional($student->date_of_birth)->format('d/m/Y') }}
                 </div>
 
                 <label class="shrink-0 ml-2 font-normal whitespace-nowrap">Gender :</label>
@@ -260,8 +260,8 @@
                 <thead>
                     <tr>
                         <th class="border border-black w-[25%]">Name</th>
-                        <th class="border border-black w-[10%]">Age</th>
-                        <th class="border border-black w-[10%]">Class</th>
+                        <th class="border border-black w-[10%]">Class/Age</th>
+                        <th class="border border-black w-[10%]">Year</th>
                         <th class="border border-black w-[30%]">School/College</th>
                         <th class="border border-black w-[15%]">Relation</th>
                     </tr>
@@ -286,11 +286,9 @@
                         @foreach ($student->siblings as $sibling)
                             <tr class="text-center">
                                 <td class="border border-black h-8">{{ $sibling->name }}</td>
-                                <td class="border border-black">{{ $sibling->age }}</td>
                                 <td class="border border-black">{{ $sibling->class }}</td>
-                                <td class="border border-black">{{ $sibling->institution->name }}
-                                    ({{ $sibling->institution->eiin_number }})
-                                </td>
+                                <td class="border border-black">{{ $sibling->year }}</td>
+                                <td class="border border-black">{{ $sibling->institution_name }}</td>
                                 <td class="border border-black">{{ ucfirst($sibling->relationship) }}</td>
                             </tr>
                         @endforeach
@@ -305,11 +303,9 @@
                         @foreach ($student->siblings as $sibling)
                             <tr class="text-center">
                                 <td class="border border-black h-8">{{ $sibling->name }}</td>
-                                <td class="border border-black">{{ $sibling->age }}</td>
                                 <td class="border border-black">{{ $sibling->class }}</td>
-                                <td class="border border-black">{{ $sibling->institution->name }}
-                                    ({{ $sibling->institution->eiin_number }})
-                                </td>
+                                <td class="border border-black">{{ $sibling->year }}</td>
+                                <td class="border border-black">{{ $sibling->institution_name }}</td>
                                 <td class="border border-black">{{ ucfirst($sibling->relationship) }}</td>
                             </tr>
                         @endforeach
