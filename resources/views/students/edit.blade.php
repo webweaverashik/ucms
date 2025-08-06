@@ -1233,8 +1233,13 @@
 
 @push('page-js')
     <script>
-        document.getElementById("student_info_menu").classList.add("here", "show");
-        document.getElementById("all_students_link").classList.add("active");
+        @if ($student->student_activation_id != null)
+            document.getElementById("student_info_menu").classList.add("here", "show");
+            document.getElementById("all_students_link").classList.add("active");
+        @else
+            document.getElementById("admission_menu").classList.add("here", "show");
+            document.getElementById("pending_approval_link").classList.add("active");
+        @endif
     </script>
 
     <script>
