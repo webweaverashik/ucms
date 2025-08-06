@@ -16,8 +16,7 @@ var KTGuardiansList = function () {
             "lengthChange": true,
             "autoWidth": false,  // Disable auto width
             'columnDefs': [
-                { orderable: false, targets: 4 }, // Disable ordering on column Guardian                
-                { orderable: false, targets: 9 }, // Disable ordering on column Actions                
+                { orderable: false, targets: [4, 7] }
             ]
         });
 

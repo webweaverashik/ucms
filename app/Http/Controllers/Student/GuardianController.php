@@ -7,6 +7,7 @@ use App\Models\Student\Guardian;
 use App\Models\Student\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 
 class GuardianController extends Controller
@@ -21,18 +22,22 @@ class GuardianController extends Controller
         }
 
         $userBranchId = auth()->user()->branch_id;
+        $cacheKey     = 'guardians_list_branch_' . $userBranchId;
 
-        $guardians = Guardian::with([
-            'student:id,name,student_unique_id,branch_id',
-            'student.branch:id,branch_name',
-            'student.payments:id,student_id,tuition_fee',
-        ])
-            ->when($userBranchId != 0, function ($query) use ($userBranchId) {
-                $query->whereHas('student', fn($q) => $q->where('branch_id', $userBranchId));
-            })
-            ->get(['id', 'name', 'gender', 'relationship', 'mobile_number', 'student_id']);
+        $guardians = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($userBranchId) {
+            return Guardian::with([
+                'student:id,name,student_unique_id,branch_id',
+                'student.branch:id,branch_name',
+                'student.payments:id,student_id,tuition_fee',
+            ])
+                ->when($userBranchId != 0, function ($query) use ($userBranchId) {
+                    $query->whereHas('student', fn($q) => $q->where('branch_id', $userBranchId));
+                })
+                ->get(['id', 'name', 'gender', 'relationship', 'mobile_number', 'student_id']);
+        });
 
         $students = Student::when($userBranchId != 0, fn($q) => $q->where('branch_id', $userBranchId))
+            ->select('id', 'name', 'student_unique_id')
             ->orderBy('student_unique_id')
             ->get();
 

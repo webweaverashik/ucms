@@ -64,8 +64,8 @@
                 <!--begin::Search-->
                 <div class="d-flex align-items-center position-relative my-1">
                     <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
-                        data-kt-subscription-table-filter="search" class="form-control form-control-solid w-250px w-sm-400px ps-12"
-                        placeholder="Search In Guardians">
+                        data-kt-subscription-table-filter="search"
+                        class="form-control form-control-solid w-250px w-sm-400px ps-12" placeholder="Search In Guardians">
                 </div>
                 <!--end::Search-->
             </div>
@@ -165,13 +165,11 @@
                 <thead>
                     <tr class="fw-bold fs-7 text-uppercase gs-0">
                         <th class="w-25px">SL</th>
-                        <th class="min-w-200px">Name</th>
+                        <th class="">Name</th>
                         <th class="d-none">Gender (filter)</th>
                         <th>Gender</th>
                         <th>Students</th>
-                        <th>Mobile</th>
                         <th>Relationship</th>
-                        <th>Monthly<br>Payment (৳)</th>
                         <th class="@if (!auth()->user()->hasRole('admin')) d-none @endif">Branch</th>
                         <th>Actions</th>
                     </tr>
@@ -180,25 +178,26 @@
                     @foreach ($guardians as $guardian)
                         <tr>
                             <td class="pe-2">{{ $loop->index + 1 }}</td>
-                            <td>
-                                <div class="d-flex align-items-center">
+                            <td class="text-center align-middle">
+                                <div class="d-inline-flex align-items-center w-200px">
                                     <!--begin:: Avatar -->
-                                    <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
+                                    {{-- <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
                                         <div class="symbol-label">
                                             <img src="{{ asset($guardian->gender == 'male' ? 'img/male.png' : 'img/female.png') }}"
                                                 alt="{{ $guardian->name }}" class="w-100" />
-
                                         </div>
-                                    </div>
+                                    </div> --}}
                                     <!--end::Avatar-->
+
                                     <!--begin::user details-->
-                                    <div class="d-flex flex-column">
-                                        <span class="text-gray-800 mb-1">{{ $guardian->name }}
-                                        </span>
+                                    <div class="d-flex flex-column text-start">
+                                        <span class="text-gray-800 mb-1 fs-5">{{ $guardian->name }}</span>
+                                        <span class="text-gray-600 fs-base">{{ $guardian->mobile_number }}</span>
                                     </div>
-                                    <!--begin::user details-->
+                                    <!--end::user details-->
                                 </div>
                             </td>
+
                             <td class="d-none">gd_{{ $guardian->gender }}</td>
                             <td>
                                 @if ($guardian->gender == 'male')
@@ -221,15 +220,8 @@
                                     <span class="badge badge-light-danger">No Student Assigned</span>
                                 @endif
                             </td>
-
-                            <td>
-                                {{ $guardian->mobile_number }}
-                            </td>
                             <td>
                                 {{ ucfirst($guardian->relationship) }}
-                            </td>
-                            <td>
-                                {{ intval(optional(optional($guardian->student)->payments)->tuition_fee) }}
                             </td>
                             <td class="@if (!auth()->user()->hasRole('admin')) d-none @endif">
                                 @if ($guardian->student && $guardian->student->branch)
