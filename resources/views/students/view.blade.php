@@ -125,8 +125,7 @@
                         <div class="d-flex align-items-center">
                             <!--begin::Avatar-->
                             <div class="symbol symbol-60px symbol-circle me-3">
-                                <img src="{{ $student->photo_url ?? asset($student->gender == 'male' ? 'img/male.png' : 'img/female.png') }}"
-                                    alt="{{ $student->name }}" />
+                                <img src="{{ $student->photo_url ? asset($student->photo_url) : asset($student->gender == 'male' ? 'img/male.png' : 'img/female.png') }}" alt="{{ $student->name }}" />
                             </div>
                             <!--end::Avatar-->
                             <!--begin::Info-->
