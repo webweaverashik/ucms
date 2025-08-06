@@ -727,57 +727,60 @@
                     <!--end::Guardians-->
 
                     <!--begin::Siblings-->
-                    <div class="card mb-5 mb-xl-10">
-                        <!--begin::Card header-->
-                        <div class="card-header">
-                            <!--begin::Title-->
-                            <div class="card-title">
-                                <h3>Sibling Info</h3>
+                    @if ($student->siblings->count() > 0)
+                        <div class="card mb-5 mb-xl-10">
+                            <!--begin::Card header-->
+                            <div class="card-header">
+                                <!--begin::Title-->
+                                <div class="card-title">
+                                    <h3>Sibling Info</h3>
+                                </div>
+                                <!--end::Title-->
                             </div>
-                            <!--end::Title-->
-                        </div>
-                        <!--end::Card header-->
-                        <!--begin::Card body-->
-                        <div class="card-body">
-                            <!--begin::Guardians-->
-                            <div class="row gx-9 gy-6">
-                                @foreach ($student->siblings as $sibling)
-                                    <!--begin::Col-->
-                                    <div class="col-xl-6">
-                                        <!--begin::Guardian-->
-                                        <div class="card card-dashed h-xl-100 flex-row flex-wrap p-6 align-items-center">
-                                            <!--begin::Photo-->
-                                            <div class="symbol symbol-60px me-5">
-                                                <img src="{{ asset($sibling->relationship == 'brother' ? 'img/male.png' : 'img/female.png') }}"
-                                                    alt="{{ $sibling->name }}">
-                                            </div>
-                                            <!--end::Photo-->
+                            <!--end::Card header-->
+                            <!--begin::Card body-->
+                            <div class="card-body">
+                                <!--begin::Guardians-->
+                                <div class="row gx-9 gy-6">
+                                    @foreach ($student->siblings as $sibling)
+                                        <!--begin::Col-->
+                                        <div class="col-xl-6">
+                                            <!--begin::Guardian-->
+                                            <div
+                                                class="card card-dashed h-xl-100 flex-row flex-wrap p-6 align-items-center">
+                                                <!--begin::Photo-->
+                                                <div class="symbol symbol-60px me-5">
+                                                    <img src="{{ asset($sibling->relationship == 'brother' ? 'img/male.png' : 'img/female.png') }}"
+                                                        alt="{{ $sibling->name }}">
+                                                </div>
+                                                <!--end::Photo-->
 
-                                            <!--begin::Details-->
-                                            <div class="d-flex flex-column py-2">
-                                                <div class="d-flex align-items-center fs-5 fw-bold mb-2">
-                                                    {{ $sibling->name }} <span
-                                                        class="ms-5 text-gray-600 fs-7    fw-semibold">{{ ucfirst($sibling->relationship) }}</span>
+                                                <!--begin::Details-->
+                                                <div class="d-flex flex-column py-2">
+                                                    <div class="d-flex align-items-center fs-5 fw-bold mb-2">
+                                                        {{ $sibling->name }} <span
+                                                            class="ms-5 text-gray-600 fs-7    fw-semibold">{{ ucfirst($sibling->relationship) }}</span>
+                                                    </div>
+                                                    <div class="fs-6 fw-semibold text-gray-600">
+                                                        Class/Age: {{ $sibling->class }}<br>
+                                                        Year: {{ $sibling->year }}<br>
+                                                        School: {{ $sibling->institution_name }}
+                                                    </div>
                                                 </div>
-                                                <div class="fs-6 fw-semibold text-gray-600">
-                                                    Class/Age: {{ $sibling->class }}<br>
-                                                    Year: {{ $sibling->year }}<br>
-                                                    School: {{ $sibling->institution_name }}
-                                                </div>
+                                                <!--end::Details-->
                                             </div>
-                                            <!--end::Details-->
+                                            <!--end::Guardian-->
+
                                         </div>
-                                        <!--end::Guardian-->
+                                        <!--end::Col-->
+                                    @endforeach
 
-                                    </div>
-                                    <!--end::Col-->
-                                @endforeach
-
+                                </div>
+                                <!--end::Guardians-->
                             </div>
-                            <!--end::Guardians-->
+                            <!--end::Card body-->
                         </div>
-                        <!--end::Card body-->
-                    </div>
+                    @endif
                     <!--end::Siblings-->
 
                 </div>
