@@ -434,7 +434,7 @@
                     </div>
                     <label class="font-normal mx-2">Others Note :</label>
                     <div class="flex-1 border-b border-dotted border-black dotted-underline min-w-[200px]">
-                        {{ $student->remarks ?? '-' }}</div>
+                        {{ $student->remarks ?? '.' }}</div>
                 </div>
 
                 <div class="flex justify-between text-[12px] font-normal mt-10">
