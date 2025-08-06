@@ -287,12 +287,11 @@
                         <th>Class</th>
                         <th class="d-none">Shift (Filter)</th>
                         <th>Shift</th>
-                        <th class="w-300px">School</th>
+                        <th class="w-300px">Institution</th>
                         <th>Guardians</th>
                         <th>Mobile<br>(Home)</th>
                         <th>Fee (Tk)</th>
                         <th>Payment<br>Type</th>
-                        <th class="d-none">Admission<br>Date</th>
                         <th class="@if (!auth()->user()->hasRole('admin')) d-none @endif">Branch</th>
                         <th class="min-w-70px not-export">Actions</th>
                     </tr>
@@ -363,7 +362,6 @@
                                     {{ ucfirst($student->payments->payment_style) }}-1/{{ $student->payments->due_date }}
                                 @endif
                             </td>
-                            <td class="d-none">{{ $student->created_at->format('d-M-Y') }}</td>
                             <td class="@if (!auth()->user()->hasRole('admin')) d-none @endif">
                                 @if ($student->branch)
                                     @php

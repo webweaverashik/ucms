@@ -85,11 +85,16 @@ class StudentController extends Controller
             ->get();
 
         $classnames = ClassName::all();
-        // $shifts       = Shift::where('branch_id', $branchId)->get();
-        // $institutions = Institution::all();
-        // return response()->json($students);
+        $shifts     = Shift::with('branch:id,branch_name')->when(auth()->user()->branch_id != 0, function ($query) {
+            $query->where('branch_id', auth()->user()->branch_id);
+        })
+            ->select('id', 'name', 'branch_id')
+            ->get();
 
-        return view('students.pending', compact('students', 'classnames'));
+        $institutions = Institution::all();
+        $branches     = Branch::all();
+
+        return view('students.pending', compact('students', 'classnames', 'shifts', 'institutions', 'branches'));
     }
 
     /**
