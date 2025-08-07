@@ -7,12 +7,14 @@ use App\Models\Sheet\SheetPayment;
 use App\Models\Student\Student;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class PaymentInvoiceController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+
     public function index()
     {
         if (! auth()->user()->can('invoices.view')) {
@@ -20,65 +22,74 @@ class PaymentInvoiceController extends Controller
         }
 
         $branchId = auth()->user()->branch_id;
+        $cacheKey = "invoices_index_branch_{$branchId}";
 
-        // Common student constraint used in both queries
-        $studentQuery = function ($query) use ($branchId) {
-            if ($branchId != 0) {
-                $query->where('branch_id', $branchId);
-            }
-            $query->where(function ($q) {
-                $q->whereHas('studentActivation', function ($q2) {
-                    $q2->where('active_status', 'active');
-                })->orWhereNull('student_activation_id');
-            });
-        };
+        $data = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($branchId) {
 
-        // Unpaid Invoices
-        $unpaid_invoices = PaymentInvoice::with([
-            'student:id,name,student_unique_id,student_activation_id',
-            'student.studentActivation:id,active_status',
-            'student.payments:id,student_id,payment_style,due_date,tuition_fee',
-        ])
-            ->withCount('paymentTransactions')
-            ->where('status', '!=', 'paid')
-            ->whereHas('student', $studentQuery)
-            ->latest('id')
-            ->get();
-
-        // Paid Invoices
-        $paid_invoices = PaymentInvoice::with([
-            'student:id,name,student_unique_id',
-            'student.payments:id,student_id,payment_style,due_date,tuition_fee',
-        ])
-            ->where('status', 'paid')
-            ->whereHas('student', function ($query) use ($branchId) {
+            // Common student constraint
+            $studentQuery = function ($query) use ($branchId) {
                 if ($branchId != 0) {
                     $query->where('branch_id', $branchId);
                 }
-            })
-            ->latest('id')
-            ->get();
+                $query->where(function ($q) {
+                    $q->whereHas('studentActivation', function ($q2) {
+                        $q2->where('active_status', 'active');
+                    })->orWhereNull('student_activation_id');
+                });
+            };
 
-        // Filter months
-        $dueMonths  = $this->getFilteredMonths('!=', 'paid');
-        $paidMonths = $this->getFilteredMonths('=', 'paid');
+            // Unpaid Invoices
+            $unpaid_invoices = PaymentInvoice::with([
+                'student:id,name,student_unique_id,student_activation_id',
+                'student.studentActivation:id,active_status',
+                'student.payments:id,student_id,payment_style,due_date,tuition_fee',
+            ])
+                ->withCount('paymentTransactions')
+                ->where('status', '!=', 'paid')
+                ->whereHas('student', $studentQuery)
+                ->latest('id')
+                ->get();
 
-        // Students for the modal
-        $students = Student::with(['studentActivation:id,active_status', 'payments:id,student_id,payment_style,due_date,tuition_fee'])
-            ->when($branchId != 0, function ($query) use ($branchId) {
-                $query->where('branch_id', $branchId);
-            })
-            ->where(function ($query) {
-                $query->whereNull('student_activation_id')
-                    ->orWhereHas('studentActivation', function ($q) {
-                        $q->where('active_status', 'active');
-                    });
-            })
-            ->orderBy('student_unique_id')
-            ->select('id', 'name', 'student_unique_id', 'student_activation_id', 'branch_id')
-            ->get();
+            // Paid Invoices
+            $paid_invoices = PaymentInvoice::with([
+                'student:id,name,student_unique_id',
+                'student.payments:id,student_id,payment_style,due_date,tuition_fee',
+            ])
+                ->where('status', 'paid')
+                ->whereHas('student', function ($query) use ($branchId) {
+                    if ($branchId != 0) {
+                        $query->where('branch_id', $branchId);
+                    }
+                })
+                ->latest('id')
+                ->get();
 
-        return view('invoices.index', compact('unpaid_invoices', 'paid_invoices', 'dueMonths', 'paidMonths', 'students'));
+            // Due & Paid Months
+            $dueMonths  = $this->getFilteredMonths('!=', 'paid');
+            $paidMonths = $this->getFilteredMonths('=', 'paid');
+
+            // Students for modal
+            $students = Student::with([
+                'studentActivation:id,active_status',
+                'payments:id,student_id,payment_style,due_date,tuition_fee',
+            ])
+                ->when($branchId != 0, function ($query) use ($branchId) {
+                    $query->where('branch_id', $branchId);
+                })
+                ->where(function ($query) {
+                    $query->whereNull('student_activation_id')
+                        ->orWhereHas('studentActivation', function ($q) {
+                            $q->where('active_status', 'active');
+                        });
+                })
+                ->orderBy('student_unique_id')
+                ->select('id', 'name', 'student_unique_id', 'student_activation_id', 'branch_id')
+                ->get();
+
+            return compact('unpaid_invoices', 'paid_invoices', 'dueMonths', 'paidMonths', 'students');
+        });
+
+        return view('invoices.index', $data);
     }
 
     private function getFilteredMonths(string $operator, string $value)
@@ -190,6 +201,9 @@ class PaymentInvoiceController extends Controller
             }
         }
 
+        // Clear the cache
+        clearUCMSCaches();
+
         return redirect()->back()->with('success', 'Invoice created successfully.');
     }
 
@@ -253,6 +267,9 @@ class PaymentInvoiceController extends Controller
             'amount_due'   => $request->invoice_amount_edit,
         ]);
 
+        // Clear the cache
+        clearUCMSCaches();
+
         return response()->json([
             'success' => true,
             'message' => 'Invoice updated successfully',
@@ -291,6 +308,9 @@ class PaymentInvoiceController extends Controller
 
         // Soft delete the invoice
         $invoice->delete();
+
+        // Clear the cache
+        clearUCMSCaches();
 
         return response()->json(['success' => true]);
     }

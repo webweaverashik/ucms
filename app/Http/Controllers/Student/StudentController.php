@@ -367,8 +367,8 @@ class StudentController extends Controller
                 ]);
             }
 
-            Cache::forget('students_list_branch_' . auth()->user()->branch_id);
-            Cache::forget('guardians_list_branch_' . auth()->user()->branch_id);
+            // Clear the cache
+            clearUCMSCaches();
 
             return response()->json([
                 'success' => true,
@@ -672,8 +672,8 @@ class StudentController extends Controller
                 ]);
             }
 
-            Cache::forget('students_list_branch_' . auth()->user()->branch_id);
-            Cache::forget('guardians_list_branch_' . auth()->user()->branch_id);
+            // Clear the cache
+            clearUCMSCaches();
 
             return response()->json(['success' => true, 'student' => $student, 'message' => 'Student updated successfully']);
         });
@@ -700,9 +700,9 @@ class StudentController extends Controller
         $student->siblings()->delete();
         $student->delete();
 
-        Cache::forget('students_list_branch_' . auth()->user()->branch_id);
-        Cache::forget('guardians_list_branch_' . auth()->user()->branch_id);
-        
+        // Clear the cache
+        clearUCMSCaches();
+
         return response()->json(['success' => true]);
     }
 

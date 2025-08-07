@@ -129,7 +129,8 @@ class GuardianController extends Controller
         // Update the guardian record
         $guardian->update($updateData);
 
-        Cache::forget('guardians_list_branch_' . auth()->user()->branch_id);
+        // Clear the cache
+        clearUCMSCaches();
 
         return response()->json([
             'success' => true,
@@ -151,8 +152,9 @@ class GuardianController extends Controller
         // Delete the guardian
         $guardian->delete();
 
-        Cache::forget('guardians_list_branch_' . auth()->user()->branch_id);
-        
+        // Clear the cache
+        clearUCMSCaches();
+
         // Return JSON response
         return response()->json(['success' => true]);
     }
