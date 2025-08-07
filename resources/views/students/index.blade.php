@@ -53,6 +53,12 @@
         foreach ($branches as $index => $branch) {
             $branchColors[$branch->branch_name] = $badgeColors[$index % count($badgeColors)];
         }
+
+        // Preloading permissions checking
+        $canDeactivate = auth()->user()->can('students.deactivate');
+        $canDownloadForm = auth()->user()->can('students.form.download');
+        $canEdit = auth()->user()->can('students.edit');
+        $canDelete = auth()->user()->can('students.delete');
     @endphp
 
     <!--begin::Card-->
@@ -383,7 +389,7 @@
                                 <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-175px py-4"
                                     data-kt-menu="true">
 
-                                    @can('students.deactivate')
+                                    @if ($canDeactivate)
                                         <div class="menu-item px-3">
                                             @if (optional($student->studentActivation)->active_status == 'active')
                                                 <a href="#" class="menu-link text-hover-warning px-3"
@@ -405,34 +411,33 @@
                                                         class="bi bi-person-check fs-3 me-2"></i> Activate</a>
                                             @endif
                                         </div>
-                                    @endcan
+                                    @endif
 
-                                    @can('students.form.download')
-                                        @if (optional($student->studentActivation)->active_status == 'active')
-                                            <div class="menu-item px-3">
-                                                <a href="{{ route('students.download', $student->id) }}"
-                                                    class="menu-link text-hover-primary px-3" target="_blank"><i
-                                                        class="bi bi-download fs-3 me-2"></i> Download</a>
-                                            </div>
-                                        @endif
-                                    @endcan
+                                    @if ($canDownloadForm && optional($student->studentActivation)->active_status == 'active')
+                                        <div class="menu-item px-3">
+                                            <a href="{{ route('students.download', $student->id) }}"
+                                                class="menu-link text-hover-primary px-3" target="_blank"><i
+                                                    class="bi bi-download fs-3 me-2"></i> Download</a>
+                                        </div>
+                                    @endif
 
-
-                                    @can('students.edit')
+                                    @if ($canEdit)
                                         <div class="menu-item px-3">
                                             <a href="{{ route('students.edit', $student->id) }}"
-                                                class="menu-link text-hover-primary px-3"><i class="las la-pen fs-3 me-2"></i>
+                                                class="menu-link text-hover-primary px-3"><i
+                                                    class="las la-pen fs-3 me-2"></i>
                                                 Edit</a>
                                         </div>
-                                    @endcan
+                                    @endif
 
-                                    @can('students.delete')
+                                    @if ($canDelete)
                                         <div class="menu-item px-3">
                                             <a href="#" class="menu-link px-3 text-hover-danger delete-student"
-                                                data-student-id="{{ $student->id }}"><i class="bi bi-trash fs-3 me-2"></i>
+                                                data-student-id="{{ $student->id }}"><i
+                                                    class="bi bi-trash fs-3 me-2"></i>
                                                 Delete</a>
                                         </div>
-                                    @endcan
+                                    @endif
                                 </div>
                                 <!--end::Menu-->
                             </td>
