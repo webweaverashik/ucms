@@ -48,6 +48,7 @@ class PaymentInvoiceController extends Controller
         // Paid Invoices
         $paid_invoices = PaymentInvoice::with([
             'student:id,name,student_unique_id',
+            'student.payments:id,student_id,payment_style,due_date,tuition_fee',
         ])
             ->where('status', 'paid')
             ->whereHas('student', function ($query) use ($branchId) {
