@@ -104,7 +104,7 @@
                                             data-kt-subscription-table-filter="product" data-hide-search="true">
                                             <option></option>
                                             @foreach ($branches as $branch)
-                                                <option value="{{ ucfirst($branch->branch_name) }}">
+                                                <option value="{{ $branch->id }}_{{ $branch->branch_name }}">
                                                     {{ ucfirst($branch->branch_name) }}</option>
                                             @endforeach
                                         </select>
@@ -292,6 +292,7 @@
                         <th>Mobile<br>(Home)</th>
                         <th>Fee (Tk)</th>
                         <th>Payment<br>Type</th>
+                        <th class="d-none">Branch (filter)</th>
                         <th class="@if (!auth()->user()->hasRole('admin')) d-none @endif">Branch</th>
                         <th class="min-w-70px not-export">Actions</th>
                     </tr>
@@ -361,6 +362,7 @@
                                     {{ ucfirst($student->payments->payment_style) }}-1/{{ $student->payments->due_date }}
                                 @endif
                             </td>
+                            <td class="d-none">{{ $student->branch_id }}_{{ $student->branch->branch_name }}</td>
                             <td class="@if (!auth()->user()->hasRole('admin')) d-none @endif">
                                 @if ($student->branch)
                                     @php
