@@ -43,6 +43,12 @@
 
 
 @section('content')
+    @php
+        // Preloading permissions checking
+        $canEditInvoice = auth()->user()->can('invoices.edit');
+        $canDeleteInvoice = auth()->user()->can('invoices.delete');
+    @endphp
+
     <!--begin:::Tabs-->
     <ul class="nav nav-custom nav-tabs nav-line-tabs nav-line-tabs-2x border-0 fs-4 fw-semibold mb-8">
         <!--begin:::Tab item-->
@@ -375,21 +381,21 @@
                                         @if (optional($invoice->student->studentActivation)->active_status == 'active' &&
                                                 $invoice->status == 'due' &&
                                                 $invoice->payment_transactions_count == 0)
-                                            @can('invoices.edit')
-                                                <a href="#" title="Edit invoice" data-invoice-id="{{ $invoice->id }}"
-                                                    data-bs-toggle="modal" data-bs-target="#kt_modal_edit_invoice"
-                                                    title="Edit Invoice"
+                                            @if ($canEditInvoice)
+                                                <a href="#" title="Edit invoice"
+                                                    data-invoice-id="{{ $invoice->id }}" data-bs-toggle="modal"
+                                                    data-bs-target="#kt_modal_edit_invoice" title="Edit Invoice"
                                                     class="btn btn-icon text-hover-primary w-30px h-30px">
                                                     <i class="ki-outline ki-pencil fs-2"></i>
                                                 </a>
-                                            @endcan
-                                            @can('invoices.delete')
+                                            @endif
+                                            @if ($canDeleteInvoice)
                                                 <a href="#" title="Delete invoice" data-bs-toggle="tooltip"
                                                     class="btn btn-icon text-hover-danger w-30px h-30px delete-invoice"
                                                     data-invoice-id="{{ $invoice->id }}">
                                                     <i class="ki-outline ki-trash fs-2"></i>
                                                 </a>
-                                            @endcan
+                                            @endif
                                         @endif
                                     </td>
                                 </tr>

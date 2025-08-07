@@ -21,56 +21,49 @@ class PaymentInvoiceController extends Controller
 
         $branchId = auth()->user()->branch_id;
 
-        $unpaid_query = PaymentInvoice::with([
-            'student'                   => function ($query) {
-                $query->select('id', 'name', 'student_unique_id', 'student_activation_id');
-            },
-            'student.studentActivation' => function ($query) {
-                $query->select('id', 'active_status');
-            },
-            'student.payments'          => function ($query) {
-                $query->select('id', 'student_id', 'payment_style', 'due_date', 'tuition_fee');
-            },
+        // Common student constraint used in both queries
+        $studentQuery = function ($query) use ($branchId) {
+            if ($branchId != 0) {
+                $query->where('branch_id', $branchId);
+            }
+            $query->where(function ($q) {
+                $q->whereHas('studentActivation', function ($q2) {
+                    $q2->where('active_status', 'active');
+                })->orWhereNull('student_activation_id');
+            });
+        };
+
+        // Unpaid Invoices
+        $unpaid_invoices = PaymentInvoice::with([
+            'student:id,name,student_unique_id,student_activation_id',
+            'student.studentActivation:id,active_status',
+            'student.payments:id,student_id,payment_style,due_date,tuition_fee',
         ])
             ->withCount('paymentTransactions')
             ->where('status', '!=', 'paid')
-            ->whereHas('student', function ($query) use ($branchId) {
-                if ($branchId != 0) {
-                    $query->where('branch_id', $branchId);
-                }
-                $query->where(function ($q) {
-                    $q->whereHas('studentActivation', function ($q2) {
-                        $q2->where('active_status', 'active');
-                    })->orWhereNull('student_activation_id');
-                });
-            });
+            ->whereHas('student', $studentQuery)
+            ->latest('id')
+            ->get();
 
-        $paid_query = PaymentInvoice::with([
-            'student'          => function ($query) {
-                $query->select('id', 'name', 'student_unique_id');
-            },
-            'student.payments' => function ($query) {
-                $query->select('id', 'student_id', 'payment_style', 'due_date', 'tuition_fee');
-            },
+        // Paid Invoices
+        $paid_invoices = PaymentInvoice::with([
+            'student:id,name,student_unique_id',
         ])
             ->where('status', 'paid')
             ->whereHas('student', function ($query) use ($branchId) {
                 if ($branchId != 0) {
                     $query->where('branch_id', $branchId);
                 }
-            });
+            })
+            ->latest('id')
+            ->get();
 
-        $unpaid_invoices = $unpaid_query->latest('id')->get();
-        $paid_invoices   = $paid_query->latest('id')->get();
-
-        // return count($paid_invoices);
-
-        // Fetching months for filters
+        // Filter months
         $dueMonths  = $this->getFilteredMonths('!=', 'paid');
         $paidMonths = $this->getFilteredMonths('=', 'paid');
 
-        // Fetching students for invoice creation modal
-        $students = Student::with(['studentActivation', 'payments'])
+        // Students for the modal
+        $students = Student::with(['studentActivation:id,active_status', 'payments:id,student_id'])
             ->when($branchId != 0, function ($query) use ($branchId) {
                 $query->where('branch_id', $branchId);
             })
@@ -81,6 +74,7 @@ class PaymentInvoiceController extends Controller
                     });
             })
             ->orderBy('student_unique_id')
+            ->select('id', 'name', 'student_unique_id', 'student_activation_id', 'branch_id')
             ->get();
 
         return view('invoices.index', compact('unpaid_invoices', 'paid_invoices', 'dueMonths', 'paidMonths', 'students'));
