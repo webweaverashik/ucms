@@ -63,7 +63,7 @@ class PaymentInvoiceController extends Controller
         $paidMonths = $this->getFilteredMonths('=', 'paid');
 
         // Students for the modal
-        $students = Student::with(['studentActivation:id,active_status', 'payments:id,student_id'])
+        $students = Student::with(['studentActivation:id,active_status', 'payments:id,student_id,payment_style,due_date,tuition_fee'])
             ->when($branchId != 0, function ($query) use ($branchId) {
                 $query->where('branch_id', $branchId);
             })
