@@ -24,7 +24,7 @@ class PaymentInvoiceController extends Controller
         $branchId = auth()->user()->branch_id;
         $cacheKey = "invoices_index_branch_{$branchId}";
 
-        $data = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($branchId) {
+        $data = Cache::remember($cacheKey, now()->addHours(6), function () use ($branchId) {
 
             // Common student constraint
             $studentQuery = function ($query) use ($branchId) {

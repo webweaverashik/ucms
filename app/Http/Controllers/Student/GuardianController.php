@@ -24,7 +24,7 @@ class GuardianController extends Controller
         $userBranchId = auth()->user()->branch_id;
         $cacheKey     = 'guardians_list_branch_' . $userBranchId;
 
-        $guardians = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($userBranchId) {
+        $guardians = Cache::remember($cacheKey, now()->addHours(6), function () use ($userBranchId) {
             return Guardian::with([
                 'student:id,name,student_unique_id,branch_id',
                 'student.branch:id,branch_name',
