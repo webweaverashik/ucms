@@ -85,7 +85,7 @@
                                 </div>
                                 <!--begin::Actions-->
                                 <div class="d-flex flex-wrap justify-content-center pb-lg-0">
-                                    <button type="button" id="kt_password_reset_submit" class="btn btn-primary me-4">
+                                    <button type="submit" id="kt_password_reset_submit" class="btn btn-primary me-4">
                                         <!--begin::Indicator label-->
                                         <span class="indicator-label">Submit</span>
                                         <!--end::Indicator label-->
