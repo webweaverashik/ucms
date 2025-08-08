@@ -5,6 +5,7 @@ use App\Http\Controllers\Academic\InstitutionController;
 use App\Http\Controllers\Academic\ShiftController;
 use App\Http\Controllers\Academic\SubjectController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\AutoInvoiceController;
 use App\Http\Controllers\Misc\MiscController;
 use App\Http\Controllers\Payment\PaymentInvoiceController;
@@ -127,6 +128,16 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
 Route::get('/logout', function () {
     return redirect()->route('login');
 })->name('logout.get');
+
+Route::controller(PasswordController::class)
+    ->middleware('guest')
+    ->group(function () {
+        Route::get('forgot-password', 'showLinkRequestForm')->name('password.request');
+        Route::post('forgot-password', 'sendResetLinkEmail')->name('password.email');
+        Route::get('reset-password', function () {return redirect()->route('password.request');})->name('password.reset.request');
+        Route::get('reset-password/{token}', 'showResetForm')->name('password.reset');
+        Route::post('reset-password', 'reset')->name('password.update');
+    });
 
 // Testing mail server
 Route::get('/send-test-email', function () {

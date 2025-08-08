@@ -23,17 +23,18 @@
             }
         </style>
         <!--end::Page bg image-->
-        <!--begin::Authentication - Sign-in -->
+        <!--begin::Authentication - Password reset -->
         <div class="d-flex flex-column flex-lg-row flex-column-fluid">
             <!--begin::Aside-->
             <div class="d-flex flex-lg-row-fluid">
                 <!--begin::Content-->
                 <div class="d-flex flex-column flex-center pb-0 pb-lg-10 p-10 w-100">
-                    <!--begin::Image--><a href="http://uniquecoachingbd.com/">
-                    <img class="theme-light-show mx-auto mw-100 w-150px w-lg-300px mb-10 mb-lg-20"
-                        src="{{ asset('assets/img/icon.png') }}" alt="" />
-                    <img class="theme-dark-show mx-auto mw-100 w-150px w-lg-300px mb-10 mb-lg-20"
-                        src="{{ asset('assets/img/icon.png') }}" alt="" />
+                    <!--begin::Image-->
+                    <a href="http://uniquecoachingbd.com/">
+                        <img class="theme-light-show mx-auto mw-100 w-150px w-lg-300px mb-10 mb-lg-20"
+                            src="{{ asset('assets/img/icon.png') }}" alt="" />
+                        <img class="theme-dark-show mx-auto mw-100 w-150px w-lg-300px mb-10 mb-lg-20"
+                            src="{{ asset('assets/img/icon.png') }}" alt="" />
                     </a>
                     <!--end::Image-->
                     <!--begin::Title-->
@@ -41,7 +42,11 @@
                     </h1>
                     <!--end::Title-->
                     <!--begin::Text-->
-                    <div class="text-gray-600 fs-base text-center fw-semibold ">UCMS (Unique Coaching Management System) is an all-in-one solution to effortlessly manage<br> student data, attendance, exams, results, payments, and more for coaching centers.<br> Designed for institutes like Unique Coaching, it streamlines operations and boosts<br> academic efficiency with powerful features and real-time insights.
+                    <div class="text-gray-600 fs-base text-center fw-semibold ">UCMS (Unique Coaching Management System)
+                        is an all-in-one solution to effortlessly manage<br> student data, attendance, exams, results,
+                        payments, and more for coaching centers.<br> Designed for institutes like Unique Coaching, it
+                        streamlines operations and boosts<br> academic efficiency with powerful features and real-time
+                        insights.
                     </div>
                     <!--end::Text-->
                 </div>
@@ -57,51 +62,20 @@
                         <!--begin::Wrapper-->
                         <div class="d-flex flex-center flex-column flex-column-fluid pb-15 pb-lg-20">
                             <!--begin::Form-->
-                            {{-- <form class="form w-100" novalidate="novalidate" id="kt_sign_in_form" data-kt-redirect-url="index.html" action="#"> --}}
-                            <form class="form w-100" novalidate="novalidate" id="kt_sign_in_form"
-                                action="{{ route('login') }}" method="POST">
+                            {{-- <form class="form w-100" novalidate="novalidate" id="kt_password_reset_form" action="#"> --}}
+                            <form class="form w-100" id="kt_password_reset_form" action="{{ route('password.email') }}" method="POST" data-kt-redirect-url="{{ route('login') }}" novalidate="novalidate">
                                 @csrf
                                 <!--begin::Heading-->
-                                <div class="text-center mb-11">
+                                <div class="text-center mb-10">
                                     <!--begin::Title-->
-                                    <h1 class="text-gray-900 fw-bolder mb-3">Sign In</h1>
+                                    <h1 class="text-gray-900 fw-bolder mb-3">Forgot Password ?</h1>
                                     <!--end::Title-->
-                                    <!--begin::Subtitle-->
-                                    <div class="text-gray-500 fw-semibold fs-6">Your Social Campaigns</div>
-                                    <!--end::Subtitle=-->
+                                    <!--begin::Link-->
+                                    <div class="text-gray-500 fw-semibold fs-6">Enter your email to reset your password.
+                                    </div>
+                                    <!--end::Link-->
                                 </div>
                                 <!--begin::Heading-->
-                                <!--begin::Login options-->
-                                <div class="row g-3 mb-9">
-                                    <!--begin::Col-->
-                                    <div class="col-md-6">
-                                        <!--begin::Google link=-->
-                                        <a href="#"
-                                            class="btn btn-flex btn-outline btn-text-gray-700 btn-active-color-primary bg-state-light flex-center text-nowrap w-100">
-                                            <img alt="Logo" src="assets/media/svg/brand-logos/google-icon.svg"
-                                                class="h-15px me-3" />Sign in with Google</a>
-                                        <!--end::Google link=-->
-                                    </div>
-                                    <!--end::Col-->
-                                    <!--begin::Col-->
-                                    <div class="col-md-6">
-                                        <!--begin::Google link=-->
-                                        <a href="#"
-                                            class="btn btn-flex btn-outline btn-text-gray-700 btn-active-color-primary bg-state-light flex-center text-nowrap w-100">
-                                            <img alt="Logo" src="assets/media/svg/brand-logos/apple-black.svg"
-                                                class="theme-light-show h-15px me-3" />
-                                            <img alt="Logo" src="assets/media/svg/brand-logos/apple-black-dark.svg"
-                                                class="theme-dark-show h-15px me-3" />Sign in with Apple</a>
-                                        <!--end::Google link=-->
-                                    </div>
-                                    <!--end::Col-->
-                                </div>
-                                <!--end::Login options-->
-                                <!--begin::Separator-->
-                                <div class="separator separator-content my-14">
-                                    <span class="w-125px text-gray-500 fw-semibold fs-7">Or with email</span>
-                                </div>
-                                <!--end::Separator-->
                                 <!--begin::Input group=-->
                                 <div class="fv-row mb-8">
                                     <!--begin::Email-->
@@ -109,27 +83,11 @@
                                         class="form-control bg-transparent" />
                                     <!--end::Email-->
                                 </div>
-                                <!--end::Input group=-->
-                                <div class="fv-row mb-3">
-                                    <!--begin::Password-->
-                                    <input type="password" placeholder="Password" name="password" autocomplete="off"
-                                        class="form-control bg-transparent" />
-                                    <!--end::Password-->
-                                </div>
-                                <!--end::Input group=-->
-                                <!--begin::Wrapper-->
-                                <div class="d-flex flex-stack flex-wrap gap-3 fs-base fw-semibold mb-8">
-                                    <div></div>
-                                    <!--begin::Link-->
-                                    <a href="{{ route('password.request') }}" class="link-primary">Forgot Password ?</a>
-                                    <!--end::Link-->
-                                </div>
-                                <!--end::Wrapper-->
-                                <!--begin::Submit button-->
-                                <div class="d-grid mb-10">
-                                    <button type="submit" id="" class="btn btn-primary">
+                                <!--begin::Actions-->
+                                <div class="d-flex flex-wrap justify-content-center pb-lg-0">
+                                    <button type="button" id="kt_password_reset_submit" class="btn btn-primary me-4">
                                         <!--begin::Indicator label-->
-                                        <span class="indicator-label">Sign In</span>
+                                        <span class="indicator-label">Submit</span>
                                         <!--end::Indicator label-->
                                         <!--begin::Indicator progress-->
                                         <span class="indicator-progress">Please wait...
@@ -137,20 +95,15 @@
                                                 class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
                                         <!--end::Indicator progress-->
                                     </button>
+                                    <a href="{{ route('login') }}" class="btn btn-light">Cancel</a>
                                 </div>
-                                <!--end::Submit button-->
-                                <!--begin::Sign up-->
-                                {{-- <div class="text-gray-500 text-center fw-semibold fs-6">Not a Member yet?
-                                    <a href="#" class="link-primary">Sign
-                                        up</a>
-                                </div> --}}
-                                <!--end::Sign up-->
+                                <!--end::Actions-->
                             </form>
                             <!--end::Form-->
                         </div>
                         <!--end::Wrapper-->
                         <!--begin::Footer-->
-                        {{-- <div class="d-flex flex-stack">
+                        {{-- <div class="w-lg-500px d-flex flex-stack">
                             <!--begin::Languages-->
                             <div class="me-10">
                                 <!--begin::Toggle-->
@@ -242,7 +195,7 @@
             </div>
             <!--end::Body-->
         </div>
-        <!--end::Authentication - Sign-in-->
+        <!--end::Authentication - Password reset-->
     </div>
     <!--end::Root-->
     <!--begin::Javascript-->
@@ -254,7 +207,7 @@
     <script src="{{ asset('assets/js/scripts.bundle.js') }}"></script>
     <!--end::Global Javascript Bundle-->
     <!--begin::Custom Javascript(used for this page only)-->
-    {{-- <script src="{{ asset('assets/js/custom/authentication/sign-in/general.js') }}"></script> --}}
+    <script src="{{ asset('js/auth/password/email.js') }}"></script>
     <!--end::Custom Javascript-->
     <!--end::Javascript-->
 
