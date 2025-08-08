@@ -96,75 +96,52 @@ var KTAuthResetPassword = function () {
             });
       }
 
-      var handleSubmitAjax = function (e) {
-            // Handle form submit
-            submitButton.addEventListener('click', function (e) {
-                  // Prevent button default action
-                  e.preventDefault();
+      var handleSubmitAjax = function () {
+            form.addEventListener('submit', function (e) {
+                  e.preventDefault(); // prevent default form submission (page reload)
 
-                  // Validate form
                   validator.validate().then(function (status) {
-                        if (status == 'Valid') {
-                              // Show loading indication
+                        if (status === 'Valid') {
                               submitButton.setAttribute('data-kt-indicator', 'on');
-
-                              // Disable button to avoid multiple click
                               submitButton.disabled = true;
 
-                              // Check axios library docs: https://axios-http.com/docs/intro
-                              axios.post(submitButton.closest('form').getAttribute('action'), new FormData(form))
+                              axios.post(form.getAttribute('action'), new FormData(form))
                                     .then(function (response) {
-                                          if (response.data.status === 'success') {
-                                                form.reset();
-                                                Swal.fire({
-                                                      text: response.data.message || "We have sent a password reset link to your email.",
-                                                      icon: "success",
-                                                      buttonsStyling: false,
-                                                      confirmButtonText: "Ok, got it!",
-                                                      customClass: { confirmButton: "btn btn-primary" }
-                                                }).then(function (result) {
-                                                      if (result.isConfirmed) {
-                                                            var redirectUrl = form.getAttribute('data-kt-redirect-url');
-                                                            if (redirectUrl) {
-                                                                  location.href = redirectUrl;
-                                                            }
+                                          form.reset();
+
+                                          Swal.fire({
+                                                text: "We have sent a password reset link to your email.",
+                                                icon: "success",
+                                                buttonsStyling: false,
+                                                confirmButtonText: "Ok, got it!",
+                                                customClass: {
+                                                      confirmButton: "btn btn-primary"
+                                                }
+                                          }).then(function (result) {
+                                                if (result.isConfirmed) {
+                                                      var redirectUrl = form.getAttribute('data-kt-redirect-url');
+                                                      if (redirectUrl) {
+                                                            location.href = redirectUrl;
                                                       }
-                                                });
-                                          } else {
-                                                Swal.fire({
-                                                      text: response.data.message || "Sorry, the email is incorrect, please try again.",
-                                                      icon: "error",
-                                                      buttonsStyling: false,
-                                                      confirmButtonText: "Ok, got it!",
-                                                      customClass: { confirmButton: "btn btn-primary" }
-                                                });
-                                          }
+                                                }
+                                          });
                                     })
                                     .catch(function (error) {
-                                          // If validation error, show first error message
-                                          let message = "Sorry, looks like there are some errors detected, please try again.";
-                                          if (error.response && error.response.data) {
-                                                if (error.response.data.message) {
-                                                      message = error.response.data.message;
-                                                } else if (error.response.data.errors && error.response.data.errors.email) {
-                                                      message = error.response.data.errors.email[0];
-                                                }
-                                          }
                                           Swal.fire({
-                                                text: message,
+                                                text: "Sorry, looks like there are some errors detected, please try again.",
                                                 icon: "error",
                                                 buttonsStyling: false,
                                                 confirmButtonText: "Ok, got it!",
-                                                customClass: { confirmButton: "btn btn-primary" }
+                                                customClass: {
+                                                      confirmButton: "btn btn-primary"
+                                                }
                                           });
                                     })
-                                    .then(() => {
+                                    .then(function () {
                                           submitButton.removeAttribute('data-kt-indicator');
                                           submitButton.disabled = false;
                                     });
-
                         } else {
-                              // Show error popup. For more info check the plugin's official documentation: https://sweetalert2.github.io/
                               Swal.fire({
                                     text: "Sorry, looks like there are some errors detected, please try again.",
                                     icon: "error",
@@ -177,7 +154,8 @@ var KTAuthResetPassword = function () {
                         }
                   });
             });
-      }
+      };
+
 
       var isValidUrl = function (url) {
             try {
