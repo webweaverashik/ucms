@@ -7,8 +7,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class PasswordController extends Controller
 {
@@ -40,21 +42,40 @@ class PasswordController extends Controller
             ], 422);
         }
 
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+        try {
+            $status = Password::sendResetLink(
+                $request->only('email')
+            );
 
-        if ($status === Password::RESET_LINK_SENT) {
+            Log::info('Password reset status: ' . $status);
+
+            if ($status === Password::RESET_LINK_SENT) {
+                return response()->json([
+                    'status'  => 'success',
+                    'message' => 'Password reset link sent to your email.',
+                ]);
+            } else {
+                // Consider checking for INVALID_USER here too if needed
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'Unable to send reset link. Please try again later.',
+                ], 422);
+            }
+        } catch (TransportExceptionInterface $e) {
+            Log::error('Mail sending failed: ' . $e->getMessage());
+
+            if (str_contains($e->getMessage(), 'rate limit') || str_contains($e->getMessage(), 'too many')) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'You can only request a password reset once every 60 seconds. Please check your email or try again later.',
+                ], 429); // 429 Too Many Requests
+            }
+
             return response()->json([
-                'status'  => 'success',
-                'message' => __($status),
-            ]);
+                'status'  => 'error',
+                'message' => 'The email address seems invalid or unreachable. Please check and try again.',
+            ], 422);
         }
-
-        return response()->json([
-            'status'  => 'error',
-            'message' => __($status),
-        ], 500);
     }
 
     /**
