@@ -7,6 +7,7 @@ use App\Http\Controllers\Academic\SubjectController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\AutoInvoiceController;
+use App\Http\Controllers\BranchController;
 use App\Http\Controllers\Misc\MiscController;
 use App\Http\Controllers\Payment\PaymentInvoiceController;
 use App\Http\Controllers\Payment\PaymentTransactionController;
@@ -110,6 +111,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
 
     // Resource Routes
     Route::resource('settings/users', UserController::class);
+    Route::resource('settings/branch', BranchController::class);
     Route::resource('students', StudentController::class);
     Route::resource('guardians', GuardianController::class);
     Route::resource('siblings', SiblingController::class);

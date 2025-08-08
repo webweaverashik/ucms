@@ -14,7 +14,7 @@ class UserController extends Controller
     public function index()
     {
         if (! auth()->user()->can('users.manage')) {
-            return redirect()->back()->with('warning', 'Not Allowed.');
+            return redirect()->back()->with('warning', 'Activity Not Allowed.');
         }
 
         $users = User::with(['branch:id,branch_name', 'latestLoginActivity', 'roles:name'])->latest('id')->get();
