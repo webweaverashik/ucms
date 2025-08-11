@@ -24,7 +24,6 @@ class SmsCampaign extends Model
     protected $casts = [
         'recipients'       => 'string',
         'exclude_inactive' => 'boolean',
-        'scheduled_at'     => 'datetime',
         'is_approved'      => 'boolean',
     ];
 
