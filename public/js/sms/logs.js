@@ -149,64 +149,8 @@ var KTSMSList = function () {
       }
 
 
-      // Delete Transaction
-      const handleDeletion = function () {
-            document.addEventListener('click', function (e) {
-                  const deleteBtn = e.target.closest('.delete-txn');
-                  if (!deleteBtn) return;
-
-                  e.preventDefault();
-
-                  let txnId = deleteBtn.getAttribute('data-txn-id');
-                  console.log('TXN ID:', txnId);
-
-                  let url = routeDeleteTxn.replace(':id', txnId);
-
-                  Swal.fire({
-                        title: 'Are you sure you want to delete?',
-                        text: "Once deleted, this transaction will be removed.",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#3085d6',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Yes, delete it',
-                        cancelButtonText: 'Cancel',
-                  }).then((result) => {
-                        if (result.isConfirmed) {
-                              fetch(url, {
-                                    method: "DELETE",
-                                    headers: {
-                                          "Content-Type": "application/json",
-                                          "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                                    },
-                              })
-                                    .then(response => response.json())
-                                    .then(data => {
-                                          if (data.success) {
-                                                Swal.fire({
-                                                      title: 'Success!',
-                                                      text: 'Transaction deleted successfully.',
-                                                      icon: 'success',
-                                                      confirmButtonText: 'Okay',
-                                                }).then(() => {
-                                                      location.reload();
-                                                });
-                                          } else {
-                                                Swal.fire('Failed!', 'Transaction could not be deleted.', 'error');
-                                          }
-                                    })
-                                    .catch(error => {
-                                          console.error("Fetch Error:", error);
-                                          Swal.fire('Failed!', 'An error occurred. Please contact support.', 'error');
-                                    });
-                        }
-                  });
-            });
-      };
-
-
       // Transaction approval AJAX
-      const handleApproval = function () {
+      const handleRetry = function () {
             document.querySelectorAll('.approve-txn').forEach(item => {
                   item.addEventListener('click', function (e) {
                         e.preventDefault();
@@ -266,7 +210,7 @@ var KTSMSList = function () {
       return {
             // Public functions  
             init: function () {
-                  table = document.getElementById('kt_transactions_table');
+                  table = document.getElementById('kt_sms_logs_table');
 
                   if (!table) {
                         return;
@@ -276,8 +220,7 @@ var KTSMSList = function () {
                   exportButtons();
                   handleSearch();
                   handleFilter();
-                  handleDeletion();
-                  handleApproval();
+                  handleRetry();
             }
       }
 }();

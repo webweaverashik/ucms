@@ -67,7 +67,7 @@
             <!--begin::Card toolbar-->
             <div class="card-toolbar">
                 <!--begin::Toolbar-->
-                <div class="d-flex justify-content-end" data-transaction-table-toolbar="base">
+                <div class="d-flex justify-content-end" data-sms-logs-table-toolbar="base">
                     <!--begin::Filter-->
                     <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
                         data-kt-menu-placement="bottom-end">
@@ -83,13 +83,13 @@
                         <div class="separator border-gray-200"></div>
                         <!--end::Separator-->
                         <!--begin::Content-->
-                        <div class="px-7 py-5" data-transaction-table-filter="form">
+                        <div class="px-7 py-5" data-sms-logs-table-filter="form">
                             <!--begin::Input group-->
                             <div class="mb-10">
-                                <label class="form-label fs-6 fw-semibold">Payment Type:</label>
+                                <label class="form-label fs-6 fw-semibold">SMS Status:</label>
                                 <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                     data-placeholder="Select option" data-allow-clear="true"
-                                    data-transaction-table-filter="status" data-hide-search="true">
+                                    data-sms-logs-table-filter="status" data-hide-search="true">
                                     <option></option>
                                     <option value="S_PENDING">Pending</option>
                                     <option value="S_SUCCESS">Success</option>
@@ -101,9 +101,9 @@
                             <!--begin::Actions-->
                             <div class="d-flex justify-content-end">
                                 <button type="reset" class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
-                                    data-kt-menu-dismiss="true" data-transaction-table-filter="reset">Reset</button>
+                                    data-kt-menu-dismiss="true" data-sms-logs-table-filter="reset">Reset</button>
                                 <button type="submit" class="btn btn-primary fw-semibold px-6" data-kt-menu-dismiss="true"
-                                    data-transaction-table-filter="filter">Apply</button>
+                                    data-sms-logs-table-filter="filter">Apply</button>
                             </div>
                             <!--end::Actions-->
                         </div>
@@ -152,7 +152,7 @@
         <!--begin::Card body-->
         <div class="card-body py-4">
             <!--begin::Table-->
-            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_transactions_table">
+            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_sms_logs_table">
                 <thead>
                     <tr class="fw-bold fs-7 text-uppercase gs-0">
                         <th class="w-25px">SL</th>
