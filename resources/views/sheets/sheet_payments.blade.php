@@ -232,7 +232,7 @@
                             <td>
                                 {{ $payment->created_at->format('d-M-Y') }}
                                 <span class="ms-1" data-bs-toggle="tooltip"
-                                    title="{{ $payment->created_at->format('d-M-Y h:i:s A') }}">
+                                    title="{{ $payment->created_at->format('h:i:s A, d-M-Y') }}">
                                     <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
                                 </span>
                             </td>

@@ -19,9 +19,14 @@ class SmsController extends Controller
     // SMS Logs
     public function smsLog()
     {
-        $smsLogs = SmsLog::with('createdBy')->orderBy('created_at', 'desc')->get();
+        $smsLogs = SmsLog::with('createdBy:id,name')->latest('updated_at')->select('id', 'recipient', 'message_body', 'status', 'api_error', 'created_by', 'created_at', 'updated_at')->get();
 
         return view('sms.logs', compact('smsLogs'));
+    }
+
+    public function sendSingleIndex()
+    {
+        return view('sms.single');
     }
 
     // Send single SMS
@@ -33,15 +38,14 @@ class SmsController extends Controller
             'message_type' => 'required|in:TEXT,UNICODE',
         ]);
 
-        $userId = Auth::id();
+        $userId = auth()->id();
 
         $log = $this->smsService->sendSingleSms($data['mobile'], $data['message_body'], $data['message_type'], $userId);
 
-        if ($log->status === 'SUCCESS') {
-            return response()->json(['message' => 'SMS sent successfully.']);
-        } else {
-            return response()->json(['message' => 'SMS sending failed.', 'error' => $log->api_error], 500);
-        }
+        $flashKey     = $log->status === 'SUCCESS' ? 'success' : 'error';
+        $flashMessage = $log->status === 'SUCCESS' ? 'SMS sent successfully.' : 'SMS sending failed.';
+
+        return redirect()->back()->with($flashKey, $flashMessage);
     }
 
     // Send bulk SMS
@@ -93,5 +97,4 @@ class SmsController extends Controller
             return response()->json(['message' => 'Failed to fetch SMS status.'], 500);
         }
     }
-
 }

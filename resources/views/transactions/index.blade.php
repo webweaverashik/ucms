@@ -215,7 +215,7 @@
                             </td>
 
                             <td>
-                                {{ $transaction->created_at->format('h:i A, d-M-Y') }}
+                                {{ $transaction->created_at->format('h:i:s A, d-M-Y') }}
                             </td>
 
                             <td>

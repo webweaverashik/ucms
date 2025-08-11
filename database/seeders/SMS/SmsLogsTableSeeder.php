@@ -13,7 +13,6 @@ class SmsLogsTableSeeder extends Seeder
     {
         SmsLog::insert([
             [
-                'request_type'         => 'SINGLE_SMS',
                 'message_type'         => 'TEXT',
                 'recipient'            => '017XXXXXXXX',
                 'message_body'         => 'Dear Ashik, your transaction of 1000 BDT has been successful.',

@@ -5,7 +5,7 @@
 
 @extends('layouts.app')
 
-@section('title', 'All SMS')
+@section('title', 'SMS Logs')
 
 @section('header-title')
     <div data-kt-swapper="true" data-kt-swapper-mode="{default: 'prepend', lg: 'prepend'}"
@@ -160,6 +160,7 @@
                         <th>Message</th>
                         <th class="d-none">Status (Filter)</th>
                         <th>Status</th>
+                        <th class="w-100px">Failed Reason (API)</th>
                         <th>Sent At</th>
                         <th>Sent By</th>
                         <th class="not-export">Actions</th>
@@ -189,8 +190,17 @@
                                     <span class="badge badge-danger">Failed</span>
                                 @endif
                             </td>
+
+                            {{-- Showing Failed API Response --}}
+                            @php
+                                $json = $log->api_error ? json_encode($log->api_error, JSON_PRETTY_PRINT) : null;
+                                $jsonWithoutBraces = $json ? trim($json, '{}') : null;
+                            @endphp
+
+                            <td>{!! $jsonWithoutBraces ? '<pre>' . $jsonWithoutBraces . '</pre>' : '' !!}</td>
+
                             <td>
-                                {{ $log->created_at->format('d-M-Y, h:i A') }}
+                                {{ $log->updated_at->format('h:i:s A, d-M-Y') }}
                             </td>
 
                             <td>
@@ -198,17 +208,13 @@
                             </td>
 
                             <td>
-                                <a href="#" title="Approve Transaction"
-                                    class="btn btn-icon text-hover-success w-30px h-30px approve-txn me-2"
-                                    data-txn-id={{ $log->id }}>
-                                    <i class="bi bi-check-circle fs-2"></i>
-                                </a>
-
-                                <a href="#" title="Delete Transaction"
-                                    class="btn btn-icon text-hover-danger w-30px h-30px delete-txn"
-                                    data-txn-id={{ $log->id }}>
-                                    <i class="bi bi-trash fs-2"></i>
-                                </a>
+                                @if ($log->status === 'FAILED')
+                                    <a href="#" title="Retry SMS"
+                                        class="btn btn-icon text-hover-success w-30px h-30px retry-sms me-2"
+                                        data-sms-log-id={{ $log->id }}>
+                                        <i class="ki-outline ki-arrows-circle fs-2"></i>
+                                    </a>
+                                @endif
                             </td>
                         </tr>
                     @endforeach

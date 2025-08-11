@@ -317,7 +317,7 @@
                                     <td class="text-gray-800">
                                         {{ $student->studentActivation->created_at->diffForHumans() }}
                                         <span class="ms-1" data-bs-toggle="tooltip"
-                                            title="{{ $student->studentActivation->created_at->format('d-M-Y h:m:s A') }}">
+                                            title="{{ $student->studentActivation->created_at->format('h:i:s A, d-M-Y') }}">
                                             <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
                                         </span>
                                     </td>
@@ -331,7 +331,7 @@
                                 <td class="text-gray-800">
                                     {{ $student->created_at->format('d-M-Y') }}
                                     <span class="ms-1" data-bs-toggle="tooltip"
-                                        title="{{ $student->created_at->format('d-M-Y h:m:s A') }}">
+                                        title="{{ $student->created_at->format('h:i:s A, d-M-Y') }}">
                                         <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
                                     </span>
 
@@ -1073,7 +1073,7 @@
                                                 <td>{{ $loop->index + 1 }}</td>
                                                 <td>{{ $transaction->created_at->format('d-M-Y') }}
                                                     <span class="ms-1" data-bs-toggle="tooltip"
-                                                        title="{{ $transaction->created_at->format('d-M-Y h:i:s A') }}">
+                                                        title="{{ $transaction->created_at->format('h:i:s A, d-M-Y') }}">
                                                         <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
                                                     </span>
                                                 </td>
@@ -1267,7 +1267,7 @@
                                             </td>
                                             <td>{{ $note->created_at->format('d-m-Y') }}
                                                 <span class="ms-1" data-bs-toggle="tooltip"
-                                                    title="{{ $note->created_at->format('d-M-Y h:m:s A') }}">
+                                                    title="{{ $note->created_at->format('h:i:s A, d-M-Y') }}">
                                                     <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
                                                 </span>
                                             </td>
@@ -1328,7 +1328,7 @@
                                             <td>{{ $record->updatedBy->name }}</td>
                                             <td>{{ $record->created_at->diffForHumans() }} <span class="ms-1"
                                                     data-bs-toggle="tooltip"
-                                                    title="{{ $record->created_at->format('d-M-Y h:m:s A') }}">
+                                                    title="{{ $record->created_at->format('h:i:s A, d-M-Y') }}">
                                                     <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
                                                 </span></td>
                                         </tr>

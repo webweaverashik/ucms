@@ -174,7 +174,7 @@
                                 </td>
                                 <td>{{ $note->created_at->format('d-m-Y') }}
                                     <span class="ms-1" data-bs-toggle="tooltip"
-                                        title="{{ $note->created_at->format('d-M-Y h:m:s A') }}">
+                                        title="{{ $note->created_at->format('h:i:s A, d-M-Y') }}">
                                         <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
                                     </span>
                                 </td>

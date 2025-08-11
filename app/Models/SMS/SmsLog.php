@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class SmsLog extends Model
 {
     protected $fillable = [
-        'request_type',
         'message_type',
         'recipient',
         'message_body',

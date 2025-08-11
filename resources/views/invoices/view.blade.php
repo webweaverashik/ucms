@@ -230,7 +230,7 @@
                         <tr>
                             <td class="text-gray-500">Created At:</td>
                             <td class="text-gray-800">
-                                {{ $invoice->created_at->format('d-M-Y h:i:s A') }}
+                                {{ $invoice->created_at->format('h:i:s A, d-M-Y') }}
                             </td>
                         </tr>
                         <!--end::Row-->
@@ -352,7 +352,7 @@
                                 </td>
 
                                 <td>
-                                    {{ $transaction->created_at->format('h:i A, d-M-Y') }}
+                                    {{ $transaction->created_at->format('h:i:s A, d-M-Y') }}
                                 </td>
 
                                 <td>{{ $transaction->remarks }}</td>
