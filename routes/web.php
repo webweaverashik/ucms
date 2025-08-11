@@ -16,6 +16,8 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Sheet\SheetController;
 use App\Http\Controllers\Sheet\SheetTopicController;
 use App\Http\Controllers\Sheet\SheetTopicTakenController;
+use App\Http\Controllers\SMS\SmsController;
+use App\Http\Controllers\SMS\SmsTemplateController;
 use App\Http\Controllers\Student\GuardianController;
 use App\Http\Controllers\Student\ReferenceController;
 use App\Http\Controllers\Student\SiblingController;
@@ -91,6 +93,17 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
 
     // Reports
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+
+    // ----- SMS Routes Start -----
+    Route::post('sms/send-single', [SmsController::class, 'sendSingle'])->name('sms.send.single');
+    Route::post('sms/send-bulk', [SmsController::class, 'sendBulk'])->name('sms.send.bulk');
+    Route::get('sms/balance', [SmsController::class, 'checkBalance'])->name('sms.balance');
+    Route::get('sms/status', [SmsController::class, 'checkSmsStatus'])->name('sms.status');
+
+    Route::get('settings/sms-templates', [SmsTemplateController::class, 'index'])->name('sms.templates.index');
+    Route::put('settings/sms-templates/{id}', [SmsTemplateController::class, 'update'])->name('sms.templates.update');
+    Route::post('settings/sms-templates/{id}/toggle-status', [SmsTemplateController::class, 'toggleStatus'])->name('sms.templates.toggleStatus');
+    // ----- SMS Routes End -----
 
     // Settings
     Route::get('settings/branch', function () {

@@ -8,7 +8,7 @@
 
 <body id="kt_body" class="app-blank bgi-size-cover bgi-position-center bgi-no-repeat">
     <!--begin::Theme mode setup on page load-->
-    @include('layouts.partials.theme-mode')
+    @include('layouts.partials.theme_mode')
     <!--end::Theme mode setup on page load-->
     <!--begin::Root-->
     <div class="d-flex flex-column flex-root" id="kt_app_root">

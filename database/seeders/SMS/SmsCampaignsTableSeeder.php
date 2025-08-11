@@ -1,0 +1,29 @@
+<?php
+namespace Database\Seeders\SMS;
+
+use App\Models\SMS\SmsCampaign;
+use Illuminate\Database\Seeder;
+
+class SmsCampaignsTableSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run()
+    {
+        SmsCampaign::insert([
+            [
+                'campaign_title'   => 'Welcome Campaign',
+                'message_type'     => 'TEXT',
+                'message_body'     => 'Welcome to our service! Thank you for joining us.',
+                'recipients'       => '017XXXXXXXX,018XXXXXXXX',
+                'exclude_inactive' => true,
+                'scheduled_at'     => now()->addDays(1),
+                'status'           => 'PENDING',
+                'created_by'       => 1,
+                'created_at'       => now(),
+                'updated_at'       => now(),
+            ],
+        ]);
+    }
+}

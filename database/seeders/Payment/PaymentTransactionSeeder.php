@@ -32,9 +32,11 @@ class PaymentTransactionSeeder extends Seeder
 
                 PaymentTransaction::create([
                     'student_id'         => $invoice->student_id,
+                    'student_classname'  => $invoice->student->class->name,
                     'payment_invoice_id' => $invoice->id,
                     'payment_type'       => $paymentType,
                     'amount_paid'        => $amountPaid,
+                    'remaining_amount'   => $remaining,
                     'voucher_no'         => strtoupper(Str::random(10)),
                     'created_by'         => 2,
                 ]);

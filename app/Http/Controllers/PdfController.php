@@ -26,7 +26,7 @@ class PdfController extends Controller
             return redirect()->route('students.index')->with('warning', 'This student is inactive.');
         }
 
-        return view('pdf.admission-form-layout', ['student' => $student]);
+        return view('pdf.admission_form_layout', ['student' => $student]);
     }
 
     public function downloadPaySlip(string $id)

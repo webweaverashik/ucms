@@ -10,7 +10,7 @@
     data-kt-app-sidebar-hoverable="true" data-kt-app-sidebar-push-header="true" data-kt-app-sidebar-push-toolbar="true"
     data-kt-app-sidebar-push-footer="true" class="app-default">
     <!--begin::Theme mode setup on page load-->
-    @include('layouts.partials.theme-mode')
+    @include('layouts.partials.theme_mode')
     <!--end::Theme mode setup on page load-->
 
     <!--begin::App-->

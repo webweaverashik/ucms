@@ -417,7 +417,108 @@
                     @endcan
                     <!--end:Reports Menu-->
 
-                    <!--begin:Settings Info Menu Heading-->
+                    <!--begin:SMS Menu-->
+                    @canany(['sms.send', 'sms.logs.view', 'sms.templates.manage'])
+                        <!--begin:SMS Modules-->
+                        <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="sms_menu">
+                            <!--begin:Menu link-->
+                            <span class="menu-link">
+                                <span class="menu-icon">
+                                    <i class="ki-outline ki-sms fs-2"></i>
+                                </span>
+                                <span class="menu-title">SMS</span>
+                                <span class="menu-arrow"></span>
+                            </span>
+                            <!--end:Menu link-->
+
+                            <!--begin:Menu sub-->
+                            <div class="menu-sub menu-sub-accordion">
+                                @can('sms.send')
+                                    <!--begin:Menu item-->
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <a class="menu-link" id="single_sms_link" href="{{ route('users.index') }}"><span
+                                                class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
+                                                class="menu-title">Send SMS</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                    <!--end:Menu item-->
+                                @endcan
+
+                                <!--begin:SMS Campaign item-->
+                                @can('sms.send')
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <a class="menu-link" id="sms_campaign_link" href="{{ route('branch.index') }}">
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot">
+                                                </span>
+                                            </span>
+                                            <span class="menu-title">SMS Campaigns</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                @endcan
+                                <!--end:SMS Campaign item-->
+                                
+                                <!--begin:SMS template item-->
+                                @can('sms.templates.manage')
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <a class="menu-link" id="sms_template_link" href="{{ route('sms.templates.index') }}">
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot">
+                                                </span>
+                                            </span>
+                                            <span class="menu-title">SMS Templates</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                @endcan
+                                <!--end:SMS template item-->
+                                
+                                <!--begin:SMS Campaign item-->
+                                @can('sms.logs.view')
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <a class="menu-link" id="sms_logs_link" href="{{ route('branch.index') }}">
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot">
+                                                </span>
+                                            </span>
+                                            <span class="menu-title">SMS Logs</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                @endcan
+                                <!--end:SMS Campaign item-->
+
+
+
+                                <!--begin:Bulk Admission item-->
+                                {{-- <div class="menu-item">
+                                    <!--begin:Menu link-->
+                                    <a class="menu-link" id="bulk_admission_link"
+                                        href="{{ route('bulk.admission.index') }}">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot">
+                                            </span>
+                                        </span>
+                                        <span class="menu-title">Bulk Admission</span>
+                                    </a>
+                                    <!--end:Menu link-->
+                                </div> --}}
+                                <!--end:Bulk Admission item-->
+
+                            </div>
+                            <!--end:Menu sub-->
+                        </div>
+                        <!--end: SMS Modules-->
+                    @endcanany
+                    <!--end:SMS Menu-->
+
+                    <!--begin:Settings Menu-->
                     @canany(['users.manage', 'settings.manage'])
                         <!--begin:Settings Modules-->
                         <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="settings_menu">
@@ -447,17 +548,19 @@
                                 @endcan
 
                                 <!--begin:Branch management item-->
-                                <div class="menu-item">
-                                    <!--begin:Menu link-->
-                                    <a class="menu-link" id="branch_link" href="{{ route('branch.index') }}">
-                                        <span class="menu-bullet">
-                                            <span class="bullet bullet-dot">
+                                @can('branches.manage')
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <a class="menu-link" id="branch_link" href="{{ route('branch.index') }}">
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot">
+                                                </span>
                                             </span>
-                                        </span>
-                                        <span class="menu-title">Branch</span>
-                                    </a>
-                                    <!--end:Menu link-->
-                                </div>
+                                            <span class="menu-title">Branch</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                @endcan
                                 <!--end:Branch management item-->
 
                                 <!--begin:Bulk Admission item-->
@@ -474,13 +577,12 @@
                                     <!--end:Menu link-->
                                 </div> --}}
                                 <!--end:Bulk Admission item-->
-
                             </div>
                             <!--end:Menu sub-->
                         </div>
                         <!--end: Settings Modules-->
                     @endcanany
-                    <!--end:Settings Info Menu Heading-->
+                    <!--end:Settings Menu-->
 
                 </div>
                 <!--end::Menu-->

@@ -143,7 +143,7 @@ class SheetController extends Controller
 
         $sheet_groups = Sheet::with('class')->get(); // $sheet->class
 
-        return view('sheets.sheet-payments', compact('payments', 'sheet_groups'));
+        return view('sheets.sheet_payments', compact('payments', 'sheet_groups'));
     }
 
     public function getPaidSheets($studentId)
