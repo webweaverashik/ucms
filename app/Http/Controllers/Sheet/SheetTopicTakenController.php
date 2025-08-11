@@ -46,7 +46,7 @@ class SheetTopicTakenController extends Controller
             $query->where('branch_id', $branchId);
         })
             ->where(function ($query) {
-                $query->whereNull('student_activation_id')->orWhereHas('studentActivation', function ($q) {
+                $query->whereNotNull('student_activation_id')->orWhereHas('studentActivation', function ($q) {
                     $q->where('active_status', 'active');
                 });
             })
