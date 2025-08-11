@@ -19,7 +19,7 @@ class SmsController extends Controller
     // SMS Logs
     public function smsLog()
     {
-        $smsLogs = SmsLog::with('createdBy:id,name')->latest('updated_at')->select('id', 'recipient', 'message_body', 'status', 'api_error', 'created_by', 'created_at', 'updated_at')->get();
+        $smsLogs = SmsLog::with('createdBy:id,name')->latest('updated_at')->select('id', 'recipient', 'message_body', 'status', 'api_error', 'created_by', 'created_at', 'updated_at')->take(100)->get();
 
         return view('sms.logs', compact('smsLogs'));
     }
