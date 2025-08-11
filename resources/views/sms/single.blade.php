@@ -49,7 +49,8 @@
                 <!--begin::Card body-->
                 <div class="card-body py-20">
                     <!--begin::Form-->
-                    <form id="kt_send_single_sms_form" class="form" action="{{ route('sms.single.send') }}" method="POST">
+                    <form id="kt_send_single_sms_form" class="form" action="{{ route('sms.single.send') }}"
+                        method="POST">
                         @csrf
                         <!--begin::Scroll-->
                         <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_send_single_sms_scroll"
@@ -109,8 +110,8 @@
                                         <!--begin::Old Month Year-->
                                         <div class="col-6">
                                             <!--begin::Option-->
-                                            <input type="radio" class="btn-check" name="message_type"
-                                                value="UNICODE" id="unicode_message_type_input" />
+                                            <input type="radio" class="btn-check" name="message_type" value="UNICODE"
+                                                id="unicode_message_type_input" />
                                             <label
                                                 class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                                 for="unicode_message_type_input">
@@ -143,13 +144,8 @@
                         <!--end::Scroll-->
                         <!--begin::Actions-->
                         <div class="text-center pt-10">
-                            <button type="reset" class="btn btn-light me-3"
-                                data-kt-add-invoice-modal-action="cancel">Discard</button>
-                            <button type="submit" class="btn btn-primary" data-kt-add-invoice-modal-action="submit">
-                                <span class="indicator-label">Submit</span>
-                                <span class="indicator-progress">Please wait...
-                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
-                            </button>
+                            <button type="reset" class="btn btn-light me-3">Reset</button>
+                            <button type="submit" class="btn btn-primary">Submit</button>
                         </div>
                         <!--end::Actions-->
                     </form>
