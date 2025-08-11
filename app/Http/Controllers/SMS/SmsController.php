@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\SMS;
 
 use App\Http\Controllers\Controller;
+use App\Models\SMS\SmsLog;
 use App\Services\SmsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,6 +14,14 @@ class SmsController extends Controller
     public function __construct(SmsService $smsService)
     {
         $this->smsService = $smsService;
+    }
+
+    // SMS Logs
+    public function smsLog()
+    {
+        $smsLogs = SmsLog::with('createdBy')->orderBy('created_at', 'desc')->get();
+
+        return view('sms.logs', compact('smsLogs'));
     }
 
     // Send single SMS
@@ -84,4 +93,5 @@ class SmsController extends Controller
             return response()->json(['message' => 'Failed to fetch SMS status.'], 500);
         }
     }
+
 }

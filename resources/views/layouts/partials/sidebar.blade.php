@@ -437,7 +437,7 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" id="single_sms_link" href="{{ route('users.index') }}"><span
+                                        <a class="menu-link" id="single_sms_link" href="{{ route('sms.single.index') }}"><span
                                                 class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
                                                 class="menu-title">Send SMS</span>
                                         </a>
@@ -450,7 +450,7 @@
                                 @can('sms.send')
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" id="sms_campaign_link" href="{{ route('branch.index') }}">
+                                        <a class="menu-link" id="sms_campaign_link" href="{{ route('sms.campaign.index') }}">
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot">
                                                 </span>
@@ -477,12 +477,12 @@
                                     </div>
                                 @endcan
                                 <!--end:SMS template item-->
-                                
+
                                 <!--begin:SMS Campaign item-->
                                 @can('sms.logs.view')
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" id="sms_logs_link" href="{{ route('branch.index') }}">
+                                        <a class="menu-link" id="sms_logs_link" href="{{ route('sms.logs.index') }}">
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot">
                                                 </span>

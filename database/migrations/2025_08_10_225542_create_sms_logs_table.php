@@ -22,8 +22,8 @@ return new class extends Migration
             $table->string('status')->default('PENDING');    // PENDING, SUCCESS, FAILED
             $table->integer('api_response_code')->nullable();
             $table->string('api_response_message')->nullable();
-            $table->json('api_error')->nullable(); // Store API error details if failed
-            $table->foreignId('created_by')->nullable();
+            $table->json('api_error')->nullable();       // Store API error details if failed
+            $table->foreignId('created_by')->nullable(); // user who created the campaign or System
             $table->timestamps();
         });
     }

@@ -10,7 +10,7 @@ class SmsTemplateController extends Controller
     public function index()
     {
         $templates = SmsTemplate::all();
-        return view('settings.sms_templates.index', compact('templates'));
+        return view('sms.templates', compact('templates'));
     }
 
     public function store(Request $request)

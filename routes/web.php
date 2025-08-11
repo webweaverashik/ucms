@@ -95,14 +95,19 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
 
     // ----- SMS Routes Start -----
-    Route::post('sms/send-single', [SmsController::class, 'sendSingle'])->name('sms.send.single');
+    Route::get('sms/send-single', [SmsController::class, 'sendSingleIndex'])->name('sms.single.index');
+    Route::post('sms/send-single', [SmsController::class, 'sendSingle'])->name('sms.single.send');
+
+    Route::get('sms/send-campaign', [SmsController::class, 'sendCampaignIndex'])->name('sms.campaign.index');
     Route::post('sms/send-bulk', [SmsController::class, 'sendBulk'])->name('sms.send.bulk');
+
+    Route::get('sms/logs', [SmsController::class, 'smsLog'])->name('sms.logs.index');
     Route::get('sms/balance', [SmsController::class, 'checkBalance'])->name('sms.balance');
     Route::get('sms/status', [SmsController::class, 'checkSmsStatus'])->name('sms.status');
 
-    Route::get('settings/sms-templates', [SmsTemplateController::class, 'index'])->name('sms.templates.index');
-    Route::put('settings/sms-templates/{id}', [SmsTemplateController::class, 'update'])->name('sms.templates.update');
-    Route::post('settings/sms-templates/{id}/toggle-status', [SmsTemplateController::class, 'toggleStatus'])->name('sms.templates.toggleStatus');
+    Route::get('sms/templates', [SmsTemplateController::class, 'index'])->name('sms.templates.index');
+    Route::put('sms/templates/{id}', [SmsTemplateController::class, 'update'])->name('sms.templates.update');
+    Route::post('sms/templates/{id}/toggle-status', [SmsTemplateController::class, 'toggleStatus'])->name('sms.templates.toggleStatus');
     // ----- SMS Routes End -----
 
     // Settings
