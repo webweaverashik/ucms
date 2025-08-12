@@ -13,16 +13,11 @@ class SmsTemplateController extends Controller
         return view('sms.templates', compact('templates'));
     }
 
-    public function store(Request $request)
+    public function update(Request $request, SmsTemplate $template)
     {
-        $request->validate([
-            'title'        => 'required',
-            'message_type' => 'required|in:TEXT,UNICODE',
-            'body'         => 'required',
-        ]);
-
-        SmsTemplate::create($request->only('title', 'message_type', 'body', 'is_active'));
-        return back()->with('success', 'SMS Template created successfully.');
+        $template->update($request->all());
+        
+        return response()->json(['success' => 'SMS Template updated successfully.']);
     }
 
     public function toggleStatus(SmsTemplate $template)

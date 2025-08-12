@@ -13,26 +13,14 @@ class SmsTemplatesTableSeeder extends Seeder
     {
         SmsTemplate::insert([
             [
-                'title'        => 'Transaction SMS',
-                'message_type' => 'TEXT',
-                'body'         => 'Dear {name}, your transaction of {amount} has been successful.',
-                'is_active'    => true,
+                'title'        => 'transaction_sms',
+                'body'         => 'Dear {name}, your payment of {amount} has been successful. {voucher_no}',
                 'created_at'   => now(),
                 'updated_at'   => now(),
             ],
             [
-                'title'        => 'Greetings SMS',
-                'message_type' => 'UNICODE',
-                'body'         => 'শুভেচ্ছা {name}, আপনার দিনটি আনন্দময় হোক।',
-                'is_active'    => true,
-                'created_at'   => now(),
-                'updated_at'   => now(),
-            ],
-            [
-                'title'        => 'Birthday Wish',
-                'message_type' => 'TEXT',
+                'title'        => 'birthday_wish',
                 'body'         => 'Happy Birthday, {name}! Have a wonderful day!',
-                'is_active'    => true,
                 'created_at'   => now(),
                 'updated_at'   => now(),
             ],

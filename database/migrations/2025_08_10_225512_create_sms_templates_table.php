@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('sms_templates', function (Blueprint $table) {
             $table->id();
-            $table->string('title');                           // e.g., Transaction SMS, Greetings, Birthday Wish
-            $table->text('body');                              // predefined body with placeholders {name}, {amount}, etc.
+            $table->string('name'); // e.g., Transaction SMS, Greetings, Birthday Wish
+            $table->text('body');   // predefined body with placeholders {name}, {amount}, etc.
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
