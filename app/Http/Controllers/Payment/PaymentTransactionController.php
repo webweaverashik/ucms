@@ -5,7 +5,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment\PaymentInvoice;
 use App\Models\Payment\PaymentTransaction;
 use App\Models\Student\Student;
+use App\Services\AutoSmsService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentTransactionController extends Controller
 {
@@ -129,7 +131,6 @@ class PaymentTransactionController extends Controller
             //     'amount_due' => 0,
             //     'status'     => 'paid',
             // ]);
-
         } elseif ($newAmountDue <= 0) {
             // Full payment (regular case)
             $invoice->update([
@@ -146,6 +147,22 @@ class PaymentTransactionController extends Controller
                 : $invoice->status, // Keep existing status if already partially paid
             ]);
         }
+
+        // Sending SMS
+        $autoSmsService = app(AutoSmsService::class);
+        $mobile         = $transaction->student->mobileNumbers->where('number_type', 'sms')->first()->mobile_number;
+        $autoSmsService->sendAutoSms(
+            'student_payment_success',
+            $mobile,
+            [
+                'student_name'     => $transaction->student->name,
+                'invoice_no'       => $invoice->invoice_number,
+                'voucher_no'       => $transaction->voucher_no,
+                'paid_amount'      => $transaction->amount_paid,
+                'remaining_amount' => $transaction->remaining_amount,
+                'payment_time'     => $transaction->created_at,
+            ]
+        );
 
         return redirect()->back()->with('success', 'Transaction recorded successfully.');
     }

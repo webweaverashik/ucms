@@ -5,8 +5,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment\PaymentInvoice;
 use App\Models\Sheet\SheetPayment;
 use App\Models\Student\Student;
+use App\Services\AutoSmsService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
 class PaymentInvoiceController extends Controller
@@ -25,7 +27,6 @@ class PaymentInvoiceController extends Controller
         $cacheKey = "invoices_index_branch_{$branchId}";
 
         $data = Cache::remember($cacheKey, now()->addHours(6), function () use ($branchId) {
-
             // Common student constraint
             $studentQuery = function ($query) use ($branchId) {
                 if ($branchId != 0) {
@@ -39,11 +40,7 @@ class PaymentInvoiceController extends Controller
             };
 
             // Unpaid Invoices
-            $unpaid_invoices = PaymentInvoice::with([
-                'student:id,name,student_unique_id,student_activation_id',
-                'student.studentActivation:id,active_status',
-                'student.payments:id,student_id,payment_style,due_date,tuition_fee',
-            ])
+            $unpaid_invoices = PaymentInvoice::with(['student:id,name,student_unique_id,student_activation_id', 'student.studentActivation:id,active_status', 'student.payments:id,student_id,payment_style,due_date,tuition_fee'])
                 ->withCount('paymentTransactions')
                 ->where('status', '!=', 'paid')
                 ->whereHas('student', $studentQuery)
@@ -51,10 +48,7 @@ class PaymentInvoiceController extends Controller
                 ->get();
 
             // Paid Invoices
-            $paid_invoices = PaymentInvoice::with([
-                'student:id,name,student_unique_id',
-                'student.payments:id,student_id,payment_style,due_date,tuition_fee',
-            ])
+            $paid_invoices = PaymentInvoice::with(['student:id,name,student_unique_id', 'student.payments:id,student_id,payment_style,due_date,tuition_fee'])
                 ->where('status', 'paid')
                 ->whereHas('student', function ($query) use ($branchId) {
                     if ($branchId != 0) {
@@ -69,18 +63,14 @@ class PaymentInvoiceController extends Controller
             $paidMonths = $this->getFilteredMonths('=', 'paid');
 
             // Students for modal
-            $students = Student::with([
-                'studentActivation:id,active_status',
-                'payments:id,student_id,payment_style,due_date,tuition_fee',
-            ])
+            $students = Student::with(['studentActivation:id,active_status', 'payments:id,student_id,payment_style,due_date,tuition_fee'])
                 ->when($branchId != 0, function ($query) use ($branchId) {
                     $query->where('branch_id', $branchId);
                 })
                 ->where(function ($query) {
-                    $query->whereNotNull('student_activation_id')
-                        ->orWhereHas('studentActivation', function ($q) {
-                            $q->where('active_status', 'active');
-                        });
+                    $query->whereNotNull('student_activation_id')->orWhereHas('studentActivation', function ($q) {
+                        $q->where('active_status', 'active');
+                    });
                 })
                 ->orderBy('student_unique_id')
                 ->select('id', 'name', 'student_unique_id', 'student_activation_id', 'branch_id')
@@ -141,21 +131,13 @@ class PaymentInvoiceController extends Controller
         $classId = optional($student->class)->id;
 
         // ✅ Prevent duplicate tuition_fee invoice (same student + same month_year)
-        if (
-            $request->invoice_type === 'tuition_fee' &&
-            PaymentInvoice::where('student_id', $student->id)
-            ->where('invoice_type', 'tuition_fee')
-            ->where('month_year', $validatedMonthYear)
-            ->exists()
-        ) {
+        if ($request->invoice_type === 'tuition_fee' && PaymentInvoice::where('student_id', $student->id)->where('invoice_type', 'tuition_fee')->where('month_year', $validatedMonthYear)->exists()) {
             return back()->with('warning', 'Tuition fee invoice already exists for this student and month.');
         }
 
         // ✅ Prevent duplicate sheet_fee for same student + class
         if ($request->invoice_type === 'sheet_fee') {
-            $alreadyPaid = SheetPayment::where('student_id', $student->id)
-                ->whereHas('sheet', fn($q) => $q->where('class_id', $classId))
-                ->exists();
+            $alreadyPaid = SheetPayment::where('student_id', $student->id)->whereHas('sheet', fn($q) => $q->where('class_id', $classId))->exists();
 
             if ($alreadyPaid) {
                 return back()->with('warning', 'Sheet invoice already exists for this student.');
@@ -172,9 +154,7 @@ class PaymentInvoiceController extends Controller
             ->latest('invoice_number')
             ->first();
 
-        $nextSequence = $lastInvoice
-        ? ((int) substr($lastInvoice->invoice_number, strrpos($lastInvoice->invoice_number, '_') + 1)) + 1
-        : 1001;
+        $nextSequence = $lastInvoice ? ((int) substr($lastInvoice->invoice_number, strrpos($lastInvoice->invoice_number, '_') + 1)) + 1 : 1001;
 
         $invoiceNumber = "{$prefix}{$yearSuffix}{$month}_{$nextSequence}";
 
@@ -201,10 +181,54 @@ class PaymentInvoiceController extends Controller
             }
         }
 
+        // Sending SMS
+        $autoSmsService = app(AutoSmsService::class);
+        $mobile         = $invoice->student->mobileNumbers
+            ->where('number_type', 'sms')
+            ->first()
+            ->mobile_number;
+
+        if (in_array($request->invoice_type, [
+            'tuition_fee', 'model_test_fee', 'exam_fee',
+            'sheet_fee', 'book_fee', 'diary_fee', 'others_fee',
+        ])) {
+            $autoSmsService->sendAutoSms(
+                "{$request->invoice_type}_invoice_created",
+                $mobile,
+                [
+                    'student_name' => $invoice->student->name,
+                    'month_year'   => $invoice->month_year
+                    ? Carbon::createFromDate(
+                        explode('_', $invoice->month_year)[1], // year
+                        explode('_', $invoice->month_year)[0]  // month
+                    )->format('F')
+                    : now()->format('F'),
+                    'amount'       => $invoice->total_amount,
+                    'invoice_no'   => $invoice->invoice_number,
+                    'due_date'     => $this->ordinal($invoice->student->payments->due_date) . ' ' . now()->format('F'),
+                ]
+            );
+        }
+
         // Clear the cache
         clearUCMSCaches();
 
         return redirect()->back()->with('success', 'Invoice created successfully.');
+    }
+
+    /**
+     * Convert number to ordinal (1st, 2nd, 3rd, etc.)
+     */
+    private function ordinal(int $number): string
+    {
+        if (! in_array(($number % 100), [11, 12, 13])) {
+            switch ($number % 10) {
+                case 1:return $number . 'st';
+                case 2:return $number . 'nd';
+                case 3:return $number . 'rd';
+            }
+        }
+        return $number . 'th';
     }
 
     /**
@@ -231,10 +255,9 @@ class PaymentInvoiceController extends Controller
             $query->where('branch_id', auth()->user()->branch_id);
         })
             ->where(function ($query) {
-                $query->whereNull('student_activation_id')
-                    ->orWhereHas('studentActivation', function ($q) {
-                        $q->where('active_status', 'active');
-                    });
+                $query->whereNull('student_activation_id')->orWhereHas('studentActivation', function ($q) {
+                    $q->where('active_status', 'active');
+                });
             })
             ->orderBy('student_unique_id')
             ->get();
