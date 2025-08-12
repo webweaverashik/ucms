@@ -46,14 +46,17 @@
         <div class="col-xl-8 col-xxl-6">
             <!--begin::Card-->
             <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title" id="smsBalance">Loading Balance...</h3>
+                </div>
                 <!--begin::Card body-->
-                <div class="card-body py-20">
+                <div class="card-body py-10">
                     <!--begin::Form-->
                     <form id="kt_send_single_sms_form" class="form" action="{{ route('sms.single.send') }}"
                         method="POST">
                         @csrf
                         <!--begin::Scroll-->
-                        <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_send_single_sms_scroll"
+                        <div class="d-flex flex-column scroll-y px-5" id="kt_send_single_sms_scroll"
                             data-kt-scroll="true" data-kt-scroll-activate="false" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_transaction_header"
                             data-kt-scroll-wrappers="#kt_send_single_sms_scroll" data-kt-scroll-offset="300px">
@@ -163,6 +166,10 @@
 @endpush
 
 @push('page-js')
+    <script>
+        window.smsBalanceUrl = "{{ route('sms.balance') }}";
+    </script>
+
     <script src="{{ asset('js/sms/single.js') }}"></script>
 
     <script>

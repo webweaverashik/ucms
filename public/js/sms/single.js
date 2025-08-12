@@ -65,4 +65,15 @@ document.addEventListener("DOMContentLoaded", function () {
                   defaultSubmit: new FormValidation.plugins.DefaultSubmit(),
             },
       });
+
+
+      // Fetching balance
+      fetch(window.smsBalanceUrl)
+            .then(response => response.json())
+            .then(data => {
+                  document.getElementById("smsBalance").textContent = 'Balance: ' + data.balance + 'Tk' || "N/A";
+            })
+            .catch(() => {
+                  document.getElementById("smsBalance").textContent = "Error";
+            });
 });
