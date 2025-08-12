@@ -110,10 +110,9 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::post('sms/templates/{id}/toggle-status', [SmsTemplateController::class, 'toggleStatus'])->name('sms.templates.toggleStatus');
     // ----- SMS Routes End -----
 
-    // Settings
-    Route::get('settings/branch', function () {
-        echo "Hello";
-    })->name('settings.branch');
+    // ----- Settings Start -----
+
+    // ----- Settings End -----
 
     // Miscellaneous
     Route::get('bulk-admission', [MiscController::class, 'index'])->name('bulk.admission.index');
@@ -128,20 +127,23 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     });
 
     // Resource Routes
-    Route::resource('settings/users', UserController::class);
-    Route::resource('settings/branch', BranchController::class);
-    Route::resource('students', StudentController::class);
-    Route::resource('guardians', GuardianController::class);
-    Route::resource('siblings', SiblingController::class);
-    Route::resource('teachers', TeacherController::class);
-    Route::resource('institutions', InstitutionController::class);
-    Route::resource('classnames', ClassNameController::class);
-    Route::resource('shifts', ShiftController::class);
-    Route::resource('subjects', SubjectController::class);
-    Route::resource('invoices', PaymentInvoiceController::class);
-    Route::resource('transactions', PaymentTransactionController::class);
-    Route::resource('sheets', SheetController::class);
-    Route::resource('notes', SheetTopicController::class);
+    Route::resources([
+        'settings/users'  => UserController::class,
+        'settings/branch' => BranchController::class,
+        'students'        => StudentController::class,
+        'guardians'       => GuardianController::class,
+        'siblings'        => SiblingController::class,
+        'teachers'        => TeacherController::class,
+        'institutions'    => InstitutionController::class,
+        'classnames'      => ClassNameController::class,
+        'shifts'          => ShiftController::class,
+        'subjects'        => SubjectController::class,
+        'invoices'        => PaymentInvoiceController::class,
+        'transactions'    => PaymentTransactionController::class,
+        'sheets'          => SheetController::class,
+        'notes'           => SheetTopicController::class,
+    ]);
+
 });
 
 // Handle GET /logout for logged-out users (redirect to login)
