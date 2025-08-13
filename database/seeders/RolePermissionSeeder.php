@@ -193,6 +193,8 @@ class RolePermissionSeeder extends Seeder
 
             // 📩 sms
             'sms.send',
+            'sms.campaign.view',
+            'sms.campaign.edit',
             'sms.logs.view',
 
         ]);
@@ -242,6 +244,8 @@ class RolePermissionSeeder extends Seeder
 
             // 📩 sms
             'sms.send',
+            'sms.campaign.view',
+            'sms.campaign.edit',
             'sms.logs.view',
         ]);
     }
