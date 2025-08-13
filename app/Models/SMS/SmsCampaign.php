@@ -14,16 +14,13 @@ class SmsCampaign extends Model
         'message_type',
         'message_body',
         'recipients',
-        'exclude_inactive',
-        'scheduled_at',
-        'status',
+        'is_approved',
         'created_by',
         'deleted_by',
     ];
 
     protected $casts = [
         'recipients'       => 'string',
-        'exclude_inactive' => 'boolean',
         'is_approved'      => 'boolean',
     ];
 

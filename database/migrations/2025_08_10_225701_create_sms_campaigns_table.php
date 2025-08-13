@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('message_type')->default('TEXT'); // TEXT or UNICODE
             $table->text('message_body');
             $table->text('recipients'); // Comma-separated or JSON list
-            $table->boolean('exclude_inactive')->default(true);
             $table->boolean('is_approved')->default(false); // Needs admin approval
             $table->foreignId('created_by');
             $table->timestamps();

@@ -450,7 +450,7 @@
                                 @can('sms.send')
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" id="sms_campaign_link" href="{{ route('sms.campaign.index') }}">
+                                        <a class="menu-link" id="sms_campaign_link" href="{{ route('send-campaign.index') }}">
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot">
                                                 </span>

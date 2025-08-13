@@ -24,6 +24,7 @@ class SmsController extends Controller
         return view('sms.logs', compact('smsLogs'));
     }
 
+    // Single SMS Form page
     public function sendSingleIndex()
     {
         return view('sms.single');
