@@ -101,7 +101,7 @@ var KTSMSList = function () {
 
       // Search Datatable --- official docs reference: https://datatables.net/reference/api/search()
       var handleSearch = function () {
-            const filterSearch = document.querySelector('[data-transaction-table-filter="search"]');
+            const filterSearch = document.querySelector('[data-sms-logs-table-filter="search"]');
             filterSearch.addEventListener('keyup', function (e) {
                   datatable.search(e.target.value).draw();
             });
@@ -110,9 +110,9 @@ var KTSMSList = function () {
       // Filter Datatable
       var handleFilter = function () {
             // Select filter options
-            const filterForm = document.querySelector('[data-transaction-table-filter="form"]');
-            const filterButton = filterForm.querySelector('[data-transaction-table-filter="filter"]');
-            const resetButton = filterForm.querySelector('[data-transaction-table-filter="reset"]');
+            const filterForm = document.querySelector('[data-sms-logs-table-filter="form"]');
+            const filterButton = filterForm.querySelector('[data-sms-logs-table-filter="filter"]');
+            const resetButton = filterForm.querySelector('[data-sms-logs-table-filter="reset"]');
             const selectOptions = filterForm.querySelectorAll('select');
 
             // Filter datatable on submit
@@ -220,7 +220,7 @@ var KTSMSList = function () {
                   exportButtons();
                   handleSearch();
                   handleFilter();
-                  handleRetry();
+                  // handleRetry();
             }
       }
 }();
