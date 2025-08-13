@@ -53,7 +53,7 @@
                 <!--begin::Card body-->
                 <div class="card-body py-10">
                     <!--begin::Form-->
-                    <form id="kt_send_single_sms_form" class="form" action="{{ route('sms.single.send') }}"
+                    <form id="kt_send_single_sms_form" class="form" action="#"
                         method="POST">
                         @csrf
                         <!--begin::Scroll-->
