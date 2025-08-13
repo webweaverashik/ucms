@@ -13,6 +13,10 @@ class SmsCampaignController extends Controller
      */
     public function index()
     {
+        if (! auth()->user()->can('sms.campaign.view')) {
+            return redirect()->back()->with('warning', 'No permission to manage SMS templates.');
+        }
+
         $campaigns = SmsCampaign::all();
 
         return view('sms.campaign.index', compact('campaigns'));
@@ -23,6 +27,10 @@ class SmsCampaignController extends Controller
      */
     public function create()
     {
+        if (! auth()->user()->can('sms.campaign.create')) {
+            return redirect()->back()->with('warning', 'No permission to manage SMS templates.');
+        }
+
         return view('sms.campaign.create');
     }
 

@@ -105,6 +105,7 @@ class RolePermissionSeeder extends Seeder
 
             // 📩 sms
             'sms.send',
+            'sms.campaign.view',
             'sms.campaign.create',
             'sms.campaign.edit',
             'sms.campaign.delete',
