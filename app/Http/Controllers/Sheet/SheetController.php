@@ -28,7 +28,10 @@ class SheetController extends Controller
                     $q->where('invoice_type', 'sheet_fee');
                 });
             },
-        ])->with('class')->latest()->get();
+        ])
+            ->with('class')
+            ->latest()
+            ->get();
 
         $classes = ClassName::all();
 
@@ -55,10 +58,13 @@ class SheetController extends Controller
 
         // Check for duplicate class_id
         if (Sheet::where('class_id', $validated['sheet_class_id'])->exists()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'A sheet for this class already exists.',
-            ], 409); // 409 Conflict
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'A sheet for this class already exists.',
+                ],
+                409,
+            ); // 409 Conflict
         }
 
         Sheet::create([
@@ -78,7 +84,7 @@ class SheetController extends Controller
             return redirect()->back()->with('warning', 'No permission to view sheets.');
         }
 
-        $sheet = Sheet::find($id);
+        $sheet = Sheet::with(['class.subjects.sheetTopics.sheetsTaken'])->find($id);
 
         if (! $sheet) {
             return redirect()->route('sheets.index')->with('warning', 'Sheet group not found.');
@@ -136,7 +142,7 @@ class SheetController extends Controller
                 ! $user->hasRole('admin'),
                 fn($query) => $query->whereHas('student', function ($q) use ($user) {
                     $q->where('branch_id', $user->branch_id);
-                })
+                }),
             )
             ->latest()
             ->get();
@@ -151,8 +157,7 @@ class SheetController extends Controller
         $payments = SheetPayment::with('sheet')
             ->where('student_id', $studentId)
             ->whereHas('invoice', function ($query) {
-                $query->where('invoice_type', 'sheet_fee')
-                    ->whereIn('status', ['paid', 'partially_paid']);
+                $query->where('invoice_type', 'sheet_fee')->whereIn('status', ['paid', 'partially_paid']);
             })
             ->get();
 
@@ -190,21 +195,17 @@ class SheetController extends Controller
         // Debug subjects query
         // \Log::debug("Subjects Query Results", $subjects->toArray());
 
-        $topics = SheetTopic::whereIn('subject_id', $subjects->pluck('id'))
-            ->with('subject')
-            ->get();
+        $topics = SheetTopic::whereIn('subject_id', $subjects->pluck('id'))->with('subject')->get();
 
-        $distributedTopics = SheetTopicTaken::where('student_id', $studentId)
-            ->whereIn('sheet_topic_id', $topics->pluck('id'))
-            ->pluck('sheet_topic_id')
-            ->toArray();
+        $distributedTopics = SheetTopicTaken::where('student_id', $studentId)->whereIn('sheet_topic_id', $topics->pluck('id'))->pluck('sheet_topic_id')->toArray();
 
         return response()->json([
             'topics'            => $topics,
             'distributedTopics' => $distributedTopics,
             'studentGroup'      => $student->academic_group,
             'classNumeral'      => $student->class->class_numeral,
-            'debug'             => [ // Temporary debug info
+            'debug'             => [
+                // Temporary debug info
                 'student_group'    => $student->academic_group,
                 'class_numeral'    => $student->class->class_numeral,
                 'subject_count'    => $subjects->count(),
@@ -212,5 +213,4 @@ class SheetController extends Controller
             ],
         ]);
     }
-
 }

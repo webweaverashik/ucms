@@ -9,7 +9,7 @@ class SmsTemplateController extends Controller
 {
     public function index()
     {
-        $templates = SmsTemplate::all();
+        return $templates = SmsTemplate::all();
         return view('sms.templates', compact('templates'));
     }
 

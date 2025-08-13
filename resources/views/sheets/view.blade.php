@@ -43,6 +43,9 @@
 
 
 @section('content')
+    @php
+        $canNotesManage = auth()->user()->can('notes.manage');
+    @endphp
     <!--begin::Layout-->
     <div class="d-flex flex-column flex-xl-row">
         <!--begin::Sidebar-->
@@ -267,7 +270,9 @@
                                                                 <i class="bi bi-dot fs-3 text-info me-2"></i>
                                                                 <div class="flex-grow-1">
                                                                     <span
-                                                                        class="topic-text text-gray-700 fs-6 @if ($topic->status == 'inactive') text-decoration-line-through @endif" title="{{ $topic->sheetsTaken->count() }} students taken this topic" data-bs-toggle="tooltip">
+                                                                        class="topic-text text-gray-700 fs-6 @if ($topic->status == 'inactive') text-decoration-line-through @endif"
+                                                                        title="{{ $topic->sheetsTaken->count() }} students taken this topic"
+                                                                        data-bs-toggle="tooltip">
                                                                         {{ $topic->topic_name }}
                                                                         ({{ $topic->sheetsTaken->count() }})
                                                                     </span>
@@ -275,8 +280,9 @@
                                                                         class="topic-input form-control form-control-sm d-none fs-6"
                                                                         value="{{ $topic->topic_name }}" />
                                                                 </div>
-                                                                @can('notes.manage')
-                                                                    <div class="action-icons ms-2 d-flex align-items-center">
+                                                                @if ($canNotesManage)
+                                                                    <div
+                                                                        class="action-icons ms-2 d-flex align-items-center">
                                                                         <div
                                                                             class="form-check form-switch d-flex align-items-center m-0">
                                                                             <input
@@ -293,7 +299,8 @@
                                                                             <i class="ki-outline ki-trash fs-3 text-muted delete-note text-hover-danger ms-3"
                                                                                 role="button"
                                                                                 data-topic-id="{{ $topic->id }}"
-                                                                                data-bs-toggle="tooltip" title="Delete"></i>
+                                                                                data-bs-toggle="tooltip"
+                                                                                title="Delete"></i>
                                                                         @else
                                                                             {{-- Just for placeholder purpose --}}
                                                                             <span class="delete-note"></span>
@@ -305,7 +312,7 @@
                                                                             role="button" data-bs-toggle="tooltip"
                                                                             title="Cancel"></i>
                                                                     </div>
-                                                                @endcan
+                                                                @endif
                                                             </div>
                                                         </div>
                                                     </div>

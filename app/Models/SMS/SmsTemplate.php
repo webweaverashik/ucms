@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 class SmsTemplate extends Model
 {
     protected $fillable = [
-        'title',
+        'name',
         'body',
         'type',
         'is_active',
