@@ -8,11 +8,19 @@
 <body id="kt_app_body" data-kt-app-layout="dark-sidebar" data-kt-app-header-fixed="true"
     data-kt-app-header-fixed-mobile="true" data-kt-app-sidebar-enabled="true" data-kt-app-sidebar-fixed="true"
     data-kt-app-sidebar-hoverable="true" data-kt-app-sidebar-push-header="true" data-kt-app-sidebar-push-toolbar="true"
-    data-kt-app-sidebar-push-footer="true" class="app-default">
+    data-kt-app-sidebar-push-footer="true" data-kt-app-page-loading-enabled="true" data-kt-app-page-loading="on" class="app-default">
     <!--begin::Theme mode setup on page load-->
     @include('layouts.partials.theme_mode')
     <!--end::Theme mode setup on page load-->
 
+	<!--begin::Page loading(append to body)-->
+	<div class="page-loader">
+		<span class="spinner-border text-primary" role="status">
+			<span class="visually-hidden">Loading...</span>
+		</span>
+	</div>
+	<!--end::Page loading-->
+    
     <!--begin::App-->
     <div class="d-flex flex-column flex-root app-root" id="kt_app_root">
         <!--begin::Page-->

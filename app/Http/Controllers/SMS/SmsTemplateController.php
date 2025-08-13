@@ -9,22 +9,31 @@ class SmsTemplateController extends Controller
 {
     public function index()
     {
-        return $templates = SmsTemplate::all();
-        return view('sms.templates', compact('templates'));
-    }
+        if (! auth()->user()->can('sms.templates.manage')) {
+            return redirect()->back()->with('warning', 'No permission to manage SMS templates.');
+        }
 
-    public function update(Request $request, SmsTemplate $template)
-    {
-        $template->update($request->all());
-        
-        return response()->json(['success' => 'SMS Template updated successfully.']);
+        $templates = SmsTemplate::all();
+        return view('sms.templates', compact('templates'));
     }
 
     public function toggleStatus(SmsTemplate $template)
     {
-        $template->is_active = ! $template->is_active;
-        $template->save();
+        $template->update([
+            'is_active' => ! $template->is_active,
+        ]);
 
-        return response()->json(['success' => 'SMS Template status updated successfully.', 'is_active' => $template->is_active]);
+        return response()->json(['success' => true, 'is_active' => $template->is_active]);
+    }
+
+    public function updateBody(Request $request, SmsTemplate $template)
+    {
+        $validated = $request->validate([
+            'body' => 'required|string', // or any limit you want
+        ]);
+
+        $template->update(['body' => $validated['body']]);
+
+        return response()->json(['success' => true, 'body' => $template->body]);
     }
 }

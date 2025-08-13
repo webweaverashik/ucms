@@ -106,8 +106,11 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('sms/status', [SmsController::class, 'checkSmsStatus'])->name('sms.status');
 
     Route::get('sms/templates', [SmsTemplateController::class, 'index'])->name('sms.templates.index');
-    Route::put('sms/templates/{id}', [SmsTemplateController::class, 'update'])->name('sms.templates.update');
-    Route::post('sms/templates/{id}/toggle-status', [SmsTemplateController::class, 'toggleStatus'])->name('sms.templates.toggleStatus');
+    Route::prefix('sms/templates')->name('sms.templates.')->group(function () {
+        Route::patch('{template}/toggle', [SmsTemplateController::class, 'toggleStatus'])->name('toggle');
+        Route::patch('{template}/update-body', [SmsTemplateController::class, 'updateBody'])->name('updateBody');
+    });
+
     // ----- SMS Routes End -----
 
     // ----- Settings Start -----
