@@ -194,13 +194,15 @@
                                         </a>
                                     @endcan
 
+                                    @can('sms.campaign.edit')
                                     <a href="#" title="Edit Campaign"
                                         class="btn btn-icon text-hover-success w-30px h-30px edit-campaign me-2"
                                         data-campaign-id={{ $campaign->id }}>
                                         <i class="bi bi-pencil fs-2"></i>
                                     </a>
+                                    @endcan
 
-                                    @can('sms.campaign.approve')
+                                    @can('sms.campaign.delete')
                                         <a href="#" title="Delete Campaign"
                                             class="btn btn-icon text-hover-danger w-30px h-30px delete-campaign"
                                             data-campaign-id={{ $campaign->id }}>
