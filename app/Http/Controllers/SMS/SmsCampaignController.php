@@ -1,10 +1,9 @@
 <?php
-
 namespace App\Http\Controllers\SMS;
 
-use Illuminate\Http\Request;
-use App\Models\SMS\SmsCampaign;
 use App\Http\Controllers\Controller;
+use App\Models\SMS\SmsCampaign;
+use Illuminate\Http\Request;
 
 class SmsCampaignController extends Controller
 {
@@ -55,7 +54,11 @@ class SmsCampaignController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        if (! auth()->user()->can('sms.campaign.edit')) {
+            return redirect()->back()->with('warning', 'No permission to edit SMS campaigns.');
+        }
+
+        return view('sms.campaign.edit');
     }
 
     /**
