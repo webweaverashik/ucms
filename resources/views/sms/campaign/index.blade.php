@@ -141,10 +141,12 @@
                     </div>
                     <!--end::Export dropdown-->
 
-                    <!--begin::Add subscription-->
-                    <a href="{{ route('send-campaign.create') }}" class="btn btn-primary">
-                        <i class="ki-outline ki-plus fs-2"></i>New Campaign</a>
-                    <!--end::Add subscription-->
+                    <!--begin::Add Campaign-->
+                    @can('sms.campaign.create')
+                        <a href="{{ route('send-campaign.create') }}" class="btn btn-primary">
+                            <i class="ki-outline ki-plus fs-2"></i>New Campaign</a>
+                    @endcan
+                    <!--end::Add Campaign-->
 
                     <!--end::Filter-->
                 </div>
@@ -195,11 +197,11 @@
                                     @endcan
 
                                     @can('sms.campaign.edit')
-                                    <a href="#" title="Edit Campaign"
-                                        class="btn btn-icon text-hover-success w-30px h-30px edit-campaign me-2"
-                                        data-campaign-id={{ $campaign->id }}>
-                                        <i class="bi bi-pencil fs-2"></i>
-                                    </a>
+                                        <a href="#" title="Edit Campaign"
+                                            class="btn btn-icon text-hover-success w-30px h-30px edit-campaign me-2"
+                                            data-campaign-id={{ $campaign->id }}>
+                                            <i class="bi bi-pencil fs-2"></i>
+                                        </a>
                                     @endcan
 
                                     @can('sms.campaign.delete')

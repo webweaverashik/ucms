@@ -14,7 +14,7 @@ class SmsCampaignController extends Controller
     public function index()
     {
         if (! auth()->user()->can('sms.campaign.view')) {
-            return redirect()->back()->with('warning', 'No permission to manage SMS templates.');
+            return redirect()->back()->with('warning', 'No permission to view SMS campaigns.');
         }
 
         $campaigns = SmsCampaign::all();
@@ -28,7 +28,7 @@ class SmsCampaignController extends Controller
     public function create()
     {
         if (! auth()->user()->can('sms.campaign.create')) {
-            return redirect()->back()->with('warning', 'No permission to manage SMS templates.');
+            return redirect()->back()->with('warning', 'No permission to create SMS campaigns.');
         }
 
         return view('sms.campaign.create');
