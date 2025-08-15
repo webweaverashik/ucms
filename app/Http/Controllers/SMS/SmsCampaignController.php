@@ -2,6 +2,8 @@
 namespace App\Http\Controllers\SMS;
 
 use App\Http\Controllers\Controller;
+use App\Models\Academic\ClassName;
+use App\Models\Branch;
 use App\Models\SMS\SmsCampaign;
 use Illuminate\Http\Request;
 
@@ -30,7 +32,10 @@ class SmsCampaignController extends Controller
             return redirect()->back()->with('warning', 'No permission to create SMS campaigns.');
         }
 
-        return view('sms.campaign.create');
+        $branches = Branch::all();
+        $classes  = ClassName::all();
+
+        return view('sms.campaign.create', compact('branches', 'classes'));
     }
 
     /**
@@ -64,7 +69,10 @@ class SmsCampaignController extends Controller
             return redirect()->back()->with('warning', 'Campaign not found.');
         }
 
-        return view('sms.campaign.edit', compact('campaign'));
+        $branches = Branch::all();
+        $classes  = ClassName::all();
+
+        return view('sms.campaign.create', compact('campaign', 'branches', 'classes'));
     }
 
     /**

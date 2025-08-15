@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('sms_campaigns', function (Blueprint $table) {
             $table->id();
             $table->string('campaign_title');
-            $table->string('message_type')->default('TEXT'); // TEXT or UNICODE
+            $table->string('message_type')->default('TEXT'); // TEXT or UNICODE => Language
             $table->text('message_body');
             $table->text('recipients'); // Comma-separated or JSON list
             $table->boolean('is_approved')->default(false); // Needs admin approval

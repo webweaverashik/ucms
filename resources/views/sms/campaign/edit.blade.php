@@ -44,105 +44,183 @@
 
 @section('content')
     <div class="row">
-        <div class="col-xl-8 col-xxl-6">
+        <div class="col-xl-8">
             <!--begin::Card-->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title" id="smsBalance">Loading Balance...</h3>
+                    <h3 class="card-title">Create a sms campaign</h3>
                 </div>
                 <!--begin::Card body-->
                 <div class="card-body py-10">
                     <!--begin::Form-->
-                    <form id="kt_send_single_sms_form" class="form" action="#"
+                    <form id="kt_send_single_sms_form" class="form" action="{{ route('send-campaign.store') }}"
                         method="POST">
                         @csrf
                         <!--begin::Scroll-->
-                        <div class="d-flex flex-column scroll-y px-5" id="kt_send_single_sms_scroll" data-kt-scroll="true"
+                        <div class="d-flex flex-column scroll-y px-5" id="kt_send_campaign_sms_scroll" data-kt-scroll="true"
                             data-kt-scroll-activate="false" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_transaction_header"
-                            data-kt-scroll-wrappers="#kt_send_single_sms_scroll" data-kt-scroll-offset="300px">
+                            data-kt-scroll-wrappers="#kt_send_campaign_sms_scroll" data-kt-scroll-offset="300px">
 
                             <div class="row">
                                 <!--begin::Name Input group-->
                                 <div class="fv-row mb-7 col-12">
                                     <!--begin::Label-->
-                                    <label class="required fw-semibold fs-6 mb-2">Mobile Number</label>
+                                    <label class="required fw-semibold fs-6 mb-2">Campaign Title</label>
                                     <!--end::Label-->
-
-                                    <!--begin::Solid input group style-->
-                                    <div class="input-group input-group-solid flex-nowrap">
-                                        <span class="input-group-text">
-                                            <i class="ki-outline ki-phone fs-3"></i>
-                                        </span>
-                                        <div class="overflow-hidden flex-grow-1">
-                                            <input type="text" name="mobile" maxlength="11"
-                                                class="form-control form-control-solid mb-3 mb-lg-0 rounded-start-0 border-start"
-                                                placeholder="Write the 11 digit mobile number e.g. 017XXXXXXXX" required />
-                                        </div>
-                                    </div>
-                                    <!--end::Solid input group style-->
+                                    <input type="text" name="campaign_title"
+                                        class="form-control form-control-solid mb-3 mb-lg-0"
+                                        placeholder="Write the campaign title" required />
                                 </div>
                                 <!--end::Name Input group-->
 
-                                <!--begin::Month_Year Input group-->
-                                <div class="fv-row mb-7 col-12">
-                                    <!--begin::Label-->
-                                    <label class="required fw-semibold fs-6 mb-2">SMS Language</label>
-                                    <!--end::Label-->
-
-                                    <!--begin::Solid input group style-->
+                                <!--begin::Branch & Class row-->
+                                <div class="col-12">
                                     <div class="row">
-                                        <!--begin::New Month Year-->
-                                        <div class="col-6">
-                                            <!--begin::Option-->
-                                            <input type="radio" class="btn-check" name="message_type" checked="checked"
-                                                value="TEXT" id="text_message_type_input" />
-                                            <label
-                                                class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
-                                                for="text_message_type_input">
-                                                <i class="ki-outline ki-abstract-44 fs-2x me-5"></i>
-                                                <!--begin::Info-->
-                                                <span class="d-block fw-semibold text-start">
-                                                    <span class="text-gray-900 fw-bold d-block fs-6">English</span>
-                                                </span>
-                                                <!--end::Info-->
-                                            </label>
-                                            <!--end::Option-->
-                                        </div>
-                                        <!--end::New Month Year-->
+                                        <!--begin::Branch Input group-->
+                                        <div class="fv-row mb-7 col-xl-6">
+                                            <!--begin::Label-->
+                                            <label class="required fw-semibold fs-6 mb-2">Branch</label>
+                                            <!--end::Label-->
 
-                                        <!--begin::Old Month Year-->
-                                        <div class="col-6">
-                                            <!--begin::Option-->
-                                            <input type="radio" class="btn-check" name="message_type" value="UNICODE"
-                                                id="unicode_message_type_input" />
-                                            <label
-                                                class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
-                                                for="unicode_message_type_input">
-                                                <i class="ki-outline ki-abstract-24 fs-2x me-5"></i>
-                                                <!--begin::Info-->
-                                                <span class="d-block fw-semibold text-start">
-                                                    <span class="text-gray-900 fw-bold d-block fs-6">বাংলা</span>
-                                                </span>
-                                                <!--end::Info-->
-                                            </label>
-                                            <!--end::Option-->
+                                            <!--begin::Solid input group style-->
+                                            <div class="input-group input-group-solid flex-nowrap">
+                                                <select name="branch_id" class="form-select form-select-solid"
+                                                    data-control="select2" data-placeholder="Select branch"
+                                                    id="branch_select">
+                                                    <option></option>
+                                                    @foreach ($branches as $branch)
+                                                        <option value="{{ $branch->id }}">{{ $branch->branch_name }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <!--end::Solid input group style-->
                                         </div>
-                                        <!--end::Old Month Year-->
+                                        <!--end::Branch Input group-->
+
+                                        <!--begin::Class Input group-->
+                                        <div class="fv-row mb-7 col-xl-6">
+                                            <!--begin::Label-->
+                                            <label class="required fw-semibold fs-6 mb-2">Class</label>
+                                            <!--end::Label-->
+
+                                            <!--begin::Solid input group style-->
+                                            <div class="input-group input-group-solid flex-nowrap">
+                                                <span class="input-group-text">
+                                                    <i class="ki-outline ki-bank fs-3"></i>
+                                                </span>
+                                                <div class="overflow-hidden flex-grow-1">
+                                                    <select name="class_id"
+                                                        class="form-select form-select-solid rounded-start-0 border-start"
+                                                        data-control="select2" data-placeholder="Select a class"
+                                                        id="class_select">
+                                                        <option></option>
+                                                        @foreach ($classes as $class)
+                                                            <option value="{{ $class->id }}">{{ $class->name }}
+                                                                ({{ $class->class_numeral }})
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <!--end::Solid input group style-->
+                                        </div>
+                                        <!--end::Class Input group-->
                                     </div>
-                                    <!--end::Solid input group style-->
                                 </div>
-                                <!--end::Month_Year Input group-->
+                                <!--end::Branch & Class row-->
 
-                                <!--begin::Amount Input group-->
+                                <div class="col-12">
+                                    <div class="row">
+                                        <!--begin::Student & Guardian Checkbox-->
+                                        <div class="fv-row mb-7 col-xl-6">
+                                            <!--begin::Label-->
+                                            <label class="required fw-semibold fs-6 mb-4">Recipients Selection</label>
+                                            <!--end::Label-->
+
+                                            <div class="d-flex align-items-center">
+                                                <!--begin::Checkbox-->
+                                                <label class="form-check form-check-custom form-check-solid me-10">
+                                                    <input class="form-check-input h-20px w-20px" type="checkbox"
+                                                        name="recipients_select" value="students" checked="checked" />
+                                                    <span class="form-check-label fw-semibold fs-6">Students</span>
+                                                </label>
+                                                <!--end::Checkbox-->
+                                                <!--begin::Checkbox-->
+                                                <label class="form-check form-check-custom form-check-solid">
+                                                    <input class="form-check-input h-20px w-20px" type="checkbox"
+                                                        name="recipients_select" value="guardians" />
+                                                    <span class="form-check-label fw-semibold fs-6">Guardians</span>
+                                                </label>
+                                                <!--end::Checkbox-->
+                                            </div>
+                                        </div>
+                                        <!--end::Student & Guardian Checkbox-->
+
+                                        <!--begin::TEXT & UNICODE-->
+                                        <div class="fv-row mb-7 col-xl-6">
+                                            <!--begin::Label-->
+                                            <label class="required fw-semibold fs-6 mb-2">SMS Language</label>
+                                            <!--end::Label-->
+
+                                            <!--begin::Solid input group style-->
+                                            <div class="row">
+                                                <!--begin::New Month Year-->
+                                                <div class="col-6">
+                                                    <!--begin::Option-->
+                                                    <input type="radio" class="btn-check" name="message_type"
+                                                        checked="checked" value="TEXT" id="text_message_type_input" />
+                                                    <label
+                                                        class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                                        for="text_message_type_input">
+                                                        <i class="ki-outline ki-abstract-44 fs-2x me-5"></i>
+                                                        <!--begin::Info-->
+                                                        <span class="d-block fw-semibold text-start">
+                                                            <span class="text-gray-900 fw-bold d-block fs-6">English</span>
+                                                        </span>
+                                                        <!--end::Info-->
+                                                    </label>
+                                                    <!--end::Option-->
+                                                </div>
+                                                <!--end::New Month Year-->
+
+                                                <!--begin::Old Month Year-->
+                                                <div class="col-6">
+                                                    <!--begin::Option-->
+                                                    <input type="radio" class="btn-check" name="message_type"
+                                                        value="UNICODE" id="unicode_message_type_input" />
+                                                    <label
+                                                        class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                                        for="unicode_message_type_input">
+                                                        <i class="ki-outline ki-abstract-24 fs-2x me-5"></i>
+                                                        <!--begin::Info-->
+                                                        <span class="d-block fw-semibold text-start">
+                                                            <span class="text-gray-900 fw-bold d-block fs-6">বাংলা</span>
+                                                        </span>
+                                                        <!--end::Info-->
+                                                    </label>
+                                                    <!--end::Option-->
+                                                </div>
+                                                <!--end::Old Month Year-->
+                                            </div>
+                                            <!--end::Solid input group style-->
+                                        </div>
+                                        <!--end::TEXT & UNICODE-->
+                                    </div>
+                                </div>
+
+
+                                <!--begin::Message input-->
                                 <div class="fv-row mb-7 col-12">
                                     <!--begin::Label-->
                                     <label class="required fw-semibold fs-6 mb-2">Message</label>
                                     <!--end::Label-->
-                                    <textarea class="form-control form-control-solid" rows="5" name="message_body" placeholder="Write the message"></textarea>
+                                    <textarea class="form-control form-control-solid" rows="5" name="message_body"
+                                        placeholder="Write the message"></textarea>
                                     <!--end::Input-->
                                 </div>
-                                <!--end::Amount Input group-->
+                                <!--end::Message input-->
                             </div>
                         </div>
                         <!--end::Scroll-->
