@@ -74,6 +74,49 @@ class SmsCampaignController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $campaign = SmsCampaign::find($id);
+
+        if (! $campaign) {
+            return response()->json(['error' => 'Campaign not found'], 404);
+        }
+
+        if ($campaign->is_approved === true) {
+            return response()->json(['error' => 'Cannot delete approved campaign'], 422);
+        }
+
+        // Mark who deleted it
+        $campaign->update([
+            'deleted_by' => auth()->id(),
+        ]);
+
+        $campaign->delete();
+
+        // Clear the cache
+        clearUCMSCaches();
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * SMS Campaign approve
+     */
+    public function approve($id)
+    {
+        $campaign = SmsCampaign::find($id)->where('is_approved', false)->first();
+
+        if (! $campaign) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Campaign not found.',
+            ]);
+        }
+
+        $campaign->is_approved = true;
+        $campaign->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Campaign approved successfully.',
+        ]);
     }
 }

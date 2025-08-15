@@ -1,33 +1,33 @@
 <?php
 
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PdfController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\BranchController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\SMS\SmsController;
-use App\Http\Controllers\Misc\MiscController;
-use App\Http\Controllers\AutoInvoiceController;
-use App\Http\Controllers\Sheet\SheetController;
-use App\Http\Controllers\Auth\PasswordController;
-use App\Http\Controllers\Academic\ShiftController;
-use App\Http\Controllers\SMS\SmsCampaignController;
-use App\Http\Controllers\SMS\SmsTemplateController;
-use App\Http\Controllers\Student\SiblingController;
-use App\Http\Controllers\Student\StudentController;
-use App\Http\Controllers\Teacher\TeacherController;
-use App\Http\Controllers\Academic\SubjectController;
-use App\Http\Controllers\Sheet\SheetTopicController;
-use App\Http\Controllers\Student\GuardianController;
-use App\Http\Controllers\Student\ReferenceController;
 use App\Http\Controllers\Academic\ClassNameController;
 use App\Http\Controllers\Academic\InstitutionController;
-use App\Http\Controllers\Sheet\SheetTopicTakenController;
+use App\Http\Controllers\Academic\ShiftController;
+use App\Http\Controllers\Academic\SubjectController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\AutoInvoiceController;
+use App\Http\Controllers\BranchController;
+use App\Http\Controllers\Misc\MiscController;
 use App\Http\Controllers\Payment\PaymentInvoiceController;
-use App\Http\Controllers\Student\StudentActivationController;
 use App\Http\Controllers\Payment\PaymentTransactionController;
+use App\Http\Controllers\PdfController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\Sheet\SheetController;
+use App\Http\Controllers\Sheet\SheetTopicController;
+use App\Http\Controllers\Sheet\SheetTopicTakenController;
+use App\Http\Controllers\SMS\SmsCampaignController;
+use App\Http\Controllers\SMS\SmsController;
+use App\Http\Controllers\SMS\SmsTemplateController;
+use App\Http\Controllers\Student\GuardianController;
+use App\Http\Controllers\Student\ReferenceController;
+use App\Http\Controllers\Student\SiblingController;
+use App\Http\Controllers\Student\StudentActivationController;
+use App\Http\Controllers\Student\StudentController;
+use App\Http\Controllers\Teacher\TeacherController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AuthController::class, 'showLogin'])->name('home');
 
@@ -99,8 +99,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('sms/send-single', [SmsController::class, 'sendSingleIndex'])->name('sms.single.index');
     Route::post('sms/send-single', [SmsController::class, 'sendSingle'])->name('sms.single.send');
 
-    // Route::get('sms/send-campaign', [SmsController::class, 'sendCampaignIndex'])->name('sms.campaign.index');
-    // Route::post('sms/send-bulk', [SmsController::class, 'sendBulk'])->name('sms.send.bulk');
+    Route::post('/sms/send-campaign/{id}/approve', [SmsCampaignController::class, 'approve'])->name('sms-campaigns.approve');
 
     Route::get('sms/logs', [SmsController::class, 'smsLog'])->name('sms.logs.index');
     Route::get('sms/balance', [SmsController::class, 'checkBalance'])->name('sms.balance');
@@ -132,21 +131,21 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
 
     // Resource Routes
     Route::resources([
-        'settings/users'  => UserController::class,
-        'settings/branch' => BranchController::class,
-        'students'        => StudentController::class,
-        'guardians'       => GuardianController::class,
-        'siblings'        => SiblingController::class,
-        'teachers'        => TeacherController::class,
-        'institutions'    => InstitutionController::class,
-        'classnames'      => ClassNameController::class,
-        'shifts'          => ShiftController::class,
-        'subjects'        => SubjectController::class,
-        'invoices'        => PaymentInvoiceController::class,
-        'transactions'    => PaymentTransactionController::class,
-        'sheets'          => SheetController::class,
-        'notes'           => SheetTopicController::class,
-        'sms/send-campaign'   => SmsCampaignController::class,
+        'settings/users'    => UserController::class,
+        'settings/branch'   => BranchController::class,
+        'students'          => StudentController::class,
+        'guardians'         => GuardianController::class,
+        'siblings'          => SiblingController::class,
+        'teachers'          => TeacherController::class,
+        'institutions'      => InstitutionController::class,
+        'classnames'        => ClassNameController::class,
+        'shifts'            => ShiftController::class,
+        'subjects'          => SubjectController::class,
+        'invoices'          => PaymentInvoiceController::class,
+        'transactions'      => PaymentTransactionController::class,
+        'sheets'            => SheetController::class,
+        'notes'             => SheetTopicController::class,
+        'sms/send-campaign' => SmsCampaignController::class,
     ]);
 
 });

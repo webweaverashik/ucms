@@ -294,11 +294,11 @@
                                     @endphp
 
                                     @if ($status === 'inactive')
-                                        <span class="badge badge-light-danger">{{ ucfirst($status) }}</span>
+                                        <span class="badge badge-danger rounded-pill">{{ ucfirst($status) }}</span>
                                     @elseif ($status === 'active')
-                                        <span class="badge badge-light-success">{{ ucfirst($status) }}</span>
+                                        <span class="badge badge-success rounded-pill">{{ ucfirst($status) }}</span>
                                     @else
-                                        <span class="badge badge-light-info">Pending Approval</span>
+                                        <span class="badge badge-info rounded-pill">Pending Approval</span>
                                     @endif
 
                                 </td>
@@ -1008,17 +1008,17 @@
                                                 <td>
                                                     @if ($status === 'due')
                                                         @if ($isOverdue)
-                                                            <span class="badge badge-danger">Overdue</span>
+                                                            <span class="badge badge-danger rounded-pill">Overdue</span>
                                                         @else
-                                                            <span class="badge badge-warning">Due</span>
+                                                            <span class="badge badge-warning rounded-pill">Due</span>
                                                         @endif
                                                     @elseif ($status === 'partially_paid')
-                                                        <span class="badge badge-info">Partial</span>
+                                                        <span class="badge badge-info rounded-pill">Partial</span>
                                                         @if ($isOverdue)
-                                                            <span class="badge badge-danger ms-1">Overdue</span>
+                                                            <span class="badge badge-danger rounded-pill ms-1">Overdue</span>
                                                         @endif
                                                     @elseif ($status === 'paid')
-                                                        <span class="badge badge-success">Paid</span>
+                                                        <span class="badge badge-success rounded-pill">Paid</span>
                                                     @endif
                                                 </td>
                                                 <!-- end: Invoice Status Badge -->
@@ -1087,11 +1087,11 @@
                                                 <td class="text-success">৳ {{ $transaction->amount_paid }}</td>
                                                 <td>
                                                     @if ($transaction->payment_type === 'partial')
-                                                        <span class="badge badge-warning">Partial</span>
+                                                        <span class="badge badge-warning rounded-pill">Partial</span>
                                                     @elseif ($transaction->payment_type === 'full')
-                                                        <span class="badge badge-success">Full Paid</span>
+                                                        <span class="badge badge-success rounded-pill">Full Paid</span>
                                                     @elseif ($transaction->payment_type === 'discounted')
-                                                        <span class="badge badge-info">Discounted</span>
+                                                        <span class="badge badge-info rounded-pill">Discounted</span>
                                                     @endif
                                                 </td>
                                                 <td>{{ $transaction->remarks }}</td>
@@ -1318,10 +1318,10 @@
                                             <td>
                                                 @if ($record->active_status == 'inactive')
                                                     <span
-                                                        class="badge badge-light-danger">{{ ucfirst($record->active_status) }}</span>
+                                                        class="badge badge-danger rounded-pill">{{ ucfirst($record->active_status) }}</span>
                                                 @else
                                                     <span
-                                                        class="badge badge-light-success">{{ ucfirst($record->active_status) }}</span>
+                                                        class="badge badge-success rounded-pill">{{ ucfirst($record->active_status) }}</span>
                                                 @endif
                                             </td>
                                             <td>{{ $record->reason }}</td>

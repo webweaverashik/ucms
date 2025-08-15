@@ -364,14 +364,14 @@
                                     <td>
                                         @if ($status === 'due')
                                             @if ($isOverdue)
-                                                <span class="badge badge-danger">Overdue</span>
+                                                <span class="badge badge-danger rounded-pill">Overdue</span>
                                             @else
-                                                <span class="badge badge-warning">Due</span>
+                                                <span class="badge badge-warning rounded-pill">Due</span>
                                             @endif
                                         @elseif ($status === 'partially_paid')
-                                            <span class="badge badge-info">Partial</span>
+                                            <span class="badge badge-info rounded-pill">Partial</span>
                                             @if ($isOverdue)
-                                                <span class="badge badge-danger ms-1">Overdue</span>
+                                                <span class="badge badge-danger rounded-pill ms-1">Overdue</span>
                                             @endif
                                         @endif
 
@@ -631,7 +631,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="badge badge-success">{{ ucfirst($invoice->status) }}</span>
+                                        <span class="badge badge-success rounded-pill">{{ ucfirst($invoice->status) }}</span>
                                     </td>
                                     <td>
                                         {{ $invoice->updated_at->format('d-M-Y') }}

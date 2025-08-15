@@ -52,7 +52,7 @@
                 <!--begin::Search-->
                 <div class="d-flex align-items-center position-relative my-1">
                     <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
-                        data-transaction-table-filter="search" class="form-control form-control-solid w-350px ps-12"
+                        data-sms-campaigns-table-filter="search" class="form-control form-control-solid w-350px ps-12"
                         placeholder="Search in campaigns">
                 </div>
                 <!--end::Search-->
@@ -67,7 +67,7 @@
             <!--begin::Card toolbar-->
             <div class="card-toolbar">
                 <!--begin::Toolbar-->
-                <div class="d-flex justify-content-end" data-transaction-table-toolbar="base">
+                <div class="d-flex justify-content-end" data-sms-campaigns-table-toolbar="base">
                     <!--begin::Filter-->
                     <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
                         data-kt-menu-placement="bottom-end">
@@ -83,13 +83,13 @@
                         <div class="separator border-gray-200"></div>
                         <!--end::Separator-->
                         <!--begin::Content-->
-                        <div class="px-7 py-5" data-transaction-table-filter="form">
+                        <div class="px-7 py-5" data-sms-campaigns-table-filter="form">
                             <!--begin::Input group-->
                             <div class="mb-10">
                                 <label class="form-label fs-6 fw-semibold">Campaign Status:</label>
                                 <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                     data-placeholder="Select option" data-allow-clear="true"
-                                    data-transaction-table-filter="status" data-hide-search="true">
+                                    data-sms-campaigns-table-filter="status" data-hide-search="true">
                                     <option></option>
                                     <option value="T_partial">Sent</option>
                                     <option value="T_discounted">Not Sent</option>
@@ -100,9 +100,9 @@
                             <!--begin::Actions-->
                             <div class="d-flex justify-content-end">
                                 <button type="reset" class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
-                                    data-kt-menu-dismiss="true" data-transaction-table-filter="reset">Reset</button>
+                                    data-kt-menu-dismiss="true" data-sms-campaigns-table-filter="reset">Reset</button>
                                 <button type="submit" class="btn btn-primary fw-semibold px-6" data-kt-menu-dismiss="true"
-                                    data-transaction-table-filter="filter">Apply</button>
+                                    data-sms-campaigns-table-filter="filter">Apply</button>
                             </div>
                             <!--end::Actions-->
                         </div>
@@ -159,7 +159,7 @@
         <!--begin::Card body-->
         <div class="card-body py-4">
             <!--begin::Table-->
-            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_transactions_table">
+            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_sms_campaigns_table">
                 <thead>
                     <tr class="fw-bold fs-7 text-uppercase gs-0">
                         <th class="w-25px">SL</th>
@@ -168,6 +168,7 @@
                         <th>Recipients</th>
                         <th>Created At</th>
                         <th>Created By</th>
+                        <th>Status</th>
                         <th class="not-export">Actions</th>
                     </tr>
                 </thead>
@@ -188,6 +189,14 @@
 
                             <td>
                                 @if ($campaign->is_approved === false)
+                                    <span class="badge badge-warning rounded-pill">Pending</span>
+                                @else
+                                    <span class="badge badge-success rounded-pill">Approved</span>
+                                @endif
+                            </td>
+
+                            <td>
+                                @if ($campaign->is_approved === false)
                                     @can('sms.campaign.approve')
                                         <a href="#" title="Approve Campaign"
                                             class="btn btn-icon text-hover-success w-30px h-30px approve-campaign me-2"
@@ -197,9 +206,8 @@
                                     @endcan
 
                                     @can('sms.campaign.edit')
-                                        <a href="#" title="Edit Campaign"
-                                            class="btn btn-icon text-hover-success w-30px h-30px edit-campaign me-2"
-                                            data-campaign-id={{ $campaign->id }}>
+                                        <a href="{{ route('send-campaign.edit', $campaign->id) }}" title="Edit Campaign"
+                                            class="btn btn-icon text-hover-success w-30px h-30px me-2">
                                             <i class="bi bi-pencil fs-2"></i>
                                         </a>
                                     @endcan
@@ -211,11 +219,8 @@
                                             <i class="bi bi-trash fs-2"></i>
                                         </a>
                                     @endcan
-
-                                    {{-- Showing a placeholder text for other users --}}
-                                    @cannot('sms.campaign.approve')
-                                        <span class="badge rounded-pill text-bg-secondary">Pending</span>
-                                    @endcannot
+                                @else
+                                    <span class="badge rounded-pill text-bg-success text-white">Sent</span>
                                 @endif
                             </td>
                         </tr>
@@ -235,6 +240,10 @@
 @endpush
 
 @push('page-js')
+    <script>
+        const routeDeleteCampaign = "{{ route('send-campaign.destroy', ':id') }}";
+    </script>
+
     <script src="{{ asset('js/sms/campaign/index.js') }}"></script>
 
     <script>

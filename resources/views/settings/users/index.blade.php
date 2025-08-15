@@ -187,9 +187,9 @@
                                     $role = $user->roles->first()?->name; // Using eager loaded 'roles' relationship
 
                                     $badgeClasses = [
-                                        'admin' => 'badge badge-light-danger fw-bold',
-                                        'manager' => 'badge badge-light-success fw-bold',
-                                        'accountant' => 'badge badge-light-info fw-bold',
+                                        'admin' => 'badge badge-light-danger rounded-pill fs-7 fw-bold',
+                                        'manager' => 'badge badge-light-success rounded-pill fs-7 fw-bold',
+                                        'accountant' => 'badge badge-light-info rounded-pill fs-7 fw-bold',
                                     ];
 
                                     $badgeClass = $badgeClasses[$role] ?? 'badge badge-light-secondary fw-bold';

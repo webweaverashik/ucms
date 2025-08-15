@@ -200,11 +200,11 @@
 
                             <td>
                                 @if ($transaction->payment_type === 'partial')
-                                    <span class="badge badge-warning">Partial</span>
+                                    <span class="badge badge-warning rounded-pill">Partial</span>
                                 @elseif ($transaction->payment_type === 'full')
-                                    <span class="badge badge-success">Full Paid</span>
+                                    <span class="badge badge-success rounded-pill">Full Paid</span>
                                 @elseif ($transaction->payment_type === 'discounted')
-                                    <span class="badge badge-info">Discounted</span>
+                                    <span class="badge badge-info rounded-pill">Discounted</span>
                                 @endif
                             </td>
 

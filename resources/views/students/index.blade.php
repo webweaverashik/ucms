@@ -351,7 +351,7 @@
                             <td>
                                 @foreach ($student->guardians as $guardian)
                                     <a href="#"><span
-                                            class="badge badge-light-primary text-hover-success fs-7">{{ $guardian->name }},
+                                            class="badge badge-light-primary rounded-pill text-hover-success fs-7">{{ $guardian->name }},
                                             {{ ucfirst($guardian->relationship) }}</span></a><br>
                                 @endforeach
                             </td>
@@ -375,9 +375,9 @@
                                         $branchName = $student->branch->branch_name;
                                         $badgeColor = $branchColors[$branchName] ?? 'badge-light-secondary';
                                     @endphp
-                                    <span class="badge {{ $badgeColor }}">{{ $branchName }}</span>
+                                    <span class="badge {{ $badgeColor }} rounded-pill">{{ $branchName }}</span>
                                 @else
-                                    <span class="badge badge-light-secondary">N/A</span>
+                                    <span class="badge badge-light-secondary rounded-pill">N/A</span>
                                 @endif
                             </td>
 
