@@ -63,7 +63,7 @@ class PaymentTransactionController extends Controller
      */
     public function create()
     {
-        return redirect()->back()->with('warning', 'URL Not Allowed');
+        return redirect()->back();
     }
 
     /**
@@ -172,7 +172,7 @@ class PaymentTransactionController extends Controller
      */
     public function show(string $id)
     {
-        return redirect()->back()->with('warning', 'URL Not Allowed');
+        return redirect()->back();
     }
 
     /**
@@ -180,7 +180,7 @@ class PaymentTransactionController extends Controller
      */
     public function edit(string $id)
     {
-        return redirect()->back()->with('warning', 'URL Not Allowed');
+        return redirect()->back();
     }
 
     /**
@@ -188,7 +188,7 @@ class PaymentTransactionController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        return redirect()->back()->with('warning', 'URL Not Allowed');
+        return redirect()->back();
     }
 
     /**

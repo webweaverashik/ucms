@@ -26,7 +26,7 @@ class BranchController extends Controller
      */
     public function create()
     {
-        //
+        return redirect()->back();
     }
 
     /**
@@ -42,7 +42,7 @@ class BranchController extends Controller
      */
     public function show(string $id)
     {
-        //
+        return redirect()->back();
     }
 
     /**
@@ -50,7 +50,7 @@ class BranchController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        return redirect()->back();
     }
 
     /**
@@ -66,6 +66,6 @@ class BranchController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        return redirect()->back();
     }
 }

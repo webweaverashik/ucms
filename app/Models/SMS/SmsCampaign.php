@@ -2,6 +2,7 @@
 namespace App\Models\SMS;
 
 use App\Models\User;
+use App\Models\Branch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -15,13 +16,14 @@ class SmsCampaign extends Model
         'message_body',
         'recipients',
         'is_approved',
+        'branch_id',
         'created_by',
         'deleted_by',
     ];
 
     protected $casts = [
-        'recipients'       => 'string',
-        'is_approved'      => 'boolean',
+        'recipients'  => 'string',
+        'is_approved' => 'boolean',
     ];
 
     // Use your User model namespace if different
@@ -33,5 +35,10 @@ class SmsCampaign extends Model
     public function deletedBy()
     {
         return $this->belongsTo(User::class, 'deleted_by')->withTrashed();
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 }

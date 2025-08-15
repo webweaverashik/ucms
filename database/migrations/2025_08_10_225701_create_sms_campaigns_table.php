@@ -18,6 +18,7 @@ return new class extends Migration
             $table->text('message_body');
             $table->text('recipients'); // Comma-separated or JSON list
             $table->boolean('is_approved')->default(false); // Needs admin approval
+            $table->foreignId('branch_id');
             $table->foreignId('created_by');
             $table->timestamps();
             $table->softDeletes();

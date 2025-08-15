@@ -26,7 +26,7 @@ class ClassNameController extends Controller
      */
     public function create()
     {
-        return redirect()->back()->with('warning', 'URL Not Allowed');
+        return redirect()->back();
     }
 
     /**
@@ -77,7 +77,7 @@ class ClassNameController extends Controller
      */
     public function edit(string $id)
     {
-        return redirect()->back()->with('warning', 'URL Not Allowed');
+        return redirect()->back();
     }
 
     /**
@@ -106,7 +106,7 @@ class ClassNameController extends Controller
      */
     public function destroy(string $id)
     {
-        return redirect()->back()->with('warning', 'URL Not Allowed');
+        return redirect()->back();
     }
 
     /**

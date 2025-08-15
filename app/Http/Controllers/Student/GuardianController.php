@@ -52,7 +52,7 @@ class GuardianController extends Controller
      */
     public function create()
     {
-        return redirect()->back()->with('warning', 'Not Allowed');
+        return redirect()->back();
     }
 
     /**
@@ -60,7 +60,7 @@ class GuardianController extends Controller
      */
     public function store(Request $request)
     {
-        return redirect()->back()->with('warning', 'Not Allowed');
+        return redirect()->back();
 
     }
 
@@ -92,7 +92,7 @@ class GuardianController extends Controller
      */
     public function edit(string $id)
     {
-        return redirect()->back()->with('warning', 'URL Not Allowed');
+        return redirect()->back()->wi;
     }
 
     /**

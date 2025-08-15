@@ -46,7 +46,7 @@ class SmsCampaignController extends Controller
      */
     public function show(string $id)
     {
-        //
+        return redirect()->back();
     }
 
     /**
@@ -58,7 +58,13 @@ class SmsCampaignController extends Controller
             return redirect()->back()->with('warning', 'No permission to edit SMS campaigns.');
         }
 
-        return view('sms.campaign.edit');
+        $campaign = SmsCampaign::find($id);
+
+        if (! $campaign) {
+            return redirect()->back()->with('warning', 'Campaign not found.');
+        }
+
+        return view('sms.campaign.edit', compact('campaign'));
     }
 
     /**
