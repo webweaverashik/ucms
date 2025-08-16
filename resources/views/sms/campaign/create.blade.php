@@ -156,7 +156,7 @@
 
                                             <!--begin::Solid input group style-->
                                             <div class="row">
-                                                <!--begin::New Month Year-->
+                                                <!--begin::English text-->
                                                 <div class="col-6">
                                                     <!--begin::Option-->
                                                     <input type="radio" class="btn-check" name="message_type"
@@ -173,9 +173,9 @@
                                                     </label>
                                                     <!--end::Option-->
                                                 </div>
-                                                <!--end::New Month Year-->
+                                                <!--end::English text-->
 
-                                                <!--begin::Old Month Year-->
+                                                <!--begin::Bangla text-->
                                                 <div class="col-6">
                                                     <!--begin::Option-->
                                                     <input type="radio" class="btn-check" name="message_type"
@@ -192,7 +192,7 @@
                                                     </label>
                                                     <!--end::Option-->
                                                 </div>
-                                                <!--end::Old Month Year-->
+                                                <!--end::Bangla text-->
                                             </div>
                                             <!--end::Solid input group style-->
                                         </div>

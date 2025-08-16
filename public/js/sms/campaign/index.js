@@ -1,6 +1,6 @@
 "use strict";
 
-var KTSMSList = function () {
+var KTSMSCampaignList = function () {
       // Define shared variables
       var table;
       var datatable;
@@ -282,7 +282,155 @@ var KTSMSList = function () {
       }
 }();
 
+var KTEditCampaignModal = function () {
+      // Shared variables
+      const element = document.getElementById('kt_modal_edit_campaign');
+
+      if (!element) {
+            console.error('Modal element not found');
+            return { init: function () { } };
+      }
+
+      const form = element.querySelector('#kt_modal_edit_campaign_form');
+      const modal = bootstrap.Modal.getOrCreateInstance(element);
+      const titleEl = element.querySelector("#kt_modal_edit_campaign_title");
+
+      let campaignId = null;
+
+      // --- Init edit campaign ---
+      var initEditCampaign = () => {
+            // Cancel button
+            const cancelButton = element.querySelector('[data-kt-campaign-modal-action="cancel"]');
+            if (cancelButton) {
+                  cancelButton.addEventListener('click', e => {
+                        e.preventDefault();
+                        if (form) form.reset();
+                        if (titleEl) titleEl.textContent = "Update Campaign"; // reset header
+                        modal.hide();
+                  });
+            }
+
+            // Close button
+            const closeButton = element.querySelector('[data-kt-campaign-modal-action="close"]');
+            if (closeButton) {
+                  closeButton.addEventListener('click', e => {
+                        e.preventDefault();
+                        if (form) form.reset();
+                        if (titleEl) titleEl.textContent = "Update Campaign"; // reset header
+                        modal.hide();
+                  });
+            }
+
+            // Edit button click (only .edit-campaign)
+            document.addEventListener("click", function (e) {
+                  const button = e.target.closest(".edit-campaign");
+                  if (!button) return;
+
+                  e.preventDefault();
+                  campaignId = button.getAttribute("data-campaign-id");
+                  if (!campaignId) return;
+
+                  // Clear form
+                  if (form) form.reset();
+                  if (titleEl) titleEl.textContent = "Update Campaign"; // reset first
+
+                  // Fetch campaign details
+                  fetch(`/sms/send-campaign/${campaignId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                              if (data.success && data.data) {
+                                    const campaign = data.data;
+
+                                    // ✅ Update modal header
+                                    if (titleEl) {
+                                          titleEl.textContent = `Update Campaign: ${campaign.campaign_title}`;
+                                    }
+
+                                    // Prefill language radio
+                                    if (campaign.message_type === "UNICODE") {
+                                          element.querySelector("#unicode_message_type_input").checked = true;
+                                    } else {
+                                          element.querySelector("#text_message_type_input").checked = true;
+                                    }
+
+                                    // Prefill message body
+                                    const messageInput = element.querySelector("textarea[name='message_body']");
+                                    if (messageInput) messageInput.value = campaign.message_body || "";
+
+                                    // Show modal
+                                    modal.show();
+                              } else {
+                                    throw new Error(data.message || 'Invalid response data');
+                              }
+                        })
+                        .catch(error => {
+                              console.error("Error:", error);
+                              toastr.error(error.message || "Failed to load campaign details");
+                        });
+            });
+      };
+
+      // --- Init form submission ---
+      var initSubmit = () => {
+            const submitButton = element.querySelector('[data-kt-campaign-modal-action="submit"]');
+            if (!submitButton) return;
+
+            submitButton.addEventListener('click', function (e) {
+                  e.preventDefault();
+                  if (!campaignId) {
+                        toastr.error("No campaign selected");
+                        return;
+                  }
+
+                  const formData = new FormData(form);
+                  formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+                  formData.append('_method', 'PUT'); // Laravel expects PUT
+
+                  submitButton.setAttribute('data-kt-indicator', 'on');
+                  submitButton.disabled = true;
+
+                  fetch(`/sms/send-campaign/${campaignId}`, {
+                        method: 'POST', // Laravel PUT via POST + _method
+                        body: formData,
+                        headers: {
+                              'Accept': 'application/json',
+                              'X-Requested-With': 'XMLHttpRequest'
+                        }
+                  })
+                        .then(response => response.json())
+                        .then(data => {
+                              submitButton.removeAttribute('data-kt-indicator');
+                              submitButton.disabled = false;
+
+                              if (data.success) {
+                                    toastr.success(data.message || 'Campaign updated successfully');
+                                    modal.hide();
+                                    if (titleEl) titleEl.textContent = "Update Campaign"; // reset header
+                                    setTimeout(() => window.location.reload(), 1500);
+                              } else {
+                                    throw new Error(data.message || 'Update failed');
+                              }
+                        })
+                        .catch(error => {
+                              submitButton.removeAttribute('data-kt-indicator');
+                              submitButton.disabled = false;
+                              toastr.error(error.message || 'Failed to update campaign');
+                              console.error('Error:', error);
+                        });
+            });
+      };
+
+      return {
+            init: function () {
+                  initEditCampaign();
+                  initSubmit();
+            }
+      };
+}();
+
+
 // On document ready
 KTUtil.onDOMContentLoaded(function () {
-      KTSMSList.init();
+      KTSMSCampaignList.init();
+      KTEditCampaignModal.init();
 });

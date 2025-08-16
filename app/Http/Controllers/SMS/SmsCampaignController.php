@@ -18,10 +18,10 @@ class SmsCampaignController extends Controller
     public function index()
     {
         if (! auth()->user()->can('sms.campaign.view')) {
-            return redirect()->back()->with('warning', 'No permission to view SMS campaigns.');
+            return redirect()->back()->with('warning', 'No permission to view campaigns.');
         }
 
-        $campaigns = SmsCampaign::latest()->get();
+        $campaigns = SmsCampaign::with('branch', 'createdBy')->latest()->get();
 
         return view('sms.campaign.index', compact('campaigns'));
     }
@@ -32,7 +32,7 @@ class SmsCampaignController extends Controller
     public function create()
     {
         if (! auth()->user()->can('sms.campaign.create')) {
-            return redirect()->back()->with('warning', 'No permission to create SMS campaigns.');
+            return redirect()->back()->with('warning', 'No permission to create campaigns.');
         }
 
         $branches = Branch::all();
@@ -107,6 +107,9 @@ class SmsCampaignController extends Controller
             'created_by'     => auth()->id(),
         ]);
 
+        // Clear the cache
+        clearUCMSCaches();
+
         return response()->json([
             'success'          => true,
             'message'          => 'Campaign created successfully',
@@ -120,7 +123,28 @@ class SmsCampaignController extends Controller
      */
     public function show(string $id)
     {
-        return redirect()->back();
+        if (! auth()->user()->can('sms.campaign.edit')) {
+            return redirect()->back()->with('warning', 'No permission to edit campaign.');
+        }
+
+        $campaign = SmsCampaign::where('id', $id)->where('is_approved', false)->first();
+
+        if (! $campaign) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Campaign not found.',
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'id'             => $campaign->id,
+                'campaign_title' => $campaign->campaign_title,
+                'message_type'   => $campaign->message_type,
+                'message_body'   => $campaign->message_body,
+            ],
+        ]);
     }
 
     /**
@@ -128,20 +152,7 @@ class SmsCampaignController extends Controller
      */
     public function edit(string $id)
     {
-        if (! auth()->user()->can('sms.campaign.edit')) {
-            return redirect()->back()->with('warning', 'No permission to edit SMS campaigns.');
-        }
-
-        $campaign = SmsCampaign::find($id);
-
-        if (! $campaign) {
-            return redirect()->back()->with('warning', 'Campaign not found.');
-        }
-
-        $branches = Branch::all();
-        $classes  = ClassName::all();
-
-        return view('sms.campaign.create', compact('campaign', 'branches', 'classes'));
+        return redirect()->back();
     }
 
     /**
@@ -149,7 +160,22 @@ class SmsCampaignController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        if (! auth()->user()->can('sms.campaign.edit')) {
+            return response()->json(['success' => false, 'message' => 'No permission.']);
+        }
+
+        $campaign = SmsCampaign::where('id', $id)->where('is_approved', false)->first();
+
+        if (! $campaign) {
+            return response()->json(['success' => false, 'message' => 'Campaign not found.']);
+        }
+
+        $campaign->update([
+            'message_type' => $request->message_type,
+            'message_body' => $request->message_body,
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Campaign updated successfully.']);
     }
 
     /**
