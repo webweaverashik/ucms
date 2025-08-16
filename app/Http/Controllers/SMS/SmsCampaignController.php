@@ -5,7 +5,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Academic\ClassName;
 use App\Models\Branch;
 use App\Models\SMS\SmsCampaign;
+use App\Models\Student\Guardian;
+use App\Models\Student\Student;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class SmsCampaignController extends Controller
 {
@@ -18,7 +21,7 @@ class SmsCampaignController extends Controller
             return redirect()->back()->with('warning', 'No permission to view SMS campaigns.');
         }
 
-        $campaigns = SmsCampaign::all();
+        $campaigns = SmsCampaign::latest()->get();
 
         return view('sms.campaign.index', compact('campaigns'));
     }
@@ -43,7 +46,73 @@ class SmsCampaignController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'campaign_title' => 'required|string|max:255',
+            'branch_id'      => 'required|exists:branches,id',
+            'class_id'       => 'required|exists:class_names,id',
+            'message_type'   => 'required|in:TEXT,UNICODE',
+            'message_body'   => 'required|string|max:500',
+            'recipients'     => 'required|string', // JSON string: ["students","guardians"]
+        ]);
+
+        $selectedRecipients = json_decode($validated['recipients'], true);
+
+        $mobileNumbers = collect();
+
+        // ✅ If "students" selected
+        if (in_array('students', $selectedRecipients)) {
+            $studentNumbers = Student::where('branch_id', $validated['branch_id'])
+                ->where('class_id', $validated['class_id'])
+                ->whereHas('studentActivation', function ($q2) {
+                    $q2->where('active_status', 'active');
+                })
+                ->whereHas('mobileNumbers', function ($q) {
+                    $q->where('number_type', 'sms');
+                })
+                ->with([
+                    'mobileNumbers' => function ($q) {
+                        $q->where('number_type', 'sms');
+                    },
+                ])
+                ->get()
+                ->pluck('mobileNumbers.*.mobile_number') // nested array of numbers
+                ->flatten();
+
+            $mobileNumbers = $mobileNumbers->merge($studentNumbers);
+        }
+
+        // ✅ If "guardians" selected
+        if (in_array('guardians', $selectedRecipients)) {
+            $guardianNumbers = Guardian::whereHas('student', function ($q) use ($validated) {
+                $q->where('branch_id', $validated['branch_id'])
+                    ->where('class_id', $validated['class_id'])
+                    ->whereHas('studentActivation', function ($q2) {
+                        $q2->where('active_status', 'active');
+                    });
+            })->pluck('mobile_number');
+
+            $mobileNumbers = $mobileNumbers->merge($guardianNumbers);
+        }
+
+        // ✅ Remove duplicates & reindex
+        $mobileNumbers = $mobileNumbers->filter()->unique()->values();
+
+        // ✅ Save campaign
+        $campaign = SmsCampaign::create([
+            'campaign_title' => $validated['campaign_title'],
+            'branch_id'      => $validated['branch_id'],
+            'message_type'   => $validated['message_type'],
+            'message_body'   => $validated['message_body'],
+            'recipients'     => $mobileNumbers->toJson(), // Store JSON array of numbers
+            'created_by'     => auth()->id(),
+        ]);
+
+        return response()->json([
+            'success'          => true,
+            'message'          => 'Campaign created successfully',
+            'recipients_count' => $mobileNumbers->count(),
+            'data'             => $campaign,
+        ]);
     }
 
     /**
@@ -114,14 +183,14 @@ class SmsCampaignController extends Controller
     /**
      * SMS Campaign approve
      */
-    public function approve($id)
+    public function approve(string $id)
     {
-        $campaign = SmsCampaign::find($id)->where('is_approved', false)->first();
+        $campaign = SmsCampaign::where('id', $id)->where('is_approved', false)->first();
 
         if (! $campaign) {
             return response()->json([
                 'success' => false,
-                'message' => 'Campaign not found.',
+                'message' => 'Campaign not found or already approved.',
             ]);
         }
 

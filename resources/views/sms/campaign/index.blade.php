@@ -164,9 +164,10 @@
                     <tr class="fw-bold fs-7 text-uppercase gs-0">
                         <th class="w-25px">SL</th>
                         <th>Title</th>
-                        <th>Message</th>
+                        <th class="w-500px">Message</th>
                         <th>Recipients</th>
                         <th>Created At</th>
+                        <th>Branch</th>
                         <th>Created By</th>
                         <th>Status</th>
                         <th class="not-export">Actions</th>
@@ -178,11 +179,14 @@
                             <td>{{ $loop->index + 1 }}</td>
                             <td>{{ $campaign->campaign_title }}</td>
                             <td>{{ $campaign->message_body }}</td>
-                            <td>{{ $campaign->recipients }}</td>
+                            {{-- <td>{{ $campaign->recipients }}</td> --}}
+                            <td><button class="btn btn-icon text-hover-success w-30px h-30px" data-bs-toggle="modal"
+                                    data-bs-target="#kt_modal_view_recipients" data-campaign-id="{{ $campaign->id }}"><i
+                                        class="ki-outline ki-eye fs-2"></i></button></td>
                             <td>
                                 {{ $campaign->created_at->format('h:i:s A, d-M-Y') }}
                             </td>
-
+                            <td>{{ $campaign->branch->branch_name }}</td>
                             <td>
                                 {{ $campaign->createdBy->name ?? 'System' }}
                             </td>
@@ -220,7 +224,7 @@
                                         </a>
                                     @endcan
                                 @else
-                                    <span class="badge rounded-pill text-bg-success text-white">Sent</span>
+                                    <span class="badge badge-info rounded-pill">Sent</span>
                                 @endif
                             </td>
                         </tr>

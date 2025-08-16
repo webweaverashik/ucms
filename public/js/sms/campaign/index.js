@@ -150,61 +150,63 @@ var KTSMSList = function () {
 
       // campaign approval AJAX
       var handleApproval = function () {
-            document.querySelectorAll('.approve-campaign').forEach(item => {
-                  item.addEventListener('click', function (e) {
-                        e.preventDefault();
+            document.addEventListener('click', function (e) {
+                  const approveBtn = e.target.closest('.approve-campaign');
+                  if (!approveBtn) return; // only continue if button clicked
 
-                        let campaignId = this.getAttribute('data-campaign-id');
-                        console.log("Campaign ID: ", campaignId);
+                  e.preventDefault();
 
-                        Swal.fire({
-                              title: 'Are you sure?',
-                              text: "Do you want to approve this campaign?",
-                              icon: 'warning',
-                              showCancelButton: true,
-                              confirmButtonColor: '#3085d6',
-                              cancelButtonColor: '#d33',
-                              confirmButtonText: 'Yes, approve!'
-                        }).then((result) => {
-                              if (result.isConfirmed) {
-                                    fetch(`/sms/send-campaign/${campaignId}/approve`, {
-                                          method: "POST",
-                                          headers: {
-                                                "Content-Type": "application/json",
-                                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                                          }
-                                    })
-                                          .then(response => response.json())
-                                          .then(data => {
-                                                if (data.success) {
-                                                      Swal.fire({
-                                                            title: "Approved!",
-                                                            text: "Campaign approved successfully.",
-                                                            icon: "success",
-                                                      }).then(() => {
-                                                            location.reload();
-                                                      });
-                                                } else {
-                                                      Swal.fire({
-                                                            title: "Error!",
-                                                            text: data.message,
-                                                            icon: "warning",
-                                                      });
-                                                }
-                                          })
-                                          .catch(error => {
-                                                console.error("Fetch Error:", error);
+                  let campaignId = approveBtn.getAttribute('data-campaign-id');
+                  console.log("Campaign ID:", campaignId);
+
+                  Swal.fire({
+                        title: 'Are you sure?',
+                        text: "Do you want to approve this campaign?",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, approve!'
+                  }).then((result) => {
+                        if (result.isConfirmed) {
+                              fetch(`/sms/send-campaign/${campaignId}/approve`, {
+                                    method: "POST",
+                                    headers: {
+                                          "Content-Type": "application/json",
+                                          "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                                    }
+                              })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                          if (data.success) {
+                                                Swal.fire({
+                                                      title: "Approved!",
+                                                      text: "Campaign approved successfully.",
+                                                      icon: "success",
+                                                }).then(() => {
+                                                      location.reload();
+                                                });
+                                          } else {
                                                 Swal.fire({
                                                       title: "Error!",
-                                                      text: "Something went wrong. Please try again.",
-                                                      icon: "error",
+                                                      text: data.message,
+                                                      icon: "warning",
                                                 });
+                                          }
+                                    })
+                                    .catch(error => {
+                                          console.error("Fetch Error:", error);
+                                          Swal.fire({
+                                                title: "Error!",
+                                                text: "Something went wrong. Please try again.",
+                                                icon: "error",
                                           });
-                              }
-                        });
+                                    });
+                        }
                   });
             });
       };
+
 
       // Delete campaign
       const handleDeletion = function () {

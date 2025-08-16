@@ -1,5 +1,4 @@
 @push('page-css')
-    <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
 @endpush
 
 
@@ -24,7 +23,7 @@
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
                 <a href="#" class="text-muted text-hover-primary">
-                    Payments Info </a>
+                    SMS </a>
             </li>
             <!--end::Item-->
             <!--begin::Item-->
@@ -53,9 +52,7 @@
                 <!--begin::Card body-->
                 <div class="card-body py-10">
                     <!--begin::Form-->
-                    <form id="kt_send_single_sms_form" class="form" action="{{ route('send-campaign.store') }}"
-                        method="POST">
-                        @csrf
+                    <form id="kt_send_campaign_sms_form" class="form" action="#" novalidate="novalidate">
                         <!--begin::Scroll-->
                         <div class="d-flex flex-column scroll-y px-5" id="kt_send_campaign_sms_scroll" data-kt-scroll="true"
                             data-kt-scroll-activate="false" data-kt-scroll-max-height="auto"
@@ -79,23 +76,16 @@
                                     <div class="row">
                                         <!--begin::Branch Input group-->
                                         <div class="fv-row mb-7 col-xl-6">
-                                            <!--begin::Label-->
                                             <label class="required fw-semibold fs-6 mb-2">Branch</label>
-                                            <!--end::Label-->
 
-                                            <!--begin::Solid input group style-->
-                                            <div class="input-group input-group-solid flex-nowrap">
-                                                <select name="branch_id" class="form-select form-select-solid"
-                                                    data-control="select2" data-placeholder="Select branch"
-                                                    id="branch_select">
-                                                    <option></option>
-                                                    @foreach ($branches as $branch)
-                                                        <option value="{{ $branch->id }}">{{ $branch->branch_name }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                            <!--end::Solid input group style-->
+                                            <select name="branch_id" class="form-select form-select-solid"
+                                                data-control="select2" data-placeholder="Select branch" id="branch_select">
+                                                <option></option>
+                                                @foreach ($branches as $branch)
+                                                    <option value="{{ $branch->id }}">{{ $branch->branch_name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
                                         </div>
                                         <!--end::Branch Input group-->
 
@@ -242,11 +232,10 @@
 
 
 @push('vendor-js')
-    <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
 @endpush
 
 @push('page-js')
-    <script src="{{ asset('js/sms/campaign/index.js') }}"></script>
+    <script src="{{ asset('js/sms/campaign/create.js') }}"></script>
 
     <script>
         document.getElementById("sms_menu").classList.add("here", "show");
