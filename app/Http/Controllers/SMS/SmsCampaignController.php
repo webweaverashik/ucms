@@ -21,7 +21,14 @@ class SmsCampaignController extends Controller
             return redirect()->back()->with('warning', 'No permission to view campaigns.');
         }
 
-        $campaigns = SmsCampaign::with('branch', 'createdBy')->latest()->get();
+        $branchId = auth()->user()->branch_id;
+
+        $campaigns = SmsCampaign::with(['branch', 'createdBy'])
+            ->when($branchId != 0, function ($query) use ($branchId) {
+                $query->where('branch_id', $branchId);
+            })
+            ->latest()
+            ->get();
 
         return view('sms.campaign.index', compact('campaigns'));
     }
