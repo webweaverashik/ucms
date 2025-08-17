@@ -100,7 +100,6 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::post('sms/send-single', [SmsController::class, 'sendSingle'])->name('sms.single.send');
 
     Route::post('/sms/send-campaign/{id}/approve', [SmsCampaignController::class, 'approve'])->name('sms-campaigns.approve');
-    Route::get('/sms/send-campaign/{id}/recipients', [SmsCampaignController::class, 'getRecipients'])->name('sms.campaign.recipients');
 
     Route::get('sms/logs', [SmsController::class, 'smsLog'])->name('sms.logs.index');
     Route::get('sms/balance', [SmsController::class, 'checkBalance'])->name('sms.balance');

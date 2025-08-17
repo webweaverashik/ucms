@@ -180,8 +180,13 @@
                             <td>{{ $campaign->campaign_title }}</td>
                             <td>{{ $campaign->message_body }}</td>
                             {{-- <td>{{ $campaign->recipients }}</td> --}}
-                            <td><button class="btn btn-icon text-hover-success w-30px h-30px view-receipients"
-                                    data-campaign-id="{{ $campaign->id }}"><i class="ki-outline ki-eye fs-2"></i></button>
+                            <td><button type="button"
+                                    class="btn btn-icon text-hover-success w-30px h-30px view-receipients"
+                                    data-campaign-title="{{ $campaign->campaign_title }}"
+                                    data-recipients='@json(is_array($campaign->recipients) ? $campaign->recipients : json_decode($campaign->recipients, true) ?? [])'>
+                                    <i class="ki-outline ki-eye fs-2"></i>
+                                </button>
+
                             </td>
                             <td>
                                 {{ $campaign->created_at->format('h:i:s A, d-M-Y') }}
@@ -350,15 +355,16 @@
     </div>
     <!--end::Modal - Edit Campaign-->
 
-    <div class="modal fade" id="viewRecipientsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="viewRecipientsModal" tabindex="-1" aria-labelledby="viewRecipientsModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2 class="fw-bold" id="viewRecipientsModalLabel">Campaign Recipients</h2>
+                    <h5 class="modal-title" id="viewRecipientsModalLabel">Recipients</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <div id="recipientsContent" class="fs-2">Loading...</div>
+                <div class="modal-body" id="recipientsContent">
+                    <!-- recipients will load here -->
                 </div>
             </div>
         </div>

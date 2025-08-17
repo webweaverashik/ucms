@@ -263,37 +263,51 @@ var KTSMSCampaignList = function () {
             });
       };
 
-      // View Recipients
+      // View Recipients (delegated so it survives DataTables redraws)
       const handleViewRecipients = function () {
-            document.querySelectorAll(".view-receipients").forEach(button => {
-                  button.addEventListener("click", function () {
-                        const campaignId = this.getAttribute("data-campaign-id");
-                        const modal = new bootstrap.Modal(document.getElementById("viewRecipientsModal"));
-                        const recipientsContent = document.getElementById("recipientsContent");
-                        const modalLabel = document.getElementById("viewRecipientsModalLabel");
+            document.addEventListener("click", function (e) {
+                  const button = e.target.closest(".view-receipients");
+                  if (!button) return;
 
-                        // Show loading first
-                        recipientsContent.innerHTML = "Loading...";
+                  e.preventDefault();
 
-                        fetch(`/sms/send-campaign/${campaignId}/recipients`)
-                              .then(res => res.json())
-                              .then(data => {
-                                    if (data.success) {
-                                          modalLabel.innerText = `Recipients for: ${data.title}`;
-                                          // assuming recipients is stored as CSV/text
-                                          recipientsContent.innerHTML = `<pre class="fs-2">${data.recipients}</pre>`;
-                                    } else {
-                                          recipientsContent.innerHTML = `<span class="text-danger">${data.message}</span>`;
-                                    }
-                              })
-                              .catch(() => {
-                                    recipientsContent.innerHTML = `<span class="text-danger">Failed to load recipients.</span>`;
-                              });
+                  const title = button.getAttribute("data-campaign-title") || "Campaign";
+                  const raw = button.getAttribute("data-recipients") || "[]";
 
-                        modal.show();
-                  });
+                  // Parse recipients from JSON first; fall back to CSV/newline
+                  let recipients = [];
+                  try {
+                        if (raw.trim().startsWith("[")) {
+                              recipients = JSON.parse(raw) || [];
+                        } else {
+                              recipients = raw.split(/[,\n]/).map(s => s.trim()).filter(Boolean);
+                        }
+                  } catch {
+                        recipients = raw.split(/[,\n]/).map(s => s.replace(/[\[\]"]/g, "").trim()).filter(Boolean);
+                  }
+
+                  const recipientsContent = document.getElementById("recipientsContent");
+                  const modalLabel = document.getElementById("viewRecipientsModalLabel");
+                  const modalEl = document.getElementById("viewRecipientsModal");
+                  const modal = new bootstrap.Modal(modalEl);
+
+                  modalLabel.textContent = `Recipients of ${title} (${recipients.length})`;
+
+                  if (recipients.length > 0) {
+                        // Build 4-column grid
+                        let html = '<div class="row g-2">';
+                        recipients.forEach(recipient => {
+                              html += `<div class="col-3 fs-6">${recipient}</div>`;
+                        });
+                        html += '</div>';
+                        recipientsContent.innerHTML = html;
+                  } else {
+                        recipientsContent.innerHTML = `<span class="text-muted">No recipients found.</span>`;
+                  }
+
+                  modal.show();
             });
-      }
+      };
 
       return {
             // Public functions  
