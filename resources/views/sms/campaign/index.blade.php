@@ -180,9 +180,9 @@
                             <td>{{ $campaign->campaign_title }}</td>
                             <td>{{ $campaign->message_body }}</td>
                             {{-- <td>{{ $campaign->recipients }}</td> --}}
-                            <td><button class="btn btn-icon text-hover-success w-30px h-30px" data-bs-toggle="modal"
-                                    data-bs-target="#kt_modal_view_recipients" data-campaign-id="{{ $campaign->id }}"><i
-                                        class="ki-outline ki-eye fs-2"></i></button></td>
+                            <td><button class="btn btn-icon text-hover-success w-30px h-30px view-receipients"
+                                    data-campaign-id="{{ $campaign->id }}"><i class="ki-outline ki-eye fs-2"></i></button>
+                            </td>
                             <td>
                                 {{ $campaign->created_at->format('h:i:s A, d-M-Y') }}
                             </td>
@@ -349,6 +349,21 @@
         <!--end::Modal dialog-->
     </div>
     <!--end::Modal - Edit Campaign-->
+
+    <div class="modal fade" id="viewRecipientsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="fw-bold" id="viewRecipientsModalLabel">Campaign Recipients</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="recipientsContent" class="fs-2">Loading...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 

@@ -228,4 +228,35 @@ class SmsCampaignController extends Controller
             'message' => 'Campaign approved successfully.',
         ]);
     }
+
+    public function getRecipients($id)
+    {
+        $campaign = SmsCampaign::find($id);
+
+        if (! $campaign) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Campaign not found or already approved.',
+                ],
+                404,
+            );
+        }
+
+        $recipients = $campaign->recipients;
+
+        if (is_array($recipients)) {
+            // Already decoded (if cast in model as array/json)
+            $recipients = implode(', ', $recipients);
+        } else {
+            // If stored as JSON string, decode first
+            $recipients = implode(', ', json_decode($recipients, true));
+        }
+
+        return response()->json([
+            'success'    => true,
+            'title'      => $campaign->campaign_title,
+            'recipients' => $recipients,
+        ]);
+    }
 }

@@ -100,16 +100,19 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::post('sms/send-single', [SmsController::class, 'sendSingle'])->name('sms.single.send');
 
     Route::post('/sms/send-campaign/{id}/approve', [SmsCampaignController::class, 'approve'])->name('sms-campaigns.approve');
+    Route::get('/sms/send-campaign/{id}/recipients', [SmsCampaignController::class, 'getRecipients'])->name('sms.campaign.recipients');
 
     Route::get('sms/logs', [SmsController::class, 'smsLog'])->name('sms.logs.index');
     Route::get('sms/balance', [SmsController::class, 'checkBalance'])->name('sms.balance');
     Route::get('sms/status', [SmsController::class, 'checkSmsStatus'])->name('sms.status');
 
     Route::get('sms/templates', [SmsTemplateController::class, 'index'])->name('sms.templates.index');
-    Route::prefix('sms/templates')->name('sms.templates.')->group(function () {
-        Route::patch('{template}/toggle', [SmsTemplateController::class, 'toggleStatus'])->name('toggle');
-        Route::patch('{template}/update-body', [SmsTemplateController::class, 'updateBody'])->name('updateBody');
-    });
+    Route::prefix('sms/templates')
+        ->name('sms.templates.')
+        ->group(function () {
+            Route::patch('{template}/toggle', [SmsTemplateController::class, 'toggleStatus'])->name('toggle');
+            Route::patch('{template}/update-body', [SmsTemplateController::class, 'updateBody'])->name('updateBody');
+        });
 
     // ----- SMS Routes End -----
 
@@ -147,7 +150,6 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
         'notes'             => SheetTopicController::class,
         'sms/send-campaign' => SmsCampaignController::class,
     ]);
-
 });
 
 // Handle GET /logout for logged-out users (redirect to login)
@@ -160,7 +162,9 @@ Route::controller(PasswordController::class)
     ->group(function () {
         Route::get('forgot-password', 'showLinkRequestForm')->name('password.request');
         Route::post('forgot-password', 'sendResetLinkEmail')->name('password.email');
-        Route::get('reset-password', function () {return redirect()->route('password.request');})->name('password.reset.request');
+        Route::get('reset-password', function () {
+            return redirect()->route('password.request');
+        })->name('password.reset.request');
         Route::get('reset-password/{token}', 'showResetForm')->name('password.reset');
         Route::post('reset-password', 'reset')->name('password.update');
     });

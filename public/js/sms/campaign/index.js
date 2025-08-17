@@ -263,6 +263,38 @@ var KTSMSCampaignList = function () {
             });
       };
 
+      // View Recipients
+      const handleViewRecipients = function () {
+            document.querySelectorAll(".view-receipients").forEach(button => {
+                  button.addEventListener("click", function () {
+                        const campaignId = this.getAttribute("data-campaign-id");
+                        const modal = new bootstrap.Modal(document.getElementById("viewRecipientsModal"));
+                        const recipientsContent = document.getElementById("recipientsContent");
+                        const modalLabel = document.getElementById("viewRecipientsModalLabel");
+
+                        // Show loading first
+                        recipientsContent.innerHTML = "Loading...";
+
+                        fetch(`/sms/send-campaign/${campaignId}/recipients`)
+                              .then(res => res.json())
+                              .then(data => {
+                                    if (data.success) {
+                                          modalLabel.innerText = `Recipients for: ${data.title}`;
+                                          // assuming recipients is stored as CSV/text
+                                          recipientsContent.innerHTML = `<pre class="fs-2">${data.recipients}</pre>`;
+                                    } else {
+                                          recipientsContent.innerHTML = `<span class="text-danger">${data.message}</span>`;
+                                    }
+                              })
+                              .catch(() => {
+                                    recipientsContent.innerHTML = `<span class="text-danger">Failed to load recipients.</span>`;
+                              });
+
+                        modal.show();
+                  });
+            });
+      }
+
       return {
             // Public functions  
             init: function () {
@@ -278,6 +310,7 @@ var KTSMSCampaignList = function () {
                   handleFilter();
                   handleDeletion();
                   handleApproval();
+                  handleViewRecipients();
             }
       }
 }();
