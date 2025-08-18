@@ -181,33 +181,23 @@ class PaymentInvoiceController extends Controller
             }
         }
 
-        // Sending SMS
+        // AutoSMS for invoice created
         $autoSmsService = app(AutoSmsService::class);
-        $mobile         = $invoice->student->mobileNumbers
-            ->where('number_type', 'sms')
-            ->first()
-            ->mobile_number;
+        $mobile         = $invoice->student->mobileNumbers->where('number_type', 'sms')->first()->mobile_number;
 
-        if (in_array($request->invoice_type, [
-            'tuition_fee', 'model_test_fee', 'exam_fee',
-            'sheet_fee', 'book_fee', 'diary_fee', 'others_fee',
-        ])) {
-            $autoSmsService->sendAutoSms(
-                "{$request->invoice_type}_invoice_created",
-                $mobile,
-                [
-                    'student_name' => $invoice->student->name,
-                    'month_year'   => $invoice->month_year
-                    ? Carbon::createFromDate(
-                        explode('_', $invoice->month_year)[1], // year
-                        explode('_', $invoice->month_year)[0]  // month
-                    )->format('F')
-                    : now()->format('F'),
-                    'amount'       => $invoice->total_amount,
-                    'invoice_no'   => $invoice->invoice_number,
-                    'due_date'     => $this->ordinal($invoice->student->payments->due_date) . ' ' . now()->format('F'),
-                ]
-            );
+        if (in_array($request->invoice_type, ['tuition_fee', 'model_test_fee', 'exam_fee', 'sheet_fee', 'book_fee', 'diary_fee', 'others_fee'])) {
+            send_auto_sms("{$request->invoice_type}_invoice_created", $invoice->student->mobileNumbers->where('number_type', 'sms')->first()->mobile_number, [
+                'student_name' => $invoice->student->name,
+                'month_year'   => $invoice->month_year
+                ? Carbon::createFromDate(
+                    explode('_', $invoice->month_year)[1], // year
+                    explode('_', $invoice->month_year)[0], // month
+                )->format('F')
+                : now()->format('F'),
+                'amount'       => $invoice->total_amount,
+                'invoice_no'   => $invoice->invoice_number,
+                'due_date'     => $this->ordinal($invoice->student->payments->due_date) . ' ' . now()->format('F'),
+            ]);
         }
 
         // Clear the cache
@@ -221,11 +211,14 @@ class PaymentInvoiceController extends Controller
      */
     private function ordinal(int $number): string
     {
-        if (! in_array(($number % 100), [11, 12, 13])) {
+        if (! in_array($number % 100, [11, 12, 13])) {
             switch ($number % 10) {
-                case 1:return $number . 'st';
-                case 2:return $number . 'nd';
-                case 3:return $number . 'rd';
+                case 1:
+                    return $number . 'st';
+                case 2:
+                    return $number . 'nd';
+                case 3:
+                    return $number . 'rd';
             }
         }
         return $number . 'th';

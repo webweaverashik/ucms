@@ -25,22 +25,22 @@ class AutoSmsService
      */
     public function sendAutoSms(string $templateTitle, string $mobile, array $data = [], string $messageType = 'TEXT', ?int $userId = null)
     {
-        // Fetch the template by title
-        $template = SmsTemplate::where('name', $templateTitle)->first();
+        // Fetch active template by title
+        $template = SmsTemplate::where('name', $templateTitle)
+            ->where('is_active', true)
+            ->first();
 
         if (! $template) {
-            return ['error' => true, 'message' => "SMS template '{$templateTitle}' not found."];
+            return ['error' => true, 'message' => "Active SMS template '{$templateTitle}' not found or inactive."];
         }
 
-        // Replace placeholders in the template body with actual data
+        // Replace placeholders in the template body
         $message = $template->body;
-
         foreach ($data as $key => $value) {
-            $placeholder = '{' . $key . '}';
-            $message     = str_replace($placeholder, $value, $message);
+            $message = str_replace("{" . $key . "}", $value, $message);
         }
 
-        // Send SMS using SmsService
+        // Send SMS
         return $this->smsService->sendSingleSms($mobile, $message, $messageType, $userId);
     }
 }
