@@ -91,7 +91,6 @@
                                     data-placeholder="Select option" data-allow-clear="true"
                                     data-sms-logs-table-filter="status" data-hide-search="true">
                                     <option></option>
-                                    <option value="S_PENDING">Pending</option>
                                     <option value="S_SUCCESS">Success</option>
                                     <option value="S_FAILED">Failed</option>
                                 </select>
@@ -163,7 +162,7 @@
                         <th class="w-100px">Failed Reason (API)</th>
                         <th>Sent At</th>
                         <th>Sent By</th>
-                        <th class="not-export">Actions</th>
+                        <th class="not-export d-none">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="text-gray-600 fw-semibold">
@@ -207,7 +206,7 @@
                                 {{ $log->createdBy->name ?? 'System' }}
                             </td>
 
-                            <td>
+                            <td class="d-none">
                                 @if ($log->status === 'FAILED')
                                     <a href="#" title="Retry SMS"
                                         class="btn btn-icon text-hover-success w-30px h-30px retry-sms me-2"
