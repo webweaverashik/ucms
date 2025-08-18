@@ -128,7 +128,7 @@
 
                         <!--begin::Row-->
                         <tr class="">
-                            <td class="text-gray-500">Remaining Amount:</td>
+                            <td class="text-gray-500">Remaining:</td>
                             <td
                                 class="@if ($invoice->amount_due > 0) text-danger animation-blink @else text-gray-800 @endif">
                                 {{ $invoice->amount_due }} ৳

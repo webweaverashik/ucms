@@ -73,6 +73,12 @@ $(document).ready(function () {
             } else if (amount < 1) {
                   isValid = false;
                   errorMessage = 'Amount must be at least ৳1';
+            } else if (invoice.status === 'partially_paid') {
+                  // For partially paid invoices, allow amount equal to or less than due amount
+                  if (amount > maxAmount) {
+                        isValid = false;
+                        errorMessage = `Amount must be less than or equal to the due amount of ৳${maxAmount}`;
+                  }
             } else if (paymentType === 'partial' && amount >= maxAmount) {
                   isValid = false;
                   errorMessage = `For partial payment, amount must be less than the due amount of ৳${maxAmount}`;
@@ -107,6 +113,11 @@ $(document).ready(function () {
                   isValid = false;
             } else if (amount < 1) {
                   isValid = false;
+            } else if (invoice.status === 'partially_paid') {
+                  // For partially paid invoices, allow amount equal to or less than due amount
+                  if (amount > maxAmount) {
+                        isValid = false;
+                  }
             } else if (paymentType === 'partial' && amount >= maxAmount) {
                   isValid = false;
             } else if (paymentType === 'discounted' && amount >= maxAmount) {

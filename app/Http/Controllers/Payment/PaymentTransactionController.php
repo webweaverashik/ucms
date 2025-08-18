@@ -70,8 +70,6 @@ class PaymentTransactionController extends Controller
      */
     public function store(Request $request)
     {
-        // return $request;
-
         $validated = $request->validate([
             'transaction_student' => 'required|exists:students,id',
             'transaction_invoice' => 'required|exists:payment_invoices,id',
@@ -80,25 +78,31 @@ class PaymentTransactionController extends Controller
             'transaction_remarks' => 'nullable|string|max:1000',
         ]);
 
-        $invoice = PaymentInvoice::where('id', $validated['transaction_invoice'])->where('student_id', $validated['transaction_student'])->firstOrFail();
+        $invoice = PaymentInvoice::where('id', $validated['transaction_invoice'])
+            ->where('student_id', $validated['transaction_student'])
+            ->firstOrFail();
 
-        // Use amount_due instead of total_amount for validation
-        $maxAmount = $invoice->amount_due;
-
-        // return ['request' => $validated, 'invoice' => $invoice, 'maxAmount' => $maxAmount];
-
-        // Combined validation for all payment types
+        $maxAmount   = $invoice->amount_due;
         $paymentType = $validated['transaction_type'];
         $amount      = $validated['transaction_amount'];
 
-        if (($paymentType === 'full' && $amount != $maxAmount) || (in_array($paymentType, ['partial', 'discounted']) && $amount >= $maxAmount)) {
-            $errorMessage = match ($paymentType) {
-                'full' => "For full payments, the amount must equal the due amount (৳{$maxAmount}).",
-                'partial' => "Partial payment must be less than the due amount (৳{$maxAmount}).",
-                'discounted' => "Discounted payment must be less than the due amount (৳{$maxAmount}).",
-            };
-
-            return redirect()->back()->with('warning', $errorMessage);
+        // Special case for partially paid invoices - allow equal or less than amount_due
+        if ($invoice->status === 'partially_paid') {
+            if ($amount > $maxAmount) {
+                return redirect()->back()->with('warning', "Amount must be less than or equal to the due amount (৳{$maxAmount}).");
+            }
+        }
+        // Normal validation for other statuses
+        else {
+            if (($paymentType === 'full' && $amount != $maxAmount) ||
+                (in_array($paymentType, ['partial', 'discounted']) && $amount >= $maxAmount)) {
+                $errorMessage = match ($paymentType) {
+                    'full' => "For full payments, the amount must equal the due amount (৳{$maxAmount}).",
+                    'partial' => "Partial payment must be less than the due amount (৳{$maxAmount}).",
+                    'discounted' => "Discounted payment must be less than the due amount (৳{$maxAmount}).",
+                };
+                return redirect()->back()->with('warning', $errorMessage);
+            }
         }
 
         // Count existing transactions for this invoice to get next sequence number
@@ -125,7 +129,6 @@ class PaymentTransactionController extends Controller
 
         if ($validated['transaction_type'] === 'discounted') {
             // For discounted payments, mark the payment as pending and is_approved false
-
             // $invoice->update([
             //     'amount_due' => 0,
             //     'status'     => 'paid',
@@ -140,10 +143,7 @@ class PaymentTransactionController extends Controller
             // Partial payment
             $invoice->update([
                 'amount_due' => $newAmountDue,
-                'status'     =>
-                $invoice->amount_due == $invoice->total_amount
-                ? 'partially_paid'  // First partial payment
-                : $invoice->status, // Keep existing status if already partially paid
+                'status'     => 'partially_paid',
             ]);
         }
 
