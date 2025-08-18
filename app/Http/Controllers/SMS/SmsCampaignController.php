@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\SMS;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendSmsCampaignJob;
 use App\Models\Academic\ClassName;
 use App\Models\Branch;
 use App\Models\SMS\SmsCampaign;
@@ -230,9 +231,12 @@ class SmsCampaignController extends Controller
         $campaign->is_approved = true;
         $campaign->save();
 
+        // Dispatch job
+        dispatch(new SendSmsCampaignJob($campaign));
+
         return response()->json([
             'success' => true,
-            'message' => 'Campaign approved successfully.',
+            'message' => 'Campaign approved and SMS sending started in background.',
         ]);
     }
 }

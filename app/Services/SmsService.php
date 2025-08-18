@@ -42,17 +42,27 @@ class SmsService
             'response' => $data,
         ]);
 
-        return SmsLog::create([
-            'message_type'         => $messageType,
-            'recipient'            => $mobile,
-            'message_body'         => $message,
-            'sms_uid'              => $data['sms_uid'] ?? null,
-            'status'               => ($data['api_response_message'] ?? '') === 'SUCCESS' ? 'SUCCESS' : 'FAILED',
-            'api_response_code'    => $data['api_response_code'] ?? null,
-            'api_response_message' => $data['api_response_message'] ?? 'FAILED',
-            'api_error'            => $data['error'] ?? null,
-            'created_by'           => $userId,
-        ]);
+        try {
+            return SmsLog::create([
+                'message_type'         => $messageType,
+                'recipient'            => $mobile,
+                'message_body'         => $message,
+                'sms_uid'              => $data['sms_uid'] ?? null,
+                'status'               => ($data['api_response_message'] ?? '') === 'SUCCESS' ? 'SUCCESS' : 'FAILED',
+                'api_response_code'    => $data['api_response_code'] ?? null,
+                'api_response_message' => $data['api_response_message'] ?? 'FAILED',
+                'api_error'            => $data['error'] ?? null,
+                'created_by'           => $userId,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to log SMS', [
+                'mobile'  => $mobile,
+                'message' => $message,
+                'error'   => $e->getMessage(),
+            ]);
+            return null;
+        }
+
     }
 
     /**

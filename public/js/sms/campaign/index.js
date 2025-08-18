@@ -181,7 +181,7 @@ var KTSMSCampaignList = function () {
                                           if (data.success) {
                                                 Swal.fire({
                                                       title: "Approved!",
-                                                      text: "Campaign approved successfully.",
+                                                      text: data.message,
                                                       icon: "success",
                                                 }).then(() => {
                                                       location.reload();

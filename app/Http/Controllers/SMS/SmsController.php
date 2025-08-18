@@ -49,28 +49,6 @@ class SmsController extends Controller
         return redirect()->back()->with($flashKey, $flashMessage);
     }
 
-    // Send bulk SMS
-    public function sendBulk(Request $request)
-    {
-        $data = $request->validate([
-            'recipients'     => 'required|array|min:1',
-            'message_body'   => 'required|string',
-            'campaign_title' => 'required|string',
-            'message_type'   => 'required|in:TEXT,UNICODE',
-            'is_promotional' => 'sometimes|boolean',
-        ]);
-
-        $userId = Auth::id();
-
-        $campaign = $this->smsService->sendBulkSms($data['recipients'], $data['message_body'], $data['campaign_title'], $data['is_promotional'] ?? false, $data['message_type'], $userId);
-
-        if ($campaign->status === 'SENT') {
-            return response()->json(['message' => 'Bulk SMS campaign sent successfully.']);
-        } else {
-            return response()->json(['message' => 'Bulk SMS campaign failed to send.'], 500);
-        }
-    }
-
     // Check SMS balance
     public function checkBalance()
     {

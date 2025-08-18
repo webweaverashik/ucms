@@ -10,7 +10,6 @@ class SmsLog extends Model
         'message_type',
         'recipient',
         'message_body',
-        'campaign_uid',
         'sms_uid',
         'status',
         'api_response_code',
