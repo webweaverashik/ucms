@@ -43,8 +43,11 @@ class SmsCampaignController extends Controller
             return redirect()->back()->with('warning', 'No permission to create campaigns.');
         }
 
-        $branches = Branch::all();
-        $classes  = ClassName::all();
+        $branches = Branch::when(auth()->user()->branch_id != 0, function ($query) {
+            $query->where('id', auth()->user()->branch_id);
+        })->get();
+
+        $classes = ClassName::all();
 
         return view('sms.campaign.create', compact('branches', 'classes'));
     }
