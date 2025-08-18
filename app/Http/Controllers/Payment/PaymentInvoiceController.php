@@ -5,7 +5,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment\PaymentInvoice;
 use App\Models\Sheet\SheetPayment;
 use App\Models\Student\Student;
-use App\Services\AutoSmsService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -182,8 +181,7 @@ class PaymentInvoiceController extends Controller
         }
 
         // AutoSMS for invoice created
-        $autoSmsService = app(AutoSmsService::class);
-        $mobile         = $invoice->student->mobileNumbers->where('number_type', 'sms')->first()->mobile_number;
+        $mobile = $invoice->student->mobileNumbers->where('number_type', 'sms')->first()->mobile_number;
 
         if (in_array($request->invoice_type, ['tuition_fee', 'model_test_fee', 'exam_fee', 'sheet_fee', 'book_fee', 'diary_fee', 'others_fee'])) {
             send_auto_sms("{$request->invoice_type}_invoice_created", $invoice->student->mobileNumbers->where('number_type', 'sms')->first()->mobile_number, [

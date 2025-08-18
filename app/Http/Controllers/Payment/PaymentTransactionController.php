@@ -5,7 +5,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment\PaymentInvoice;
 use App\Models\Payment\PaymentTransaction;
 use App\Models\Student\Student;
-use App\Services\AutoSmsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -148,10 +147,13 @@ class PaymentTransactionController extends Controller
             ]);
         }
 
-        // Sending SMS
-        $autoSmsService = app(AutoSmsService::class);
-        $mobile         = $transaction->student->mobileNumbers->where('number_type', 'sms')->first()->mobile_number;
-        $autoSmsService->sendAutoSms(
+        // AutoSMS for transaction creation
+        $mobile = $transaction->student->mobileNumbers
+            ->where('number_type', 'sms')
+            ->first()
+            ->mobile_number;
+
+        send_auto_sms(
             'student_payment_success',
             $mobile,
             [
@@ -160,9 +162,12 @@ class PaymentTransactionController extends Controller
                 'voucher_no'       => $transaction->voucher_no,
                 'paid_amount'      => $transaction->amount_paid,
                 'remaining_amount' => $transaction->remaining_amount,
-                'payment_time'     => $transaction->created_at,
+                'payment_time'     => $transaction->created_at->format('d M Y, h:i A'),
             ]
         );
+
+        // Clear the cache
+        clearUCMSCaches();
 
         return redirect()->back()->with('success', 'Transaction recorded successfully.');
     }
