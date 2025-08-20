@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('payments', function (Blueprint $table) {
+        Schema::create('payments_info', function (Blueprint $table) {
             $table->id();
             $table->foreignId('student_id');
             $table->enum('payment_style', ['current', 'due']);
             $table->integer('due_date')->default(7);
             $table->integer('tuition_fee');
-            $table->foreignId('created_by')->nullable();
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('payments');
+        Schema::dropIfExists('payments_info');
     }
 };

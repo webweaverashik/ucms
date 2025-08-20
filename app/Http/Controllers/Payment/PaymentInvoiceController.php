@@ -184,7 +184,7 @@ class PaymentInvoiceController extends Controller
         $mobile = $invoice->student->mobileNumbers->where('number_type', 'sms')->first()->mobile_number;
 
         if (in_array($request->invoice_type, ['tuition_fee', 'model_test_fee', 'exam_fee', 'sheet_fee', 'book_fee', 'diary_fee', 'others_fee'])) {
-            send_auto_sms("{$request->invoice_type}_invoice_created", $invoice->student->mobileNumbers->where('number_type', 'sms')->first()->mobile_number, [
+            send_auto_sms("{$request->invoice_type}_invoice_created", $mobile, [
                 'student_name' => $invoice->student->name,
                 'month_year'   => $invoice->month_year
                 ? Carbon::createFromDate(

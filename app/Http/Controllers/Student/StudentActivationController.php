@@ -1,13 +1,13 @@
 <?php
 namespace App\Http\Controllers\Student;
 
-use Illuminate\Http\Request;
-use App\Models\Student\Student;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\Student\Student;
+use App\Models\Student\StudentActivation;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use App\Models\Student\StudentActivation;
+use Illuminate\Support\Facades\DB;
 
 class StudentActivationController extends Controller
 {
@@ -18,10 +18,10 @@ class StudentActivationController extends Controller
         // Check if the student has any unpaid (due or partially_paid) invoice
         $hasDueInvoice = $student->paymentInvoices()
             ->whereIn('status', ['due', 'partially_paid'])
+            ->where('invoice_type', 'tuition_fee')
             ->exists();
 
         if ($hasDueInvoice) {
-            // return redirect()->back()->with('error', 'Admission fee is still due. Cannot approve.');
             return response()->json(['success' => false, 'message' => 'Admission fee is still due. Cannot approve.']);
         }
 
@@ -42,7 +42,20 @@ class StudentActivationController extends Controller
             // Update Student's Activation ID
             $student->update(['student_activation_id' => $activation->id]);
 
-            Cache::forget('students_list_branch_' . auth()->user()->branch_id);
+            // AutoSMS for invoice created
+            $mobile = $student->mobileNumbers->where('number_type', 'sms')->first()->mobile_number;
+            send_auto_sms("student_registration_success", $mobile, [
+                'student_name'       => $student->name,
+                'student_unique_id'  => $student->student_unique_id,
+                'student_class_name' => $student->class->name,
+                'student_shift_name' => $student->shift->name,
+                'tuition_fee'        => $student->payments->tuition_fee,
+                'due_date'           => $student->name,
+            ]);
+
+            // Clear the cache
+            clearUCMSCaches();
+
             return response()->json(['success' => true, 'message' => 'Student activation updated successfully']);
         });
     }
