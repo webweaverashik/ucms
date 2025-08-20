@@ -50,7 +50,7 @@ class StudentActivationController extends Controller
                 'student_class_name' => $student->class->name,
                 'student_shift_name' => $student->shift->name,
                 'tuition_fee'        => $student->payments->tuition_fee,
-                'due_date'           => $student->name,
+                'due_date'           => $student->payments->due_date,
             ]);
 
             // Clear the cache
