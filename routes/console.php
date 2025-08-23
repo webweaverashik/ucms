@@ -13,3 +13,7 @@ Artisan::command('inspire', function () {
 Schedule::command('invoices:generate-monthly')
     ->monthly() // Run on 1st day of month at 12:30 AM
     ->appendOutputTo(storage_path('logs/invoice-generation.log'));
+
+
+Schedule::command('sms:send-birthday-wish')
+    ->daily('10:00');
