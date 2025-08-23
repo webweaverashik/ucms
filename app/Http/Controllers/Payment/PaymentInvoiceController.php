@@ -198,6 +198,27 @@ class PaymentInvoiceController extends Controller
             ]);
         }
 
+        // AutoSMS to guardian
+        if ($request->invoice_type === 'tuition_fee') {
+            $father = $invoice->student->guardians->where('relationship', 'father')->first();
+            $mobile = $father->mobile_number ?? null;
+
+            if ($mobile) {
+                send_auto_sms('guardian_tuition_fee_invoice_created', $mobile, [
+                    'student_name' => $invoice->student->name,
+                    'month_year'   => $invoice->month_year
+                    ? Carbon::createFromDate(
+                        explode('_', $invoice->month_year)[1], // year
+                        explode('_', $invoice->month_year)[0]  // month
+                    )->format('F')
+                    : now()->format('F'),
+                    'amount'       => $invoice->total_amount,
+                    'invoice_no'   => $invoice->invoice_number,
+                    'due_date'     => $this->ordinal($invoice->student->payments->due_date) . ' ' . now()->format('F'),
+                ]);
+            }
+        }
+
         // Clear the cache
         clearUCMSCaches();
 
