@@ -10,10 +10,7 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('invoices:generate-monthly')
-    ->monthly() // Run on 1st day of month at 12:30 AM
-    ->appendOutputTo(storage_path('logs/invoice-generation.log'));
-
-
-Schedule::command('sms:send-birthday-wish')
-    ->daily('10:00');
+Schedule::command('invoices:generate-monthly')->monthly()->appendOutputTo(storage_path('logs/invoice-generation.log'));
+Schedule::command('sms:send-birthday-wish')->dailyAt('10:00');
+Schedule::command('sms:send-student-due-invoice-reminder')->dailyAt('10:00');
+Schedule::command('sms:send-student-overdue-invoice-reminder')->dailyAt('10:00');

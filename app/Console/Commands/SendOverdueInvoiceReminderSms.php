@@ -11,14 +11,14 @@ class SendOverdueInvoiceReminderSms extends Command
      *
      * @var string
      */
-    protected $signature = 'app:send-overdue-invoice-reminder-sms';
+    protected $signature = 'sms:send-overdue-invoice-reminder';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Send SMS to students with overdue invoices i.e. due date passed';
 
     /**
      * Execute the console command.
