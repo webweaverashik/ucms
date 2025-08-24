@@ -1,12 +1,11 @@
 <?php
-
 namespace App\Models;
 
+use App\Models\Academic\ClassName;
 use App\Models\Academic\Shift;
 use App\Models\Student\Student;
-use App\Models\Academic\ClassName;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Branch extends Model
 {
@@ -26,6 +25,13 @@ class Branch extends Model
     public function students()
     {
         return $this->hasMany(Student::class);
+    }
+
+    public function activeStudents()
+    {
+        return $this->hasMany(Student::class, 'branch_id', 'id')->whereHas('studentActivation', function ($query) {
+            $query->where('active_status', 'active');
+        });
     }
 
     // Get all the teachers in the branch

@@ -63,7 +63,7 @@
                         <h4 class="text-gray-600"><i class="ki-outline ki-geolocation fs-4 me-2"></i>{{ $branch->address }}</h4>
                         <h4 class="text-gray-600"><i class="bi bi-telephone fs-4 me-2"></i>{{ $branch->phone_number }}</h4>
                         <div class="fw-bold text-gray-600 mt-10 fs-5">Total students on this branch:
-                            {{ count($branch->students) }}</div>
+                            {{ count($branch->activeStudents) }}</div>
                     </div>
                     <!--end::Card body-->
                 </div>
