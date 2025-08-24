@@ -13,7 +13,7 @@ class BranchController extends Controller
     public function index()
     {
         if (! auth()->user()->can('branches.manage')) {
-            return redirect()->back()->with('warning', 'Activity Not Allowed.');
+            return redirect()->back()->with('warning', 'No permission to view branches.');
         }
 
         $branches = Branch::all();
