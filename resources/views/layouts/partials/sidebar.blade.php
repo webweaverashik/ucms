@@ -148,7 +148,8 @@
                                         <!--begin:Menu link--><a class="menu-link" id="pending_approval_link"
                                             href="{{ route('students.pending') }}"><span class="menu-bullet"><span
                                                     class="bullet bullet-dot"></span></span><span class="menu-title">Pending
-                                                Approval</span></a>
+                                                Approval</span><span class="menu-badge"><span
+                                                    class="badge badge-info">{{ \App\Models\Student\Student::pending()->count() }}</span></span></a>
                                         <!--end:Menu link-->
                                     </div>
                                     <!--end:Menu item-->
@@ -437,9 +438,10 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" id="single_sms_link" href="{{ route('sms.single.index') }}"><span
-                                                class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
-                                                class="menu-title">Send SMS</span>
+                                        <a class="menu-link" id="single_sms_link"
+                                            href="{{ route('sms.single.index') }}"><span class="menu-bullet"><span
+                                                    class="bullet bullet-dot"></span></span><span class="menu-title">Send
+                                                SMS</span>
                                         </a>
                                         <!--end:Menu link-->
                                     </div>
@@ -450,7 +452,8 @@
                                 @can('sms.campaign.view')
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" id="sms_campaign_link" href="{{ route('send-campaign.index') }}">
+                                        <a class="menu-link" id="sms_campaign_link"
+                                            href="{{ route('send-campaign.index') }}">
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot">
                                                 </span>
@@ -461,12 +464,13 @@
                                     </div>
                                 @endcan
                                 <!--end:SMS Campaign item-->
-                                
+
                                 <!--begin:SMS template item-->
                                 @can('sms.templates.manage')
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" id="sms_template_link" href="{{ route('sms.templates.index') }}">
+                                        <a class="menu-link" id="sms_template_link"
+                                            href="{{ route('sms.templates.index') }}">
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot">
                                                 </span>

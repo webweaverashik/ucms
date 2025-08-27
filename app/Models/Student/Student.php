@@ -1,20 +1,20 @@
 <?php
 namespace App\Models\Student;
 
-use App\Models\User;
-use App\Models\Branch;
-use App\Models\Academic\Shift;
-use App\Models\Payment\Payment;
 use App\Models\Academic\ClassName;
-use App\Models\Sheet\SheetPayment;
 use App\Models\Academic\Institution;
+use App\Models\Academic\Shift;
 use App\Models\Academic\SubjectTaken;
-use App\Models\Sheet\SheetTopicTaken;
+use App\Models\Branch;
+use App\Models\Payment\Payment;
 use App\Models\Payment\PaymentInvoice;
-use Illuminate\Database\Eloquent\Model;
 use App\Models\Payment\PaymentTransaction;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Sheet\SheetPayment;
+use App\Models\Sheet\SheetTopicTaken;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Student extends Model
 {
@@ -28,6 +28,14 @@ class Student extends Model
         'date_of_birth' => 'date',
     ];
 
+    /**
+     * Scope for pending students
+     */
+    public function scopePending($query)
+    {
+        return $query->whereNull('student_activation_id');
+    }
+
     // Get the branch of the student:
     public function branch()
     {
@@ -35,7 +43,7 @@ class Student extends Model
     }
 
     // Get the current academic class of this student
-    public function class()
+    public function class ()
     {
         return $this->belongsTo(ClassName::class, 'class_id');
     }
