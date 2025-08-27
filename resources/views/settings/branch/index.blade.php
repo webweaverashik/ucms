@@ -42,6 +42,8 @@
 
 
 @section('content')
+    @include('settings.partials.hero')
+
     <!--begin::Row-->
     <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-5 g-xl-9">
         @foreach ($branches as $branch)
@@ -60,7 +62,8 @@
                     <!--end::Card header-->
                     <!--begin::Card body-->
                     <div class="card-body pt-1">
-                        <h4 class="text-gray-600"><i class="ki-outline ki-geolocation fs-4 me-2"></i>{{ $branch->address }}</h4>
+                        <h4 class="text-gray-600"><i class="ki-outline ki-geolocation fs-4 me-2"></i>{{ $branch->address }}
+                        </h4>
                         <h4 class="text-gray-600"><i class="bi bi-telephone fs-4 me-2"></i>{{ $branch->phone_number }}</h4>
                         <div class="fw-bold text-gray-600 mt-10 fs-5">Total active students:
                             {{ count($branch->activeStudents) }}</div>
@@ -73,7 +76,6 @@
         @endforeach
     </div>
     <!--end::Row-->
-
 @endsection
 
 
@@ -82,7 +84,7 @@
 
 @push('page-js')
     <script>
-        document.getElementById("settings_menu").classList.add("here", "show");
-        document.getElementById("branch_link").classList.add("active");
+        document.getElementById("settings_link").classList.add("active");
+        document.getElementById("settings_branch_link").classList.add("active");
     </script>
 @endpush

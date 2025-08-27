@@ -43,8 +43,6 @@
 
 
 @section('content')
-    @include('settings.partials.hero')
-
     <!--begin::Card-->
     <div class="card">
         <!--begin::Card header-->
@@ -112,11 +110,10 @@
 
                             <!--begin::Actions-->
                             <div class="d-flex justify-content-end">
-                                <button type="reset"
-                                    class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
+                                <button type="reset" class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
                                     data-kt-menu-dismiss="true" data-users-table-filter="reset">Reset</button>
-                                <button type="submit" class="btn btn-primary fw-semibold px-6"
-                                    data-kt-menu-dismiss="true" data-users-table-filter="filter">Apply</button>
+                                <button type="submit" class="btn btn-primary fw-semibold px-6" data-kt-menu-dismiss="true"
+                                    data-users-table-filter="filter">Apply</button>
                             </div>
                             <!--end::Actions-->
                         </div>
@@ -125,8 +122,7 @@
                     <!--end::Menu 1-->
 
                     <!--begin::Add user-->
-                    <a href="#" class="btn btn-primary" data-bs-toggle="modal"
-                        data-bs-target="#kt_modal_add_user">
+                    <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_user">
                         <i class="ki-outline ki-plus fs-2"></i>New User</a>
                     <!--end::Add user-->
                 </div>
@@ -252,6 +248,7 @@
         <!--end::Card body-->
     </div>
     <!--end::Card-->
+
 
     <!--begin::Modal - Add User-->
     <div class="modal fade" id="kt_modal_add_user" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
@@ -721,7 +718,7 @@
     <script src="{{ asset('js/users/index.js') }}"></script>
 
     <script>
-        document.getElementById("settings_link").classList.add("active");
-        document.getElementById("settings_users_link").classList.add("active");
+        document.getElementById("settings_menu").classList.add("here", "show");
+        document.getElementById("users_link").classList.add("active");
     </script>
 @endpush

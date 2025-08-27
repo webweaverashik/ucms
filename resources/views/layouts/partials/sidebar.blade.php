@@ -523,7 +523,20 @@
                     <!--end:SMS Menu-->
 
                     <!--begin:Settings Menu-->
-                    @canany(['users.manage', 'settings.manage'])
+                    @can(['users.manage', 'settings.manage'])
+                        <div class="menu-item">
+                            <!--begin:Menu link-->
+                            <a class="menu-link" href="{{ route('users.index') }}" id="settings_link">
+                                <span class="menu-icon">
+                                    <i class="ki-outline ki-setting-2 fs-2"></i>
+                                </span>
+                                <span class="menu-title">Settings</span>
+                            </a>
+                            <!--end:Menu link-->
+                        </div>
+                    @endcan
+
+                    {{-- @canany(['users.manage', 'settings.manage'])
                         <!--begin:Settings Modules-->
                         <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="settings_menu">
                             <!--begin:Menu link-->
@@ -580,12 +593,6 @@
                                     </a>
                                     <!--end:Menu link-->
                                 </div> --}}
-                                <!--end:Bulk Admission item-->
-                            </div>
-                            <!--end:Menu sub-->
-                        </div>
-                        <!--end: Settings Modules-->
-                    @endcanany
                     <!--end:Settings Menu-->
 
                 </div>
