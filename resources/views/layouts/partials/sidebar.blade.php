@@ -405,15 +405,75 @@
 
                     <!--begin:Reports Menu-->
                     @can('reports.view')
-                        <div class="menu-item">
+                        <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="reports_menu">
                             <!--begin:Menu link-->
-                            <a class="menu-link" href="{{ route('reports.index') }}" id="reports_link">
+                            <span class="menu-link">
                                 <span class="menu-icon">
                                     <i class="ki-outline ki-filter-tablet fs-2"></i>
                                 </span>
                                 <span class="menu-title">Reports</span>
-                            </a>
+                                <span class="menu-arrow"></span>
+                            </span>
                             <!--end:Menu link-->
+
+                            <!--begin:Menu sub-->
+                            <div class="menu-sub menu-sub-accordion">
+                                <!--begin:Menu item-->
+                                <div class="menu-item">
+                                    <!--begin:Menu link-->
+                                    <a class="menu-link" id="student_report_link"
+                                        href="{{ route('reports.student.index') }}"><span class="menu-bullet"><span
+                                                class="bullet bullet-dot"></span></span><span class="menu-title">Student Reports</span>
+                                    </a>
+                                    <!--end:Menu link-->
+                                </div>
+                                <!--end:Menu item-->
+
+                                <!--begin:SMS Campaign item-->
+                                <div class="menu-item">
+                                    <!--begin:Menu link-->
+                                    <a class="menu-link" id="attendance_report_link"
+                                        href="#">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot">
+                                            </span>
+                                        </span>
+                                        <span class="menu-title">Attendance Reports</span>
+                                    </a>
+                                    <!--end:Menu link-->
+                                </div>
+                                <!--end:SMS Campaign item-->
+
+                                <!--begin:SMS template item-->
+                                <div class="menu-item">
+                                    <!--begin:Menu link-->
+                                    <a class="menu-link" id="finance_report_link"
+                                        href="{{ route('reports.finance.index') }}">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot">
+                                            </span>
+                                        </span>
+                                        <span class="menu-title">Finance Reports</span>
+                                    </a>
+                                    <!--end:Menu link-->
+                                </div>
+                                <!--end:SMS template item-->
+
+                                <!--begin:SMS Campaign item-->
+                                <div class="menu-item">
+                                    <!--begin:Menu link-->
+                                    <a class="menu-link" id="sms_logs_link" href="#">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot">
+                                            </span>
+                                        </span>
+                                        <span class="menu-title">Activity</span>
+                                    </a>
+                                    <!--end:Menu link-->
+                                </div>
+                                <!--end:SMS Campaign item-->
+                            </div>
+                            <!--end:Menu sub-->
                         </div>
                     @endcan
                     <!--end:Reports Menu-->
@@ -497,24 +557,6 @@
                                     </div>
                                 @endcan
                                 <!--end:SMS Campaign item-->
-
-
-
-                                <!--begin:Bulk Admission item-->
-                                {{-- <div class="menu-item">
-                                    <!--begin:Menu link-->
-                                    <a class="menu-link" id="bulk_admission_link"
-                                        href="{{ route('bulk.admission.index') }}">
-                                        <span class="menu-bullet">
-                                            <span class="bullet bullet-dot">
-                                            </span>
-                                        </span>
-                                        <span class="menu-title">Bulk Admission</span>
-                                    </a>
-                                    <!--end:Menu link-->
-                                </div> --}}
-                                <!--end:Bulk Admission item-->
-
                             </div>
                             <!--end:Menu sub-->
                         </div>
@@ -523,7 +565,7 @@
                     <!--end:SMS Menu-->
 
                     <!--begin:Settings Menu-->
-                    @can(['users.manage', 'settings.manage'])
+                    @can(['users.manage', 'settings.manage', 'branches.manage'])
                         <div class="menu-item">
                             <!--begin:Menu link-->
                             <a class="menu-link" href="{{ route('users.index') }}" id="settings_link">

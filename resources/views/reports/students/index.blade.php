@@ -124,6 +124,7 @@
 
 @push('page-js')
     <script>
-        document.getElementById("reports_link").classList.add("active");
+        document.getElementById("reports_menu").classList.add("here", "show");
+        document.getElementById("student_report_link").classList.add("active");
     </script>
 @endpush

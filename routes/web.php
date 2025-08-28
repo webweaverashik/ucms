@@ -93,9 +93,12 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('classnames/ajax-data/{class}', [ClassNameController::class, 'getClassName'])->name('classnames.ajax');
 
     // Reports
-    Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('reports', [ReportController::class, 'studentReport']);
+    Route::get('reports/students', [ReportController::class, 'studentReport'])->name('reports.student.index');
+    Route::get('reports/finance', [ReportController::class, 'financeReport'])->name('reports.finance.index');
 
     // ----- SMS Routes Start -----
+    Route::get('sms', [SmsController::class, 'sendSingleIndex']);
     Route::get('sms/send-single', [SmsController::class, 'sendSingleIndex'])->name('sms.single.index');
     Route::post('sms/send-single', [SmsController::class, 'sendSingle'])->name('sms.single.send');
 
