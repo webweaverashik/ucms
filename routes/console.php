@@ -12,5 +12,5 @@ Artisan::command('inspire', function () {
 
 Schedule::command('invoices:generate-monthly')->monthly()->appendOutputTo(storage_path('logs/invoice-generation.log'));
 Schedule::command('sms:send-birthday-wish')->dailyAt('10:00');
-Schedule::command('sms:send-student-due-invoice-reminder')->dailyAt('10:00');
-Schedule::command('sms:send-student-overdue-invoice-reminder')->dailyAt('10:00');
+Schedule::command('sms:send-due-invoice-reminder')->dailyAt('10:00');
+Schedule::command('sms:send-overdue-invoice-reminder')->dailyAt('10:00');
