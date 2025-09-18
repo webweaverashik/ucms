@@ -36,6 +36,13 @@ class SendOverdueInvoiceReminderSms extends Command
             ->whereHas('student.payments', fn($q) => $q->where('due_date', '<', $today))
             ->get();
 
+        $dueInvoices = PaymentInvoice::with(['student.mobileNumbers', 'student.studentActivation', 'student.payments' => fn($q) => $q->whereDate('due_date', '<', $today)])
+            ->where('status', '!=', 'paid')
+            ->where('invoice_type', 'tuition_fee')
+            ->whereHas('student', fn($q) => $q->whereHas('studentActivation', fn($q2) => $q2->where('active_status', 'active')))
+            ->whereHas('student.payments', fn($q) => $q->whereDate('due_date', '<', $today))
+            ->get();
+
         Log::info('Found overdue invoices count: ' . $dueInvoices->count());
 
         foreach ($dueInvoices as $invoice) {
