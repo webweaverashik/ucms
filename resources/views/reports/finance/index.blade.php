@@ -118,57 +118,75 @@
             $('#finance_report_form').on('submit', function(e) {
                 e.preventDefault();
 
-                let formData = $(this).serialize(); // urlencoded
+                let formData = $(this).serialize();
 
                 $.ajax({
                     url: "{{ route('reports.finance.generate') }}",
                     type: "POST",
                     data: formData,
                     success: function(response) {
-                        if (Object.keys(response).length > 0) {
-                            let html = "";
+                        if (Object.keys(response.report).length > 0) {
+                            let classes = response.classes; // already sorted by class_id
+                            let report = response.report;
 
-                            $.each(response, function(groupKey, groupData) {
-                                html += `
-                            <h5 class="mt-4">${groupKey}</h5>
-                            <p><strong>Total Paid:</strong> ${groupData.total_paid}</p>
-                            <table class="table table-bordered table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>SL</th>
-                                        <th>Invoice ID</th>
-                                        <th>Student Name</th>
-                                        <th>Class</th>
-                                        <th>Amount Paid</th>
-                                        <th>Remaining</th>
-                                        <th>Payment Type</th>
-                                        <th>Voucher</th>
-                                        <th>Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                        `;
-
-                                groupData.transactions.forEach((item, index) => {
-                                    html += `
-                                <tr>
-                                    <td>${index + 1}</td>
-                                    <td>${item.payment_invoice_id ?? '-'}</td>
-                                    <td>${item.student?.student_name ?? '-'}</td>
-                                    <td>${item.student?.class?.name ?? '-'}</td>
-                                    <td>${item.amount_paid ?? 0}</td>
-                                    <td>${item.remaining_amount ?? 0}</td>
-                                    <td>${item.payment_type ?? '-'}</td>
-                                    <td>${item.voucher_no ?? '-'}</td>
-                                    <td>${item.created_at ?? '-'}</td>
-                                </tr>
-                            `;
-                                });
-
-                                html += `</tbody></table>`;
+                            // Sort dates descending
+                            let dates = Object.keys(report).sort((a, b) => {
+                                let [dA, mA, yA] = a.split('-').map(Number);
+                                let [dB, mB, yB] = b.split('-').map(Number);
+                                return new Date(yB, mB - 1, dB) - new Date(yA, mA - 1,
+                                    dA);
                             });
 
-                            $("#finance_report_result").html(html);
+                            let table = `
+    <table class="table table-bordered table-striped text-center">
+        <thead>
+            <tr>
+                <th rowspan="2" class="align-middle">Date</th>
+                <th colspan="${classes.length}">Classes</th>
+                <th rowspan="2" class="align-middle">Total</th>
+            </tr>
+            <tr>`;
+
+                            // Second row: class names
+                            classes.forEach(cls => {
+                                table += `<th>${cls}</th>`;
+                            });
+
+                            table += `</tr>
+        </thead>
+        <tbody>`;
+
+
+                            let grandTotal = 0;
+                            let classTotals = {};
+                            classes.forEach(c => classTotals[c] = 0);
+
+                            // Rows per date
+                            dates.forEach(date => {
+                                table += `<tr><td>${date}</td>`;
+                                let dailyTotal = 0;
+
+                                classes.forEach(cls => {
+                                    let amount = report[date][cls] ?? 0;
+                                    dailyTotal += amount;
+                                    classTotals[cls] += amount;
+                                    table += `<td>${amount}</td>`;
+                                });
+
+                                grandTotal += dailyTotal;
+                                table += `<td><b>${dailyTotal}</b></td></tr>`;
+                            });
+
+                            // Grand Total Row
+                            table += `<tr><th>Total</th>`;
+                            classes.forEach(cls => {
+                                table += `<th>${classTotals[cls]}</th>`;
+                            });
+                            table += `<th>${grandTotal}</th></tr>`;
+
+                            table += `</tbody></table>`;
+                            $("#finance_report_result").html(table);
+
                         } else {
                             $("#finance_report_result").html(
                                 `<div class="alert alert-warning">No data found</div>`
@@ -185,7 +203,6 @@
             });
         });
     </script>
-
 
     <script src="{{ asset('js/reports/finance/index.js') }}"></script>
 
