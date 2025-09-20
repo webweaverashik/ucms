@@ -138,7 +138,7 @@
                             });
 
                             let table = `
-    <table class="table table-bordered table-striped text-center">
+    <table class="table table-bordered table-striped text-center border-5">
         <thead>
             <tr>
                 <th rowspan="2" class="align-middle">Date</th>
