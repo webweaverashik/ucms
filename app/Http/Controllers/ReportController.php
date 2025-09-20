@@ -1,13 +1,12 @@
 <?php
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
-use App\Models\Branch;
-use Illuminate\Http\Request;
-use App\Models\Student\Student;
 use App\Models\Academic\ClassName;
-use Illuminate\Support\Facades\DB;
+use App\Models\Branch;
 use App\Models\Payment\PaymentTransaction;
+use App\Models\Student\Student;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
@@ -46,14 +45,16 @@ class ReportController extends Controller
             'branch_id'  => 'nullable|integer|exists:branches,id',
         ]);
 
-        // Parse daterangepicker value (example: "14-09-2025 - 20-09-2025")
+        // Parse date range
         [$startDate, $endDate] = explode(' - ', $request->date_range);
+        $startDate             = \Carbon\Carbon::createFromFormat('d-m-Y', trim($startDate))->startOfDay();
+        $endDate               = \Carbon\Carbon::createFromFormat('d-m-Y', trim($endDate))->endOfDay();
 
-        $startDate = Carbon::createFromFormat('d-m-Y', trim($startDate))->startOfDay();
-        $endDate   = Carbon::createFromFormat('d-m-Y', trim($endDate))->endOfDay();
+                                                                           // Get all class names sorted ascending
+        $classes = ClassName::orderBy('id')->pluck('name', 'id'); // id => name
 
-        $query = PaymentTransaction::query()
-            ->with(['student.class'])
+        // Fetch transactions with student and class relation
+        $query = PaymentTransaction::with(['student.class'])
             ->whereBetween(DB::raw('DATE(created_at)'), [$startDate, $endDate])
             ->where('is_approved', true);
 
@@ -65,37 +66,26 @@ class ReportController extends Controller
 
         $transactions = $query->get();
 
-        // Get all classes involved, ordered by id
-        $classes = ClassName::whereIn(
-            'id', $transactions->pluck('student.class_id')->unique()
-        )->orderBy('id')->get(['id', 'name']);
-
-        $classNames = $classes->pluck('name')->toArray();
-
-        // Prepare pivot table: date vs class revenue
+        // Build report: { date => { class_name => amount, ... }, ... }
         $report = [];
-        foreach ($transactions as $txn) {
-            $date      = $txn->created_at->format('d-m-Y');
-            $className = $txn->student->class->name ?? 'Unknown';
 
-            if (! isset($report[$date][$className])) {
-                $report[$date][$className] = 0;
-            }
-            $report[$date][$className] += $txn->amount_paid;
-        }
+        // Group transactions by date
+        $transactionsByDate = $transactions->groupBy(function ($t) {
+            return $t->created_at->format('d-m-Y');
+        });
 
-        // Ensure all classes appear in each date row
-        foreach ($report as $date => &$row) {
-            foreach ($classNames as $className) {
-                if (! isset($row[$className])) {
-                    $row[$className] = 0;
-                }
+        foreach ($transactionsByDate as $date => $dailyTransactions) {
+            $report[$date] = [];
+            foreach ($classes as $id => $className) {
+                // Sum of transactions for this class on this date, default 0
+                $amount                    = $dailyTransactions->where('student.class_id', $id)->sum('amount_paid');
+                $report[$date][$className] = $amount;
             }
         }
 
         return response()->json([
-            'classes' => $classNames, // sorted by class_id
             'report'  => $report,
+            'classes' => $classes->values(), // numeric array of class names
         ]);
     }
 

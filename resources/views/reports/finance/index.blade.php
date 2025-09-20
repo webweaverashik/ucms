@@ -94,7 +94,14 @@
         <!--end::Card header-->
 
         <!--begin::Notes Distribution Panel-->
-        <div class="card-body py-4" id="finance_report_result">
+        <div class="card-body py-10">
+            <div id="finance_report_result">
+            </div>
+
+            <div class="mt-10">
+                <canvas id="finance_report_graph" height="80"></canvas>
+            </div>
+
         </div>
         <!--end::Notes Distribution Panel-->
     </div>
@@ -107,102 +114,138 @@
 @endpush
 
 @push('page-js')
-    <script>
-        $(document).ready(function() {
-            $.ajaxSetup({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+
+<script>
+$(document).ready(function() {
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+
+    $('#finance_report_form').on('submit', function(e) {
+        e.preventDefault();
+        let formData = $(this).serialize();
+
+        $.ajax({
+            url: "{{ route('reports.finance.generate') }}",
+            type: "POST",
+            data: formData,
+            success: function(response) {
+                const report = response.report;
+                const classes = response.classes;
+
+                if (Object.keys(report).length === 0) {
+                    $("#finance_report_result").html(
+                        `<div class="alert alert-warning">No data found</div>`
+                    );
+                    if (window.financeChart) window.financeChart.destroy();
+                    return;
                 }
-            });
 
-            $('#finance_report_form').on('submit', function(e) {
-                e.preventDefault();
+                // ----------- TABLE ------------
+                let table = `
+<h4 class="text-center mb-3">Revenue vs Cost</h4>
+<table class="table table-bordered table-striped text-center mb-0" style="border-radius: 0.5rem; overflow: hidden;">
+    <thead>
+        <tr>
+            <th rowspan="2" class="align-middle">Date</th>
+            <th colspan="${classes.length}">Revenue (Tk)</th>
+            <th rowspan="2" class="align-middle">Total (Tk)</th>
+        </tr>
+        <tr>`;
 
-                let formData = $(this).serialize();
+                classes.forEach(cls => {
+                    table += `<th>${cls}</th>`;
+                });
+                table += `</tr></thead><tbody>`;
 
-                $.ajax({
-                    url: "{{ route('reports.finance.generate') }}",
-                    type: "POST",
-                    data: formData,
-                    success: function(response) {
-                        if (Object.keys(response.report).length > 0) {
-                            let classes = response.classes; // already sorted by class_id
-                            let report = response.report;
+                // Dates descending
+                Object.keys(report).sort((a, b) => new Date(b.split('-').reverse().join('-')) - new Date(a.split('-').reverse().join('-')))
+                    .forEach(date => {
+                        table += `<tr><td>${date}</td>`;
+                        let dailyTotal = 0;
+                        classes.forEach(cls => {
+                            let amount = report[date][cls] ?? 0;
+                            dailyTotal += amount;
+                            table += `<td>${amount}</td>`;
+                        });
+                        table += `<td><b>${dailyTotal}</b></td></tr>`;
+                    });
 
-                            // Sort dates descending
-                            let dates = Object.keys(report).sort((a, b) => {
-                                let [dA, mA, yA] = a.split('-').map(Number);
-                                let [dB, mB, yB] = b.split('-').map(Number);
-                                return new Date(yB, mB - 1, dB) - new Date(yA, mA - 1,
-                                    dA);
-                            });
+                // Grand total row
+                table += `<tr><td><b>Total</b></td>`;
+                classes.forEach(cls => {
+                    let classTotal = Object.values(report).reduce((sum, day) => sum + (day[cls] ?? 0), 0);
+                    table += `<td><b>${classTotal}</b></td>`;
+                });
+                let grandTotal = Object.values(report).reduce((sum, day) => sum + Object.values(day).reduce((a, b) => a + b, 0), 0);
+                table += `<td><b>${grandTotal}</b></td></tr>`;
 
-                            let table = `
-    <table class="table table-bordered table-striped text-center rounded">
-        <thead>
-            <tr>
-                <th rowspan="2" class="align-middle">Date</th>
-                <th colspan="${classes.length}">Classes</th>
-                <th rowspan="2" class="align-middle">Total</th>
-            </tr>
-            <tr>`;
+                table += `</tbody></table>`;
+                $("#finance_report_result").html(table);
 
-                            // Second row: class names
-                            classes.forEach(cls => {
-                                table += `<th>${cls}</th>`;
-                            });
+                // ----------- BAR CHART ------------
+                let classTotals = {};
+                classes.forEach(cls => {
+                    classTotals[cls] = Object.values(report).reduce((sum, day) => sum + (day[cls] ?? 0), 0);
+                });
 
-                            table += `</tr>
-        </thead>
-        <tbody>`;
+                let ctx = document.getElementById('finance_report_graph').getContext('2d');
 
+                if (window.financeChart) {
+                    window.financeChart.destroy();
+                }
 
-                            let grandTotal = 0;
-                            let classTotals = {};
-                            classes.forEach(c => classTotals[c] = 0);
-
-                            // Rows per date
-                            dates.forEach(date => {
-                                table += `<tr><td>${date}</td>`;
-                                let dailyTotal = 0;
-
-                                classes.forEach(cls => {
-                                    let amount = report[date][cls] ?? 0;
-                                    dailyTotal += amount;
-                                    classTotals[cls] += amount;
-                                    table += `<td>${amount}</td>`;
-                                });
-
-                                grandTotal += dailyTotal;
-                                table += `<td><b>${dailyTotal}</b></td></tr>`;
-                            });
-
-                            // Grand Total Row
-                            table += `<tr><th>Total</th>`;
-                            classes.forEach(cls => {
-                                table += `<th>${classTotals[cls]}</th>`;
-                            });
-                            table += `<th>${grandTotal}</th></tr>`;
-
-                            table += `</tbody></table>`;
-                            $("#finance_report_result").html(table);
-
-                        } else {
-                            $("#finance_report_result").html(
-                                `<div class="alert alert-warning">No data found</div>`
-                            );
-                        }
+                window.financeChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(classTotals),
+                        datasets: [{
+                            label: 'Total Revenue',
+                            data: Object.values(classTotals),
+                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
                     },
-                    error: function(xhr) {
-                        console.error(xhr.responseText);
-                        $("#finance_report_result").html(
-                            `<div class="alert alert-danger">Error loading report.</div>`
-                        );
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false },
+                            title: {
+                                display: true,
+                                text: 'Total Revenue per Class'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'Revenue: ' + context.raw;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: { title: { display: true, text: 'Class Name' } },
+                            y: { 
+                                beginAtZero: true, 
+                                title: { display: true, text: 'Revenue (Tk)' }
+                            }
+                        }
                     }
                 });
-            });
+            },
+            error: function(xhr) {
+                $("#finance_report_result").html(
+                    `<div class="alert alert-danger">Error loading report.</div>`
+                );
+                if (window.financeChart) window.financeChart.destroy();
+            }
         });
-    </script>
+    });
+});
+</script>
+
 
     <script src="{{ asset('js/reports/finance/index.js') }}"></script>
 
