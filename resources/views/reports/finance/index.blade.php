@@ -47,9 +47,8 @@
     <div class="card">
         <!--begin::Card header-->
         <div class="card-header border-0 pt-6">
-            <!--begin::Card title-->
             <div class="card-title w-100">
-                <form class="row g-3 align-items-end w-100">
+                <form id="finance_report_form" class="row g-3 align-items-end w-100">
                     <!-- Date Selection -->
                     <div class="col-md-5">
                         <label for="finance_daterangepicker" class="form-label fw-semibold required">Select Date</label>
@@ -58,7 +57,7 @@
                                 <i class="ki-outline ki-calendar fs-3"></i>
                             </span>
                             <input type="text" class="form-control form-control-solid rounded-start-0 border-start"
-                                placeholder="Pick date range" id="finance_daterangepicker">
+                                placeholder="Pick date range" id="finance_daterangepicker" name="date_range">
                         </div>
                     </div>
 
@@ -70,11 +69,12 @@
                                 <i class="ki-outline ki-note-2 fs-3"></i>
                             </span>
                             <select id="student_paid_sheet_group"
-                                class="form-select form-select-solid rounded-start-0 border-start" data-control="select2"
-                                data-placeholder="Select branch">
+                                class="form-select form-select-solid rounded-start-0 border-start" name="branch_id"
+                                data-control="select2" data-placeholder="Select branch" data-hide-search="true">
                                 <option></option>
                                 @foreach ($branches as $branch)
-                                    <option value="{{ $branch->id }}">{{ $branch->branch_name }}
+                                    <option value="{{ $branch->id }}" @if ($loop->first) selected @endif>
+                                        {{ $branch->branch_name }}
                                         ({{ $branch->branch_prefix }})
                                     </option>
                                 @endforeach
@@ -90,12 +90,11 @@
                     </div>
                 </form>
             </div>
-            <!--begin::Card title-->
         </div>
         <!--end::Card header-->
 
         <!--begin::Notes Distribution Panel-->
-        <div class="card-body py-4" id="student_notes_distribution">
+        <div class="card-body py-4" id="finance_report_result">
         </div>
         <!--end::Notes Distribution Panel-->
     </div>
@@ -108,6 +107,86 @@
 @endpush
 
 @push('page-js')
+    <script>
+        $(document).ready(function() {
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+
+            $('#finance_report_form').on('submit', function(e) {
+                e.preventDefault();
+
+                let formData = $(this).serialize(); // urlencoded
+
+                $.ajax({
+                    url: "{{ route('reports.finance.generate') }}",
+                    type: "POST",
+                    data: formData,
+                    success: function(response) {
+                        if (Object.keys(response).length > 0) {
+                            let html = "";
+
+                            $.each(response, function(groupKey, groupData) {
+                                html += `
+                            <h5 class="mt-4">${groupKey}</h5>
+                            <p><strong>Total Paid:</strong> ${groupData.total_paid}</p>
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>SL</th>
+                                        <th>Invoice ID</th>
+                                        <th>Student Name</th>
+                                        <th>Class</th>
+                                        <th>Amount Paid</th>
+                                        <th>Remaining</th>
+                                        <th>Payment Type</th>
+                                        <th>Voucher</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        `;
+
+                                groupData.transactions.forEach((item, index) => {
+                                    html += `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>${item.payment_invoice_id ?? '-'}</td>
+                                    <td>${item.student?.student_name ?? '-'}</td>
+                                    <td>${item.student?.class?.name ?? '-'}</td>
+                                    <td>${item.amount_paid ?? 0}</td>
+                                    <td>${item.remaining_amount ?? 0}</td>
+                                    <td>${item.payment_type ?? '-'}</td>
+                                    <td>${item.voucher_no ?? '-'}</td>
+                                    <td>${item.created_at ?? '-'}</td>
+                                </tr>
+                            `;
+                                });
+
+                                html += `</tbody></table>`;
+                            });
+
+                            $("#finance_report_result").html(html);
+                        } else {
+                            $("#finance_report_result").html(
+                                `<div class="alert alert-warning">No data found</div>`
+                            );
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error(xhr.responseText);
+                        $("#finance_report_result").html(
+                            `<div class="alert alert-danger">Error loading report.</div>`
+                        );
+                    }
+                });
+            });
+        });
+    </script>
+
+
     <script src="{{ asset('js/reports/finance/index.js') }}"></script>
 
     <script>
