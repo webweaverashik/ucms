@@ -103,9 +103,8 @@
             </div>
 
             <div class="mt-10">
-                <canvas id="finance_report_graph" height="80"></canvas>
+                <canvas id="finance_report_graph"></canvas>
             </div>
-
         </div>
         <!--end::Notes Distribution Panel-->
     </div>
@@ -227,6 +226,7 @@
                             },
                             options: {
                                 responsive: true,
+                                maintainAspectRatio: false, // 👈 allows flexible height
                                 plugins: {
                                     legend: {
                                         display: false

@@ -16,14 +16,16 @@ table.ucms-table td {
 
 /****** Topic Creation Styling : Start ******/
 /* Topic card styling */
-.topic-editable, .subject-editable {
+.topic-editable,
+.subject-editable {
     transition: all 0.2s ease;
     border: 1px solid transparent;
     border-radius: 6px;
     cursor: pointer;
 }
 
-.topic-editable:hover, .subject-editable:hover {
+.topic-editable:hover,
+.subject-editable:hover {
     /* background-color: #f8f9fa; */
     box-shadow: none !important;
 }
@@ -34,12 +36,14 @@ table.ucms-table td {
     transition: opacity 0.2s ease;
 }
 
-.topic-editable:hover .action-icons, .subject-editable:hover .action-icons {
+.topic-editable:hover .action-icons,
+.subject-editable:hover .action-icons {
     opacity: 1;
 }
 
 /* Input styling */
-.topic-input, .subject-input {
+.topic-input,
+.subject-input {
     border: none !important;
     padding: 0rem 0.5rem !important;
     border-radius: 4px;
@@ -390,3 +394,21 @@ table.ucms-table td {
 }
 
 /****** Topic Assigning Styling : End ******/
+
+
+
+
+/* CSS For finance report */
+#finance_report_graph {
+    min-height: 300px;
+    /* desktop */
+    max-height: 500px;
+}
+
+@media (max-width: 768px) {
+    #finance_report_graph {
+        min-height: 200px;
+        /* mobile */
+    }
+}
+/* CSS For finance report */
