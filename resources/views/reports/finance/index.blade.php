@@ -171,10 +171,12 @@
                         table += `</tr></thead><tbody>`;
 
                         // Dates descending
-                        Object.keys(report).sort((a, b) => new Date(b.split('-').reverse().join(
-                                '-')) - new Date(a.split('-').reverse().join('-')))
+                        Object.keys(report)
+                            .sort((a, b) => new Date(b.split('-').reverse().join('-')) -
+                                new Date(a.split('-').reverse().join('-')))
                             .forEach(date => {
-                                table += `<tr><td>${date}</td>`;
+                                table +=
+                                    `<tr><td class="text-nowrap text-center align-middle">${date}</td>`;
                                 let dailyTotal = 0;
                                 classes.forEach(cls => {
                                     let amount = report[date][cls] ?? 0;
@@ -183,6 +185,7 @@
                                 });
                                 table += `<td><b>${dailyTotal}</b></td></tr>`;
                             });
+
 
                         // Grand total row
                         table += `<tr><td><b>Total</b></td>`;
