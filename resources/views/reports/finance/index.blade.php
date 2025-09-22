@@ -156,6 +156,7 @@
                         // ----------- TABLE ------------
                         let table = `
                                     <h4 class="text-center mb-3">Revenue vs Cost</h4>
+                                    <div class="table-responsive">
                                     <table class="table table-bordered table-hover table-striped text-center mb-0" style="border-radius: 0.5rem; overflow: hidden;">
                                         <thead>
                                             <tr>
@@ -195,7 +196,7 @@
                             .values(day).reduce((a, b) => a + b, 0), 0);
                         table += `<td><b>${grandTotal}</b></td></tr>`;
 
-                        table += `</tbody></table>`;
+                        table += `</tbody></table></div>`;
                         $("#finance_report_result").html(table);
 
                         // ----------- BAR CHART ------------
