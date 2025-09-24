@@ -1,6 +1,6 @@
 "use strict";
 
-var KTAllTransactionsList = function () {
+var KTAllTeachersList =  function () {
       // Define shared variables
       var table;
       var datatable;
@@ -28,7 +28,7 @@ var KTAllTransactionsList = function () {
 
       // Hook export buttons
       var exportButtons = () => {
-            const documentTitle = 'Transactions Report';
+            const documentTitle = 'Teachers List';
 
             var buttons = new $.fn.dataTable.Buttons(datatable, {
                   buttons: [
@@ -100,52 +100,52 @@ var KTAllTransactionsList = function () {
 
       // Search Datatable --- official docs reference: https://datatables.net/reference/api/search()
       var handleSearch = function () {
-            const filterSearch = document.querySelector('[data-transaction-table-filter="search"]');
+            const filterSearch = document.querySelector('[data-teachers-table-filter="search"]');
             filterSearch.addEventListener('keyup', function (e) {
                   datatable.search(e.target.value).draw();
             });
       }
 
       // Filter Datatable
-      var handleFilter = function () {
-            // Select filter options
-            const filterForm = document.querySelector('[data-transaction-table-filter="form"]');
-            const filterButton = filterForm.querySelector('[data-transaction-table-filter="filter"]');
-            const resetButton = filterForm.querySelector('[data-transaction-table-filter="reset"]');
-            const selectOptions = filterForm.querySelectorAll('select');
+      // var handleFilter = function () {
+      //       // Select filter options
+      //       const filterForm = document.querySelector('[data-teachers-table-filter="form"]');
+      //       const filterButton = filterForm.querySelector('[data-teachers-table-filter="filter"]');
+      //       const resetButton = filterForm.querySelector('[data-teachers-table-filter="reset"]');
+      //       const selectOptions = filterForm.querySelectorAll('select');
 
-            // Filter datatable on submit
-            filterButton.addEventListener('click', function () {
-                  var filterString = '';
+      //       // Filter datatable on submit
+      //       filterButton.addEventListener('click', function () {
+      //             var filterString = '';
 
-                  // Get filter values
-                  selectOptions.forEach((item, index) => {
-                        if (item.value && item.value !== '') {
-                              if (index !== 0) {
-                                    filterString += ' ';
-                              }
+      //             // Get filter values
+      //             selectOptions.forEach((item, index) => {
+      //                   if (item.value && item.value !== '') {
+      //                         if (index !== 0) {
+      //                               filterString += ' ';
+      //                         }
 
-                              // Build filter value options
-                              filterString += item.value;
-                        }
-                  });
+      //                         // Build filter value options
+      //                         filterString += item.value;
+      //                   }
+      //             });
 
-                  // Filter datatable --- official docs reference: https://datatables.net/reference/api/search()
-                  datatable.search(filterString).draw();
-            });
+      //             // Filter datatable --- official docs reference: https://datatables.net/reference/api/search()
+      //             datatable.search(filterString).draw();
+      //       });
 
-            // Reset datatable
-            resetButton.addEventListener('click', function () {
-                  // Reset filter form
-                  selectOptions.forEach((item, index) => {
-                        // Reset Select2 dropdown --- official docs reference: https://select2.org/programmatic-control/add-select-clear-items
-                        $(item).val(null).trigger('change');
-                  });
+      //       // Reset datatable
+      //       resetButton.addEventListener('click', function () {
+      //             // Reset filter form
+      //             selectOptions.forEach((item, index) => {
+      //                   // Reset Select2 dropdown --- official docs reference: https://select2.org/programmatic-control/add-select-clear-items
+      //                   $(item).val(null).trigger('change');
+      //             });
 
-                  // Filter datatable --- official docs reference: https://datatables.net/reference/api/search()
-                  datatable.search('').draw();
-            });
-      }
+      //             // Filter datatable --- official docs reference: https://datatables.net/reference/api/search()
+      //             datatable.search('').draw();
+      //       });
+      // }
 
 
       // Delete Transaction
@@ -203,69 +203,10 @@ var KTAllTransactionsList = function () {
             });
       };
 
-
-      // Transaction approval AJAX
-      const handleApproval = function () {
-            document.querySelectorAll('.approve-txn').forEach(item => {
-                  item.addEventListener('click', function (e) {
-                        e.preventDefault();
-
-                        let txnId = this.getAttribute('data-txn-id');
-                        console.log("TXN ID: ", txnId);
-
-                        Swal.fire({
-                              title: 'Are you sure?',
-                              text: "Do you want to approve this transaction?",
-                              icon: 'warning',
-                              showCancelButton: true,
-                              confirmButtonColor: '#3085d6',
-                              cancelButtonColor: '#d33',
-                              confirmButtonText: 'Yes, approve!'
-                        }).then((result) => {
-                              if (result.isConfirmed) {
-                                    fetch(`/transactions/${txnId}/approve`, {
-                                          method: "POST",
-                                          headers: {
-                                                "Content-Type": "application/json",
-                                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                                          }
-                                    })
-                                          .then(response => response.json())
-                                          .then(data => {
-                                                if (data.success) {
-                                                      Swal.fire({
-                                                            title: "Approved!",
-                                                            text: "Transaction approved successfully.",
-                                                            icon: "success",
-                                                      }).then(() => {
-                                                            location.reload(); // Reload to reflect changes
-                                                      });
-                                                } else {
-                                                      Swal.fire({
-                                                            title: "Error!",
-                                                            text: data.message,
-                                                            icon: "warning",
-                                                      });
-                                                }
-                                          })
-                                          .catch(error => {
-                                                console.error("Fetch Error:", error);
-                                                Swal.fire({
-                                                      title: "Error!",
-                                                      text: "Something went wrong. Please try again.",
-                                                      icon: "error",
-                                                });
-                                          });
-                              }
-                        });
-                  });
-            });
-      };
-
       return {
             // Public functions  
             init: function () {
-                  table = document.getElementById('kt_transactions_table');
+                  table = document.getElementById('kt_teachers_table');
 
                   if (!table) {
                         return;
@@ -274,17 +215,16 @@ var KTAllTransactionsList = function () {
                   initDatatable();
                   exportButtons();
                   handleSearch();
-                  handleFilter();
+                  // handleFilter();
                   handleDeletion();
-                  handleApproval();
             }
       }
 }();
 
 
-var KTAddTransaction = function () {
+var KTAddTeacher = function () {
       // Shared variables
-      const element = document.getElementById('kt_modal_add_transaction');
+      const element = document.getElementById('kt_modal_add_teacher');
 
       // Early return if element doesn't exist
       if (!element) {
@@ -294,76 +234,30 @@ var KTAddTransaction = function () {
             };
       }
 
-      const form = element.querySelector('#kt_modal_add_transaction_form');
+      const form = element.querySelector('#kt_modal_add_teacher_form');
       const modal = bootstrap.Modal.getOrCreateInstance(element);
-      const studentSelect = document.getElementById('transaction_student_select');
-      const invoiceSelect = document.getElementById('student_due_invoice_select');
 
-
-      // Init add transaction form
-      var initAddTransaction = () => {
-
-      }
 
       var initCloseModal = () => {
 
             // Reset Select2 inputs
 
             // Cancel button handler
-            const cancelButton = element.querySelector('[data-kt-add-transaction-modal-action="cancel"]');
+            const cancelButton = element.querySelector('[data-kt-add-teacher-modal-action="cancel"]');
             if (cancelButton) {
                   cancelButton.addEventListener('click', e => {
                         e.preventDefault();
                         if (form) form.reset();
-
-                        if (studentSelect && $(studentSelect).data('select2')) {
-                              $(studentSelect).val(null).trigger('change');
-                        }
-
-                        if (invoiceSelect && $(invoiceSelect).data('select2')) {
-                              $(invoiceSelect).val(null).trigger('change');
-                        }
-
-                        // Reset amount input
-                        const amountInput = document.getElementById('transaction_amount_input');
-                        if (amountInput) {
-                              amountInput.value = '';
-                              amountInput.disabled = true;
-                        }
-
-                        // Remove previous error state
-                        $('#transaction_amount_input').removeClass('is-invalid');
-                        $('#transaction_amount_error').remove();
-
                         modal.hide();
                   });
             }
 
             // Close button handler
-            const closeButton = element.querySelector('[data-kt-add-transaction-modal-action="close"]');
+            const closeButton = element.querySelector('[data-kt-add-teacher-modal-action="close"]');
             if (closeButton) {
                   closeButton.addEventListener('click', e => {
                         e.preventDefault();
                         if (form) form.reset();
-
-                        if (studentSelect && $(studentSelect).data('select2')) {
-                              $(studentSelect).val(null).trigger('change');
-                        }
-
-                        if (invoiceSelect && $(invoiceSelect).data('select2')) {
-                              $(invoiceSelect).val(null).trigger('change');
-                        }
-
-                        // Reset amount input
-                        const amountInput = document.getElementById('transaction_amount_input');
-                        if (amountInput) {
-                              amountInput.value = '';
-                              amountInput.disabled = true;
-                        }
-
-                        // Remove previous error state
-                        $('#transaction_amount_input').removeClass('is-invalid');
-                        $('#transaction_amount_error').remove();
 
                         modal.hide();
                   });
@@ -381,6 +275,6 @@ var KTAddTransaction = function () {
 
 // On document ready
 KTUtil.onDOMContentLoaded(function () {
-      KTAllTransactionsList.init();
-      KTAddTransaction.init();
+      KTAllTeachersList.init();
+      KTAddTeacher.init();
 });
