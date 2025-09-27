@@ -52,7 +52,8 @@
                 <div class="card-title">
                     <!--begin::Search-->
                     <div class="d-flex align-items-center position-relative my-1">
-                        <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text" data-teachers-table-filter="search" class="form-control form-control-solid w-350px ps-12"
+                        <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
+                            data-teachers-table-filter="search" class="form-control form-control-solid w-350px ps-12"
                             placeholder="Search in teachers">
                     </div>
                     <!--end::Search-->
@@ -117,15 +118,15 @@
             <!--begin::Card body-->
             <div class="card-body py-4">
                 <!--begin::Table-->
-                <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table"
-                    id="kt_teachers_table">
+                <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_teachers_table">
                     <thead>
                         <tr class="fw-bold fs-7 text-uppercase gs-0">
                             <th class="w-25px">SL</th>
-                            <th class="w-150px">Name</th>
+                            <th class="">Name</th>
                             <th>Email</th>
                             <th>Phone</th>
-                            <th>Base Salary (Tk)</th>
+                            <th class="w-100px">Base Salary (Tk)</th>
+                            <th class="w-200px">Active/Inactive</th>
                             <th class="not-export">Actions</th>
                         </tr>
                     </thead>
@@ -143,19 +144,35 @@
                                 <td>{{ $teacher->phone }}</td>
                                 <td>{{ $teacher->base_salary }}</td>
                                 <td>
+
+                                    <div
+                                        class="form-check form-switch form-check-solid form-check-success d-flex justify-content-center">
+                                        <input class="form-check-input toggle-active" type="checkbox"
+                                            value="{{ $teacher->id }}" @if ($teacher->is_active == 1) checked @endif>
+                                    </div>
+
+                                </td>
+                                <td>
                                     @can('teachers.edit')
                                         <a href="#" title="Edit Teacher"
-                                            class="btn btn-icon text-hover-success w-30px h-30px edit-teacher me-2"
+                                            class="btn btn-icon text-hover-primary w-30px h-30px edit-teacher me-2"
                                             data-teacher-id={{ $teacher->id }}>
-                                            <i class="bi bi-pencil fs-2"></i>
+                                            <i class="ki-outline ki-pencil fs-2"></i>
                                         </a>
                                     @endcan
+
+                                    <a href="#" title="Reset Passsword" data-bs-toggle="modal"
+                                        data-bs-target="#kt_modal_edit_password" data-teacher-id="{{ $teacher->id }}"
+                                        data-teacher-name="{{ $teacher->name }}"
+                                        class="btn btn-icon text-hover-primary w-30px h-30px change-password-btn">
+                                        <i class="ki-outline ki-key fs-2"></i>
+                                    </a>
 
                                     @can('teachers.delete')
                                         <a href="#" title="Delete Teacher"
                                             class="btn btn-icon text-hover-danger w-30px h-30px delete-teacher"
                                             data-teacher-id={{ $teacher->id }}>
-                                            <i class="bi bi-trash fs-2"></i>
+                                            <i class="ki-outline ki-trash fs-2"></i>
                                         </a>
                                     @endcan
                                 </td>
