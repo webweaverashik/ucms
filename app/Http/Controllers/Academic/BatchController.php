@@ -37,16 +37,16 @@ class BatchController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'shift_name' => ['required', 'string', 'max:15', 'regex:/^\S+$/'], // No spaces allowed
-            'shift_branch' => 'required|integer',
+            'batch_name' => ['required', 'string', 'max:15', 'regex:/^\S+$/'], // No spaces allowed
+            'batch_branch' => 'required|integer',
         ], [
-            'shift_name.regex' => 'Single word only',
+            'batch_name.regex' => 'Single word only',
         ]);
         
         
         Batch::create([
-            'name' => $validated['shift_name'],
-            'branch_id' => $validated['shift_branch'],
+            'name' => $validated['batch_name'],
+            'branch_id' => $validated['batch_branch'],
         ]);
 
         return redirect()->route('batches.index')->with('success', 'Batch created successfully.');

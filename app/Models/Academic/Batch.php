@@ -15,7 +15,7 @@ class Batch extends Model
     protected $fillable = ['name', 'branch_id'];
 
     /**
-     * Get the branch associated with this shift.
+     * Get the branch associated with this batch.
      */
     public function branch()
     {
@@ -23,17 +23,17 @@ class Batch extends Model
     }
     
     /**
-     * Get all students assigned to this shift.
+     * Get all students assigned to this batch.
      */
     public function students()
     {
-        return $this->hasMany(Student::class, 'shift_id');
+        return $this->hasMany(Student::class, 'batch_id');
     }
 
-    // Get all the active students associated with this shift
+    // Get all the active students associated with this batch
     public function activeStudents()
     {
-        return $this->hasMany(Student::class, 'shift_id', 'id')->whereHas('studentActivation', function ($query) {
+        return $this->hasMany(Student::class, 'batch_id', 'id')->whereHas('studentActivation', function ($query) {
             $query->where('active_status', 'active');
         });
     }

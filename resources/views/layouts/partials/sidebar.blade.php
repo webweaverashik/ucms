@@ -231,7 +231,7 @@
                                         <!--begin:Menu link-->
                                         <a class="menu-link" id="batches_link" href="{{ route('batches.index') }}"><span
                                                 class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
-                                                class="menu-title">Shifts</span>
+                                                class="menu-title">Batches</span>
                                         </a>
                                         <!--end:Menu link-->
                                     </div>

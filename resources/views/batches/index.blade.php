@@ -4,7 +4,7 @@
 
 @extends('layouts.app')
 
-@section('title', 'All Shifts')
+@section('title', 'All Batches')
 
 @section('header-title')
     <div data-kt-swapper="true" data-kt-swapper-mode="{default: 'prepend', lg: 'prepend'}"
@@ -12,7 +12,7 @@
         class="page-title d-flex align-items-center flex-wrap me-3 mb-5 mb-lg-0">
         <!--begin::Title-->
         <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 align-items-center my-0">
-            All Shifts
+            All Batches
         </h1>
         <!--end::Title-->
         <!--begin::Separator-->
@@ -22,7 +22,7 @@
         <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 ">
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                <a href="?page=index" class="text-muted text-hover-primary">
+                <a href="#" class="text-muted text-hover-primary">
                     Academic </a>
             </li>
             <!--end::Item-->
@@ -33,7 +33,7 @@
             <!--end::Item-->
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                Shifts </li>
+                Batches </li>
             <!--end::Item-->
         </ul>
         <!--end::Breadcrumb-->
@@ -57,9 +57,9 @@
             <!--begin::Row-->
             <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-5 g-xl-9">
 
-                @foreach ($shifts as $shift)
+                @foreach ($batches as $batch)
                     @php
-                        $branchName = $shift->branch->branch_name;
+                        $branchName = $batch->branch->branch_name;
                         $badgeColor = $branchColors[$branchName] ?? 'badge-light-info'; // Default color if not found
                     @endphp
                     <!--begin::Col-->
@@ -70,7 +70,7 @@
                             <div class="card-header">
                                 <!--begin::Card title-->
                                 <div class="card-title">
-                                    <h2>{{ $shift->name }} &nbsp;</h2>
+                                    <h2>{{ $batch->name }} &nbsp;</h2>
                                     <span class="badge {{ $badgeColor }}">{{ $branchName }}</span>
                                 </div>
                                 <!--end::Card title-->
@@ -79,8 +79,8 @@
                             <!--begin::Card body-->
                             <div class="card-body pt-1">
                                 <!--begin::Users-->
-                                <div class="fw-bold text-gray-600 mb-5">Total active students on this shift:
-                                    {{ count($shift->activeStudents) }}</div>
+                                <div class="fw-bold text-gray-600 mb-5">Total active students on this batch:
+                                    {{ count($batch->activeStudents) }}</div>
                                 <!--end::Users-->
                             </div>
                             <!--end::Card body-->
@@ -103,12 +103,12 @@
                     <div class="card border-dashed border-primary">
                         <!--begin::Card body-->
                         <div class="card-body">
-                            <form action="{{ route('shifts.store') }}" method="post">
+                            <form action="{{ route('batches.store') }}" method="post">
                                 @csrf
                                 <!--begin::Heading-->
                                 <div class="pb-5">
                                     <!--begin::Title-->
-                                    <h3 class="fw-bold d-flex align-items-center text-gray-900">Add New Shift</h3>
+                                    <h3 class="fw-bold d-flex align-items-center text-gray-900">Add New Batch</h3>
                                     <!--end::Title-->
                                 </div>
                                 <!--end::Heading-->
@@ -119,12 +119,12 @@
                                     <label class="required fw-semibold fs-6 mb-2">Name</label>
                                     <!--end::Label-->
                                     <!--begin::Input-->
-                                    <input type="text" name="shift_name"
-                                        class="form-control form-control-solid mb-3 mb-lg-0" placeholder="Shift name"
-                                        maxlength="15" required value="{{ old('shift_name') }}" />
+                                    <input type="text" name="batch_name"
+                                        class="form-control form-control-solid mb-3 mb-lg-0" placeholder="Batch name"
+                                        maxlength="15" required value="{{ old('batch_name') }}" />
                                     <!--end::Input-->
 
-                                    @error('shift_name')
+                                    @error('batch_name')
                                         <p style="color: red;">{{ $message }}</p>
                                     @enderror
                                 </div>
@@ -138,7 +138,7 @@
 
                                     <!--begin::Solid input group style-->
                                     <div class="flex-nowrap">
-                                            <select name="shift_branch" data-hide-search="true"
+                                            <select name="batch_branch" data-hide-search="true"
                                                 class="form-select form-select-solid" data-control="select2"
                                                 data-placeholder="Select branch" required>
                                                 <option></option>
@@ -146,7 +146,7 @@
                                                     <option value="{{ $branch->id }}">{{ $branch->branch_name }}</option>
                                                 @endforeach
                                             </select>
-                                        @error('shift_branch')
+                                        @error('batch_branch')
                                             <p style="color: red;">{{ $message }}</p>
                                         @enderror
                                     </div>
@@ -174,6 +174,6 @@
 @push('page-js')
     <script>
         document.getElementById("academic_menu").classList.add("here", "show");
-        document.getElementById("shifts_link").classList.add("active");
+        document.getElementById("batches_link").classList.add("active");
     </script>
 @endpush
