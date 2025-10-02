@@ -186,7 +186,7 @@
 
 
                     <!--begin:Academic Menu item-->
-                    @canany(['institutions.view', 'classes.view', 'shifts.manage'])
+                    @canany(['institutions.view', 'classes.view', 'batches.manage'])
                         <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="academic_menu">
                             <!--begin:Menu link-->
                             <span class="menu-link">
@@ -225,11 +225,11 @@
                                     <!--end:Menu item-->
                                 @endcan
 
-                                @can('shifts.manage')
+                                @can('batches.manage')
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" id="shifts_link" href="{{ route('shifts.index') }}"><span
+                                        <a class="menu-link" id="batches_link" href="{{ route('batches.index') }}"><span
                                                 class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
                                                 class="menu-title">Shifts</span>
                                         </a>

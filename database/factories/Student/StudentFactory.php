@@ -3,7 +3,7 @@ namespace Database\Factories\Student;
 
 use App\Models\Academic\ClassName;
 use App\Models\Academic\Institution;
-use App\Models\Academic\Shift;
+use App\Models\Academic\Batch;
 use App\Models\Branch;
 use App\Models\Student\Reference;
 use App\Models\Student\Student;
@@ -48,7 +48,7 @@ class StudentFactory extends Factory
             'gender'                => $this->faker->randomElement(['male', 'female']),
             'class_id'              => $class->id,
             'academic_group'        => $academic_group,
-            'shift_id'              => Shift::inRandomOrder()->first()->id ?? Shift::factory()->create()->id,
+            'batch_id'              => Batch::inRandomOrder()->first()->id ?? Batch::factory()->create()->id,
             // 'institution_roll' => $roll,
             'institution_id'        => Institution::inRandomOrder()->first()->id ?? Institution::factory()->create()->id,
             'religion'              => 'Islam',

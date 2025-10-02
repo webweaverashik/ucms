@@ -3,7 +3,7 @@ namespace App\Models\Student;
 
 use App\Models\Academic\ClassName;
 use App\Models\Academic\Institution;
-use App\Models\Academic\Shift;
+use App\Models\Academic\Batch;
 use App\Models\Academic\SubjectTaken;
 use App\Models\Branch;
 use App\Models\Payment\Payment;
@@ -20,7 +20,7 @@ class Student extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['student_unique_id', 'branch_id', 'name', 'date_of_birth', 'gender', 'class_id', 'academic_group', 'shift_id', 'institution_id', 'religion', 'blood_group', 'home_address', 'email', 'password', 'reference_id', 'student_activation_id', 'photo_url', 'remarks', 'deleted_by'];
+    protected $fillable = ['student_unique_id', 'branch_id', 'name', 'date_of_birth', 'gender', 'class_id', 'academic_group', 'batch_id', 'institution_id', 'religion', 'blood_group', 'home_address', 'email', 'password', 'reference_id', 'student_activation_id', 'photo_url', 'remarks', 'deleted_by'];
 
     protected $hidden = ['password'];
 
@@ -48,10 +48,10 @@ class Student extends Model
         return $this->belongsTo(ClassName::class, 'class_id');
     }
 
-    // Get the current shift of this student
-    public function shift()
+    // Get the current batch of this student
+    public function batch()
     {
-        return $this->belongsTo(Shift::class, 'shift_id');
+        return $this->belongsTo(Batch::class, 'batch_id');
     }
 
     // Get the institution associated with this student

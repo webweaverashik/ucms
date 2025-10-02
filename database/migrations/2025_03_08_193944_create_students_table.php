@@ -20,7 +20,7 @@ return new class extends Migration
             $table->enum('gender', ['male', 'female']);
             $table->foreignId('class_id');
             $table->enum('academic_group', ['General', 'Science', 'Commerce', 'Arts'])->default('General');
-            $table->foreignId('shift_id');
+            $table->foreignId('batch_id');
             $table->foreignId('institution_id')->nullable();
             $table->string('religion')->nullable();
             $table->enum('blood_group', ['A+', 'B+', 'AB+', 'O+', 'A-', 'B-', 'AB-', 'O-'])->nullable();

@@ -82,8 +82,8 @@ class RolePermissionSeeder extends Seeder
             'classes.edit',
             'classes.delete',
 
-            // 🕑 shifts
-            'shifts.manage',
+            // 🕑 batches
+            'batches.manage',
 
             // 🧑‍🏫 teachers
             'teachers.view',

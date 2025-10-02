@@ -2,7 +2,7 @@
 namespace App\Models;
 
 use App\Models\Academic\ClassName;
-use App\Models\Academic\Shift;
+use App\Models\Academic\Batch;
 use App\Models\Student\Student;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -46,9 +46,9 @@ class Branch extends Model
         return $this->hasMany(ClassName::class);
     }
 
-    // Get all the shifts in the branch
-    public function shifts()
+    // Get all the batches in the branch
+    public function batches()
     {
-        return $this->hasMany(Shift::class);
+        return $this->hasMany(Batch::class);
     }
 }

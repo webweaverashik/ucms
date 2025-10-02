@@ -4,7 +4,7 @@ namespace Database\Seeders;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Database\Seeders\Sheet\SheetSeeder;
-use Database\Seeders\Academic\ShiftSeeder;
+use Database\Seeders\Academic\BatchSeeder;
 use Database\Seeders\Payment\PaymentSeeder;
 use Database\Seeders\Student\SiblingSeeder;
 use Database\Seeders\Student\StudentSeeder;
@@ -35,7 +35,7 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             UserSeeder::class,
             ClassNameSeeder::class,
-            ShiftSeeder::class,
+            BatchSeeder::class,
             InstitutionSeeder::class,
 
             TeacherSeeder::class,
@@ -57,8 +57,8 @@ class DatabaseSeeder extends Seeder
             SheetTopicSeeder::class,
 
             SmsTemplatesTableSeeder::class,
-            SmsCampaignsTableSeeder::class,
-            SmsLogsTableSeeder::class,
+            // SmsCampaignsTableSeeder::class,
+            // SmsLogsTableSeeder::class,
         ]);
     }
 }

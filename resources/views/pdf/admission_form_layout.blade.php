@@ -399,11 +399,11 @@
                 </div>
 
                 <div class="mb-2 flex flex-wrap items-center text-[15px] font-normal">
-                    <label class="w-[125px]">Shift</label>:
-                    @foreach ($student->branch->shifts as $shift)
+                    <label class="w-[125px]">Batch</label>:
+                    @foreach ($student->branch->batches as $batch)
                         <label class="ml-2 flex items-center"><input type="checkbox" class="mr-1"
-                                value="{{ $shift->id }}"
-                                @if ($shift->id == $student->shift_id) checked @endif />{{ $shift->name }}</label>
+                                value="{{ $batch->id }}"
+                                @if ($batch->id == $student->batch_id) checked @endif />{{ $batch->name }}</label>
                     @endforeach
 
                     <button type="button"

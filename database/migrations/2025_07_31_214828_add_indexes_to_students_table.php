@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::table('students', function (Blueprint $table) {
             $table->index('branch_id');
             $table->index('class_id');
-            $table->index('shift_id');
+            $table->index('batch_id');
             $table->index('academic_group');
             $table->index('deleted_at');
-            $table->index(['class_id', 'academic_group', 'shift_id'], 'students_class_group_shift_index'); // custom name to avoid default name collision
+            $table->index(['class_id', 'academic_group', 'batch_id'], 'students_class_group_batch_index'); // custom name to avoid default name collision
         });
     }
 
@@ -30,10 +30,10 @@ return new class extends Migration
             Schema::table('students', function (Blueprint $table) {
                 $table->dropIndex(['branch_id']);
                 $table->dropIndex(['class_id']);
-                $table->dropIndex(['shift_id']);
+                $table->dropIndex(['batch_id']);
                 $table->dropIndex(['academic_group']);
                 $table->dropIndex(['deleted_at']);
-                $table->dropIndex('students_class_group_shift_index');
+                $table->dropIndex('students_class_group_batch_index');
             });
         });
     }

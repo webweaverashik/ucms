@@ -3,24 +3,24 @@ namespace App\Http\Controllers\Academic;
 
 use App\Models\Branch;
 use Illuminate\Http\Request;
-use App\Models\Academic\Shift;
+use App\Models\Academic\Batch;
 use App\Http\Controllers\Controller;
 
-class ShiftController extends Controller
+class BatchController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        if (! auth()->user()->can('shifts.manage')) {
-            return redirect()->back()->with('warning', 'No permission to view shifts.');
+        if (! auth()->user()->can('batches.manage')) {
+            return redirect()->back()->with('warning', 'No permission to view batches.');
         }
 
-        $shifts = Shift::all();
+        $batches = Batch::all();
         $branches = Branch::all();
 
-        return view('shifts.index', compact('branches', 'shifts'));
+        return view('batches.index', compact('branches', 'batches'));
     }
 
     /**
@@ -44,12 +44,12 @@ class ShiftController extends Controller
         ]);
         
         
-        Shift::create([
+        Batch::create([
             'name' => $validated['shift_name'],
             'branch_id' => $validated['shift_branch'],
         ]);
 
-        return redirect()->route('shifts.index')->with('success', 'Shift created successfully.');
+        return redirect()->route('batches.index')->with('success', 'Batch created successfully.');
     }
 
     /**

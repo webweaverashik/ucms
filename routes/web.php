@@ -1,8 +1,8 @@
 <?php
 
+use App\Http\Controllers\Academic\BatchController;
 use App\Http\Controllers\Academic\ClassNameController;
 use App\Http\Controllers\Academic\InstitutionController;
-use App\Http\Controllers\Academic\ShiftController;
 use App\Http\Controllers\Academic\SubjectController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Auth\PasswordController;
@@ -145,7 +145,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
         'teachers'          => TeacherController::class,
         'institutions'      => InstitutionController::class,
         'classnames'        => ClassNameController::class,
-        'shifts'            => ShiftController::class,
+        'batches'           => BatchController::class,
         'subjects'          => SubjectController::class,
         'invoices'          => PaymentInvoiceController::class,
         'transactions'      => PaymentTransactionController::class,
