@@ -877,7 +877,7 @@
                             <h2 class="fw-bold text-gray-900">Administrative</h2>
                             <!--end::Title-->
                             <!--begin::Notice-->
-                            <div class="text-muted fw-semibold fs-6">Set shift, tuition fee, type, due date etc.</div>
+                            <div class="text-muted fw-semibold fs-6">Set batch, tuition fee, type, due date etc.</div>
                             <!--end::Notice-->
                         </div>
                         <!--end::Heading-->
@@ -920,30 +920,30 @@
                         </div>
                         <!--end::Branch radio-->
 
-                        <!--begin::Shift radio-->
+                        <!--begin::Batch radio-->
                         <div class="fv-row mb-7">
                             <!--begin::Label-->
-                            <label class="fs-6 fw-semibold mb-2 required">Shift
+                            <label class="fs-6 fw-semibold mb-2 required">Batch
                             </label>
                             <!--End::Label-->
                             <!--begin::Row-->
-                            <div id="shift-container"
-                                class="row row-cols-1 row-cols-md-3 row-cols-lg-1 row-cols-xl-3 g-9">
+                            <div id="batch-container"
+                                class="row row-cols-1 row-cols-md-3 row-cols-lg-2 row-cols-xl-4 g-9">
                                 @foreach ($branches as $branch)
-                                    @foreach ($shifts->where('branch_id', $branch->id) as $shift)
-                                        <div class="col shift-option" data-branch="{{ $branch->id }}"
+                                    @foreach ($batches->where('branch_id', $branch->id) as $batch)
+                                        <div class="col batch-option" data-branch="{{ $branch->id }}"
                                             style="display: none;">
                                             <label
                                                 class="btn btn-outline btn-outline-dashed btn-active-light-primary d-flex text-start p-6"
                                                 data-kt-button="true">
                                                 <span
                                                     class="form-check form-check-custom form-check-solid form-check-sm align-items-start mt-1">
-                                                    <input class="form-check-input" type="radio" name="student_shift"
-                                                        value="{{ $shift->id }}" required />
+                                                    <input class="form-check-input" type="radio" name="student_batch"
+                                                        value="{{ $batch->id }}" required />
                                                 </span>
                                                 <span class="ms-5">
                                                     <span
-                                                        class="fs-4 fw-bold text-gray-800 d-block">{{ $shift->name }}</span>
+                                                        class="fs-4 fw-bold text-gray-800 d-block">{{ $batch->name }}</span>
                                                 </span>
                                             </label>
                                         </div>
@@ -953,7 +953,7 @@
 
                             <!--end::Row-->
                         </div>
-                        <!--end::Shift radio-->
+                        <!--end::Batch radio-->
 
                         {{-- Tuition fee, type, due date Row --}}
                         <div class="row">

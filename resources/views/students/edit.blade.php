@@ -950,7 +950,7 @@
                                     Branch</span></h2>
                             <!--end::Title-->
                             <!--begin::Notice-->
-                            <div class="text-muted fw-semibold fs-6">Set shift, tuition fee, type, due date etc.</div>
+                            <div class="text-muted fw-semibold fs-6">Set batch, tuition fee, type, due date etc.</div>
                             <!--end::Notice-->
                         </div>
                         <!--end::Heading-->
@@ -958,32 +958,32 @@
                         <!--begin::Input group-->
                         <div class="fv-row mb-7">
                             <!--begin::Label-->
-                            <label class="fs-6 fw-semibold mb-2 required">Shift
+                            <label class="fs-6 fw-semibold mb-2 required">Batch
                             </label>
                             <!--End::Label-->
                             <!--begin::Row-->
-                            <div class="row row-cols-1 row-cols-md-3 row-cols-lg-1 row-cols-xl-3 g-9"
+                            <div class="row row-cols-1 row-cols-md-3 row-cols-lg-2 row-cols-xl-4 g-9"
                                 data-kt-buttons="true" data-kt-buttons-target="[data-kt-button='true']">
-                                @foreach ($shifts as $shift)
+                                @foreach ($batches as $batch)
                                     <!--begin::Col-->
                                     <div class="col">
                                         <!--begin::Option-->
                                         <label
-                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary @if ($student->shift_id == $shift->id) active @endif d-flex text-start p-6 @if (auth()->user()->hasRole('accountant')) disabled @endif"
+                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary @if ($student->batch_id == $batch->id) active @endif d-flex text-start p-6 @if (auth()->user()->hasRole('accountant')) disabled @endif"
                                             data-kt-button="true">
                                             <!--begin::Radio-->
                                             <span
                                                 class="form-check form-check-custom form-check-solid form-check-sm align-items-start mt-1">
-                                                <input class="form-check-input" type="radio" name="student_shift"
-                                                    value="{{ $shift->id }}" required
+                                                <input class="form-check-input" type="radio" name="student_batch"
+                                                    value="{{ $batch->id }}" required
                                                     @if (auth()->user()->hasRole('accountant')) disabled @endif
-                                                    @if ($student->shift_id == $shift->id) checked="checked" @endif />
+                                                    @if ($student->batch_id == $batch->id) checked="checked" @endif />
                                             </span>
                                             <!--end::Radio-->
                                             <!--begin::Info-->
                                             <span class="ms-5">
                                                 <span
-                                                    class="fs-4 fw-bold text-gray-800 d-block">{{ $shift->name }}</span>
+                                                    class="fs-4 fw-bold text-gray-800 d-block">{{ $batch->name }}</span>
                                             </span>
                                             <!--end::Info-->
                                         </label>

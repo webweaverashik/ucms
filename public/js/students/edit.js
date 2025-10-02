@@ -703,10 +703,10 @@ var KTUpdateStudent = function () {
                form,
                {
                     fields: {
-                         'student_shift': {
+                         'student_batch': {
                               validators: {
                                    notEmpty: {
-                                        message: 'Select a shift'
+                                        message: 'Select a batch'
                                    }
                               }
                          },

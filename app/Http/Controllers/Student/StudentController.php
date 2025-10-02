@@ -2,9 +2,9 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\Academic\Batch;
 use App\Models\Academic\ClassName;
 use App\Models\Academic\Institution;
-use App\Models\Academic\Shift;
 use App\Models\Branch;
 use App\Models\Payment\Payment;
 use App\Models\Payment\PaymentInvoice;
@@ -36,7 +36,7 @@ class StudentController extends Controller
             return Student::with([
                 'class:id,name,class_numeral',
                 'branch:id,branch_name,branch_prefix',
-                'shift:id,name',
+                'batch:id,name',
                 'institution:id,name,eiin_number',
                 'studentActivation:id,active_status',
                 'guardians:id,name,relationship,student_id',
@@ -52,7 +52,7 @@ class StudentController extends Controller
         });
 
         $classnames = ClassName::all();
-        $shifts     = Shift::with('branch:id,branch_name')->when(auth()->user()->branch_id != 0, function ($query) {
+        $batches    = Batch::with('branch:id,branch_name')->when(auth()->user()->branch_id != 0, function ($query) {
             $query->where('branch_id', auth()->user()->branch_id);
         })
             ->select('id', 'name', 'branch_id')
@@ -61,7 +61,7 @@ class StudentController extends Controller
         $institutions = Institution::all();
         $branches     = Branch::all();
 
-        return view('students.index', compact('students', 'classnames', 'shifts', 'institutions', 'branches'));
+        return view('students.index', compact('students', 'classnames', 'batches', 'institutions', 'branches'));
 
     }
 
@@ -72,7 +72,7 @@ class StudentController extends Controller
         $students = Student::with([
             'class:id,name,class_numeral',
             'branch:id,branch_name,branch_prefix',
-            'shift:id,name',
+            'batch:id,name',
             'institution:id,name,eiin_number',
             'guardians:id,name,relationship,student_id',
             'mobileNumbers:id,mobile_number,number_type,student_id',
@@ -85,7 +85,7 @@ class StudentController extends Controller
             ->get();
 
         $classnames = ClassName::all();
-        $shifts     = Shift::with('branch:id,branch_name')->when(auth()->user()->branch_id != 0, function ($query) {
+        $batches    = Batch::with('branch:id,branch_name')->when(auth()->user()->branch_id != 0, function ($query) {
             $query->where('branch_id', auth()->user()->branch_id);
         })
             ->select('id', 'name', 'branch_id')
@@ -94,7 +94,7 @@ class StudentController extends Controller
         $institutions = Institution::all();
         $branches     = Branch::all();
 
-        return view('students.pending', compact('students', 'classnames', 'shifts', 'institutions', 'branches'));
+        return view('students.pending', compact('students', 'classnames', 'batches', 'institutions', 'branches'));
     }
 
     /**
@@ -108,7 +108,7 @@ class StudentController extends Controller
         $classnames   = ClassName::select('id', 'name', 'class_numeral')->get();
         $institutions = Institution::select('id', 'name', 'eiin_number')->get();
 
-        $shifts = Shift::when(auth()->user()->branch_id != 0, function ($query) {
+        $batches = Batch::when(auth()->user()->branch_id != 0, function ($query) {
             $query->where('branch_id', auth()->user()->branch_id);
         })
             ->select('id', 'name', 'branch_id')
@@ -120,7 +120,7 @@ class StudentController extends Controller
             ->select('id', 'branch_name', 'branch_prefix')
             ->get();
 
-        return view('students.create', compact('classnames', 'shifts', 'institutions', 'branches'));
+        return view('students.create', compact('classnames', 'batches', 'institutions', 'branches'));
     }
 
     /**
@@ -141,7 +141,7 @@ class StudentController extends Controller
             'student_class'           => 'required|integer|exists:class_names,id',
             'student_academic_group'  => 'nullable|string|in:General,Science,Commerce,Arts',
             'student_branch'          => 'required|integer|exists:branches,id',
-            'student_shift'           => 'required|integer|exists:shifts,id',
+            'student_batch'           => 'required|integer|exists:batches,id',
             'student_institution'     => 'required|integer|exists:institutions,id',
             'subjects'                => 'required|array',
             'subjects.*'              => 'integer|exists:subjects,id',
@@ -227,7 +227,7 @@ class StudentController extends Controller
                 'gender'            => $validated['student_gender'],
                 'class_id'          => $validated['student_class'],
                 'academic_group'    => $validated['student_academic_group'] ?? 'General',
-                'shift_id'          => $validated['student_shift'],
+                'batch_id'          => $validated['student_batch'],
                 'institution_id'    => $validated['student_institution'],
                 'religion'          => $validated['student_religion'] ?? null,
                 'blood_group'       => $validated['student_blood_group'] ?? null,
@@ -272,12 +272,12 @@ class StudentController extends Controller
             for ($i = 1; $i <= 2; $i++) {
                 if (! empty($validated["guardian_{$i}_name"])) {
                     Guardian::create([
-                        'student_id'    => $student->id,
-                        'name'          => $validated["guardian_{$i}_name"],
+                        'student_id' => $student->id,
+                        'name'       => $validated["guardian_{$i}_name"],
                         'mobile_number' => $validated["guardian_{$i}_mobile"],
-                        'gender'        => $validated["guardian_{$i}_gender"],
-                        'relationship'  => $validated["guardian_{$i}_relationship"],
-                        'password'      => Hash::make('password'),
+                        'gender' => $validated["guardian_{$i}_gender"],
+                        'relationship' => $validated["guardian_{$i}_relationship"],
+                        'password' => Hash::make('password'),
                     ]);
                 }
             }
@@ -286,12 +286,12 @@ class StudentController extends Controller
             for ($i = 1; $i <= 2; $i++) {
                 if (! empty($validated["sibling_{$i}_name"])) {
                     Sibling::create([
-                        'student_id'       => $student->id,
-                        'name'             => $validated["sibling_{$i}_name"],
-                        'year'             => $validated["sibling_{$i}_year"],
-                        'class'            => $validated["sibling_{$i}_class"],
+                        'student_id' => $student->id,
+                        'name'       => $validated["sibling_{$i}_name"],
+                        'year' => $validated["sibling_{$i}_year"],
+                        'class' => $validated["sibling_{$i}_class"],
                         'institution_name' => $validated["sibling_{$i}_institution"],
-                        'relationship'     => $validated["sibling_{$i}_relationship"],
+                        'relationship' => $validated["sibling_{$i}_relationship"],
                     ]);
                 }
             }
@@ -453,10 +453,10 @@ class StudentController extends Controller
         $students = $studentsQuery->get();
 
         $classnames   = ClassName::all();
-        $shifts       = Shift::where('branch_id', $student->branch_id)->get();
+        $batches      = Batch::where('branch_id', $student->branch_id)->get();
         $institutions = Institution::all();
 
-        return view('students.edit', compact('student', 'students', 'classnames', 'shifts', 'institutions'));
+        return view('students.edit', compact('student', 'students', 'classnames', 'batches', 'institutions'));
     }
 
     /**
@@ -478,7 +478,7 @@ class StudentController extends Controller
             'student_blood_group'     => 'nullable|string',
             'student_class'           => $isAccountant ? 'nullable' : 'required|integer|exists:class_names,id',
             'student_academic_group'  => 'nullable|string|in:General,Science,Commerce,Arts',
-            'student_shift'           => $isAccountant ? 'nullable' : 'required|integer|exists:shifts,id',
+            'student_batch'           => $isAccountant ? 'nullable' : 'required|integer|exists:batches,id',
             'student_institution'     => $isAccountant ? 'nullable' : 'required|integer|exists:institutions,id',
             'subjects'                => 'required|array',
             'subjects.*'              => 'integer|exists:subjects,id',
@@ -660,7 +660,7 @@ class StudentController extends Controller
                 $student->update([
                     'class_id'       => $validated['student_class'],
                     'academic_group' => $validated['student_academic_group'] ?? 'General',
-                    'shift_id'       => $validated['student_shift'],
+                    'batch_id'       => $validated['student_batch'],
                     'institution_id' => $validated['student_institution'],
                 ]);
 
@@ -780,7 +780,7 @@ class StudentController extends Controller
         $students = Student::whereHas('studentActivation', function ($query) {
             $query->where('active_status', 'active');
         })
-            ->select('id', 'name', 'student_unique_id', 'branch_id', 'class_id', 'shift_id')
+            ->select('id', 'name', 'student_unique_id', 'branch_id', 'class_id', 'batch_id')
             ->get();
 
         $branches = Branch::all();
@@ -798,7 +798,7 @@ class StudentController extends Controller
         $students = Student::whereHas('studentActivation', function ($query) {
             $query->where('active_status', 'active');
         })
-            ->select('id', 'name', 'student_unique_id', 'branch_id', 'class_id', 'shift_id')
+            ->select('id', 'name', 'student_unique_id', 'branch_id', 'class_id', 'batch_id')
             ->get();
 
         $classes = ClassName::all();

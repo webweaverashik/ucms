@@ -177,8 +177,8 @@
 
                                 <!--begin::Row-->
                                 <tr class="">
-                                    <td class="text-gray-500">Shift:</td>
-                                    <td>{{ $student->shift->name }}</td>
+                                    <td class="text-gray-500">Batch:</td>
+                                    <td>{{ $student->batch->name }}</td>
                                 </tr>
                                 <!--end::Row-->
 

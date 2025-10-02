@@ -706,10 +706,10 @@ var KTCreateStudent = function () {
                form,
                {
                     fields: {
-                         'student_shift': {
+                         'student_batch': {
                               validators: {
                                    notEmpty: {
-                                        message: 'Select a shift'
+                                        message: 'Select a batch'
                                    }
                               }
                          },
@@ -751,28 +751,28 @@ var KTCreateStudent = function () {
 
      function toggleShiftsByBranch() {
           const branchRadios = document.querySelectorAll('.branch-radio');
-          const shiftOptions = document.querySelectorAll('.shift-option');
+          const batchOptions = document.querySelectorAll('.batch-option');
 
           branchRadios.forEach(radio => {
                radio.addEventListener('change', () => {
                     const selectedBranch = radio.value;
 
-                    // Hide all shifts first
-                    shiftOptions.forEach(option => {
+                    // Hide all batches first
+                    batchOptions.forEach(option => {
                          option.style.display = 'none';
                          const input = option.querySelector('input[type="radio"]');
                          if (input) input.checked = false;
                     });
 
-                    // Show matching shifts
-                    shiftOptions.forEach(option => {
+                    // Show matching batches
+                    batchOptions.forEach(option => {
                          if (option.dataset.branch === selectedBranch) {
                               option.style.display = 'block';
                          }
                     });
 
-                    // Auto-check the first visible shift
-                    const firstVisible = document.querySelector(`.shift-option[data-branch="${selectedBranch}"] input[type="radio"]`);
+                    // Auto-check the first visible batch
+                    const firstVisible = document.querySelector(`.batch-option[data-branch="${selectedBranch}"] input[type="radio"]`);
                     if (firstVisible) firstVisible.checked = true;
                });
           });

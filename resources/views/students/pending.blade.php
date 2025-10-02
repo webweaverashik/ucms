@@ -24,7 +24,7 @@
         <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 ">
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                <a href="?page=index" class="text-muted text-hover-primary">
+                <a href="#" class="text-muted text-hover-primary">
                     Student Info </a>
             </li>
             <!--end::Item-->
@@ -150,16 +150,16 @@
 
                                 <!--begin::Input group-->
                                 <div class="col-6 mb-5">
-                                    <label class="form-label fs-6 fw-semibold">Shifts:</label>
+                                    <label class="form-label fs-6 fw-semibold">Batches:</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                         data-placeholder="Select option" data-allow-clear="true"
                                         data-kt-subscription-table-filter="product" data-hide-search="true">
                                         <option></option>
-                                        @foreach ($shifts as $shift)
+                                        @foreach ($batches as $batch)
                                             <option
-                                                value="{{ $shift->id }}_{{ $shift->name }}_{{ $shift->branch->branch_name }}">
-                                                {{ $shift->name }} @if (auth()->user()->hasRole('admin'))
-                                                    ({{ $shift->branch->branch_name }})
+                                                value="{{ $batch->id }}_{{ $batch->name }}_{{ $batch->branch->branch_name }}">
+                                                {{ $batch->name }} @if (auth()->user()->hasRole('admin'))
+                                                    ({{ $batch->branch->branch_name }})
                                                 @endif
                                             </option>
                                         @endforeach
@@ -273,8 +273,8 @@
                         <th class="d-none">Gender (filter)</th>
                         <th class="d-none">Class (filter)</th>
                         <th>Class</th>
-                        <th class="d-none">Shift (Filter)</th>
-                        <th>Shift</th>
+                        <th class="d-none">Batch (Filter)</th>
+                        <th>Batch</th>
                         <th class="w-300px">Institution</th>
                         <th>Guardians</th>
                         <th>Mobile<br>(Home)</th>
@@ -318,9 +318,9 @@
                             <td class="d-none">{{ $student->class_id }}_{{ $student->class->class_numeral }}_ucms</td>
                             <td>{{ $student->class->name }}</td>
                             <td class="d-none">
-                                {{ $student->shift_id }}_{{ $student->shift->name }}_{{ $student->branch->branch_name }}
+                                {{ $student->batch_id }}_{{ $student->batch->name }}_{{ $student->branch->branch_name }}
                             </td>
-                            <td>{{ $student->shift->name }}</td>
+                            <td>{{ $student->batch->name }}</td>
                             <td>{{ $student->institution->name }}
                                 (EIIN: {{ $student->institution->eiin_number }})</td>
                             <td>
