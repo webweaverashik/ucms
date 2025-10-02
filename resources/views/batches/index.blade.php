@@ -53,9 +53,9 @@
     @endphp
 
     <div class="row">
-        <div class="col-md-9">
+        <div class="col-md-12">
             <!--begin::Row-->
-            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-5 g-xl-9">
+            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-5 g-xl-9">
 
                 @foreach ($batches as $batch)
                     @php
@@ -63,9 +63,9 @@
                         $badgeColor = $branchColors[$branchName] ?? 'badge-light-info'; // Default color if not found
                     @endphp
                     <!--begin::Col-->
-                    <div class="col-md-4">
+                    <div class="col">
                         <!--begin::Card-->
-                        <div class="card card-flush h-md-100">
+                        <div class="card card-flush h-md-100 border-hover-primary">
                             <!--begin::Card header-->
                             <div class="card-header">
                                 <!--begin::Card title-->
@@ -95,7 +95,7 @@
         </div>
 
         {{-- begin:Right Sidebar --}}
-        <div class="col-md-3">
+        {{-- <div class="col-md-3">
             <div class="row">
                 <!--begin::Add new card-->
                 <div class="col-md-12">
@@ -162,7 +162,7 @@
                     <!--begin::Card-->
                 </div>
             </div>
-        </div>
+        </div> --}}
         {{-- end:Right Sidebar --}}
     </div>
 @endsection

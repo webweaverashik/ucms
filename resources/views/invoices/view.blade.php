@@ -73,7 +73,7 @@
                             </div>
 
                             <div class="d-flex flex-wrap fw-semibold mb-2 fs-5 text-gray-500">
-                                Shift: &nbsp;<span class="text-gray-800 ms-19">{{ $invoice->student->shift->name }}</span>
+                                Batch: &nbsp;<span class="text-gray-800 ms-19">{{ $invoice->student->batch->name }}</span>
                             </div>
 
                             <div class="d-flex flex-wrap fw-semibold mb-2 fs-5 text-gray-500">
