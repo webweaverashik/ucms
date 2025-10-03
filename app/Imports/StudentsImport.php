@@ -67,7 +67,7 @@ class StudentsImport implements ToCollection, WithHeadingRow
                     'gender'            => $row['gender'],
                     'class_id'          => $row['class_id'],
                     'academic_group'    => $row['academic_group'],
-                    'shift_id'          => $row['shift_id'],
+                    'batch_id'          => $row['batch_id'],
                     'institution_id'    => $row['institution_id'],
                     'home_address'      => $row['home_address'] ?? null,
                     'password'          => Hash::make('12345678'), // Default password
@@ -78,11 +78,11 @@ class StudentsImport implements ToCollection, WithHeadingRow
                 foreach ([1, 2] as $index) {
                     if ($row["guardian_{$index}_name"]) {
                         Guardian::create([
-                            'student_id'    => $student->id,
-                            'name'          => $row["guardian_{$index}_name"],
+                            'student_id' => $student->id,
+                            'name'       => $row["guardian_{$index}_name"],
                             'mobile_number' => $row["guardian_{$index}_mobile"],
-                            'gender'        => $row["guardian_{$index}_gender"],
-                            'relationship'  => $row["guardian_{$index}_relationship"],
+                            'gender' => $row["guardian_{$index}_gender"],
+                            'relationship' => $row["guardian_{$index}_relationship"],
                         ]);
                     }
                 }
@@ -91,12 +91,12 @@ class StudentsImport implements ToCollection, WithHeadingRow
                 foreach ([1, 2] as $index) {
                     if ($row["sibling_{$index}_name"]) {
                         Sibling::create([
-                            'student_id'     => $student->id,
-                            'name'           => $row["sibling_{$index}_name"],
-                            'age'            => $row["sibling_{$index}_age"],
-                            'class'          => $row["sibling_{$index}_class"],
-                            'institution_id' => $row["sibling_{$index}_institution_id"] ?? null,
-                            'relationship'   => $row["sibling_{$index}_relationship"],
+                            'student_id' => $student->id,
+                            'name'       => $row["sibling_{$index}_name"],
+                            'year' => $row["sibling_{$index}_year"],
+                            'class' => $row["sibling_{$index}_class"],
+                            'institution_name' => $row["sibling_{$index}_institution_name"] ?? null,
+                            'relationship' => $row["sibling_{$index}_relationship"],
                         ]);
                     }
                 }
@@ -143,15 +143,12 @@ class StudentsImport implements ToCollection, WithHeadingRow
                     // For classes 9 and above: General + specific academic_group
                     $subjects = Subject::where('class_id', $row['class_id'])
                         ->where(function ($query) use ($row) {
-                            $query->where('academic_group', $row['academic_group'])
-                                ->orWhere('academic_group', 'General');
+                            $query->where('academic_group', $row['academic_group'])->orWhere('academic_group', 'General');
                         })
                         ->pluck('id');
                 } else {
                     // For classes below 9: only matching academic_group
-                    $subjects = Subject::where('class_id', $row['class_id'])
-                        ->where('academic_group', $row['academic_group'])
-                        ->pluck('id');
+                    $subjects = Subject::where('class_id', $row['class_id'])->where('academic_group', $row['academic_group'])->pluck('id');
                 }
 
                 // Enroll subjects
@@ -164,7 +161,6 @@ class StudentsImport implements ToCollection, WithHeadingRow
 
                 DB::commit();
                 $this->results['inserted'][] = $rowNumber;
-
             } catch (\Throwable $e) {
                 DB::rollBack();
                 Log::error("Row {$rowNumber} failed: " . $e->getMessage());

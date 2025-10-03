@@ -124,8 +124,8 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     // ----- Settings End -----
 
     // Miscellaneous
-    Route::get('bulk-admission', [MiscController::class, 'index'])->name('bulk.admission.index');
-    Route::post('bulk-admission', [MiscController::class, 'bulkAdmission'])->name('bulk.admission.upload');
+    Route::get('settings/bulk-admission', [MiscController::class, 'index'])->name('bulk.admission.index');
+    Route::post('settings/bulk-admission', [MiscController::class, 'bulkAdmission'])->name('bulk.admission.upload');
 
     // ------- Custom routes end -------
 

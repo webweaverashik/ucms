@@ -14,7 +14,7 @@ class MiscController extends Controller
             return redirect()->back()->with('warning', 'Activity Not Allowed.');
         }
 
-        return view('misc.bulk_admission');
+        return view('settings.misc.bulk_admission');
     }
 
     public function bulkAdmission(Request $request)

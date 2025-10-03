@@ -83,6 +83,14 @@ class InstitutionSeeder extends Seeder
             ['name' => 'NO COLLEGE', 'type' => 'school'],
             ['name' => 'Shonaimuri Girls High School', 'type' => 'school'],
             ['name' => 'Khilgaon Model College', 'type' => 'college'],
+            ['name' => 'Ali Ahmed High School', 'type' => 'school'],
+            ['name' => 'Quality Education School', 'type' => 'school'],
+            ['name' => 'Quality Education College', 'type' => 'college'],
+            ['name' => 'Khilgaon Girls School', 'type' => 'school'],
+            ['name' => 'Khilgaon Girls Collage', 'type' => 'college'],
+            ['name' => 'Siddheswari Girls College', 'type' => 'college'],
+            ['name' => 'Siddheswari Degree College', 'type' => 'college'],
+            ['name' => 'Faridgonj Girls Pilot High School', 'type' => 'school'],
         ];
 
         foreach ($institutions as $institution) {
