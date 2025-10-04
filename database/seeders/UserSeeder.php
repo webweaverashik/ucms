@@ -4,7 +4,6 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Role;
 
 class UserSeeder extends Seeder
 {
@@ -23,29 +22,37 @@ class UserSeeder extends Seeder
         // Super Admin
         $admin = User::create([
             'name'          => 'Ashfaq Kayes',
-            'email'         => 'admin@ucms.com',
-            'mobile_number' => '01700000000',
+            'email'         => 'admin@uniquecoachingbd.com',
+            'mobile_number' => '01812778899',
             'password'      => Hash::make('admin123'),
             'branch_id'     => 0,
         ]);
         $admin->assignRole('admin');
 
+        $admin2 = User::create([
+            'name'          => 'Ashikur Rahman',
+            'email'         => 'pineapplesoftbd@gmail.com',
+            'mobile_number' => '01920869809',
+            'password'      => Hash::make('admin123'),
+            'branch_id'     => 0,
+        ]);
+        $admin2->assignRole('admin');
+
         // Goran Branch Manager
         $manager1 = User::create([
-            'name'          => 'Ahamed Shakib',
-            'email'         => 'manager@goran.com',
-            'mobile_number' => '01800000000',
+            'name'          => 'Manager Goran',
+            'email'         => 'manager.goran@uniquecoachingbd.com',
+            'mobile_number' => '01973033299',
             'password'      => Hash::make('manager123'),
             'branch_id'     => 1,
         ]);
         $manager1->assignRole('manager');
 
-
         // Goran Branch Accountant
         $accountant1 = User::create([
             'name'          => 'Ramjan Shaikh',
-            'email'         => 'accountant@goran.com',
-            'mobile_number' => '01900000000',
+            'email'         => 'accountantramjan@uniquecoachingbd.com',
+            'mobile_number' => '01723663310',
             'password'      => Hash::make('accountant123'),
             'branch_id'     => 1,
         ]);
@@ -54,18 +61,17 @@ class UserSeeder extends Seeder
         // Khilgaon Branch Manager
         $manager2 = User::create([
             'name'          => 'Naeem',
-            'email'         => 'manager@khilgaon.com',
+            'email'         => 'manager.khilgaon@uniquecoachingbd.com',
             'mobile_number' => '01800000000',
             'password'      => Hash::make('manager123'),
             'branch_id'     => 2,
         ]);
         $manager2->assignRole('manager');
 
-
         // Khilgaon Branch Accountant
         $accountant2 = User::create([
             'name'          => 'Arafat Sunny',
-            'email'         => 'accountant@khilgaon.com',
+            'email'         => 'accountant.khilgaon@uniquecoachingbd.com',
             'mobile_number' => '01900000000',
             'password'      => Hash::make('accountant123'),
             'branch_id'     => 2,

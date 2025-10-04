@@ -11,7 +11,11 @@ class ClassName extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'class_numeral', 'description'];
+    protected $fillable = ['name', 'class_numeral', 'description', 'is_active'];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
 
     // Get all subjects associated with this class
     public function subjects()

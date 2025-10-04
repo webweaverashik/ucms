@@ -17,8 +17,10 @@ class ClassNameSeeder extends Seeder
             'Class IX'        => '09',
             'SSC (25-26)'     => '10',
             'SSC (24-25)'     => '10',
-            'HSC (25-26) Sci' => '11',
-            'HSC (25-26) Com' => '11',
+            'HSC (26-27) Sci' => '11',
+            'HSC (26-27) Com' => '11',
+            'HSC (25-26) Sci' => '12',
+            'HSC (25-26) Com' => '12',
             'HSC (24-25) Sci' => '12',
             'HSC (24-25) Com' => '12',
         ];

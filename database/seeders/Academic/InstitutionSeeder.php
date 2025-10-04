@@ -63,12 +63,12 @@ class InstitutionSeeder extends Seeder
             ['name' => 'Quality Education School and College', 'type' => 'college'],
             ['name' => 'Rajarbagh Police Lines School & College', 'type' => 'college'],
             ['name' => 'Rajuk Uttara Model College', 'type' => 'college'],
-            ['name' => 'Sabujbagh Government College', 'type' => 'college'],
+            ['name' => 'Sabujbag Government College', 'type' => 'college'],
             ['name' => 'Shaheed Suhrawardy College', 'type' => 'college'],
             ['name' => 'Shajanpur Railway Government School', 'type' => 'school'],
             ['name' => 'Shantipur High School', 'type' => 'school'],
             ['name' => 'Siddheswari Girls\' College', 'type' => 'college'],
-            ['name' => 'Shobujbagh Government High School', 'type' => 'school'],
+            ['name' => 'Sabujbag Government High School', 'type' => 'school'],
             ['name' => 'South Banasree Model High School and College', 'type' => 'college'],
             ['name' => 'South Point School and College', 'type' => 'college'],
             ['name' => 'Tamirul Millat Kamil Madrasha', 'type' => 'school'],
@@ -91,6 +91,7 @@ class InstitutionSeeder extends Seeder
             ['name' => 'Siddheswari Girls College', 'type' => 'college'],
             ['name' => 'Siddheswari Degree College', 'type' => 'college'],
             ['name' => 'Faridgonj Girls Pilot High School', 'type' => 'school'],
+            ['name' => 'Siddheswari Girls High School', 'type' => 'school'],
         ];
 
         foreach ($institutions as $institution) {
