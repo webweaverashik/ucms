@@ -42,77 +42,150 @@
 
 
 @section('content')
-    <!--begin::Row-->
-    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-5 g-xl-9">
-        <!--begin::Add new class-->
-        @can('classes.create')
-            <div class="col-md-4">
-                <!--begin::Card-->
-                <div class="card h-md-100">
-                    <!--begin::Card body-->
-                    <div class="card-body d-flex flex-center">
-                        <!--begin::Button-->
-                        <button type="button" class="btn btn-clear d-flex flex-column flex-center" data-bs-toggle="modal"
-                            data-bs-target="#kt_modal_add_class">
-                            <!--begin::Illustration-->
-                            <img src="{{ asset('assets/media/illustrations/sketchy-1/4.png') }}" alt=""
-                                class="mw-100 mh-150px mb-7" />
-                            <!--end::Illustration-->
-                            <!--begin::Label-->
-                            <div class="btn btn-primary fw-bold fs-5">Add New Class</div>
-                            <!--end::Label-->
-                        </button>
-                        <!--begin::Button-->
-                    </div>
-                    <!--begin::Card body-->
-                </div>
-                <!--begin::Card-->
-            </div>
+    @php
+        // Preloading permissions checking
+        $canEditClass = auth()->user()->can('classes.edit');
+        $canDeleteClass = auth()->user()->can('classes.delete');
+    @endphp
+
+    <!--begin:::Tabs-->
+    <ul class="nav nav-custom nav-tabs nav-line-tabs nav-line-tabs-2x border-0 fs-4 fw-semibold mb-8">
+        <!--begin:::Tab item-->
+        <li class="nav-item">
+            <a class="nav-link text-active-primary pb-4 active" data-bs-toggle="tab" href="#kt_due_invoices_tab"><i
+                    class="ki-outline ki-home fs-3 me-2"></i>Active Class
+            </a>
+        </li>
+        <!--end:::Tab item-->
+
+        <!--begin:::Tab item-->
+        <li class="nav-item">
+            <a class="nav-link text-active-primary pb-4" data-bs-toggle="tab" href="#kt_paid_invoices_tab"><i
+                    class="ki-outline ki-book-open fs-3 me-2"></i>Inactive Class
+            </a>
+        </li>
+        <!--end:::Tab item-->
+
+        @can('invoices.create')
+            <!--begin:::Tab item-->
+            <li class="nav-item ms-auto">
+                <!--begin::Action menu-->
+                <a href="#" class="btn btn-primary ps-7" data-bs-toggle="modal" data-bs-target="#kt_modal_add_class"><i
+                        class="ki-outline ki-plus fs-2 me-0"></i> Add Class</a>
+                <!--end::Menu-->
+            </li>
+            <!--end:::Tab item-->
         @endcan
-        <!--begin::Add new class-->
+    </ul>
+    <!--end:::Tabs-->
 
-        @foreach ($classnames as $classname)
-            <!--begin::Col-->
-            <div class="col-md-4">
-                <!--begin::Card-->
-                <div class="card card-flush h-md-100 border-hover-primary">
-                    <!--begin::Card header-->
-                    <div class="card-header">
-                        <!--begin::Card title-->
-                        <div class="card-title">
-                            <h2>{{ $classname->name }} <i class="text-muted">({{ $classname->class_numeral }})</i></h2>
-                        </div>
-                        <!--end::Card title-->
-                    </div>
-                    <!--end::Card header-->
-                    <!--begin::Card body-->
-                    <div class="card-body pt-1">
-                        <div class="fw-bold text-gray-700 mb-5">
-                            {{ $classname->description ?? 'This is a sample description. Update the class description to change this.' }}
-                        </div>
+    <!--begin:::Tab content-->
+    <div class="tab-content" id="myTabContent">
+        <!--begin:::Tab pane-->
+        <div class="tab-pane fade show active" id="kt_due_invoices_tab" role="tabpanel">
+            <!--begin::Row-->
+            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-5 g-xl-9">
+                @foreach ($active_classes as $classname)
+                    <!--begin::Col-->
+                    <div class="col-md-4">
+                        <!--begin::Card-->
+                        <div class="card card-flush h-md-100 border-hover-primary">
+                            <!--begin::Card header-->
+                            <div class="card-header">
+                                <!--begin::Card title-->
+                                <div class="card-title">
+                                    <h2>{{ $classname->name }} <i class="text-muted">({{ $classname->class_numeral }})</i>
+                                    </h2>
+                                </div>
+                                <!--end::Card title-->
+                            </div>
+                            <!--end::Card header-->
+                            <!--begin::Card body-->
+                            <div class="card-body pt-1">
+                                <div class="fw-bold text-gray-700 mb-5">
+                                    {{ $classname->description ?? 'This is a sample description. Update the class description to change this.' }}
+                                </div>
 
-                        <div class="fw-bold text-gray-600 mb-5"><i class="fas fa-users me-2"></i>Total active students:
-                            {{ $classname->active_students_count  }}</div>
+                                <div class="fw-bold text-gray-600 mb-5"><i class="fas fa-users me-2"></i>Total active
+                                    students:
+                                    {{ $classname->active_students_count }}</div>
+                            </div>
+                            <!--end::Card body-->
+                            <!--begin::Card footer-->
+                            <div class="card-footer flex-wrap pt-0">
+                                <a href="{{ route('classnames.show', $classname->id) }}"
+                                    class="btn btn-light btn-active-primary my-1 me-2">View Class</a>
+                                @can('classes.edit')
+                                    <button type="button" class="btn btn-light btn-active-light-primary my-1"
+                                        data-bs-toggle="modal" data-bs-target="#kt_modal_edit_class"
+                                        data-class-id="{{ $classname->id }}">Edit Class</button>
+                                @endcan
+                            </div>
+                            <!--end::Card footer-->
+                        </div>
+                        <!--end::Card-->
                     </div>
-                    <!--end::Card body-->
-                    <!--begin::Card footer-->
-                    <div class="card-footer flex-wrap pt-0">
-                        <a href="{{ route('classnames.show', $classname->id) }}"
-                            class="btn btn-light btn-active-primary my-1 me-2">View Class</a>
-                            @can('classes.edit')
-                        <button type="button" class="btn btn-light btn-active-light-primary my-1" data-bs-toggle="modal"
-                            data-bs-target="#kt_modal_edit_class" data-class-id="{{ $classname->id }}">Edit Class</button>
-                            @endcan
-                    </div>
-                    <!--end::Card footer-->
-                </div>
-                <!--end::Card-->
+                    <!--end::Col-->
+                @endforeach
             </div>
-            <!--end::Col-->
-        @endforeach
+            <!--end::Row-->
+        </div>
+        <!--end:::Tab pane-->
 
+        <!--begin:::Tab pane-->
+        <div class="tab-pane fade show" id="kt_paid_invoices_tab" role="tabpanel">
+            <!--begin::Row-->
+            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-5 g-xl-9">
+                @foreach ($inactive_classes as $classname)
+                    <!--begin::Col-->
+                    <div class="col-md-4">
+                        <!--begin::Card-->
+                        <div class="card card-flush h-md-100 border-hover-danger">
+                            <!--begin::Card header-->
+                            <div class="card-header">
+                                <!--begin::Card title-->
+                                <div class="card-title">
+                                    <h2>{{ $classname->name }} <i class="text-muted">({{ $classname->class_numeral }})</i>
+                                    </h2>
+                                </div>
+                                <!--end::Card title-->
+                            </div>
+                            <!--end::Card header-->
+                            <!--begin::Card body-->
+                            <div class="card-body pt-1">
+                                <div class="fw-bold text-gray-700 mb-5">
+                                    {{ $classname->description ?? 'This is a sample description. Update the class description to change this.' }}
+                                </div>
+
+                                <div class="fw-bold text-gray-600 mb-5"><i class="fas fa-users me-2"></i>Total active
+                                    students:
+                                    {{ $classname->active_students_count }}</div>
+                            </div>
+                            <!--end::Card body-->
+                            <!--begin::Card footer-->
+                            <div class="card-footer flex-wrap pt-0">
+                                <a href="{{ route('classnames.show', $classname->id) }}"
+                                    class="btn btn-light btn-active-primary my-1 me-2">View Class</a>
+                                @can('classes.edit')
+                                    <button type="button" class="btn btn-light btn-active-light-primary my-1"
+                                        data-bs-toggle="modal" data-bs-target="#kt_modal_edit_class"
+                                        data-class-id="{{ $classname->id }}">Edit Class</button>
+                                @endcan
+                            </div>
+                            <!--end::Card footer-->
+                        </div>
+                        <!--end::Card-->
+                    </div>
+                    <!--end::Col-->
+                @endforeach
+            </div>
+            <!--end::Row-->
+        </div>
+        <!--end:::Tab pane-->
     </div>
-    <!--end::Row-->
+    <!--end:::Tab content-->
+
+
 
     <!--begin::Modal - Add class-->
     <div class="modal fade" id="kt_modal_add_class" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"

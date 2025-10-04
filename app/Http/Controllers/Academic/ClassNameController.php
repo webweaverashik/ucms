@@ -13,12 +13,18 @@ class ClassNameController extends Controller
     public function index()
     {
         if (! auth()->user()->can('classes.view')) {
-            return redirect()->back()->with('warning', 'No permission to view classes.');
+            return back()->with('warning', 'No permission to view classes.');
         }
 
-        $classnames = ClassName::withCount('activeStudents')->latest('id')->get();
+        $classes = ClassName::withCount('activeStudents')
+            ->latest('id')
+            ->get()
+            ->groupBy('is_active');
 
-        return view('classnames.index', compact('classnames'));
+        return view('classnames.index', [
+            'active_classes'   => $classes[true] ?? collect(),
+            'inactive_classes' => $classes[false] ?? collect(),
+        ]);
     }
 
     /**

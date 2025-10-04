@@ -47,10 +47,10 @@
         <!--begin::Sidebar-->
         <div class="flex-column flex-lg-row-auto w-100 w-xl-350px mb-10">
             <!--begin::Card-->
-            <div class="card card-flush mb-0" data-kt-sticky="true" data-kt-sticky-name="student-summary"
-                data-kt-sticky-offset="{default: false, lg: 0}" data-kt-sticky-width="{lg: '250px', xl: '350px'}"
-                data-kt-sticky-left="auto" data-kt-sticky-top="100px" data-kt-sticky-animation="false"
-                data-kt-sticky-zindex="95">
+            <div class="card card-flush mb-0 @if ($classname->is_active == false) border border-dashed border-danger @endif"
+                data-kt-sticky="true" data-kt-sticky-name="student-summary" data-kt-sticky-offset="{default: false, lg: 0}"
+                data-kt-sticky-width="{lg: '250px', xl: '350px'}" data-kt-sticky-left="auto" data-kt-sticky-top="100px"
+                data-kt-sticky-animation="false" data-kt-sticky-zindex="95">
                 <!--begin::Card header-->
                 <div class="card-header">
                     <!--begin::Card title-->
@@ -162,6 +162,18 @@
                         <!--begin::Details-->
                         <table class="table fs-6 fw-semibold gs-0 gy-2 gx-2">
                             <tr class="">
+                                <td class="text-gray-500">Status:</td>
+
+                                <td class="text-gray-800">
+                                    @if ($classname->is_active == true)
+                                        <span class="badge badge-success rounded-pill">Active</span>
+                                    @else
+                                        <span class="badge badge-danger rounded-pill">Inactive</span>
+                                    @endif
+                                </td>
+                            </tr>
+
+                            <tr class="">
                                 <td class="text-gray-500">Created Since:</td>
 
                                 <td class="text-gray-800">
@@ -207,16 +219,18 @@
                 <!--end:::Tab item-->
 
                 @can('subjects.manage')
-                    <!--begin:::Tab item-->
-                    <li class="nav-item ms-auto">
-                        <!--begin::Action menu-->
-                        <a href="#" class="btn btn-primary ps-7" data-bs-toggle="modal"
-                            data-bs-target="#kt_modal_add_subject"><i class="ki-outline ki-plus fs-2 me-0"></i>New Subject
-                        </a>
-                        <!--end::Action Menu-->
-                    </li>
-                    <!--end:::Tab item-->
-                @endcan
+                    @if ($classname->is_active == true)
+                        <!--begin:::Tab item-->
+                        <li class="nav-item ms-auto">
+                            <!--begin::Action menu-->
+                            <a href="#" class="btn btn-primary ps-7" data-bs-toggle="modal"
+                                data-bs-target="#kt_modal_add_subject"><i class="ki-outline ki-plus fs-2 me-0"></i>New Subject
+                            </a>
+                            <!--end::Action Menu-->
+                        </li>
+                        <!--end:::Tab item-->
+                    @endcan
+                @endif
             </ul>
             <!--end:::Tabs-->
 
@@ -252,11 +266,14 @@
                                         <div class="row">
                                             @foreach ($subjects as $subject)
                                                 <div class="col-md-6 col-xxl-4 mb-3">
-                                                    <div class="subject-editable py-2 px-3" data-id="{{ $subject->id }}">
+                                                    <div class="subject-editable py-2 px-3"
+                                                        data-id="{{ $subject->id }}">
                                                         <div class="d-flex align-items-center">
                                                             <i class="bi bi-dot fs-2 text-info me-2"></i>
                                                             <div class="flex-grow-1">
-                                                                <span class="subject-text text-gray-700 fs-6" title="{{ $subject->students->count() }} students enrolled this subject" data-bs-toggle="tooltip">
+                                                                <span class="subject-text text-gray-700 fs-6"
+                                                                    title="{{ $subject->students->count() }} students enrolled this subject"
+                                                                    data-bs-toggle="tooltip">
                                                                     {{ $subject->name }}
                                                                     ({{ $subject->students->count() }})
                                                                 </span>
