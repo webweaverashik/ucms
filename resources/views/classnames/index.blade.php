@@ -93,21 +93,17 @@
                         <!--begin::Search-->
                         <div class="d-flex align-items-center position-relative my-1">
                             <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
-                                data-kt-due-invoice-table-filter="search"
+                                data-kt-active-class-table-filter="search"
                                 class="form-control form-control-solid w-350px ps-12" placeholder="Search in due invoices">
                         </div>
                         <!--end::Search-->
-
-                        <!--begin::Export hidden buttons-->
-                        <div id="kt_hidden_export_buttons" class="d-none"></div>
-                        <!--end::Export buttons-->
                     </div>
                     <!--begin::Card title-->
 
                     <!--begin::Card toolbar-->
                     <div class="card-toolbar">
                         <!--begin::Toolbar-->
-                        <div class="d-flex justify-content-end" data-kt-subscription-table-toolbar="base">
+                        <div class="d-flex justify-content-end" data-kt-active-class-table-toolbar="base">
                             <!--begin::Filter-->
                             <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
                                 data-kt-menu-placement="bottom-end">
@@ -123,50 +119,31 @@
                                 <div class="separator border-gray-200"></div>
                                 <!--end::Separator-->
                                 <!--begin::Content-->
-                                <div class="px-7 py-5" data-kt-due-invoice-table-filter="form">
+                                <div class="px-7 py-5" data-kt-active-class-table-filter="form">
                                     <!--begin::Input group-->
                                     <div class="mb-10">
-                                        <label class="form-label fs-6 fw-semibold">Invoice Type:</label>
+                                        <label class="form-label fs-6 fw-semibold">Class Numeral:</label>
                                         <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                             data-placeholder="Select option" data-allow-clear="true"
-                                            data-kt-subscription-table-filter="product" data-hide-search="true">
+                                            data-kt-active-class-table-filter="product" data-hide-search="true">
                                             <option></option>
-                                            <option value="tuition_fee">Tuition Fee</option>
-                                            <option value="sheet_fee">Sheet Fee</option>
-                                            <option value="diary_fee">Diary Fee</option>
-                                            <option value="book_fee">Book Fee</option>
-                                            <option value="exam_fee">Exam Fee</option>
-                                            <option value="model_test_fee">Model Test Fee</option>
-                                            <option value="others_fee">Others</option>
+                                            @foreach (range(4, 12) as $i)
+                                                <option value="Active_{{ sprintf('%02d', $i) }}">{{ sprintf('%02d', $i) }}
+                                                </option>
+                                            @endforeach
                                         </select>
                                     </div>
                                     <!--end::Input group-->
 
                                     <!--begin::Input group-->
                                     <div class="mb-10">
-                                        <label class="form-label fs-6 fw-semibold">Due Date:</label>
+                                        <label class="form-label fs-6 fw-semibold">Activation Status:</label>
                                         <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                             data-placeholder="Select option" data-allow-clear="true"
-                                            data-kt-subscription-table-filter="product" data-hide-search="true">
+                                            data-kt-active-class-table-filter="status" data-hide-search="true">
                                             <option></option>
-                                            <option value="1/7">1-7</option>
-                                            <option value="1/10">1-10</option>
-                                            <option value="1/15">1-15</option>
-                                            <option value="1/30">1-30</option>
-                                        </select>
-                                    </div>
-                                    <!--end::Input group-->
-
-                                    <!--begin::Input group-->
-                                    <div class="mb-10">
-                                        <label class="form-label fs-6 fw-semibold">Invoice Status:</label>
-                                        <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                            data-placeholder="Select option" data-allow-clear="true"
-                                            data-kt-subscription-table-filter="status" data-hide-search="true">
-                                            <option></option>
-                                            <option value="I_due">Due</option>
-                                            <option value="I_overdue">Overdue</option>
-                                            <option value="I_partial">Partial Paid</option>
+                                            <option value="Active_class">Active</option>
+                                            <option value="Inactive_class">Inactive</option>
                                         </select>
                                     </div>
                                     <!--end::Input group-->
@@ -176,10 +153,10 @@
                                         <button type="reset"
                                             class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
                                             data-kt-menu-dismiss="true"
-                                            data-kt-due-invoice-table-filter="reset">Reset</button>
+                                            data-kt-active-class-table-filter="reset">Reset</button>
                                         <button type="submit" class="btn btn-primary fw-semibold px-6"
                                             data-kt-menu-dismiss="true"
-                                            data-kt-due-invoice-table-filter="filter">Apply</button>
+                                            data-kt-active-class-table-filter="filter">Apply</button>
                                     </div>
                                     <!--end::Actions-->
                                 </div>
@@ -187,38 +164,6 @@
                             </div>
                             <!--end::Menu 1-->
                             <!--end::Filter-->
-
-                            <!--begin::Export dropdown-->
-                            <div class="dropdown">
-                                <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
-                                    data-kt-menu-placement="bottom-end">
-                                    <i class="ki-outline ki-exit-up fs-2"></i>Export
-                                </button>
-
-                                <!--begin::Menu-->
-                                <div id="kt_table_report_dropdown_menu"
-                                    class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
-                                    data-kt-menu="true">
-                                    <!--begin::Menu item-->
-                                    <div class="menu-item px-3">
-                                        <a href="#" class="menu-link px-3" data-row-export="copy">Copy to
-                                            clipboard</a>
-                                    </div>
-                                    <div class="menu-item px-3">
-                                        <a href="#" class="menu-link px-3" data-row-export="excel">Export as
-                                            Excel</a>
-                                    </div>
-                                    <div class="menu-item px-3">
-                                        <a href="#" class="menu-link px-3" data-row-export="csv">Export as CSV</a>
-                                    </div>
-                                    <div class="menu-item px-3">
-                                        <a href="#" class="menu-link px-3" data-row-export="pdf">Export as PDF</a>
-                                    </div>
-                                    <!--end::Menu item-->
-                                </div>
-                                <!--end::Menu-->
-                            </div>
-                            <!--end::Export dropdown-->
                         </div>
                         <!--end::Toolbar-->
 
@@ -231,7 +176,7 @@
                 <div class="card-body py-4">
                     <!--begin::Table-->
                     <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table"
-                        id="kt_due_invoices_table">
+                        id="kt_active_classes_table">
                         <thead>
                             <tr class="fw-bold fs-7 text-uppercase gs-0">
                                 <th class="w-25px">SL</th>
@@ -259,7 +204,7 @@
                                     </td>
 
                                     <td>{{ $classname->class_numeral }}</td>
-                                    <td class="d-none">{{ $classname->class_numeral }}</td>
+                                    <td class="d-none">Active_{{ $classname->class_numeral }}</td>
 
                                     <td>{{ $classname->active_students_count }}</td>
 
@@ -282,7 +227,8 @@
                                     <td>
                                         @if ($canEditClass)
                                             <a href="#" title="Edit Class" data-bs-toggle="modal"
-                                                data-bs-target="#kt_modal_edit_class" data-class-id="{{ $classname->id }}"
+                                                data-bs-target="#kt_modal_edit_class"
+                                                data-class-id="{{ $classname->id }}"
                                                 class="btn btn-icon text-hover-primary w-30px h-30px">
                                                 <i class="ki-outline ki-pencil fs-2"></i>
                                             </a>
@@ -309,59 +255,167 @@
 
         <!--begin:::Tab pane-->
         <div class="tab-pane fade show" id="kt_inactive_classnames_tab" role="tabpanel">
-            <!--begin::Row-->
-            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-5 g-xl-9">
-                @foreach ($inactive_classes as $classname)
-                    <!--begin::Col-->
-                    <div class="col-md-4">
-                        <!--begin::Card-->
-                        <div class="card card-flush h-md-100 border-hover-danger">
-                            <!--begin::Card header-->
-                            <div class="card-header">
-                                <!--begin::Card title-->
-                                <div class="card-title">
-                                    <a href="{{ route('classnames.show', $classname->id) }}" title="View Class">
-                                        <h2>{{ $classname->name }} <i
-                                                class="text-muted">({{ $classname->class_numeral }})</i>
-                                        </h2>
-                                    </a>
-                                </div>
-                                <!--end::Card title-->
-                            </div>
-                            <!--end::Card header-->
-                            <!--begin::Card body-->
-                            <div class="card-body pt-1">
-                                <div class="fw-bold text-gray-700 mb-5">
-                                    {{ $classname->description ?? 'This is a sample description. Update the class description to change this.' }}
-                                </div>
-
-                                <div class="fw-bold text-gray-600 mb-5"><i class="fas fa-users me-2"></i>Total active
-                                    students:
-                                    {{ $classname->active_students_count }}</div>
-                            </div>
-                            <!--end::Card body-->
-                            <!--begin::Card footer-->
-                            <div class="card-footer flex-wrap pt-0">
-                                {{-- <a href="{{ route('classnames.show', $classname->id) }}" title="View Class"
-                                    class="btn btn-icon text-hover-primary w-30px h-30px">
-                                    <i class="ki-outline ki-eye fs-2"></i>
-                                </a> --}}
-                                @if ($canEditClass)
-                                    <a href="#" title="Edit Class" data-bs-toggle="modal"
-                                        data-bs-target="#kt_modal_edit_class" data-class-id="{{ $classname->id }}"
-                                        class="btn btn-icon text-hover-primary w-30px h-30px">
-                                        <i class="ki-outline ki-pencil fs-2"></i>
-                                    </a>
-                                @endif
-                            </div>
-                            <!--end::Card footer-->
+            <!--begin::Card-->
+            <div class="card">
+                <!--begin::Card header-->
+                <div class="card-header border-0 pt-6">
+                    <!--begin::Card title-->
+                    <div class="card-title">
+                        <!--begin::Search-->
+                        <div class="d-flex align-items-center position-relative my-1">
+                            <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
+                                data-kt-inactive-class-table-filter="search"
+                                class="form-control form-control-solid w-350px ps-12"
+                                placeholder="Search in due invoices">
                         </div>
-                        <!--end::Card-->
+                        <!--end::Search-->
                     </div>
-                    <!--end::Col-->
-                @endforeach
+                    <!--begin::Card title-->
+
+                    <!--begin::Card toolbar-->
+                    <div class="card-toolbar">
+                        <!--begin::Toolbar-->
+                        <div class="d-flex justify-content-end" data-kt-inactive-class-table-toolbar="base">
+                            <!--begin::Filter-->
+                            <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
+                                data-kt-menu-placement="bottom-end">
+                                <i class="ki-outline ki-filter fs-2"></i>Filter</button>
+                            <!--begin::Menu 1-->
+                            <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
+                                <!--begin::Header-->
+                                <div class="px-7 py-5">
+                                    <div class="fs-5 text-gray-900 fw-bold">Filter Options</div>
+                                </div>
+                                <!--end::Header-->
+                                <!--begin::Separator-->
+                                <div class="separator border-gray-200"></div>
+                                <!--end::Separator-->
+                                <!--begin::Content-->
+                                <div class="px-7 py-5" data-kt-inactive-class-table-filter="form">
+                                    <!--begin::Input group-->
+                                    <div class="mb-10">
+                                        <label class="form-label fs-6 fw-semibold">Class Numeral:</label>
+                                        <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
+                                            data-placeholder="Select option" data-allow-clear="true"
+                                            data-kt-inactive-class-table-filter="product" data-hide-search="true">
+                                            <option></option>
+                                            @foreach (range(4, 12) as $i)
+                                                <option value="Inactive_{{ sprintf('%02d', $i) }}">
+                                                    {{ sprintf('%02d', $i) }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <!--end::Input group-->
+
+                                    <!--begin::Input group-->
+                                    <div class="mb-10">
+                                        <label class="form-label fs-6 fw-semibold">Activation Status:</label>
+                                        <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
+                                            data-placeholder="Select option" data-allow-clear="true"
+                                            data-kt-inactive-class-table-filter="status" data-hide-search="true">
+                                            <option></option>
+                                            <option value="Active_class">Active</option>
+                                            <option value="Inactive_class">Inactive</option>
+                                        </select>
+                                    </div>
+                                    <!--end::Input group-->
+
+                                    <!--begin::Actions-->
+                                    <div class="d-flex justify-content-end">
+                                        <button type="reset"
+                                            class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
+                                            data-kt-menu-dismiss="true"
+                                            data-kt-inactive-class-table-filter="reset">Reset</button>
+                                        <button type="submit" class="btn btn-primary fw-semibold px-6"
+                                            data-kt-menu-dismiss="true"
+                                            data-kt-inactive-class-table-filter="filter">Apply</button>
+                                    </div>
+                                    <!--end::Actions-->
+                                </div>
+                                <!--end::Content-->
+                            </div>
+                            <!--end::Menu 1-->
+                            <!--end::Filter-->
+                        </div>
+                        <!--end::Toolbar-->
+
+                    </div>
+                    <!--end::Card toolbar-->
+                </div>
+                <!--end::Card header-->
+
+                <!--begin::Card body-->
+                <div class="card-body py-4">
+                    <!--begin::Table-->
+                    <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table"
+                        id="kt_inactive_classes_table">
+                        <thead>
+                            <tr class="fw-bold fs-7 text-uppercase gs-0">
+                                <th class="w-25px">SL</th>
+                                <th class="">Class Name</th>
+                                <th class="w-400px">Description</th>
+                                <th>Class Numeral</th>
+                                <th class="d-none">Class Numeral (filter)</th>
+                                <th>Total Active Students</th>
+                                <th>Status</th>
+                                <th class="d-none">Status (filter)</th>
+                                <th class="w-100px not-export">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-600 fw-semibold">
+                            @foreach ($inactive_classes as $classname)
+                                <tr>
+                                    <td>{{ $loop->index + 1 }}</td>
+                                    <td>
+                                        <a href="{{ route('classnames.show', $classname->id) }}">
+                                            {{ $classname->name }} <i
+                                                class="text-muted">({{ $classname->class_numeral }})</i>
+                                        </a>
+                                    </td>
+                                    <td>{{ $classname->description ?? 'This is a sample description. Update the class description to change this.' }}
+                                    </td>
+
+                                    <td>{{ $classname->class_numeral }}</td>
+                                    <td class="d-none">Inactive_{{ $classname->class_numeral }}</td>
+
+                                    <td>{{ $classname->active_students_count }}</td>
+
+                                    <td>
+                                        @if ($classname->is_active == true)
+                                            <span class="badge badge-success rounded-pill">Active</span>
+                                        @else
+                                            <span class="badge badge-danger rounded-pill">Inactive</span>
+                                        @endif
+                                    </td>
+
+                                    <td class="d-none">
+                                        @if ($classname->is_active == true)
+                                            Active_class
+                                        @else
+                                            Inactive_class
+                                        @endif
+                                    </td>
+
+                                    <td>
+                                        @if ($canEditClass)
+                                            <a href="#" title="Edit Class" data-bs-toggle="modal"
+                                                data-bs-target="#kt_modal_edit_class"
+                                                data-class-id="{{ $classname->id }}"
+                                                class="btn btn-icon text-hover-primary w-30px h-30px">
+                                                <i class="ki-outline ki-pencil fs-2"></i>
+                                            </a>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    <!--end::Table-->
+                </div>
+                <!--end::Card body-->
             </div>
-            <!--end::Row-->
+            <!--end::Card-->
         </div>
         <!--end:::Tab pane-->
     </div>
