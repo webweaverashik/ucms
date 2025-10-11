@@ -384,7 +384,7 @@
                                             @if ($canEditInvoice)
                                                 <a href="#" title="Edit invoice"
                                                     data-invoice-id="{{ $invoice->id }}" data-bs-toggle="modal"
-                                                    data-bs-target="#kt_modal_edit_invoice" title="Edit Invoice"
+                                                    data-bs-target="#kt_modal_edit_invoice"
                                                     class="btn btn-icon text-hover-primary w-30px h-30px">
                                                     <i class="ki-outline ki-pencil fs-2"></i>
                                                 </a>
