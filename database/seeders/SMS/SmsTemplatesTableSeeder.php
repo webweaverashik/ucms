@@ -15,7 +15,7 @@ class SmsTemplatesTableSeeder extends Seeder
             // Academic type templates
             [
                 'name'       => 'student_registration_success',
-                'body'       => 'প্রিয় {student_name}, {student_class_name} এবং {student_shift_name} এ আপনার ভর্তি সম্পন্ন হয়েছে। আপনার  শিক্ষার্থী আইডি: {student_unique_id} এবং মাসিক বেতন: {tuition_fee} টাকা যা প্রতি মাসের {due_date} তারিখের মধ্যে পরিশোধ করুন। ধন্যবাদান্তে, ইউনিক কোচিং',
+                'body'       => 'প্রিয় {student_name}, {student_class_name} এবং {student_batch_name} এ আপনার ভর্তি সম্পন্ন হয়েছে। আপনার  শিক্ষার্থী আইডি: {student_unique_id} এবং মাসিক বেতন: {tuition_fee} টাকা যা প্রতি মাসের {due_date} তারিখের মধ্যে পরিশোধ করুন। ধন্যবাদান্তে, ইউনিক কোচিং',
                 'type'       => 'academic',
                 'created_at' => now(),
                 'updated_at' => now(),

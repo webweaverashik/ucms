@@ -194,7 +194,7 @@
                 <div class="card-header">
                     <!--begin::Card title-->
                     <div class="card-title">
-                        <p class="text-gray-600 fs-5">Use Placeholder: {student_name}, {student_unique_id}, {student_class_name}, {student_shift_name}, {tuition_fee}, {due_date}</p>
+                        <p class="text-gray-600 fs-5">Use Placeholder: {student_name}, {student_unique_id}, {student_class_name}, {student_batch_name}, {tuition_fee}, {due_date}</p>
                     </div>
                     <!--end::Card title-->
                 </div>

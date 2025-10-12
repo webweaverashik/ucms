@@ -105,7 +105,7 @@ class StudentController extends Controller
         // $students     = Student::all();
         // $guardians    = Guardian::all();
         // $subjects     = Subject::all();
-        $classnames   = ClassName::where('is_active', true)->select('id', 'name', 'class_numeral')->get();
+        $classnames   = ClassName::where('is_active', true)->select('id', 'name', 'class_numeral')->latest('class_numeral')->get();
         $institutions = Institution::select('id', 'name', 'eiin_number')->get();
 
         $batches = Batch::when(auth()->user()->branch_id != 0, function ($query) {

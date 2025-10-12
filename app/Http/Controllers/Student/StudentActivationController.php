@@ -48,7 +48,7 @@ class StudentActivationController extends Controller
                 'student_name'       => $student->name,
                 'student_unique_id'  => $student->student_unique_id,
                 'student_class_name' => $student->class->name,
-                'student_shift_name' => $student->shift->name,
+                'student_batch_name' => $student->batch->name,
                 'tuition_fee'        => $student->payments->tuition_fee,
                 'due_date'           => $student->payments->due_date,
             ]);
