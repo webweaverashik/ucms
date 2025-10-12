@@ -94,7 +94,7 @@
                         <div class="d-flex align-items-center position-relative my-1">
                             <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
                                 data-kt-active-class-table-filter="search"
-                                class="form-control form-control-solid w-350px ps-12" placeholder="Search in due invoices">
+                                class="form-control form-control-solid w-350px ps-12" placeholder="Search in active class">
                         </div>
                         <!--end::Search-->
                     </div>
@@ -235,7 +235,7 @@
                                         @endif
 
                                         @if ($canDeleteClass && $classname->active_students_count == 0)
-                                            <a href="#" title="Delete Class" data-class-id="{{ $classname->id }}"
+                                            <a href="#" title="Delete Class" data-active-class-id="{{ $classname->id }}"
                                                 class="btn btn-icon text-hover-danger w-30px h-30px class-delete-button">
                                                 <i class="ki-outline ki-trash fs-2"></i>
                                             </a>
@@ -266,7 +266,7 @@
                             <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
                                 data-kt-inactive-class-table-filter="search"
                                 class="form-control form-control-solid w-350px ps-12"
-                                placeholder="Search in due invoices">
+                                placeholder="Search in inactive class">
                         </div>
                         <!--end::Search-->
                     </div>
@@ -613,7 +613,7 @@
 
 @push('page-js')
     <script>
-        const routeDeleteClass = "{{ route('classnames.destroy', ':id') }}";
+        const routeDeleteActiveClass = "{{ route('classnames.destroy', ':id') }}";
     </script>
 
     <script src="{{ asset('js/classnames/index.js') }}"></script>

@@ -112,7 +112,15 @@ class ClassNameController extends Controller
      */
     public function destroy(string $id)
     {
-        return redirect()->back();
+        $class = ClassName::findOrFail($id);
+
+        if ($class->activeStudents()->count() > 0) {
+            return response()->json(['success' => false, 'message' => 'This class cannot be deleted because it has active students.']);
+        }
+        
+        $class->delete();
+
+        return response()->json(['success' => true]);
     }
 
     /**

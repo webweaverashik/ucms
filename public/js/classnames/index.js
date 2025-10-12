@@ -79,16 +79,16 @@ var KTActiveClassList = function () {
     // Delete invoices
     const handleDeletion = function () {
         document.addEventListener('click', function (e) {
-            const deleteBtn = e.target.closest('.delete-invoice');
+            const deleteBtn = e.target.closest('.class-delete-button');
             if (!deleteBtn) return;
 
             e.preventDefault();
 
-            const invoiceId = deleteBtn.getAttribute('data-invoice-id');
-            const url = routeDeleteInvoice.replace(':id', invoiceId);
+            const activeClassId = deleteBtn.getAttribute('data-active-class-id');
+            const url = routeDeleteActiveClass.replace(':id', activeClassId);
 
             Swal.fire({
-                title: "Are you sure to delete this invoice?",
+                title: "Are you sure to delete this class?",
                 text: "This action cannot be undone!",
                 icon: "warning",
                 showCancelButton: true,
@@ -109,7 +109,7 @@ var KTActiveClassList = function () {
                             if (data.success) {
                                 Swal.fire({
                                     title: "Deleted!",
-                                    text: "The invoice has been deleted successfully.",
+                                    text: data.message || "Class has been deleted successfully.",
                                     icon: "success",
                                 }).then(() => {
                                     location.reload();
@@ -117,7 +117,7 @@ var KTActiveClassList = function () {
                             } else {
                                 Swal.fire({
                                     title: "Error!",
-                                    text: data.error || "Something went wrong.",
+                                    text: data.message || "Something went wrong.",
                                     icon: "error",
                                 });
                             }
@@ -126,7 +126,7 @@ var KTActiveClassList = function () {
                             console.error("Fetch Error:", error);
                             Swal.fire({
                                 title: "Error!",
-                                text: "Something went wrong. Please try again.",
+                                text: "Server error. Please try again later.",
                                 icon: "error",
                             });
                         });
