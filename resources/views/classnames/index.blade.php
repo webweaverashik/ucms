@@ -235,7 +235,8 @@
                                         @endif
 
                                         @if ($canDeleteClass && $classname->active_students_count == 0)
-                                            <a href="#" title="Delete Class" data-active-class-id="{{ $classname->id }}"
+                                            <a href="#" title="Delete Class"
+                                                data-active-class-id="{{ $classname->id }}"
                                                 class="btn btn-icon text-hover-danger w-30px h-30px class-delete-button">
                                                 <i class="ki-outline ki-trash fs-2"></i>
                                             </a>
@@ -543,16 +544,16 @@
                             data-kt-scroll-dependencies="#kt_modal_edit_class_header"
                             data-kt-scroll-wrappers="#kt_modal_edit_class_scroll" data-kt-scroll-offset="300px">
 
-                            <!--begin::Name Input group-->
+                            <!--begin::Class Name Input-->
                             <div class="fv-row mb-7">
                                 <label class="required fw-semibold fs-6 mb-2">Class Name</label>
                                 <input type="text" name="class_name_edit"
                                     class="form-control form-control-solid mb-3 mb-lg-0"
                                     placeholder="Write name of the class" required />
                             </div>
-                            <!--end::Name Input group-->
+                            <!--end::Class Name Input-->
 
-                            <!--begin::Name Input group-->
+                            <!--begin::Class Numeral Input-->
                             <div class="fv-row mb-7">
                                 <label class="fw-semibold fs-6 mb-2">Class Numeral <span class="text-muted">(Cannot
                                         change)</span></label>
@@ -568,9 +569,9 @@
                                     @endfor
                                 </select>
                             </div>
-                            <!--end::Name Input group-->
+                            <!--end::Class Numeral Input-->
 
-                            <!--begin::Name Input group-->
+                            <!--begin::Description Input group-->
                             <div class="fv-row mb-7">
                                 <label class="fw-semibold fs-6 mb-2">Description <span
                                         class="text-muted">(Optional)</span></label>
@@ -578,7 +579,54 @@
                                     class="form-control form-control-solid mb-3 mb-lg-0"
                                     placeholder="Write something about the class" />
                             </div>
-                            <!--end::Name Input group-->
+                            <!--end::Description Input group-->
+
+                            <!--begin::Status Input-->
+                            <div class="fv-row mb-7">
+                                <label class="fw-semibold fs-6 mb-2 required">Activation Status</label>
+                                <!--begin::Solid input group style-->
+                                <div class="row">
+                                    <!--begin::New Month Year-->
+                                    <div class="col-lg-6">
+                                        <!--begin::Option-->
+                                        <input type="radio" class="btn-check" name="activation_status"
+                                            value="active" id="active_radio" />
+                                        <label
+                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                            for="active_radio">
+                                            <i class="ki-outline ki-abstract fs-2x me-5"></i>
+                                            <!--begin::Info-->
+                                            <span class="d-block fw-semibold text-start">
+                                                <span class="text-gray-900 fw-bold d-block fs-6">Active</span>
+                                            </span>
+                                            <!--end::Info-->
+                                        </label>
+                                        <!--end::Option-->
+                                    </div>
+                                    <!--end::New Month Year-->
+
+                                    <!--begin::Old Month Year-->
+                                    <div class="col-lg-6">
+                                        <!--begin::Option-->
+                                        <input type="radio" class="btn-check" name="activation_status"
+                                            value="inactive" id="inactive_radio" />
+                                        <label
+                                            class="btn btn-outline btn-outline-dashed btn-active-light-danger p-3 d-flex align-items-center"
+                                            for="inactive_radio">
+                                            <i class="ki-outline ki-abstract-20 fs-2x me-5"></i>
+                                            <!--begin::Info-->
+                                            <span class="d-block fw-semibold text-start">
+                                                <span class="text-gray-900 fw-bold d-block fs-6">Inactive</span>
+                                            </span>
+                                            <!--end::Info-->
+                                        </label>
+                                        <!--end::Option-->
+                                    </div>
+                                    <!--end::Old Month Year-->
+                                </div>
+                                <!--end::Solid input group style-->
+                            </div>
+                            <!--end::Status Input-->
                         </div>
                         <!--end::Scroll-->
 

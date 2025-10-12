@@ -165,7 +165,7 @@ var KTInactiveClassList = function () {
             "info": true,
             'order': [],
             "lengthMenu": [10, 25, 50, 100],
-            "pageLength": 2,
+            "pageLength": 10,
             "lengthChange": true,
             "autoWidth": false,  // Disable auto width
             'columnDefs': [
@@ -403,7 +403,9 @@ var KTEditClassName = function () {
 
     let classId = null;
 
-    // Function to handle edit button click
+    // ----------------------------
+    // 🔹 Fetch and populate modal
+    // ----------------------------
     const handleEditClick = (button) => {
         classId = button.getAttribute("data-class-id");
         if (!classId) return;
@@ -427,13 +429,31 @@ var KTEditClassName = function () {
                         if (el) el.value = value;
                     };
 
+                    // Populate form fields
                     setValue("input[name='class_name_edit']", classname.class_name);
                     setValue("select[name='class_numeral_edit']", classname.class_numeral);
                     setValue("input[name='description_edit']", classname.class_description);
 
+                    // ✅ Handle activation status radio buttons
+                    const isActive = Boolean(classname.is_active);
+                    const activeRadio = document.getElementById("active_radio");
+                    const inactiveRadio = document.getElementById("inactive_radio");
+
+                    if (activeRadio && inactiveRadio) {
+                        activeRadio.checked = isActive;
+                        inactiveRadio.checked = !isActive;
+                    }
+
+                    // Refresh Bootstrap visual states
+                    [activeRadio, inactiveRadio].forEach(radio => {
+                        if (radio) radio.dispatchEvent(new Event("change"));
+                    });
+
+                    // Update modal title
                     const modalTitle = document.getElementById("kt_modal_edit_class_title");
                     if (modalTitle) modalTitle.textContent = `Update - ${classname.class_name} (${classname.class_numeral})`;
 
+                    // Trigger numeral select UI update
                     const classNumeralSelect = document.querySelector("select[name='class_numeral_edit']");
                     if (classNumeralSelect) classNumeralSelect.dispatchEvent(new Event("change"));
 
@@ -448,22 +468,21 @@ var KTEditClassName = function () {
             });
     };
 
-    // Attach event delegation for both tables
-    ['#kt_active_classes_table', '#kt_inactive_classes_table'].forEach(tableId => {
-        const tbody = document.querySelector(`${tableId} tbody`);
-        if (tbody) {
-            tbody.addEventListener('click', function (e) {
-                const button = e.target.closest("[data-bs-target='#kt_modal_edit_class']");
-                if (button) handleEditClick(button);
-            });
+    // ----------------------------------------
+    // 🔹 Event Delegation for both DataTables
+    // ----------------------------------------
+    document.addEventListener('click', function (e) {
+        const button = e.target.closest("[data-bs-target='#kt_modal_edit_class']");
+        if (button && (button.closest('#kt_active_classes_table') || button.closest('#kt_inactive_classes_table'))) {
+            handleEditClick(button);
         }
     });
 
-    // Cancel & Close buttons
-    const cancelButton = element.querySelector('[data-kt-edit-class-modal-action="cancel"]');
-    const closeButton = element.querySelector('[data-kt-edit-class-modal-action="close"]');
-
-    [cancelButton, closeButton].forEach(btn => {
+    // ----------------------------------------
+    // 🔹 Cancel & Close buttons
+    // ----------------------------------------
+    ['cancel', 'close'].forEach(action => {
+        const btn = element.querySelector(`[data-kt-edit-class-modal-action="${action}"]`);
         if (btn) {
             btn.addEventListener('click', e => {
                 e.preventDefault();
@@ -473,33 +492,33 @@ var KTEditClassName = function () {
         }
     });
 
-    // Form validation
+    // ----------------------------------------
+    // 🔹 Form Validation + Submit
+    // ----------------------------------------
     const initValidation = () => {
         if (!form) return;
 
-        var validator = FormValidation.formValidation(
-            form,
-            {
-                fields: {
-                    'class_name_edit': {
-                        validators: { notEmpty: { message: 'Name is required' } }
-                    }
-                },
-                plugins: {
-                    trigger: new FormValidation.plugins.Trigger(),
-                    bootstrap: new FormValidation.plugins.Bootstrap5({
-                        rowSelector: '.fv-row',
-                        eleInvalidClass: '',
-                        eleValidClass: ''
-                    })
+        const validator = FormValidation.formValidation(form, {
+            fields: {
+                'class_name_edit': {
+                    validators: { notEmpty: { message: 'Name is required' } }
                 }
+            },
+            plugins: {
+                trigger: new FormValidation.plugins.Trigger(),
+                bootstrap: new FormValidation.plugins.Bootstrap5({
+                    rowSelector: '.fv-row',
+                    eleInvalidClass: '',
+                    eleValidClass: ''
+                })
             }
-        );
+        });
 
         const submitButton = element.querySelector('[data-kt-edit-class-modal-action="submit"]');
         if (submitButton && validator) {
             submitButton.addEventListener('click', function (e) {
                 e.preventDefault();
+
                 validator.validate().then(function (status) {
                     if (status === 'Valid') {
                         submitButton.setAttribute('data-kt-indicator', 'on');
@@ -557,7 +576,6 @@ var KTEditClassName = function () {
         }
     };
 }();
-
 
 
 // On document ready

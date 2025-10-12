@@ -17,7 +17,7 @@ class ClassNameController extends Controller
         }
 
         $classes = ClassName::withCount('activeStudents')
-            ->latest('id')
+            ->latest('updated_at')
             ->get()
             ->groupBy('is_active');
 
@@ -92,8 +92,9 @@ class ClassNameController extends Controller
     public function update(Request $request, string $id)
     {
         $validated = $request->validate([
-            'class_name_edit'  => 'required|string|max:255',
-            'description_edit' => 'nullable|string|max:1000',
+            'class_name_edit'   => 'required|string|max:255',
+            'description_edit'  => 'nullable|string|max:1000',
+            'activation_status' => 'required|in:active,inactive',
         ]);
 
         $class = ClassName::findOrFail($id);
@@ -101,6 +102,7 @@ class ClassNameController extends Controller
         $class->update([
             'name'        => $validated['class_name_edit'],
             'description' => $validated['description_edit'],
+            'is_active'   => $validated['activation_status'] == 'active' ? true : false,
         ]);
 
         // Return JSON response
@@ -117,7 +119,7 @@ class ClassNameController extends Controller
         if ($class->activeStudents()->count() > 0) {
             return response()->json(['success' => false, 'message' => 'This class cannot be deleted because it has active students.']);
         }
-        
+
         $class->delete();
 
         return response()->json(['success' => true]);
@@ -133,6 +135,7 @@ class ClassNameController extends Controller
             'data'    => [
                 'class_id'          => $class->id,
                 'class_name'        => $class->name,
+                'is_active'         => $class->is_active,
                 'class_numeral'     => $class->class_numeral,
                 'class_description' => $class->description,
             ],
