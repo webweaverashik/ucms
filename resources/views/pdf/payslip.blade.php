@@ -88,7 +88,7 @@
         <table class="row-table">
             <tr>
                 <td>Class: {{ $transaction->student_classname ?? '' }}</td>
-                <td>Shift: {{ $transaction->student->shift->name ?? '' }}
+                <td>Batch: {{ $transaction->student->batch->name ?? '' }}
                 </td>
             </tr>
         </table>
