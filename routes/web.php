@@ -127,6 +127,14 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('settings/bulk-admission', [MiscController::class, 'index'])->name('bulk.admission.index');
     Route::post('settings/bulk-admission', [MiscController::class, 'bulkAdmission'])->name('bulk.admission.upload');
 
+    // Clear the cache
+    Route::get('clear-cache', function () {
+        clearUCMSCaches();
+        clearServerCache();
+
+        return response()->json(['success' => true]);
+    })->name('clear.cache');
+
     // ------- Custom routes end -------
 
     // AJAX Routes

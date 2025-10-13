@@ -33,7 +33,7 @@ class SheetController extends Controller
             ->latest()
             ->get();
 
-        $classes = ClassName::all();
+        $classes = ClassName::where('is_active', true)->get();
 
         return view('sheets.index', compact('sheets', 'classes'));
     }

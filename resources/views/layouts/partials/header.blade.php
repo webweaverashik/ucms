@@ -11,7 +11,7 @@
             </div>
         </div>
         <!--end::Sidebar mobile toggle-->
-        
+
         <!--begin::Mobile logo-->
         <div class="d-flex align-items-center flex-grow-1 flex-lg-grow-0">
             <a href="{{ route('dashboard') }}" class="d-lg-none">
@@ -19,7 +19,7 @@
             </a>
         </div>
         <!--end::Mobile logo-->
-        
+
         <!--begin::Header wrapper-->
         <div class="d-flex align-items-stretch justify-content-between flex-lg-grow-1" id="kt_app_header_wrapper">
 
@@ -33,10 +33,15 @@
                 <!--begin::Search-->
                 <div class="app-navbar-item ms-1 ms-md-4">
                     {{-- <a href="{{ route('auto.invoice') }}" class="badge badge-lg badge-danger fs-5 me-2">Auto Invoice</a> --}}
-                    <span class="badge badge-lg badge-info fs-5">@if (auth()->user()->branch_id) {{ auth()->user()->branch->branch_name }} Branch @else SuperAdmin @endif</span>
+                    <span class="badge badge-lg badge-info fs-5">
+                        @if (auth()->user()->branch_id)
+                            {{ auth()->user()->branch->branch_name }} Branch
+                        @else
+                            SuperAdmin
+                        @endif
+                    </span>
                 </div>
                 <!--end::Search-->
-
 
                 <!--begin::Notifications-->
                 <div class="app-navbar-item ms-1 ms-md-4">
@@ -578,6 +583,15 @@
                 </div>
                 <!--end::Notifications-->
 
+                <!--begin::Clear Cache-->
+                <div class="app-navbar-item ms-1 ms-md-4">
+                    <a href="#" id="clear_cache_button" data-url="{{ route('clear.cache') }}"
+                        data-bs-toggle="tooltip" data-bs-placement="bottom" title="Clear Cache"
+                        class="btn btn-icon btn-custom btn-icon-muted btn-active-light btn-active-color-primary w-35px h-35px"><i
+                            class="ki-outline ki-flash-circle fs-2"></i></a>
+                </div>
+                <!--end::Clear Cache-->
+
                 <!--begin::Theme mode-->
                 <div class="app-navbar-item ms-1 ms-md-4">
                     <!--begin::Menu toggle-->
@@ -638,7 +652,8 @@
                     <div class="cursor-pointer symbol symbol-35px"
                         data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-attach="parent"
                         data-kt-menu-placement="bottom-end">
-                        <img src="{{ auth()->user()->photo_url ?? asset('assets/img/dummy.png') }}" class="rounded-3" alt="user" />
+                        <img src="{{ auth()->user()->photo_url ?? asset('assets/img/dummy.png') }}" class="rounded-3"
+                            alt="user" />
                     </div>
 
                     <!--begin::User account menu-->
@@ -649,7 +664,8 @@
                             <div class="menu-content d-flex align-items-center px-3">
                                 <!--begin::Avatar-->
                                 <div class="symbol symbol-50px me-5">
-                                    <img alt="Logo" src="{{ auth()->user()->photo_url ?? asset('assets/img/dummy.png') }}" />
+                                    <img alt="Logo"
+                                        src="{{ auth()->user()->photo_url ?? asset('assets/img/dummy.png') }}" />
                                 </div>
                                 <!--end::Avatar-->
                                 <!--begin::Username-->
@@ -690,7 +706,7 @@
                         <!--begin::Menu separator-->
                         <div class="separator my-2"></div>
                         <!--end::Menu separator-->
-                        
+
                         <!--begin::Menu item-->
                         <div class="menu-item px-5">
                             <a href="{{ route('logout') }}" class="menu-link px-5"

@@ -91,5 +91,65 @@
         tooltipTriggerList.forEach(function(tooltipTriggerEl) {
             new bootstrap.Tooltip(tooltipTriggerEl);
         });
+
+        // Clear Caches
+        document.addEventListener('DOMContentLoaded', function() {
+            const clearBtn = document.getElementById('clear_cache_button');
+
+            if (!clearBtn) return;
+
+            clearBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                const clearUrl = clearBtn.dataset.url; // Laravel route passed via data-url
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'This will clear all system caches.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, clear it!',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Clearing cache...',
+                            text: 'Please wait a moment.',
+                            allowOutsideClick: false,
+                            didOpen: () => Swal.showLoading(),
+                        });
+
+                        fetch(clearUrl)
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Cache Cleared!',
+                                        text: 'All caches have been cleared successfully.',
+                                        showConfirmButton: false,
+                                        timer: 2000,
+                                        willClose: () => {
+                                            // Reload after success
+                                            location.reload();
+                                        }
+                                    });
+                                } else {
+                                    throw new Error('Cache clear failed');
+                                }
+                            })
+                            .catch(() => {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error!',
+                                    text: 'Something went wrong while clearing cache.',
+                                });
+                            });
+                    }
+                });
+            });
+        });
     </script>
     <!--end::Custom Javascript-->
