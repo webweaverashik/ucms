@@ -101,11 +101,11 @@
             clearBtn.addEventListener('click', function(e) {
                 e.preventDefault();
 
-                const clearUrl = clearBtn.dataset.url; // Laravel route passed via data-url
+                const clearUrl = clearBtn.dataset.url;
 
                 Swal.fire({
                     title: 'Are you sure?',
-                    text: 'This will clear all system caches.',
+                    text: 'This will clear all caches.',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonText: 'Yes, clear it!',
@@ -114,6 +114,7 @@
                     cancelButtonColor: '#d33',
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        // Show loading
                         Swal.fire({
                             title: 'Clearing cache...',
                             text: 'Please wait a moment.',
@@ -121,24 +122,30 @@
                             didOpen: () => Swal.showLoading(),
                         });
 
+                        const startTime = Date.now();
+
                         fetch(clearUrl)
                             .then(res => res.json())
                             .then(data => {
-                                if (data.success) {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Cache Cleared!',
-                                        text: 'All caches have been cleared successfully.',
-                                        showConfirmButton: false,
-                                        timer: 2000,
-                                        willClose: () => {
-                                            // Reload after success
-                                            location.reload();
-                                        }
-                                    });
-                                } else {
-                                    throw new Error('Cache clear failed');
-                                }
+                                const elapsed = Date.now() - startTime;
+                                const minDelay = 1500; // 1.5 seconds minimum wait
+
+                                const waitTime = elapsed < minDelay ? minDelay - elapsed : 0;
+
+                                setTimeout(() => {
+                                    if (data.success) {
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Cache Cleared!',
+                                            text: 'All caches have been cleared successfully.',
+                                            showConfirmButton: false,
+                                            timer: 2000,
+                                            willClose: () => location.reload()
+                                        });
+                                    } else {
+                                        throw new Error('Cache clear failed');
+                                    }
+                                }, waitTime);
                             })
                             .catch(() => {
                                 Swal.fire({
