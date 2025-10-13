@@ -114,7 +114,7 @@ class StudentsImport implements ToCollection, WithHeadingRow
                     'student_id'    => $student->id,
                     'active_status' => $row['activation_status'],
                     'reason'        => $row['inactive_reason'] ?? 'Admitted',
-                    'updated_by'    => 1,
+                    'updated_by'    => auth()->user()->id,
                 ]);
 
                 $student->update(['student_activation_id' => $activation->id]);
@@ -169,5 +169,8 @@ class StudentsImport implements ToCollection, WithHeadingRow
 
             $rowNumber++;
         }
+
+        // Clear the cache
+        clearUCMSCaches();
     }
 }
