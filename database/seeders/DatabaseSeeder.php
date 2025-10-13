@@ -53,7 +53,7 @@ class DatabaseSeeder extends Seeder
             // PaymentInvoiceSeeder::class,
             // PaymentTransactionSeeder::class,
 
-            // SheetSeeder::class,
+            SheetSeeder::class,
             // SheetTopicSeeder::class,
 
             SmsTemplatesTableSeeder::class,
