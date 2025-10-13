@@ -38,23 +38,23 @@ class DatabaseSeeder extends Seeder
             BatchSeeder::class,
             InstitutionSeeder::class,
 
-            TeacherSeeder::class,
-            ReferenceSeeder::class,
-            StudentSeeder::class,
-            GuardianSeeder::class,
-            MobileNumberSeeder::class,
-            SiblingSeeder::class,
+            // TeacherSeeder::class,
+            // ReferenceSeeder::class,
+            // StudentSeeder::class,
+            // GuardianSeeder::class,
+            // MobileNumberSeeder::class,
+            // SiblingSeeder::class,
 
             // StudentActivationSeeder::class, // will be called by StudentFactory
             SubjectSeeder::class,
 
-            SubjectTakenSeeder::class,
-            PaymentSeeder::class,
-            PaymentInvoiceSeeder::class,
-            PaymentTransactionSeeder::class,
+            // SubjectTakenSeeder::class,
+            // PaymentSeeder::class,
+            // PaymentInvoiceSeeder::class,
+            // PaymentTransactionSeeder::class,
 
-            SheetSeeder::class,
-            SheetTopicSeeder::class,
+            // SheetSeeder::class,
+            // SheetTopicSeeder::class,
 
             SmsTemplatesTableSeeder::class,
             // SmsCampaignsTableSeeder::class,
