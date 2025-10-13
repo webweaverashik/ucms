@@ -32,7 +32,7 @@ class StudentController extends Controller
         // Unique cache key per branch (useful when branch_id != 0)
         $cacheKey = 'students_list_branch_' . $branchId;
 
-        $students = Cache::remember($cacheKey, now()->addHours(6), function () use ($branchId) {
+        $students = Cache::remember($cacheKey, now()->addHours(1), function () use ($branchId) {
             return Student::with([
                 'class:id,name,class_numeral',
                 'branch:id,branch_name,branch_prefix',

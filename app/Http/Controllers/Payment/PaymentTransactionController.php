@@ -26,11 +26,12 @@ class PaymentTransactionController extends Controller
         // Unique cache key per branch (useful when branch_id != 0)
         $cacheKey = "transactions_branch_{$branchId}";
 
-        $transactions = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($branchId) {
+        $transactions = Cache::remember($cacheKey, now()->addHours(1), function () use ($branchId) {
             return PaymentTransaction::with([
                 'paymentInvoice:id,invoice_number',
                 'createdBy:id,name',
-                'student:id,name,student_unique_id',
+                'student:id,name,student_unique_id,branch_id',
+                'student.branch:id,branch_name',
             ])
                 ->whereHas('student', function ($query) use ($branchId) {
                     if ($branchId != 0) {

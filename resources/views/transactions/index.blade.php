@@ -43,6 +43,17 @@
 
 
 @section('content')
+    @php
+        // Define badge colors for different branches
+        $badgeColors = ['badge-light-primary', 'badge-light-success', 'badge-light-warning'];
+
+        // Map branches to badge colors dynamically
+        $branchColors = [];
+        foreach ($branches as $index => $branch) {
+            $branchColors[$branch->branch_name] = $badgeColors[$index % count($badgeColors)];
+        }
+    @endphp
+
     <!--begin::Card-->
     <div class="card">
         <!--begin::Card header-->
@@ -88,8 +99,7 @@
                             <div class="mb-10">
                                 <label class="form-label fs-6 fw-semibold">Payment Type:</label>
                                 <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                    data-placeholder="Select option" data-allow-clear="true"
-                                    data-hide-search="true">
+                                    data-placeholder="Select option" data-allow-clear="true" data-hide-search="true">
                                     <option></option>
                                     <option value="T_partial">Partial</option>
                                     <option value="T_full_paid">Full Paid</option>
@@ -188,6 +198,7 @@
                         <th class="d-none">Payment Type (Filter)</th>
                         <th>Payment Type</th>
                         <th class="w-350px">Student</th>
+                        <th class="@if (!auth()->user()->hasRole('admin')) d-none @endif">Branch</th>
                         <th>Payment Date</th>
                         <th>Received By</th>
                         <th class="not-export">Actions</th>
@@ -230,6 +241,15 @@
                                     {{ $transaction->student->name }}, {{ $transaction->student->student_unique_id }}
                                 </a>
                             </td>
+
+                            <td class="@if (!auth()->user()->hasRole('admin')) d-none @endif">
+                                @php
+                                    $branchName = $transaction->student->branch->branch_name;
+                                    $badgeColor = $branchColors[$branchName] ?? 'badge-light-secondary'; // Default color
+                                @endphp
+                                <span class="badge {{ $badgeColor }}">{{ $branchName }}</span>
+                            </td>
+
 
                             <td>
                                 {{ $transaction->created_at->format('h:i:s A, d-M-Y') }}
