@@ -89,7 +89,7 @@
                                 <label class="form-label fs-6 fw-semibold">Payment Type:</label>
                                 <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                     data-placeholder="Select option" data-allow-clear="true"
-                                    data-transaction-table-filter="status" data-hide-search="true">
+                                    data-hide-search="true">
                                     <option></option>
                                     <option value="T_partial">Partial</option>
                                     <option value="T_full_paid">Full Paid</option>
@@ -97,6 +97,22 @@
                                 </select>
                             </div>
                             <!--end::Input group-->
+
+                            @if (auth()->user()->hasRole('admin'))
+                                <!--begin::Input group-->
+                                <div class="mb-10">
+                                    <label class="form-label fs-6 fw-semibold">Branch:</label>
+                                    <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
+                                        data-placeholder="Select option" data-allow-clear="true" data-hide-search="true">
+                                        <option></option>
+                                        @foreach ($branches as $branch)
+                                            <option value="{{ ucfirst($branch->branch_name) }}">
+                                                {{ ucfirst($branch->branch_name) }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <!--end::Input group-->
+                            @endif
 
                             <!--begin::Actions-->
                             <div class="d-flex justify-content-end">
@@ -161,7 +177,8 @@
         <!--begin::Card body-->
         <div class="card-body py-4">
             <!--begin::Table-->
-            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_transactions_table">
+            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table"
+                id="kt_transactions_table">
                 <thead>
                     <tr class="fw-bold fs-7 text-uppercase gs-0">
                         <th class="w-25px">SL</th>

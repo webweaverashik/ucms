@@ -1,12 +1,14 @@
 <?php
 namespace App\Http\Controllers\Payment;
 
+use App\Models\Branch;
+use Illuminate\Http\Request;
+use App\Models\Student\Student;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use App\Models\Payment\PaymentInvoice;
 use App\Models\Payment\PaymentTransaction;
-use App\Models\Student\Student;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class PaymentTransactionController extends Controller
 {
@@ -21,25 +23,23 @@ class PaymentTransactionController extends Controller
 
         $branchId = auth()->user()->branch_id;
 
-        // Simplified transactions query
-        $transactions = PaymentTransaction::with([
-            'paymentInvoice' => function ($query) {
-                $query->select('id', 'invoice_number');
-            },
-            'createdBy'      => function ($query) {
-                $query->select('id', 'name');
-            },
-            'student'        => function ($query) {
-                $query->select('id', 'name', 'student_unique_id');
-            },
-        ])
-            ->whereHas('student', function ($query) use ($branchId) {
-                if ($branchId != 0) {
-                    $query->where('branch_id', $branchId);
-                }
-            })
-            ->latest('id')
-            ->get();
+        // Unique cache key per branch (useful when branch_id != 0)
+        $cacheKey = "transactions_branch_{$branchId}";
+
+        $transactions = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($branchId) {
+            return PaymentTransaction::with([
+                'paymentInvoice:id,invoice_number',
+                'createdBy:id,name',
+                'student:id,name,student_unique_id',
+            ])
+                ->whereHas('student', function ($query) use ($branchId) {
+                    if ($branchId != 0) {
+                        $query->where('branch_id', $branchId);
+                    }
+                })
+                ->latest('id')
+                ->get();
+        });
 
         // Simplified students query
         $students = Student::when($branchId != 0, function ($query) use ($branchId) {
@@ -54,7 +54,9 @@ class PaymentTransactionController extends Controller
             ->orderBy('student_unique_id')
             ->get();
 
-        return view('transactions.index', compact('transactions', 'students'));
+        $branches = Branch::all();
+
+        return view('transactions.index', compact('transactions', 'students', 'branches'));
     }
 
     /**

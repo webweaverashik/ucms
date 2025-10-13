@@ -20,6 +20,7 @@ if (! function_exists('clearUCMSCaches')) {
         Cache::forget('students_list_branch_' . $branchId);
         Cache::forget('guardians_list_branch_' . $branchId);
         Cache::forget('invoices_index_branch_' . $branchId);
+        Cache::forget('transactions_branch_' . $branchId);
     }
 }
 
