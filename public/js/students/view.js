@@ -687,6 +687,11 @@ var KTStudentsActivity = function () {
     }
 }();
 
+
+var KTDownloadStatement = function () {
+    
+}();
+
 // On document ready
 KTUtil.onDOMContentLoaded(function () {
     KTStudentsActions.init();
@@ -695,4 +700,5 @@ KTUtil.onDOMContentLoaded(function () {
     KTStudentsTransactionsView.init();
     KTStudentsSheetsView.init();
     KTStudentsActivity.init();
+    KTDownloadStatement.init()
 });

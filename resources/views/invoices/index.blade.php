@@ -132,6 +132,7 @@
                                             data-kt-subscription-table-filter="product" data-hide-search="true">
                                             <option></option>
                                             <option value="tuition_fee">Tuition Fee</option>
+                                            <option value="admission_fee">Admission Fee</option>
                                             <option value="sheet_fee">Sheet Fee</option>
                                             <option value="diary_fee">Diary Fee</option>
                                             <option value="book_fee">Book Fee</option>
@@ -461,6 +462,7 @@
                                             data-kt-subscription-table-filter="product" data-hide-search="true">
                                             <option></option>
                                             <option value="tuition_fee">Tuition Fee</option>
+                                            <option value="admission_fee">Admission Fee</option>
                                             <option value="sheet_fee">Sheet Fee</option>
                                             <option value="diary_fee">Diary Fee</option>
                                             <option value="book_fee">Book Fee</option>
@@ -631,7 +633,8 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="badge badge-success rounded-pill">{{ ucfirst($invoice->status) }}</span>
+                                        <span
+                                            class="badge badge-success rounded-pill">{{ ucfirst($invoice->status) }}</span>
                                     </td>
                                     <td>
                                         {{ $invoice->updated_at->format('d-M-Y') }}
@@ -738,6 +741,7 @@
                                                 disabled>
                                                 <option></option>
                                                 <option value="tuition_fee" selected>Tuition Fee</option>
+                                                <option value="admission_fee">Admission Fee</option>
                                                 <option value="sheet_fee">Sheet Fee</option>
                                                 <option value="diary_fee">Diary Fee</option>
                                                 <option value="book_fee">Book Fee</option>
@@ -951,6 +955,7 @@
                                             data-placeholder="Select a invoice type" disabled>
                                             <option></option>
                                             <option value="tuition_fee">Tuition Fee</option>
+                                            <option value="admission_fee">Admission Fee</option>
                                             <option value="sheet_fee">Sheet Fee</option>
                                             <option value="diary_fee">Diary Fee</option>
                                             <option value="book_fee">Book Fee</option>

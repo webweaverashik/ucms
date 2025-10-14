@@ -61,6 +61,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('students/{id}/sheet-fee', [StudentController::class, 'getSheetFee']);
     Route::get('students/transfer', [StudentController::class, 'transferStudent'])->name('students.transfer');
     Route::get('students/promote', [StudentController::class, 'promoteStudents'])->name('students.promote');
+    Route::post('student/statement/download', [MiscController::class, 'downloadStatement'])->name('student.statement.download');
 
     // Invoices
     Route::get('students/{student}/due-invoices', [PaymentInvoiceController::class, 'getDueInvoices'])->name('students.due.invoices');

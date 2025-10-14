@@ -918,7 +918,7 @@
                     <!--begin::Statements-->
                     <div class="card mb-6 mb-xl-9">
                         <!--begin::Header-->
-                        <div class="card-header">
+                        <div class="card-header align-items-center">
                             <!--begin::Title-->
                             <div class="card-title">
                                 <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x fw-semibold border-0">
@@ -934,7 +934,25 @@
                             </div>
                             <!--end::Title-->
 
+                            <!--begin::Toolbar-->
+                            <div class="card-toolbar flex-shrink-0" style="white-space: nowrap;">
+                                <form class="form d-flex align-items-center gap-2 flex-nowrap" id="statement_form" method="POST" action="{{ route('student.statement.download') }}" target="_blank">
+                                    @csrf
+                                    <input type="hidden" name="student_id" value="{{ $student->id }}">
+                                    <label class="required fw-semibold fs-6 mb-0 me-2">Download statements</label>
+                                    <select class="form-select form-select-sm w-150px" name="statement_year"
+                                        data-control="select2" data-hide-search="true" required>
+                                        <option value="">Select a year</option>
+                                        @for ($year = now()->year; $year >= 2021; $year--)
+                                            <option value="{{ $year }}">{{ $year }}</option>
+                                        @endfor
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-primary">Download</button>
+                                </form>
+                            </div>
+                            <!--end::Toolbar-->
                         </div>
+
                         <!--end::Header-->
                         <!--begin::Card body-->
                         <div class="card-body pb-5 tab-content">
@@ -1015,7 +1033,8 @@
                                                     @elseif ($status === 'partially_paid')
                                                         <span class="badge badge-info rounded-pill">Partial</span>
                                                         @if ($isOverdue)
-                                                            <span class="badge badge-danger rounded-pill ms-1">Overdue</span>
+                                                            <span
+                                                                class="badge badge-danger rounded-pill ms-1">Overdue</span>
                                                         @endif
                                                     @elseif ($status === 'paid')
                                                         <span class="badge badge-success rounded-pill">Paid</span>

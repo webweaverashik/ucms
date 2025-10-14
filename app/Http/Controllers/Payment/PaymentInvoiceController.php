@@ -111,7 +111,7 @@ class PaymentInvoiceController extends Controller
     {
         $rules = [
             'invoice_student' => 'required|exists:students,id',
-            'invoice_type'    => 'required|in:tuition_fee,exam_fee,model_test_fee,others_fee,sheet_fee,diary_fee,book_fee',
+            'invoice_type'    => 'required|in:tuition_fee,exam_fee,model_test_fee,others_fee,sheet_fee,diary_fee,book_fee,admission_fee',
             'invoice_amount'  => 'required|numeric|min:50',
         ];
 
@@ -183,7 +183,7 @@ class PaymentInvoiceController extends Controller
         // AutoSMS for invoice created
         $mobile = $invoice->student->mobileNumbers->where('number_type', 'sms')->first()->mobile_number;
 
-        if (in_array($request->invoice_type, ['tuition_fee', 'model_test_fee', 'exam_fee', 'sheet_fee', 'book_fee', 'diary_fee', 'others_fee'])) {
+        if (in_array($request->invoice_type, ['tuition_fee', 'model_test_fee', 'exam_fee', 'sheet_fee', 'book_fee', 'diary_fee', 'others_fee', 'admission_fee'])) {
             send_auto_sms("{$request->invoice_type}_invoice_created", $mobile, [
                 'student_name' => $invoice->student->name,
                 'month_year'   => $invoice->month_year

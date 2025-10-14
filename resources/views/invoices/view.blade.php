@@ -634,6 +634,7 @@
                                             data-placeholder="Select a invoice type" disabled>
                                             <option></option>
                                             <option value="tuition_fee">Tuition Fee</option>
+                                            <option value="admission_fee">Admission Fee</option>
                                             <option value="exam_fee">Exam Fee</option>
                                             <option value="model_test_fee">Model Test Fee</option>
                                             <option value="sheet_fee">Sheet Fee</option>

@@ -52,6 +52,11 @@
         foreach ($branches as $index => $branch) {
             $branchColors[$branch->branch_name] = $badgeColors[$index % count($badgeColors)];
         }
+
+        // Preloading permissions checking
+        $canApproveTxn = auth()->user()->can('transactions.approve');
+        $canDeleteTxn = auth()->user()->can('transactions.delete');
+        $canDownloadPayslip = auth()->user()->can('transactions.payslip.download');
     @endphp
 
     <!--begin::Card-->
@@ -261,34 +266,34 @@
 
                             <td>
                                 @if ($transaction->is_approved === false)
-                                    @can('transactions.approve')
+                                    @if ($canApproveTxn)
                                         <a href="#" title="Approve Transaction"
                                             class="btn btn-icon text-hover-success w-30px h-30px approve-txn me-2"
                                             data-txn-id={{ $transaction->id }}>
                                             <i class="bi bi-check-circle fs-2"></i>
                                         </a>
-                                    @endcan
+                                    @endif
 
-                                    @can('transactions.delete')
+                                    @if ($canDeleteTxn)
                                         <a href="#" title="Delete Transaction"
                                             class="btn btn-icon text-hover-danger w-30px h-30px delete-txn"
                                             data-txn-id={{ $transaction->id }}>
                                             <i class="bi bi-trash fs-2"></i>
                                         </a>
-                                    @endcan
+                                    @endif
 
                                     {{-- Showing a placeholder text for other users --}}
-                                    @cannot('transactions.approve')
+                                    @if (! $canApproveTxn)
                                         <span class="badge rounded-pill text-bg-secondary">Pending Approval</span>
-                                    @endcannot
+                                    @endif
                                 @else
-                                    @can('transactions.payslip.download')
+                                    @if ($canDownloadPayslip)
                                         <a href="{{ route('transactions.download', $transaction->id) }}" target="_blank"
                                             data-bs-toggle="tooltip" title="Download Payslip"
                                             class="btn btn-icon text-hover-primary w-30px h-30px">
                                             <i class="bi bi-download fs-2"></i>
                                         </a>
-                                    @endcan
+                                    @endif
                                 @endif
                             </td>
                         </tr>
