@@ -37,6 +37,13 @@ class SmsTemplatesTableSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
+                'name'       => 'admission_fee_invoice_created',
+                'body'       => 'প্রিয় {student_name}, আপনার এডমিশন ফি এর ইনভয়েস নং: {invoice_no}, পরিমাণ: {amount} টাকা। ফি পরিশোধ করে আপনার ভর্তি সম্পন্ন করুন। ধন্যবাদান্তে, ইউনিক কোচিং',
+                'type'       => 'invoices',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
                 'name'       => 'model_test_fee_invoice_created',
                 'body'       => 'প্রিয় {student_name}, আপনার মডেল টেস্ট ফি এর একটি ইনভয়েস তৈরি হয়েছে। ইনভয়েস নং: {invoice_no}, পরিমাণ: {amount} টাকা। বকেয়াটি পরিশোধ করুন। ধন্যবাদান্তে, ইউনিক কোচিং',
                 'type'       => 'invoices',

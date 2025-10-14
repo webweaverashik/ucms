@@ -936,7 +936,7 @@
 
                             <!--begin::Toolbar-->
                             <div class="card-toolbar flex-shrink-0" style="white-space: nowrap;">
-                                <form class="form d-flex align-items-center gap-2 flex-nowrap" id="statement_form" method="POST" action="{{ route('student.statement.download') }}" target="_blank">
+                                <form class="form d-flex align-items-center gap-2 flex-nowrap" id="statement_form" method="POST" action="{{ route('student.statement.download') }}">
                                     @csrf
                                     <input type="hidden" name="student_id" value="{{ $student->id }}">
                                     <label class="required fw-semibold fs-6 mb-0 me-2">Download statements</label>

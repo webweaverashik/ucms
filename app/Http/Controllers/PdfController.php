@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Payment\PaymentTransaction;
 use App\Models\Student\Student;
+use Illuminate\Http\Request;
 use Mpdf\Mpdf;
 
 class PdfController extends Controller
@@ -62,5 +63,37 @@ class PdfController extends Controller
         $pdf->WriteHTML($html);
 
         return $pdf->Output($transaction->voucher_no . '.pdf', 'I'); // I = Inline view, D = Download
+    }
+
+    // Download statement of all transactions of student for a year
+    public function downloadStatement(Request $request)
+    {
+        $request->validate([
+            'student_id'     => 'required|exists:students,id',
+            'statement_year' => 'required|integer',
+        ]);
+
+        $student = Student::findOrFail($request->student_id);
+        $year    = $request->statement_year;
+
+        $transactions = PaymentTransaction::with([
+            'paymentInvoice',
+            'createdBy:id,name',
+        ])
+            ->where([
+                ['student_id', '=', $student->id],
+                ['is_approved', '=', true],
+            ])
+            ->whereYear('created_at', $year)
+            ->latest()
+            ->get();
+
+        if ($transactions->isEmpty()) {
+            return back()->with('error', "No transactions found for {$year}. year");
+        }
+
+        // Example: render a Blade view (could also generate a PDF)
+        return view('pdf.student_statement', compact('student', 'year', 'transactions'));
+
     }
 }
