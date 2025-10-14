@@ -3,7 +3,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Payment\PaymentTransaction;
 use App\Models\Student\Student;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Mpdf\Mpdf;
 
 class PdfController extends Controller
@@ -85,15 +87,45 @@ class PdfController extends Controller
                 ['is_approved', '=', true],
             ])
             ->whereYear('created_at', $year)
-            ->latest()
+            ->whereHas('paymentInvoice', function ($q) {
+                $q->where('invoice_type', 'tuition_fee');
+            })
             ->get();
 
         if ($transactions->isEmpty()) {
-            return back()->with('error', "No transactions found for {$year}. year");
+            return back()->with('error', "No tuition fee transactions found for {$year}.");
         }
 
-        // Example: render a Blade view (could also generate a PDF)
-        return view('pdf.student_statement', compact('student', 'year', 'transactions'));
+        // Group transactions by month number
+        $monthlyPayments = $transactions
+            ->where('paymentInvoice.invoice_type', 'tuition_fee') // optional filter
+            ->groupBy(function ($t) {
+                $monthYear = $t->paymentInvoice->month_year;
 
+                // Handle formats like "10_2025"
+                if ($monthYear && preg_match('/^(\d{1,2})_(\d{4})$/', $monthYear, $matches)) {
+                    return (int) $matches[1]; // Extract month number
+                }
+
+                // Fallback to invoice created_at month
+                return (int) Carbon::parse($t->paymentInvoice->created_at)->format('n');
+            })
+            ->map(function (Collection $monthGroup) {
+                // Now group within month by invoice
+                return $monthGroup
+                    ->groupBy('payment_invoice_id')
+                    ->map(function (Collection $invoiceGroup) {
+                        // Sum all transactions of that invoice
+                        $first   = $invoiceGroup->first();
+                        $sumPaid = $invoiceGroup->sum('amount_paid');
+
+                        // Return a single summarized record
+                        $first->amount_paid = $sumPaid;
+                        return $first;
+                    });
+            });
+
+        return view('pdf.student_statement', compact('student', 'year', 'monthlyPayments'));
     }
+
 }

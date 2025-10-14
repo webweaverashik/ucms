@@ -62,13 +62,91 @@
                 </table>
             </div>
         </div>
-        <h5 class="fs-6 text-center">মাসিক বেতন</h5>
+        <h6 class="text-center fw-bold">মাসিক বেতন</h6>
 
-        <table>
+
+        @php
+            $months = [
+                'জানুয়ারি',
+                'ফেব্রুয়ারি',
+                'মার্চ',
+                'এপ্রিল',
+                'মে',
+                'জুন',
+                'জুলাই',
+                'আগস্ট',
+                'সেপ্টেম্বর',
+                'অক্টোবর',
+                'নভেম্বর',
+                'ডিসেম্বর',
+            ];
+            $chunks = array_chunk($months, 6);
+        @endphp
+
+        @foreach ($chunks as $chunkIndex => $chunk)
+    <table class="table table-bordered text-center mb-4">
+        <thead class="table-secondary">
             <tr>
-                @foreach ()
+                <th>মাস</th>
+                @foreach ($chunk as $month)
+                    <th>{{ $month }}</th>
+                @endforeach
             </tr>
-        </table>
+        </thead>
+        <tbody>
+            <tr>
+                <th>বেতন</th>
+                @foreach ($chunk as $i => $month)
+                    @php
+                        $monthNumber = ($chunkIndex * 6) + ($i + 1);
+                        $transaction = $monthlyPayments->get($monthNumber)?->first();
+                    @endphp
+                    <td>{{ $transaction->amount_paid ?? '-' }}</td>
+                @endforeach
+            </tr>
+            <tr>
+                <th>রশিদ নং</th>
+                @foreach ($chunk as $i => $month)
+                    @php
+                        $monthNumber = ($chunkIndex * 6) + ($i + 1);
+                        $transaction = $monthlyPayments->get($monthNumber)?->first();
+                    @endphp
+                    <td>{{ $transaction->paymentInvoice->invoice_number ?? '-' }}</td>
+                @endforeach
+            </tr>
+            <tr>
+                <th>গ্রহীতার নাম</th>
+                @foreach ($chunk as $i => $month)
+                    @php
+                        $monthNumber = ($chunkIndex * 6) + ($i + 1);
+                        $transaction = $monthlyPayments->get($monthNumber)?->first();
+                    @endphp
+                    <td>{{ $transaction->createdBy->name ?? '-' }}</td>
+                @endforeach
+            </tr>
+            <tr>
+                <th>তারিখ</th>
+                @foreach ($chunk as $i => $month)
+                    @php
+                        $monthNumber = ($chunkIndex * 6) + ($i + 1);
+                        $transaction = $monthlyPayments->get($monthNumber)?->first();
+                    @endphp
+                    <td>{{ optional($transaction?->created_at)->format('d-M-Y') ?? '-' }}</td>
+                @endforeach
+            </tr>
+        </tbody>
+    </table>
+@endforeach
+
+
+
+        <p style="display: flex; align-items: center;">
+            বকেয়া বেতনের পরিমাণ:
+            <span style="flex: 1; border-bottom: 1px dotted #000; margin-left: 5px;">
+                4000 taka
+            </span>
+        </p>
+
 
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
