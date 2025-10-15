@@ -936,7 +936,8 @@
 
                             <!--begin::Toolbar-->
                             <div class="card-toolbar flex-shrink-0" style="white-space: nowrap;">
-                                <form class="form d-flex align-items-center gap-2 flex-nowrap" id="statement_form" method="POST" action="{{ route('student.statement.download') }}">
+                                <form class="form d-flex align-items-center gap-2 flex-nowrap" id="statement_form" >
+                                    {{-- method="POST" action="{{ route('student.statement.download') }}" target="_blank"> --}}
                                     @csrf
                                     <input type="hidden" name="student_id" value="{{ $student->id }}">
                                     <label class="required fw-semibold fs-6 mb-0 me-2">Download statements</label>
@@ -1597,5 +1598,45 @@
             document.getElementById("admission_menu").classList.add("here", "show");
             document.getElementById("pending_approval_link").classList.add("active");
         @endif
+    </script>
+
+    <script>
+        document.getElementById('statement_form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const form = this;
+            const formData = new FormData(form);
+
+            fetch("{{ route('student.statement.download') }}", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRF-TOKEN": formData.get('_token')
+                    },
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error("Server error");
+                    return response.text(); // expecting HTML
+                })
+                .then(html => {
+                    // Create a new window with the HTML
+                    const printWindow = window.open("", "_blank", "width=800,height=600");
+
+                    printWindow.document.open();
+                    printWindow.document.write(html);
+                    printWindow.document.close();
+
+                    // Wait for fonts + styles to load, then print
+                    // printWindow.onload = function() {
+                    //     setTimeout(() => {
+                    //         printWindow.print();
+                    //         // Optional: printWindow.close(); // auto-close after printing
+                    //     }, 800);
+                    // };
+                })
+                .catch(err => {
+                    alert("Failed to load statement: " + err.message);
+                });
+        });
     </script>
 @endpush

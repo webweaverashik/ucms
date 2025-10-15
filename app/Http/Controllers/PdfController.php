@@ -87,13 +87,13 @@ class PdfController extends Controller
                 ['is_approved', '=', true],
             ])
             ->whereYear('created_at', $year)
-            ->whereHas('paymentInvoice', function ($q) {
-                $q->where('invoice_type', 'tuition_fee');
-            })
+            // ->whereHas('paymentInvoice', function ($q) {
+            //     $q->where('invoice_type', 'tuition_fee');
+            // })
             ->get();
 
         if ($transactions->isEmpty()) {
-            return back()->with('error', "No tuition fee transactions found for {$year}.");
+            return back()->with('error', "No transactions found for {$year}.");
         }
 
         // Group transactions by month number
@@ -125,7 +125,7 @@ class PdfController extends Controller
                     });
             });
 
-        return view('pdf.student_statement', compact('student', 'year', 'monthlyPayments'));
+        return view('pdf.student_statement', compact('student', 'monthlyPayments', 'transactions'));
     }
 
 }

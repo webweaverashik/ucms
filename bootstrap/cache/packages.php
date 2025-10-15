@@ -63,6 +63,13 @@
       0 => 'Termwind\\Laravel\\TermwindServiceProvider',
     ),
   ),
+  'rakibhstu/number-to-bangla' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Rakibhstu\\Banglanumber\\NumberToBanglaServiceProvider',
+    ),
+  ),
   'spatie/laravel-permission' => 
   array (
     'providers' => 
