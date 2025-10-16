@@ -222,7 +222,7 @@
                 'model_test_fee' => 'মডেল টেস্ট ফি',
                 'exam_fee' => 'পরীক্ষা ফি',
                 'sheet_fee' => 'শীট ফি',
-                // 'admission_fee' => 'ভর্তি ফি',
+                'admission_fee' => 'ভর্তি ফি',
                 'diary_fee' => 'ডায়েরি ফি',
                 'book_fee' => 'বই ফি',
                 'others_fee' => 'অন্যান্য',
@@ -276,7 +276,7 @@
                             $transactionsOfType = $groupedByType[$type] ?? collect();
                             $invoice = optional($transactionsOfType->first()?->paymentInvoice);
                         @endphp
-                        <td>{{ ashikBnNum($invoice->invoice_number) ?? '-' }}</td>
+                        <td>{{ $invoice?->invoice_number ? ashikBnNum($invoice->invoice_number) : '-' }}</td>
                     @endforeach
                 </tr>
 
