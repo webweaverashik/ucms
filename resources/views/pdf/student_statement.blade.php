@@ -319,11 +319,11 @@
             <tr style="vertical-align: middle;">
                 <th style="width: 30%;" class="align-center bg-light">সর্বমোট পরিশোধ</th>
                 <td style="width: 70%">
-                    {{ $numto->bnCommaLakh($transactions->sum('amount_paid')) }}/-
+                    {{ $numto->bnCommaLakh($totalPaid) }}/-
                     <p style="display: flex; align-items: center; margin-bottom: 0;">
                         কথায়:
                         <span style="flex: 1; border-bottom: 1px dotted #000; margin-left: 5px;">
-                            {{ $numto->bnMoney($transactions->sum('amount_paid')) }}
+                            {{ $numto->bnMoney($totalPaid) }}
                         </span>
                     </p>
                 </td>

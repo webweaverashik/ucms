@@ -96,6 +96,8 @@ class PdfController extends Controller
             return back()->with('error', "No transactions found for {$year}.");
         }
 
+        $totalPaid = $transactions->sum('amount_paid');
+
         // Group transactions by month number
         $monthlyPayments = $transactions
             ->where('paymentInvoice.invoice_type', 'tuition_fee') // optional filter
@@ -125,7 +127,7 @@ class PdfController extends Controller
                     });
             });
 
-        return view('pdf.student_statement', compact('student', 'monthlyPayments', 'transactions'));
+        return view('pdf.student_statement', compact('student', 'monthlyPayments', 'transactions', 'totalPaid'));
     }
 
 }
