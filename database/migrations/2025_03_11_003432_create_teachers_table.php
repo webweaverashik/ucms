@@ -19,7 +19,8 @@ return new class extends Migration
             $table->string('password');
             $table->string('photo_url')->nullable();
             $table->integer('base_salary');
-            $table->softDeletes(); // Enables soft delete feature
+            $table->boolean('is_active')->default(true);
+            $table->softDeletes();
             $table->foreignId('deleted_by')->nullable();
             $table->timestamps();
         });
