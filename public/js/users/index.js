@@ -41,7 +41,7 @@ var KTUsersList = function () {
                e.preventDefault();
 
                let userId = deleteBtn.getAttribute('data-user-id');
-               console.log('User ID:', userId);
+               // console.log('User ID:', userId);
 
                let url = routeDeleteUser.replace(':id', userId);
 
@@ -138,7 +138,7 @@ var KTUsersList = function () {
                const userId = toggle.value;
                const isActive = toggle.checked ? 1 : 0;
 
-               console.log('User ID:', userId);
+               // console.log('User ID:', userId);
 
                let url = routeToggleActive.replace(':id', userId);
 
@@ -447,7 +447,7 @@ var KTUsersEditUser = function () {
                e.preventDefault();
 
                userId = editBtn.getAttribute("data-user-id");
-               console.log('User ID:', userId);
+               // console.log('User ID:', userId);
 
                if (!userId) return;
 
@@ -592,7 +592,7 @@ var KTUsersEditUser = function () {
                               formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
                               formData.append('_method', 'PUT');
 
-                              console.log(userId);
+                              // console.log(userId);
                               fetch(`/settings/users/${userId}`, {
                                    method: 'POST',
                                    body: formData,
@@ -719,7 +719,7 @@ var KTUsersResetPassword = function () {
                const changePasswordBtn = e.target.closest('.change-password-btn');
                if (changePasswordBtn) {
                     userId = changePasswordBtn.getAttribute('data-user-id');
-                    console.log('User ID:', userId);
+                    // console.log('User ID:', userId);
 
                     const userName = changePasswordBtn.getAttribute('data-user-name');
 
@@ -830,7 +830,7 @@ var KTUsersResetPassword = function () {
                               formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
                               formData.append('_method', 'PUT');
 
-                              console.log('Updating password for user ID:', userId);
+                              // console.log('Updating password for user ID:', userId);
                               fetch(`/settings/users/${userId}/password`, {
                                    method: 'POST',
                                    body: formData,

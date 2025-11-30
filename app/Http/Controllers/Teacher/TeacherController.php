@@ -1,10 +1,10 @@
 <?php
-
 namespace App\Http\Controllers\Teacher;
 
 use Illuminate\Http\Request;
 use App\Models\Teacher\Teacher;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
 
 class TeacherController extends Controller
 {
@@ -13,7 +13,7 @@ class TeacherController extends Controller
      */
     public function index()
     {
-        $teachers = Teacher::all();
+        $teachers = Teacher::latest('updated_at')->get();
 
         return view('teachers.index', compact('teachers'));
     }
@@ -39,7 +39,13 @@ class TeacherController extends Controller
      */
     public function show(string $id)
     {
-        return view('teachers.index');
+        $teacher = Teacher::find($id);
+
+        if (! $teacher) {
+            return redirect()->back()->with('warning', 'Teacher not found.');
+        }
+
+        return view('teachers.view', compact('teacher'));
     }
 
     /**
@@ -61,8 +67,47 @@ class TeacherController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Teacher $teacher)
     {
-        //
+        $teacher->delete();
+        $teacher->update(['deleted_by' => auth()->user()->id]);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Toggle active and inactive teachers
+     */
+    public function toggleActive(Request $request)
+    {
+        $teacher = Teacher::find($request->teacher_id);
+
+        if (! $teacher) {
+            return response()->json(['success' => false, 'message' => 'Error. Please, contact support.']);
+        }
+
+        $teacher->is_active = $request->is_active;
+        $teacher->save();
+
+        return response()->json(['success' => true, 'message' => 'Teacher activation status updated.']);
+    }
+
+    /**
+     * Reset teacher password
+     */
+    public function teacherPasswordReset(Request $request, Teacher $teacher)
+    {
+        $request->validate([
+            'new_password' => 'required|string|min:6',
+        ]);
+
+        if (! $teacher) {
+            return response()->json(['success' => false, 'message' => 'Teacher not found.']);
+        }
+
+        $teacher->password = Hash::make($request->new_password);
+        $teacher->save();
+
+        return response()->json(['success' => true]);
     }
 }

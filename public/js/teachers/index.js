@@ -1,6 +1,6 @@
 "use strict";
 
-var KTAllTeachersList =  function () {
+var KTAllTeachersList = function () {
       // Define shared variables
       var table;
       var datatable;
@@ -106,64 +106,23 @@ var KTAllTeachersList =  function () {
             });
       }
 
-      // Filter Datatable
-      // var handleFilter = function () {
-      //       // Select filter options
-      //       const filterForm = document.querySelector('[data-teachers-table-filter="form"]');
-      //       const filterButton = filterForm.querySelector('[data-teachers-table-filter="filter"]');
-      //       const resetButton = filterForm.querySelector('[data-teachers-table-filter="reset"]');
-      //       const selectOptions = filterForm.querySelectorAll('select');
-
-      //       // Filter datatable on submit
-      //       filterButton.addEventListener('click', function () {
-      //             var filterString = '';
-
-      //             // Get filter values
-      //             selectOptions.forEach((item, index) => {
-      //                   if (item.value && item.value !== '') {
-      //                         if (index !== 0) {
-      //                               filterString += ' ';
-      //                         }
-
-      //                         // Build filter value options
-      //                         filterString += item.value;
-      //                   }
-      //             });
-
-      //             // Filter datatable --- official docs reference: https://datatables.net/reference/api/search()
-      //             datatable.search(filterString).draw();
-      //       });
-
-      //       // Reset datatable
-      //       resetButton.addEventListener('click', function () {
-      //             // Reset filter form
-      //             selectOptions.forEach((item, index) => {
-      //                   // Reset Select2 dropdown --- official docs reference: https://select2.org/programmatic-control/add-select-clear-items
-      //                   $(item).val(null).trigger('change');
-      //             });
-
-      //             // Filter datatable --- official docs reference: https://datatables.net/reference/api/search()
-      //             datatable.search('').draw();
-      //       });
-      // }
-
 
       // Delete Transaction
       const handleDeletion = function () {
             document.addEventListener('click', function (e) {
-                  const deleteBtn = e.target.closest('.delete-txn');
+                  const deleteBtn = e.target.closest('.delete-teacher');
                   if (!deleteBtn) return;
 
                   e.preventDefault();
 
-                  let txnId = deleteBtn.getAttribute('data-txn-id');
-                  console.log('TXN ID:', txnId);
+                  let teacherId = deleteBtn.getAttribute('data-teacher-id');
+                  // console.log('Teacher ID:', teacherId);
 
-                  let url = routeDeleteTxn.replace(':id', txnId);
+                  let url = routeDeleteTeacher.replace(':id', teacherId);
 
                   Swal.fire({
-                        title: 'Are you sure you want to delete?',
-                        text: "Once deleted, this transaction will be removed.",
+                        title: 'Are you sure to delete?',
+                        text: "Once deleted, this teacher will be removed.",
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#3085d6',
@@ -184,14 +143,14 @@ var KTAllTeachersList =  function () {
                                           if (data.success) {
                                                 Swal.fire({
                                                       title: 'Success!',
-                                                      text: 'Transaction deleted successfully.',
+                                                      text: 'Teacher deleted successfully.',
                                                       icon: 'success',
                                                       confirmButtonText: 'Okay',
                                                 }).then(() => {
                                                       location.reload();
                                                 });
                                           } else {
-                                                Swal.fire('Failed!', 'Transaction could not be deleted.', 'error');
+                                                Swal.fire('Failed!', 'Teacher could not be deleted.', 'error');
                                           }
                                     })
                                     .catch(error => {
@@ -200,6 +159,49 @@ var KTAllTeachersList =  function () {
                                     });
                         }
                   });
+            });
+      };
+
+
+      // Toggle activation
+      const handleToggleActivation = function () {
+            document.addEventListener('change', function (e) {
+                  const toggle = e.target.closest('.toggle-active');
+                  if (!toggle) return;
+
+                  const teacherId = toggle.value;
+                  const isActive = toggle.checked ? 1 : 0;
+
+                  // console.log('Teacher ID:', teacherId);
+
+                  let url = routeToggleActive.replace(':id', teacherId);
+
+                  fetch(url, {
+                        method: 'POST',
+                        headers: {
+                              'Content-Type': 'application/json',
+                              "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                        },
+                        body: JSON.stringify({
+                              teacher_id: teacherId,
+                              is_active: isActive
+                        })
+                  })
+                        .then(response => {
+                              if (!response.ok) throw new Error('Network response was not ok');
+                              return response.json();
+                        })
+                        .then(data => {
+                              if (data.success) {
+                                    toastr.success(data.message);
+                              } else {
+                                    toastr.error(data.message);
+                              }
+                        })
+                        .catch(error => {
+                              console.error('Error:', error);
+                              toastr.error('Error occurred while toggling user status');
+                        });
             });
       };
 
@@ -215,8 +217,8 @@ var KTAllTeachersList =  function () {
                   initDatatable();
                   exportButtons();
                   handleSearch();
-                  // handleFilter();
                   handleDeletion();
+                  handleToggleActivation();
             }
       }
 }();
@@ -273,8 +275,249 @@ var KTAddTeacher = function () {
 }();
 
 
+var KTEditPassword = function () {
+      // Shared variables
+      const element = document.getElementById('kt_modal_edit_password');
+      const form = element.querySelector('#kt_modal_edit_password_form');
+      const modal = new bootstrap.Modal(element);
+
+      let teacherId = null;
+      let validator = null; // Declare validator globally
+
+      // Init add schedule modal
+      var initEditPassword = () => {
+            const passwordInput = document.getElementById('teacherPasswordNew');
+            const strengthText = document.getElementById('password-strength-text');
+            const strengthBar = document.getElementById('password-strength-bar');
+
+            // Cancel button handler
+            const cancelButton = element.querySelector('[data-kt-edit-password-modal-action="cancel"]');
+            cancelButton.addEventListener('click', e => {
+                  e.preventDefault();
+
+                  form.reset(); // Reset form			
+                  modal.hide();
+
+                  // Reset strength meter
+                  if (strengthText) strengthText.textContent = '';
+                  if (strengthBar) {
+                        strengthBar.className = 'progress-bar';
+                        strengthBar.style.width = '0%';
+                  }
+            });
+
+            // Close button handler
+            const closeButton = element.querySelector('[data-kt-edit-password-modal-action="close"]');
+            closeButton.addEventListener('click', e => {
+                  e.preventDefault();
+
+                  form.reset(); // Reset form			
+                  modal.hide();
+
+                  // Reset strength meter
+                  if (strengthText) strengthText.textContent = '';
+                  if (strengthBar) {
+                        strengthBar.className = 'progress-bar';
+                        strengthBar.style.width = '0%';
+                  }
+            });
+
+
+            // AJAX loading password modal data
+            document.addEventListener('click', function (e) {
+                  // Handle password toggle
+                  const toggleBtn = e.target.closest('.toggle-password');
+                  if (toggleBtn) {
+                        const inputId = toggleBtn.getAttribute('data-target');
+                        const input = document.getElementById(inputId);
+                        const icon = toggleBtn.querySelector('i');
+
+                        if (input) {
+                              const isPassword = input.type === 'password';
+                              input.type = isPassword ? 'text' : 'password';
+
+                              if (icon) {
+                                    icon.classList.toggle('ki-eye');
+                                    icon.classList.toggle('ki-eye-slash');
+                              }
+                        }
+                        return; // Prevent falling through to next case
+                  }
+
+                  // Handle edit password modal button
+                  const changePasswordBtn = e.target.closest('.change-password-btn');
+                  if (changePasswordBtn) {
+                        teacherId = changePasswordBtn.getAttribute('data-teacher-id');
+                        console.log('User ID:', teacherId);
+
+                        const teacherName = changePasswordBtn.getAttribute('data-teacher-name');
+
+                        const teacherIdInput = document.getElementById('user_id_input');
+                        const modalTitle = document.getElementById('kt_modal_edit_password_title');
+
+                        if (teacherIdInput) teacherIdInput.value = teacherId;
+                        if (modalTitle) modalTitle.textContent = `Password Reset of ${teacherName}`;
+                  }
+            });
+
+            // Live strength meter
+            if (passwordInput) {
+                  passwordInput.addEventListener('input', function () {
+                        const value = passwordInput.value;
+                        let score = 0;
+
+                        if (value.length >= 8) score++;
+                        if (/[A-Z]/.test(value)) score++;
+                        if (/[a-z]/.test(value)) score++;
+                        if (/\d/.test(value)) score++;
+                        if (/[^A-Za-z0-9]/.test(value)) score++;
+
+                        let strength = '';
+                        let barColor = '';
+                        let width = score * 20;
+
+                        switch (score) {
+                              case 0:
+                              case 1:
+                                    strength = 'Very Weak';
+                                    barColor = 'bg-danger';
+                                    break;
+                              case 2:
+                                    strength = 'Weak';
+                                    barColor = 'bg-warning';
+                                    break;
+                              case 3:
+                                    strength = 'Moderate';
+                                    barColor = 'bg-info';
+                                    break;
+                              case 4:
+                                    strength = 'Strong';
+                                    barColor = 'bg-primary';
+                                    break;
+                              case 5:
+                                    strength = 'Very Strong';
+                                    barColor = 'bg-success';
+                                    break;
+                        }
+
+                        strengthText.textContent = strength;
+                        strengthBar.className = `progress-bar ${barColor}`;
+                        strengthBar.style.width = `${width}%`;
+                  });
+            }
+      }
+
+
+      // Form validation
+      var initFormValidation = function () {
+            if (!form) return;
+
+            validator = FormValidation.formValidation(
+                  form,
+                  {
+                        fields: {
+                              'new_password': {
+                                    validators: {
+                                          notEmpty: {
+                                                message: 'Password is required'
+                                          },
+                                          stringLength: {
+                                                min: 8,
+                                                message: '* Must be at least 8 characters long'
+                                          },
+                                          regexp: {
+                                                regexp: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/,
+                                                message: '* Must contain uppercase, lowercase, number, and special character'
+                                          }
+                                    }
+                              },
+                        },
+                        plugins: {
+                              trigger: new FormValidation.plugins.Trigger(),
+                              bootstrap: new FormValidation.plugins.Bootstrap5({
+                                    rowSelector: '.fv-row',
+                                    eleInvalidClass: '',
+                                    eleValidClass: ''
+                              })
+                        }
+                  }
+            );
+
+            const submitButton = element.querySelector('[data-kt-edit-password-modal-action="submit"]');
+
+            if (submitButton && validator) {
+                  submitButton.addEventListener('click', function (e) {
+                        e.preventDefault(); // Prevent default button behavior
+
+                        validator.validate().then(function (status) {
+                              if (status === 'Valid') {
+                                    // Show loading indicator
+                                    submitButton.setAttribute('data-kt-indicator', 'on');
+                                    submitButton.disabled = true;
+
+                                    const formData = new FormData(form);
+                                    formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+                                    formData.append('_method', 'PUT');
+
+                                    console.log('Updating password for teacher ID:', teacherId);
+                                    fetch(`/teachers/${teacherId}/password`, {
+                                          method: 'POST',
+                                          body: formData,
+                                          headers: {
+                                                'Accept': 'application/json',
+                                                'X-Requested-With': 'XMLHttpRequest'
+                                          }
+                                    })
+                                          .then(response => {
+                                                if (!response.ok) {
+                                                      return response.json().then(errorData => {
+                                                            // Show error from Laravel if available
+                                                            throw new Error(errorData.message || 'Network response was not ok');
+                                                      });
+                                                }
+                                                return response.json();
+                                          })
+                                          .then(data => {
+                                                submitButton.removeAttribute('data-kt-indicator');
+                                                submitButton.disabled = false;
+
+                                                if (data.success) {
+                                                      toastr.success(data.message || 'Password updated successfully');
+                                                      modal.hide();
+                                                      setTimeout(() => {
+                                                            window.location.reload();
+                                                      }, 1500); // 1000ms = 1 second delay
+                                                } else {
+                                                      throw new Error(data.message || 'Password Update failed');
+                                                }
+                                          })
+                                          .catch(error => {
+                                                submitButton.removeAttribute('data-kt-indicator');
+                                                submitButton.disabled = false;
+                                                toastr.error(error.message || 'Failed to update user');
+                                                console.error('Error:', error);
+                                          });
+                              } else {
+                                    toastr.warning('Please fill all required fields');
+                              }
+                        });
+                  });
+            }
+      };
+
+      return {
+            // Public functions
+            init: function () {
+                  initEditPassword();
+                  initFormValidation();
+            }
+      };
+}();
+
+
 // On document ready
 KTUtil.onDOMContentLoaded(function () {
       KTAllTeachersList.init();
       KTAddTeacher.init();
+      KTEditPassword.init();
 });

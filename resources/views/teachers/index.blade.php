@@ -144,13 +144,11 @@
                                 <td>{{ $teacher->phone }}</td>
                                 <td>{{ $teacher->base_salary }}</td>
                                 <td>
-
                                     <div
                                         class="form-check form-switch form-check-solid form-check-success d-flex justify-content-center">
                                         <input class="form-check-input toggle-active" type="checkbox"
                                             value="{{ $teacher->id }}" @if ($teacher->is_active == 1) checked @endif>
                                     </div>
-
                                 </td>
                                 <td>
                                     @can('teachers.edit')
@@ -398,6 +396,89 @@
         <!--end::Modal dialog-->
     </div>
     <!--end::Modal - Add Transaction-->
+
+
+    <!--begin::Modal - Edit Teacher Password-->
+    <div class="modal fade" id="kt_modal_edit_password" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+        data-bs-keyboard="false">
+        <!--begin::Modal dialog-->
+        <div class="modal-dialog modal-dialog-centered mw-450px">
+            <!--begin::Modal content-->
+            <div class="modal-content">
+                <!--begin::Modal header-->
+                <div class="modal-header" id="kt_modal_edit_password_header">
+                    <!--begin::Modal title-->
+                    <h2 class="fw-bold" id="kt_modal_edit_password_title">Password Reset</h2>
+                    <!--end::Modal title-->
+                    <!--begin::Close-->
+                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-edit-password-modal-action="close">
+                        <i class="ki-outline ki-cross fs-1">
+                        </i>
+                    </div>
+                    <!--end::Close-->
+                </div>
+                <!--end::Modal header-->
+                <!--begin::Modal body-->
+                <div class="modal-body px-5 my-7">
+                    <!--begin::Form-->
+                    <form id="kt_modal_edit_password_form" class="form" action="#" novalidate="novalidate" autocomplete="off">
+                        <!--begin::Scroll-->
+                        <div class="d-flex flex-column scroll-y px-5" id="kt_modal_edit_password_scroll"
+                            data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
+                            data-kt-scroll-dependencies="#kt_modal_edit_password_header"
+                            data-kt-scroll-wrappers="#kt_modal_edit_password_scroll" data-kt-scroll-offset="300px">
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <!--begin::Input group-->
+                                    <div class="fv-row mb-7">
+                                        <!--begin::Label-->
+                                        <label class="required fw-semibold fs-6 mb-2">Write New Password</label>
+                                        <!--end::Label-->
+
+                                        <div class="input-group">
+                                            <input type="password" name="new_password" id="teacherPasswordNew"
+                                                class="form-control mb-3 mb-lg-0" placeholder="Enter New Password"
+                                                required autocomplete="off"/>
+                                            <span class="input-group-text toggle-password" data-target="teacherPasswordNew"
+                                                style="cursor: pointer;" title="See Password" data-bs-toggle="tooltip">
+                                                <i class="ki-outline ki-eye fs-3"></i>
+                                            </span>
+                                        </div>
+
+                                        <!-- Password strength meter -->
+                                        <div id="password-strength-text" class="mt-1 fw-bold small text-muted"></div>
+                                        <div class="progress mt-1" style="height: 5px;">
+                                            <div id="password-strength-bar" class="progress-bar" role="progressbar"
+                                                style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                    <!--end::Input group-->
+                                </div>
+                            </div>
+                        </div>
+                        <!--end::Scroll-->
+
+                        <!--begin::Actions-->
+                        <div class="text-center pt-10">
+                            <button type="reset" class="btn btn-light me-3"
+                                data-kt-edit-password-modal-action="cancel">Discard</button>
+                            <button type="submit" class="btn btn-success" data-kt-edit-password-modal-action="submit">
+                                <span class="indicator-label">Update</span>
+                                <span class="indicator-progress">Please wait...
+                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                            </button>
+                        </div>
+                        <!--end::Actions-->
+                    </form>
+                    <!--end::Form-->
+                </div>
+                <!--end::Modal body-->
+            </div>
+            <!--end::Modal content-->
+        </div>
+        <!--end::Modal dialog-->
+    </div>
+    <!--end::Modal - Edit Teacher Password-->
 @endsection
 
 
@@ -406,6 +487,13 @@
 @endpush
 
 @push('page-js')
+    <script>
+        const storeTeacherRoute = "{{ route('teachers.store') }}";
+
+        const routeDeleteTeacher = "{{ route('teachers.destroy', ':id') }}";
+        const routeToggleActive = "{{ route('teachers.toggleActive', ':id') }}";
+    </script>
+
     <script src="{{ asset('js/teachers/index.js') }}"></script>
 
     <script>

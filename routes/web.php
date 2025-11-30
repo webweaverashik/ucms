@@ -63,6 +63,10 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('students/promote', [StudentController::class, 'promoteStudents'])->name('students.promote');
     Route::post('student/statement/download', [PdfController::class, 'downloadStatement'])->name('student.statement.download');
 
+    // Teachers
+    Route::post('teachers/toggle-active', [TeacherController::class, 'toggleActive'])->name('teachers.toggleActive');
+    Route::put('teachers/{teacher}/password', [TeacherController::class, 'teacherPasswordReset'])->name('teachers.password.reset');
+
     // Invoices
     Route::get('students/{student}/due-invoices', [PaymentInvoiceController::class, 'getDueInvoices'])->name('students.due.invoices');
     Route::get('invoices/{invoice}/view-ajax', [PaymentInvoiceController::class, 'viewAjax'])->name('invoices.view.ajax');
