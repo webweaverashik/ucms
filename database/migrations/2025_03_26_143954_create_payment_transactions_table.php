@@ -14,9 +14,11 @@ return new class extends Migration
         Schema::create('payment_transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('student_id');
+            $table->string('student_classname');
             $table->foreignId('payment_invoice_id');
             $table->enum('payment_type', ['partial', 'full', 'discounted']);
             $table->integer('amount_paid');
+            $table->integer('remaining_amount');
             $table->string('voucher_no')->unique();
             $table->text('remarks')->nullable();
             $table->boolean('is_approved')->default(true);
