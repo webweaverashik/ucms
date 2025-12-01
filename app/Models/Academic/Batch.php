@@ -1,18 +1,13 @@
 <?php
-
 namespace App\Models\Academic;
 
 use App\Models\Branch;
 use App\Models\Student\Student;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Batch extends Model
 {
-    use HasFactory, SoftDeletes;
-
-    protected $fillable = ['name', 'branch_id'];
+    protected $fillable = ['name', 'branch_id', 'day_off'];
 
     /**
      * Get the branch associated with this batch.
@@ -21,7 +16,7 @@ class Batch extends Model
     {
         return $this->belongsTo(Branch::class, 'branch_id');
     }
-    
+
     /**
      * Get all students assigned to this batch.
      */

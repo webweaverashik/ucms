@@ -1,4 +1,4 @@
-w<?php
+<?php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -11,13 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('batches', function (Blueprint $table) {
+        Schema::create('teacher_assignments', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->foreignId('teacher_id');
             $table->foreignId('branch_id');
-            $table->enum('day_off', ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'])->nullable();
+            $table->foreignId('batch_id');
+            $table->foreignId('class_id');
+            $table->foreignId('subject_id');
             $table->timestamps();
+
+            $table->unique(['teacher_id', 'class_id', 'branch_id', 'batch_id', 'subject_id'], 'unique_teacher_assignment');
         });
+
     }
 
     /**
@@ -25,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('batches');
+        Schema::dropIfExists('teacher_assignments');
     }
 };

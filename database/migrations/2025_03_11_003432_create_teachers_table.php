@@ -20,6 +20,10 @@ return new class extends Migration
             $table->string('photo_url')->nullable();
             $table->integer('base_salary');
             $table->boolean('is_active')->default(true);
+            $table->enum('gender', ['male', 'female']);
+            $table->text('academic_qualification')->nullable();
+            $table->string('experience')->nullable();
+            $table->string('blood_group')->nullable();
             $table->softDeletes();
             $table->foreignId('deleted_by')->nullable();
             $table->timestamps();

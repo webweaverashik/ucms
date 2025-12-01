@@ -78,10 +78,25 @@
                             <!--end::Card header-->
                             <!--begin::Card body-->
                             <div class="card-body pt-1">
-                                <!--begin::Users-->
-                                <div class="fw-bold text-gray-600 mb-5">Total active students on this batch:
-                                    {{ count($batch->activeStudents) }}</div>
-                                <!--end::Users-->
+                                <table class="table fs-6 fw-semibold gs-0 gy-1 gx-0">
+                                    <!--begin::Row-->
+                                    <tr class="">
+                                        <td class="text-gray-500">Day Off:</td>
+                                        <td class="text-gray-800 text-center">
+                                            {{ ucfirst($batch->day_off) }}
+                                        </td>
+                                    </tr>
+                                    <!--end::Row-->
+
+                                    <!--begin::Row-->
+                                    <tr class="">
+                                        <td class="text-gray-500">Total active students:</td>
+                                        <td class="text-gray-800 text-center">
+                                            {{ count($batch->activeStudents) }}
+                                        </td>
+                                    </tr>
+                                    <!--end::Row-->
+                                </table>
                             </div>
                             <!--end::Card body-->
                         </div>

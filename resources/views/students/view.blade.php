@@ -125,7 +125,7 @@
                         <div class="d-flex align-items-center">
                             <!--begin::Avatar-->
                             <div class="symbol symbol-60px symbol-circle me-3">
-                                <img src="{{ $student->photo_url ? asset($student->photo_url) : asset($student->gender == 'male' ? 'img/male.png' : 'img/female.png') }}"
+                                <img src="{{ $student->photo_url ? asset($student->photo_url) : asset($student->gender == 'male' ? 'img/boy.png' : 'img/girl.png') }}"
                                     alt="{{ $student->name }}" />
                             </div>
                             <!--end::Avatar-->
@@ -750,7 +750,7 @@
                                                 class="card card-dashed h-xl-100 flex-row flex-wrap p-6 align-items-center">
                                                 <!--begin::Photo-->
                                                 <div class="symbol symbol-60px me-5">
-                                                    <img src="{{ asset($sibling->relationship == 'brother' ? 'img/male.png' : 'img/female.png') }}"
+                                                    <img src="{{ asset($sibling->relationship == 'brother' ? 'img/boy.png' : 'img/girl.png') }}"
                                                         alt="{{ $sibling->name }}">
                                                 </div>
                                                 <!--end::Photo-->
