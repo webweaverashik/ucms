@@ -147,12 +147,13 @@
                                     <div
                                         class="form-check form-switch form-check-solid form-check-success d-flex justify-content-center">
                                         <input class="form-check-input toggle-active" type="checkbox"
-                                            value="{{ $teacher->id }}" @if ($teacher->is_active == 1) checked @endif>
+                                            value="{{ $teacher->id }}" @if ($teacher->is_active == 1) checked @endif @cannot('teachers.edit') disabled @endcan>
                                     </div>
                                 </td>
                                 <td>
                                     @can('teachers.edit')
-                                        <a href="#" title="Edit Teacher"
+                                        <a href="#" title="Edit Teacher" data-bs-toggle="modal"
+                                            data-bs-target="#kt_modal_edit_teacher"
                                             class="btn btn-icon text-hover-primary w-30px h-30px edit-teacher me-2"
                                             data-teacher-id={{ $teacher->id }}>
                                             <i class="ki-outline ki-pencil fs-2"></i>
@@ -185,7 +186,7 @@
         <!--end::Card-->
     </div>
 
-    <!--begin::Modal - Add Transaction-->
+    <!--begin::Modal - Add Teacher-->
     <div class="modal fade" id="kt_modal_add_teacher" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
         data-bs-keyboard="false">
         <!--begin::Modal dialog-->
@@ -195,7 +196,7 @@
                 <!--begin::Modal header-->
                 <div class="modal-header" id="kt_modal_add_teacher_header">
                     <!--begin::Modal title-->
-                    <h2 class="fw-bold">Add Transaction</h2>
+                    <h2 class="fw-bold">Add Teacher</h2>
                     <!--end::Modal title-->
                     <!--begin::Close-->
                     <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-add-teacher-modal-action="close">
@@ -208,169 +209,72 @@
                 <!--begin::Modal body-->
                 <div class="modal-body px-5 my-7">
                     <!--begin::Form-->
-                    <form id="kt_modal_add_teacher_form" class="form" action="{{ route('teachers.store') }}"
-                        method="POST">
-                        @csrf
+                    <form id="kt_modal_add_teacher_form" class="form" action="#" novalidate="novalidate">
                         <!--begin::Scroll-->
                         <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_add_teacher_scroll"
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_teacher_header"
                             data-kt-scroll-wrappers="#kt_modal_add_teacher_scroll" data-kt-scroll-offset="300px">
-
-                            <!--begin::Name Input group-->
-                            <div class="fv-row mb-7">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">Select Student</label>
-                                <!--end::Label-->
-
-                                <!--begin::Solid input group style-->
-                                <div class="input-group input-group-solid flex-nowrap">
-                                    <span class="input-group-text">
-                                        <i class="ki-outline ki-faceid fs-3"></i>
-                                    </span>
-                                    <div class="overflow-hidden flex-grow-1">
-                                        <select name="transaction_student"
-                                            class="form-select form-select-solid rounded-start-0 border-start"
-                                            data-control="select2" data-dropdown-parent="#kt_modal_add_teacher"
-                                            data-placeholder="Select a student" id="transaction_student_select">
-                                            <option></option>
-                                            {{-- @foreach ($students as $student)
-                                                <option value="{{ $student->id }}">{{ $student->name }}
-                                                    ({{ $student->student_unique_id }})
-                                                </option>
-                                            @endforeach --}}
-                                        </select>
-                                    </div>
-                                </div>
-                                <!--end::Solid input group style-->
-                            </div>
-                            <!--end::Name Input group-->
-
-                            <!--begin::Phone Input group-->
-                            <div class="fv-row mb-7">
-                                <!--begin::Label-->
-                                <label class="required fw-semibold fs-6 mb-2">Invoice Number</label>
-                                <!--end::Label-->
-
-                                <!--begin::Solid input group style-->
-                                <div class="input-group input-group-solid flex-nowrap">
-                                    <span class="input-group-text">
-                                        <i class="ki-outline ki-save-2 fs-3"></i>
-                                    </span>
-                                    <div class="overflow-hidden flex-grow-1">
-                                        <select name="transaction_invoice"
-                                            class="form-select form-select-solid rounded-start-0 border-start"
-                                            data-control="select2" data-dropdown-parent="#kt_modal_add_teacher"
-                                            data-placeholder="Select a due invoice" id="student_due_invoice_select">
-                                            <!-- show the due invoice of selected student -->
-                                        </select>
-                                    </div>
-                                </div>
-                                <!--end::Solid input group style-->
-                            </div>
-                            <!--end::Phone Input group-->
-
-                            <!--begin::Type Input group-->
-                            <div class="fv-row mb-7">
-                                <!--begin::Label-->
-                                <label class="d-flex align-items-center form-label mb-3 required">Payment Type</label>
-                                <!--end::Label-->
-                                <!--begin::Row-->
-                                <div class="row">
-                                    <!--begin::Col-->
-                                    <div class="col-lg-4">
-                                        <!--begin::Option-->
-                                        <input type="radio" class="btn-check" name="transaction_type" value="full"
-                                            checked="checked" id="full_payment_type_input" />
-                                        <label
-                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
-                                            for="full_payment_type_input">
-                                            <i class="ki-outline ki-dollar fs-2x me-5"></i>
-                                            <!--begin::Info-->
-                                            <span class="d-block fw-semibold text-start">
-                                                <span class="text-gray-900 fw-bold d-block fs-6">Full Payment</span>
-                                            </span>
-                                            <!--end::Info-->
-                                        </label>
-                                        <!--end::Option-->
-                                    </div>
-                                    <!--end::Col-->
-
-                                    <!--begin::Col-->
-                                    <div class="col-lg-4">
-                                        <!--begin::Option-->
-                                        <input type="radio" class="btn-check" name="transaction_type" value="partial"
-                                            id="partial_payment_type_input" />
-                                        <label
-                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
-                                            for="partial_payment_type_input">
-                                            <i class="ki-outline ki-finance-calculator fs-2x me-5"></i>
-                                            <!--begin::Info-->
-                                            <span class="d-block fw-semibold text-start">
-                                                <span class="text-gray -mt-2-900 fw-bold d-block fs-6">Partial
-                                                    Payment</span>
-                                            </span>
-                                            <!--end::Info-->
-                                        </label>
-                                        <!--end::Option-->
-                                    </div>
-                                    <!--end::Col-->
-
-                                    <!--begin::Col-->
-                                    <div class="col-lg-4">
-                                        <!--begin::Option-->
-                                        <input type="radio" class="btn-check" name="transaction_type"
-                                            value="discounted" id="discounted_payment_type_input" />
-                                        <label
-                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
-                                            for="discounted_payment_type_input">
-                                            <i class="ki-outline ki-discount fs-2x me-5"></i>
-                                            <!--begin::Info-->
-                                            <span class="d-block fw-semibold text-start">
-                                                <span class="text-gray -mt-2-900 fw-bold d-block fs-6">Discounted</span>
-                                            </span>
-                                            <!--end::Info-->
-                                        </label>
-                                        <!--end::Option-->
-                                    </div>
-                                    <!--end::Col-->
-                                </div>
-                                <!--end::Row-->
-                            </div>
-                            <!--end::Type Input group-->
-
                             <div class="row">
+                                <!--begin::Name Input group-->
                                 <div class="col-lg-6">
-                                    <!--begin::Name Input group-->
                                     <div class="fv-row mb-7">
                                         <!--begin::Label-->
-                                        <label class="required fw-semibold fs-6 mb-2">Amount</label>
+                                        <label class="required fw-semibold fs-6 mb-2">Name</label>
                                         <!--end::Label-->
                                         <!--begin::Input-->
-                                        <input type="number" name="transaction_amount" min="0"
-                                            id="transaction_amount_input"
+                                        <input type="text" name="teacher_name"
                                             class="form-control form-control-solid mb-3 mb-lg-0"
-                                            placeholder="Enter the paid amount" required disabled />
+                                            placeholder="Enter teacher name" required />
                                         <!--end::Input-->
                                     </div>
-                                    <!--end::Name Input group-->
                                 </div>
+                                <!--end::Name Input group-->
 
+                                <!--begin::Salary Input group-->
                                 <div class="col-lg-6">
-                                    <!--begin::Name Input group-->
                                     <div class="fv-row">
                                         <!--begin::Label-->
-                                        <label class="fw-semibold fs-6 mb-2">Remarks <span
-                                                class="text-muted">(optional)</span></label>
+                                        <label class="fw-semibold fs-6 mb-2 required">Base Salary (tk)</label>
                                         <!--end::Label-->
                                         <!--begin::Input-->
-                                        <input type="text" name="transaction_remarks" min="0"
+                                        <input type="number" name="teacher_salary" min="100"
                                             class="form-control form-control-solid mb-3 mb-lg-0"
-                                            placeholder="Add some remarks" />
+                                            placeholder="Enter base salary" required />
                                         <!--end::Input-->
                                     </div>
-                                    <!--end::Name Input group-->
                                 </div>
+                                <!--end::Salary Input group-->
+
+                                <!--begin::Phone Input group-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row">
+                                        <!--begin::Label-->
+                                        <label class="fw-semibold fs-6 mb-2 required">Phone</label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <input type="text" name="teacher_phone"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="Enter phone number" required />
+                                        <!--end::Input-->
+                                    </div>
+                                </div>
+                                <!--end::Phone Input group-->
+
+                                <!--begin::Email Input group-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row">
+                                        <!--begin::Label-->
+                                        <label class="fw-semibold fs-6 mb-2 required">Email</label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <input type="email" name="teacher_email"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="Enter email number" required />
+                                        <!--end::Input-->
+                                    </div>
+                                </div>
+                                <!--end::Email Input group-->
                             </div>
                         </div>
                         <!--end::Scroll-->
@@ -395,7 +299,123 @@
         </div>
         <!--end::Modal dialog-->
     </div>
-    <!--end::Modal - Add Transaction-->
+    <!--end::Modal - Add Teacher-->
+
+
+    <!--begin::Modal - Edit User-->
+    <div class="modal fade" id="kt_modal_edit_teacher" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+        data-bs-keyboard="false">
+        <!--begin::Modal dialog-->
+        <div class="modal-dialog modal-dialog-centered mw-750px">
+            <!--begin::Modal content-->
+            <div class="modal-content">
+                <!--begin::Modal header-->
+                <div class="modal-header">
+                    <!--begin::Modal title-->
+                    <h2 class="fw-bold" id="kt_modal_edit_teacher_title">Update Teacher</h2>
+                    <!--end::Modal title-->
+                    <!--begin::Close-->
+                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-edit-teachers-modal-action="close">
+                        <i class="ki-outline ki-cross fs-1">
+                        </i>
+                    </div>
+                    <!--end::Close-->
+                </div>
+                <!--end::Modal header-->
+                <!--begin::Modal body-->
+                <div class="modal-body px-5 my-7">
+                    <!--begin::Form-->
+                    <form id="kt_modal_edit_teacher_form" class="form" action="#" novalidate="novalidate">
+                        <!--begin::Scroll-->
+                        <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_edit_teacher_scroll"
+                            data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
+                            data-kt-scroll-dependencies="#kt_modal_edit_teacher_header"
+                            data-kt-scroll-wrappers="#kt_modal_edit_teacher_scroll" data-kt-scroll-offset="300px">
+                            <div class="row">
+                                <!--begin::Name Input group-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row mb-7">
+                                        <!--begin::Label-->
+                                        <label class="required fw-semibold fs-6 mb-2">Name</label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <input type="text" name="teacher_name_edit"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="Enter teacher name" required />
+                                        <!--end::Input-->
+                                    </div>
+                                </div>
+                                <!--end::Name Input group-->
+
+                                <!--begin::Salary Input group-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row">
+                                        <!--begin::Label-->
+                                        <label class="fw-semibold fs-6 mb-2 required">Base Salary (tk)</label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <input type="number" name="teacher_salary_edit" min="100"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="Enter base salary" required />
+                                        <!--end::Input-->
+                                    </div>
+                                </div>
+                                <!--end::Salary Input group-->
+
+                                <!--begin::Phone Input group-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row">
+                                        <!--begin::Label-->
+                                        <label class="fw-semibold fs-6 mb-2 required">Phone</label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <input type="text" name="teacher_phone_edit"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="Enter phone number" required />
+                                        <!--end::Input-->
+                                    </div>
+                                </div>
+                                <!--end::Phone Input group-->
+
+                                <!--begin::Email Input group-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row">
+                                        <!--begin::Label-->
+                                        <label class="fw-semibold fs-6 mb-2 required">Email</label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <input type="email" name="teacher_email_edit"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="Enter email number" required />
+                                        <!--end::Input-->
+                                    </div>
+                                </div>
+                                <!--end::Email Input group-->
+                            </div>
+                        </div>
+                        <!--end::Scroll-->
+
+                        <!--begin::Actions-->
+                        <div class="text-center pt-10">
+                            <button type="reset" class="btn btn-light me-3"
+                                data-edit-teachers-modal-action="cancel">Discard</button>
+                            <button type="submit" class="btn btn-primary" data-edit-teachers-modal-action="submit">
+                                <span class="indicator-label">Update</span>
+                                <span class="indicator-progress">Please wait...
+                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                            </button>
+                        </div>
+                        <!--end::Actions-->
+                    </form>
+                    <!--end::Form-->
+                </div>
+                <!--end::Modal body-->
+            </div>
+            <!--end::Modal content-->
+        </div>
+        <!--end::Modal dialog-->
+    </div>
+    <!--end::Modal - Edit User-->
 
 
     <!--begin::Modal - Edit Teacher Password-->
@@ -421,7 +441,8 @@
                 <!--begin::Modal body-->
                 <div class="modal-body px-5 my-7">
                     <!--begin::Form-->
-                    <form id="kt_modal_edit_password_form" class="form" action="#" novalidate="novalidate" autocomplete="off">
+                    <form id="kt_modal_edit_password_form" class="form" action="#" novalidate="novalidate"
+                        autocomplete="off">
                         <!--begin::Scroll-->
                         <div class="d-flex flex-column scroll-y px-5" id="kt_modal_edit_password_scroll"
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
@@ -438,9 +459,10 @@
                                         <div class="input-group">
                                             <input type="password" name="new_password" id="teacherPasswordNew"
                                                 class="form-control mb-3 mb-lg-0" placeholder="Enter New Password"
-                                                required autocomplete="off"/>
-                                            <span class="input-group-text toggle-password" data-target="teacherPasswordNew"
-                                                style="cursor: pointer;" title="See Password" data-bs-toggle="tooltip">
+                                                required autocomplete="off" />
+                                            <span class="input-group-text toggle-password"
+                                                data-target="teacherPasswordNew" style="cursor: pointer;"
+                                                title="See Password" data-bs-toggle="tooltip">
                                                 <i class="ki-outline ki-eye fs-3"></i>
                                             </span>
                                         </div>

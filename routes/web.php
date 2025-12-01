@@ -66,6 +66,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     // Teachers
     Route::post('teachers/toggle-active', [TeacherController::class, 'toggleActive'])->name('teachers.toggleActive');
     Route::put('teachers/{teacher}/password', [TeacherController::class, 'teacherPasswordReset'])->name('teachers.password.reset');
+    Route::get('teachers/{id}/ajax-data', [TeacherController::class, 'getTeacherData']);
 
     // Invoices
     Route::get('students/{student}/due-invoices', [PaymentInvoiceController::class, 'getDueInvoices'])->name('students.due.invoices');

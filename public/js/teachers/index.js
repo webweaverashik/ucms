@@ -266,10 +266,353 @@ var KTAddTeacher = function () {
             }
       }
 
+      // Form validation
+      var initValidation = function () {
+            if (!form) return;
+
+            var validator = FormValidation.formValidation(
+                  form,
+                  {
+                        fields: {
+                              'teacher_name': {
+                                    validators: {
+                                          notEmpty: {
+                                                message: 'Teacher name is required'
+                                          }
+                                    }
+                              },
+                              'teacher_email': {
+                                    validators: {
+                                          notEmpty: {
+                                                message: 'Email is required'
+                                          },
+                                          emailAddress: {
+                                                message: 'Enter a valid email address',
+                                          },
+                                    }
+                              },
+                              'teacher_phone': {
+                                    validators: {
+                                          notEmpty: {
+                                                message: 'Mobile no. is required'
+                                          },
+                                          regexp: {
+                                                regexp: /^01[3-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
+                                                message: 'Please enter a valid Bangladeshi mobile number'
+                                          },
+                                          stringLength: {
+                                                min: 11,
+                                                max: 11,
+                                                message: 'The mobile number must be exactly 11 digits'
+                                          }
+                                    }
+                              },
+                              'teacher_salary': {
+                                    validators: {
+                                          notEmpty: {
+                                                message: 'Salary is required'
+                                          },
+                                          greaterThan: {
+                                                min: 100,
+                                                message: 'Salary must be at least 100'
+                                          }
+                                    }
+                              },
+                        },
+                        plugins: {
+                              trigger: new FormValidation.plugins.Trigger(),
+                              bootstrap: new FormValidation.plugins.Bootstrap5({
+                                    rowSelector: '.fv-row',
+                                    eleInvalidClass: '',
+                                    eleValidClass: ''
+                              })
+                        }
+                  }
+            );
+
+            const submitButton = element.querySelector('[data-kt-add-teacher-modal-action="submit"]');
+
+            if (submitButton && validator) {
+                  submitButton.addEventListener('click', function (e) {
+                        e.preventDefault(); // Prevent default button behavior
+
+                        validator.validate().then(function (status) {
+                              if (status === 'Valid') {
+                                    // Show loading indicator
+                                    submitButton.setAttribute('data-kt-indicator', 'on');
+                                    submitButton.disabled = true;
+
+                                    const formData = new FormData(form);
+                                    formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+
+                                    fetch(storeTeacherRoute, {
+                                          method: "POST",
+                                          body: formData,
+                                          headers: {
+                                                'Accept': 'application/json', // Explicitly ask for JSON
+                                                'X-Requested-With': 'XMLHttpRequest'
+                                          }
+                                    })
+                                          .then(async response => {
+                                                const data = await response.json();
+
+                                                if (!response.ok) {
+                                                      const message = data.message || 'Something went wrong';
+                                                      const errors = data.errors
+                                                            ? [...new Set(Object.values(data.errors).flat())].join('<br>')
+                                                            : '';
+                                                      throw {
+                                                            message: data.message || 'User creation failed',
+                                                            response: new Response(JSON.stringify(data), {
+                                                                  status: 422,
+                                                                  headers: { 'Content-type': 'application/json' }
+                                                            })
+                                                      };
+
+                                                }
+
+                                                return data;
+                                          })
+
+                                          .then(data => {
+                                                submitButton.removeAttribute('data-kt-indicator');
+                                                submitButton.disabled = false;
+
+                                                if (data.success) {
+                                                      toastr.success(data.message || 'Teacher created successfully');
+                                                      modal.hide();
+                                                      setTimeout(() => {
+                                                            window.location.reload();
+                                                      }, 1500);
+                                                } else {
+                                                      toastr.error(data.message || 'Teacher creation failed');
+                                                }
+                                          })
+                                          .catch(error => {
+                                                submitButton.removeAttribute('data-kt-indicator');
+                                                submitButton.disabled = false;
+                                                toastr.error(error.message || 'Failed to create teacher');
+                                                console.error('Error:', error);
+                                          });
+
+                              } else {
+                                    toastr.warning('Please fill all fields correctly');
+                              }
+                        });
+                  });
+            }
+      }
+
       return {
             init: function () {
-                  // initAddTransaction();
                   initCloseModal();
+                  initValidation();
+            }
+      };
+}();
+
+
+var KTEditTeacher = function () {
+      // Shared variables
+      const element = document.getElementById('kt_modal_edit_teacher');
+      const form = element.querySelector('#kt_modal_edit_teacher_form');
+      const modal = new bootstrap.Modal(element);
+
+      let teacherId = null;
+      let validator = null; // Declare validator globally
+
+      // Init Edit User Modal
+      const initEditTeacher = () => {
+            document.addEventListener('click', function (e) {
+                  const editBtn = e.target.closest("[data-bs-target='#kt_modal_edit_teacher']");
+                  if (!editBtn) return;
+
+                  e.preventDefault();
+
+                  teacherId = editBtn.getAttribute("data-teacher-id");
+                  console.log('Teacher ID:', teacherId);
+
+                  if (!teacherId) return;
+
+                  if (form) form.reset();
+
+                  // AJAX data fetch
+                  fetch(`/teachers/${teacherId}/ajax-data`)
+                        .then(response => {
+                              if (!response.ok) throw new Error('Network response was not ok');
+                              return response.json();
+                        })
+                        .then(data => {
+                              if (data.success && data.data) {
+                                    const teacher = data.data;
+
+                                    const titleEl = document.getElementById("kt_modal_edit_teacher_title");
+                                    if (titleEl) {
+                                          titleEl.textContent = `Update teacher ${teacher.name}`;
+                                    }
+
+                                    document.querySelector("input[name='teacher_name_edit']").value = teacher.name;
+                                    document.querySelector("input[name='teacher_email_edit']").value = teacher.email;
+                                    document.querySelector("input[name='teacher_phone_edit']").value = teacher.phone;
+                                    document.querySelector("input[name='teacher_salary_edit']").value = teacher.base_salary;
+
+                                    modal.show();
+
+                              } else {
+                                    throw new Error(data.message || 'Invalid response data');
+                              }
+                        })
+                        .catch(error => {
+                              console.error("Error:", error);
+                              toastr.error(error.message || "Failed to load user details");
+                        });
+            });
+
+            // Cancel and close buttons
+            const cancelButton = element.querySelector('[data-edit-teachers-modal-action="cancel"]');
+            const closeButton = element.querySelector('[data-edit-teachers-modal-action="close"]');
+            [cancelButton, closeButton].forEach(btn => {
+                  if (btn) {
+                        btn.addEventListener('click', e => {
+                              e.preventDefault();
+                              form.reset();
+                              modal.hide();
+                        });
+                  }
+            });
+      };
+
+
+      // Form validation
+      var initEditFormValidation = function () {
+            if (!form) return;
+
+            validator = FormValidation.formValidation(
+                  form,
+                  {
+                        fields: {
+                              'teacher_name_edit': {
+                                    validators: {
+                                          notEmpty: {
+                                                message: 'Teacher name is required'
+                                          }
+                                    }
+                              },
+                              'teacher_email_edit': {
+                                    validators: {
+                                          notEmpty: {
+                                                message: 'Email is required'
+                                          },
+                                          emailAddress: {
+                                                message: 'Enter a valid email address',
+                                          },
+                                    }
+                              },
+                              'teacher_phone_edit': {
+                                    validators: {
+                                          notEmpty: {
+                                                message: 'Mobile no. is required'
+                                          },
+                                          regexp: {
+                                                regexp: /^01[3-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
+                                                message: 'Please enter a valid Bangladeshi mobile number'
+                                          },
+                                          stringLength: {
+                                                min: 11,
+                                                max: 11,
+                                                message: 'The mobile number must be exactly 11 digits'
+                                          }
+                                    }
+                              },
+                              'teacher_salary_edit': {
+                                    validators: {
+                                          notEmpty: {
+                                                message: 'Salary is required'
+                                          },
+                                          greaterThan: {
+                                                min: 100,
+                                                message: 'Salary must be at least 100'
+                                          }
+                                    }
+                              },
+                        },
+                        plugins: {
+                              trigger: new FormValidation.plugins.Trigger(),
+                              bootstrap: new FormValidation.plugins.Bootstrap5({
+                                    rowSelector: '.fv-row',
+                                    eleInvalidClass: '',
+                                    eleValidClass: ''
+                              })
+                        }
+                  }
+            );
+
+            const submitButton = element.querySelector('[data-edit-teachers-modal-action="submit"]');
+
+            if (submitButton && validator) {
+                  submitButton.addEventListener('click', function (e) {
+                        e.preventDefault(); // Prevent default button behavior
+
+                        validator.validate().then(function (status) {
+                              if (status === 'Valid') {
+                                    // Show loading indicator
+                                    submitButton.setAttribute('data-kt-indicator', 'on');
+                                    submitButton.disabled = true;
+
+                                    const formData = new FormData(form);
+                                    formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+                                    formData.append('_method', 'PUT');
+
+                                    console.log(teacherId);
+                                    fetch(`/teachers/${teacherId}`, {
+                                          method: 'POST',
+                                          body: formData,
+                                          headers: {
+                                                'Accept': 'application/json',
+                                                'X-Requested-With': 'XMLHttpRequest'
+                                          }
+                                    })
+                                          .then(response => {
+                                                if (!response.ok) {
+                                                      return response.json().then(errorData => {
+                                                            // Show error from Laravel if available
+                                                            throw new Error(errorData.message || 'Network response was not ok');
+                                                      });
+                                                }
+                                                return response.json();
+                                          })
+                                          .then(data => {
+                                                submitButton.removeAttribute('data-kt-indicator');
+                                                submitButton.disabled = false;
+
+                                                if (data.success) {
+                                                      toastr.success(data.message || 'Teacher updated successfully');
+                                                      modal.hide();
+                                                      setTimeout(() => {
+                                                            window.location.reload();
+                                                      }, 1500); // 1000ms = 1 second delay
+                                                } else {
+                                                      throw new Error(data.message || 'Teacher Update failed');
+                                                }
+                                          })
+                                          .catch(error => {
+                                                submitButton.removeAttribute('data-kt-indicator');
+                                                submitButton.disabled = false;
+                                                toastr.error(error.message || 'Failed to update user');
+                                                console.error('Error:', error);
+                                          });
+                              } else {
+                                    toastr.warning('Please fill all required fields');
+                              }
+                        });
+                  });
+            }
+      };
+
+      return {
+            init: function () {
+                  initEditTeacher();
+                  initEditFormValidation();
             }
       };
 }();
@@ -519,5 +862,6 @@ var KTEditPassword = function () {
 KTUtil.onDOMContentLoaded(function () {
       KTAllTeachersList.init();
       KTAddTeacher.init();
+      KTEditTeacher.init();
       KTEditPassword.init();
 });

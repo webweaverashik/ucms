@@ -1,9 +1,9 @@
 <?php
 namespace App\Http\Controllers\Teacher;
 
-use Illuminate\Http\Request;
-use App\Models\Teacher\Teacher;
 use App\Http\Controllers\Controller;
+use App\Models\Teacher\Teacher;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class TeacherController extends Controller
@@ -31,7 +31,27 @@ class TeacherController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $commonRules = [
+            'teacher_name'   => 'required|string|max:255',
+            'teacher_email'  => 'required|string|email|max:255|unique:teachers,email',
+            'teacher_phone'  => 'required|string|size:11',
+            'teacher_salary' => 'required|integer|min:100',
+        ];
+
+        $request->validate($commonRules);
+
+        $teacher = Teacher::create([
+            'name'        => $request->teacher_name,
+            'email'       => $request->teacher_email,
+            'phone'       => $request->teacher_phone,
+            'password'    => Hash::make('ucms@123'),
+            'base_salary' => $request->teacher_salary,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Teacher created successfully',
+        ]);
     }
 
     /**
@@ -49,11 +69,30 @@ class TeacherController extends Controller
     }
 
     /**
+     * Show the ajax data for editing the teacher
+     */
+    public function getTeacherData(string $id)
+    {
+        $teacher = Teacher::find($id);
+
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'id'          => $teacher->id,
+                'name'        => $teacher->name,
+                'email'       => $teacher->email,
+                'phone'       => $teacher->phone,
+                'base_salary' => $teacher->base_salary,
+            ],
+        ]);
+    }
+
+    /**
      * Show the form for editing the specified resource.
      */
     public function edit(string $id)
     {
-        //
+        return redirect()->back();
     }
 
     /**
@@ -61,7 +100,29 @@ class TeacherController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $teacher = Teacher::findOrFail($id);
+
+        $commonRules = [
+            'teacher_name_edit'   => 'required|string|max:255',
+            'teacher_email_edit'  => 'required|string|email|max:255|unique:teachers,email,' . $teacher->id,
+            'teacher_phone_edit'  => 'required|string|size:11',
+            'teacher_salary_edit' => 'required|integer|min:100',
+        ];
+
+        $request->validate($commonRules);
+
+        // Update the teacher record
+        $teacher->update([
+            'name'        => $request->teacher_name_edit,
+            'email'       => $request->teacher_email_edit,
+            'phone'       => $request->teacher_phone_edit,
+            'base_salary' => $request->teacher_salary_edit,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Teacher updated successfully',
+        ]);
     }
 
     /**
@@ -80,6 +141,10 @@ class TeacherController extends Controller
      */
     public function toggleActive(Request $request)
     {
+        if (auth()->user()->cannot('teachers.edit')) {
+            return response()->json(['success' => false, 'message' => 'You do not have permission to perform this action.']);
+        }
+
         $teacher = Teacher::find($request->teacher_id);
 
         if (! $teacher) {
