@@ -147,7 +147,8 @@
                                     <div
                                         class="form-check form-switch form-check-solid form-check-success d-flex justify-content-center">
                                         <input class="form-check-input toggle-active" type="checkbox"
-                                            value="{{ $teacher->id }}" @if ($teacher->is_active == 1) checked @endif @cannot('teachers.edit') disabled @endcan>
+                                            value="{{ $teacher->id }}" @if ($teacher->is_active == 1) checked @endif
+                                            @cannot('teachers.edit') disabled @endcan>
                                     </div>
                                 </td>
                                 <td>
@@ -231,9 +232,59 @@
                                 </div>
                                 <!--end::Name Input group-->
 
+                                <!--begin::Gender Input group-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row mb-7">
+                                        <!--begin::Label-->
+                                        <label class="required fw-semibold fs-6 mb-2">Gender</label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <div class="row">
+                                            <!--begin::Col-->
+                                            <div class="col-lg-6">
+                                                <!--begin::Option-->
+                                                <input type="radio" class="btn-check" name="teacher_gender"
+                                                    value="male" checked="checked" id="gender_male_input" />
+                                                <label
+                                                    class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                                    for="gender_male_input">
+                                                    <i class="las la-mars fs-2x me-5"></i>
+                                                    <!--begin::Info-->
+                                                    <span class="d-block fw-semibold text-start">
+                                                        <span class="text-gray-900 fw-bold d-block fs-6">Male</span>
+                                                    </span>
+                                                    <!--end::Info-->
+                                                </label>
+                                                <!--end::Option-->
+                                            </div>
+                                            <!--end::Col-->
+                                            <!--begin::Col-->
+                                            <div class="col-lg-6">
+                                                <!--begin::Option-->
+                                                <input type="radio" class="btn-check" name="teacher_gender"
+                                                    value="female" id="gender_female_input" />
+                                                <label
+                                                    class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                                    for="gender_female_input">
+                                                    <i class="las la-venus fs-2x me-5"></i>
+                                                    <!--begin::Info-->
+                                                    <span class="d-block fw-semibold text-start">
+                                                        <span class="text-gray-900 fw-bold d-block fs-6">Female</span>
+                                                    </span>
+                                                    <!--end::Info-->
+                                                </label>
+                                                <!--end::Option-->
+                                            </div>
+                                            <!--end::Col-->
+                                        </div>
+                                        <!--end::Input-->
+                                    </div>
+                                </div>
+                                <!--end::Gender Input group-->
+
                                 <!--begin::Salary Input group-->
                                 <div class="col-lg-6">
-                                    <div class="fv-row">
+                                    <div class="fv-row mb-7">
                                         <!--begin::Label-->
                                         <label class="fw-semibold fs-6 mb-2 required">Base Salary (tk)</label>
                                         <!--end::Label-->
@@ -248,7 +299,7 @@
 
                                 <!--begin::Phone Input group-->
                                 <div class="col-lg-6">
-                                    <div class="fv-row">
+                                    <div class="fv-row mb-7">
                                         <!--begin::Label-->
                                         <label class="fw-semibold fs-6 mb-2 required">Phone</label>
                                         <!--end::Label-->
@@ -263,18 +314,84 @@
 
                                 <!--begin::Email Input group-->
                                 <div class="col-lg-6">
-                                    <div class="fv-row">
+                                    <div class="fv-row mb-7">
                                         <!--begin::Label-->
                                         <label class="fw-semibold fs-6 mb-2 required">Email</label>
                                         <!--end::Label-->
                                         <!--begin::Input-->
                                         <input type="email" name="teacher_email"
                                             class="form-control form-control-solid mb-3 mb-lg-0"
-                                            placeholder="Enter email number" required />
+                                            placeholder="Enter email address" required />
                                         <!--end::Input-->
                                     </div>
                                 </div>
                                 <!--end::Email Input group-->
+
+                                <!--begin::Blood Group Input-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row mb-7">
+                                        <!--begin::Label-->
+                                        <label class="fw-semibold fs-6 mb-2">Blood Group <span
+                                                class="text-muted">(optional)</span></label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <div class="input-group input-group-solid flex-nowrap">
+                                            <span class="input-group-text">
+                                                <i class="las la-tint fs-3"></i>
+                                            </span>
+                                            <div class="overflow-hidden flex-grow-1">
+                                                <select name="teacher_blood_group"
+                                                    class="form-select form-select-solid rounded-start-0 border-start"
+                                                    data-control="select2" data-placeholder="Select an option"
+                                                    data-hide-search="true">
+                                                    <option></option>
+                                                    <option value="A+">A+</option>
+                                                    <option value="B+">B+</option>
+                                                    <option value="AB+">AB+</option>
+                                                    <option value="O+">O+</option>
+                                                    <option value="A-">A-</option>
+                                                    <option value="B-">B-</option>
+                                                    <option value="AB-">AB-</option>
+                                                    <option value="O-">O-</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <!--end::Input-->
+                                    </div>
+                                </div>
+                                <!--end::Blood Group Input-->
+
+                                <!--begin::Qualification Input group-->
+                                <div class="col-lg-12">
+                                    <div class="fv-row mb-7">
+                                        <!--begin::Label-->
+                                        <label class="fw-semibold fs-6 mb-2">Academic Qualification <span
+                                                class="text-muted">(optional)</span></label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <input type="text" name="teacher_qualification"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="Enter academic qualification information" />
+                                        <!--end::Input-->
+                                    </div>
+                                </div>
+                                <!--end::Qualification Input group-->
+
+                                <!--begin::Experience Input group-->
+                                <div class="col-lg-12">
+                                    <div class="fv-row mb-7">
+                                        <!--begin::Label-->
+                                        <label class="fw-semibold fs-6 mb-2">Teaching Experience <span
+                                                class="text-muted">(optional)</span></label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <input type="text" name="teacher_experience"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="Enter teaching experience" />
+                                        <!--end::Input-->
+                                    </div>
+                                </div>
+                                <!--end::Experience Input group-->
                             </div>
                         </div>
                         <!--end::Scroll-->
@@ -302,7 +419,7 @@
     <!--end::Modal - Add Teacher-->
 
 
-    <!--begin::Modal - Edit User-->
+    <!--begin::Modal - Edit Teacher-->
     <div class="modal fade" id="kt_modal_edit_teacher" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
         data-bs-keyboard="false">
         <!--begin::Modal dialog-->
@@ -347,9 +464,59 @@
                                 </div>
                                 <!--end::Name Input group-->
 
+                                <!--begin::Gender Input group-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row mb-7">
+                                        <!--begin::Label-->
+                                        <label class="required fw-semibold fs-6 mb-2">Gender</label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <div class="row">
+                                            <!--begin::Col-->
+                                            <div class="col-lg-6">
+                                                <!--begin::Option-->
+                                                <input type="radio" class="btn-check" name="teacher_gender_edit"
+                                                    value="male" id="gender_male_input_edit" />
+                                                <label
+                                                    class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                                    for="gender_male_input_edit">
+                                                    <i class="las la-mars fs-2x me-5"></i>
+                                                    <!--begin::Info-->
+                                                    <span class="d-block fw-semibold text-start">
+                                                        <span class="text-gray-900 fw-bold d-block fs-6">Male</span>
+                                                    </span>
+                                                    <!--end::Info-->
+                                                </label>
+                                                <!--end::Option-->
+                                            </div>
+                                            <!--end::Col-->
+                                            <!--begin::Col-->
+                                            <div class="col-lg-6">
+                                                <!--begin::Option-->
+                                                <input type="radio" class="btn-check" name="teacher_gender_edit"
+                                                    value="female" id="gender_female_input_edit" />
+                                                <label
+                                                    class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                                    for="gender_female_input_edit">
+                                                    <i class="las la-venus fs-2x me-5"></i>
+                                                    <!--begin::Info-->
+                                                    <span class="d-block fw-semibold text-start">
+                                                        <span class="text-gray-900 fw-bold d-block fs-6">Female</span>
+                                                    </span>
+                                                    <!--end::Info-->
+                                                </label>
+                                                <!--end::Option-->
+                                            </div>
+                                            <!--end::Col-->
+                                        </div>
+                                        <!--end::Input-->
+                                    </div>
+                                </div>
+                                <!--end::Gender Input group-->
+
                                 <!--begin::Salary Input group-->
                                 <div class="col-lg-6">
-                                    <div class="fv-row">
+                                    <div class="fv-row mb-7">
                                         <!--begin::Label-->
                                         <label class="fw-semibold fs-6 mb-2 required">Base Salary (tk)</label>
                                         <!--end::Label-->
@@ -364,7 +531,7 @@
 
                                 <!--begin::Phone Input group-->
                                 <div class="col-lg-6">
-                                    <div class="fv-row">
+                                    <div class="fv-row mb-7">
                                         <!--begin::Label-->
                                         <label class="fw-semibold fs-6 mb-2 required">Phone</label>
                                         <!--end::Label-->
@@ -379,7 +546,7 @@
 
                                 <!--begin::Email Input group-->
                                 <div class="col-lg-6">
-                                    <div class="fv-row">
+                                    <div class="fv-row mb-7">
                                         <!--begin::Label-->
                                         <label class="fw-semibold fs-6 mb-2 required">Email</label>
                                         <!--end::Label-->
@@ -391,6 +558,72 @@
                                     </div>
                                 </div>
                                 <!--end::Email Input group-->
+
+                                <!--begin::Blood Group Input-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row mb-7">
+                                        <!--begin::Label-->
+                                        <label class="fw-semibold fs-6 mb-2">Blood Group <span
+                                                class="text-muted">(optional)</span></label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <div class="input-group input-group-solid flex-nowrap">
+                                            <span class="input-group-text">
+                                                <i class="las la-tint fs-3"></i>
+                                            </span>
+                                            <div class="overflow-hidden flex-grow-1">
+                                                <select name="teacher_blood_group_edit"
+                                                    class="form-select form-select-solid rounded-start-0 border-start"
+                                                    data-control="select2" data-placeholder="Select an option"
+                                                    data-hide-search="true">
+                                                    <option></option>
+                                                    <option value="A+">A+</option>
+                                                    <option value="B+">B+</option>
+                                                    <option value="AB+">AB+</option>
+                                                    <option value="O+">O+</option>
+                                                    <option value="A-">A-</option>
+                                                    <option value="B-">B-</option>
+                                                    <option value="AB-">AB-</option>
+                                                    <option value="O-">O-</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <!--end::Input-->
+                                    </div>
+                                </div>
+                                <!--end::Blood Group Input-->
+
+                                <!--begin::Qualification Input group-->
+                                <div class="col-lg-12">
+                                    <div class="fv-row mb-7">
+                                        <!--begin::Label-->
+                                        <label class="fw-semibold fs-6 mb-2">Academic Qualification <span
+                                                class="text-muted">(optional)</span></label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <input type="text" name="teacher_qualification_edit"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="Enter academic qualification information" />
+                                        <!--end::Input-->
+                                    </div>
+                                </div>
+                                <!--end::Qualification Input group-->
+
+                                <!--begin::Experience Input group-->
+                                <div class="col-lg-12">
+                                    <div class="fv-row mb-7">
+                                        <!--begin::Label-->
+                                        <label class="fw-semibold fs-6 mb-2">Teaching Experience <span
+                                                class="text-muted">(optional)</span></label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <input type="text" name="teacher_experience_edit"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="Enter teaching experience" />
+                                        <!--end::Input-->
+                                    </div>
+                                </div>
+                                <!--end::Experience Input group-->
                             </div>
                         </div>
                         <!--end::Scroll-->
@@ -415,7 +648,7 @@
         </div>
         <!--end::Modal dialog-->
     </div>
-    <!--end::Modal - Edit User-->
+    <!--end::Modal - Edit Teacher-->
 
 
     <!--begin::Modal - Edit Teacher Password-->

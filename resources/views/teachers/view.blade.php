@@ -120,7 +120,8 @@
                         <div class="d-flex align-items-center">
                             <!--begin::Avatar-->
                             <div class="symbol symbol-60px symbol-circle me-3">
-                                <img src="{{ $teacher->photo_url ? asset($teacher->photo_url) : asset($teacher->gender == 'male' ? 'img/male-placeholder.png' : 'img/female-placeholder.png')  }}" />
+                                <img
+                                    src="{{ $teacher->photo_url ? asset($teacher->photo_url) : asset($teacher->gender == 'male' ? 'img/male-placeholder.png' : 'img/female-placeholder.png') }}" />
 
                             </div>
                             <!--end::Avatar-->
@@ -174,7 +175,7 @@
                                     <td class="text-gray-800">{{ $teacher->academic_qualification }}</td>
                                 </tr>
                                 <!--end::Row-->
-                                
+
                                 <!--begin::Row-->
                                 <tr class="">
                                     <td class="text-gray-500">Experience:</td>
@@ -190,7 +191,7 @@
                                     </td>
                                 </tr>
                                 <!--end::Row-->
-                                
+
                                 <!--begin::Row-->
                                 <tr class="">
                                     <td class="text-gray-500">Blood Group:</td>
@@ -222,7 +223,7 @@
                             <!--begin::Details-->
                             <table class="table fs-6 fw-semibold gs-0 gy-2 gx-2">
                                 <!--begin::Row-->
-                                <tr class="">
+                                <tr>
                                     <td class="text-gray-500">Base Salary:</td>
                                     <td>
                                         ৳ {{ $teacher->base_salary }}
@@ -231,9 +232,9 @@
                                 <!--end::Row-->
 
                                 <!--begin::Row-->
-                                <tr class="">
-                                    <td class="text-gray-500">Total Class taken:</td>
-                                    <td class="text-gray-800">
+                                <tr>
+                                    <td class="text-gray-500">Total Class Taken:</td>
+                                    <td>
                                         100
                                     </td>
                                 </tr>
@@ -273,6 +274,20 @@
 
                             <!--begin::Row-->
                             <tr class="">
+                                <td class="text-gray-500">Last Updated:</td>
+                                <td class="text-gray-800">
+                                    {{ $teacher->updated_at->diffForHumans() }}
+                                    <span class="ms-1" data-bs-toggle="tooltip"
+                                        title="{{ $teacher->updated_at->format('h:i:s A, d-M-Y') }}">
+                                        <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
+                                    </span>
+
+                                </td>
+                            </tr>
+                            <!--end::Row-->
+
+                            <!--begin::Row-->
+                            <tr class="">
                                 <td class="text-gray-500">Registered Since:</td>
                                 <td class="text-gray-800">
                                     {{ $teacher->created_at->diffForHumans() }}
@@ -302,31 +317,24 @@
                 <!--begin:::Tab item-->
                 <li class="nav-item">
                     <a class="nav-link text-active-primary pb-4 active" data-bs-toggle="tab"
-                        href="#kt_student_view_personal_info_tab"><i class="ki-outline ki-home fs-3 me-2"></i>Personal
-                        Info</a>
-                </li>
-                <!--end:::Tab item-->
-
-                <!--begin:::Tab item-->
-                <li class="nav-item">
-                    <a class="nav-link text-active-primary pb-4" data-bs-toggle="tab"
-                        href="#kt_student_view_enrolled_subjects_tab"><i
-                            class="ki-outline ki-book-open fs-3 me-2"></i>Enrolled Subjects</a>
+                        href="#kt_student_view_personal_info_tab"><i class="ki-outline ki-book-open fs-3 me-2"></i>Class
+                        Assignments</a>
                 </li>
                 <!--end:::Tab item-->
 
                 <!--begin:::Tab item-->
                 <li class="nav-item">
                     <a class="nav-link text-active-primary pb-4" data-kt-countup-tabs="true" data-bs-toggle="tab"
-                        href="#kt_student_view_transactions_tab"><i
-                            class="ki-outline ki-credit-cart fs-3 me-2"></i>Transactions</a>
+                        href="#kt_student_view_transactions_tab"><i class="ki-outline ki-credit-cart fs-3 me-2"></i>Salary
+                        Tracking</a>
                 </li>
                 <!--end:::Tab item-->
 
                 <!--begin:::Tab item-->
                 <li class="nav-item">
                     <a class="nav-link text-active-primary pb-4" data-kt-countup-tabs="true" data-bs-toggle="tab"
-                        href="#kt_student_view_sheets_tab"><i class="ki-outline ki-some-files fs-3 me-2"></i>Sheets</a>
+                        href="#kt_student_view_sheets_tab"><i class="ki-outline ki-some-files fs-3 me-2"></i>Exam &
+                        Result</a>
                 </li>
                 <!--end:::Tab item-->
 
@@ -348,75 +356,43 @@
                         data-kt-menu="true">
                         <!--begin::Menu item-->
                         <div class="menu-item px-5">
-                            <div class="menu-content text-muted pb-2 px-5 fs-7 text-uppercase">Sheet</div>
-                        </div>
-                        <!--end::Menu item-->
-                        @can('notes.distribute')
-                            <div class="menu-item px-5">
-                                <a href="{{ route('notes.distribution.create') }}"
-                                    class="menu-link text-hover-primary px-5"><i class="ki-outline ki-note-2 fs-2 me-2"></i>
-                                    Note Distribution</a>
-                            </div>
-                        @endcan
-
-                        <!--begin::Menu separator-->
-                        <div class="separator my-3"></div>
-                        <!--end::Menu separator-->
-
-                        <!--begin::Menu item-->
-                        <div class="menu-item px-5">
                             <div class="menu-content text-muted pb-2 px-5 fs-7 text-uppercase">Account</div>
                         </div>
                         <!--end::Menu item-->
 
-                        @can('nothing')
+                        @can('teachers.edit')
                             <!--begin::Menu item-->
                             <div class="menu-item px-5">
-                                @if (optional($student->studentActivation)->active_status == 'active')
-                                    <a href="#" class="menu-link px-5 text-hover-warning" data-bs-toggle="modal"
+                                @if ($teacher->is_active === true)
+                                    <a href="#" class="menu-link text-hover-warning px-3" data-bs-toggle="modal"
                                         data-bs-target="#kt_toggle_activation_student_modal"
-                                        data-student-unique-id="{{ $student->student_unique_id }}"
-                                        data-student-name="{{ $student->name }}" data-student-id="{{ $student->id }}"
-                                        data-active-status="{{ optional($student->studentActivation)->active_status }}"><i
-                                            class="bi bi-person-slash fs-2 me-2"></i> Deactivate Student</a>
+                                        data-teacher-name="{{ $teacher->name }}" data-teacher-id="{{ $teacher->id }}"
+                                        data-active-status="{{ $teacher->is_active }}"><i
+                                            class="bi bi-person-slash fs-2 me-2"></i> Deactivate</a>
                                 @else
-                                    <a href="#" class="menu-link px-5 text-hover-success" data-bs-toggle="modal"
+                                    <a href="#" class="menu-link text-hover-success px" data-bs-toggle="modal"
                                         data-bs-target="#kt_toggle_activation_student_modal"
-                                        data-student-unique-id="{{ $student->student_unique_id }}"
-                                        data-student-name="{{ $student->name }}" data-student-id="{{ $student->id }}"
-                                        data-active-status="{{ optional($student->studentActivation)->active_status }}"><i
-                                            class="bi bi-person-check fs-2 me-2"></i> Activate Student</a>
+                                        data-teacher-name="{{ $teacher->name }}" data-teacher-id="{{ $teacher->id }}"
+                                        data-active-status="{{ $teacher->is_active }}"><i
+                                            class="bi bi-person-check fs-3 me-2"></i> Activate</a>
                                 @endif
                             </div>
                             <!--end::Menu item-->
-                        @endcan
 
-                        @can('nothing')
-                            @if (optional($student->studentActivation)->active_status == 'active')
-                                <div class="menu-item px-5">
-                                    <a href="{{ route('students.download', $student->id) }}" target="_blank"
-                                        class="menu-link text-hover-primary px-5"><i class="bi bi-download fs-2 me-2"></i>
-                                        Download Form</a>
-                                </div>
-                            @endif
-                        @endcan
-
-                        @can('nothing')
                             <!--begin::Menu item-->
                             <div class="menu-item px-5 my-1">
-                                <a href="{{ route('students.edit', $student->id) }}"
-                                    class="menu-link px-5 text-hover-primary"><i class="las la-pen fs-3 me-2"></i> Edit
-                                    Student</a>
+                                <a href="{{ route('teachers.edit', $teacher->id) }}"
+                                    class="menu-link text-hover-primary px-3"><i class="las la-pen fs-3 me-2"></i> Edit</a>
                             </div>
                             <!--end::Menu item-->
                         @endcan
 
-                        @can('nothing')
+                        @can('teachers.delete')
                             <!--begin::Menu item-->
                             <div class="menu-item px-5">
-                                <a href="#" class="menu-link text-hover-danger px-5 delete-student"
-                                    data-student-id="{{ $student->id }}"><i class="bi bi-trash fs-3 me-2"></i>
-                                    Delete Student</a>
+                                <a href="#" class="menu-link text-hover-danger px-3 delete-teacher"
+                                    data-teacher-id="{{ $teacher->id }}"><i class="bi bi-trash fs-3 me-2"></i>
+                                    Delete</a>
                             </div>
                             <!--end::Menu item-->
                         @endcan

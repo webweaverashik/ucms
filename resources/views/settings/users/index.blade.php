@@ -163,7 +163,7 @@
                                     <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
                                         <a href="#">
                                             <div class="symbol-label">
-                                                <img src="{{ $user->photo_url ? asset($user->photo_url) : asset('img/male.png') }}"
+                                                <img src="{{ $user->photo_url ? asset($user->photo_url) : asset('img/male-placeholder.png') }}"
                                                     alt="{{ $user->name }}" class="w-100" />
                                             </div>
                                         </a>

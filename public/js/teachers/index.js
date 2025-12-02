@@ -281,6 +281,13 @@ var KTAddTeacher = function () {
                                           }
                                     }
                               },
+                              'teacher_gender': {
+                                    validators: {
+                                          notEmpty: {
+                                                message: 'Gender is required'
+                                          }
+                                    }
+                              },
                               'teacher_email': {
                                     validators: {
                                           notEmpty: {
@@ -421,6 +428,7 @@ var KTEditTeacher = function () {
       let teacherId = null;
       let validator = null; // Declare validator globally
 
+
       // Init Edit User Modal
       const initEditTeacher = () => {
             document.addEventListener('click', function (e) {
@@ -452,12 +460,40 @@ var KTEditTeacher = function () {
                                     }
 
                                     document.querySelector("input[name='teacher_name_edit']").value = teacher.name;
-                                    document.querySelector("input[name='teacher_email_edit']").value = teacher.email;
-                                    document.querySelector("input[name='teacher_phone_edit']").value = teacher.phone;
                                     document.querySelector("input[name='teacher_salary_edit']").value = teacher.base_salary;
+                                    document.querySelector("input[name='teacher_phone_edit']").value = teacher.phone;
+                                    document.querySelector("input[name='teacher_email_edit']").value = teacher.email;
+
+                                    /* Gender Starts */
+                                    const gender = teacher.gender; // 'male' or 'female'
+                                    if (gender) {
+                                          const genderRadio = document.querySelector(
+                                                `input[name='teacher_gender_edit'][value="${gender}"]`
+                                          );
+
+                                          if (genderRadio) {
+                                                genderRadio.checked = true;
+                                                // trigger change so UI updates (Bootstrap active state, validation, etc.)
+                                                genderRadio.dispatchEvent(new Event('change'));
+                                          }
+                                    }
+                                    /* Gender Ends */
+
+
+                                    /* Blood Group Starts*/
+                                    const setSelect2Value = (name, value) => {
+                                          const el = $(`select[name="${name}"]`);
+                                          if (el.length) {
+                                                el.val(value).trigger('change');
+                                          }
+                                    };
+                                    setSelect2Value("teacher_blood_group_edit", teacher.blood_group);
+                                    /* Blood Group Ends*/
+
+                                    document.querySelector("input[name='teacher_qualification_edit']").value = teacher.qualification;
+                                    document.querySelector("input[name='teacher_experience_edit']").value = teacher.experience;
 
                                     modal.show();
-
                               } else {
                                     throw new Error(data.message || 'Invalid response data');
                               }
@@ -495,6 +531,13 @@ var KTEditTeacher = function () {
                                     validators: {
                                           notEmpty: {
                                                 message: 'Teacher name is required'
+                                          }
+                                    }
+                              },
+                              'teacher_gender_edit': {
+                                    validators: {
+                                          notEmpty: {
+                                                message: 'Gender is required'
                                           }
                                     }
                               },

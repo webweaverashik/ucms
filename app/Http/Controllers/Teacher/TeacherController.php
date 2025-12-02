@@ -32,20 +32,28 @@ class TeacherController extends Controller
     public function store(Request $request)
     {
         $commonRules = [
-            'teacher_name'   => 'required|string|max:255',
-            'teacher_email'  => 'required|string|email|max:255|unique:teachers,email',
-            'teacher_phone'  => 'required|string|size:11',
-            'teacher_salary' => 'required|integer|min:100',
+            'teacher_name'          => 'required|string|max:255',
+            'teacher_gender'        => 'required|in:male,female',
+            'teacher_salary'        => 'required|integer|min:100',
+            'teacher_phone'         => 'required|string|size:11',
+            'teacher_email'         => 'required|string|email|max:255|unique:teachers,email',
+            'teacher_blood_group'   => 'nullable|string',
+            'teacher_qualification' => 'nullable|string',
+            'teacher_experience'    => 'nullable|string',
         ];
 
         $request->validate($commonRules);
 
         $teacher = Teacher::create([
-            'name'        => $request->teacher_name,
-            'email'       => $request->teacher_email,
-            'phone'       => $request->teacher_phone,
-            'password'    => Hash::make('ucms@123'),
-            'base_salary' => $request->teacher_salary,
+            'name'                   => $request->teacher_name,
+            'gender'                 => $request->teacher_gender,
+            'email'                  => $request->teacher_email,
+            'phone'                  => $request->teacher_phone,
+            'password'               => Hash::make('ucms@123'),
+            'base_salary'            => $request->teacher_salary,
+            'blood_group'            => $request->teacher_blood_group,
+            'academic_qualification' => $request->teacher_qualification,
+            'experience'             => $request->teacher_experience,
         ]);
 
         return response()->json([
@@ -78,11 +86,15 @@ class TeacherController extends Controller
         return response()->json([
             'success' => true,
             'data'    => [
-                'id'          => $teacher->id,
-                'name'        => $teacher->name,
-                'email'       => $teacher->email,
-                'phone'       => $teacher->phone,
-                'base_salary' => $teacher->base_salary,
+                'id'            => $teacher->id,
+                'name'          => $teacher->name,
+                'email'         => $teacher->email,
+                'phone'         => $teacher->phone,
+                'base_salary'   => $teacher->base_salary,
+                'gender'        => $teacher->gender,
+                'blood_group'   => $teacher->blood_group,
+                'qualification' => $teacher->academic_qualification,
+                'experience'    => $teacher->experience,
             ],
         ]);
     }
@@ -103,20 +115,28 @@ class TeacherController extends Controller
         $teacher = Teacher::findOrFail($id);
 
         $commonRules = [
-            'teacher_name_edit'   => 'required|string|max:255',
-            'teacher_email_edit'  => 'required|string|email|max:255|unique:teachers,email,' . $teacher->id,
-            'teacher_phone_edit'  => 'required|string|size:11',
-            'teacher_salary_edit' => 'required|integer|min:100',
+            'teacher_name_edit'          => 'required|string|max:255',
+            'teacher_gender_edit'        => 'required|in:male,female',
+            'teacher_salary_edit'        => 'required|integer|min:100',
+            'teacher_phone_edit'         => 'required|string|size:11',
+            'teacher_email_edit'         => 'required|string|email|max:255|unique:teachers,email,' . $teacher->id,
+            'teacher_blood_group_edit'   => 'nullable|string',
+            'teacher_qualification_edit' => 'nullable|string',
+            'teacher_experience_edit'    => 'nullable|string',
         ];
 
         $request->validate($commonRules);
 
         // Update the teacher record
         $teacher->update([
-            'name'        => $request->teacher_name_edit,
-            'email'       => $request->teacher_email_edit,
-            'phone'       => $request->teacher_phone_edit,
-            'base_salary' => $request->teacher_salary_edit,
+            'name'                   => $request->teacher_name_edit,
+            'gender'                 => $request->teacher_gender_edit,
+            'email'                  => $request->teacher_email_edit,
+            'phone'                  => $request->teacher_phone_edit,
+            'base_salary'            => $request->teacher_salary_edit,
+            'blood_group'            => $request->teacher_blood_group_edit,
+            'academic_qualification' => $request->teacher_qualification_edit,
+            'experience'             => $request->teacher_experience_edit,
         ]);
 
         return response()->json([

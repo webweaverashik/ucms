@@ -23,7 +23,7 @@ return new class extends Migration
             $table->foreignId('batch_id');
             $table->foreignId('institution_id')->nullable();
             $table->string('religion')->nullable();
-            $table->enum('blood_group', ['A+', 'B+', 'AB+', 'O+', 'A-', 'B-', 'AB-', 'O-'])->nullable();
+            $table->string('blood_group')->nullable();
             $table->text('home_address')->nullable();
             $table->string('email')->unique()->nullable();
             $table->string('password');

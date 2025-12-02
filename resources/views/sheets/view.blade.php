@@ -81,8 +81,8 @@
                                         <a href="#" data-bs-toggle="modal" data-bs-target="#kt_modal_edit_sheet"
                                             data-sheet-id="{{ $sheet->id }}" data-sheet-price="{{ $sheet->price }}"
                                             data-sheet-class="{{ $sheet->class->name }} ({{ $sheet->class->class_numeral }})"
-                                            class="menu-link text-hover-primary px-3"><i class="las la-pen fs-3 me-2"></i> Update
-                                            Sheet</a>
+                                            class="menu-link text-hover-primary px-3"><i class="las la-pen fs-3 me-2"></i> Edit
+                                            Price</a>
                                     </div>
                                     <!--end::Menu item-->
                                 @endcan
