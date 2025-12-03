@@ -35,6 +35,9 @@ class RolePermissionSeeder extends Seeder
             'students.promote',
             'students.transfer',
 
+            // 🗓️ attendance
+            'students.attendance.manage',
+
             // 👨‍👩‍👧 guardians
             'guardians.view',
             'guardians.create',
@@ -69,10 +72,6 @@ class RolePermissionSeeder extends Seeder
             'notes.manage',
             'notes.distribute',
 
-            // 🗓️ attendance
-            'attendance.mark',
-            'attendance.view',
-
             // 📚 subjects
             'subjects.manage',
 
@@ -90,9 +89,7 @@ class RolePermissionSeeder extends Seeder
             'teachers.create',
             'teachers.edit',
             'teachers.delete',
-            'teachers.deactivate',
             'teachers.salary.manage',
-            'teachers.class.track',
 
             // 🏫 institutions
             'institutions.view',
@@ -153,6 +150,9 @@ class RolePermissionSeeder extends Seeder
             'students.form.download',
             'students.promote',
 
+            // 🗓️ attendance
+            'students.attendance.manage',
+
             // 👨‍👩‍👧 guardians
             'guardians.view',
             'guardians.create',
@@ -170,6 +170,10 @@ class RolePermissionSeeder extends Seeder
 
             // 🏷️ classes
             'classes.view',
+
+            // 🧑‍🏫 teachers
+            'teachers.view',
+            'teachers.salary.manage',
 
             // 💸 invoices
             'invoices.view',
@@ -209,6 +213,9 @@ class RolePermissionSeeder extends Seeder
             'students.approve',
             'students.form.download',
 
+            // 🗓️ attendance
+            'students.attendance.manage',
+
             // 👨‍👩‍👧 guardians
             'guardians.view',
             'guardians.create',
@@ -223,6 +230,10 @@ class RolePermissionSeeder extends Seeder
 
             // 🏷️ classes
             'classes.view',
+
+            // 🧑‍🏫 teachers
+            'teachers.view',
+            'teachers.salary.manage',
 
             // 💸 invoices
             'invoices.view',

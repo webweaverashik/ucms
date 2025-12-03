@@ -186,7 +186,7 @@
 
 
                     <!--begin:Academic Menu item-->
-                    @canany(['institutions.view', 'classes.view', 'batches.manage'])
+                    @canany(['institutions.view', 'classes.view', 'batches.manage', 'students.attendance.manage'])
                         <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="academic_menu">
                             <!--begin:Menu link-->
                             <span class="menu-link">
@@ -232,6 +232,19 @@
                                         <a class="menu-link" id="batches_link" href="{{ route('batches.index') }}"><span
                                                 class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
                                                 class="menu-title">Batches</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                    <!--end:Menu item-->
+                                @endcan
+
+                                @can('students.attendance.manage')
+                                    <!--begin:Menu item-->
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <a class="menu-link" id="attendance_link" href="{{ route('attendances.index') }}"><span
+                                                class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
+                                                class="menu-title">Attendance</span>
                                         </a>
                                         <!--end:Menu link-->
                                     </div>
@@ -358,48 +371,54 @@
                     <!--end:Invoices & Transactions-->
 
 
-                    {{-- ----------------- Teachers Modules ----------------- --}}
                     <!--begin:Teachers Modules-->
-                    <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="teachers_menu">
-                        <!--begin:Menu link-->
-                        <span class="menu-link">
-                            <span class="menu-icon">
-                                <i class="fa-solid fa-person-chalkboard fs-3"></i>
+                    @canany(['teachers.view', 'teachers.create', 'teachers.edit', 'teachers.delete',
+                        'teachers.salary.manage'])
+                        <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="teachers_menu">
+                            <!--begin:Menu link-->
+                            <span class="menu-link">
+                                <span class="menu-icon">
+                                    <i class="fa-solid fa-person-chalkboard fs-3"></i>
+                                </span>
+                                <span class="menu-title">Teachers</span>
+                                <span class="menu-arrow"></span>
                             </span>
-                            <span class="menu-title">Teachers</span>
-                            <span class="menu-arrow"></span>
-                        </span>
-                        <!--end:Menu link-->
+                            <!--end:Menu link-->
 
-                        <!--begin:Menu sub-->
-                        <div class="menu-sub menu-sub-accordion">
-                            <!--begin:Menu item-->
-                            <div class="menu-item">
-                                <!--begin:Menu link-->
-                                <a class="menu-link" href="{{ route('teachers.index') }}" id="teachers_link"><span
-                                        class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
-                                        class="menu-title">Teachers</span>
-                                </a>
-                                <!--end:Menu link-->
-                            </div>
-                            <!--end:Menu item-->
+                            <!--begin:Menu sub-->
+                            <div class="menu-sub menu-sub-accordion">
+                                @can('teachers.view')
+                                    <!--begin:Menu item-->
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <a class="menu-link" href="{{ route('teachers.index') }}" id="teachers_link"><span
+                                                class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
+                                                class="menu-title">Teachers</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                    <!--end:Menu item-->
+                                @endcan
 
-                            <!--begin:Menu item-->
-                            <div class="menu-item">
-                                <!--begin:Menu link-->
-                                <a class="menu-link" href="{{ route('teachers.index') }}" id="salary_tracking_link">
-                                    <span class="menu-bullet">
-                                        <span class="bullet bullet-dot">
-                                        </span>
-                                    </span>
-                                    <span class="menu-title">Salary Tracking</span>
-                                </a>
-                                <!--end:Menu link-->
+                                @can('teachers.salary.manage')
+                                    <!--begin:Menu item-->
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <a class="menu-link" href="{{ route('teachers.index') }}" id="salary_tracking_link">
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot">
+                                                </span>
+                                            </span>
+                                            <span class="menu-title">Salary Tracking</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                    <!--end:Menu item-->
+                                @endcan
                             </div>
-                            <!--end:Menu item-->
+                            <!--end:Menu sub-->
                         </div>
-                        <!--end:Menu sub-->
-                    </div>
+                    @endcanany
                     <!--end: Teachers Modules-->
 
 
@@ -423,7 +442,8 @@
                                     <!--begin:Menu link-->
                                     <a class="menu-link" id="student_report_link"
                                         href="{{ route('reports.student.index') }}"><span class="menu-bullet"><span
-                                                class="bullet bullet-dot"></span></span><span class="menu-title">Student Reports</span>
+                                                class="bullet bullet-dot"></span></span><span class="menu-title">Student
+                                            Reports</span>
                                     </a>
                                     <!--end:Menu link-->
                                 </div>
@@ -432,8 +452,7 @@
                                 <!--begin:SMS Campaign item-->
                                 <div class="menu-item">
                                     <!--begin:Menu link-->
-                                    <a class="menu-link" id="attendance_report_link"
-                                        href="#">
+                                    <a class="menu-link" id="attendance_report_link" href="#">
                                         <span class="menu-bullet">
                                             <span class="bullet bullet-dot">
                                             </span>
@@ -565,7 +584,7 @@
                     <!--end:SMS Menu-->
 
                     <!--begin:Settings Menu-->
-                    @can(['users.manage', 'settings.manage', 'branches.manage'])
+                    @canany(['users.manage', 'settings.manage', 'branches.manage'])
                         <div class="menu-item">
                             <!--begin:Menu link-->
                             <a class="menu-link" href="{{ route('users.index') }}" id="settings_link">
@@ -576,7 +595,7 @@
                             </a>
                             <!--end:Menu link-->
                         </div>
-                    @endcan
+                    @endcanany
 
                     {{-- @canany(['users.manage', 'settings.manage'])
                         <!--begin:Settings Modules-->

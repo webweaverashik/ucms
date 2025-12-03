@@ -299,66 +299,64 @@
                 </li>
                 <!--end:::Tab item-->
 
-                @canany(['teachers.edit', 'teachers.delete', 'teachers.deactivate'])
-                <!--begin:::Tab item-->
-                <li class="nav-item ms-auto">
-                    <!--begin::Action menu-->
-                    <a href="#" class="btn btn-primary ps-7" data-kt-menu-trigger="click"
-                        data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end">Actions
-                        <i class="ki-outline ki-down fs-2 me-0"></i></a>
-                    <!--begin::Menu-->
-                    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-semibold py-4 w-250px fs-6"
-                        data-kt-menu="true">
-                        <!--begin::Menu item-->
-                        <div class="menu-item px-5">
-                            <div class="menu-content text-muted pb-2 px-5 fs-7 text-uppercase">Account</div>
+                @canany(['teachers.edit', 'teachers.delete'])
+                    <!--begin:::Tab item-->
+                    <li class="nav-item ms-auto">
+                        <!--begin::Action menu-->
+                        <a href="#" class="btn btn-primary ps-7" data-kt-menu-trigger="click"
+                            data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end">Actions
+                            <i class="ki-outline ki-down fs-2 me-0"></i></a>
+                        <!--begin::Menu-->
+                        <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-semibold py-4 w-250px fs-6"
+                            data-kt-menu="true">
+                            <!--begin::Menu item-->
+                            <div class="menu-item px-5">
+                                <div class="menu-content text-muted pb-2 px-5 fs-7 text-uppercase">Account</div>
+                            </div>
+                            <!--end::Menu item-->
+
+                            @can('teachers.edit')
+                                <!--begin::Menu item-->
+                                <div class="menu-item px-5">
+                                    @if ($teacher->is_active === true)
+                                        <a href="#" class="menu-link text-hover-warning px-3" data-bs-toggle="modal"
+                                            data-bs-target="#kt_toggle_activation_student_modal"
+                                            data-teacher-name="{{ $teacher->name }}" data-teacher-id="{{ $teacher->id }}"
+                                            data-active-status="{{ $teacher->is_active }}"><i
+                                                class="bi bi-person-slash fs-2 me-2"></i> Deactivate</a>
+                                    @else
+                                        <a href="#" class="menu-link text-hover-success px" data-bs-toggle="modal"
+                                            data-bs-target="#kt_toggle_activation_student_modal"
+                                            data-teacher-name="{{ $teacher->name }}" data-teacher-id="{{ $teacher->id }}"
+                                            data-active-status="{{ $teacher->is_active }}"><i
+                                                class="bi bi-person-check fs-3 me-2"></i> Activate</a>
+                                    @endif
+                                </div>
+                                <!--end::Menu item-->
+
+                                <!--begin::Menu item-->
+                                <div class="menu-item px-5 my-1">
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#kt_modal_edit_teacher"
+                                        data-teacher-id="{{ $teacher->id }}" class="menu-link text-hover-primary px-3"><i
+                                            class="las la-pen fs-3 me-2"></i> Edit</a>
+                                </div>
+                                <!--end::Menu item-->
+                            @endcan
+
+                            @can('teachers.delete')
+                                <!--begin::Menu item-->
+                                <div class="menu-item px-5">
+                                    <a href="#" class="menu-link text-hover-danger px-3 delete-teacher"
+                                        data-teacher-id="{{ $teacher->id }}"><i class="bi bi-trash fs-3 me-2"></i>
+                                        Delete</a>
+                                </div>
+                                <!--end::Menu item-->
+                            @endcan
                         </div>
-                        <!--end::Menu item-->
-
-                        @can('teachers.deactivate')
-                            <!--begin::Menu item-->
-                            <div class="menu-item px-5">
-                                @if ($teacher->is_active === true)
-                                    <a href="#" class="menu-link text-hover-warning px-3" data-bs-toggle="modal"
-                                        data-bs-target="#kt_toggle_activation_student_modal"
-                                        data-teacher-name="{{ $teacher->name }}" data-teacher-id="{{ $teacher->id }}"
-                                        data-active-status="{{ $teacher->is_active }}"><i
-                                            class="bi bi-person-slash fs-2 me-2"></i> Deactivate</a>
-                                @else
-                                    <a href="#" class="menu-link text-hover-success px" data-bs-toggle="modal"
-                                        data-bs-target="#kt_toggle_activation_student_modal"
-                                        data-teacher-name="{{ $teacher->name }}" data-teacher-id="{{ $teacher->id }}"
-                                        data-active-status="{{ $teacher->is_active }}"><i
-                                            class="bi bi-person-check fs-3 me-2"></i> Activate</a>
-                                @endif
-                            </div>
-                            <!--end::Menu item-->
-                        @endcan
-
-                        @can('teachers.edit')
-                            <!--begin::Menu item-->
-                            <div class="menu-item px-5 my-1">
-                                <a href="#" data-bs-toggle="modal" data-bs-target="#kt_modal_edit_teacher"
-                                    data-teacher-id="{{ $teacher->id }}" class="menu-link text-hover-primary px-3"><i
-                                        class="las la-pen fs-3 me-2"></i> Edit</a>
-                            </div>
-                            <!--end::Menu item-->
-                        @endcan
-
-                        @can('teachers.delete')
-                            <!--begin::Menu item-->
-                            <div class="menu-item px-5">
-                                <a href="#" class="menu-link text-hover-danger px-3 delete-teacher"
-                                    data-teacher-id="{{ $teacher->id }}"><i class="bi bi-trash fs-3 me-2"></i>
-                                    Delete</a>
-                            </div>
-                            <!--end::Menu item-->
-                        @endcan
-                    </div>
-                    <!--end::Menu-->
-                    <!--end::Action Menu-->
-                </li>
-                <!--end:::Tab item-->
+                        <!--end::Menu-->
+                        <!--end::Action Menu-->
+                    </li>
+                    <!--end:::Tab item-->
                 @endcan
             </ul>
             <!--end:::Tabs-->
