@@ -61,52 +61,6 @@
                     <!--end::Card title-->
                     <!--begin::Card toolbar-->
                     <div class="card-toolbar">
-                        <!--begin::More options-->
-                        <a href="#" class="btn btn-sm btn-light btn-icon" data-kt-menu-trigger="click"
-                            data-kt-menu-placement="bottom-end">
-                            <i class="ki-outline ki-dots-horizontal fs-3">
-                            </i>
-                        </a>
-                        <!--begin::Menu-->
-                        <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-6 w-175px py-4"
-                            data-kt-menu="true">
-                            @can('teachers.edit')
-                                <div class="menu-item px-3">
-                                    @if ($teacher->is_active === true)
-                                        <a href="#" class="menu-link text-hover-warning px-3" data-bs-toggle="modal"
-                                            data-bs-target="#kt_toggle_activation_student_modal"
-                                            data-teacher-name="{{ $teacher->name }}" data-teacher-id="{{ $teacher->id }}"
-                                            data-active-status="{{ $teacher->is_active }}"><i
-                                                class="bi bi-person-slash fs-2 me-2"></i> Deactivate</a>
-                                    @else
-                                        <a href="#" class="menu-link text-hover-success px" data-bs-toggle="modal"
-                                            data-bs-target="#kt_toggle_activation_student_modal"
-                                            data-teacher-name="{{ $teacher->name }}" data-teacher-id="{{ $teacher->id }}"
-                                            data-active-status="{{ $teacher->is_active }}"><i
-                                                class="bi bi-person-check fs-3 me-2"></i> Activate</a>
-                                    @endif
-                                </div>
-
-                                <!--begin::Menu item-->
-                                <div class="menu-item px-3">
-                                    <a href="{{ route('teachers.edit', $teacher->id) }}"
-                                        class="menu-link text-hover-primary px-3"><i class="las la-pen fs-3 me-2"></i> Edit</a>
-                                </div>
-                                <!--end::Menu item-->
-                            @endcan
-
-                            @can('teachers.delete')
-                                <!--begin::Menu item-->
-                                <div class="menu-item px-3">
-                                    <a href="#" class="menu-link text-hover-danger px-3 delete-teacher"
-                                        data-teacher-id="{{ $teacher->id }}"><i class="bi bi-trash fs-3 me-2"></i>
-                                        Delete</a>
-                                </div>
-                                <!--end::Menu item-->
-                            @endcan
-                        </div>
-                        <!--end::Menu-->
-                        <!--end::More options-->
                     </div>
                     <!--end::Card toolbar-->
                 </div>
@@ -381,7 +335,7 @@
 
                             <!--begin::Menu item-->
                             <div class="menu-item px-5 my-1">
-                                <a href="{{ route('teachers.edit', $teacher->id) }}"
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#kt_modal_edit_teacher" data-teacher-id="{{ $teacher->id }}"
                                     class="menu-link text-hover-primary px-3"><i class="las la-pen fs-3 me-2"></i> Edit</a>
                             </div>
                             <!--end::Menu item-->
@@ -413,6 +367,238 @@
         <!--end::Content-->
     </div>
     <!--end::Layout-->
+
+
+    <!--begin::Modal - Edit Teacher-->
+    <div class="modal fade" id="kt_modal_edit_teacher" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+        data-bs-keyboard="false">
+        <!--begin::Modal dialog-->
+        <div class="modal-dialog modal-dialog-centered mw-750px">
+            <!--begin::Modal content-->
+            <div class="modal-content">
+                <!--begin::Modal header-->
+                <div class="modal-header">
+                    <!--begin::Modal title-->
+                    <h2 class="fw-bold" id="kt_modal_edit_teacher_title">Update Teacher</h2>
+                    <!--end::Modal title-->
+                    <!--begin::Close-->
+                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-edit-teachers-modal-action="close">
+                        <i class="ki-outline ki-cross fs-1">
+                        </i>
+                    </div>
+                    <!--end::Close-->
+                </div>
+                <!--end::Modal header-->
+                <!--begin::Modal body-->
+                <div class="modal-body px-5 my-7">
+                    <!--begin::Form-->
+                    <form id="kt_modal_edit_teacher_form" class="form" action="#" novalidate="novalidate">
+                        <!--begin::Scroll-->
+                        <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_edit_teacher_scroll"
+                            data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
+                            data-kt-scroll-dependencies="#kt_modal_edit_teacher_header"
+                            data-kt-scroll-wrappers="#kt_modal_edit_teacher_scroll" data-kt-scroll-offset="300px">
+                            <div class="row">
+                                <!--begin::Name Input group-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row mb-7">
+                                        <!--begin::Label-->
+                                        <label class="required fw-semibold fs-6 mb-2">Name</label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <input type="text" name="teacher_name_edit"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="Enter teacher name" required />
+                                        <!--end::Input-->
+                                    </div>
+                                </div>
+                                <!--end::Name Input group-->
+
+                                <!--begin::Gender Input group-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row mb-7">
+                                        <!--begin::Label-->
+                                        <label class="required fw-semibold fs-6 mb-2">Gender</label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <div class="row">
+                                            <!--begin::Col-->
+                                            <div class="col-lg-6">
+                                                <!--begin::Option-->
+                                                <input type="radio" class="btn-check" name="teacher_gender_edit"
+                                                    value="male" id="gender_male_input_edit" />
+                                                <label
+                                                    class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                                    for="gender_male_input_edit">
+                                                    <i class="las la-mars fs-2x me-5"></i>
+                                                    <!--begin::Info-->
+                                                    <span class="d-block fw-semibold text-start">
+                                                        <span class="text-gray-900 fw-bold d-block fs-6">Male</span>
+                                                    </span>
+                                                    <!--end::Info-->
+                                                </label>
+                                                <!--end::Option-->
+                                            </div>
+                                            <!--end::Col-->
+                                            <!--begin::Col-->
+                                            <div class="col-lg-6">
+                                                <!--begin::Option-->
+                                                <input type="radio" class="btn-check" name="teacher_gender_edit"
+                                                    value="female" id="gender_female_input_edit" />
+                                                <label
+                                                    class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
+                                                    for="gender_female_input_edit">
+                                                    <i class="las la-venus fs-2x me-5"></i>
+                                                    <!--begin::Info-->
+                                                    <span class="d-block fw-semibold text-start">
+                                                        <span class="text-gray-900 fw-bold d-block fs-6">Female</span>
+                                                    </span>
+                                                    <!--end::Info-->
+                                                </label>
+                                                <!--end::Option-->
+                                            </div>
+                                            <!--end::Col-->
+                                        </div>
+                                        <!--end::Input-->
+                                    </div>
+                                </div>
+                                <!--end::Gender Input group-->
+
+                                <!--begin::Salary Input group-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row mb-7">
+                                        <!--begin::Label-->
+                                        <label class="fw-semibold fs-6 mb-2 required">Base Salary (tk)</label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <input type="number" name="teacher_salary_edit" min="100"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="Enter base salary" required />
+                                        <!--end::Input-->
+                                    </div>
+                                </div>
+                                <!--end::Salary Input group-->
+
+                                <!--begin::Phone Input group-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row mb-7">
+                                        <!--begin::Label-->
+                                        <label class="fw-semibold fs-6 mb-2 required">Phone</label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <input type="text" name="teacher_phone_edit"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="Enter phone number" required />
+                                        <!--end::Input-->
+                                    </div>
+                                </div>
+                                <!--end::Phone Input group-->
+
+                                <!--begin::Email Input group-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row mb-7">
+                                        <!--begin::Label-->
+                                        <label class="fw-semibold fs-6 mb-2 required">Email</label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <input type="email" name="teacher_email_edit"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="Enter email number" required />
+                                        <!--end::Input-->
+                                    </div>
+                                </div>
+                                <!--end::Email Input group-->
+
+                                <!--begin::Blood Group Input-->
+                                <div class="col-lg-6">
+                                    <div class="fv-row mb-7">
+                                        <!--begin::Label-->
+                                        <label class="fw-semibold fs-6 mb-2">Blood Group <span
+                                                class="text-muted">(optional)</span></label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <div class="input-group input-group-solid flex-nowrap">
+                                            <span class="input-group-text">
+                                                <i class="las la-tint fs-3"></i>
+                                            </span>
+                                            <div class="overflow-hidden flex-grow-1">
+                                                <select name="teacher_blood_group_edit"
+                                                    class="form-select form-select-solid rounded-start-0 border-start"
+                                                    data-control="select2" data-placeholder="Select an option"
+                                                    data-hide-search="true">
+                                                    <option></option>
+                                                    <option value="A+">A+</option>
+                                                    <option value="B+">B+</option>
+                                                    <option value="AB+">AB+</option>
+                                                    <option value="O+">O+</option>
+                                                    <option value="A-">A-</option>
+                                                    <option value="B-">B-</option>
+                                                    <option value="AB-">AB-</option>
+                                                    <option value="O-">O-</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <!--end::Input-->
+                                    </div>
+                                </div>
+                                <!--end::Blood Group Input-->
+
+                                <!--begin::Qualification Input group-->
+                                <div class="col-lg-12">
+                                    <div class="fv-row mb-7">
+                                        <!--begin::Label-->
+                                        <label class="fw-semibold fs-6 mb-2">Academic Qualification <span
+                                                class="text-muted">(optional)</span></label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <input type="text" name="teacher_qualification_edit"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="Enter academic qualification information" />
+                                        <!--end::Input-->
+                                    </div>
+                                </div>
+                                <!--end::Qualification Input group-->
+
+                                <!--begin::Experience Input group-->
+                                <div class="col-lg-12">
+                                    <div class="fv-row mb-7">
+                                        <!--begin::Label-->
+                                        <label class="fw-semibold fs-6 mb-2">Teaching Experience <span
+                                                class="text-muted">(optional)</span></label>
+                                        <!--end::Label-->
+                                        <!--begin::Input-->
+                                        <input type="text" name="teacher_experience_edit"
+                                            class="form-control form-control-solid mb-3 mb-lg-0"
+                                            placeholder="Enter teaching experience" />
+                                        <!--end::Input-->
+                                    </div>
+                                </div>
+                                <!--end::Experience Input group-->
+                            </div>
+                        </div>
+                        <!--end::Scroll-->
+
+                        <!--begin::Actions-->
+                        <div class="text-center pt-10">
+                            <button type="reset" class="btn btn-light me-3"
+                                data-edit-teachers-modal-action="cancel">Discard</button>
+                            <button type="submit" class="btn btn-primary" data-edit-teachers-modal-action="submit">
+                                <span class="indicator-label">Update</span>
+                                <span class="indicator-progress">Please wait...
+                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                            </button>
+                        </div>
+                        <!--end::Actions-->
+                    </form>
+                    <!--end::Form-->
+                </div>
+                <!--end::Modal body-->
+            </div>
+            <!--end::Modal content-->
+        </div>
+        <!--end::Modal dialog-->
+    </div>
+    <!--end::Modal - Edit Teacher-->
 @endsection
 
 
@@ -424,11 +610,8 @@
 
 @push('page-js')
     <script>
-        const routeDeleteStudent = "{{ route('teachers.destroy', ':id') }}";
+        const routeDeleteTeacher = "{{ route('teachers.destroy', ':id') }}";
         const routeToggleActive = "{{ route('teachers.toggleActive', ':id') }}";
-        const routeDeleteInvoice = "{{ route('invoices.destroy', ':id') }}";
-        const routeDeleteTxn = "{{ route('transactions.destroy', ':id') }}";
-        const routeApproveTxn = "{{ route('transactions.approve', ':id') }}";
     </script>
 
     <script src="{{ asset('js/teachers/view.js') }}"></script>

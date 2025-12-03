@@ -70,7 +70,7 @@ class TeacherController extends Controller
         $teacher = Teacher::find($id);
 
         if (! $teacher) {
-            return redirect()->back()->with('warning', 'Teacher not found.');
+            return redirect()->route('teachers.index')->with('warning', 'Teacher not found.');
         }
 
         return view('teachers.view', compact('teacher'));
