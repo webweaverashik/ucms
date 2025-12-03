@@ -1,9 +1,9 @@
 <?php
 namespace App\Models\Student;
 
+use App\Models\Academic\Batch;
 use App\Models\Academic\ClassName;
 use App\Models\Academic\Institution;
-use App\Models\Academic\Batch;
 use App\Models\Academic\SubjectTaken;
 use App\Models\Branch;
 use App\Models\Payment\Payment;
@@ -141,6 +141,13 @@ class Student extends Model
     public function deletedBy()
     {
         return $this->belongsTo(User::class, 'deleted_by');
+    }
+
+    // Get the login activities for the student
+    public function loginActivities()
+    {
+        return $this->hasMany(LoginActivity::class, 'user_id')
+            ->where('user_type', 'student');
     }
 
 }

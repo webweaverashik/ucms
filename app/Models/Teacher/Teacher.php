@@ -20,6 +20,15 @@ class Teacher extends Authenticatable
     ];
 
     /**
+     * Get the login activities for the teacher.
+     */
+    public function loginActivities()
+    {
+        return $this->hasMany(LoginActivity::class, 'user_id')
+            ->where('user_type', 'teacher');
+    }
+
+    /**
      * Get the user who deleted this teacher (if applicable).
      */
     public function deletedBy()

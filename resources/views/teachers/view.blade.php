@@ -299,6 +299,7 @@
                 </li>
                 <!--end:::Tab item-->
 
+                @canany(['teachers.edit', 'teachers.delete', 'teachers.deactivate'])
                 <!--begin:::Tab item-->
                 <li class="nav-item ms-auto">
                     <!--begin::Action menu-->
@@ -314,7 +315,7 @@
                         </div>
                         <!--end::Menu item-->
 
-                        @can('teachers.edit')
+                        @can('teachers.deactivate')
                             <!--begin::Menu item-->
                             <div class="menu-item px-5">
                                 @if ($teacher->is_active === true)
@@ -332,11 +333,14 @@
                                 @endif
                             </div>
                             <!--end::Menu item-->
+                        @endcan
 
+                        @can('teachers.edit')
                             <!--begin::Menu item-->
                             <div class="menu-item px-5 my-1">
-                                <a href="#" data-bs-toggle="modal" data-bs-target="#kt_modal_edit_teacher" data-teacher-id="{{ $teacher->id }}"
-                                    class="menu-link text-hover-primary px-3"><i class="las la-pen fs-3 me-2"></i> Edit</a>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#kt_modal_edit_teacher"
+                                    data-teacher-id="{{ $teacher->id }}" class="menu-link text-hover-primary px-3"><i
+                                        class="las la-pen fs-3 me-2"></i> Edit</a>
                             </div>
                             <!--end::Menu item-->
                         @endcan
@@ -355,6 +359,7 @@
                     <!--end::Action Menu-->
                 </li>
                 <!--end:::Tab item-->
+                @endcan
             </ul>
             <!--end:::Tabs-->
 

@@ -27,4 +27,14 @@ class Guardian extends Model
     {
         return $this->belongsTo(User::class, 'deleted_by');
     }
+
+    /**
+     * Get the login activities for the guardian.
+     */
+    public function loginActivities()
+    {
+        return $this->hasMany(LoginActivity::class, 'user_id')
+            ->where('user_type', 'guardian');
+    }
+
 }

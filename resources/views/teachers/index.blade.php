@@ -148,7 +148,7 @@
                                         class="form-check form-switch form-check-solid form-check-success d-flex justify-content-center">
                                         <input class="form-check-input toggle-active" type="checkbox"
                                             value="{{ $teacher->id }}" @if ($teacher->is_active == 1) checked @endif
-                                            @cannot('teachers.edit') disabled @endcan>
+                                            @cannot('teachers.deactivate') disabled @endcan>
                                     </div>
                                 </td>
                                 <td>

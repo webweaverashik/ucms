@@ -53,7 +53,8 @@ class User extends Authenticatable
      */
     public function loginActivities()
     {
-        return $this->hasMany(LoginActivity::class);
+        return $this->hasMany(LoginActivity::class, 'user_id')
+            ->where('user_type', 'user');
     }
 
     /**
@@ -61,7 +62,7 @@ class User extends Authenticatable
      */
     public function latestLoginActivity()
     {
-        return $this->hasOne(LoginActivity::class)->latestOfMany()->select('login_activities.*');
+        return $this->hasOne(LoginActivity::class)->where('user_type', 'user')->latestOfMany()->select('login_activities.*');
     }
 
 }
