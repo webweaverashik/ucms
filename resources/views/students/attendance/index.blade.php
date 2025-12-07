@@ -248,9 +248,9 @@
                         } else {
                             $('#student_list_container').html(
                                 '<div class="alert alert-info">No students found for this criteria.</div>'
-                                );
+                            );
                             $('#save_attendance_section').addClass(
-                            'd-none'); // Hide save button if no students
+                                'd-none'); // Hide save button if no students
                             $('#bulk_buttons').addClass('d-none');
                         }
                     },
@@ -278,13 +278,13 @@
     `;
 
                 // Added 'index' to the forEach callback
-    students.forEach((student, index) => {
-        // Determine Checked Status
-        let presentCheck = student.status === 'present' ? 'checked' : '';
-        let lateCheck = student.status === 'late' ? 'checked' : '';
-        let absentCheck = student.status === 'absent' ? 'checked' : '';
+                students.forEach((student, index) => {
+                    // Determine Checked Status
+                    let presentCheck = student.status === 'present' ? 'checked' : '';
+                    let lateCheck = student.status === 'late' ? 'checked' : '';
+                    let absentCheck = student.status === 'absent' ? 'checked' : '';
 
-        html += `
+                    html += `
             <tr data-student-id="${student.id}">
                 
                 <!-- New Serial Number Column -->
@@ -316,11 +316,11 @@
                 </td>
                 <td>
                     <input type="text" class="form-control form-control-solid form-control-sm remarks-input" 
-                        placeholder="Remarks" value="${student.remarks || ''}" />
+                        placeholder="Add a remarks" value="${student.remarks || ''}" />
                 </td>
             </tr>
         `;
-    });
+                });
 
                 html += `</tbody></table></div>`;
                 $('#student_list_container').html(html);

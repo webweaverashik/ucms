@@ -15,9 +15,12 @@ class BatchController extends Controller
     {
         $branchId = auth()->user()->branch_id;
 
-        $batches = Batch::when($branchId != 0, function ($query) use ($branchId) {
-            $query->where('branch_id', $branchId);
-        })->get();
+        $batches = Batch::with('branch')
+            ->withCount('activeStudents') // ← Correct way to load count
+            ->when($branchId != 0, function ($query) use ($branchId) {
+                $query->where('branch_id', $branchId);
+            })
+            ->get();
 
         $branches = Branch::when($branchId != 0, function ($query) use ($branchId) {
             $query->where('id', $branchId);
