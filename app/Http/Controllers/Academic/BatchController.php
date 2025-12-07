@@ -1,10 +1,10 @@
 <?php
 namespace App\Http\Controllers\Academic;
 
+use App\Http\Controllers\Controller;
+use App\Models\Academic\Batch;
 use App\Models\Branch;
 use Illuminate\Http\Request;
-use App\Models\Academic\Batch;
-use App\Http\Controllers\Controller;
 
 class BatchController extends Controller
 {
@@ -13,12 +13,15 @@ class BatchController extends Controller
      */
     public function index()
     {
-        if (! auth()->user()->can('batches.manage')) {
-            return redirect()->back()->with('warning', 'No permission to view batches.');
-        }
+        $branchId = auth()->user()->branch_id;
 
-        $batches = Batch::all();
-        $branches = Branch::all();
+        $batches = Batch::when($branchId != 0, function ($query) use ($branchId) {
+            $query->where('branch_id', $branchId);
+        })->get();
+
+        $branches = Branch::when($branchId != 0, function ($query) use ($branchId) {
+            $query->where('id', $branchId);
+        })->get();
 
         return view('batches.index', compact('branches', 'batches'));
     }
@@ -37,15 +40,14 @@ class BatchController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'batch_name' => ['required', 'string', 'max:15', 'regex:/^\S+$/'], // No spaces allowed
+            'batch_name'   => ['required', 'string', 'max:15', 'regex:/^\S+$/'], // No spaces allowed
             'batch_branch' => 'required|integer',
         ], [
             'batch_name.regex' => 'Single word only',
         ]);
-        
-        
+
         Batch::create([
-            'name' => $validated['batch_name'],
+            'name'      => $validated['batch_name'],
             'branch_id' => $validated['batch_branch'],
         ]);
 

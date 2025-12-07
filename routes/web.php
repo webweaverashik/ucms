@@ -1,34 +1,34 @@
 <?php
 
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PdfController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\BranchController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\SMS\SmsController;
-use App\Http\Controllers\Misc\MiscController;
-use App\Http\Controllers\AutoInvoiceController;
-use App\Http\Controllers\Sheet\SheetController;
-use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Academic\BatchController;
-use App\Http\Controllers\SMS\SmsCampaignController;
-use App\Http\Controllers\SMS\SmsTemplateController;
-use App\Http\Controllers\Student\SiblingController;
-use App\Http\Controllers\Student\StudentController;
-use App\Http\Controllers\Teacher\TeacherController;
-use App\Http\Controllers\Academic\SubjectController;
-use App\Http\Controllers\Sheet\SheetTopicController;
-use App\Http\Controllers\Student\GuardianController;
-use App\Http\Controllers\Student\ReferenceController;
 use App\Http\Controllers\Academic\ClassNameController;
 use App\Http\Controllers\Academic\InstitutionController;
-use App\Http\Controllers\Sheet\SheetTopicTakenController;
+use App\Http\Controllers\Academic\SubjectController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\AutoInvoiceController;
+use App\Http\Controllers\BranchController;
+use App\Http\Controllers\Misc\MiscController;
 use App\Http\Controllers\Payment\PaymentInvoiceController;
+use App\Http\Controllers\Payment\PaymentTransactionController;
+use App\Http\Controllers\PdfController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\Sheet\SheetController;
+use App\Http\Controllers\Sheet\SheetTopicController;
+use App\Http\Controllers\Sheet\SheetTopicTakenController;
+use App\Http\Controllers\SMS\SmsCampaignController;
+use App\Http\Controllers\SMS\SmsController;
+use App\Http\Controllers\SMS\SmsTemplateController;
+use App\Http\Controllers\Student\GuardianController;
+use App\Http\Controllers\Student\ReferenceController;
+use App\Http\Controllers\Student\SiblingController;
 use App\Http\Controllers\Student\StudentActivationController;
 use App\Http\Controllers\Student\StudentAttendanceController;
-use App\Http\Controllers\Payment\PaymentTransactionController;
+use App\Http\Controllers\Student\StudentController;
+use App\Http\Controllers\Teacher\TeacherController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AuthController::class, 'showLogin'])->name('home');
 
@@ -63,6 +63,10 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('students/transfer', [StudentController::class, 'transferStudent'])->name('students.transfer');
     Route::get('students/promote', [StudentController::class, 'promoteStudents'])->name('students.promote');
     Route::post('student/statement/download', [PdfController::class, 'downloadStatement'])->name('student.statement.download');
+
+    // Student Attendance
+    Route::post('attendances/get-students', [StudentAttendanceController::class, 'getStudents'])->name('attendances.get_students');
+    Route::post('attendances/store-bulk', [StudentAttendanceController::class, 'storeBulk'])->name('attendances.store_bulk');
 
     // Teachers
     Route::post('teachers/toggle-active', [TeacherController::class, 'toggleActive'])->name('teachers.toggleActive');

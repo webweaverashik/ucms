@@ -1,20 +1,21 @@
 <?php
 namespace App\Models\Student;
 
+use App\Models\User;
+use App\Models\Branch;
 use App\Models\Academic\Batch;
+use App\Models\Payment\Payment;
 use App\Models\Academic\ClassName;
+use App\Models\Sheet\SheetPayment;
 use App\Models\Academic\Institution;
 use App\Models\Academic\SubjectTaken;
-use App\Models\Branch;
-use App\Models\Payment\Payment;
-use App\Models\Payment\PaymentInvoice;
-use App\Models\Payment\PaymentTransaction;
-use App\Models\Sheet\SheetPayment;
 use App\Models\Sheet\SheetTopicTaken;
-use App\Models\User;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Payment\PaymentInvoice;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Student\StudentAttendance;
+use App\Models\Payment\PaymentTransaction;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Student extends Model
 {
@@ -148,6 +149,12 @@ class Student extends Model
     {
         return $this->hasMany(LoginActivity::class, 'user_id')
             ->where('user_type', 'student');
+    }
+
+    // Get all the attendances of the student
+    public function attendances()
+    {
+        return $this->hasMany(StudentAttendance::class);
     }
 
 }

@@ -225,7 +225,7 @@
                                     <!--end:Menu item-->
                                 @endcan
 
-                                @can('batches.manage')
+                                @can('batches.view')
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link-->

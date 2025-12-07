@@ -82,6 +82,7 @@ class RolePermissionSeeder extends Seeder
             'classes.delete',
 
             // 🕑 batches
+            'batches.view',
             'batches.manage',
 
             // 🧑‍🏫 teachers
@@ -171,6 +172,9 @@ class RolePermissionSeeder extends Seeder
             // 🏷️ classes
             'classes.view',
 
+            // 🕑 batches
+            'batches.view',
+
             // 🧑‍🏫 teachers
             'teachers.view',
             'teachers.salary.manage',
@@ -230,6 +234,9 @@ class RolePermissionSeeder extends Seeder
 
             // 🏷️ classes
             'classes.view',
+
+            // 🕑 batches
+            'batches.view',
 
             // 🧑‍🏫 teachers
             'teachers.view',
