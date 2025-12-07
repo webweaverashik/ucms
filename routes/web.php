@@ -106,6 +106,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     // Reports
     Route::get('reports', [ReportController::class, 'studentReport']);
     Route::get('reports/students', [ReportController::class, 'studentReport'])->name('reports.student.index');
+    Route::get('reports/attendance', [ReportController::class, 'attendanceReport'])->name('reports.attendance.index');
     Route::get('reports/finance', [ReportController::class, 'financeReport'])->name('reports.finance.index');
     Route::post('reports/finance', [ReportController::class, 'financeReportGenerate'])->name('reports.finance.generate');
 

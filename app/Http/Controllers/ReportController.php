@@ -89,4 +89,12 @@ class ReportController extends Controller
         ]);
     }
 
+    /* 
+    * Attendance Report
+    */
+    public function attendanceReport()
+    {
+        return view('reports.attendance.index');
+    }
+
 }

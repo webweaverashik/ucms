@@ -383,8 +383,9 @@ class StudentController extends Controller
      */
     public function show(string $id)
     {
-        // Try to find the student including trashed ones (if soft deletes are enabled)
-        $student = Student::withTrashed()->find($id);
+        // Try to find the student including trashed ones
+        // We add 'attendances' to eager loading here to avoid N+1 queries later
+        $student = Student::withTrashed()->with('attendances')->find($id);
 
         // If not found or trashed, redirect with warning
         if (! $student || $student->trashed()) {
@@ -395,6 +396,29 @@ class StudentController extends Controller
         if (auth()->user()->branch_id != 0 && auth()->user()->branch_id != $student->branch_id) {
             return redirect()->route('students.index')->with('error', 'Student not found in this branch.');
         }
+
+        // --- NEW CODE: Prepare Attendance Events for Calendar ---
+        $attendance_events = $student->attendances->map(function ($attendance) {
+                                 // Define Metronic Theme Colors
+            $color  = '#50cd89'; // Green (Present)
+            $status = strtolower($attendance->status);
+
+            if ($status === 'absent') {
+                $color = '#f1416c'; // Red
+            } elseif ($status === 'late') {
+                $color = '#ffc700'; // Yellow/Orange
+            } elseif ($status === 'excused' || $status === 'leave') {
+                $color = '#7239ea'; // Purple
+            }
+
+            return [
+                'title'       => ucfirst($attendance->status),
+                'start'       => $attendance->attendance_date->format('Y-m-d'),
+                'description' => $attendance->remarks ?? '',
+                'color'       => $color, // e.g. #50cd89
+            ];
+        });
+        // --------------------------------------------------------
 
         // Get all sheet payments of the student
         $sheetPayments = $student
@@ -415,14 +439,14 @@ class StudentController extends Controller
 
         // Extract unique subject names from those classes
         $sheet_subjectNames = $sheetPayments
-            ->pluck('sheet.class.subjects') // get subjects collections
+            ->pluck('sheet.class.subjects')
             ->flatten()
             ->unique('name')
             ->pluck('name')
             ->sort()
             ->values();
 
-        return view('students.view', compact('student', 'sheet_class_names', 'sheet_subjectNames'));
+        return view('students.view', compact('student', 'sheet_class_names', 'sheet_subjectNames', 'attendance_events'));
     }
 
     /**

@@ -149,7 +149,7 @@
             <div id="student_list_container"></div>
 
             <div class="mt-5 d-none" id="save_attendance_section">
-                <button class="btn btn-primary w-100" id="save_attendance_button">Save Attendance</button>
+                <button class="btn btn-primary" id="save_attendance_button">Save Attendance</button>
             </div>
 
         </div>
@@ -226,15 +226,20 @@
                         // 1. Handle Off Day Warning
                         if (response.is_off_day) {
                             let alertHtml = `
-                <div class="alert alert-warning d-flex align-items-center p-5 mb-5">
+                <div class="alert alert-dismissible alert-warning d-flex align-items-center p-5 mb-5 border border-warning border-dashed">
                     <i class="ki-outline ki-information-5 fs-2hx text-warning me-4"></i>
                     <div class="d-flex flex-column">
                         <h4 class="mb-1 text-warning">Off Day Warning</h4>
-                        <span>
-                            Today (<strong>${response.off_day_name}</strong>) is marked as the official off-day for this batch. 
+                        <span class="fs-7">
+                            Today (<strong>${response.off_day_name}</strong>) is the official off-day for this batch. 
                             However, you may still proceed to take attendance.
                         </span>
                     </div>
+                    <button type="button"
+                        class="position-absolute position-sm-relative m-2 m-sm-0 top-0 end-0 btn btn-icon ms-sm-auto"
+                        data-bs-dismiss="alert">
+                        <i class="ki-outline ki-cross fs-1 text-warning"></i>
+                    </button>
                 </div>
             `;
                             $('#off_day_warning').html(alertHtml);

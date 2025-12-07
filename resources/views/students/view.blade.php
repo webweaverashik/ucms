@@ -1,5 +1,21 @@
 @push('page-css')
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('assets/plugins/custom/fullcalendar/fullcalendar.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <style>
+        /* Optional: Tweaks to make the calendar look cleaner */
+        .fc-event {
+            cursor: pointer;
+        }
+
+        .fc-toolbar-title {
+            font-size: 1.5rem !important;
+        }
+
+        .fc-col-header-cell {
+            padding: 10px 0;
+            background-color: #f9f9f9;
+        }
+    </style>
 @endpush
 
 
@@ -400,7 +416,8 @@
                 <!--begin:::Tab item-->
                 <li class="nav-item">
                     <a class="nav-link text-active-primary pb-4 active" data-kt-countup-tabs="true" data-bs-toggle="tab"
-                        href="#kt_student_view_attendance_tab"><i class="ki-outline ki-calendar fs-3 me-2"></i>Attendance</a>
+                        href="#kt_student_view_attendance_tab"><i
+                            class="ki-outline ki-calendar fs-3 me-2"></i>Attendance</a>
                 </li>
                 <!--end:::Tab item-->
 
@@ -504,7 +521,7 @@
 
             <!--begin:::Tab content-->
             <div class="tab-content" id="myTabContent">
-                <!--begin:::Tab pane-->
+                <!--begin:::Personal Info Tab pane-->
                 <div class="tab-pane fade " id="kt_student_view_personal_info_tab" role="tabpanel">
                     <!--begin::Personal Info-->
                     <div class="card mb-5 mb-xl-10" id="kt_profile_details_view">
@@ -791,9 +808,9 @@
                     <!--end::Siblings-->
 
                 </div>
-                <!--end:::Tab pane-->
+                <!--end:::Personal Info Tab pane-->
 
-                <!--begin:::Tab pane-->
+                <!--begin:::Enrolled Subjects Tab pane-->
                 <div class="tab-pane fade" id="kt_student_view_enrolled_subjects_tab" role="tabpanel">
                     <!--begin::Card-->
                     <div class="card pt-4 mb-6 mb-xl-9">
@@ -864,9 +881,9 @@
                     </div>
                     <!--end::Card-->
                 </div>
-                <!--end:::Tab pane-->
+                <!--end:::Enrolled Subjects Tab pane-->
 
-                <!--begin:::Tab pane-->
+                <!--begin:::Transaction Tab pane-->
                 <div class="tab-pane fade" id="kt_student_view_transactions_tab" role="tabpanel">
                     <!--begin::Earnings-->
                     <div class="card mb-6 mb-xl-9">
@@ -943,7 +960,7 @@
 
                             <!--begin::Toolbar-->
                             <div class="card-toolbar flex-shrink-0" style="white-space: nowrap;">
-                                <form class="form d-flex align-items-center gap-2 flex-nowrap" id="statement_form" >
+                                <form class="form d-flex align-items-center gap-2 flex-nowrap" id="statement_form">
                                     {{-- method="POST" action="{{ route('student.statement.download') }}" target="_blank"> --}}
                                     @csrf
                                     <input type="hidden" name="student_id" value="{{ $student->id }}">
@@ -1167,7 +1184,7 @@
                     </div>
                     <!--end::Statements-->
                 </div>
-                <!--end:::Tab pane-->
+                <!--end:::Transaction Tab pane-->
 
                 <!--begin:::Tab pane-->
                 <div class="tab-pane fade" id="kt_student_view_sheets_tab" role="tabpanel">
@@ -1311,32 +1328,53 @@
                 </div>
                 <!--end:::Tab pane-->
 
-                <!--begin:::Tab pane-->
+                <!--begin:::Attendance Tab pane-->
                 <div class="tab-pane fade show active" id="kt_student_view_attendance_tab" role="tabpanel">
-                    <!--begin::Card-->
                     <div class="card pt-4 mb-6 mb-xl-9">
-                        <!--begin::Card header-->
                         <div class="card-header border-0">
-                            <!--begin::Card title-->
                             <div class="card-title">
-                                <h2>Attendance</h2>
+                                <h2>Attendance History</h2>
                             </div>
-                            <!--end::Card title-->
+                            <!-- Legend Toolbar -->
+                            <div class="card-toolbar">
+                                <div class="d-flex flex-wrap gap-2">
+                                    <div class="d-flex align-items-center"><span class="w-10px h-10px rounded-circle me-1"
+                                            style="background: #50cd89"></span> Present</div>
+                                    <div class="d-flex align-items-center"><span class="w-10px h-10px rounded-circle me-1"
+                                            style="background: #f1416c"></span> Absent</div>
+                                    <div class="d-flex align-items-center"><span class="w-10px h-10px rounded-circle me-1"
+                                            style="background: #ffc700"></span> Late</div>
+                                </div>
+                            </div>
                         </div>
-                        <!--end::Card header-->
-                        <!--begin::Card body-->
-                        <div class="card-body pt-0 pb-5">
-                            <!--begin::Calendar View-->
-                            
-                            <!--end::Calendar View-->
-                        </div>
-                        <!--end::Card body-->
-                    </div>
-                    <!--end::Card-->
-                </div>
-                <!--end:::Tab pane-->
 
-                <!--begin:::Tab pane-->
+                        <div class="card-body pt-0 pb-5">
+                            <!-- IMPORTANT: We inject the PHP array as JSON here -->
+                            <div id="kt_attendance_calendar" data-events="{{ json_encode($attendance_events) }}"></div>
+                        </div>
+                    </div>
+
+                    <div class="card pt-4 mb-6 mb-xl-9">
+                        <div class="card-header border-0">
+                            <div class="card-title">
+                                <h2>Overview ({{ date('F Y') }})</h2>
+                            </div>
+                        </div>
+
+                        <div class="card-body pt-0 pb-5">
+                            <!-- Chart Container -->
+                            <!-- We keep the data-events here to read from JS -->
+                            <div id="kt_attendance_pie_chart_wrapper"
+                                data-events="{{ json_encode($attendance_events) }}"
+                                style="height: 400px; display: flex; justify-content: center;">
+                                <canvas id="kt_attendance_pie_chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--end:::Attendance Tab pane-->
+
+                <!--begin:::Activity Tab pane-->
                 <div class="tab-pane fade" id="kt_student_view_activity_tab" role="tabpanel">
                     <!--begin::Card-->
                     <div class="card pt-4 mb-6 mb-xl-9">
@@ -1393,7 +1431,7 @@
                     </div>
                     <!--end::Card-->
                 </div>
-                <!--end:::Tab pane-->
+                <!--end:::Activity Tab pane-->
             </div>
             <!--end:::Tab content-->
         </div>
@@ -1609,6 +1647,8 @@
 
 @push('vendor-js')
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
+    <script src="{{ asset('assets/plugins/custom/fullcalendar/fullcalendar.bundle.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 @endpush
 
 @push('page-js')
@@ -1632,6 +1672,8 @@
         @endif
     </script>
 
+
+    {{-- Statement Download jquery --}}
     <script>
         document.getElementById('statement_form').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -1658,13 +1700,6 @@
                     printWindow.document.write(html);
                     printWindow.document.close();
 
-                    // Wait for fonts + styles to load, then print
-                    // printWindow.onload = function() {
-                    //     setTimeout(() => {
-                    //         printWindow.print();
-                    //         // Optional: printWindow.close(); // auto-close after printing
-                    //     }, 800);
-                    // };
                 })
                 .catch(err => {
                     alert("Failed to load statement: " + err.message);

@@ -686,10 +686,211 @@ var KTStudentsActivity = function () {
     }
 }();
 
+var KTStudentViewAttendance = function () {
+    // Shared variables
+    var calendar;
+    var calendarEl;
 
-var KTDownloadStatement = function () {
-    
+    // --- 1. Calendar Logic ---
+    var initCalendar = function () {
+        calendarEl = document.getElementById('kt_attendance_calendar');
+
+        if (!calendarEl) {
+            return;
+        }
+
+        var eventsData = JSON.parse(calendarEl.getAttribute('data-events'));
+
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            // Define header toolbar
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,listMonth'
+            },
+
+            // --- Custom View Settings ---
+            views: {
+                listMonth: {
+                    buttonText: 'List',
+                    displayEventTime: false,   // Hides "All day" text
+                    listDayFormat: false,      // Hides default Date Header rows (optional, keeps list clean)
+                    listDaySideFormat: false   // Hides side headers
+                }
+            },
+
+            initialView: 'dayGridMonth',
+            height: 'auto',
+            contentHeight: 650,
+            aspectRatio: 3,
+            initialDate: new Date(),
+            navLinks: true,
+            editable: false,
+            dayMaxEvents: true,
+            events: eventsData,
+
+            // Tooltip Logic (Works for both Grid and List views)
+            eventDidMount: function (info) {
+                var remarks = info.event.extendedProps.description;
+                if (remarks) {
+                    new bootstrap.Tooltip(info.el, {
+                        title: remarks,
+                        placement: 'top',
+                        trigger: 'hover',
+                        container: 'body'
+                    });
+                }
+            },
+
+            // --- CUSTOM CONTENT RENDERING ---
+            eventContent: function (arg) {
+                // A. Logic for LIST View (Show Date + Status)
+                if (arg.view.type === 'listMonth') {
+                    // 1. Format Date manually to 07-Dec-2025
+                    var dateObj = arg.event.start;
+                    var day = dateObj.getDate().toString().padStart(2, '0');
+                    var month = dateObj.toLocaleString('en-US', { month: 'short' });
+                    var year = dateObj.getFullYear();
+                    var formattedDate = day + '-' + month + '-' + year;
+
+                    // 2. Return Custom HTML layout
+                    return {
+                        html: `
+                            <div class="d-flex align-items-center">
+                                <span class="min-w-100px fw-bold text-gray-800 fs-6 me-4">${formattedDate}</span>
+                                <span class="badge" style="background-color: ${arg.event.backgroundColor}; color: white; font-size: 0.9rem;">
+                                    ${arg.event.title}
+                                </span>
+                            </div>
+                        `
+                    };
+                }
+
+                // B. Logic for GRID View (Standard Month View)
+                return {
+                    html: '<div class="fc-content" style="color:white; padding:1px 2px;">' + arg.event.title + '</div>'
+                };
+            }
+        });
+
+        calendar.render();
+    }
+
+    // --- 2. Pie Chart Logic ---
+    var initPieChart = function () {
+        var wrapper = document.getElementById('kt_attendance_pie_chart_wrapper');
+        var canvas = document.getElementById('kt_attendance_pie_chart');
+
+        if (!wrapper || !canvas) {
+            return;
+        }
+
+        // 1. Get Data
+        var eventsData = JSON.parse(wrapper.getAttribute('data-events'));
+
+        // 2. Filter Data for Current Month
+        var now = new Date();
+        var currentMonth = now.getMonth();
+        var currentYear = now.getFullYear();
+
+        var stats = { present: 0, absent: 0, late: 0, others: 0 };
+
+        eventsData.forEach(function (event) {
+            var eventDate = new Date(event.start);
+            if (eventDate.getMonth() === currentMonth && eventDate.getFullYear() === currentYear) {
+                var status = event.title.toLowerCase();
+                if (status === 'present') stats.present++;
+                else if (status === 'absent') stats.absent++;
+                else if (status === 'late') stats.late++;
+                else stats.others++;
+            }
+        });
+
+        // 3. Define Chart Data
+        var data = {
+            labels: ['Present', 'Absent', 'Late'],
+            datasets: [{
+                data: [stats.present, stats.absent, stats.late, stats.others],
+                backgroundColor: ['#50cd89', '#f1416c', '#ffc700'],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        };
+
+        // 4. Render Chart
+        var ctx = canvas.getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: data,
+            // Register the DataLabels plugin here
+            plugins: [ChartDataLabels],
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { usePointStyle: true, padding: 20, font: { size: 13 } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                var value = context.raw || 0;
+                                return context.label + ': ' + value + ' days';
+                            }
+                        }
+                    },
+                    // --- DATALABELS CONFIGURATION (Percentage on Chart) ---
+                    datalabels: {
+                        color: '#ffffff', // White text
+                        font: {
+                            weight: 'bold',
+                            size: 14
+                        },
+                        formatter: function (value, context) {
+                            // Hide label if value is 0
+                            if (value === 0) return null;
+
+                            // Calculate Total
+                            var dataset = context.chart.data.datasets[0].data;
+                            var total = dataset.reduce((acc, val) => acc + val, 0);
+
+                            // Calculate Percentage
+                            var percentage = Math.round((value / total) * 100) + '%';
+
+                            return percentage;
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // --- 3. Handle Tab Logic ---
+    var handleTabSwitch = function () {
+        var tabLink = document.querySelector('a[href="#kt_student_view_attendance_tab"]');
+        if (!tabLink) {
+            tabLink = document.querySelector('button[data-bs-target="#kt_student_view_attendance_tab"]');
+        }
+
+        if (tabLink) {
+            tabLink.addEventListener('shown.bs.tab', function (e) {
+                if (calendar) {
+                    calendar.updateSize();
+                }
+            });
+        }
+    }
+
+    return {
+        init: function () {
+            initCalendar();
+            initPieChart();
+            handleTabSwitch();
+        }
+    };
 }();
+
 
 // On document ready
 KTUtil.onDOMContentLoaded(function () {
@@ -699,5 +900,5 @@ KTUtil.onDOMContentLoaded(function () {
     KTStudentsTransactionsView.init();
     KTStudentsSheetsView.init();
     KTStudentsActivity.init();
-    KTDownloadStatement.init()
+    KTStudentViewAttendance.init();
 });
