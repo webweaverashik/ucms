@@ -264,58 +264,63 @@
             // 2. Render Table Function
             function renderStudentTable(students) {
                 let html = `
-                <div class="table-responsive">
-                    <table class="table table-row-bordered table-row-gray-300 align-middle gs-0 gy-3" id="attendance_table">
-                        <thead>
-                            <tr class="fw-bold text-muted">
-                                <th>Student Info</th>
-                                <th class="text-center">Status</th>
-                                <th>Remarks</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-
-                students.forEach(student => {
-                    // Determine Checked Status
-                    let presentCheck = student.status === 'present' ? 'checked' : '';
-                    let lateCheck = student.status === 'late' ? 'checked' : '';
-                    let absentCheck = student.status === 'absent' ? 'checked' : '';
-                    // If no status (new record), default to nothing (or present if you prefer)
-
-                    html += `
-                    <tr data-student-id="${student.id}">
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <div class="d-flex justify-content-start flex-column">
-                                    <span class="text-gray-800 fw-bold mb-1 fs-6">${student.name}</span>
-                                    <span class="text-muted fw-semibold d-block fs-7">ID: ${student.student_unique_id}</span>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="text-center">
-                            <div class="d-flex justify-content-center gap-5">
-                                <div class="form-check form-check-custom form-check-success form-check-solid">
-                                    <input class="form-check-input status-radio" type="radio" value="present" name="status_${student.id}" id="status_present_${student.id}" ${presentCheck} />
-                                    <label class="form-check-label" for="status_present_${student.id}">Present</label>
-                                </div>
-                                <div class="form-check form-check-custom form-check-warning form-check-solid">
-                                    <input class="form-check-input status-radio" type="radio" value="late" name="status_${student.id}" id="status_late_${student.id}" ${lateCheck} />
-                                    <label class="form-check-label" for="status_late_${student.id}">Late</label>
-                                </div>
-                                <div class="form-check form-check-custom form-check-danger form-check-solid">
-                                    <input class="form-check-input status-radio" type="radio" value="absent" name="status_${student.id}" id="status_absent_${student.id}" ${absentCheck} />
-                                    <label class="form-check-label" for="status_absent_${student.id}">Absent</label>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <input type="text" class="form-control form-control-solid form-control-sm remarks-input" 
-                                placeholder="Remarks (Optional)" value="${student.remarks || ''}" />
-                        </td>
+        <div class="table-responsive">
+            <table class="table table-row-bordered table-row-gray-300 align-middle gs-0 gy-3" id="attendance_table">
+                <thead>
+                    <tr class="fw-bold text-muted">
+                        <th class="w-25px">#</th> <!-- New Serial Header -->
+                        <th>Student Info</th>
+                        <th class="text-center">Status</th>
+                        <th>Remarks</th>
                     </tr>
-                `;
-                });
+                </thead>
+                <tbody>
+    `;
+
+                // Added 'index' to the forEach callback
+    students.forEach((student, index) => {
+        // Determine Checked Status
+        let presentCheck = student.status === 'present' ? 'checked' : '';
+        let lateCheck = student.status === 'late' ? 'checked' : '';
+        let absentCheck = student.status === 'absent' ? 'checked' : '';
+
+        html += `
+            <tr data-student-id="${student.id}">
+                
+                <!-- New Serial Number Column -->
+                <td class="fw-bold text-gray-600">${index + 1}</td>
+
+                <td>
+                    <div class="d-flex align-items-center">
+                        <div class="d-flex justify-content-start flex-column">
+                            <span class="text-gray-800 fw-bold mb-1 fs-6">${student.name}</span>
+                            <span class="text-muted fw-semibold d-block fs-7">ID: ${student.student_unique_id}</span>
+                        </div>
+                    </div>
+                </td>
+                <td class="text-center">
+                    <div class="d-flex justify-content-center gap-5">
+                        <div class="form-check form-check-custom form-check-success form-check-solid">
+                            <input class="form-check-input status-radio" type="radio" value="present" name="status_${student.id}" id="status_present_${student.id}" ${presentCheck} />
+                            <label class="form-check-label" for="status_present_${student.id}">Present</label>
+                        </div>
+                        <div class="form-check form-check-custom form-check-warning form-check-solid">
+                            <input class="form-check-input status-radio" type="radio" value="late" name="status_${student.id}" id="status_late_${student.id}" ${lateCheck} />
+                            <label class="form-check-label" for="status_late_${student.id}">Late</label>
+                        </div>
+                        <div class="form-check form-check-custom form-check-danger form-check-solid">
+                            <input class="form-check-input status-radio" type="radio" value="absent" name="status_${student.id}" id="status_absent_${student.id}" ${absentCheck} />
+                            <label class="form-check-label" for="status_absent_${student.id}">Absent</label>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <input type="text" class="form-control form-control-solid form-control-sm remarks-input" 
+                        placeholder="Remarks" value="${student.remarks || ''}" />
+                </td>
+            </tr>
+        `;
+    });
 
                 html += `</tbody></table></div>`;
                 $('#student_list_container').html(html);
