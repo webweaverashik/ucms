@@ -1,12 +1,13 @@
 <?php
 namespace App\Models\Academic;
 
-use App\Models\User;
 use App\Models\Sheet\Sheet;
 use App\Models\Student\Student;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory; // <--- alias
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ClassName extends Model
 {
@@ -17,6 +18,23 @@ class ClassName extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    // Add global scope so only active classes are returned
+    protected static function booted()
+    {
+        static::addGlobalScope('active', function (Builder $builder) {
+            $builder->where('is_active', true);
+        });
+    }
+
+    /*
+    ❗ How to query inactive classes when needed?
+    Just like soft deletes use withTrashed(), you can override the scope using:
+
+    ClassName::withoutGlobalScope('active')->get();
+    */
+
+    // ---- relationships below ----
 
     // Get all subjects associated with this class
     public function subjects()

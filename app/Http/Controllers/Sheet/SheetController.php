@@ -30,10 +30,13 @@ class SheetController extends Controller
             },
         ])
             ->with('class')
+            ->whereHas('class', function ($query) {
+                $query->where('is_active', true);
+            })
             ->latest()
             ->get();
 
-        $classes = ClassName::where('is_active', true)->get();
+        $classes = ClassName::all();
 
         return view('sheets.index', compact('sheets', 'classes'));
     }

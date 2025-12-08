@@ -266,7 +266,7 @@
                                         <div class="row">
                                             @foreach ($subjects as $subject)
                                                 <div class="col-md-6 col-xxl-4 mb-3">
-                                                    <div class="subject-editable py-2 px-3"
+                                                    <div class="@if ($classname->is_active == true) subject-editable @endif py-2 px-3"
                                                         data-id="{{ $subject->id }}">
                                                         <div class="d-flex align-items-center">
                                                             <i class="bi bi-dot fs-2 text-info me-2"></i>

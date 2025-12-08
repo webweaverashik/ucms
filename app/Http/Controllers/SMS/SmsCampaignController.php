@@ -47,7 +47,7 @@ class SmsCampaignController extends Controller
             $query->where('id', auth()->user()->branch_id);
         })->get();
 
-        $classes = ClassName::all();
+        $classes = ClassName::select('id', 'name', 'class_numeral')->get();
 
         return view('sms.campaign.create', compact('branches', 'classes'));
     }

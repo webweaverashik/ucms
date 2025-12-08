@@ -47,11 +47,14 @@ class StudentController extends Controller
                 ->when($branchId != 0, function ($query) use ($branchId) {
                     $query->where('branch_id', $branchId);
                 })
+                ->whereHas('class', function ($query) {
+                    $query->where('is_active', true);
+                })
                 ->latest('updated_at')
                 ->get();
         });
 
-        $classnames = ClassName::all();
+        $classnames = ClassName::get();
         $batches    = Batch::with('branch:id,branch_name')->when(auth()->user()->branch_id != 0, function ($query) {
             $query->where('branch_id', auth()->user()->branch_id);
         })
@@ -84,7 +87,7 @@ class StudentController extends Controller
             ->latest()
             ->get();
 
-        $classnames = ClassName::all();
+        $classnames = ClassName::where('is_active', true)->get();;
         $batches    = Batch::with('branch:id,branch_name')->when(auth()->user()->branch_id != 0, function ($query) {
             $query->where('branch_id', auth()->user()->branch_id);
         })
@@ -105,7 +108,7 @@ class StudentController extends Controller
         // $students     = Student::all();
         // $guardians    = Guardian::all();
         // $subjects     = Subject::all();
-        $classnames   = ClassName::where('is_active', true)->select('id', 'name', 'class_numeral')->latest('class_numeral')->get();
+        $classnames   = ClassName::where('is_active', true)->latest('class_numeral')->get();
         $institutions = Institution::select('id', 'name', 'eiin_number')->get();
 
         $batches = Batch::when(auth()->user()->branch_id != 0, function ($query) {
@@ -476,7 +479,7 @@ class StudentController extends Controller
 
         $students = $studentsQuery->get();
 
-        $classnames   = ClassName::all();
+        $classnames   = ClassName::where('is_active', true)->get();
         $batches      = Batch::where('branch_id', $student->branch_id)->get();
         $institutions = Institution::all();
 
@@ -825,7 +828,7 @@ class StudentController extends Controller
             ->select('id', 'name', 'student_unique_id', 'branch_id', 'class_id', 'batch_id')
             ->get();
 
-        $classes = ClassName::all();
+        $classes = ClassName::where('is_active', true)->get();;
 
         return view('students.promote', compact('students', 'classes'));
     }

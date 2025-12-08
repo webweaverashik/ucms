@@ -103,7 +103,7 @@ class ReportController extends Controller
             $query->where('id', $branchId);
         })->select('id', 'branch_name', 'branch_prefix')->get();
 
-        $classnames = ClassName::where('is_active', true)->select('id', 'name', 'class_numeral')->get();
+        $classnames = ClassName::select('id', 'name', 'class_numeral')->get();
 
         $batches = Batch::with('branch:id,branch_name')
             ->when($branchId != 0, function ($query) use ($branchId) {
