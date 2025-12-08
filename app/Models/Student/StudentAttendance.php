@@ -55,7 +55,7 @@ class StudentAttendance extends Model
 
     public function recorder()
     {
-        return $this->belongsTo(User::class, 'recorded_by');
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**

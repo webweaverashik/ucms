@@ -1,12 +1,15 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Models\Academic\ClassName;
+use Carbon\Carbon;
 use App\Models\Branch;
-use App\Models\Payment\PaymentTransaction;
-use App\Models\Student\Student;
 use Illuminate\Http\Request;
+use App\Models\Academic\Batch;
+use App\Models\Student\Student;
+use App\Models\Academic\ClassName;
 use Illuminate\Support\Facades\DB;
+use App\Models\Student\StudentAttendance;
+use App\Models\Payment\PaymentTransaction;
 
 class ReportController extends Controller
 {
@@ -50,7 +53,7 @@ class ReportController extends Controller
         $startDate             = \Carbon\Carbon::createFromFormat('d-m-Y', trim($startDate))->startOfDay();
         $endDate               = \Carbon\Carbon::createFromFormat('d-m-Y', trim($endDate))->endOfDay();
 
-                                                                           // Get all class names sorted ascending
+                                                                  // Get all class names sorted ascending
         $classes = ClassName::orderBy('id')->pluck('name', 'id'); // id => name
 
         // Fetch transactions with student and class relation
@@ -89,12 +92,87 @@ class ReportController extends Controller
         ]);
     }
 
-    /* 
+    /*
     * Attendance Report
     */
     public function attendanceReport()
     {
-        return view('reports.attendance.index');
+        $branchId = auth()->user()->branch_id;
+
+        $branches = Branch::when($branchId != 0, function ($query) use ($branchId) {
+            $query->where('id', $branchId);
+        })->select('id', 'branch_name', 'branch_prefix')->get();
+
+        $classnames = ClassName::where('is_active', true)->select('id', 'name', 'class_numeral')->get();
+
+        $batches = Batch::with('branch:id,branch_name')
+            ->when($branchId != 0, function ($query) use ($branchId) {
+                $query->where('branch_id', $branchId);
+            })
+            ->select('id', 'name', 'day_off', 'branch_id')
+            ->get();
+
+        return view('reports.attendance.index', compact('branches', 'classnames', 'batches'));
     }
 
+    /*
+    * Attendance AJAX Data
+    */
+    public function attendanceReportData(Request $request)
+    {
+        // --- 1. Validate and Parse Input ---
+        // Validate required inputs
+        $request->validate([
+            'date_range' => 'required|string',
+            'branch_id'  => 'required|integer|exists:branches,id',
+            'class_id'   => 'required|integer|exists:class_names,id', // Added class_id validation
+            'batch_id'   => 'required|integer|exists:batches,id',
+        ]);
+
+        // Parse the date range string "start_date - end_date"
+        $dateRange = explode(' - ', $request->date_range);
+
+        // Check if the range was successfully split into two parts
+        if (count($dateRange) !== 2) {
+            return response()->json([
+                'message' => 'Invalid date range format. Expected "start_date - end_date".',
+                'data'    => [],
+            ], 400); // 400 Bad Request
+        }
+
+        $startDate = Carbon::parse(trim($dateRange[0]))->startOfDay();
+        $endDate   = Carbon::parse(trim($dateRange[1]))->endOfDay();
+
+        // --- 2. Build the Query ---
+        $attendances = StudentAttendance::with([
+            'student'   => function ($q) {
+                $q->select('id', 'name', 'student_unique_id');
+            },
+            'batch'     => function ($q) {
+                $q->select('id', 'name', 'branch_id');
+            },
+            'branch'    => function ($q) {
+                $q->select('id', 'branch_name');
+            },
+            'classname' => function ($q) {
+                $q->select('id', 'name', 'class_numeral');
+            },
+            'recorder'  => function ($q) {
+                $q->select('id', 'name');
+            },
+        ])
+            ->where('batch_id', $request->batch_id)
+        // IMPORTANT: use whereBetween with the correctly parsed start and end dates
+            ->whereBetween('attendance_date', [$startDate, $endDate])
+            ->where('branch_id', $request->branch_id)
+        // Added filter for class_id as per the HTML form
+            ->where('class_id', $request->class_id)
+            ->get();
+
+        // --- 3. Return as JSON ---
+        return response()->json([
+            'message' => 'Attendance data retrieved successfully.',
+            'data'    => $attendances,
+        ]);
+    }
 }

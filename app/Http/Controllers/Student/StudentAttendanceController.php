@@ -143,7 +143,7 @@ class StudentAttendanceController extends Controller
      */
     public function create()
     {
-        //
+        return redirect()->route('attendances.index');
     }
 
     /**
@@ -159,7 +159,7 @@ class StudentAttendanceController extends Controller
      */
     public function show(string $id)
     {
-        //
+        return redirect()->route('attendances.index');
     }
 
     /**
@@ -167,7 +167,7 @@ class StudentAttendanceController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        return redirect()->route('attendances.index');
     }
 
     /**

@@ -384,7 +384,7 @@
             <ul class="nav nav-custom nav-tabs nav-line-tabs nav-line-tabs-2x border-0 fs-4 fw-semibold mb-8">
                 <!--begin:::Tab item-->
                 <li class="nav-item">
-                    <a class="nav-link text-active-primary pb-4 " data-bs-toggle="tab"
+                    <a class="nav-link text-active-primary pb-4 active" data-bs-toggle="tab"
                         href="#kt_student_view_personal_info_tab"><i class="ki-outline ki-home fs-3 me-2"></i>Personal
                         Info</a>
                 </li>
@@ -415,7 +415,7 @@
 
                 <!--begin:::Tab item-->
                 <li class="nav-item">
-                    <a class="nav-link text-active-primary pb-4 active" data-kt-countup-tabs="true" data-bs-toggle="tab"
+                    <a class="nav-link text-active-primary pb-4" data-kt-countup-tabs="true" data-bs-toggle="tab"
                         href="#kt_student_view_attendance_tab"><i
                             class="ki-outline ki-calendar fs-3 me-2"></i>Attendance</a>
                 </li>
@@ -522,7 +522,7 @@
             <!--begin:::Tab content-->
             <div class="tab-content" id="myTabContent">
                 <!--begin:::Personal Info Tab pane-->
-                <div class="tab-pane fade " id="kt_student_view_personal_info_tab" role="tabpanel">
+                <div class="tab-pane fade show active" id="kt_student_view_personal_info_tab" role="tabpanel">
                     <!--begin::Personal Info-->
                     <div class="card mb-5 mb-xl-10" id="kt_profile_details_view">
                         <!--begin::Card header-->
@@ -1329,7 +1329,7 @@
                 <!--end:::Tab pane-->
 
                 <!--begin:::Attendance Tab pane-->
-                <div class="tab-pane fade show active" id="kt_student_view_attendance_tab" role="tabpanel">
+                <div class="tab-pane fade" id="kt_student_view_attendance_tab" role="tabpanel">
                     <div class="card pt-4 mb-6 mb-xl-9">
                         <div class="card-header border-0">
                             <div class="card-title">

@@ -242,8 +242,9 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" id="attendance_link" href="{{ route('attendances.index') }}"><span
-                                                class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
+                                        <a class="menu-link" id="attendance_link"
+                                            href="{{ route('attendances.index') }}"><span class="menu-bullet"><span
+                                                    class="bullet bullet-dot"></span></span><span
                                                 class="menu-title">Attendance</span>
                                         </a>
                                         <!--end:Menu link-->
@@ -452,7 +453,8 @@
                                 <!--begin:SMS Campaign item-->
                                 <div class="menu-item">
                                     <!--begin:Menu link-->
-                                    <a class="menu-link" id="attendance_report_link" href="#">
+                                    <a class="menu-link" id="attendance_report_link"
+                                        href="{{ route('reports.attendance.index') }}">
                                         <span class="menu-bullet">
                                             <span class="bullet bullet-dot">
                                             </span>
@@ -478,19 +480,22 @@
                                 </div>
                                 <!--end:SMS template item-->
 
-                                <!--begin:SMS Campaign item-->
-                                <div class="menu-item">
-                                    <!--begin:Menu link-->
-                                    <a class="menu-link" id="sms_logs_link" href="#">
-                                        <span class="menu-bullet">
-                                            <span class="bullet bullet-dot">
+                                @if (auth()->user()->hasRole('admin'))
+                                    <!--begin:Activity Logs item-->
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <a class="menu-link" id="activity_logs_link" href="#">
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot">
+                                                </span>
                                             </span>
-                                        </span>
-                                        <span class="menu-title">Activity</span>
-                                    </a>
-                                    <!--end:Menu link-->
-                                </div>
-                                <!--end:SMS Campaign item-->
+                                            <span class="menu-title">Activity</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                    <!--end:Activity Logs item-->
+                                @endif
+
                             </div>
                             <!--end:Menu sub-->
                         </div>
