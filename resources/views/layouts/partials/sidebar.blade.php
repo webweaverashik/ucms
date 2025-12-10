@@ -57,8 +57,8 @@
                     <!--end:Dashboard Menu item-->
 
                     {{-- ----------------- Student & Admission Modules ----------------- --}}
+                    <!--begin:Student Info Menu item-->
                     @canany(['students.view', 'guardians.view', 'siblings.view'])
-                        <!--begin:Student Info Menu item-->
                         <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="student_info_menu">
                             <!--begin:Menu link-->
                             <span class="menu-link">
@@ -86,7 +86,6 @@
                                 @endcan
 
 
-
                                 <!--begin:Guardians Menu item-->
                                 @can('guardians.view')
                                     <div class="menu-item">
@@ -107,15 +106,25 @@
                                 @endcan
                                 <!--end:Siblings Menu item-->
 
+                                <!--begin:Alumni Menu item-->
+                                @can('students.view')
+                                    <div class="menu-item">
+                                        <a class="menu-link" id="alumni_link" href="{{ route('students.alumni.index') }}"><span
+                                                class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
+                                                class="menu-title">Alumni Students</span></a>
+                                    </div>
+                                @endcan
+                                <!--end:Alumni Menu item-->
+
                             </div>
                             <!--end:Menu sub-->
                         </div>
-                        <!--end: Student Info Menu item-->
                     @endcanany
+                    <!--end: Student Info Menu item-->
 
 
+                    <!--begin:Admission Menu item-->
                     @canany(['students.create', 'students.approve', 'students.promote', 'students.transfer'])
-                        <!--begin:Admission Menu item-->
                         <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="admission_menu">
                             <!--begin:Menu link-->
                             <span class="menu-link">
@@ -181,8 +190,8 @@
                             </div>
                             <!--end:Menu sub-->
                         </div>
-                        <!--end: Admission Menu item-->
                     @endcanany
+                    <!--end: Admission Menu item-->
 
 
                     <!--begin:Academic Menu item-->

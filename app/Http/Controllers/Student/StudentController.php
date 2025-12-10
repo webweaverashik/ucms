@@ -87,7 +87,7 @@ class StudentController extends Controller
             ->latest()
             ->get();
 
-        $classnames = ClassName::where('is_active', true)->get();;
+        $classnames = ClassName::where('is_active', true)->get();
         $batches    = Batch::with('branch:id,branch_name')->when(auth()->user()->branch_id != 0, function ($query) {
             $query->where('branch_id', auth()->user()->branch_id);
         })
@@ -828,8 +828,51 @@ class StudentController extends Controller
             ->select('id', 'name', 'student_unique_id', 'branch_id', 'class_id', 'batch_id')
             ->get();
 
-        $classes = ClassName::where('is_active', true)->get();;
+        $classes = ClassName::where('is_active', true)->get();
 
         return view('students.promote', compact('students', 'classes'));
+    }
+
+    /* Old Student - Alumni */
+    public function alumniStudent()
+    {
+        $branchId = auth()->user()->branch_id;
+
+        $students = Student::with([
+            // remove the shorthand for class and use a closure to disable the global scope
+            'class' => function ($q) {
+                $q->withoutGlobalScope('active')
+                    ->select('id', 'name', 'class_numeral');
+            },
+            'branch:id,branch_name,branch_prefix',
+            'batch:id,name',
+            'institution:id,name,eiin_number',
+            'studentActivation:id,active_status',
+            'guardians:id,name,relationship,student_id',
+            'mobileNumbers:id,mobile_number,number_type,student_id',
+            'payments:id,payment_style,due_date,tuition_fee,student_id',
+        ])
+            ->whereNotNull('student_activation_id')
+            ->when($branchId != 0, function ($query) use ($branchId) {
+                $query->where('branch_id', $branchId);
+            })
+            ->whereHas('class', function ($q) {
+                $q->withoutGlobalScope('active')
+                    ->where('is_active', false);
+            })
+            ->latest('updated_at')
+            ->get();
+
+        $classnames = ClassName::withoutGlobalScope('active')->where('is_active', false)->get();
+        $batches    = Batch::with('branch:id,branch_name')->when(auth()->user()->branch_id != 0, function ($query) {
+            $query->where('branch_id', auth()->user()->branch_id);
+        })
+            ->select('id', 'name', 'branch_id')
+            ->get();
+
+        $institutions = Institution::all();
+        $branches     = Branch::all();
+
+        return view('students.alumni.index', compact('students', 'classnames', 'batches', 'institutions', 'branches'));
     }
 }

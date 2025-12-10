@@ -5,7 +5,7 @@
 
 @extends('layouts.app')
 
-@section('title', 'All Students')
+@section('title', 'Alumni Students')
 
 
 @section('header-title')
@@ -14,7 +14,7 @@
         class="page-title d-flex align-items-center flex-wrap me-3 mb-5 mb-lg-0">
         <!--begin::Title-->
         <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 align-items-center my-0">
-            All students in this branch
+            Alumni Students
         </h1>
         <!--end::Title-->
         <!--begin::Separator-->
@@ -35,7 +35,7 @@
             <!--end::Item-->
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                All Students </li>
+                All Alumni </li>
             <!--end::Item-->
         </ul>
         <!--end::Breadcrumb-->
@@ -265,13 +265,6 @@
                         <!--end::Menu-->
                     </div>
                     <!--end::Export dropdown-->
-
-                    @can('students.create')
-                        <!--begin::Add Student-->
-                        <a href="{{ route('students.create') }}" class="btn btn-primary">
-                            <i class="ki-outline ki-plus fs-2"></i>New Admission</a>
-                        <!--end::Add Student-->
-                    @endcan
                 </div>
                 <!--end::Toolbar-->
             </div>
@@ -282,7 +275,7 @@
         <!--begin::Card body-->
         <div class="card-body py-4">
             <!--begin::Table-->
-            <table class="table table-hover table-row-dashed align-middle fs-6 gy-5 ucms-table" id="kt_students_table">
+            <table class="table table-hover table-row-dashed align-middle fs-6 gy-5 ucms-table" id="kt_alumni_students_table">
                 <thead>
                     <tr class="fw-bold fs-7 text-uppercase gs-0">
                         <th class="w-25px">SL</th>
@@ -545,10 +538,10 @@
         const routeToggleActive = "{{ route('students.toggleActive', ':id') }}";
     </script>
 
-    <script src="{{ asset('js/students/index.js') }}"></script>
+    <script src="{{ asset('js/students/almuni/index.js') }}"></script>
 
     <script>
         document.getElementById("student_info_menu").classList.add("here", "show");
-        document.getElementById("all_students_link").classList.add("active");
+        document.getElementById("alumni_link").classList.add("active");
     </script>
 @endpush

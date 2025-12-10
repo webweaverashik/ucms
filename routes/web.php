@@ -55,6 +55,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
 
     // Students
     Route::get('students/pending', [StudentController::class, 'pending'])->name('students.pending');
+    Route::get('students/alumni', [StudentController::class, 'alumniStudent'])->name('students.alumni.index');
     Route::post('students/{id}/approve', [StudentActivationController::class, 'approve'])->name('students.activate');
     Route::post('students/toggle-active', [StudentActivationController::class, 'toggleActive'])->name('students.toggleActive');
     Route::get('students/{id}/download-form', [PdfController::class, 'downloadAdmissionForm'])->name('students.download');
