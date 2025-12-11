@@ -69,6 +69,6 @@ class AutoInvoiceController extends Controller
         $branchId = auth()->user()->branch_id;
         Cache::forget('invoices_index_branch_' . $branchId);
 
-        return redirect()->route('invoices.index')->with('success', "Generated {$generatedInvoices} new invoices.");
+        return redirect()->back()->with('success', "Generated {$generatedInvoices} new invoices.");
     }
 }

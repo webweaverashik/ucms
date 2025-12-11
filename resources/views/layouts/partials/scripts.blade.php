@@ -158,5 +158,26 @@
                 });
             });
         });
+
+        document.getElementById('auto_invoice_button').addEventListener('click', function(event) {
+            event.preventDefault();
+
+            const url = this.getAttribute('href');
+            console.log(url);
+            
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'You would like to generate new invoices.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, continue',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#f1c40f' // warning/yellow color
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url; // redirect
+                }
+            });
+        });
     </script>
     <!--end::Custom Javascript-->

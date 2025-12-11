@@ -32,7 +32,6 @@
             <div class="app-navbar flex-shrink-0">
                 <!--begin::Search-->
                 <div class="app-navbar-item ms-1 ms-md-4">
-                    <a href="{{ route('auto.invoice') }}" class="badge badge-lg badge-danger fs-5 me-2">Auto Invoice</a>
                     <span class="badge badge-lg badge-info fs-5">
                         @if (auth()->user()->branch_id)
                             {{ auth()->user()->branch->branch_name }} Branch
