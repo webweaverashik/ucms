@@ -1,10 +1,11 @@
 <?php
 namespace App\Console\Commands;
 
-use App\Models\Payment\PaymentInvoice;
+use Illuminate\Support\Carbon;
 use App\Models\Student\Student;
 use Illuminate\Console\Command;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
+use App\Models\Payment\PaymentInvoice;
 
 class GenerateMonthlyInvoices extends Command
 {
@@ -18,11 +19,10 @@ class GenerateMonthlyInvoices extends Command
         $lastMonth    = Carbon::now()->subMonth()->format('m');
 
         $students = Student::with(['studentActivation', 'payments', 'paymentInvoices', 'branch'])
-            ->whereHas('studentActivation', function ($query) {
-                $query->where('active_status', 'active');
-            })
-            ->whereHas('payments', function ($query) {
-                $query->where('tuition_fee', '>', 0);
+            ->whereHas('studentActivation', fn($q) => $q->where('active_status', 'active'))
+            ->whereHas('payments', fn($q) => $q->where('tuition_fee', '>', 0))
+            ->whereHas('class', function ($q) {
+                $q->withoutGlobalScope('active')->where('is_active', true);
             })
             ->get();
 
@@ -61,6 +61,10 @@ class GenerateMonthlyInvoices extends Command
             $sequence++;
             $generatedInvoices++;
         }
+        
+        // clearing cache after invoice generation
+        $branchId = auth()->user()->branch_id;
+        Cache::forget('invoices_index_branch_' . $branchId);
 
         $this->info("[" . now() . "] Generated {$generatedInvoices} new invoices.");
     }
