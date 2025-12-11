@@ -22,7 +22,7 @@
         <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 ">
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                <a href="" class="text-muted text-hover-primary">
+                <a href="#" class="text-muted text-hover-primary">
                     Student Info </a>
             </li>
             <!--end::Item-->
@@ -47,63 +47,70 @@
         <!--begin::Card header-->
         <div class="card-header border-0 pt-6">
             <!--begin::Card title-->
-            <div class="card-title">
-                <!--begin::Search-->
-                <div class="d-flex align-items-center">
-                    <!--begin::Student selection-->
-                    <div class="fv-row mb-7 w-400px">
-                        <label class="required fw-semibold fs-6 mb-2">Select Student</label>
-
-                        <!--begin::Solid input group style-->
+            <div class="card-title w-100">
+                <form id="student_list_filter_form" class="row g-3 align-items-end w-100" novalidate="novalidate">
+                    <!-- Student Selection -->
+                    <div class="col-md-3">
+                        <label for="student_class_group" class="form-label fw-semibold required">Select Student</label>
                         <div class="input-group input-group-solid flex-nowrap">
                             <span class="input-group-text">
                                 <i class="ki-outline ki-faceid fs-3"></i>
                             </span>
-                            <div class="overflow-hidden flex-grow-1">
-                                <!-- Student Select -->
-                                <select class="form-select form-select-solid rounded-start-0 border-start"
-                                    data-control="select2" data-placeholder="Select a student" id="student_select_id">
-                                    <option></option>
-                                    @foreach ($students as $student)
-                                        <option value="{{ $student->id }}">
-                                            {{ $student->name }} ({{ $student->student_unique_id }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
+                            <select class="form-select form-select-solid rounded-start-0 border-start" name="student_id"
+                                data-control="select2" data-placeholder="Select a student" id="student_select_id">
+                                <option></option>
+                                @foreach ($students as $student)
+                                    <option value="{{ $student->id }}">
+                                        {{ $student->name }} ({{ $student->student_unique_id }})
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
-                        <!--end::Solid input group style-->
                     </div>
-                    <!--end::Student selection-->
 
-                    <!--begin::Branch selection-->
-                    <div class="fv-row mb-7 ps-5 w-400px">
-                        <label class="required fw-semibold fs-6 mb-2">Branch</label>
-
-                        <!--begin::Solid input group style-->
+                    <!-- Branch Selection -->
+                    <div class="col-md-3">
+                        <label for="student_branch_group" class="form-label fw-semibold required">Transfer to Branch</label>
                         <div class="input-group input-group-solid flex-nowrap">
                             <span class="input-group-text">
-                                <i class="ki-outline ki-faceid fs-3"></i>
+                                <i class="ki-outline ki-parcel fs-3"></i>
                             </span>
-                            <div class="overflow-hidden flex-grow-1">
-                                <!-- Student Select -->
-                                <select name="transfer_branch" class="form-select form-select-solid rounded-start-0 border-start"
-                                    data-control="select2" data-hide-search="true" data-placeholder="Select branch" id="transfer_branch_select">
-                                    <option></option>
-                                    @foreach ($branches as $branch)
-                                        <option value="{{ $branch->id }}">
-                                            {{ $branch->branch_name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
+                            <select id="student_branch_group"
+                                class="form-select form-select-solid rounded-start-0 border-start" name="branch_id"
+                                data-control="select2" data-placeholder="Select branch" data-hide-search="true">
+                                <option></option>
+                                @foreach ($branches as $branch)
+                                    <option value="{{ $branch->id }}">
+                                        {{ $branch->branch_name }}
+                                        ({{ $branch->branch_prefix }})
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
-                        <!--end::Solid input group style-->
                     </div>
-                    <!--end::Student selection-->
 
-                </div>
-                <!--end::Search-->
+                    <!-- Batch Selection -->
+                    <div class="col-md-3">
+                        <label for="student_batch_group" class="form-label fw-semibold required">Batch</label>
+                        <div class="input-group input-group-solid flex-nowrap">
+                            <span class="input-group-text">
+                                <i class="ki-outline ki-people fs-3"></i>
+                            </span>
+                            <select id="student_batch_group"
+                                class="form-select form-select-solid rounded-start-0 border-start" name="batch_id"
+                                data-control="select2" data-placeholder="Select batch" data-hide-search="true">
+                                <option></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="col-md-1">
+                        <button type="submit" class="btn btn-primary" id="submit_button">
+                            Submit
+                        </button>
+                    </div>
+                </form>
             </div>
             <!--begin::Card title-->
         </div>

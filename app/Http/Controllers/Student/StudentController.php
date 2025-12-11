@@ -832,10 +832,13 @@ class StudentController extends Controller
         $students = Student::whereHas('studentActivation', function ($query) {
             $query->where('active_status', 'active');
         })
+            ->whereHas('class', function ($query) {
+                $query->where('is_active', true);
+            })
             ->select('id', 'name', 'student_unique_id', 'branch_id', 'class_id', 'batch_id')
             ->get();
 
-        $branches = Branch::all();
+        $branches = Branch::whereNot('id', auth()->user()->branch_id)->get();
 
         return view('students.transfer', compact('students', 'branches'));
     }

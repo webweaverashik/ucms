@@ -54,14 +54,14 @@
                         <label for="student_branch_group" class="form-label fw-semibold required">Branch</label>
                         <div class="input-group input-group-solid flex-nowrap">
                             <span class="input-group-text">
-                                <i class="ki-outline ki-note-2 fs-3"></i>
+                                <i class="ki-outline ki-parcel fs-3"></i>
                             </span>
                             <select id="student_branch_group"
                                 class="form-select form-select-solid rounded-start-0 border-start" name="branch_id"
                                 data-control="select2" data-placeholder="Select branch" data-hide-search="true">
                                 <option></option>
                                 @foreach ($branches as $branch)
-                                    <option value="{{ $branch->id }}" @if ($loop->first) selected @endif>
+                                    <option value="{{ $branch->id }}">
                                         {{ $branch->branch_name }}
                                         ({{ $branch->branch_prefix }})
                                     </option>
@@ -75,14 +75,14 @@
                         <label for="student_class_group" class="form-label fw-semibold required">Class</label>
                         <div class="input-group input-group-solid flex-nowrap">
                             <span class="input-group-text">
-                                <i class="ki-outline ki-note-2 fs-3"></i>
+                                <i class="ki-outline ki-book fs-3"></i>
                             </span>
                             <select id="student_class_group"
                                 class="form-select form-select-solid rounded-start-0 border-start" name="class_id"
                                 data-control="select2" data-placeholder="Select class" data-hide-search="false">
                                 <option></option>
                                 @foreach ($classnames as $classname)
-                                    <option value="{{ $classname->id }}" @if ($loop->first) selected @endif>
+                                    <option value="{{ $classname->id }}">
                                         {{ $classname->name }}
                                         ({{ $classname->class_numeral }})
                                     </option>
@@ -96,14 +96,14 @@
                         <label for="student_batch_group" class="form-label fw-semibold required">Batch</label>
                         <div class="input-group input-group-solid flex-nowrap">
                             <span class="input-group-text">
-                                <i class="ki-outline ki-note-2 fs-3"></i>
+                                <i class="ki-outline ki-people fs-3"></i>
                             </span>
                             <select id="student_batch_group"
                                 class="form-select form-select-solid rounded-start-0 border-start" name="batch_id"
                                 data-control="select2" data-placeholder="Select batch" data-hide-search="true">
                                 <option></option>
                                 @foreach ($batches as $batch)
-                                    <option value="{{ $batch->id }}" @if ($loop->first) selected @endif>
+                                    <option value="{{ $batch->id }}">
                                         {{ $batch->name }} ({{ $batch->branch->branch_name }})
                                     </option>
                                 @endforeach
@@ -122,7 +122,7 @@
         </div>
         <!--end::Card header-->
 
-        <!--begin::Notes Distribution Panel-->
+        <!--begin::Selected Student Card-->
         <div class="card-body py-10">
             <div id="student_list_loader" class="text-center my-3 d-none">
                 <strong>Loading...</strong>
@@ -153,7 +153,7 @@
             </div>
 
         </div>
-        <!--end::Notes Distribution Panel-->
+        <!--end::Selected Student Card-->
     </div>
     <!--end::Card-->
 @endsection

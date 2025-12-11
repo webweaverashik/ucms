@@ -14,7 +14,7 @@
         class="page-title d-flex align-items-center flex-wrap me-3 mb-5 mb-lg-0">
         <!--begin::Title-->
         <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 align-items-center my-0">
-            All students in this branch
+            All running students in this branch
         </h1>
         <!--end::Title-->
         <!--begin::Separator-->
