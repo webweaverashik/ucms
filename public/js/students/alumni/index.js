@@ -162,7 +162,7 @@ var KTStudentsList = function () {
             let url = routeDeleteStudent.replace(':id', studentId);
 
             Swal.fire({
-                title: "Are you sure to delete this student?",
+                title: "Are you sure to delete this Alumni student?",
                 text: "This action cannot be undone!",
                 icon: "warning",
                 showCancelButton: true,
@@ -183,7 +183,7 @@ var KTStudentsList = function () {
                             if (data.success) {
                                 Swal.fire({
                                     title: "Deleted!",
-                                    text: "The student has been removed successfully.",
+                                    text: "Alumni student deleted successfully.",
                                     icon: "success",
                                 }).then(() => {
                                     location.reload(); // Reload to reflect changes

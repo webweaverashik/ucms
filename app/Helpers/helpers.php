@@ -18,6 +18,7 @@ if (! function_exists('clearUCMSCaches')) {
         $branchId = auth()->user()->branch_id;
 
         Cache::forget('students_list_branch_' . $branchId);
+        Cache::forget('alumni_students_list_branch_' . $branchId);
         Cache::forget('guardians_list_branch_' . $branchId);
         Cache::forget('invoices_index_branch_' . $branchId);
         Cache::forget('transactions_branch_' . $branchId);
@@ -99,12 +100,11 @@ function ashikBnNum($numberOrText)
 function ashikBatchBn($word)
 {
     $map = [
-        'Orun'    => 'অরুণ',
-        'Usha'    => 'ঊষা',
-        'Proloy'  => 'প্রলয়',
-        'Dhumketu'=> 'ধূমকেতু',
+        'Orun'     => 'অরুণ',
+        'Usha'     => 'ঊষা',
+        'Proloy'   => 'প্রলয়',
+        'Dhumketu' => 'ধূমকেতু',
     ];
 
     return $map[$word] ?? $word; // fallback to original if not found
 }
-

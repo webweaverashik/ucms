@@ -71,7 +71,7 @@
                 <div class="d-flex align-items-center position-relative my-1">
                     <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
                         data-kt-subscription-table-filter="search" class="form-control form-control-solid w-350px ps-12"
-                        placeholder="Search Students">
+                        placeholder="Search in Alumni Students">
                 </div>
                 <!--end::Search-->
 
@@ -275,7 +275,8 @@
         <!--begin::Card body-->
         <div class="card-body py-4">
             <!--begin::Table-->
-            <table class="table table-hover table-row-dashed align-middle fs-6 gy-5 ucms-table" id="kt_alumni_students_table">
+            <table class="table table-hover table-row-dashed align-middle fs-6 gy-5 ucms-table"
+                id="kt_alumni_students_table">
                 <thead>
                     <tr class="fw-bold fs-7 text-uppercase gs-0">
                         <th class="w-25px">SL</th>
@@ -382,54 +383,32 @@
                                 <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-175px py-4"
                                     data-kt-menu="true">
 
-                                    @if ($canDeactivate)
-                                        <div class="menu-item px-3">
-                                            @if (optional($student->studentActivation)->active_status == 'active')
-                                                <a href="#" class="menu-link text-hover-warning px-3"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#kt_toggle_activation_student_modal"
-                                                    data-student-unique-id="{{ $student->student_unique_id }}"
-                                                    data-student-name="{{ $student->name }}"
-                                                    data-student-id="{{ $student->id }}"
-                                                    data-active-status="{{ optional($student->studentActivation)->active_status }}"><i
-                                                        class="bi bi-person-slash fs-2 me-2"></i> Deactivate</a>
-                                            @else
-                                                <a href="#" class="menu-link text-hover-success px-3"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#kt_toggle_activation_student_modal"
-                                                    data-student-unique-id="{{ $student->student_unique_id }}"
-                                                    data-student-name="{{ $student->name }}"
-                                                    data-student-id="{{ $student->id }}"
-                                                    data-active-status="{{ optional($student->studentActivation)->active_status }}"><i
-                                                        class="bi bi-person-check fs-3 me-2"></i> Activate</a>
-                                            @endif
-                                        </div>
-                                    @endif
-
                                     @if ($canDownloadForm && optional($student->studentActivation)->active_status == 'active')
                                         <div class="menu-item px-3">
                                             <a href="{{ route('students.download', $student->id) }}"
                                                 class="menu-link text-hover-primary px-3" target="_blank"><i
-                                                    class="bi bi-download fs-3 me-2"></i> Download</a>
+                                                    class="bi bi-download fs-3 me-2"></i> Download Form</a>
                                         </div>
                                     @endif
 
-                                    @if ($canEdit)
-                                        <div class="menu-item px-3">
-                                            <a href="{{ route('students.edit', $student->id) }}"
-                                                class="menu-link text-hover-primary px-3"><i
-                                                    class="las la-pen fs-3 me-2"></i>
-                                                Edit</a>
-                                        </div>
-                                    @endif
+                                    @if (auth()->user()->hasRole('admin'))
+                                        @if ($canEdit)
+                                            <div class="menu-item px-3">
+                                                <a href="{{ route('students.edit', $student->id) }}"
+                                                    class="menu-link text-hover-primary px-3"><i
+                                                        class="las la-pen fs-3 me-2"></i>
+                                                    Edit Student</a>
+                                            </div>
+                                        @endif
 
-                                    @if ($canDelete)
-                                        <div class="menu-item px-3">
-                                            <a href="#" class="menu-link px-3 text-hover-danger delete-student"
-                                                data-student-id="{{ $student->id }}"><i
-                                                    class="bi bi-trash fs-3 me-2"></i>
-                                                Delete</a>
-                                        </div>
+                                        @if ($canDelete)
+                                            <div class="menu-item px-3">
+                                                <a href="#" class="menu-link px-3 text-hover-danger delete-student"
+                                                    data-student-id="{{ $student->id }}"><i
+                                                        class="bi bi-trash fs-3 me-2"></i>
+                                                    Delete Student</a>
+                                            </div>
+                                        @endif
                                     @endif
                                 </div>
                                 <!--end::Menu-->
@@ -538,7 +517,7 @@
         const routeToggleActive = "{{ route('students.toggleActive', ':id') }}";
     </script>
 
-    <script src="{{ asset('js/students/almuni/index.js') }}"></script>
+    <script src="{{ asset('js/students/alumni/index.js') }}"></script>
 
     <script>
         document.getElementById("student_info_menu").classList.add("here", "show");

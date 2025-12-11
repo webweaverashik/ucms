@@ -387,8 +387,13 @@ class StudentController extends Controller
     public function show(string $id)
     {
         // Try to find the student including trashed ones
-        // We add 'attendances' to eager loading here to avoid N+1 queries later
-        $student = Student::withTrashed()->with('attendances')->find($id);
+        $student = Student::withTrashed()->with([
+            // 'attendances' added to eager loading
+            'attendances',
+            'class' => function ($q) {
+                $q->withoutGlobalScope('active')
+                    ->select('id', 'name', 'class_numeral');
+            }])->find($id);
 
         // If not found or trashed, redirect with warning
         if (! $student || $student->trashed()) {
@@ -449,7 +454,11 @@ class StudentController extends Controller
             ->sort()
             ->values();
 
-        return view('students.view', compact('student', 'sheet_class_names', 'sheet_subjectNames', 'attendance_events'));
+        if ($student->class->is_active == 0) {
+            return view('students.alumni.view', compact('student', 'sheet_class_names', 'sheet_subjectNames', 'attendance_events'));
+        } else {
+            return view('students.view', compact('student', 'sheet_class_names', 'sheet_subjectNames', 'attendance_events'));
+        }
     }
 
     /**
@@ -457,29 +466,45 @@ class StudentController extends Controller
      */
     public function edit(string $id)
     {
-        // Try to find the student including trashed ones (if soft deletes are enabled)
-        $student = Student::with('reference.referer')->withTrashed()->find($id);
+        // Eager-load class WITHOUT global scopes
+        $student = Student::with([
+            'reference.referer',
+            'class' => function ($q) {
+                $q->withoutGlobalScopes()->select('id', 'name', 'class_numeral', 'is_active');
+            },
+        ])
+            ->withTrashed()
+            ->find($id);
 
-        // If not found or trashed, redirect with warning
         if (! $student || $student->trashed()) {
             return redirect()->route('students.index')->with('warning', 'Student not found or deleted.');
         }
 
-        // Restrict access: Only allow editing if the user belongs to the same branch
+        // Access guard for branch
         if (auth()->user()->branch_id != 0 && auth()->user()->branch_id != $student->branch_id) {
             return redirect()->route('students.index')->with('error', 'This student is not available on this branch.');
         }
 
-        // Fetch students based on branch access
+        // Fetch students for sidebar/list
         $studentsQuery = Student::whereNotNull('student_activation_id')->latest('id');
-
         if (auth()->user()->branch_id != 0) {
             $studentsQuery->where('branch_id', auth()->user()->branch_id);
         }
-
         $students = $studentsQuery->get();
 
-        $classnames   = ClassName::where('is_active', true)->get();
+        // Load classnames safely: bypass global scope so both statuses are available
+        // If student has a class, prefer loading same-status list; else load active by default
+        $studentClassIsActive = optional($student->class)->is_active;
+
+        if ($studentClassIsActive === true) {
+            $classnames = ClassName::withoutGlobalScopes()->where('is_active', true)->get();
+        } elseif ($studentClassIsActive === false) {
+            $classnames = ClassName::withoutGlobalScopes()->where('is_active', false)->get();
+        } else {
+            // student has no class assigned, return active classes by default
+            $classnames = ClassName::withoutGlobalScopes()->where('is_active', true)->get();
+        }
+
         $batches      = Batch::where('branch_id', $student->branch_id)->get();
         $institutions = Institution::all();
 
@@ -838,30 +863,35 @@ class StudentController extends Controller
     {
         $branchId = auth()->user()->branch_id;
 
-        $students = Student::with([
-            // remove the shorthand for class and use a closure to disable the global scope
-            'class' => function ($q) {
-                $q->withoutGlobalScope('active')
-                    ->select('id', 'name', 'class_numeral');
-            },
-            'branch:id,branch_name,branch_prefix',
-            'batch:id,name',
-            'institution:id,name,eiin_number',
-            'studentActivation:id,active_status',
-            'guardians:id,name,relationship,student_id',
-            'mobileNumbers:id,mobile_number,number_type,student_id',
-            'payments:id,payment_style,due_date,tuition_fee,student_id',
-        ])
-            ->whereNotNull('student_activation_id')
-            ->when($branchId != 0, function ($query) use ($branchId) {
-                $query->where('branch_id', $branchId);
-            })
-            ->whereHas('class', function ($q) {
-                $q->withoutGlobalScope('active')
-                    ->where('is_active', false);
-            })
-            ->latest('updated_at')
-            ->get();
+        // Unique cache key per branch (useful when branch_id != 0)
+        $cacheKey = 'alumni_students_list_branch_' . $branchId;
+
+        $students = Cache::remember($cacheKey, now()->addHours(1), function () use ($branchId) {
+            return Student::with([
+                // remove the shorthand for class and use a closure to disable the global scope
+                'class' => function ($q) {
+                    $q->withoutGlobalScope('active')
+                        ->select('id', 'name', 'class_numeral');
+                },
+                'branch:id,branch_name,branch_prefix',
+                'batch:id,name',
+                'institution:id,name,eiin_number',
+                'studentActivation:id,active_status',
+                'guardians:id,name,relationship,student_id',
+                'mobileNumbers:id,mobile_number,number_type,student_id',
+                'payments:id,payment_style,due_date,tuition_fee,student_id',
+            ])
+                ->whereNotNull('student_activation_id')
+                ->when($branchId != 0, function ($query) use ($branchId) {
+                    $query->where('branch_id', $branchId);
+                })
+                ->whereHas('class', function ($q) {
+                    $q->withoutGlobalScope('active')
+                        ->where('is_active', false);
+                })
+                ->latest('updated_at')
+                ->get();
+        });
 
         $classnames = ClassName::withoutGlobalScope('active')->where('is_active', false)->get();
         $batches    = Batch::with('branch:id,branch_name')->when(auth()->user()->branch_id != 0, function ($query) {

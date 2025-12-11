@@ -71,7 +71,10 @@ class PaymentInvoiceController extends Controller
                         $q->where('active_status', 'active');
                     });
                 })
-                ->orderBy('student_unique_id')
+                ->whereHas('class', function ($query) {
+                    $query->where('is_active', true);
+                })
+                ->latest('student_unique_id')
                 ->select('id', 'name', 'student_unique_id', 'student_activation_id', 'branch_id')
                 ->get();
 
@@ -187,11 +190,11 @@ class PaymentInvoiceController extends Controller
             send_auto_sms("{$request->invoice_type}_invoice_created", $mobile, [
                 'student_name' => $invoice->student->name,
                 'month_year'   => $invoice->month_year
-                ? Carbon::createFromDate(
+                    ? Carbon::createFromDate(
                     explode('_', $invoice->month_year)[1], // year
                     explode('_', $invoice->month_year)[0], // month
                 )->format('F')
-                : now()->format('F'),
+                    : now()->format('F'),
                 'amount'       => $invoice->total_amount,
                 'invoice_no'   => $invoice->invoice_number,
                 'due_date'     => $this->ordinal($invoice->student->payments->due_date) . ' ' . now()->format('F'),
@@ -207,11 +210,11 @@ class PaymentInvoiceController extends Controller
                 send_auto_sms('guardian_tuition_fee_invoice_created', $mobile, [
                     'student_name' => $invoice->student->name,
                     'month_year'   => $invoice->month_year
-                    ? Carbon::createFromDate(
+                        ? Carbon::createFromDate(
                         explode('_', $invoice->month_year)[1], // year
                         explode('_', $invoice->month_year)[0]  // month
                     )->format('F')
-                    : now()->format('F'),
+                        : now()->format('F'),
                     'amount'       => $invoice->total_amount,
                     'invoice_no'   => $invoice->invoice_number,
                     'due_date'     => $this->ordinal($invoice->student->payments->due_date) . ' ' . now()->format('F'),
