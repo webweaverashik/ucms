@@ -25,6 +25,7 @@ use App\Http\Controllers\Student\SiblingController;
 use App\Http\Controllers\Student\StudentActivationController;
 use App\Http\Controllers\Student\StudentAttendanceController;
 use App\Http\Controllers\Student\StudentController;
+use App\Http\Controllers\Student\StudentTransferController;
 use App\Http\Controllers\Teacher\TeacherController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Mail;
@@ -61,9 +62,17 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('students/{id}/download-form', [PdfController::class, 'downloadAdmissionForm'])->name('students.download');
     Route::get('students/{student}/invoice-months-data', [StudentController::class, 'getInvoiceMonthsData']);
     Route::get('students/{id}/sheet-fee', [StudentController::class, 'getSheetFee']);
-    Route::get('students/transfer', [StudentController::class, 'transferStudent'])->name('students.transfer');
     Route::get('students/promote', [StudentController::class, 'promoteStudents'])->name('students.promote');
     Route::post('student/statement/download', [PdfController::class, 'downloadStatement'])->name('student.statement.download');
+
+    /* --- Student Transfer Starts --- */
+    Route::get('students/transfer', [StudentTransferController::class, 'index'])->name('students.transfer');
+
+    Route::get('students/{student}/info', [StudentTransferController::class, 'studentInfo'])->name('students.transfer.studentInfo');
+    Route::get('students/{student}/available-branches', [StudentTransferController::class, 'availableBranches'])->name('students.transfer.availableBranches');
+    Route::get('branches/{branch}/batches', [StudentTransferController::class, 'batchesByBranch'])->name('students.transfer.batchesByBranch');
+    Route::post('students/transfer/store', [StudentTransferController::class, 'store'])->name('students.transfer.store');
+    /* --- Student Transfer Ends --- */
 
     // Student Attendance
     Route::post('attendances/get-students', [StudentAttendanceController::class, 'getStudents'])->name('attendances.get_students');

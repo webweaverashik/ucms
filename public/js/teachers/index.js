@@ -241,8 +241,25 @@ var KTAddTeacher = function () {
 
 
       var initCloseModal = () => {
-
             // Reset Select2 inputs
+            function resetSelect2Inputs() {
+                  // 1) Reset Select2 value + UI + borders
+                  $(form).find('select[data-control="select2"]').each(function () {
+                        $(this).val(null).trigger('change');
+                        $(this).next('.select2').find('.select2-selection')
+                              .removeClass('is-valid is-invalid');
+                  });
+
+                  // 2) Remove Bootstrap validation classes from all fields
+                  $(form).find('.is-valid, .is-invalid').removeClass('is-valid is-invalid');
+
+                  // 3) Remove ALL FormValidation error messages
+                  $(form).find('.fv-plugins-message-container').each(function () {
+                        $(this).empty();  // Clear inner validation messages
+                        // Optionally remove "enabled" class:
+                        $(this).removeClass('fv-plugins-message-container--enabled');
+                  });
+            }
 
             // Cancel button handler
             const cancelButton = element.querySelector('[data-kt-add-teacher-modal-action="cancel"]');
@@ -250,6 +267,7 @@ var KTAddTeacher = function () {
                   cancelButton.addEventListener('click', e => {
                         e.preventDefault();
                         if (form) form.reset();
+                        resetSelect2Inputs()
                         modal.hide();
                   });
             }
@@ -260,7 +278,7 @@ var KTAddTeacher = function () {
                   closeButton.addEventListener('click', e => {
                         e.preventDefault();
                         if (form) form.reset();
-
+                        resetSelect2Inputs()
                         modal.hide();
                   });
             }

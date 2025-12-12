@@ -44,7 +44,7 @@ class Student extends Model
     }
 
     // Get the current academic class of this student
-    public function class ()
+    public function class()
     {
         return $this->belongsTo(ClassName::class, 'class_id');
     }
