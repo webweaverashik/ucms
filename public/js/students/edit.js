@@ -305,7 +305,7 @@ var KTUpdateStudent = function () {
                                    file: {
                                         extension: 'jpg,jpeg,png',
                                         type: 'image/jpeg,image/png',
-                                        maxSize: 102400, // 100 * 1024
+                                        maxSize: 51200, // 50 * 1024
                                         message: 'The selected file type or size is not valid'
                                    },
                               }

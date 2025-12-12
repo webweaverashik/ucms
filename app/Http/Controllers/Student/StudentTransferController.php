@@ -20,7 +20,33 @@ class StudentTransferController extends Controller
             return redirect()->back()->with('warning', 'No permission to transfer students.');
         }
 
-        // load students who are active (same criteria you used)
+        // Get transfer logs without eager loading branches yet
+        $transfer_logs = StudentTransferHistory::with([
+            'transferredBy:id,name',
+            'fromBatch:id,name',
+            'toBatch:id,name',
+            'student:id,name,student_unique_id,gender,photo_url',
+        ])->latest()->get();
+
+        // Collect all unique branch IDs from both from_branch_id and to_branch_id
+        $fromBranchIds = $transfer_logs->pluck('from_branch_id')->filter();
+        $toBranchIds   = $transfer_logs->pluck('to_branch_id')->filter();
+
+        $allBranchIds = $fromBranchIds->merge($toBranchIds)->unique();
+
+        // Load all branches in ONE query
+        $branches = Branch::whereIn('id', $allBranchIds)
+            ->select('id', 'branch_name', 'branch_prefix') // include prefix if needed
+            ->get()
+            ->keyBy('id');
+
+        // Manually attach branch data to each log to avoid N+1 or duplicate queries
+        foreach ($transfer_logs as $log) {
+            $log->fromBranch = $branches->get($log->from_branch_id);
+            $log->toBranch   = $branches->get($log->to_branch_id);
+        }
+
+        // load students who are active (to be used in the modal)
         $students = Student::with(['branch:id,branch_name,branch_prefix', 'class:id,name,class_numeral', 'batch:id,name'])
             ->whereHas('studentActivation', function ($q) {
                 $q->where('active_status', 'active');
@@ -30,8 +56,6 @@ class StudentTransferController extends Controller
             })
             ->select('id', 'name', 'student_unique_id', 'branch_id', 'class_id', 'batch_id')
             ->get();
-
-        $transfer_logs = StudentTransferHistory::with(['fromBranch:id,branch_name', 'toBranch:id,branch_name', 'transferredBy:id,name', 'fromBatch:id,name', 'toBatch:id,name', 'student:id,name,student_unique_id,gender,photo_url'])->latest()->get();
 
         return view('students.transfer', compact('students', 'transfer_logs'));
     }

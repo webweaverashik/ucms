@@ -394,7 +394,7 @@
                                     <!--end::Image input-->
 
                                     <!--begin::Hint-->
-                                    <div class="form-text">Allowed file types: png, jpg, jpeg. Max 100kB</div>
+                                    <div class="form-text">Allowed file types: png, jpg, jpeg. Max 50kB</div>
                                     <!--end::Hint-->
                                 </div>
                                 <!--end::Photo Input group-->
