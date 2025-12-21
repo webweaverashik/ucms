@@ -414,7 +414,7 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" href="{{ route('teachers.index') }}" id="salary_tracking_link">
+                                        <a class="menu-link" href="#" id="salary_tracking_link">
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot">
                                                 </span>
