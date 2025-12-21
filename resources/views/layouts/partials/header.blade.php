@@ -732,7 +732,6 @@
                 <!--end::Header menu toggle-->
             </div>
             <!--end::Navbar-->
-
         </div>
         <!--end::Header wrapper-->
     </div>
