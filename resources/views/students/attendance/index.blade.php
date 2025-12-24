@@ -164,17 +164,7 @@
 
 
 @push('page-js')
-    {{-- <script>
-        window.UCMS = {
-            routes: {
-                batchesByBranch: "{{ route('attendances.batches') }}",
-                loadStudents: "{{ route('attendances.students') }}",
-                storeAttendance: "{{ route('attendances.store') }}",
-            }
-        };
-    </script> --}}
-
-    {{-- <script src="{{ asset('js/attendances/index.js') }}"></script> --}}
+    <script src="{{ asset('js/attendances/index.js') }}"></script>
 
     <script>
         $(document).ready(function() {

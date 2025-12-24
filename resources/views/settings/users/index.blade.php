@@ -112,11 +112,10 @@
 
                             <!--begin::Actions-->
                             <div class="d-flex justify-content-end">
-                                <button type="reset"
-                                    class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
+                                <button type="reset" class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
                                     data-kt-menu-dismiss="true" data-users-table-filter="reset">Reset</button>
-                                <button type="submit" class="btn btn-primary fw-semibold px-6"
-                                    data-kt-menu-dismiss="true" data-users-table-filter="filter">Apply</button>
+                                <button type="submit" class="btn btn-primary fw-semibold px-6" data-kt-menu-dismiss="true"
+                                    data-users-table-filter="filter">Apply</button>
                             </div>
                             <!--end::Actions-->
                         </div>
@@ -125,8 +124,7 @@
                     <!--end::Menu 1-->
 
                     <!--begin::Add user-->
-                    <a href="#" class="btn btn-primary" data-bs-toggle="modal"
-                        data-bs-target="#kt_modal_add_user">
+                    <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_user">
                         <i class="ki-outline ki-plus fs-2"></i>New User</a>
                     <!--end::Add user-->
                 </div>
@@ -222,18 +220,25 @@
                                 @endif
                             </td>
                             <td>
-                                <a href="#" title="Edit User" data-bs-toggle="modal"
-                                    data-bs-target="#kt_modal_edit_user" data-user-id="{{ $user->id }}"
-                                    class="btn btn-icon text-hover-primary w-30px h-30px">
-                                    <i class="ki-outline ki-pencil fs-2"></i>
-                                </a>
+                                @if ($user->id == auth()->user()->id)
+                                    <a href="{{ route('users.profile') }}" title="My Profile" data-bs-toggle="tooltip"
+                                        class="btn btn-icon text-hover-success w-30px h-30px me-3">
+                                        <i class="ki-outline ki-eye fs-2"></i>
+                                    </a>
+                                @else
+                                    <a href="#" title="Edit User" data-bs-toggle="modal"
+                                        data-bs-target="#kt_modal_edit_user" data-user-id="{{ $user->id }}"
+                                        class="btn btn-icon text-hover-primary w-30px h-30px">
+                                        <i class="ki-outline ki-pencil fs-2"></i>
+                                    </a>
 
-                                <a href="#" title="Reset Passsword" data-bs-toggle="modal"
-                                    data-bs-target="#kt_modal_edit_password" data-user-id="{{ $user->id }}"
-                                    data-user-name="{{ $user->name }}"
-                                    class="btn btn-icon text-hover-primary w-30px h-30px change-password-btn">
-                                    <i class="ki-outline ki-key fs-2"></i>
-                                </a>
+                                    <a href="#" title="Reset Passsword" data-bs-toggle="modal"
+                                        data-bs-target="#kt_modal_edit_password" data-user-id="{{ $user->id }}"
+                                        data-user-name="{{ $user->name }}"
+                                        class="btn btn-icon text-hover-primary w-30px h-30px change-password-btn">
+                                        <i class="ki-outline ki-key fs-2"></i>
+                                    </a>
+                                @endif
 
                                 @if ($user->id != auth()->user()->id)
                                     <a href="#" title="Delete User" data-bs-toggle="tooltip"

@@ -277,7 +277,7 @@
                                 <!--end::Items-->
                                 <!--begin::View more-->
                                 <div class="py-3 text-center border-top">
-                                    <a href="?page=pages/user-profile/activity"
+                                    <a href="#"
                                         class="btn btn-color-gray-600 btn-active-color-primary">
                                         View All
                                         <i class="ki-outline ki-arrow-right fs-5"></i> </a>
@@ -565,7 +565,7 @@
                                 <!--end::Items-->
                                 <!--begin::View more-->
                                 <div class="py-3 text-center border-top">
-                                    <a href="?page=pages/user-profile/activity"
+                                    <a href="#"
                                         class="btn btn-color-gray-600 btn-active-color-primary">
                                         View All
                                         <i class="ki-outline ki-arrow-right fs-5"></i> </a>
@@ -686,7 +686,7 @@
 
                         <!--begin::Menu item-->
                         <div class="menu-item px-5">
-                            <a href="#" class="menu-link px-5">
+                            <a href="{{ route('users.profile') }}" class="menu-link px-5">
                                 My Profile
                             </a>
                         </div>

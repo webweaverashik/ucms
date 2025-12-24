@@ -27,7 +27,7 @@ use App\Http\Controllers\Student\StudentAttendanceController;
 use App\Http\Controllers\Student\StudentController;
 use App\Http\Controllers\Student\StudentTransferController;
 use App\Http\Controllers\Teacher\TeacherController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
@@ -53,6 +53,8 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     // Users
     Route::post('settings/users/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggleActive');
     Route::put('settings/users/{user}/password', [UserController::class, 'userPasswordReset'])->name('users.password.reset');
+    Route::get('profile', [UserController::class, 'profile'])->name('users.profile');
+    Route::put('profile/update', [UserController::class, 'updateProfile'])->name('users.profile.update');
 
     // Students
     Route::get('students/pending', [StudentController::class, 'pending'])->name('students.pending');
