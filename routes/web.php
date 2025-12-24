@@ -77,8 +77,15 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     /* --- Student Transfer Ends --- */
 
     // Student Attendance
-    Route::post('attendances/get-students', [StudentAttendanceController::class, 'getStudents'])->name('attendances.get_students');
-    Route::post('attendances/store-bulk', [StudentAttendanceController::class, 'storeBulk'])->name('attendances.store_bulk');
+    Route::prefix('attendances')
+        ->name('attendances.')
+        ->group(function () {
+            Route::get('/', [StudentAttendanceController::class, 'index'])->name('index');
+            Route::get('/batches/{branchId}', [StudentAttendanceController::class, 'getBatches'])->name('get_batches');
+            Route::post('/get-students', [StudentAttendanceController::class, 'getStudents'])->name('get_students');
+
+            Route::post('/store-bulk', [StudentAttendanceController::class, 'storeBulk'])->name('store_bulk');
+        });
 
     // Teachers
     Route::post('teachers/toggle-active', [TeacherController::class, 'toggleActive'])->name('teachers.toggleActive');
@@ -173,7 +180,6 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
         'settings/users'    => UserController::class,
         'settings/branch'   => BranchController::class,
         'students'          => StudentController::class,
-        'attendances'       => StudentAttendanceController::class,
         'guardians'         => GuardianController::class,
         'siblings'          => SiblingController::class,
         'teachers'          => TeacherController::class,

@@ -33,17 +33,13 @@
                 <!--begin::Search-->
                 <div class="app-navbar-item ms-1 ms-md-4">
                     <span class="badge badge-lg badge-info fs-5">
-                        @if (auth()->user()->branch_id)
-                            {{ auth()->user()->branch->branch_name }} Branch
-                        @else
-                            SuperAdmin
-                        @endif
+                        {{ ucfirst(auth()->user()->getRoleNames()->first()) }}
                     </span>
                 </div>
                 <!--end::Search-->
 
                 <!--begin::Notifications-->
-                <div class="app-navbar-item ms-1 ms-md-4">
+                {{-- <div class="app-navbar-item ms-1 ms-md-4">
                     <!--begin::Menu- wrapper-->
                     <div class="btn btn-icon btn-custom btn-icon-muted btn-active-light btn-active-color-primary w-35px h-35px"
                         data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-attach="parent"
@@ -277,8 +273,7 @@
                                 <!--end::Items-->
                                 <!--begin::View more-->
                                 <div class="py-3 text-center border-top">
-                                    <a href="#"
-                                        class="btn btn-color-gray-600 btn-active-color-primary">
+                                    <a href="#" class="btn btn-color-gray-600 btn-active-color-primary">
                                         View All
                                         <i class="ki-outline ki-arrow-right fs-5"></i> </a>
                                 </div>
@@ -565,8 +560,7 @@
                                 <!--end::Items-->
                                 <!--begin::View more-->
                                 <div class="py-3 text-center border-top">
-                                    <a href="#"
-                                        class="btn btn-color-gray-600 btn-active-color-primary">
+                                    <a href="#" class="btn btn-color-gray-600 btn-active-color-primary">
                                         View All
                                         <i class="ki-outline ki-arrow-right fs-5"></i> </a>
                                 </div>
@@ -579,7 +573,7 @@
                     <!--end::Menu-->
 
                     <!--end::Menu wrapper-->
-                </div>
+                </div> --}}
                 <!--end::Notifications-->
 
                 <!--begin::Clear Cache-->
@@ -671,10 +665,8 @@
                                 <div class="d-flex flex-column">
                                     <div class="fw-bold d-flex align-items-center fs-5">
                                         {{ auth()->user()->name }}
-                                        <span
-                                            class="badge badge-light-success fw-bold fs-8 px-2 py-1 ms-2">{{ ucfirst(auth()->user()->getRoleNames()->first()) }}</span>
                                     </div>
-                                    <span class="fw-semibold text-muted fs-7">
+                                    <span class="fw-semibold text-muted fs-7 text-break">
                                         {{ auth()->user()->email }} </span>
                                 </div>
                                 <!--end::Username-->

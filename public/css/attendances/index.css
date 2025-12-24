@@ -1,0 +1,228 @@
+/**
+ * Student Attendance Styles
+ * Path: public/css/attendances/index.css
+ */
+
+/* ============================================
+   Animations
+   ============================================ */
+.fade-in {
+      animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+      from {
+            opacity: 0;
+            transform: translateY(-10px);
+      }
+
+      to {
+            opacity: 1;
+            transform: translateY(0);
+      }
+}
+
+/* ============================================
+   Attendance Row States
+   ============================================ */
+.attendance-row.bg-light-danger {
+      background-color: #fff5f8 !important;
+}
+
+/* ============================================
+   Quick Action Buttons (Bulk Actions)
+   ============================================ */
+.quick-action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.25rem;
+      border-radius: 0.475rem;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 500;
+      font-size: 0.925rem;
+}
+
+.quick-action-btn input[type="radio"] {
+      display: none;
+}
+
+/* Present Button */
+.quick-action-btn.present-btn {
+      background-color: #e8fff3;
+      color: #50cd89;
+      border-color: #c8f1db;
+}
+
+.quick-action-btn.present-btn i {
+      color: #50cd89;
+}
+
+.quick-action-btn.present-btn:hover,
+.quick-action-btn.present-btn:has(input:checked) {
+      background-color: #50cd89;
+      color: #fff;
+      border-color: #50cd89;
+      box-shadow: 0 3px 6px rgba(80, 205, 137, 0.3);
+}
+
+.quick-action-btn.present-btn:hover i,
+.quick-action-btn.present-btn:has(input:checked) i {
+      color: #fff;
+}
+
+/* Late Button */
+.quick-action-btn.late-btn {
+      background-color: #fff8dd;
+      color: #ffc700;
+      border-color: #f5e7b5;
+}
+
+.quick-action-btn.late-btn i {
+      color: #ffc700;
+}
+
+.quick-action-btn.late-btn:hover,
+.quick-action-btn.late-btn:has(input:checked) {
+      background-color: #ffc700;
+      color: #fff;
+      border-color: #ffc700;
+      box-shadow: 0 3px 6px rgba(255, 199, 0, 0.3);
+}
+
+.quick-action-btn.late-btn:hover i,
+.quick-action-btn.late-btn:has(input:checked) i {
+      color: #fff;
+}
+
+/* Absent Button */
+.quick-action-btn.absent-btn {
+      background-color: #fff5f8;
+      color: #f1416c;
+      border-color: #f5c5d1;
+}
+
+.quick-action-btn.absent-btn i {
+      color: #f1416c;
+}
+
+.quick-action-btn.absent-btn:hover,
+.quick-action-btn.absent-btn:has(input:checked) {
+      background-color: #f1416c;
+      color: #fff;
+      border-color: #f1416c;
+      box-shadow: 0 3px 6px rgba(241, 65, 108, 0.3);
+}
+
+.quick-action-btn.absent-btn:hover i,
+.quick-action-btn.absent-btn:has(input:checked) i {
+      color: #fff;
+}
+
+/* ============================================
+   Status Options (Per-Student Radio Buttons)
+   ============================================ */
+.status-option {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1rem;
+      border-radius: 0.475rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-weight: 500;
+      font-size: 0.875rem;
+      border: 1px dashed transparent;
+      background-color: #f9f9f9;
+}
+
+.status-option input[type="radio"] {
+      display: none;
+}
+
+.status-option .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      transition: all 0.15s ease;
+}
+
+/* Present Option */
+.status-option.present-option {
+      color: #5e6278;
+}
+
+.status-option.present-option .status-dot {
+      background-color: #c8f1db;
+      border: 2px solid #50cd89;
+}
+
+.status-option.present-option:hover {
+      background-color: #e8fff3;
+      border-color: #c8f1db;
+}
+
+.status-option.present-option:has(input:checked) {
+      background-color: #50cd89;
+      color: #fff;
+      border-color: #50cd89;
+}
+
+.status-option.present-option:has(input:checked) .status-dot {
+      background-color: #fff;
+      border-color: #fff;
+}
+
+/* Late Option */
+.status-option.late-option {
+      color: #5e6278;
+}
+
+.status-option.late-option .status-dot {
+      background-color: #fff8dd;
+      border: 2px solid #ffc700;
+}
+
+.status-option.late-option:hover {
+      background-color: #fff8dd;
+      border-color: #f5e7b5;
+}
+
+.status-option.late-option:has(input:checked) {
+      background-color: #ffc700;
+      color: #fff;
+      border-color: #ffc700;
+}
+
+.status-option.late-option:has(input:checked) .status-dot {
+      background-color: #fff;
+      border-color: #fff;
+}
+
+/* Absent Option */
+.status-option.absent-option {
+      color: #5e6278;
+}
+
+.status-option.absent-option .status-dot {
+      background-color: #fff5f8;
+      border: 2px solid #f1416c;
+}
+
+.status-option.absent-option:hover {
+      background-color: #fff5f8;
+      border-color: #f5c5d1;
+}
+
+.status-option.absent-option:has(input:checked) {
+      background-color: #f1416c;
+      color: #fff;
+      border-color: #f1416c;
+}
+
+.status-option.absent-option:has(input:checked) .status-dot {
+      background-color: #fff;
+      border-color: #fff;
+}
