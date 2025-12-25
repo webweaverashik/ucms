@@ -126,6 +126,8 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     // Reports
     Route::get('reports', [ReportController::class, 'studentReport']);
     Route::get('reports/students', [ReportController::class, 'studentReport'])->name('reports.student.index');
+    
+    // Attendance Reports
     Route::get('reports/attendance', [ReportController::class, 'attendanceReport'])->name('reports.attendance.index');
     Route::get('reports/attendance/data', [ReportController::class, 'attendanceReportData'])->name('reports.attendance.data');
 

@@ -1,31 +1,45 @@
 "use strict";
 
 /**
+ * Attendance Report Module
+ * For Metronic 8.2.6 + Bootstrap 5.3
+ *
+ * This file handles:
+ * - Date Range Picker initialization
+ * - Branch-Batch dynamic loading
+ * - DataTable with aggregation
+ * - Form validation
+ * - Export functionality
+ */
+
+/**
  * Module: Date Range Picker
  */
-var KTDateRangePicker = function () {
-      // Init daterangepicker
-      var initDaterangepicker = () => {
-            var start = moment().startOf("month");
-            var end = moment().endOf("month");
+var KTDateRangePicker = (function () {
+      var input;
+      var defaultStart, defaultEnd;
 
-            var input = $("#attendance_daterangepicker");
-            var hiddenInput = $("#date_range_value"); // Hidden input field to store the value
+      // Init daterangepicker
+      var initDaterangepicker = function () {
+            defaultStart = moment().startOf("month");
+            defaultEnd = moment().endOf("month");
+
+            input = $("#attendance_daterangepicker");
+            var hiddenInput = $("#date_range_value");
 
             function cb(start, end) {
-                  // Display format
                   var displayFormat = start.format("DD-MM-YYYY") + " - " + end.format("DD-MM-YYYY");
-                  // Value format (same as display for backend processing consistency)
                   var valueFormat = start.format("DD-MM-YYYY") + " - " + end.format("DD-MM-YYYY");
 
-                  input.val(displayFormat); // Set the display value
-                  hiddenInput.val(valueFormat); // Set the hidden input value for form submission
+                  input.val(displayFormat);
+                  if (hiddenInput.length) {
+                        hiddenInput.val(valueFormat);
+                  }
             }
 
-            // Initialize daterangepicker
             input.daterangepicker({
-                  startDate: start,
-                  endDate: end,
+                  startDate: defaultStart,
+                  endDate: defaultEnd,
                   locale: {
                         format: "DD-MM-YYYY"
                   },
@@ -39,24 +53,240 @@ var KTDateRangePicker = function () {
                   }
             }, cb);
 
-            cb(start, end);
-      }
+            cb(defaultStart, defaultEnd);
+      };
 
-      // Public methods
       return {
             init: function () {
                   initDaterangepicker();
             }
       };
-}();
-
+})();
 
 /**
- * KTAttendanceReportTable - final consolidated module
+ * Module: Branch-Batch Loader
+ * Handles dynamic batch loading based on branch selection
+ */
+var KTBranchBatchLoader = (function () {
+      var branchSelect, batchSelect;
+      var config;
+
+      // Get the URL for fetching batches
+      function getBatchesUrl(branchId) {
+            return config.getBatchesUrl.replace(':branchId', branchId);
+      }
+
+      // Load batches for a given branch ID
+      function loadBatches(branchId) {
+            if (!branchId) {
+                  clearBatches();
+                  disableBatchSelect();
+                  return;
+            }
+
+            // Show loading state
+            if (batchSelect.tagName === 'SELECT') {
+                  $(batchSelect).prop('disabled', true);
+
+                  // Clear existing options and show loading
+                  $(batchSelect).empty().append('<option value="">Loading batches...</option>');
+
+                  // Trigger select2 update if applicable
+                  if ($(batchSelect).hasClass('select2-hidden-accessible')) {
+                        $(batchSelect).trigger('change');
+                  }
+            }
+
+            // Make AJAX request
+            $.ajax({
+                  url: getBatchesUrl(branchId),
+                  type: 'GET',
+                  dataType: 'json',
+                  success: function (response) {
+                        populateBatches(response.batches || []);
+                        enableBatchSelect();
+                  },
+                  error: function (xhr, status, error) {
+                        console.error('Error loading batches:', error);
+
+                        var errorMessage = 'Error loading batches';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                              errorMessage = xhr.responseJSON.message;
+                        }
+
+                        if (typeof toastr !== 'undefined') {
+                              toastr.error(errorMessage);
+                        }
+
+                        clearBatches();
+                        disableBatchSelect();
+                  }
+            });
+      }
+
+      // Populate batch dropdown with options
+      function populateBatches(batches) {
+            if (batchSelect.tagName !== 'SELECT') return;
+
+            $(batchSelect).empty();
+            $(batchSelect).append('<option value="">Select batch</option>');
+
+            if (batches && batches.length > 0) {
+                  batches.forEach(function (batch) {
+                        $(batchSelect).append(
+                              $('<option></option>')
+                                    .val(batch.id)
+                                    .text(batch.name)
+                        );
+                  });
+            }
+
+            // Trigger select2 update if applicable
+            if ($(batchSelect).hasClass('select2-hidden-accessible')) {
+                  $(batchSelect).trigger('change');
+            }
+      }
+
+      // Clear batch dropdown
+      function clearBatches() {
+            if (batchSelect.tagName !== 'SELECT') return;
+
+            $(batchSelect).empty();
+            $(batchSelect).append('<option value="">Select batch</option>');
+
+            if ($(batchSelect).hasClass('select2-hidden-accessible')) {
+                  $(batchSelect).trigger('change');
+            }
+      }
+
+      // Enable batch select
+      function enableBatchSelect() {
+            if (batchSelect.tagName !== 'SELECT') return;
+            $(batchSelect).prop('disabled', false);
+      }
+
+      // Disable batch select
+      function disableBatchSelect() {
+            if (batchSelect.tagName !== 'SELECT') return;
+            $(batchSelect).prop('disabled', true);
+      }
+
+      // Initialize branch change listener (admin only)
+      function initBranchChangeListener() {
+            if (!config.isAdmin) return;
+
+            $(branchSelect).on('change', function () {
+                  var branchId = $(this).val();
+                  loadBatches(branchId);
+            });
+      }
+
+      // Initialize for non-admin users
+      function initNonAdminBatches() {
+            if (config.isAdmin) return;
+
+            // For non-admin users, branch is already set via hidden input
+            // Batches are pre-loaded from server
+            if (batchSelect && batchSelect.tagName === 'SELECT') {
+                  enableBatchSelect();
+            }
+      }
+
+      return {
+            init: function () {
+                  config = window.AttendanceReportConfig || {};
+                  branchSelect = document.getElementById('student_branch_group');
+                  batchSelect = document.getElementById('student_batch_group');
+
+                  if (!batchSelect) {
+                        console.warn('KTBranchBatchLoader: batch select element not found');
+                        return;
+                  }
+
+                  if (config.isAdmin) {
+                        // Admin: disable batch initially, enable after branch selection
+                        disableBatchSelect();
+                        initBranchChangeListener();
+                  } else {
+                        // Non-admin: batches already loaded from server
+                        initNonAdminBatches();
+                  }
+            },
+
+            // Public method to reload batches
+            reloadBatches: function (branchId) {
+                  loadBatches(branchId);
+            }
+      };
+})();
+
+/**
+ * Module: Select2 Input Group Fix
+ * Fixes Select2 width issues within Bootstrap input-groups
+ */
+var KTSelect2InputGroupFix = (function () {
+
+      function applyFix() {
+            // Find all Select2 containers within input-groups
+            $('.input-group .select2-container').each(function () {
+                  var $container = $(this);
+                  var $inputGroup = $container.closest('.input-group');
+
+                  $container.css({
+                        'flex': '1 1 auto',
+                        'width': 'auto',
+                        'min-width': '0'
+                  });
+
+                  $container.find('.select2-selection').css({
+                        'height': '100%',
+                        'min-height': '43.5px',
+                        'display': 'flex',
+                        'align-items': 'center'
+                  });
+            });
+      }
+
+      function initObserver() {
+            var observer = new MutationObserver(function (mutations) {
+                  mutations.forEach(function (mutation) {
+                        if (mutation.addedNodes.length) {
+                              mutation.addedNodes.forEach(function (node) {
+                                    if (node.classList && node.classList.contains('select2-container')) {
+                                          applyFix();
+                                    }
+                              });
+                        }
+                  });
+            });
+
+            var form = document.getElementById('student_list_filter_form');
+            if (form) {
+                  observer.observe(form, { childList: true, subtree: true });
+            }
+      }
+
+      return {
+            init: function () {
+                  $(document).ready(function () {
+                        setTimeout(applyFix, 100);
+
+                        $(document).on('select2:open', function () {
+                              setTimeout(applyFix, 50);
+                        });
+                  });
+
+                  initObserver();
+            }
+      };
+})();
+
+/**
+ * KTAttendanceReportTable - Handles DataTable, FormValidation, report generation
  */
 var KTAttendanceReportTable = (function () {
-      // --- Module-level state ---
-      var table, datatable;
+      // Module-level state
+      var table, datatable, validator;
       var DATA_URL = "/reports/attendance/data";
 
       var form, submitButton, tableBody, dateInput, branchSelect, classSelect, batchSelect;
@@ -64,20 +294,21 @@ var KTAttendanceReportTable = (function () {
       var exportListenerAttached = false;
       var searchListenerAttached = false;
       var dtButtons = null;
+      var config;
 
-      // --- helpers for logging ---
+      // Logging helpers
       function log() { if (window.console && console.log) console.log.apply(console, arguments); }
       function warn() { if (window.console && console.warn) console.warn.apply(console, arguments); }
       function error() { if (window.console && console.error) console.error.apply(console, arguments); }
 
-      // --- small helper to create <td> with text safely ---
+      // Helper to create <td> with text safely
       function tdWithText(text) {
             var td = document.createElement("td");
             td.textContent = text === undefined || text === null ? "" : text;
             return td;
       }
 
-      // --- ensure tbody exists before initializing DataTable ---
+      // Ensure tbody exists before initializing DataTable
       function ensureTbodyExists() {
             try {
                   if (!table) return;
@@ -86,7 +317,6 @@ var KTAttendanceReportTable = (function () {
                         var newT = document.createElement("tbody");
                         newT.id = "kt_attendance_report_table_body";
                         newT.className = "text-gray-600 fw-semibold";
-                        // empty row with 8 tds
                         var r = "<tr>";
                         for (var i = 0; i < 8; i++) r += "<td></td>";
                         r += "</tr>";
@@ -102,7 +332,7 @@ var KTAttendanceReportTable = (function () {
             }
       }
 
-      // --- DataTable init (destroy safe) ---
+      // DataTable initialization (destroy safe)
       function initDatatable() {
             try {
                   if (!table) { warn("initDatatable: missing table element"); return; }
@@ -120,15 +350,16 @@ var KTAttendanceReportTable = (function () {
                   pageLength: 10,
                   lengthChange: true,
                   autoWidth: false,
-                  columnDefs: []
+                  columnDefs: [
+                        { targets: -1, orderable: false } // Disable sorting on Actions column
+                  ]
             });
 
             log("DataTable initialized.");
       }
 
-      // --- Export Buttons (Buttons API preferred, fallback implemented) ---
+      // Export Buttons
       function exportButtons() {
-            // Clean old Buttons instance & DOM
             try { if (dtButtons && typeof dtButtons.destroy === "function") dtButtons.destroy(); } catch (e) { /* ignore */ }
             try { $(".dt-buttons").remove(); } catch (e) { /* ignore */ }
             try { $("#kt_hidden_export_buttons").empty(); } catch (e) { /* ignore */ }
@@ -142,7 +373,6 @@ var KTAttendanceReportTable = (function () {
 
             var documentTitle = "Attendance Report";
 
-            // Try to create Buttons using DataTables Buttons extension
             try {
                   if (datatable && $.fn.dataTable && $.fn.dataTable.Buttons) {
                         dtButtons = new $.fn.dataTable.Buttons(datatable, {
@@ -161,7 +391,7 @@ var KTAttendanceReportTable = (function () {
                               ]
                         });
                         try { dtButtons.container().appendTo("#kt_hidden_export_buttons"); } catch (e) { /* ignore */ }
-                        log("dtButtons created (Buttons extension available).");
+                        log("dtButtons created.");
                   } else {
                         dtButtons = null;
                         log("Buttons extension not present — using fallback exports.");
@@ -171,14 +401,13 @@ var KTAttendanceReportTable = (function () {
                   warn("exportButtons: dtButtons creation error:", e);
             }
 
-            // Utilities for fallback exports (CSV, download, copy)
+            // Fallback export utilities
             function buildCsv() {
                   var rows = [];
                   try {
-                        var dt = $($("#kt_attendance_report_table")).DataTable();
+                        var dt = $(table).DataTable();
                         var data = dt.rows({ search: "applied", page: "all" }).data().toArray();
                         data.forEach(function (r) {
-                              // r is an array of columns when we added via datatable API
                               var row = r.map(function (c) {
                                     if (typeof c === "string") return c.replace(/<[^>]*>/g, "").trim();
                                     return String(c);
@@ -186,17 +415,16 @@ var KTAttendanceReportTable = (function () {
                               rows.push(row);
                         });
                   } catch (e) {
-                        // fallback DOM read
-                        document.querySelectorAll("#kt_attendance_report_table tbody tr").forEach(function (tr) {
+                        table.querySelectorAll("tbody tr").forEach(function (tr) {
                               var cols = [];
                               tr.querySelectorAll("td,th").forEach(function (cell) { cols.push(cell.textContent.trim()); });
                               rows.push(cols);
                         });
                   }
                   var header = [];
-                  document.querySelectorAll("#kt_attendance_report_table thead th").forEach(function (th) { header.push(th.textContent.trim()); });
+                  table.querySelectorAll("thead th").forEach(function (th) { header.push(th.textContent.trim()); });
                   if (header.length) rows.unshift(header);
-                  return rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(",")).join("\r\n");
+                  return rows.map(function (r) { return r.map(function (c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(","); }).join("\r\n");
             }
 
             function triggerDownload(filename, text, mime) {
@@ -216,7 +444,6 @@ var KTAttendanceReportTable = (function () {
                   document.body.removeChild(ta); return Promise.resolve();
             }
 
-            // Attach dropdown handler once
             if (!exportListenerAttached) {
                   var menu = document.getElementById("kt_table_report_dropdown_menu");
                   if (menu) {
@@ -224,9 +451,8 @@ var KTAttendanceReportTable = (function () {
                               var target = ev.target.closest("[data-row-export]");
                               if (!target) return;
                               ev.preventDefault();
-                              var key = target.getAttribute("data-row-export"); // copy|excel|csv|pdf
+                              var key = target.getAttribute("data-row-export");
 
-                              // 1) Prefer Buttons API if available
                               try {
                                     if (dtButtons && datatable && typeof datatable.button === "function") {
                                           var nodes = datatable.buttons().nodes().toArray();
@@ -239,14 +465,14 @@ var KTAttendanceReportTable = (function () {
                                                 if (key === "pdf" && cls.indexOf("buttons-pdf") !== -1) { idx = i; break; }
                                           }
                                           if (idx >= 0) {
-                                                try { datatable.button(idx).trigger(); return; } catch (err) { warn("datatable.button(idx).trigger failed:", err); /* fallback below */ }
+                                                try { datatable.button(idx).trigger(); return; } catch (err) { warn("datatable.button(idx).trigger failed:", err); }
                                           }
                                     }
                               } catch (err) {
                                     warn("Export via Buttons API attempt error:", err);
                               }
 
-                              // 2) Fallback logic
+                              // Fallback exports
                               if (key === "copy") {
                                     var csvText = buildCsv();
                                     copyToClipboard(csvText).then(function () {
@@ -265,7 +491,7 @@ var KTAttendanceReportTable = (function () {
                               if (key === "pdf") {
                                     if (window.pdfMake) {
                                           var csv2 = buildCsv();
-                                          var lines = csv2.split(/\r\n/).map(l => l.replace(/"/g, ""));
+                                          var lines = csv2.split(/\r\n/).map(function (l) { return l.replace(/"/g, ""); });
                                           var docDef = { content: [{ text: documentTitle, style: "header" }, { text: lines.join("\n"), style: "table" }], styles: { header: { fontSize: 14, bold: true } } };
                                           pdfMake.createPdf(docDef).download(documentTitle + ".pdf");
                                     } else {
@@ -278,18 +504,13 @@ var KTAttendanceReportTable = (function () {
                         });
                         exportListenerAttached = true;
                         log("Export dropdown handler attached.");
-                  } else {
-                        warn("exportButtons: #kt_table_report_dropdown_menu not found.");
                   }
             }
       }
 
-      // --- search handler (multi-selector + debounce + single attach) ---
+      // Search handler
       function handleSearch() {
-            var input = document.querySelector('[data-attendance-table-filter="search"]') ||
-                  document.querySelector('[data-attendance-report-table-filter="search"]') ||
-                  document.querySelector('[data-attendance-search="search"]') || null;
-
+            var input = document.querySelector('[data-attendance-table-filter="search"]');
             if (!input) { warn("handleSearch: search input not found."); return; }
             if (searchListenerAttached) return;
             searchListenerAttached = true;
@@ -305,7 +526,7 @@ var KTAttendanceReportTable = (function () {
             log("Search listener attached.");
       }
 
-      // --- status detector + aggregator ---
+      // Status detector
       function getRecordStatus(r) {
             var vals = [r.status, r.attendance_status, r.attendance, r.present, r.is_present, r.isPresent, r.type];
             for (var i = 0; i < vals.length; i++) {
@@ -324,6 +545,7 @@ var KTAttendanceReportTable = (function () {
             return "absent";
       }
 
+      // Aggregate records by student
       function aggregateRecords(payload) {
             var rows = payload && Array.isArray(payload.data) ? payload.data : [];
             var map = {};
@@ -352,134 +574,63 @@ var KTAttendanceReportTable = (function () {
             return Object.keys(map).map(function (k) { return map[k]; });
       }
 
-      // --- Render using DataTables API (robust) ---
+      // Render using DataTables API
       function renderAggregatedTable(records) {
             try {
                   records = Array.isArray(records) ? records : [];
                   log("[Attendance] renderAggregatedTable called, records:", records.length);
 
-                  // empty-state handling
                   if (!records.length) {
                         var msg = "No records found for the selected filters.";
-                        if (typeof toastr !== "undefined") toastr.info(msg); else console.info(msg);
+                        if (typeof toastr !== "undefined") toastr.info(msg);
 
-                        // If datatable API exists, clear & add a single empty row (8 columns)
                         if (datatable && typeof datatable.clear === "function") {
                               datatable.clear();
-                              var empty = [];
-                              for (var i = 0; i < 8; i++) empty.push("");
-                              datatable.row.add(empty);
                               datatable.draw(false);
-                              return;
-                        } else {
-                              // fallback: replace tbody
-                              var newT = document.createElement("tbody");
-                              newT.id = "kt_attendance_report_table_body";
-                              newT.className = "text-gray-600 fw-semibold";
-                              var rowHtml = "<tr>";
-                              for (var j = 0; j < 8; j++) rowHtml += "<td></td>";
-                              rowHtml += "</tr>";
-                              newT.innerHTML = rowHtml;
-                              var old = table.querySelector("tbody");
-                              if (old) old.replaceWith(newT); else table.appendChild(newT);
-                              tableBody = newT;
-                              initDatatable(); exportButtons(); handleSearch();
-                              return;
                         }
+                        return;
                   }
 
-                  // Build dtRows as arrays matching header order
                   var dtRows = records.map(function (rec, idx) {
-                        var nameHtml = '<div>' + (rec.name || "") + '</div>';
-                        nameHtml += '<div class="text-muted small">' + (rec.uniqueId ? ("ID: " + rec.uniqueId) : "") + '</div>';
-                        var viewHtml = '<button type="button" class="btn btn-sm btn-light btn-active-primary me-2 view-student-btn" data-student-id="' + (rec.studentId || "") + '">View</button>';
+                        var nameHtml = '<div class="d-flex flex-column">' +
+                              '<span class="text-gray-800 fw-bold">' + (rec.name || "") + '</span>' +
+                              '<span class="text-muted fs-7">' + (rec.uniqueId ? ("ID: " + rec.uniqueId) : "") + '</span>' +
+                              '</div>';
+                        var viewHtml = '<a href="/students/' + (rec.studentId || "") + '" class="btn btn-sm btn-light btn-active-primary" target="_blank">View</a>';
                         return [
                               idx + 1,
                               nameHtml,
                               rec.className || "",
                               rec.batchName || "",
-                              rec.present || 0,
-                              rec.absent || 0,
-                              rec.late || 0,
+                              '<span class="badge badge-light-success fs-7 fw-bold">' + (rec.present || 0) + '</span>',
+                              '<span class="badge badge-light-danger fs-7 fw-bold">' + (rec.absent || 0) + '</span>',
+                              '<span class="badge badge-light-warning fs-7 fw-bold">' + (rec.late || 0) + '</span>',
                               viewHtml
                         ];
                   });
 
-                  // Inject rows via DataTables API
-                  if (datatable && typeof datatable.clear === "function" && typeof datatable.rows === "function") {
+                  if (datatable && typeof datatable.clear === "function") {
                         try { $(".dt-buttons").remove(); } catch (e) { /* ignore */ }
                         datatable.clear();
                         datatable.rows.add(dtRows);
                         try { datatable.columns.adjust(); } catch (e) { /* ignore */ }
                         datatable.draw(false);
-
-                        // Attach view-button delegation once (idempotent)
-                        try {
-                              if (!table._viewBtnHandlerAttached) {
-                                    table._viewBtnHandlerAttached = true;
-                                    table.addEventListener("click", function (ev) {
-                                          var btn = ev.target.closest(".view-student-btn");
-                                          if (!btn) return;
-
-                                          var sid = btn.getAttribute("data-student-id");
-                                          if (sid) {
-                                                window.open("/students/" + sid, "_blank"); // ✅ open in new tab
-                                          } else {
-                                                alert("Student ID not available for this record.");
-                                          }
-                                    });
-                              }
-
-                        } catch (e) { warn("view button delegation attach failed:", e); }
-
-                        return;
                   }
-
-                  // Fallback: replace tbody with built rows
-                  var newTbody = document.createElement("tbody");
-                  newTbody.id = "kt_attendance_report_table_body";
-                  newTbody.className = "text-gray-600 fw-semibold";
-                  var frag = document.createDocumentFragment();
-                  records.forEach(function (rec, idx) {
-                        var tr = document.createElement("tr");
-                        var th = document.createElement("th"); th.scope = "row"; th.textContent = idx + 1; tr.appendChild(th);
-                        var tdName = document.createElement("td");
-                        var d1 = document.createElement("div"); d1.textContent = rec.name || ""; var d2 = document.createElement("div"); d2.className = "text-muted small"; d2.textContent = rec.uniqueId ? ("ID: " + rec.uniqueId) : "";
-                        tdName.appendChild(d1); tdName.appendChild(d2); tr.appendChild(tdName);
-                        tr.appendChild(tdWithText(rec.className || ""));
-                        tr.appendChild(tdWithText(rec.batchName || ""));
-                        tr.appendChild(tdWithText(rec.present || 0));
-                        tr.appendChild(tdWithText(rec.absent || 0));
-                        tr.appendChild(tdWithText(rec.late || 0));
-                        var tdAct = document.createElement("td"); tdAct.className = "not-export";
-                        var vb = document.createElement("button"); vb.type = "button"; vb.className = "btn btn-sm btn-light btn-active-primary me-2"; vb.textContent = "View"; vb.setAttribute("data-student-id", rec.studentId || "");
-                        tdAct.appendChild(vb); tr.appendChild(tdAct);
-                        frag.appendChild(tr);
-                  });
-                  newTbody.appendChild(frag);
-                  var old = table.querySelector("tbody");
-                  if (old) old.replaceWith(newTbody); else table.appendChild(newTbody);
-                  tableBody = newTbody;
-                  initDatatable(); exportButtons(); handleSearch();
 
             } catch (err) {
                   error("[Attendance] renderAggregatedTable error:", err);
             }
       }
 
-      // --- Build query params (select2 / hidden input fallbacks) ---
+      // Build query params
       function buildQueryParams() {
             var params = new URLSearchParams();
             var dateRange = dateInput && dateInput.value ? dateInput.value.trim() : "";
 
             function getSelectValue(sel) {
                   if (!sel) return "";
+                  if (sel.tagName === 'INPUT') return sel.value || "";
                   if (sel.value) return sel.value;
-                  if (sel.dataset && sel.dataset.selected) return sel.dataset.selected;
-                  var hidden = form ? form.querySelector('input[name="' + (sel.name || "") + '"][type="hidden"]') : null;
-                  if (hidden && hidden.value) return hidden.value;
-                  var opt = sel.querySelector("option[selected]");
-                  if (opt) return opt.value;
                   return "";
             }
 
@@ -495,51 +646,121 @@ var KTAttendanceReportTable = (function () {
             return params.toString();
       }
 
-      // --- Defensive setLoading ---
+      // Loading state (Metronic indicator pattern)
       function setLoading(isLoading) {
             try {
                   if (!submitButton) submitButton = document.getElementById("submit_button");
-                  if (!submitButton) { warn("setLoading: submit_button not found"); return; }
+                  if (!submitButton) return;
+
                   if (isLoading) {
-                        if (!submitButton.dataset.originalText) submitButton.dataset.originalText = submitButton.innerHTML;
                         submitButton.disabled = true;
-                        try { submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating'; } catch (e) { try { submitButton.textContent = "Generating..."; } catch (e2) { } }
+                        submitButton.setAttribute("data-kt-indicator", "on");
                   } else {
                         submitButton.disabled = false;
-                        try { submitButton.innerHTML = submitButton.dataset.originalText || "Generate"; } catch (e) { try { submitButton.textContent = submitButton.dataset.originalText || "Generate"; } catch (e2) { } }
+                        submitButton.setAttribute("data-kt-indicator", "off");
                   }
             } catch (e) { warn("setLoading error:", e); }
       }
 
-      // --- Fetch + timeout + aggregation + render ---
+      // Initialize FormValidation
+      function initValidation() {
+            if (!form) return;
+
+            // Build validation fields based on user role
+            var validationFields = {
+                  'date_range': {
+                        validators: {
+                              notEmpty: { message: 'Date range is required' }
+                        }
+                  },
+                  'class_id': {
+                        validators: {
+                              notEmpty: { message: 'Class is required' }
+                        }
+                  },
+                  'batch_id': {
+                        validators: {
+                              notEmpty: { message: 'Batch is required' }
+                        }
+                  }
+            };
+
+            // Add branch validation only for admin users
+            if (config.isAdmin) {
+                  validationFields['branch_id'] = {
+                        validators: {
+                              notEmpty: { message: 'Branch is required' }
+                        }
+                  };
+            }
+
+            validator = FormValidation.formValidation(
+                  form,
+                  {
+                        fields: validationFields,
+                        plugins: {
+                              trigger: new FormValidation.plugins.Trigger(),
+                              bootstrap: new FormValidation.plugins.Bootstrap5({
+                                    rowSelector: '.fv-row',
+                                    eleInvalidClass: '',
+                                    eleValidClass: ''
+                              })
+                        }
+                  }
+            );
+
+            // Handle form submission
+            submitButton.addEventListener('click', function (e) {
+                  e.preventDefault();
+
+                  validator.validate().then(function (status) {
+                        if (status === 'Valid') {
+                              fetchAttendance();
+                        } else {
+                              toastr.warning('Please fill all required fields');
+                        }
+                  });
+            });
+
+            // Revalidate on select2 change
+            $(form).find('select[data-control="select2"]').on('change', function () {
+                  var fieldName = $(this).attr('name');
+                  if (fieldName && validator) {
+                        validator.revalidateField(fieldName);
+                  }
+            });
+      }
+
+      // Fetch attendance data
       async function fetchAttendance() {
-            var TIMEOUT = 30000; // 30s
+            var TIMEOUT = 30000;
             setLoading(true);
 
             var qs = buildQueryParams();
             var url = qs ? DATA_URL + "?" + qs : DATA_URL;
             log("[Attendance] Request URL:", url);
 
-            const controller = new AbortController();
-            const signal = controller.signal;
-            var timeoutId = setTimeout(function () { try { controller.abort(); log("[Attendance] Fetch aborted due to timeout"); } catch (e) { } }, TIMEOUT);
+            var controller = new AbortController();
+            var signal = controller.signal;
+            var timeoutId = setTimeout(function () { controller.abort(); }, TIMEOUT);
 
             try {
-                  var res = await fetch(url, { method: "GET", headers: { Accept: "application/json" }, credentials: "same-origin", signal: signal });
+                  var res = await fetch(url, {
+                        method: "GET",
+                        headers: { Accept: "application/json" },
+                        credentials: "same-origin",
+                        signal: signal
+                  });
                   clearTimeout(timeoutId);
 
                   if (!res.ok) {
                         var txt = await res.text();
                         try {
                               var jsonErr = JSON.parse(txt);
-                              var msg = jsonErr.message || txt || ("Server error: " + res.status);
-                              tableBody && (tableBody.innerHTML = "<tr>" + Array(8).fill("<td></td>").join("") + "</tr>");
-                              warn("[Attendance] Non-ok response:", res.status, jsonErr);
+                              if (typeof toastr !== "undefined") toastr.error(jsonErr.message || "Server error");
                         } catch (e) {
-                              tableBody && (tableBody.innerHTML = "<tr>" + Array(8).fill("<td></td>").join("") + "</tr>");
-                              warn("[Attendance] Non-ok response (non-json):", res.status, txt);
+                              if (typeof toastr !== "undefined") toastr.error("Server error: " + res.status);
                         }
-                        initDatatable(); exportButtons(); handleSearch();
                         return;
                   }
 
@@ -547,41 +768,27 @@ var KTAttendanceReportTable = (function () {
                   log("[Attendance] Server payload:", payload);
 
                   var aggregated = aggregateRecords(payload);
-
-                  // fallback quick grouping if aggregator empty but raw data present
-                  if ((!Array.isArray(aggregated) || aggregated.length === 0) && Array.isArray(payload.data) && payload.data.length > 0) {
-                        warn("[Attendance] aggregator returned empty; using quick fallback grouping.");
-                        var quickMap = {};
-                        payload.data.forEach(function (r) {
-                              var sid = (r.student && r.student.id) || r.student_id || ("sid_missing_" + (r.id || Math.random().toString(36).slice(2)));
-                              if (!quickMap[sid]) quickMap[sid] = { studentId: sid, name: (r.student && r.student.name) || r.student_name || "", uniqueId: (r.student && r.student.student_unique_id) || r.student_unique_id || "", className: (r.classname && r.classname.name) || r.class_name || "", batchName: (r.batch && r.batch.name) || r.batch_name || "", present: 0, absent: 0, late: 0 };
-                              var st = getRecordStatus(r);
-                              if (st === "present") quickMap[sid].present++; else if (st === "late") quickMap[sid].late++; else quickMap[sid].absent++;
-                        });
-                        aggregated = Object.keys(quickMap).map(function (k) { return quickMap[k]; });
-                  }
-
                   renderAggregatedTable(aggregated);
-                  // ensure exports are recreated for latest datatable instance
                   exportButtons();
 
             } catch (err) {
                   error("[Attendance] Fetch error:", err);
                   if (err && err.name === "AbortError") {
-                        tableBody && (tableBody.innerHTML = "<tr>" + Array(8).fill("<td></td>").join("") + "</tr>");
+                        if (typeof toastr !== "undefined") toastr.error("Request timed out. Please try again.");
                   } else {
-                        tableBody && (tableBody.innerHTML = "<tr>" + Array(8).fill("<td></td>").join("") + "</tr>");
+                        if (typeof toastr !== "undefined") toastr.error("An error occurred while fetching data.");
                   }
-                  initDatatable(); exportButtons(); handleSearch();
             } finally {
-                  try { clearTimeout(timeoutId); } catch (e) { }
-                  try { setLoading(false); } catch (e) { warn("Error clearing loading state:", e); }
+                  clearTimeout(timeoutId);
+                  setLoading(false);
             }
       }
 
-      // --- public init ---
+      // Public init
       return {
             init: function () {
+                  config = window.AttendanceReportConfig || {};
+
                   table = document.getElementById("kt_attendance_report_table");
                   if (!table) { error("KTAttendanceReportTable: table element not found"); return; }
 
@@ -596,26 +803,22 @@ var KTAttendanceReportTable = (function () {
                   initDatatable();
                   exportButtons();
                   handleSearch();
+                  initValidation();
 
+                  // Prevent default form submission
                   if (form) {
                         form.addEventListener("submit", function (e) {
                               e.preventDefault();
-                              fetchAttendance();
                         });
-                  } else {
-                        warn("student_list_filter_form not found; submit handler not attached.");
                   }
-
-                  // also re-wire exportButtons on initial load so dtButtons created
-                  exportButtons();
             }
       };
 })();
 
-
-
-// On document ready
+// Initialize on DOM ready
 KTUtil.onDOMContentLoaded(function () {
       KTDateRangePicker.init();
+      KTBranchBatchLoader.init();
+      KTSelect2InputGroupFix.init();
       KTAttendanceReportTable.init();
 });
