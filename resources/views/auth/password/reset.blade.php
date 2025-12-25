@@ -13,7 +13,7 @@
         <!--begin::Heading-->
         <div class="text-center mb-10">
             <!--begin::Title-->
-            <h1 class="text-gray-900 fw-bolder mb-3">Set New Password</h1>
+            <h1 class="text-gray-900 mb-3">Set New Password</h1>
             <!--end::Title-->
             <!--begin::Link-->
             <div class="text-gray-500 fw-semibold fs-6">Have you already reset your password?
