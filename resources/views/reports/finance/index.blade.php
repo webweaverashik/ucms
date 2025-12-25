@@ -72,195 +72,239 @@
 @endsection
 
 @section('content')
-    <!--begin::Filter Card-->
-    <div class="card mb-6">
-        <div class="card-header border-0 pt-6">
-            <div class="card-title w-100">
-                <form id="finance_report_form" class="row g-3 align-items-end w-100">
-                    <!-- Date Range -->
-                    <div class="col-lg-4 col-md-6">
-                        <label for="finance_daterangepicker" class="form-label fw-semibold required">Select Date
-                            Range</label>
-                        <div class="input-group input-group-solid flex-nowrap">
-                            <span class="input-group-text">
-                                <i class="ki-outline ki-calendar fs-3"></i>
-                            </span>
-                            <input type="text" class="form-control form-control-solid rounded-start-0 border-start"
-                                placeholder="Pick date range" id="finance_daterangepicker" name="date_range" readonly>
+    <!--begin::Card with Tabs-->
+    <div class="card">
+        <!--begin::Card Header with Tabs-->
+        <div class="card-header card-header-stretch">
+            <div class="card-title">
+                <h3 class="fw-bold m-0">Finance Reports</h3>
+            </div>
+            <div class="card-toolbar">
+                <ul class="nav nav-tabs nav-line-tabs nav-stretch fs-6 border-0" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link active" data-bs-toggle="tab" role="tab" href="#tab_revenue_cost">
+                            <i class="ki-outline ki-chart-simple fs-4 me-2"></i>
+                            Revenue vs Cost
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" data-bs-toggle="tab" role="tab" href="#tab_cost_records"
+                            id="cost_records_tab">
+                            <i class="ki-outline ki-wallet fs-4 me-2"></i>
+                            Cost Records
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!--end::Card Header-->
+
+        <!--begin::Card Body-->
+        <div class="card-body">
+            <div class="tab-content" id="financeTabContent">
+                <!--begin::Tab - Revenue vs Cost-->
+                <div class="tab-pane fade show active" id="tab_revenue_cost" role="tabpanel">
+                    <!--begin::Filter Form-->
+                    <form id="finance_report_form" class="row g-3 align-items-end mb-8">
+                        <!-- Date Range -->
+                        <div class="col-lg-4 col-md-6">
+                            <label for="finance_daterangepicker" class="form-label fw-semibold required">Select Date
+                                Range</label>
+                            <div class="input-group input-group-solid flex-nowrap">
+                                <span class="input-group-text">
+                                    <i class="ki-outline ki-calendar fs-3"></i>
+                                </span>
+                                <input type="text" class="form-control form-control-solid rounded-start-0 border-start"
+                                    placeholder="Pick date range" id="finance_daterangepicker" name="date_range" readonly>
+                            </div>
+                        </div>
+
+                        <!-- Branch Selection -->
+                        <div class="col-lg-3 col-md-6">
+                            <label for="branch_id" class="form-label fw-semibold required">Branch</label>
+                            <div class="input-group input-group-solid flex-nowrap">
+                                <span class="input-group-text">
+                                    <i class="ki-outline ki-bank fs-3"></i>
+                                </span>
+                                <select id="branch_id" class="form-select form-select-solid rounded-start-0 border-start"
+                                    name="branch_id" data-control="select2" data-placeholder="Select branch"
+                                    data-hide-search="true" @if (!$isAdmin) disabled @endif>
+                                    @if ($isAdmin)
+                                        <option value="">-- Select Branch --</option>
+                                    @endif
+                                    @foreach ($branches as $branch)
+                                        <option value="{{ $branch->id }}"
+                                            @if (!$isAdmin) selected @endif>
+                                            {{ $branch->branch_name }} ({{ $branch->branch_prefix }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            @if (!$isAdmin)
+                                <input type="hidden" name="branch_id" value="{{ $branches->first()->id ?? '' }}">
+                            @endif
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="col-lg-5 col-md-12">
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button type="submit" class="btn btn-primary" id="generate_report_btn">
+                                    <span class="indicator-label">
+                                        <i class="ki-outline ki-document fs-4 me-1"></i>
+                                        Generate Report
+                                    </span>
+                                    <span class="indicator-progress">
+                                        Please wait...
+                                        <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                    </span>
+                                </button>
+                                <button type="button" class="btn btn-success" id="add_cost_btn">
+                                    <i class="ki-outline ki-plus fs-4 me-1"></i>
+                                    Add Cost
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    <!--end::Filter Form-->
+
+                    <div class="separator separator-dashed mb-8"></div>
+
+                    <!-- Loader -->
+                    <div id="finance_report_loader" class="text-center py-10 d-none">
+                        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-muted fw-semibold">Generating report...</p>
+                    </div>
+
+                    <!-- Summary Cards -->
+                    <div id="summary_cards" class="row g-4 mb-8 d-none">
+                        <div class="col-md-3 col-sm-6">
+                            <div class="summary-card card bg-primary text-white h-100">
+                                <div class="card-body d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <p class="text-white opacity-75 fs-7 fw-semibold mb-1">Total Revenue</p>
+                                        <h3 id="total_revenue" class="text-white fw-bold mb-0">৳0</h3>
+                                    </div>
+                                    <div class="bg-white bg-opacity-20 rounded p-3">
+                                        <i class="ki-outline ki-dollar fs-2x text-white"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="summary-card card bg-danger text-white h-100">
+                                <div class="card-body d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <p class="text-white opacity-75 fs-7 fw-semibold mb-1">Total Cost</p>
+                                        <h3 id="total_cost" class="text-white fw-bold mb-0">৳0</h3>
+                                    </div>
+                                    <div class="bg-white bg-opacity-20 rounded p-3">
+                                        <i class="ki-outline ki-wallet fs-2x text-white"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="summary-card card bg-success text-white h-100">
+                                <div class="card-body d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <p class="text-white opacity-75 fs-7 fw-semibold mb-1">Net Profit</p>
+                                        <h3 id="net_profit" class="text-white fw-bold mb-0">৳0</h3>
+                                    </div>
+                                    <div class="bg-white bg-opacity-20 rounded p-3">
+                                        <i class="ki-outline ki-chart-line-up fs-2x text-white"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="summary-card card bg-info text-white h-100">
+                                <div class="card-body d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <p class="text-white opacity-75 fs-7 fw-semibold mb-1">Profit Margin</p>
+                                        <h3 id="profit_margin" class="text-white fw-bold mb-0">0%</h3>
+                                    </div>
+                                    <div class="bg-white bg-opacity-20 rounded p-3">
+                                        <i class="ki-outline ki-graph-up fs-2x text-white"></i>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Branch Selection -->
-                    <div class="col-lg-3 col-md-6">
-                        <label for="branch_id" class="form-label fw-semibold required">Branch</label>
-                        <div class="input-group input-group-solid flex-nowrap">
-                            <span class="input-group-text">
-                                <i class="ki-outline ki-bank fs-3"></i>
-                            </span>
-                            <select id="branch_id" class="form-select form-select-solid rounded-start-0 border-start"
-                                name="branch_id" data-control="select2" data-placeholder="Select branch"
-                                data-hide-search="true" @if (!$isAdmin) disabled @endif>
-                                @if ($isAdmin)
-                                    <option value="">-- Select Branch --</option>
-                                @endif
-                                @foreach ($branches as $branch)
-                                    <option value="{{ $branch->id }}" @if (!$isAdmin) selected @endif>
-                                        {{ $branch->branch_name }} ({{ $branch->branch_prefix }})
-                                    </option>
-                                @endforeach
-                            </select>
+                    <!-- Chart Section (Full Width) -->
+                    <div id="chart_section" class="mb-8 d-none">
+                        <div class="bg-light rounded p-5">
+                            <h4 class="fw-bold text-gray-800 mb-4">Revenue vs Cost Chart</h4>
+                            <div class="chart-container">
+                                <canvas id="finance_report_graph"></canvas>
+                            </div>
                         </div>
-                        @if (!$isAdmin)
-                            <input type="hidden" name="branch_id" value="{{ $branches->first()->id ?? '' }}">
-                        @endif
                     </div>
 
-                    <!-- Buttons -->
-                    <div class="col-lg-5 col-md-12">
-                        <div class="d-flex gap-2 flex-wrap">
-                            <button type="submit" class="btn btn-primary" id="generate_report_btn">
-                                <span class="indicator-label">
-                                    <i class="ki-outline ki-document fs-4 me-1"></i>
-                                    Generate Report
-                                </span>
-                                <span class="indicator-progress">
-                                    Please wait...
-                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
-                                </span>
-                            </button>
-                            <button type="button" class="btn btn-success" id="add_cost_btn">
+                    <!-- Export Buttons (Before Table) -->
+                    <div id="export_buttons" class="export-section gap-3 mb-5">
+                        <button type="button" class="btn btn-light-success" id="export_excel_btn">
+                            <i class="ki-outline ki-file-down fs-4 me-2"></i>
+                            Export Excel
+                        </button>
+                        <button type="button" class="btn btn-light-warning" id="export_chart_btn">
+                            <i class="ki-outline ki-picture fs-4 me-2"></i>
+                            Download Chart
+                        </button>
+                    </div>
+
+                    <!-- Report Table -->
+                    <div id="finance_report_result"></div>
+                </div>
+                <!--end::Tab - Revenue vs Cost-->
+
+                <!--begin::Tab - Cost Records-->
+                <div class="tab-pane fade" id="tab_cost_records" role="tabpanel">
+                    <!--begin::Toolbar-->
+                    <div class="d-flex justify-content-between align-items-center mb-5">
+                        <h4 class="fw-bold text-gray-800 mb-0">Daily Cost Records</h4>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-success" id="add_cost_btn_tab">
                                 <i class="ki-outline ki-plus fs-4 me-1"></i>
                                 Add Cost
                             </button>
+                            <button type="button" class="btn btn-sm btn-light-primary" id="refresh_costs_btn">
+                                <i class="ki-outline ki-arrows-circle fs-4 me-1"></i>
+                                Refresh
+                            </button>
                         </div>
                     </div>
-                </form>
+                    <!--end::Toolbar-->
+
+                    <div class="separator separator-dashed mb-5"></div>
+
+                    <!--begin::DataTable-->
+                    <div class="table-responsive">
+                        <table id="costs_datatable"
+                            class="table table-row-bordered table-row-gray-200 align-middle gs-0 gy-4">
+                            <thead>
+                                <tr class="fw-bold text-muted bg-light">
+                                    <th class="ps-4 rounded-start min-w-100px">Date</th>
+                                    <th class="min-w-125px">Branch</th>
+                                    <th class="min-w-100px text-end">Amount</th>
+                                    <th class="min-w-200px">Description</th>
+                                    <th class="min-w-100px">Created By</th>
+                                    <th class="pe-4 rounded-end text-center min-w-100px">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <!--end::DataTable-->
+                </div>
+                <!--end::Tab - Cost Records-->
             </div>
         </div>
-
-        <div class="card-body py-6">
-            <!-- Loader -->
-            <div id="finance_report_loader" class="text-center py-10 d-none">
-                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-3 text-muted fw-semibold">Generating report...</p>
-            </div>
-
-            <!-- Summary Cards -->
-            <div id="summary_cards" class="row g-4 mb-8 d-none">
-                <div class="col-md-3 col-sm-6">
-                    <div class="summary-card card bg-primary text-white h-100">
-                        <div class="card-body d-flex align-items-center justify-content-between">
-                            <div>
-                                <p class="text-white opacity-75 fs-7 fw-semibold mb-1">Total Revenue</p>
-                                <h3 id="total_revenue" class="text-white fw-bold mb-0">৳0</h3>
-                            </div>
-                            <div class="bg-white bg-opacity-20 rounded p-3">
-                                <i class="ki-outline ki-dollar fs-2x text-white"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="summary-card card bg-danger text-white h-100">
-                        <div class="card-body d-flex align-items-center justify-content-between">
-                            <div>
-                                <p class="text-white opacity-75 fs-7 fw-semibold mb-1">Total Cost</p>
-                                <h3 id="total_cost" class="text-white fw-bold mb-0">৳0</h3>
-                            </div>
-                            <div class="bg-white bg-opacity-20 rounded p-3">
-                                <i class="ki-outline ki-wallet fs-2x text-white"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="summary-card card bg-success text-white h-100">
-                        <div class="card-body d-flex align-items-center justify-content-between">
-                            <div>
-                                <p class="text-white opacity-75 fs-7 fw-semibold mb-1">Net Profit</p>
-                                <h3 id="net_profit" class="text-white fw-bold mb-0">৳0</h3>
-                            </div>
-                            <div class="bg-white bg-opacity-20 rounded p-3">
-                                <i class="ki-outline ki-chart-line-up fs-2x text-white"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="summary-card card bg-info text-white h-100">
-                        <div class="card-body d-flex align-items-center justify-content-between">
-                            <div>
-                                <p class="text-white opacity-75 fs-7 fw-semibold mb-1">Profit Margin</p>
-                                <h3 id="profit_margin" class="text-white fw-bold mb-0">0%</h3>
-                            </div>
-                            <div class="bg-white bg-opacity-20 rounded p-3">
-                                <i class="ki-outline ki-graph-up fs-2x text-white"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Chart Section (Full Width) -->
-            <div id="chart_section" class="mb-8 d-none">
-                <div class="bg-light rounded p-5">
-                    <h4 class="fw-bold text-gray-800 mb-4">Revenue vs Cost Chart</h4>
-                    <div class="chart-container">
-                        <canvas id="finance_report_graph"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Export Buttons (Before Table) -->
-            <div id="export_buttons" class="export-section gap-3 mb-5">
-                <button type="button" class="btn btn-light-success" id="export_excel_btn">
-                    <i class="ki-outline ki-file-down fs-4 me-2"></i>
-                    Export Excel
-                </button>
-                <button type="button" class="btn btn-light-warning" id="export_chart_btn">
-                    <i class="ki-outline ki-picture fs-4 me-2"></i>
-                    Download Chart
-                </button>
-            </div>
-
-            <!-- Report Table -->
-            <div id="finance_report_result"></div>
-        </div>
+        <!--end::Card Body-->
     </div>
-    <!--end::Filter Card-->
-
-    <!--begin::Cost Records Card-->
-    <div class="card">
-        <div class="card-header border-0 pt-6">
-            <h3 class="card-title fw-bold">Daily Cost Records</h3>
-            <div class="card-toolbar">
-                <button type="button" class="btn btn-sm btn-light-primary" id="refresh_costs_btn">
-                    <i class="ki-outline ki-arrows-circle fs-4 me-1"></i>
-                    Refresh
-                </button>
-            </div>
-        </div>
-        <div class="card-body py-5">
-            <div class="table-responsive">
-                <table id="costs_datatable" class="table table-row-bordered table-row-gray-200 align-middle gs-0 gy-4">
-                    <thead>
-                        <tr class="fw-bold text-muted bg-light">
-                            <th class="ps-4 rounded-start min-w-100px">Date</th>
-                            <th class="min-w-125px">Branch</th>
-                            <th class="min-w-100px text-end">Amount</th>
-                            <th class="min-w-200px">Description</th>
-                            <th class="min-w-100px">Created By</th>
-                            <th class="pe-4 rounded-end text-center min-w-100px">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    <!--end::Cost Records Card-->
+    <!--end::Card with Tabs-->
 
     <!--begin::Add/Edit Cost Modal-->
     <div class="modal fade" id="cost_modal" tabindex="-1" aria-hidden="true">
@@ -278,7 +322,7 @@
 
                         <!-- Branch (Admin Only - Must be first) -->
                         @if ($isAdmin)
-                            <div class="mb-7">
+                            <div class="fv-row mb-7">
                                 <label class="required fw-semibold fs-6 mb-2">Branch</label>
                                 <select id="cost_branch_id" name="branch_id" class="form-select form-select-solid"
                                     data-control="select2" data-placeholder="Select branch first"
@@ -297,39 +341,47 @@
                                 value="{{ auth()->user()->branch_id }}">
                         @endif
 
-                        <!-- Date -->
-                        <div class="mb-7">
-                            <label class="required fw-semibold fs-6 mb-2">Date</label>
-                            <input type="text" id="cost_date" name="cost_date"
-                                class="form-control form-control-solid @if ($isAdmin) bg-secondary @endif"
-                                placeholder="@if ($isAdmin) Select branch first @else Select available date @endif"
-                                readonly @if ($isAdmin) disabled @endif>
-                            <div id="date_help_text" class="form-text text-muted">
-                                @if ($isAdmin)
-                                    Please select a branch first
-                                @else
-                                    Select an available date (dates with existing costs are disabled)
-                                @endif
+                        <!-- Date & Amount Row -->
+                        <div class="row mb-7">
+                            <!-- Date -->
+                            <div class="col-md-6">
+                                <div class="fv-row">
+                                    <label class="required fw-semibold fs-6 mb-2">Date</label>
+                                    <input type="text" id="cost_date" name="cost_date"
+                                        class="form-control form-control-solid @if ($isAdmin) bg-secondary @endif"
+                                        placeholder="@if ($isAdmin) Select branch first @else Select date @endif"
+                                        readonly @if ($isAdmin) disabled @endif>
+                                    <div id="date_help_text" class="form-text text-muted">
+                                        @if ($isAdmin)
+                                            Select branch first
+                                        @else
+                                            Available dates only
+                                        @endif
+                                    </div>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Amount -->
-                        <div class="mb-7">
-                            <label class="required fw-semibold fs-6 mb-2">Amount</label>
-                            <div class="input-group input-group-solid">
-                                <span class="input-group-text">৳</span>
-                                <input type="number" id="cost_amount" name="amount"
-                                    class="form-control form-control-solid" min="1" step="1"
-                                    placeholder="0" required>
+                            <!-- Amount -->
+                            <div class="col-md-6">
+                                <div class="fv-row">
+                                    <label class="required fw-semibold fs-6 mb-2">Amount</label>
+                                    <div class="input-group input-group-solid">
+                                        <span class="input-group-text">৳</span>
+                                        <input type="number" id="cost_amount" name="amount"
+                                            class="form-control form-control-solid" min="1" step="1"
+                                            placeholder="0">
+                                    </div>
+                                    <div class="form-text text-muted">Whole number only</div>
+                                </div>
                             </div>
-                            <div class="form-text text-muted">Enter whole number only (no decimals)</div>
                         </div>
 
                         <!-- Description -->
-                        <div class="mb-7">
+                        <div class="fv-row mb-7">
                             <label class="fw-semibold fs-6 mb-2">Description</label>
                             <textarea id="cost_description" name="description" class="form-control form-control-solid" rows="3"
-                                placeholder="Enter cost description..."></textarea>
+                                placeholder="Enter cost description..." maxlength="500"></textarea>
+                            <div class="form-text text-muted">Maximum 500 characters</div>
                         </div>
                     </div>
                     <div class="modal-footer flex-center">

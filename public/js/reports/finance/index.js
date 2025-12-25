@@ -3,7 +3,7 @@
 /**
  * UCMS Finance Report Module
  * Revenue vs Cost Report with Cost Management
- * Metronic 8 + Bootstrap 5 + DataTables + Toastr
+ * Metronic 8 + Bootstrap 5 + DataTables + Toastr + FormValidation
  */
 
 var KTFinanceReport = (function () {
@@ -19,6 +19,7 @@ var KTFinanceReport = (function () {
       let inlineEditModal = null;
       let existingCostDates = [];
       let reportData = null;
+      let costFormValidator = null;
 
       const config = window.FinanceReportConfig || {};
       const csrfToken = config.csrfToken || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -45,8 +46,10 @@ var KTFinanceReport = (function () {
             elements.exportChartBtn = document.getElementById('export_chart_btn');
 
             elements.addCostBtn = document.getElementById('add_cost_btn');
+            elements.addCostBtnTab = document.getElementById('add_cost_btn_tab'); // Add Cost button in Cost Records tab
             elements.costForm = document.getElementById('cost_form');
             elements.refreshCostsBtn = document.getElementById('refresh_costs_btn');
+            elements.costRecordsTab = document.getElementById('cost_records_tab');
 
             elements.saveCostBtn = document.getElementById('save_cost_btn');
             elements.confirmDeleteBtn = document.getElementById('confirm_delete_cost_btn');
@@ -106,12 +109,130 @@ var KTFinanceReport = (function () {
       };
 
       // ============================================
+      // FORM VALIDATION (FormValidation Plugin)
+      // ============================================
+      const initCostFormValidation = function () {
+            const form = document.getElementById('cost_form');
+            if (!form) return;
+
+            // Define validators based on user role
+            const validators = {
+                  'cost_date': {
+                        validators: {
+                              notEmpty: {
+                                    message: 'Date is required'
+                              },
+                              callback: {
+                                    message: 'Please select an available date',
+                                    callback: function (input) {
+                                          const value = input.value;
+                                          if (!value) return false;
+
+                                          // Check if date is in existing dates (only for new costs)
+                                          const costId = document.getElementById('cost_id').value;
+                                          if (!costId && existingCostDates.includes(value)) {
+                                                return {
+                                                      valid: false,
+                                                      message: 'A cost record already exists for this date'
+                                                };
+                                          }
+                                          return true;
+                                    }
+                              }
+                        }
+                  },
+                  'amount': {
+                        validators: {
+                              notEmpty: {
+                                    message: 'Amount is required'
+                              },
+                              integer: {
+                                    message: 'Amount must be a whole number (no decimals)'
+                              },
+                              greaterThan: {
+                                    min: 1,
+                                    message: 'Amount must be at least 1'
+                              }
+                        }
+                  },
+                  'description': {
+                        validators: {
+                              stringLength: {
+                                    max: 500,
+                                    message: 'Description must be less than 500 characters'
+                              }
+                        }
+                  }
+            };
+
+            // Add branch validation for admin users
+            if (config.isAdmin) {
+                  validators['branch_id'] = {
+                        validators: {
+                              notEmpty: {
+                                    message: 'Branch is required'
+                              },
+                              callback: {
+                                    message: 'Please select a branch',
+                                    callback: function (input) {
+                                          return input.value !== '' && input.value !== null;
+                                    }
+                              }
+                        }
+                  };
+            }
+
+            // Initialize FormValidation with delayed trigger (only on blur/submit)
+            costFormValidator = FormValidation.formValidation(form, {
+                  fields: validators,
+                  plugins: {
+                        trigger: new FormValidation.plugins.Trigger({
+                              event: {
+                                    default: 'blur', // Validate on blur instead of input
+                                    'branch_id': 'change',
+                                    'cost_date': 'change'
+                              }
+                        }),
+                        bootstrap: new FormValidation.plugins.Bootstrap5({
+                              rowSelector: '.fv-row',
+                              eleInvalidClass: 'is-invalid',
+                              eleValidClass: ''  // Don't show valid state to avoid green styling on load
+                        }),
+                        submitButton: new FormValidation.plugins.SubmitButton()
+                  }
+            });
+
+            // Handle form submission
+            costFormValidator.on('core.form.valid', function () {
+                  saveCost();
+            });
+
+            costFormValidator.on('core.form.invalid', function () {
+                  toastr.error('Please fill all required fields correctly');
+            });
+      };
+
+      // Revalidate specific field
+      const revalidateField = function (fieldName) {
+            if (costFormValidator) {
+                  costFormValidator.revalidateField(fieldName);
+            }
+      };
+
+      // Reset form validation
+      const resetFormValidation = function () {
+            if (costFormValidator) {
+                  costFormValidator.resetForm(true);
+            }
+      };
+
+      // ============================================
       // DATE RANGE PICKER
       // ============================================
       const initDateRangePicker = function () {
             if (!elements.dateRangeInput) return;
 
-            const start = moment().subtract(6, 'days');
+            const start = moment().startOf('month');
             const end = moment();
 
             $(elements.dateRangeInput).daterangepicker({
@@ -199,9 +320,17 @@ var KTFinanceReport = (function () {
                   const dateStr = picker.startDate.format('DD-MM-YYYY');
                   if (!existingCostDates.includes(dateStr)) {
                         $(this).val(dateStr);
+                        // Revalidate date field only if not initializing
+                        if (!isModalInitializing) {
+                              revalidateField('cost_date');
+                        }
                   } else {
                         $(this).val('');
                         toastr.warning('This date already has a cost record. Please select another date.');
+                        // Revalidate date field only if not initializing
+                        if (!isModalInitializing) {
+                              revalidateField('cost_date');
+                        }
                   }
             });
       };
@@ -640,9 +769,26 @@ var KTFinanceReport = (function () {
                   return;
             }
 
+            // Create a temporary canvas with white background
+            const originalCanvas = elements.chartCanvas;
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+
+            // Set dimensions
+            tempCanvas.width = originalCanvas.width;
+            tempCanvas.height = originalCanvas.height;
+
+            // Fill with white background
+            tempCtx.fillStyle = '#ffffff';
+            tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+            // Draw the chart on top of white background
+            tempCtx.drawImage(originalCanvas, 0, 0);
+
+            // Download the image
             const link = document.createElement('a');
             link.download = 'finance_chart_' + moment().format('YYYY-MM-DD_HH-mm') + '.png';
-            link.href = financeChart.toBase64Image();
+            link.href = tempCanvas.toDataURL('image/png', 1.0);
             link.click();
 
             toastr.success('Chart image downloaded successfully!');
@@ -651,15 +797,21 @@ var KTFinanceReport = (function () {
       // ============================================
       // COST MODAL FUNCTIONS
       // ============================================
+      let isModalInitializing = false; // Flag to prevent validation during modal setup
+
       const openAddCostModal = function () {
+            isModalInitializing = true; // Set flag to prevent validation
+
             document.getElementById('cost_modal_title').textContent = 'Add Daily Cost';
             elements.costForm?.reset();
             document.getElementById('cost_id').value = '';
             document.getElementById('cost_date').value = '';
 
-            // Reset branch select for admin
+            // Reset branch select for admin (without triggering change event that causes validation)
             if (config.isAdmin) {
-                  $('#cost_branch_id').val('').trigger('change');
+                  // Use val() without trigger to avoid validation
+                  $('#cost_branch_id').val(null).trigger('change.select2'); // Only trigger select2 update, not validation
+
                   // Disable date field until branch is selected
                   const costDateInput = document.getElementById('cost_date');
                   costDateInput.disabled = true;
@@ -679,11 +831,24 @@ var KTFinanceReport = (function () {
                   });
             }
 
+            // Reset form validation AFTER setting up fields
+            resetFormValidation();
+
             costModal?.show();
+
+            // Reset flag after modal is shown
+            setTimeout(function () {
+                  isModalInitializing = false;
+            }, 300);
       };
 
       const openEditCostModal = function (id) {
+            isModalInitializing = true; // Set flag to prevent validation
+
             document.getElementById('cost_modal_title').textContent = 'Edit Cost';
+
+            // Reset form validation
+            resetFormValidation();
 
             const url = config.routes.showCost.replace(':id', id);
 
@@ -751,6 +916,8 @@ var KTFinanceReport = (function () {
                                           const dateStr = selectedDate.format('DD-MM-YYYY');
                                           if (!filteredDates.includes(dateStr)) {
                                                 $costDate.val(dateStr);
+                                                // Revalidate date field
+                                                revalidateField('cost_date');
                                           }
                                     });
 
@@ -762,6 +929,10 @@ var KTFinanceReport = (function () {
                                           const dateStr = picker.startDate.format('DD-MM-YYYY');
                                           if (!filteredDates.includes(dateStr)) {
                                                 $(this).val(dateStr);
+                                                // Revalidate date field only if not initializing
+                                                if (!isModalInitializing) {
+                                                      revalidateField('cost_date');
+                                                }
                                           } else {
                                                 $(this).val(currentDate);
                                                 toastr.warning('This date already has a cost record. Please select another date.');
@@ -769,49 +940,30 @@ var KTFinanceReport = (function () {
                                     });
 
                                     costModal?.show();
+
+                                    // Reset flag after modal is shown
+                                    setTimeout(function () {
+                                          isModalInitializing = false;
+                                    }, 300);
                               });
                         } else {
                               toastr.error('Failed to load cost data');
+                              isModalInitializing = false;
                         }
                   })
                   .catch(err => {
                         toastr.error('Failed to load cost data');
                         console.error('Load cost error:', err);
+                        isModalInitializing = false;
                   });
       };
 
-      const saveCost = function (e) {
-            e.preventDefault();
-
+      const saveCost = function () {
             const costId = document.getElementById('cost_id').value;
             const costDate = document.getElementById('cost_date').value;
             const amount = document.getElementById('cost_amount').value;
             const description = document.getElementById('cost_description').value;
             const branchId = document.getElementById('cost_branch_id')?.value;
-
-            // Validate branch for admin
-            if (config.isAdmin && !branchId) {
-                  toastr.error('Please select a branch');
-                  return;
-            }
-
-            // Validate date is selected
-            if (!costDate) {
-                  toastr.error('Please select a date');
-                  return;
-            }
-
-            // Validate amount
-            if (!amount) {
-                  toastr.error('Please enter an amount');
-                  return;
-            }
-
-            // Validate amount is integer
-            if (!Number.isInteger(Number(amount)) || Number(amount) < 1) {
-                  toastr.error('Amount must be a positive whole number');
-                  return;
-            }
 
             // Double-check date is not in existing dates (for new costs)
             if (!costId && existingCostDates.includes(costDate)) {
@@ -858,6 +1010,18 @@ var KTFinanceReport = (function () {
                         toastr.error('Failed to save cost');
                         console.error('Save cost error:', err);
                   });
+      };
+
+      // Handle form submit event (for validation)
+      const handleCostFormSubmit = function (e) {
+            e.preventDefault();
+
+            if (costFormValidator) {
+                  costFormValidator.validate();
+            } else {
+                  // Fallback if validator not initialized
+                  saveCost();
+            }
       };
 
       // ============================================
@@ -986,15 +1150,39 @@ var KTFinanceReport = (function () {
                   elements.form.addEventListener('submit', generateReport);
             }
 
-            // Add cost button
+            // Add cost button (in Revenue vs Cost tab)
             if (elements.addCostBtn) {
                   elements.addCostBtn.addEventListener('click', openAddCostModal);
             }
 
+            // Add cost button (in Cost Records tab)
+            if (elements.addCostBtnTab) {
+                  elements.addCostBtnTab.addEventListener('click', openAddCostModal);
+            }
+
+            // Cost Records tab - refresh DataTable when shown (for proper column sizing)
+            if (elements.costRecordsTab) {
+                  elements.costRecordsTab.addEventListener('shown.bs.tab', function () {
+                        if (costsDataTable) {
+                              costsDataTable.columns.adjust().draw(false);
+                        }
+                  });
+            }
+
             // Cost form submit
             if (elements.costForm) {
-                  elements.costForm.addEventListener('submit', saveCost);
+                  elements.costForm.addEventListener('submit', handleCostFormSubmit);
             }
+
+            // Revalidate amount field on input
+            document.getElementById('cost_amount')?.addEventListener('input', function () {
+                  revalidateField('amount');
+            });
+
+            // Revalidate description field on input
+            document.getElementById('cost_description')?.addEventListener('input', function () {
+                  revalidateField('description');
+            });
 
             // Refresh costs button
             if (elements.refreshCostsBtn) {
@@ -1034,7 +1222,15 @@ var KTFinanceReport = (function () {
             // Branch change in cost modal (for admin)
             if (config.isAdmin) {
                   $('#cost_branch_id').on('change', function () {
+                        // Skip validation during modal initialization
+                        if (isModalInitializing) {
+                              return;
+                        }
+
                         const selectedBranchId = $(this).val();
+
+                        // Only revalidate if user has interacted (not during init)
+                        revalidateField('branch_id');
 
                         if (selectedBranchId) {
                               // Show loading state on date field
@@ -1078,6 +1274,7 @@ var KTFinanceReport = (function () {
             initElements();
             initModals();
             initDateRangePicker();
+            initCostFormValidation();
             initCostsDataTable();
             initEvents();
             updateExistingCostDates();
