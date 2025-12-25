@@ -1,289 +1,235 @@
+@extends('layouts.app')
+
+@section('title', 'Dashboard')
+
 @push('page-css')
     <style>
-        .construction-container {
-            min-height: 60vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .stat-card {
+            transition: all 0.3s ease;
         }
 
-        .construction-card {
-            text-align: center;
-            padding: 3rem;
-            border-radius: 1rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            color: white;
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
 
-        .construction-icon {
-            font-size: 5rem;
-            margin-bottom: 1.5rem;
-            animation: bounce 2s infinite;
+        .chart-container {
+            position: relative;
+            height: 300px;
         }
 
-        @keyframes bounce {
-
-            0%,
-            20%,
-            50%,
-            80%,
-            100% {
-                transform: translateY(0);
-            }
-
-            40% {
-                transform: translateY(-20px);
-            }
-
-            60% {
-                transform: translateY(-10px);
-            }
+        .chart-container-sm {
+            position: relative;
+            height: 250px;
         }
 
-        .construction-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            animation: fadeInDown 1s ease-in-out;
-            color: rgba(255, 255, 255, 1);
+        .branch-tab {
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
-        .construction-text {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            opacity: 0.9;
-            animation: fadeInUp 1s ease-in-out;
+        .branch-tab:hover {
+            background-color: var(--bs-gray-100);
         }
 
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .branch-tab.active {
+            background-color: var(--bs-primary) !important;
+            color: white !important;
         }
 
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 0.9;
-                transform: translateY(0);
-            }
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 4px;
         }
 
-        .dots {
-            display: inline-flex;
-            gap: 0.5rem;
-        }
-
-        .dot {
-            width: 12px;
-            height: 12px;
-            background-color: white;
-            border-radius: 50%;
-            animation: pulse 1.5s infinite;
-        }
-
-        .dot:nth-child(2) {
-            animation-delay: 0.3s;
-        }
-
-        .dot:nth-child(3) {
-            animation-delay: 0.6s;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
-
-            50% {
-                transform: scale(1.5);
-                opacity: 0.5;
-            }
-        }
-
-        .progress-bar-custom {
-            height: 8px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.3);
-            overflow: hidden;
-            margin-top: 2rem;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: white;
-            border-radius: 10px;
-            animation: progressAnimation 3s ease-in-out infinite;
-        }
-
-        @keyframes progressAnimation {
+        @keyframes shimmer {
             0% {
-                width: 0%;
-            }
-
-            50% {
-                width: 70%;
+                background-position: 200% 0;
             }
 
             100% {
-                width: 0%;
+                background-position: -200% 0;
             }
         }
 
-        .feature-list {
-            text-align: left;
+        .activity-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
             display: inline-block;
-            margin-top: 2rem;
         }
 
-        .feature-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            animation: fadeIn 1s ease-in-out backwards;
-        }
-
-        .feature-item:nth-child(1) {
-            animation-delay: 0.2s;
-        }
-
-        .feature-item:nth-child(2) {
-            animation-delay: 0.4s;
-        }
-
-        .feature-item:nth-child(3) {
-            animation-delay: 0.6s;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .feature-icon {
-            font-size: 1.5rem;
+        .activity-dot.online {
+            background-color: #1BC5BD;
         }
     </style>
 @endpush
 
-@extends('layouts.app')
-@section('title', 'Dashboard')
 @section('header-title')
     <div data-kt-swapper="true" data-kt-swapper-mode="{default: 'prepend', lg: 'prepend'}"
         data-kt-swapper-parent="{default: '#kt_app_content_container', lg: '#kt_app_header_wrapper'}"
         class="page-title d-flex align-items-center flex-wrap me-3 mb-5 mb-lg-0">
-        <!--begin::Title-->
         <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 align-items-center my-0">
             Dashboard
         </h1>
-        <!--end::Title-->
-        <!--begin::Separator-->
         <span class="h-20px border-gray-300 border-start mx-4"></span>
-        <!--end::Separator-->
-        <!--begin::Breadcrumb-->
-        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 ">
-            <!--begin::Item-->
+        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
             <li class="breadcrumb-item text-muted">
-                <a href="#" class="text-muted text-hover-primary">
-                    Home </a>
+                <a href="{{ route('dashboard') }}" class="text-muted text-hover-primary">Home</a>
             </li>
-            <!--end::Item-->
-            <!--begin::Item-->
             <li class="breadcrumb-item">
                 <span class="bullet bg-gray-500 w-5px h-2px"></span>
             </li>
-            <!--end::Item-->
-            <!--begin::Item-->
-            <li class="breadcrumb-item text-muted">
-                Dashboards </li>
-            <!--end::Item-->
+            <li class="breadcrumb-item text-muted">Dashboard</li>
         </ul>
-        <!--end::Breadcrumb-->
     </div>
 @endsection
 
 @section('content')
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <div class="construction-container">
-                    <div class="construction-card">
-                        <!-- Animated Icon -->
-                        <div class="construction-icon">
-                            🚧
+    <div id="dashboard-app">
+        {{-- Branch Tabs (Admin Only) --}}
+        <div class="card mb-5">
+            <div class="card-body py-3">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="fw-semibold text-gray-600 me-2">Branch:</span>
+                    <div class="nav nav-pills" id="branchTabs">
+                        <button type="button" class="nav-link branch-tab active px-4 py-2 rounded" data-branch="all">
+                            All Branches
+                        </button>
+                        @foreach ($data['branches'] as $branch)
+                            <button type="button" class="nav-link branch-tab px-4 py-2 rounded"
+                                data-branch="{{ $branch['id'] }}">
+                                {{ $branch['branch_name'] }}
+                            </button>
+                        @endforeach
+                    </div>
+
+                    <div class="ms-auto">
+                        <button type="button" class="btn btn-sm btn-light-primary" id="refreshDashboard">
+                            <i class="ki-outline ki-arrows-circle fs-4"></i>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Stats Cards --}}
+        @include('dashboard.partials._stats_cards')
+
+        {{-- Charts Row 1 --}}
+        <div class="row g-5 mb-5">
+            {{-- Payment Overview Chart --}}
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header border-0 pt-5">
+                        <h3 class="card-title align-items-start flex-column">
+                            <span class="card-label fw-bold text-gray-900">Payment Overview</span>
+                            <span class="text-muted mt-1 fw-semibold fs-7">Monthly collection trends</span>
+                        </h3>
+                        <div class="card-toolbar">
+                            <select class="form-select form-select-sm w-auto" id="paymentChartPeriod">
+                                <option value="6">Last 6 months</option>
+                                <option value="12">Last 12 months</option>
+                            </select>
                         </div>
-
-                        <!-- Title -->
-                        <h1 class="construction-title">
-                            Page Under Construction
-                        </h1>
-
-                        <!-- Description -->
-                        <p class="construction-text">
-                            We're working hard to bring you something amazing!<br>
-                            This page is currently being developed.
-                        </p>
-
-                        <!-- Animated Dots -->
-                        <div class="dots mb-3">
-                            <div class="dot"></div>
-                            <div class="dot"></div>
-                            <div class="dot"></div>
+                    </div>
+                    <div class="card-body pt-0">
+                        <div class="chart-container">
+                            <canvas id="paymentChart"></canvas>
                         </div>
+                    </div>
+                </div>
+            </div>
 
-                        <!-- Progress Bar -->
-                        <div class="progress-bar-custom">
-                            <div class="progress-fill"></div>
-                        </div>
-
-                        <!-- Coming Features -->
-                        <div class="feature-list">
-                            <div class="feature-item">
-                                <span class="feature-icon">📊</span>
-                                <span>Analytics Dashboard</span>
-                            </div>
-                            <div class="feature-item">
-                                <span class="feature-icon">📈</span>
-                                <span>Real-time Reports</span>
-                            </div>
-                            <div class="feature-item">
-                                <span class="feature-icon">⚡</span>
-                                <span>Performance Metrics</span>
-                            </div>
+            {{-- Student Distribution Chart --}}
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header border-0 pt-5">
+                        <h3 class="card-title align-items-start flex-column">
+                            <span class="card-label fw-bold text-gray-900">Student Distribution</span>
+                            <span class="text-muted mt-1 fw-semibold fs-7">By class and status</span>
+                        </h3>
+                    </div>
+                    <div class="card-body pt-0">
+                        <div class="chart-container">
+                            <canvas id="studentDistChart"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        {{-- Charts Row 2 --}}
+        <div class="row g-5 mb-5">
+            {{-- Attendance Analytics --}}
+            <div class="col-lg-8">
+                <div class="card h-100">
+                    <div class="card-header border-0 pt-5">
+                        <h3 class="card-title align-items-start flex-column">
+                            <span class="card-label fw-bold text-gray-900">Attendance Analytics</span>
+                            <span class="text-muted mt-1 fw-semibold fs-7">Class-wise attendance this week</span>
+                        </h3>
+                    </div>
+                    <div class="card-body pt-0">
+                        <div class="chart-container-sm">
+                            <canvas id="attendanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Invoice Status Breakdown --}}
+            <div class="col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header border-0 pt-5">
+                        <h3 class="card-title align-items-start flex-column">
+                            <span class="card-label fw-bold text-gray-900">Invoice Status</span>
+                            <span class="text-muted mt-1 fw-semibold fs-7">Current breakdown</span>
+                        </h3>
+                    </div>
+                    <div class="card-body pt-0">
+                        <div class="chart-container-sm">
+                            <canvas id="invoiceStatusChart"></canvas>
+                        </div>
+                        <div class="mt-4" id="invoiceStatusLegend">
+                            {{-- Populated by JS --}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Tables Row --}}
+        @include('dashboard.partials._tables')
+
+        {{-- Batch Stats --}}
+        @include('dashboard.partials._batch_stats')
     </div>
 @endsection
 
 @push('vendor-js')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 @endpush
 
 @push('page-js')
+    <script>
+        // Dashboard Configuration
+        const DashboardConfig = {
+            apiBaseUrl: '{{ url("/dashboard/api") }}',
+            csrfToken: '{{ csrf_token() }}',
+            currentBranch: 'all',
+            isAdmin: true,
+            initialData: @json($data),
+        };
+    </script>
+    <script src="{{ asset('js/dashboard/utils.js') }}"></script>
+    <script src="{{ asset('js/dashboard/cache.js') }}"></script>
+    <script src="{{ asset('js/dashboard/charts.js') }}"></script>
+    <script src="{{ asset('js/dashboard/tables.js') }}"></script>
+    <script src="{{ asset('js/dashboard/main.js') }}"></script>
     <script>
         document.getElementById("dashboard_link").classList.add("active");
     </script>

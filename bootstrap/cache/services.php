@@ -36,6 +36,7 @@
     32 => 'Rakibhstu\\Banglanumber\\NumberToBanglaServiceProvider',
     33 => 'Spatie\\Permission\\PermissionServiceProvider',
     34 => 'App\\Providers\\AppServiceProvider',
+    35 => 'App\\Providers\\DashboardServiceProvider',
   ),
   'eager' => 
   array (
@@ -59,6 +60,7 @@
     17 => 'Rakibhstu\\Banglanumber\\NumberToBanglaServiceProvider',
     18 => 'Spatie\\Permission\\PermissionServiceProvider',
     19 => 'App\\Providers\\AppServiceProvider',
+    20 => 'App\\Providers\\DashboardServiceProvider',
   ),
   'deferred' => 
   array (

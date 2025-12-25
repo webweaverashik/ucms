@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Cache;
 /**
  * Clears U-CMS (branch-based) cache.
  */
+/**
+ * Clear dashboard cache when clearing UCMS caches
+ */
 if (! function_exists('clearUCMSCaches')) {
     function clearUCMSCaches(): void
     {
@@ -17,11 +20,17 @@ if (! function_exists('clearUCMSCaches')) {
 
         $branchId = auth()->user()->branch_id;
 
+        // Existing cache clearing...
         Cache::forget('students_list_branch_' . $branchId);
         Cache::forget('alumni_students_list_branch_' . $branchId);
         Cache::forget('guardians_list_branch_' . $branchId);
         Cache::forget('invoices_index_branch_' . $branchId);
         Cache::forget('transactions_branch_' . $branchId);
+
+        // Add dashboard cache clearing
+        if (function_exists('clearDashboardCacheForBranch')) {
+            clearDashboardCacheForBranch($branchId);
+        }
     }
 }
 
