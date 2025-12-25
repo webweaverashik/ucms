@@ -122,7 +122,7 @@
                 </p>
             </div>
             <div class="w-24 h-24 rounded-full overflow-hidden">
-                <img src="{{ asset($student->photo_url ?? ($student->gender == 'male' ? 'img/male.png' : 'img/female.png')) }}"
+                <img src="{{ asset($student->photo_url ?? ($student->gender == 'male' ? 'img/boy.png' : 'img/girl.png')) }}"
                     alt="" class="w-full h-full rounded-full object-cover">
             </div>
         </div>

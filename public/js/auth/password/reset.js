@@ -42,13 +42,6 @@ var KTAuthNewPassword = function () {
                                           }
                                     }
                               },
-                              'toc': {
-                                    validators: {
-                                          notEmpty: {
-                                                message: 'You must accept the terms and conditions'
-                                          }
-                                    }
-                              }
                         },
                         plugins: {
                               trigger: new FormValidation.plugins.Trigger({

@@ -4,10 +4,11 @@ use App\Http\Controllers\Academic\BatchController;
 use App\Http\Controllers\Academic\ClassNameController;
 use App\Http\Controllers\Academic\InstitutionController;
 use App\Http\Controllers\Academic\SubjectController;
-use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\AutoInvoiceController;
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Misc\MiscController;
 use App\Http\Controllers\Payment\CostController;
 use App\Http\Controllers\Payment\PaymentInvoiceController;
@@ -38,9 +39,7 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware(['auth', 'isLoggedIn'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard.admin');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Only allow POST method for actual logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -126,7 +125,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     // Reports
     Route::get('reports', [ReportController::class, 'studentReport']);
     Route::get('reports/students', [ReportController::class, 'studentReport'])->name('reports.student.index');
-    
+
     // Attendance Reports
     Route::get('reports/attendance', [ReportController::class, 'attendanceReport'])->name('reports.attendance.index');
     Route::get('reports/attendance/data', [ReportController::class, 'attendanceReportData'])->name('reports.attendance.data');

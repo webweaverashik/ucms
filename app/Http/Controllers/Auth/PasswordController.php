@@ -130,7 +130,6 @@ class PasswordController extends Controller
             'token'    => 'required|string',
             'email'    => 'required|email',
             'password' => 'required|string|min:8|confirmed',
-            'toc'      => 'required|accepted', // Terms checkbox
         ]);
 
         $status = Password::reset(
