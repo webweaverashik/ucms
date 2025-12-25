@@ -1,7 +1,7 @@
 @extends('auth.app')
 
 
-@section('title', 'Reset Link')
+@section('title', 'Forgot Password')
 
 @section('content')
     <!--begin::Form-->
