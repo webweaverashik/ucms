@@ -240,13 +240,13 @@
                                     </a>
                                 @endif
 
-                                @if ($user->id != auth()->user()->id)
+                                {{-- @if ($user->id != auth()->user()->id)
                                     <a href="#" title="Delete User" data-bs-toggle="tooltip"
                                         class="btn btn-icon text-hover-danger w-30px h-30px delete-user"
                                         data-user-id="{{ $user->id }}">
                                         <i class="ki-outline ki-trash fs-2"></i>
                                     </a>
-                                @endif
+                                @endif --}}
                             </td>
                         </tr>
                     @endforeach
