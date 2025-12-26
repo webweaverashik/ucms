@@ -19,22 +19,23 @@ class ClassName extends Model
         'is_active' => 'boolean',
     ];
 
-    // Add global scope so only active classes are returned
-    protected static function booted()
+    /* ------------------
+     | Local Query Scopes
+     |------------------*/
+
+    public function scopeActive(Builder $query)
     {
-        static::addGlobalScope('active', function (Builder $builder) {
-            $builder->where('is_active', true);
-        });
+        return $query->where('is_active', true);
     }
 
-    /*
-    ❗ How to query inactive classes when needed?
-    Just like soft deletes use withTrashed(), you can override the scope using:
+    public function scopeInactive(Builder $query)
+    {
+        return $query->where('is_active', false);
+    }
 
-    ClassName::withoutGlobalScope('active')->get();
-    */
-
-    // ---- relationships below ----
+    /* ------------------
+     | Relationships
+     |------------------*/
 
     // Get all subjects associated with this class
     public function subjects()

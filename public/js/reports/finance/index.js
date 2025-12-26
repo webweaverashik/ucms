@@ -6,6 +6,7 @@
  * Metronic 8 + Bootstrap 5 + DataTables + Toastr + FormValidation
  * 
  * Note: Cost Edit/Delete functionality is restricted to Admin users only
+ * Updated: Now includes user-wise (collector) revenue breakdown
  */
 
 var KTFinanceReport = (function () {
@@ -50,12 +51,14 @@ var KTFinanceReport = (function () {
             elements.refreshCostsBtn = document.getElementById('refresh_costs_btn');
             elements.costRecordsTab = document.getElementById('cost_records_tab');
 
-            // Admin-only elements
+            // Add Cost elements - available to all users
+            elements.addCostBtn = document.getElementById('add_cost_btn');
+            elements.addCostBtnTab = document.getElementById('add_cost_btn_tab');
+            elements.costForm = document.getElementById('cost_form');
+            elements.saveCostBtn = document.getElementById('save_cost_btn');
+
+            // Admin-only elements (Edit/Delete)
             if (config.isAdmin) {
-                  elements.addCostBtn = document.getElementById('add_cost_btn');
-                  elements.addCostBtnTab = document.getElementById('add_cost_btn_tab');
-                  elements.costForm = document.getElementById('cost_form');
-                  elements.saveCostBtn = document.getElementById('save_cost_btn');
                   elements.confirmDeleteBtn = document.getElementById('confirm_delete_cost_btn');
                   elements.saveInlineEditBtn = document.getElementById('save_inline_edit_btn');
             }
@@ -100,35 +103,59 @@ var KTFinanceReport = (function () {
             elements.loader?.classList.add('d-none');
       };
 
-      // ============================================
-      // MODALS INITIALIZATION (Admin Only)
-      // ============================================
-      const initModals = function () {
-            // Only initialize modals for admin users
-            if (!config.isAdmin) return;
+      // Generate random color for collector chart
+      const generateColors = function (count) {
+            const colors = [
+                  { bg: 'rgba(0, 158, 247, 0.85)', border: 'rgb(0, 158, 247)' },      // Primary blue
+                  { bg: 'rgba(80, 205, 137, 0.85)', border: 'rgb(80, 205, 137)' },    // Success green
+                  { bg: 'rgba(255, 199, 0, 0.85)', border: 'rgb(255, 199, 0)' },      // Warning yellow
+                  { bg: 'rgba(125, 82, 179, 0.85)', border: 'rgb(125, 82, 179)' },    // Purple
+                  { bg: 'rgba(255, 87, 34, 0.85)', border: 'rgb(255, 87, 34)' },      // Orange
+                  { bg: 'rgba(0, 188, 212, 0.85)', border: 'rgb(0, 188, 212)' },      // Cyan
+                  { bg: 'rgba(233, 30, 99, 0.85)', border: 'rgb(233, 30, 99)' },      // Pink
+                  { bg: 'rgba(63, 81, 181, 0.85)', border: 'rgb(63, 81, 181)' },      // Indigo
+                  { bg: 'rgba(139, 195, 74, 0.85)', border: 'rgb(139, 195, 74)' },    // Light green
+                  { bg: 'rgba(121, 85, 72, 0.85)', border: 'rgb(121, 85, 72)' },      // Brown
+            ];
 
-            const costEl = document.getElementById('cost_modal');
-            const deleteEl = document.getElementById('delete_cost_modal');
-            const inlineEditEl = document.getElementById('inline_edit_modal');
-
-            if (costEl) costModal = new bootstrap.Modal(costEl);
-            if (deleteEl) deleteModal = new bootstrap.Modal(deleteEl);
-            if (inlineEditEl) inlineEditModal = new bootstrap.Modal(inlineEditEl);
+            const result = [];
+            for (let i = 0; i < count; i++) {
+                  result.push(colors[i % colors.length]);
+            }
+            return result;
       };
 
       // ============================================
-      // FORM VALIDATION (FormValidation Plugin) - Admin Only
+      // MODALS INITIALIZATION
+      // ============================================
+      const initModals = function () {
+            // Cost modal available to all users (for Add)
+            const costEl = document.getElementById('cost_modal');
+            if (costEl) costModal = new bootstrap.Modal(costEl);
+
+            // Delete and Inline Edit modals - Admin only
+            if (config.isAdmin) {
+                  const deleteEl = document.getElementById('delete_cost_modal');
+                  const inlineEditEl = document.getElementById('inline_edit_modal');
+
+                  if (deleteEl) deleteModal = new bootstrap.Modal(deleteEl);
+                  if (inlineEditEl) inlineEditModal = new bootstrap.Modal(inlineEditEl);
+            }
+      };
+
+      // ============================================
+      // FORM VALIDATION (FormValidation Plugin) - Available to all users
       // ============================================
       const initCostFormValidation = function () {
-            // Only initialize form validation for admin users
-            if (!config.isAdmin) return;
-
             const form = document.getElementById('cost_form');
             if (!form) return;
 
-            // Define validators
-            const validators = {
-                  'branch_id': {
+            // Define validators - branch validation only for admin (non-admin has fixed branch)
+            const validators = {};
+
+            // Branch validation only for admin
+            if (config.isAdmin) {
+                  validators['branch_id'] = {
                         validators: {
                               notEmpty: {
                                     message: 'Branch is required'
@@ -140,7 +167,11 @@ var KTFinanceReport = (function () {
                                     }
                               }
                         }
-                  },
+                  };
+            }
+
+            // Common validators for all users
+            validators['cost_date'] = {
                   'cost_date': {
                         validators: {
                               notEmpty: {
@@ -265,12 +296,9 @@ var KTFinanceReport = (function () {
       };
 
       // ============================================
-      // COST DATE PICKER (with disabled dates) - Admin Only
+      // COST DATE PICKER (with disabled dates) - Available to all users
       // ============================================
       const initCostDatePicker = function (branchId = null) {
-            // Only for admin users
-            if (!config.isAdmin) return;
-
             const $costDate = $('#cost_date');
             const costDateInput = document.getElementById('cost_date');
             const dateHelpText = document.getElementById('date_help_text');
@@ -583,14 +611,28 @@ var KTFinanceReport = (function () {
       };
 
       // ============================================
-      // RENDER REPORT TABLE
+      // RENDER REPORT TABLE (with User/Collector columns)
       // ============================================
       const renderReportTable = function (data) {
             const dates = Object.keys(data.report).sort().reverse();
             const classes = data.classes;
+            const classesInfo = data.classesInfo || []; // Contains id, name, is_active
+            const collectors = data.collectors || {};
+            const collectorIds = Object.keys(collectors);
+            const collectorReport = data.collectorReport || {};
 
             let grandTotalRevenue = 0;
             let grandTotalCost = 0;
+            let collectorGrandTotals = {};
+
+            // Initialize collector grand totals
+            collectorIds.forEach(id => {
+                  collectorGrandTotals[id] = 0;
+            });
+
+            // Calculate number of class columns for colspan
+            const classColCount = classes.length;
+            const collectorColCount = collectorIds.length;
 
             let html = `
             <h4 class="fw-bold text-gray-800 mb-4">Revenue vs Cost Details</h4>
@@ -598,30 +640,74 @@ var KTFinanceReport = (function () {
                 <table class="table table-bordered table-row-bordered align-middle text-center">
                     <thead>
                         <tr class="fw-bold text-gray-700 bg-light">
-                            <th class="min-w-100px">Date</th>`;
+                            <th rowspan="2" class="min-w-100px align-middle">Date</th>`;
 
-            classes.forEach(cls => {
-                  html += `<th class="min-w-100px">${cls}</th>`;
-            });
+            // Class columns header
+            if (classColCount > 0) {
+                  html += `<th colspan="${classColCount}" class="bg-light-info text-info">Class-wise Revenue</th>`;
+            }
+
+            html += `<th rowspan="2" class="min-w-120px bg-light-primary align-middle">Total Revenue</th>`;
+
+            // Collector columns header (if any collectors exist)
+            if (collectorColCount > 0) {
+                  html += `<th colspan="${collectorColCount}" class="bg-light-success text-success">Collected By (User-wise)</th>`;
+            }
 
             html += `
-                            <th class="min-w-120px bg-light-primary">Total Revenue</th>
-                            <th class="min-w-100px bg-light-danger">Cost</th>
-                            <th class="min-w-100px bg-light-success">Net Profit</th>
+                            <th rowspan="2" class="min-w-100px bg-light-danger align-middle">Cost</th>
+                            <th rowspan="2" class="min-w-100px bg-light-warning align-middle">Net Profit</th>
                         </tr>
+                        <tr class="fw-bold text-muted bg-light">`;
+
+            // Class sub-headers with inactive indicator
+            classesInfo.forEach(cls => {
+                  if (cls.is_active) {
+                        html += `<th class="min-w-80px fs-7">${cls.name}</th>`;
+                  } else {
+                        html += `<th class="min-w-80px fs-7">
+                              <span class="text-gray-500">${cls.name}</span>
+                              <span class="badge badge-light-danger fs-8 ms-1" title="Inactive Class">
+                                    <i class="ki-outline ki-cross-circle fs-7"></i>
+                              </span>
+                        </th>`;
+                  }
+            });
+
+            // Collector sub-headers
+            collectorIds.forEach(id => {
+                  const name = collectors[id];
+                  // Truncate long names
+                  const displayName = name.length > 15 ? name.substring(0, 12) + '...' : name;
+                  html += `<th class="min-w-100px fs-7 text-success" title="${name}">${displayName}</th>`;
+            });
+
+            html += `</tr>
                     </thead>
                     <tbody>`;
 
             dates.forEach(date => {
                   const dailyData = data.report[date];
+                  const dailyCollectorData = collectorReport[date] || {};
                   let dailyTotal = 0;
 
                   html += `<tr><td class="fw-semibold">${date}</td>`;
 
+                  // Class columns
                   classes.forEach(cls => {
                         const value = parseInt(dailyData[cls] || 0);
                         dailyTotal += value;
-                        html += `<td>${formatCurrency(value)}</td>`;
+                        html += `<td class="text-gray-700">${value > 0 ? formatCurrency(value) : '<span class="text-muted">-</span>'}</td>`;
+                  });
+
+                  // Total Revenue
+                  html += `<td class="fw-bold bg-light-primary text-primary">${formatCurrency(dailyTotal)}</td>`;
+
+                  // Collector columns
+                  collectorIds.forEach(id => {
+                        const value = parseInt(dailyCollectorData[id] || 0);
+                        collectorGrandTotals[id] += value;
+                        html += `<td class="text-gray-700">${value > 0 ? formatCurrency(value) : '<span class="text-muted">-</span>'}</td>`;
                   });
 
                   const cost = parseInt(data.costs[date] || 0);
@@ -630,7 +716,6 @@ var KTFinanceReport = (function () {
                   grandTotalCost += cost;
 
                   html += `
-                  <td class="fw-bold bg-light-primary">${formatCurrency(dailyTotal)}</td>
                   <td class="fw-bold text-danger bg-light-danger">${formatCurrency(cost)}</td>
                   <td class="fw-bold ${net >= 0 ? 'text-success bg-light-success' : 'text-danger bg-light-danger'}">${formatCurrency(net)}</td>
                   </tr>`;
@@ -642,14 +727,77 @@ var KTFinanceReport = (function () {
                     </tbody>
                     <tfoot>
                         <tr class="fw-bolder bg-gray-900 text-white">
-                            <td colspan="${classes.length + 1}">Grand Total</td>
-                            <td>${formatCurrency(grandTotalRevenue)}</td>
-                            <td>${formatCurrency(grandTotalCost)}</td>
+                            <td>Grand Total</td>`;
+
+            // Empty cells for class columns
+            classes.forEach(() => {
+                  html += `<td>-</td>`;
+            });
+
+            // Grand total revenue
+            html += `<td class="text-warning">${formatCurrency(grandTotalRevenue)}</td>`;
+
+            // Collector grand totals
+            collectorIds.forEach(id => {
+                  html += `<td class="text-info">${formatCurrency(collectorGrandTotals[id])}</td>`;
+            });
+
+            // Grand total cost and net profit
+            html += `
+                            <td class="text-danger">${formatCurrency(grandTotalCost)}</td>
                             <td class="${grandNet >= 0 ? 'text-success' : 'text-danger'}">${formatCurrency(grandNet)}</td>
                         </tr>
                     </tfoot>
                 </table>
             </div>`;
+
+            // Add Collector Summary Card
+            if (collectorColCount > 0) {
+                  html += `
+                  <div class="separator separator-dashed my-8"></div>
+                  <h4 class="fw-bold text-gray-800 mb-4">
+                        <i class="ki-outline ki-profile-user fs-2 text-primary me-2"></i>
+                        Collector-wise Summary
+                  </h4>
+                  <div class="row g-4 mb-5">`;
+
+                  // Sort collectors by total amount (descending)
+                  const sortedCollectors = collectorIds.sort((a, b) => collectorGrandTotals[b] - collectorGrandTotals[a]);
+
+                  sortedCollectors.forEach((id, index) => {
+                        const name = collectors[id];
+                        const total = collectorGrandTotals[id];
+                        const percentage = grandTotalRevenue > 0 ? ((total / grandTotalRevenue) * 100).toFixed(1) : 0;
+
+                        // Different colors for each card
+                        const cardColors = ['primary', 'success', 'info', 'warning', 'danger', 'dark'];
+                        const color = cardColors[index % cardColors.length];
+
+                        html += `
+                        <div class="col-xl-3 col-md-4 col-sm-6">
+                              <div class="card border border-${color} border-dashed bg-light-${color}">
+                                    <div class="card-body py-4 px-5">
+                                          <div class="d-flex align-items-center">
+                                                <div class="symbol symbol-45px symbol-circle me-3">
+                                                      <span class="symbol-label bg-${color} text-white fs-4 fw-bold">
+                                                            ${name.charAt(0).toUpperCase()}
+                                                      </span>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                      <span class="text-gray-800 fw-bold d-block fs-6">${name}</span>
+                                                      <span class="text-${color} fw-semibold d-block fs-3">${formatCurrency(total)}</span>
+                                                </div>
+                                                <div class="text-end">
+                                                      <span class="badge badge-light-${color} fs-7">${percentage}%</span>
+                                                </div>
+                                          </div>
+                                    </div>
+                              </div>
+                        </div>`;
+                  });
+
+                  html += `</div>`;
+            }
 
             elements.resultContainer.innerHTML = html;
       };
@@ -736,7 +884,7 @@ var KTFinanceReport = (function () {
       };
 
       // ============================================
-      // EXPORT FUNCTIONS
+      // EXPORT FUNCTIONS (Updated for collectors)
       // ============================================
       const exportToExcel = function () {
             if (!reportData) {
@@ -746,32 +894,75 @@ var KTFinanceReport = (function () {
 
             const dates = Object.keys(reportData.report).sort();
             const classes = reportData.classes;
+            const classesInfo = reportData.classesInfo || [];
+            const collectors = reportData.collectors || {};
+            const collectorIds = Object.keys(collectors);
+            const collectorReport = reportData.collectorReport || {};
             const wsData = [];
 
-            // Header row
-            const header = ['Date', ...classes, 'Total Revenue', 'Cost', 'Net Profit'];
+            // Header row with inactive indicator
+            const classHeaders = classesInfo.map(cls => cls.is_active ? cls.name : `${cls.name} (Inactive)`);
+            const header = ['Date', ...classHeaders, 'Total Revenue'];
+
+            // Add collector headers
+            collectorIds.forEach(id => {
+                  header.push(collectors[id] + ' (Collected)');
+            });
+
+            header.push('Cost', 'Net Profit');
             wsData.push(header);
 
             // Data rows
             let grandRevenue = 0, grandCost = 0;
+            let collectorGrandTotals = {};
+            collectorIds.forEach(id => { collectorGrandTotals[id] = 0; });
+
             dates.forEach(date => {
                   const row = [date];
                   let dailyTotal = 0;
+
+                  // Class-wise values
                   classes.forEach(cls => {
                         const value = parseInt(reportData.report[date][cls] || 0);
                         dailyTotal += value;
                         row.push(value);
                   });
+
+                  row.push(dailyTotal);
+
+                  // Collector-wise values
+                  const dailyCollectorData = collectorReport[date] || {};
+                  collectorIds.forEach(id => {
+                        const value = parseInt(dailyCollectorData[id] || 0);
+                        collectorGrandTotals[id] += value;
+                        row.push(value);
+                  });
+
                   const cost = parseInt(reportData.costs[date] || 0);
                   const net = dailyTotal - cost;
-                  row.push(dailyTotal, cost, net);
+                  row.push(cost, net);
                   wsData.push(row);
                   grandRevenue += dailyTotal;
                   grandCost += cost;
             });
 
             // Grand total row
-            wsData.push(['Grand Total', ...Array(classes.length).fill(''), grandRevenue, grandCost, grandRevenue - grandCost]);
+            const grandTotalRow = ['Grand Total', ...Array(classes.length).fill(''), grandRevenue];
+            collectorIds.forEach(id => {
+                  grandTotalRow.push(collectorGrandTotals[id]);
+            });
+            grandTotalRow.push(grandCost, grandRevenue - grandCost);
+            wsData.push(grandTotalRow);
+
+            // Add empty row and collector summary
+            wsData.push([]);
+            wsData.push(['Collector Summary']);
+            wsData.push(['Collector Name', 'Total Collected', 'Percentage']);
+            collectorIds.forEach(id => {
+                  const total = collectorGrandTotals[id];
+                  const percentage = grandRevenue > 0 ? ((total / grandRevenue) * 100).toFixed(1) + '%' : '0%';
+                  wsData.push([collectors[id], total, percentage]);
+            });
 
             const ws = XLSX.utils.aoa_to_sheet(wsData);
             const wb = XLSX.utils.book_new();
@@ -815,17 +1006,13 @@ var KTFinanceReport = (function () {
       };
 
       // ============================================
-      // COST MODAL FUNCTIONS (Admin Only)
+      // COST MODAL FUNCTIONS
+      // Add Cost: Available to all users
+      // Edit Cost: Admin only
       // ============================================
       let isModalInitializing = false;
 
       const openAddCostModal = function () {
-            // Check if user is admin
-            if (!config.isAdmin) {
-                  toastr.error('You do not have permission to add costs');
-                  return;
-            }
-
             isModalInitializing = true;
 
             document.getElementById('cost_modal_title').textContent = 'Add Daily Cost';
@@ -833,24 +1020,33 @@ var KTFinanceReport = (function () {
             document.getElementById('cost_id').value = '';
             document.getElementById('cost_date').value = '';
 
-            // Reset branch select
-            $('#cost_branch_id').val(null).trigger('change.select2');
-
-            // Disable date field until branch is selected
-            const costDateInput = document.getElementById('cost_date');
-            costDateInput.disabled = true;
-            costDateInput.classList.add('bg-secondary');
-            costDateInput.placeholder = 'Select branch first';
-
-            const dateHelpText = document.getElementById('date_help_text');
-            if (dateHelpText) {
-                  dateHelpText.textContent = 'Please select a branch first';
-            }
-
-            existingCostDates = [];
-
             // Reset form validation
             resetFormValidation();
+
+            if (config.isAdmin) {
+                  // Admin: Reset branch select and disable date until branch is selected
+                  $('#cost_branch_id').val(null).trigger('change.select2');
+
+                  const costDateInput = document.getElementById('cost_date');
+                  costDateInput.disabled = true;
+                  costDateInput.classList.add('bg-secondary');
+                  costDateInput.placeholder = 'Select branch first';
+
+                  const dateHelpText = document.getElementById('date_help_text');
+                  if (dateHelpText) {
+                        dateHelpText.textContent = 'Please select a branch first';
+                  }
+
+                  existingCostDates = [];
+            } else {
+                  // Non-admin: Branch is pre-selected, initialize date picker immediately
+                  const branchId = config.userBranchId;
+                  if (branchId) {
+                        updateExistingCostDates(branchId, function () {
+                              initCostDatePicker(branchId);
+                        });
+                  }
+            }
 
             costModal?.show();
 
@@ -980,13 +1176,14 @@ var KTFinanceReport = (function () {
       };
 
       const saveCost = function () {
-            // Check if user is admin
-            if (!config.isAdmin) {
-                  toastr.error('You do not have permission to save costs');
+            const costId = document.getElementById('cost_id').value;
+
+            // Only admin can update existing costs
+            if (costId && !config.isAdmin) {
+                  toastr.error('You do not have permission to edit costs');
                   return;
             }
 
-            const costId = document.getElementById('cost_id').value;
             const costDate = document.getElementById('cost_date').value;
             const amount = document.getElementById('cost_amount').value;
             const description = document.getElementById('cost_description').value;
@@ -1001,6 +1198,14 @@ var KTFinanceReport = (function () {
             setButtonLoading(elements.saveCostBtn, true);
 
             const isUpdate = !!costId;
+
+            // Only admin can use update route
+            if (isUpdate && !config.isAdmin) {
+                  setButtonLoading(elements.saveCostBtn, false);
+                  toastr.error('You do not have permission to edit costs');
+                  return;
+            }
+
             const url = isUpdate
                   ? config.routes.updateCost.replace(':id', costId)
                   : config.routes.storeCost;
@@ -1042,12 +1247,6 @@ var KTFinanceReport = (function () {
       // Handle form submit event (for validation)
       const handleCostFormSubmit = function (e) {
             e.preventDefault();
-
-            // Check if user is admin
-            if (!config.isAdmin) {
-                  toastr.error('You do not have permission to save costs');
-                  return;
-            }
 
             if (costFormValidator) {
                   costFormValidator.validate();
@@ -1232,51 +1431,32 @@ var KTFinanceReport = (function () {
                   elements.exportChartBtn.addEventListener('click', exportChart);
             }
 
-            // Admin-only event listeners
+            // Add cost buttons - available to all users
+            if (elements.addCostBtn) {
+                  elements.addCostBtn.addEventListener('click', openAddCostModal);
+            }
+
+            if (elements.addCostBtnTab) {
+                  elements.addCostBtnTab.addEventListener('click', openAddCostModal);
+            }
+
+            // Cost form submit - available to all users (for Add)
+            if (elements.costForm) {
+                  elements.costForm.addEventListener('submit', handleCostFormSubmit);
+            }
+
+            // Revalidate amount field on input
+            document.getElementById('cost_amount')?.addEventListener('input', function () {
+                  revalidateField('amount');
+            });
+
+            // Revalidate description field on input
+            document.getElementById('cost_description')?.addEventListener('input', function () {
+                  revalidateField('description');
+            });
+
+            // Branch change in cost modal - Admin only (non-admin has fixed branch)
             if (config.isAdmin) {
-                  // Add cost buttons
-                  if (elements.addCostBtn) {
-                        elements.addCostBtn.addEventListener('click', openAddCostModal);
-                  }
-
-                  if (elements.addCostBtnTab) {
-                        elements.addCostBtnTab.addEventListener('click', openAddCostModal);
-                  }
-
-                  // Cost form submit
-                  if (elements.costForm) {
-                        elements.costForm.addEventListener('submit', handleCostFormSubmit);
-                  }
-
-                  // Revalidate amount field on input
-                  document.getElementById('cost_amount')?.addEventListener('input', function () {
-                        revalidateField('amount');
-                  });
-
-                  // Revalidate description field on input
-                  document.getElementById('cost_description')?.addEventListener('input', function () {
-                        revalidateField('description');
-                  });
-
-                  // Delete confirm
-                  if (elements.confirmDeleteBtn) {
-                        elements.confirmDeleteBtn.addEventListener('click', confirmDelete);
-                  }
-
-                  // Inline edit save
-                  if (elements.saveInlineEditBtn) {
-                        elements.saveInlineEditBtn.addEventListener('click', saveInlineEdit);
-                  }
-
-                  // Enter key on inline edit
-                  document.getElementById('inline_edit_amount')?.addEventListener('keypress', function (e) {
-                        if (e.key === 'Enter') {
-                              e.preventDefault();
-                              saveInlineEdit();
-                        }
-                  });
-
-                  // Branch change in cost modal
                   $('#cost_branch_id').on('change', function () {
                         if (isModalInitializing) {
                               return;
@@ -1314,6 +1494,24 @@ var KTFinanceReport = (function () {
                               existingCostDates = [];
                         }
                   });
+
+                  // Delete confirm - Admin only
+                  if (elements.confirmDeleteBtn) {
+                        elements.confirmDeleteBtn.addEventListener('click', confirmDelete);
+                  }
+
+                  // Inline edit save - Admin only
+                  if (elements.saveInlineEditBtn) {
+                        elements.saveInlineEditBtn.addEventListener('click', saveInlineEdit);
+                  }
+
+                  // Enter key on inline edit - Admin only
+                  document.getElementById('inline_edit_amount')?.addEventListener('keypress', function (e) {
+                        if (e.key === 'Enter') {
+                              e.preventDefault();
+                              saveInlineEdit();
+                        }
+                  });
             }
       };
 
@@ -1325,10 +1523,8 @@ var KTFinanceReport = (function () {
             initModals();
             initDateRangePicker();
 
-            // Only initialize cost-related features for admin
-            if (config.isAdmin) {
-                  initCostFormValidation();
-            }
+            // Initialize cost form validation for all users (Add Cost available to all)
+            initCostFormValidation();
 
             initCostsDataTable();
             initEvents();

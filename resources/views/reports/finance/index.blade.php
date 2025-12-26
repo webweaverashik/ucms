@@ -44,6 +44,42 @@
         .export-section.show {
             display: flex;
         }
+
+        /* Collector column styling */
+        .collector-col {
+            background-color: rgba(80, 205, 137, 0.05) !important;
+        }
+
+        /* Table header styling for multi-row headers */
+        .table thead th[rowspan] {
+            vertical-align: middle;
+        }
+
+        /* Responsive table improvements */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Inactive class column styling */
+        .table thead th .badge-light-danger {
+            padding: 2px 4px;
+            vertical-align: middle;
+        }
+
+        .table thead th .text-gray-500 {
+            font-style: italic;
+        }
+
+        /* Collector summary cards */
+        .collector-summary-card {
+            transition: all 0.2s ease;
+        }
+
+        .collector-summary-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        }
     </style>
 @endpush
 
@@ -158,12 +194,11 @@
                                         <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
                                     </span>
                                 </button>
-                                @if ($isAdmin)
-                                    <button type="button" class="btn btn-success" id="add_cost_btn">
-                                        <i class="ki-outline ki-plus fs-4 me-1"></i>
-                                        Add Cost
-                                    </button>
-                                @endif
+                                {{-- Add Cost button visible to all users --}}
+                                <button type="button" class="btn btn-success" id="add_cost_btn">
+                                    <i class="ki-outline ki-plus fs-4 me-1"></i>
+                                    Add Cost
+                                </button>
                             </div>
                         </div>
                     </form>
@@ -257,7 +292,7 @@
                         </button>
                     </div>
 
-                    <!-- Report Table -->
+                    <!-- Report Table (includes Collector-wise breakdown) -->
                     <div id="finance_report_result"></div>
                 </div>
                 <!--end::Tab - Revenue vs Cost-->
@@ -268,12 +303,11 @@
                     <div class="d-flex justify-content-between align-items-center mb-5">
                         <h4 class="fw-bold text-gray-800 mb-0">Daily Cost Records</h4>
                         <div class="d-flex gap-2">
-                            @if ($isAdmin)
-                                <button type="button" class="btn btn-sm btn-success" id="add_cost_btn_tab">
-                                    <i class="ki-outline ki-plus fs-4 me-1"></i>
-                                    Add Cost
-                                </button>
-                            @endif
+                            {{-- Add Cost button visible to all users --}}
+                            <button type="button" class="btn btn-sm btn-success" id="add_cost_btn_tab">
+                                <i class="ki-outline ki-plus fs-4 me-1"></i>
+                                Add Cost
+                            </button>
                             <button type="button" class="btn btn-sm btn-light-primary" id="refresh_costs_btn">
                                 <i class="ki-outline ki-arrows-circle fs-4 me-1"></i>
                                 Refresh
@@ -312,25 +346,25 @@
     </div>
     <!--end::Card with Tabs-->
 
-    @if ($isAdmin)
-        <!--begin::Add/Edit Cost Modal-->
-        <div class="modal fade" id="cost_modal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3 id="cost_modal_title" class="modal-title fw-bold">Add Daily Cost</h3>
-                        <button type="button" class="btn btn-icon btn-sm btn-active-light-primary"
-                            data-bs-dismiss="modal">
-                            <i class="ki-outline ki-cross fs-1"></i>
-                        </button>
-                    </div>
-                    <form id="cost_form">
-                        <div class="modal-body py-10 px-lg-12">
-                            <input type="hidden" id="cost_id" value="">
+    <!--begin::Add/Edit Cost Modal (Available to all users for Add, Admin only for Edit) -->
+    <div class="modal fade" id="cost_modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered mw-650px">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="cost_modal_title" class="modal-title fw-bold">Add Daily Cost</h3>
+                    <button type="button" class="btn btn-icon btn-sm btn-active-light-primary" data-bs-dismiss="modal">
+                        <i class="ki-outline ki-cross fs-1"></i>
+                    </button>
+                </div>
+                <form id="cost_form">
+                    <div class="modal-body py-10 px-lg-12">
+                        <input type="hidden" id="cost_id" value="">
 
-                            <!-- Branch (Admin Only - Must be first) -->
-                            <div class="fv-row mb-7">
-                                <label class="required fw-semibold fs-6 mb-2">Branch</label>
+                        <!-- Branch Selection -->
+                        <div class="fv-row mb-7">
+                            <label class="required fw-semibold fs-6 mb-2">Branch</label>
+                            @if ($isAdmin)
+                                {{-- Admin can select any branch --}}
                                 <select id="cost_branch_id" name="branch_id" class="form-select form-select-solid"
                                     data-control="select2" data-placeholder="Select branch first"
                                     data-dropdown-parent="#cost_modal" data-hide-search="true">
@@ -342,65 +376,76 @@
                                     @endforeach
                                 </select>
                                 <div class="form-text text-muted">Select branch first to enable date selection</div>
-                            </div>
+                            @else
+                                {{-- Non-admin users: branch is pre-selected and readonly --}}
+                                <input type="text" class="form-control form-control-solid bg-secondary"
+                                    value="{{ $branches->first()->branch_name ?? '' }} ({{ $branches->first()->branch_prefix ?? '' }})"
+                                    readonly disabled>
+                                <input type="hidden" id="cost_branch_id" name="branch_id"
+                                    value="{{ $branches->first()->id ?? '' }}">
+                                <div class="form-text text-muted">Your branch is automatically selected</div>
+                            @endif
+                        </div>
 
-                            <!-- Date & Amount Row -->
-                            <div class="row mb-7">
-                                <!-- Date -->
-                                <div class="col-md-6">
-                                    <div class="fv-row">
-                                        <label class="required fw-semibold fs-6 mb-2">Date</label>
-                                        <input type="text" id="cost_date" name="cost_date"
-                                            class="form-control form-control-solid bg-secondary"
-                                            placeholder="Select branch first" readonly disabled>
-                                        <div id="date_help_text" class="form-text text-muted">
-                                            Select branch first
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Amount -->
-                                <div class="col-md-6">
-                                    <div class="fv-row">
-                                        <label class="required fw-semibold fs-6 mb-2">Amount</label>
-                                        <div class="input-group input-group-solid">
-                                            <span class="input-group-text">৳</span>
-                                            <input type="number" id="cost_amount" name="amount"
-                                                class="form-control form-control-solid" min="1" step="1"
-                                                placeholder="0">
-                                        </div>
-                                        <div class="form-text text-muted">Whole number only</div>
+                        <!-- Date & Amount Row -->
+                        <div class="row mb-7">
+                            <!-- Date -->
+                            <div class="col-md-6">
+                                <div class="fv-row">
+                                    <label class="required fw-semibold fs-6 mb-2">Date</label>
+                                    <input type="text" id="cost_date" name="cost_date"
+                                        class="form-control form-control-solid {{ $isAdmin ? 'bg-secondary' : '' }}"
+                                        placeholder="{{ $isAdmin ? 'Select branch first' : 'Select date' }}" readonly
+                                        {{ $isAdmin ? 'disabled' : '' }}>
+                                    <div id="date_help_text" class="form-text text-muted">
+                                        {{ $isAdmin ? 'Select branch first' : 'Select an available date' }}
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Description -->
-                            <div class="fv-row mb-7">
-                                <label class="fw-semibold fs-6 mb-2">Description</label>
-                                <textarea id="cost_description" name="description" class="form-control form-control-solid" rows="3"
-                                    placeholder="Enter cost description..." maxlength="500"></textarea>
-                                <div class="form-text text-muted">Maximum 500 characters</div>
+                            <!-- Amount -->
+                            <div class="col-md-6">
+                                <div class="fv-row">
+                                    <label class="required fw-semibold fs-6 mb-2">Amount</label>
+                                    <div class="input-group input-group-solid">
+                                        <span class="input-group-text">৳</span>
+                                        <input type="number" id="cost_amount" name="amount"
+                                            class="form-control form-control-solid rounded-start-0 border-start" min="1" step="1"
+                                            placeholder="0">
+                                    </div>
+                                    <div class="form-text text-muted">Whole number only</div>
+                                </div>
                             </div>
                         </div>
-                        <div class="modal-footer flex-center">
-                            <button type="button" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary" id="save_cost_btn">
-                                <span class="indicator-label">
-                                    <i class="ki-outline ki-check fs-4 me-1"></i>
-                                    Save Cost
-                                </span>
-                                <span class="indicator-progress">
-                                    Please wait...
-                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
-                                </span>
-                            </button>
+
+                        <!-- Description -->
+                        <div class="fv-row mb-7">
+                            <label class="fw-semibold fs-6 mb-2">Description</label>
+                            <textarea id="cost_description" name="description" class="form-control form-control-solid" rows="3"
+                                placeholder="Enter cost description..." maxlength="500"></textarea>
+                            <div class="form-text text-muted">Maximum 500 characters</div>
                         </div>
-                    </form>
-                </div>
+                    </div>
+                    <div class="modal-footer flex-center">
+                        <button type="button" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="save_cost_btn">
+                            <span class="indicator-label">
+                                <i class="ki-outline ki-check fs-4 me-1"></i>
+                                Save Cost
+                            </span>
+                            <span class="indicator-progress">
+                                Please wait...
+                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
-        <!--end::Add/Edit Cost Modal-->
+    </div>
+    <!--end::Add/Edit Cost Modal-->
 
+    @if ($isAdmin)
         <!--begin::Delete Confirmation Modal-->
         <div class="modal fade" id="delete_cost_modal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -441,7 +486,7 @@
 
         <!--begin::Inline Edit Amount Modal-->
         <div class="modal fade" id="inline_edit_modal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-dialog modal-dialog-centered modal">
                 <div class="modal-content">
                     <div class="modal-header py-4">
                         <h4 class="modal-title fw-bold">Edit Amount</h4>
@@ -454,7 +499,7 @@
                         <input type="hidden" id="inline_edit_cost_id">
                         <div class="input-group input-group-solid">
                             <span class="input-group-text">৳</span>
-                            <input type="number" id="inline_edit_amount" class="form-control form-control-solid"
+                            <input type="number" id="inline_edit_amount" class="form-control form-control-solid rounded-start-0 border-start"
                                 min="1" step="1" placeholder="0">
                         </div>
                         <div class="form-text text-muted">Enter whole number only</div>
@@ -492,12 +537,14 @@
             routes: {
                 generate: "{{ route('reports.finance.generate') }}",
                 costs: "{{ route('reports.finance.costs') }}",
+                // Store cost available to all users
+                storeCost: "{{ route('costs.store') }}",
+                getCostByDate: "{{ route('costs.by-date') }}",
                 @if ($isAdmin)
-                    storeCost: "{{ route('costs.store') }}",
+                    // Edit/Delete only for admin
                     showCost: "{{ route('costs.show', ':id') }}",
                     updateCost: "{{ route('costs.update', ':id') }}",
-                    deleteCost: "{{ route('costs.destroy', ':id') }}",
-                    getCostByDate: "{{ route('costs.by-date') }}"
+                    deleteCost: "{{ route('costs.destroy', ':id') }}"
                 @endif
             },
             csrfToken: "{{ csrf_token() }}"

@@ -54,7 +54,7 @@ class StudentController extends Controller
                 ->get();
         });
 
-        $classnames = ClassName::get();
+        $classnames = ClassName::active()->get();
         $batches    = Batch::with('branch:id,branch_name')->when(auth()->user()->branch_id != 0, function ($query) {
             $query->where('branch_id', auth()->user()->branch_id);
         })
@@ -108,7 +108,7 @@ class StudentController extends Controller
         // $students     = Student::all();
         // $guardians    = Guardian::all();
         // $subjects     = Subject::all();
-        $classnames   = ClassName::where('is_active', true)->latest('class_numeral')->get();
+        $classnames   = ClassName::active()->latest('class_numeral')->get();
         $institutions = Institution::select('id', 'name', 'eiin_number')->get();
 
         $batches = Batch::when(auth()->user()->branch_id != 0, function ($query) {

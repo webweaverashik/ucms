@@ -16,8 +16,7 @@ class ClassNameController extends Controller
             return back()->with('warning', 'No permission to view classes.');
         }
 
-        $classes = ClassName::withoutGlobalScope('active')
-            ->withCount('activeStudents')
+        $classes = ClassName::withCount('activeStudents')
             ->latest('updated_at')
             ->orderByDesc('id') // tie-breaker: id descending
             ->get()
