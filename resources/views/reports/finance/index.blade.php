@@ -158,10 +158,12 @@
                                         <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
                                     </span>
                                 </button>
-                                <button type="button" class="btn btn-success" id="add_cost_btn">
-                                    <i class="ki-outline ki-plus fs-4 me-1"></i>
-                                    Add Cost
-                                </button>
+                                @if ($isAdmin)
+                                    <button type="button" class="btn btn-success" id="add_cost_btn">
+                                        <i class="ki-outline ki-plus fs-4 me-1"></i>
+                                        Add Cost
+                                    </button>
+                                @endif
                             </div>
                         </div>
                     </form>
@@ -266,10 +268,12 @@
                     <div class="d-flex justify-content-between align-items-center mb-5">
                         <h4 class="fw-bold text-gray-800 mb-0">Daily Cost Records</h4>
                         <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-sm btn-success" id="add_cost_btn_tab">
-                                <i class="ki-outline ki-plus fs-4 me-1"></i>
-                                Add Cost
-                            </button>
+                            @if ($isAdmin)
+                                <button type="button" class="btn btn-sm btn-success" id="add_cost_btn_tab">
+                                    <i class="ki-outline ki-plus fs-4 me-1"></i>
+                                    Add Cost
+                                </button>
+                            @endif
                             <button type="button" class="btn btn-sm btn-light-primary" id="refresh_costs_btn">
                                 <i class="ki-outline ki-arrows-circle fs-4 me-1"></i>
                                 Refresh
@@ -291,7 +295,9 @@
                                     <th class="min-w-100px text-end">Amount</th>
                                     <th class="min-w-200px">Description</th>
                                     <th class="min-w-100px">Created By</th>
-                                    <th class="pe-4 rounded-end text-center min-w-100px">Actions</th>
+                                    @if ($isAdmin)
+                                        <th class="pe-4 rounded-end text-center min-w-100px">Actions</th>
+                                    @endif
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -306,22 +312,23 @@
     </div>
     <!--end::Card with Tabs-->
 
-    <!--begin::Add/Edit Cost Modal-->
-    <div class="modal fade" id="cost_modal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 id="cost_modal_title" class="modal-title fw-bold">Add Daily Cost</h3>
-                    <button type="button" class="btn btn-icon btn-sm btn-active-light-primary" data-bs-dismiss="modal">
-                        <i class="ki-outline ki-cross fs-1"></i>
-                    </button>
-                </div>
-                <form id="cost_form">
-                    <div class="modal-body py-10 px-lg-12">
-                        <input type="hidden" id="cost_id" value="">
+    @if ($isAdmin)
+        <!--begin::Add/Edit Cost Modal-->
+        <div class="modal fade" id="cost_modal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 id="cost_modal_title" class="modal-title fw-bold">Add Daily Cost</h3>
+                        <button type="button" class="btn btn-icon btn-sm btn-active-light-primary"
+                            data-bs-dismiss="modal">
+                            <i class="ki-outline ki-cross fs-1"></i>
+                        </button>
+                    </div>
+                    <form id="cost_form">
+                        <div class="modal-body py-10 px-lg-12">
+                            <input type="hidden" id="cost_id" value="">
 
-                        <!-- Branch (Admin Only - Must be first) -->
-                        @if ($isAdmin)
+                            <!-- Branch (Admin Only - Must be first) -->
                             <div class="fv-row mb-7">
                                 <label class="required fw-semibold fs-6 mb-2">Branch</label>
                                 <select id="cost_branch_id" name="branch_id" class="form-select form-select-solid"
@@ -336,144 +343,139 @@
                                 </select>
                                 <div class="form-text text-muted">Select branch first to enable date selection</div>
                             </div>
-                        @else
-                            <input type="hidden" id="cost_branch_id" name="branch_id"
-                                value="{{ auth()->user()->branch_id }}">
-                        @endif
 
-                        <!-- Date & Amount Row -->
-                        <div class="row mb-7">
-                            <!-- Date -->
-                            <div class="col-md-6">
-                                <div class="fv-row">
-                                    <label class="required fw-semibold fs-6 mb-2">Date</label>
-                                    <input type="text" id="cost_date" name="cost_date"
-                                        class="form-control form-control-solid @if ($isAdmin) bg-secondary @endif"
-                                        placeholder="@if ($isAdmin) Select branch first @else Select date @endif"
-                                        readonly @if ($isAdmin) disabled @endif>
-                                    <div id="date_help_text" class="form-text text-muted">
-                                        @if ($isAdmin)
+                            <!-- Date & Amount Row -->
+                            <div class="row mb-7">
+                                <!-- Date -->
+                                <div class="col-md-6">
+                                    <div class="fv-row">
+                                        <label class="required fw-semibold fs-6 mb-2">Date</label>
+                                        <input type="text" id="cost_date" name="cost_date"
+                                            class="form-control form-control-solid bg-secondary"
+                                            placeholder="Select branch first" readonly disabled>
+                                        <div id="date_help_text" class="form-text text-muted">
                                             Select branch first
-                                        @else
-                                            Available dates only
-                                        @endif
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Amount -->
+                                <div class="col-md-6">
+                                    <div class="fv-row">
+                                        <label class="required fw-semibold fs-6 mb-2">Amount</label>
+                                        <div class="input-group input-group-solid">
+                                            <span class="input-group-text">৳</span>
+                                            <input type="number" id="cost_amount" name="amount"
+                                                class="form-control form-control-solid" min="1" step="1"
+                                                placeholder="0">
+                                        </div>
+                                        <div class="form-text text-muted">Whole number only</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Amount -->
-                            <div class="col-md-6">
-                                <div class="fv-row">
-                                    <label class="required fw-semibold fs-6 mb-2">Amount</label>
-                                    <div class="input-group input-group-solid">
-                                        <span class="input-group-text">৳</span>
-                                        <input type="number" id="cost_amount" name="amount"
-                                            class="form-control form-control-solid" min="1" step="1"
-                                            placeholder="0">
-                                    </div>
-                                    <div class="form-text text-muted">Whole number only</div>
-                                </div>
+                            <!-- Description -->
+                            <div class="fv-row mb-7">
+                                <label class="fw-semibold fs-6 mb-2">Description</label>
+                                <textarea id="cost_description" name="description" class="form-control form-control-solid" rows="3"
+                                    placeholder="Enter cost description..." maxlength="500"></textarea>
+                                <div class="form-text text-muted">Maximum 500 characters</div>
                             </div>
                         </div>
-
-                        <!-- Description -->
-                        <div class="fv-row mb-7">
-                            <label class="fw-semibold fs-6 mb-2">Description</label>
-                            <textarea id="cost_description" name="description" class="form-control form-control-solid" rows="3"
-                                placeholder="Enter cost description..." maxlength="500"></textarea>
-                            <div class="form-text text-muted">Maximum 500 characters</div>
+                        <div class="modal-footer flex-center">
+                            <button type="button" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary" id="save_cost_btn">
+                                <span class="indicator-label">
+                                    <i class="ki-outline ki-check fs-4 me-1"></i>
+                                    Save Cost
+                                </span>
+                                <span class="indicator-progress">
+                                    Please wait...
+                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                </span>
+                            </button>
                         </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!--end::Add/Edit Cost Modal-->
+
+        <!--begin::Delete Confirmation Modal-->
+        <div class="modal fade" id="delete_cost_modal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title fw-bold">Delete Cost Record</h3>
+                        <button type="button" class="btn btn-icon btn-sm btn-active-light-primary"
+                            data-bs-dismiss="modal">
+                            <i class="ki-outline ki-cross fs-1"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body py-10 text-center">
+                        <div class="mb-5">
+                            <i class="ki-outline ki-trash text-danger fs-5x"></i>
+                        </div>
+                        <p class="fs-5 fw-semibold text-gray-700 mb-2">Are you sure you want to delete this cost record?
+                        </p>
+                        <p class="fs-7 text-muted">This action cannot be undone.</p>
+                        <input type="hidden" id="delete_cost_id">
                     </div>
                     <div class="modal-footer flex-center">
                         <button type="button" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary" id="save_cost_btn">
+                        <button type="button" class="btn btn-danger" id="confirm_delete_cost_btn">
                             <span class="indicator-label">
-                                <i class="ki-outline ki-check fs-4 me-1"></i>
-                                Save Cost
+                                <i class="ki-outline ki-trash fs-4 me-1"></i>
+                                Delete
                             </span>
                             <span class="indicator-progress">
-                                Please wait...
+                                Deleting...
                                 <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
                             </span>
                         </button>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
-    </div>
-    <!--end::Add/Edit Cost Modal-->
+        <!--end::Delete Confirmation Modal-->
 
-    <!--begin::Delete Confirmation Modal-->
-    <div class="modal fade" id="delete_cost_modal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title fw-bold">Delete Cost Record</h3>
-                    <button type="button" class="btn btn-icon btn-sm btn-active-light-primary" data-bs-dismiss="modal">
-                        <i class="ki-outline ki-cross fs-1"></i>
-                    </button>
-                </div>
-                <div class="modal-body py-10 text-center">
-                    <div class="mb-5">
-                        <i class="ki-outline ki-trash text-danger fs-5x"></i>
+        <!--begin::Inline Edit Amount Modal-->
+        <div class="modal fade" id="inline_edit_modal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header py-4">
+                        <h4 class="modal-title fw-bold">Edit Amount</h4>
+                        <button type="button" class="btn btn-icon btn-sm btn-active-light-primary"
+                            data-bs-dismiss="modal">
+                            <i class="ki-outline ki-cross fs-1"></i>
+                        </button>
                     </div>
-                    <p class="fs-5 fw-semibold text-gray-700 mb-2">Are you sure you want to delete this cost record?</p>
-                    <p class="fs-7 text-muted">This action cannot be undone.</p>
-                    <input type="hidden" id="delete_cost_id">
-                </div>
-                <div class="modal-footer flex-center">
-                    <button type="button" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" id="confirm_delete_cost_btn">
-                        <span class="indicator-label">
-                            <i class="ki-outline ki-trash fs-4 me-1"></i>
-                            Delete
-                        </span>
-                        <span class="indicator-progress">
-                            Deleting...
-                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
-                        </span>
-                    </button>
+                    <div class="modal-body py-6">
+                        <input type="hidden" id="inline_edit_cost_id">
+                        <div class="input-group input-group-solid">
+                            <span class="input-group-text">৳</span>
+                            <input type="number" id="inline_edit_amount" class="form-control form-control-solid"
+                                min="1" step="1" placeholder="0">
+                        </div>
+                        <div class="form-text text-muted">Enter whole number only</div>
+                    </div>
+                    <div class="modal-footer py-4 flex-center">
+                        <button type="button" class="btn btn-sm btn-light me-2" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-sm btn-primary" id="save_inline_edit_btn">
+                            <span class="indicator-label">
+                                <i class="ki-outline ki-check fs-4 me-1"></i>
+                                Save
+                            </span>
+                            <span class="indicator-progress">
+                                <span class="spinner-border spinner-border-sm align-middle"></span>
+                            </span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <!--end::Delete Confirmation Modal-->
-
-    <!--begin::Inline Edit Amount Modal-->
-    <div class="modal fade" id="inline_edit_modal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
-            <div class="modal-content">
-                <div class="modal-header py-4">
-                    <h4 class="modal-title fw-bold">Edit Amount</h4>
-                    <button type="button" class="btn btn-icon btn-sm btn-active-light-primary" data-bs-dismiss="modal">
-                        <i class="ki-outline ki-cross fs-1"></i>
-                    </button>
-                </div>
-                <div class="modal-body py-6">
-                    <input type="hidden" id="inline_edit_cost_id">
-                    <div class="input-group input-group-solid">
-                        <span class="input-group-text">৳</span>
-                        <input type="number" id="inline_edit_amount" class="form-control form-control-solid"
-                            min="1" step="1" placeholder="0">
-                    </div>
-                    <div class="form-text text-muted">Enter whole number only</div>
-                </div>
-                <div class="modal-footer py-4 flex-center">
-                    <button type="button" class="btn btn-sm btn-light me-2" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-sm btn-primary" id="save_inline_edit_btn">
-                        <span class="indicator-label">
-                            <i class="ki-outline ki-check fs-4 me-1"></i>
-                            Save
-                        </span>
-                        <span class="indicator-progress">
-                            <span class="spinner-border spinner-border-sm align-middle"></span>
-                        </span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!--end::Inline Edit Amount Modal-->
+        <!--end::Inline Edit Amount Modal-->
+    @endif
 @endsection
 
 @push('vendor-js')
@@ -490,11 +492,13 @@
             routes: {
                 generate: "{{ route('reports.finance.generate') }}",
                 costs: "{{ route('reports.finance.costs') }}",
-                storeCost: "{{ route('costs.store') }}",
-                showCost: "{{ route('costs.show', ':id') }}",
-                updateCost: "{{ route('costs.update', ':id') }}",
-                deleteCost: "{{ route('costs.destroy', ':id') }}",
-                getCostByDate: "{{ route('costs.by-date') }}"
+                @if ($isAdmin)
+                    storeCost: "{{ route('costs.store') }}",
+                    showCost: "{{ route('costs.show', ':id') }}",
+                    updateCost: "{{ route('costs.update', ':id') }}",
+                    deleteCost: "{{ route('costs.destroy', ':id') }}",
+                    getCostByDate: "{{ route('costs.by-date') }}"
+                @endif
             },
             csrfToken: "{{ csrf_token() }}"
         };

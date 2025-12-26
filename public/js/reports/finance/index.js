@@ -4,6 +4,8 @@
  * UCMS Finance Report Module
  * Revenue vs Cost Report with Cost Management
  * Metronic 8 + Bootstrap 5 + DataTables + Toastr + FormValidation
+ * 
+ * Note: Cost Edit/Delete functionality is restricted to Admin users only
  */
 
 var KTFinanceReport = (function () {
@@ -45,15 +47,18 @@ var KTFinanceReport = (function () {
             elements.exportExcelBtn = document.getElementById('export_excel_btn');
             elements.exportChartBtn = document.getElementById('export_chart_btn');
 
-            elements.addCostBtn = document.getElementById('add_cost_btn');
-            elements.addCostBtnTab = document.getElementById('add_cost_btn_tab'); // Add Cost button in Cost Records tab
-            elements.costForm = document.getElementById('cost_form');
             elements.refreshCostsBtn = document.getElementById('refresh_costs_btn');
             elements.costRecordsTab = document.getElementById('cost_records_tab');
 
-            elements.saveCostBtn = document.getElementById('save_cost_btn');
-            elements.confirmDeleteBtn = document.getElementById('confirm_delete_cost_btn');
-            elements.saveInlineEditBtn = document.getElementById('save_inline_edit_btn');
+            // Admin-only elements
+            if (config.isAdmin) {
+                  elements.addCostBtn = document.getElementById('add_cost_btn');
+                  elements.addCostBtnTab = document.getElementById('add_cost_btn_tab');
+                  elements.costForm = document.getElementById('cost_form');
+                  elements.saveCostBtn = document.getElementById('save_cost_btn');
+                  elements.confirmDeleteBtn = document.getElementById('confirm_delete_cost_btn');
+                  elements.saveInlineEditBtn = document.getElementById('save_inline_edit_btn');
+            }
       };
 
       // ============================================
@@ -96,9 +101,12 @@ var KTFinanceReport = (function () {
       };
 
       // ============================================
-      // MODALS INITIALIZATION
+      // MODALS INITIALIZATION (Admin Only)
       // ============================================
       const initModals = function () {
+            // Only initialize modals for admin users
+            if (!config.isAdmin) return;
+
             const costEl = document.getElementById('cost_modal');
             const deleteEl = document.getElementById('delete_cost_modal');
             const inlineEditEl = document.getElementById('inline_edit_modal');
@@ -109,14 +117,30 @@ var KTFinanceReport = (function () {
       };
 
       // ============================================
-      // FORM VALIDATION (FormValidation Plugin)
+      // FORM VALIDATION (FormValidation Plugin) - Admin Only
       // ============================================
       const initCostFormValidation = function () {
+            // Only initialize form validation for admin users
+            if (!config.isAdmin) return;
+
             const form = document.getElementById('cost_form');
             if (!form) return;
 
-            // Define validators based on user role
+            // Define validators
             const validators = {
+                  'branch_id': {
+                        validators: {
+                              notEmpty: {
+                                    message: 'Branch is required'
+                              },
+                              callback: {
+                                    message: 'Please select a branch',
+                                    callback: function (input) {
+                                          return input.value !== '' && input.value !== null;
+                                    }
+                              }
+                        }
+                  },
                   'cost_date': {
                         validators: {
                               notEmpty: {
@@ -165,30 +189,13 @@ var KTFinanceReport = (function () {
                   }
             };
 
-            // Add branch validation for admin users
-            if (config.isAdmin) {
-                  validators['branch_id'] = {
-                        validators: {
-                              notEmpty: {
-                                    message: 'Branch is required'
-                              },
-                              callback: {
-                                    message: 'Please select a branch',
-                                    callback: function (input) {
-                                          return input.value !== '' && input.value !== null;
-                                    }
-                              }
-                        }
-                  };
-            }
-
             // Initialize FormValidation with delayed trigger (only on blur/submit)
             costFormValidator = FormValidation.formValidation(form, {
                   fields: validators,
                   plugins: {
                         trigger: new FormValidation.plugins.Trigger({
                               event: {
-                                    default: 'blur', // Validate on blur instead of input
+                                    default: 'blur',
                                     'branch_id': 'change',
                                     'cost_date': 'change'
                               }
@@ -196,7 +203,7 @@ var KTFinanceReport = (function () {
                         bootstrap: new FormValidation.plugins.Bootstrap5({
                               rowSelector: '.fv-row',
                               eleInvalidClass: 'is-invalid',
-                              eleValidClass: ''  // Don't show valid state to avoid green styling on load
+                              eleValidClass: ''
                         }),
                         submitButton: new FormValidation.plugins.SubmitButton()
                   }
@@ -258,9 +265,12 @@ var KTFinanceReport = (function () {
       };
 
       // ============================================
-      // COST DATE PICKER (with disabled dates)
+      // COST DATE PICKER (with disabled dates) - Admin Only
       // ============================================
       const initCostDatePicker = function (branchId = null) {
+            // Only for admin users
+            if (!config.isAdmin) return;
+
             const $costDate = $('#cost_date');
             const costDateInput = document.getElementById('cost_date');
             const dateHelpText = document.getElementById('date_help_text');
@@ -273,8 +283,8 @@ var KTFinanceReport = (function () {
             // Clear the date value - user must select
             $costDate.val('');
 
-            // For admin, branch must be selected first
-            if (config.isAdmin && !branchId) {
+            // Branch must be selected first
+            if (!branchId) {
                   costDateInput.disabled = true;
                   costDateInput.classList.add('bg-secondary');
                   costDateInput.placeholder = 'Select branch first';
@@ -297,7 +307,7 @@ var KTFinanceReport = (function () {
                   singleDatePicker: true,
                   showDropdowns: true,
                   autoApply: true,
-                  autoUpdateInput: false, // Don't auto-fill the date
+                  autoUpdateInput: false,
                   maxDate: moment(),
                   locale: {
                         format: 'DD-MM-YYYY'
@@ -309,7 +319,6 @@ var KTFinanceReport = (function () {
             }, function (selectedDate) {
                   const dateStr = selectedDate.format('DD-MM-YYYY');
 
-                  // Only set value if date is not in existing dates
                   if (!existingCostDates.includes(dateStr)) {
                         $costDate.val(dateStr);
                   }
@@ -320,14 +329,12 @@ var KTFinanceReport = (function () {
                   const dateStr = picker.startDate.format('DD-MM-YYYY');
                   if (!existingCostDates.includes(dateStr)) {
                         $(this).val(dateStr);
-                        // Revalidate date field only if not initializing
                         if (!isModalInitializing) {
                               revalidateField('cost_date');
                         }
                   } else {
                         $(this).val('');
                         toastr.warning('This date already has a cost record. Please select another date.');
-                        // Revalidate date field only if not initializing
                         if (!isModalInitializing) {
                               revalidateField('cost_date');
                         }
@@ -374,6 +381,80 @@ var KTFinanceReport = (function () {
             const table = document.getElementById('costs_datatable');
             if (!table) return;
 
+            // Define columns based on user role
+            const columns = [
+                  {
+                        data: 'cost_date',
+                        className: 'ps-4',
+                        render: function (data) {
+                              return `<span class="fw-semibold text-gray-800">${formatDate(data)}</span>`;
+                        }
+                  },
+                  {
+                        data: 'branch',
+                        render: function (data) {
+                              if (!data) return '-';
+                              return `<span class="badge badge-light-primary">${data.branch_name} (${data.branch_prefix})</span>`;
+                        }
+                  },
+                  {
+                        data: 'amount',
+                        className: 'text-center',
+                        render: function (data, type, row) {
+                              // Only show inline edit button for admin
+                              if (config.isAdmin) {
+                                    return `
+                                    <div class="d-flex align-items-center justify-content-end gap-2">
+                                          <span class="fw-bold text-gray-900">${formatCurrency(data)}</span>
+                                          <button type="button" class="btn btn-icon btn-sm btn-light-primary amount-edit-btn"
+                                                onclick="KTFinanceReport.openInlineEditModal(${row.id}, ${data})" title="Edit Amount">
+                                                <i class="ki-outline ki-pencil fs-6"></i>
+                                          </button>
+                                    </div>`;
+                              } else {
+                                    return `<span class="fw-bold text-gray-900">${formatCurrency(data)}</span>`;
+                              }
+                        }
+                  },
+                  {
+                        data: 'description',
+                        className: 'text-center',
+                        render: function (data) {
+                              if (!data) return '<span class="text-muted fst-italic">No description</span>';
+                              return `<span class="text-gray-700">${data.length > 50 ? data.substring(0, 50) + '...' : data}</span>`;
+                        }
+                  },
+                  {
+                        data: 'created_by',
+                        render: function (data, type, row) {
+                              if (!row.created_by) return '-';
+                              return `<span class="text-gray-600">${row.created_by.name}</span>`;
+                        }
+                  }
+            ];
+
+            // Add actions column only for admin
+            if (config.isAdmin) {
+                  columns.push({
+                        data: null,
+                        className: 'text-center pe-4',
+                        orderable: false,
+                        render: function (data, type, row) {
+                              return `
+                              <div class="d-flex justify-content-center gap-1">
+                                    <button type="button" class="btn btn-icon btn-sm btn-light-primary"
+                                          onclick="KTFinanceReport.openEditCostModal(${row.id})" title="Edit">
+                                          <i class="ki-outline ki-pencil fs-6"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-icon btn-sm btn-light-danger"
+                                          onclick="KTFinanceReport.openDeleteModal(${row.id})" title="Delete">
+                                          <i class="ki-outline ki-trash fs-6"></i>
+                                    </button>
+                              </div>`;
+                        }
+                  });
+            }
+
             costsDataTable = $(table).DataTable({
                   processing: true,
                   serverSide: false,
@@ -395,68 +476,7 @@ var KTFinanceReport = (function () {
                               toastr.error('Failed to load cost records');
                         }
                   },
-                  columns: [
-                        {
-                              data: 'cost_date',
-                              className: 'ps-4',
-                              render: function (data) {
-                                    return `<span class="fw-semibold text-gray-800">${formatDate(data)}</span>`;
-                              }
-                        },
-                        {
-                              data: 'branch',
-                              render: function (data) {
-                                    if (!data) return '-';
-                                    return `<span class="badge badge-light-primary">${data.branch_name} (${data.branch_prefix})</span>`;
-                              }
-                        },
-                        {
-                              data: 'amount',
-                              className: 'text-end',
-                              render: function (data, type, row) {
-                                    return `
-                            <div class="d-flex align-items-center justify-content-end gap-2">
-                                <span class="fw-bold text-gray-900">${formatCurrency(data)}</span>
-                                <button type="button" class="btn btn-icon btn-sm btn-light-primary amount-edit-btn"
-                                    onclick="KTFinanceReport.openInlineEditModal(${row.id}, ${data})" title="Edit Amount">
-                                    <i class="ki-outline ki-pencil fs-6"></i>
-                                </button>
-                            </div>`;
-                              }
-                        },
-                        {
-                              data: 'description',
-                              render: function (data) {
-                                    if (!data) return '<span class="text-muted fst-italic">No description</span>';
-                                    return `<span class="text-gray-700">${data.length > 50 ? data.substring(0, 50) + '...' : data}</span>`;
-                              }
-                        },
-                        {
-                              data: 'created_by',
-                              render: function (data, type, row) {
-                                    if (!row.created_by) return '-';
-                                    return `<span class="text-gray-600">${row.created_by.name}</span>`;
-                              }
-                        },
-                        {
-                              data: null,
-                              className: 'text-center pe-4',
-                              orderable: false,
-                              render: function (data, type, row) {
-                                    return `
-                            <div class="d-flex justify-content-center gap-1">
-                                <button type="button" class="btn btn-icon btn-sm btn-light-primary"
-                                    onclick="KTFinanceReport.openEditCostModal(${row.id})" title="Edit">
-                                    <i class="ki-outline ki-pencil fs-6"></i>
-                                </button>
-                                <button type="button" class="btn btn-icon btn-sm btn-light-danger"
-                                    onclick="KTFinanceReport.openDeleteModal(${row.id})" title="Delete">
-                                    <i class="ki-outline ki-trash fs-6"></i>
-                                </button>
-                            </div>`;
-                              }
-                        }
-                  ],
+                  columns: columns,
                   order: [[0, 'desc']],
                   pageLength: 10,
                   lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
@@ -519,10 +539,10 @@ var KTFinanceReport = (function () {
 
                         if (!Object.keys(res.report).length) {
                               elements.resultContainer.innerHTML = `
-                        <div class="alert alert-warning d-flex align-items-center">
-                            <i class="ki-outline ki-information-3 fs-2x me-3 text-warning"></i>
-                            <div>No data found for the selected date range and branch.</div>
-                        </div>`;
+                              <div class="alert alert-warning d-flex align-items-center">
+                                    <i class="ki-outline ki-information-3 fs-2x me-3 text-warning"></i>
+                                    <div>No data found for the selected date range and branch.</div>
+                              </div>`;
                               return;
                         }
 
@@ -610,10 +630,10 @@ var KTFinanceReport = (function () {
                   grandTotalCost += cost;
 
                   html += `
-                <td class="fw-bold bg-light-primary">${formatCurrency(dailyTotal)}</td>
-                <td class="fw-bold text-danger bg-light-danger">${formatCurrency(cost)}</td>
-                <td class="fw-bold ${net >= 0 ? 'text-success bg-light-success' : 'text-danger bg-light-danger'}">${formatCurrency(net)}</td>
-            </tr>`;
+                  <td class="fw-bold bg-light-primary">${formatCurrency(dailyTotal)}</td>
+                  <td class="fw-bold text-danger bg-light-danger">${formatCurrency(cost)}</td>
+                  <td class="fw-bold ${net >= 0 ? 'text-success bg-light-success' : 'text-danger bg-light-danger'}">${formatCurrency(net)}</td>
+                  </tr>`;
             });
 
             const grandNet = grandTotalRevenue - grandTotalCost;
@@ -795,43 +815,41 @@ var KTFinanceReport = (function () {
       };
 
       // ============================================
-      // COST MODAL FUNCTIONS
+      // COST MODAL FUNCTIONS (Admin Only)
       // ============================================
-      let isModalInitializing = false; // Flag to prevent validation during modal setup
+      let isModalInitializing = false;
 
       const openAddCostModal = function () {
-            isModalInitializing = true; // Set flag to prevent validation
+            // Check if user is admin
+            if (!config.isAdmin) {
+                  toastr.error('You do not have permission to add costs');
+                  return;
+            }
+
+            isModalInitializing = true;
 
             document.getElementById('cost_modal_title').textContent = 'Add Daily Cost';
             elements.costForm?.reset();
             document.getElementById('cost_id').value = '';
             document.getElementById('cost_date').value = '';
 
-            // Reset branch select for admin (without triggering change event that causes validation)
-            if (config.isAdmin) {
-                  // Use val() without trigger to avoid validation
-                  $('#cost_branch_id').val(null).trigger('change.select2'); // Only trigger select2 update, not validation
+            // Reset branch select
+            $('#cost_branch_id').val(null).trigger('change.select2');
 
-                  // Disable date field until branch is selected
-                  const costDateInput = document.getElementById('cost_date');
-                  costDateInput.disabled = true;
-                  costDateInput.classList.add('bg-secondary');
-                  costDateInput.placeholder = 'Select branch first';
+            // Disable date field until branch is selected
+            const costDateInput = document.getElementById('cost_date');
+            costDateInput.disabled = true;
+            costDateInput.classList.add('bg-secondary');
+            costDateInput.placeholder = 'Select branch first';
 
-                  const dateHelpText = document.getElementById('date_help_text');
-                  if (dateHelpText) {
-                        dateHelpText.textContent = 'Please select a branch first';
-                  }
-
-                  existingCostDates = [];
-            } else {
-                  // For non-admin, fetch existing dates and init picker
-                  updateExistingCostDates(config.userBranchId, function () {
-                        initCostDatePicker(config.userBranchId);
-                  });
+            const dateHelpText = document.getElementById('date_help_text');
+            if (dateHelpText) {
+                  dateHelpText.textContent = 'Please select a branch first';
             }
 
-            // Reset form validation AFTER setting up fields
+            existingCostDates = [];
+
+            // Reset form validation
             resetFormValidation();
 
             costModal?.show();
@@ -843,7 +861,13 @@ var KTFinanceReport = (function () {
       };
 
       const openEditCostModal = function (id) {
-            isModalInitializing = true; // Set flag to prevent validation
+            // Check if user is admin
+            if (!config.isAdmin) {
+                  toastr.error('You do not have permission to edit costs');
+                  return;
+            }
+
+            isModalInitializing = true;
 
             document.getElementById('cost_modal_title').textContent = 'Edit Cost';
 
@@ -869,8 +893,7 @@ var KTFinanceReport = (function () {
 
                               const branchId = cost.branch_id;
 
-                              if (config.isAdmin && document.getElementById('cost_branch_id')) {
-                                    // Set branch but disable it during edit (can't change branch)
+                              if (document.getElementById('cost_branch_id')) {
                                     $('#cost_branch_id').val(branchId).trigger('change');
                               }
 
@@ -916,7 +939,6 @@ var KTFinanceReport = (function () {
                                           const dateStr = selectedDate.format('DD-MM-YYYY');
                                           if (!filteredDates.includes(dateStr)) {
                                                 $costDate.val(dateStr);
-                                                // Revalidate date field
                                                 revalidateField('cost_date');
                                           }
                                     });
@@ -929,7 +951,6 @@ var KTFinanceReport = (function () {
                                           const dateStr = picker.startDate.format('DD-MM-YYYY');
                                           if (!filteredDates.includes(dateStr)) {
                                                 $(this).val(dateStr);
-                                                // Revalidate date field only if not initializing
                                                 if (!isModalInitializing) {
                                                       revalidateField('cost_date');
                                                 }
@@ -959,6 +980,12 @@ var KTFinanceReport = (function () {
       };
 
       const saveCost = function () {
+            // Check if user is admin
+            if (!config.isAdmin) {
+                  toastr.error('You do not have permission to save costs');
+                  return;
+            }
+
             const costId = document.getElementById('cost_id').value;
             const costDate = document.getElementById('cost_date').value;
             const amount = document.getElementById('cost_amount').value;
@@ -1016,18 +1043,29 @@ var KTFinanceReport = (function () {
       const handleCostFormSubmit = function (e) {
             e.preventDefault();
 
+            // Check if user is admin
+            if (!config.isAdmin) {
+                  toastr.error('You do not have permission to save costs');
+                  return;
+            }
+
             if (costFormValidator) {
                   costFormValidator.validate();
             } else {
-                  // Fallback if validator not initialized
                   saveCost();
             }
       };
 
       // ============================================
-      // INLINE EDIT MODAL
+      // INLINE EDIT MODAL (Admin Only)
       // ============================================
       const openInlineEditModal = function (id, amount) {
+            // Check if user is admin
+            if (!config.isAdmin) {
+                  toastr.error('You do not have permission to edit costs');
+                  return;
+            }
+
             document.getElementById('inline_edit_cost_id').value = id;
             document.getElementById('inline_edit_amount').value = parseInt(amount);
             inlineEditModal?.show();
@@ -1038,6 +1076,12 @@ var KTFinanceReport = (function () {
       };
 
       const saveInlineEdit = function () {
+            // Check if user is admin
+            if (!config.isAdmin) {
+                  toastr.error('You do not have permission to edit costs');
+                  return;
+            }
+
             const id = document.getElementById('inline_edit_cost_id').value;
             const amount = document.getElementById('inline_edit_amount').value;
 
@@ -1101,14 +1145,26 @@ var KTFinanceReport = (function () {
       };
 
       // ============================================
-      // DELETE MODAL
+      // DELETE MODAL (Admin Only)
       // ============================================
       const openDeleteModal = function (id) {
+            // Check if user is admin
+            if (!config.isAdmin) {
+                  toastr.error('You do not have permission to delete costs');
+                  return;
+            }
+
             document.getElementById('delete_cost_id').value = id;
             deleteModal?.show();
       };
 
       const confirmDelete = function () {
+            // Check if user is admin
+            if (!config.isAdmin) {
+                  toastr.error('You do not have permission to delete costs');
+                  return;
+            }
+
             const id = document.getElementById('delete_cost_id').value;
 
             setButtonLoading(elements.confirmDeleteBtn, true);
@@ -1150,17 +1206,7 @@ var KTFinanceReport = (function () {
                   elements.form.addEventListener('submit', generateReport);
             }
 
-            // Add cost button (in Revenue vs Cost tab)
-            if (elements.addCostBtn) {
-                  elements.addCostBtn.addEventListener('click', openAddCostModal);
-            }
-
-            // Add cost button (in Cost Records tab)
-            if (elements.addCostBtnTab) {
-                  elements.addCostBtnTab.addEventListener('click', openAddCostModal);
-            }
-
-            // Cost Records tab - refresh DataTable when shown (for proper column sizing)
+            // Cost Records tab - refresh DataTable when shown
             if (elements.costRecordsTab) {
                   elements.costRecordsTab.addEventListener('shown.bs.tab', function () {
                         if (costsDataTable) {
@@ -1168,21 +1214,6 @@ var KTFinanceReport = (function () {
                         }
                   });
             }
-
-            // Cost form submit
-            if (elements.costForm) {
-                  elements.costForm.addEventListener('submit', handleCostFormSubmit);
-            }
-
-            // Revalidate amount field on input
-            document.getElementById('cost_amount')?.addEventListener('input', function () {
-                  revalidateField('amount');
-            });
-
-            // Revalidate description field on input
-            document.getElementById('cost_description')?.addEventListener('input', function () {
-                  revalidateField('description');
-            });
 
             // Refresh costs button
             if (elements.refreshCostsBtn) {
@@ -1201,52 +1232,71 @@ var KTFinanceReport = (function () {
                   elements.exportChartBtn.addEventListener('click', exportChart);
             }
 
-            // Delete confirm
-            if (elements.confirmDeleteBtn) {
-                  elements.confirmDeleteBtn.addEventListener('click', confirmDelete);
-            }
-
-            // Inline edit save
-            if (elements.saveInlineEditBtn) {
-                  elements.saveInlineEditBtn.addEventListener('click', saveInlineEdit);
-            }
-
-            // Enter key on inline edit
-            document.getElementById('inline_edit_amount')?.addEventListener('keypress', function (e) {
-                  if (e.key === 'Enter') {
-                        e.preventDefault();
-                        saveInlineEdit();
-                  }
-            });
-
-            // Branch change in cost modal (for admin)
+            // Admin-only event listeners
             if (config.isAdmin) {
+                  // Add cost buttons
+                  if (elements.addCostBtn) {
+                        elements.addCostBtn.addEventListener('click', openAddCostModal);
+                  }
+
+                  if (elements.addCostBtnTab) {
+                        elements.addCostBtnTab.addEventListener('click', openAddCostModal);
+                  }
+
+                  // Cost form submit
+                  if (elements.costForm) {
+                        elements.costForm.addEventListener('submit', handleCostFormSubmit);
+                  }
+
+                  // Revalidate amount field on input
+                  document.getElementById('cost_amount')?.addEventListener('input', function () {
+                        revalidateField('amount');
+                  });
+
+                  // Revalidate description field on input
+                  document.getElementById('cost_description')?.addEventListener('input', function () {
+                        revalidateField('description');
+                  });
+
+                  // Delete confirm
+                  if (elements.confirmDeleteBtn) {
+                        elements.confirmDeleteBtn.addEventListener('click', confirmDelete);
+                  }
+
+                  // Inline edit save
+                  if (elements.saveInlineEditBtn) {
+                        elements.saveInlineEditBtn.addEventListener('click', saveInlineEdit);
+                  }
+
+                  // Enter key on inline edit
+                  document.getElementById('inline_edit_amount')?.addEventListener('keypress', function (e) {
+                        if (e.key === 'Enter') {
+                              e.preventDefault();
+                              saveInlineEdit();
+                        }
+                  });
+
+                  // Branch change in cost modal
                   $('#cost_branch_id').on('change', function () {
-                        // Skip validation during modal initialization
                         if (isModalInitializing) {
                               return;
                         }
 
                         const selectedBranchId = $(this).val();
 
-                        // Only revalidate if user has interacted (not during init)
                         revalidateField('branch_id');
 
                         if (selectedBranchId) {
-                              // Show loading state on date field
                               const costDateInput = document.getElementById('cost_date');
                               costDateInput.placeholder = 'Loading available dates...';
 
-                              // Fetch existing dates for selected branch, then init date picker
                               updateExistingCostDates(selectedBranchId, function () {
                                     initCostDatePicker(selectedBranchId);
                               });
                         } else {
-                              // No branch selected, disable date field
                               const costDateInput = document.getElementById('cost_date');
                               const $costDate = $('#cost_date');
 
-                              // Destroy existing picker
                               if ($costDate.data('daterangepicker')) {
                                     $costDate.data('daterangepicker').remove();
                               }
@@ -1274,7 +1324,12 @@ var KTFinanceReport = (function () {
             initElements();
             initModals();
             initDateRangePicker();
-            initCostFormValidation();
+
+            // Only initialize cost-related features for admin
+            if (config.isAdmin) {
+                  initCostFormValidation();
+            }
+
             initCostsDataTable();
             initEvents();
             updateExistingCostDates();

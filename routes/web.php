@@ -71,8 +71,10 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('students/transfer', [StudentTransferController::class, 'index'])->name('students.transfer');
 
     Route::get('students/{student}/info', [StudentTransferController::class, 'studentInfo'])->name('students.transfer.studentInfo');
-    Route::get('students/{student}/available-branches', [StudentTransferController::class, 'availableBranches'])->name('students.transfer.availableBranches');
-    Route::get('branches/{branch}/batches', [StudentTransferController::class, 'batchesByBranch'])->name('students.transfer.batchesByBranch');
+    Route::get('students/{student}/available-branches', [StudentTransferController::class, 'availableBranches'])
+        ->name('students.transfer.availableBranches');
+    Route::get('branches/{branch}/batches', [StudentTransferController::class, 'batchesByBranch'])
+        ->name('students.transfer.batchesByBranch');
     Route::post('students/transfer/store', [StudentTransferController::class, 'store'])->name('students.transfer.store');
     /* --- Student Transfer Ends --- */
 
