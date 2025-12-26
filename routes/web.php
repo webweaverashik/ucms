@@ -238,4 +238,4 @@ Route::get('/send-test-email', function () {
     return 'Test email sent successfully!';
 });
 
-require __DIR__ . '/dashboard.php';
+// require __DIR__ . '/dashboard.php';

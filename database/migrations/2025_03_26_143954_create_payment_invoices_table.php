@@ -14,15 +14,16 @@ return new class extends Migration
         Schema::create('payment_invoices', function (Blueprint $table) {
             $table->id();
             $table->string('invoice_number')->unique();
-            $table->foreignId('student_id');
+            $table->foreignId('student_id')->constrained('students');
             $table->integer('total_amount');
             $table->integer('amount_due');
             $table->string('month_year')->nullable();
             $table->enum('status', ['due', 'partially_paid', 'paid'])->default('due');
-            $table->enum('invoice_type', ['tuition_fee', 'model_test_fee', 'exam_fee', 'others_fee', 'sheet_fee', 'admission_fee', 'diary_fee', 'book_fee'])->default('tuition_fee');
-            $table->foreignId('created_by')->nullable();
+            // $table->enum('invoice_type', ['tuition_fee', 'model_test_fee', 'exam_fee', 'others_fee', 'sheet_fee', 'admission_fee', 'diary_fee', 'book_fee'])->default('tuition_fee');
+            $table->foreignId('invoice_type_id')->constrained('payment_invoice_types');
+            $table->foreignId('created_by')->nullable()->constrained('users');
             $table->softDeletes();
-            $table->foreignId('deleted_by')->nullable();
+            $table->foreignId('deleted_by')->nullable()->constrained('users');
             $table->timestamps();
         });
     }

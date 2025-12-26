@@ -150,7 +150,9 @@ class SheetController extends Controller
             ->latest()
             ->get();
 
-        $sheet_groups = Sheet::with('class')->get(); // $sheet->class
+        $sheet_groups = Sheet::whereHas('class', function ($query) {
+            $query->where('is_active', true);
+        })->get(); // $sheet->class
 
         return view('sheets.sheet_payments', compact('payments', 'sheet_groups'));
     }

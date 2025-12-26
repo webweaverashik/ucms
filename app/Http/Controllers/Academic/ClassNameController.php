@@ -51,7 +51,7 @@ class ClassNameController extends Controller
             'description_add'   => 'nullable|string|max:1000',
         ]);
 
-        ClassName::create([
+        $classname = ClassName::create([
             'name'          => $validated['class_name_add'],
             'class_numeral' => $validated['class_numeral_add'],
             'description'   => $validated['description_add'] ?? null,
