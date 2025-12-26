@@ -30,7 +30,8 @@ class DashboardController extends Controller
                 $branchId = in_array($role, ['admin']) ? null : $user->branch_id;
                 $data     = $this->getDashboardDataCached($branchId);
 
-                return view("dashboard.{$role}.index", compact('data'));
+                // return view("dashboard.{$role}.index", compact('data'));
+                return redirect()->route("students.index");  
             }
         }
 

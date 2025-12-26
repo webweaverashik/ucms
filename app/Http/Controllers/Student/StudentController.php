@@ -454,7 +454,7 @@ class StudentController extends Controller
             ->sort()
             ->values();
 
-        if ($student->class->is_active == 0) {
+        if ($student->class->is_active === false) {
             return view('students.alumni.view', compact('student', 'sheet_class_names', 'sheet_subjectNames', 'attendance_events'));
         } else {
             return view('students.view', compact('student', 'sheet_class_names', 'sheet_subjectNames', 'attendance_events'));
