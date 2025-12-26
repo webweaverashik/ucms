@@ -322,7 +322,6 @@
                                         @endif
                                     </td>
 
-
                                     @php
                                         $status = $invoice->status;
                                         $payment = optional($invoice->student)->payments;
