@@ -349,7 +349,6 @@
                                         }
                                     @endphp
 
-
                                     <td class="d-none">
                                         @if ($status === 'due')
                                             I_due
