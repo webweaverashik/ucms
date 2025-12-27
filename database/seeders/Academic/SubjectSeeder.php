@@ -10,119 +10,126 @@ class SubjectSeeder extends Seeder
     public function run(): void
     {
         $subjectsByClassName = [
-            // Class IV–V
-            'Class IV'        => ['Bangla', 'English', 'Math', 'General Science', 'Religion', 'Bangladesh & Global Studies'],
-            'Class V'         => ['Bangla', 'English', 'Math', 'General Science', 'Religion', 'Bangladesh & Global Studies'],
-
-            // Class VI–VIII
-            'Class VI'        => ['Bangla 1st', 'Bangla 2nd', 'English 1st', 'English 2nd', 'Math', 'Science', 'Bangladesh & Global Studies', 'ICT', 'Religion'],
-            'Class VII'       => ['Bangla 1st', 'Bangla 2nd', 'English 1st', 'English 2nd', 'Math', 'Science', 'Bangladesh & Global Studies', 'ICT', 'Religion'],
-            'Class VIII'      => ['Bangla 1st', 'Bangla 2nd', 'English 1st', 'English 2nd', 'Math', 'Science', 'Bangladesh & Global Studies', 'ICT', 'Religion'],
-
-            // Class IX–X (Same subjects for all SSC batches)
-            'Class IX'        => 'same_as_ssc',
-            'SSC (25-26)'     => 'same_as_ssc',
-            'SSC (24-25)'     => 'same_as_ssc',
-
-            // HSC 11 (Science)
-            'HSC (25-26) Sci' => 'same_as_hsc_sci',
-            'HSC (24-25) Sci' => 'same_as_hsc_sci',
-
-            // HSC 11 (Commerce)
-            'HSC (25-26) Com' => 'same_as_hsc_com',
-            'HSC (24-25) Com' => 'same_as_hsc_com',
-        ];
-
-        $sscSubjects = [
-            // General
-            ['name' => 'Bangla 1st', 'group' => 'General'],
-            ['name' => 'Bangla 2nd', 'group' => 'General'],
-            ['name' => 'English 1st', 'group' => 'General'],
-            ['name' => 'English 2nd', 'group' => 'General'],
-            ['name' => 'Math', 'group' => 'General'],
-            ['name' => 'ICT', 'group' => 'General'],
-            ['name' => 'Religion', 'group' => 'General'],
-
-            // Science
-            ['name' => 'Physics', 'group' => 'Science'],
-            ['name' => 'Chemistry', 'group' => 'Science'],
-            ['name' => 'Biology', 'group' => 'Science'],
-            ['name' => 'Higher Math', 'group' => 'Science'],
-            ['name' => 'Bangladesh & Global Studies', 'group' => 'Science'],
-
-            // Commerce
-            ['name' => 'Business Entrepreneurship', 'group' => 'Commerce'],
-            ['name' => 'Management', 'group' => 'Commerce'],
-            ['name' => 'Marketing', 'group' => 'Commerce'],
-            ['name' => 'Finance & Banking', 'group' => 'Commerce'],
-            ['name' => 'Accounting', 'group' => 'Commerce'],
-            ['name' => 'Statistics', 'group' => 'Commerce'],
-            ['name' => 'General Science', 'group' => 'Commerce'],
-        ];
-
-        $hscScienceSubjects = [
-            ['name' => 'Bangla 1st', 'group' => 'General'],
-            ['name' => 'Bangla 2nd', 'group' => 'General'],
-            ['name' => 'English 1st', 'group' => 'General'],
-            ['name' => 'English 2nd', 'group' => 'General'],
-            ['name' => 'ICT', 'group' => 'General'],
-
-            ['name' => 'Physics 1st', 'group' => 'Science'],
-            ['name' => 'Physics 2nd', 'group' => 'Science'],
-            ['name' => 'Chemistry 1st', 'group' => 'Science'],
-            ['name' => 'Chemistry 2nd', 'group' => 'Science'],
-            ['name' => 'Biology 1st', 'group' => 'Science'],
-            ['name' => 'Biology 2nd', 'group' => 'Science'],
-            ['name' => 'Higher Math 1st', 'group' => 'Science'],
-            ['name' => 'Higher Math 2nd', 'group' => 'Science'],
-        ];
-
-        $hscCommerceSubjects = [
-            ['name' => 'Bangla 1st', 'group' => 'General'],
-            ['name' => 'Bangla 2nd', 'group' => 'General'],
-            ['name' => 'English 1st', 'group' => 'General'],
-            ['name' => 'English 2nd', 'group' => 'General'],
-            ['name' => 'ICT', 'group' => 'General'],
-
-            ['name' => 'Accounting 1st', 'group' => 'Commerce'],
-            ['name' => 'Accounting 2nd', 'group' => 'Commerce'],
-            ['name' => 'Management 1st', 'group' => 'Commerce'],
-            ['name' => 'Management 2nd', 'group' => 'Commerce'],
-            ['name' => 'Finance 1st', 'group' => 'Commerce'],
-            ['name' => 'Finance 2nd', 'group' => 'Commerce'],
-            ['name' => 'Marketing 1st', 'group' => 'Commerce'],
-            ['name' => 'Marketing 2nd', 'group' => 'Commerce'],
+            'Class IV'        => $this->getJuniorSubjects(),
+            'Class V'         => $this->getJuniorSubjects(),
+            'Class VI'        => $this->getMiddleSchoolSubjects(),
+            'Class VII'       => $this->getMiddleSchoolSubjects(),
+            'Class VIII'      => $this->getMiddleSchoolSubjects(),
+            'Class IX'        => $this->getSSCSubjects(),
+            'SSC (25-26)'     => $this->getSSCSubjects(),
+            'SSC (24-25)'     => $this->getSSCSubjects(),
+            'HSC (26-27) Sci' => $this->getHSCScienceSubjects(),
+            'HSC (26-27) Com' => $this->getHSCCommerceSubjects(),
+            'HSC (25-26) Sci' => $this->getHSCScienceSubjects(),
+            'HSC (25-26) Com' => $this->getHSCCommerceSubjects(),
+            'HSC (24-25) Sci' => $this->getHSCScienceSubjects(),
+            'HSC (24-25) Com' => $this->getHSCCommerceSubjects(),
         ];
 
         foreach ($subjectsByClassName as $className => $subjects) {
             $class = ClassName::where('name', $className)->first();
             if (! $class) {
+                $this->command->warn("Class '{$className}' not found");
                 continue;
             }
 
-            if ($subjects === 'same_as_ssc') {
-                $subjects = $sscSubjects;
-            } elseif ($subjects === 'same_as_hsc_sci') {
-                $subjects = $hscScienceSubjects;
-            } elseif ($subjects === 'same_as_hsc_com') {
-                $subjects = $hscCommerceSubjects;
-            }
-
             foreach ($subjects as $subject) {
-                if (is_string($subject)) {
-                    Subject::firstOrCreate([
-                        'name'           => $subject,
-                        'class_id'       => $class->id,
-                        'academic_group' => 'General',
-                    ]);
-                } else {
-                    Subject::firstOrCreate([
+                Subject::updateOrCreate(
+                    [
                         'name'           => $subject['name'],
                         'class_id'       => $class->id,
                         'academic_group' => $subject['group'],
-                    ]);
-                }
+                    ],
+                    [
+                        'subject_type' => $subject['type'],
+                    ]
+                );
             }
+            $this->command->info("Seeded: {$className}");
         }
+    }
+
+    private function getJuniorSubjects(): array
+    {
+        return [
+            ['name' => 'Bangla', 'group' => 'General', 'type' => 'compulsory'],
+            ['name' => 'English', 'group' => 'General', 'type' => 'compulsory'],
+            ['name' => 'Math', 'group' => 'General', 'type' => 'compulsory'],
+            ['name' => 'General Science', 'group' => 'General', 'type' => 'compulsory'],
+            ['name' => 'Religion', 'group' => 'General', 'type' => 'compulsory'],
+            ['name' => 'Bangladesh & Global Studies', 'group' => 'General', 'type' => 'compulsory'],
+        ];
+    }
+
+    private function getMiddleSchoolSubjects(): array
+    {
+        return [
+            ['name' => 'Bangla', 'group' => 'General', 'type' => 'compulsory'],
+            ['name' => 'English', 'group' => 'General', 'type' => 'compulsory'],
+            ['name' => 'Math', 'group' => 'General', 'type' => 'compulsory'],
+            ['name' => 'Science', 'group' => 'General', 'type' => 'compulsory'],
+            ['name' => 'Bangladesh & Global Studies', 'group' => 'General', 'type' => 'compulsory'],
+            ['name' => 'ICT', 'group' => 'General', 'type' => 'compulsory'],
+            ['name' => 'Religion', 'group' => 'General', 'type' => 'compulsory'],
+        ];
+    }
+
+    private function getSSCSubjects(): array
+    {
+        return [
+            // General
+            ['name' => 'Bangla', 'group' => 'General', 'type' => 'compulsory'],
+            ['name' => 'English', 'group' => 'General', 'type' => 'compulsory'],
+            ['name' => 'Math', 'group' => 'General', 'type' => 'compulsory'],
+            ['name' => 'ICT', 'group' => 'General', 'type' => 'compulsory'],
+            ['name' => 'Religion', 'group' => 'General', 'type' => 'compulsory'],
+            ['name' => 'Arts & Culture', 'group' => 'General', 'type' => 'compulsory'],
+            ['name' => 'Physical Education', 'group' => 'General', 'type' => 'compulsory'],
+
+            // Science - Compulsory
+            ['name' => 'Physics', 'group' => 'Science', 'type' => 'compulsory'],
+            ['name' => 'Chemistry', 'group' => 'Science', 'type' => 'compulsory'],
+            ['name' => 'Bangladesh & Global Studies', 'group' => 'Science', 'type' => 'compulsory'],
+            // Science - Optional
+            ['name' => 'Biology', 'group' => 'Science', 'type' => 'optional'],
+            ['name' => 'Higher Math', 'group' => 'Science', 'type' => 'optional'],
+
+            // Commerce - Compulsory
+            ['name' => 'Accounting', 'group' => 'Commerce', 'type' => 'compulsory'],
+            ['name' => 'Business Entrepreneurship', 'group' => 'Commerce', 'type' => 'compulsory'],
+            ['name' => 'Finance & Banking', 'group' => 'Commerce', 'type' => 'compulsory'],
+            ['name' => 'General Science', 'group' => 'Commerce', 'type' => 'compulsory'],
+            // Commerce - Optional
+            ['name' => 'Agriculture Studies', 'group' => 'Commerce', 'type' => 'optional'],
+            ['name' => 'Home Science', 'group' => 'Commerce', 'type' => 'optional'],
+        ];
+    }
+
+    private function getHSCScienceSubjects(): array
+    {
+        return [
+            ['name' => 'Bangla', 'group' => 'General', 'type' => 'compulsory'],
+            ['name' => 'English', 'group' => 'General', 'type' => 'compulsory'],
+            ['name' => 'ICT', 'group' => 'General', 'type' => 'compulsory'],
+            ['name' => 'Physics', 'group' => 'Science', 'type' => 'compulsory'],
+            ['name' => 'Chemistry', 'group' => 'Science', 'type' => 'compulsory'],
+            ['name' => 'Biology', 'group' => 'Science', 'type' => 'optional'],
+            ['name' => 'Higher Math', 'group' => 'Science', 'type' => 'optional'],
+        ];
+    }
+
+    private function getHSCCommerceSubjects(): array
+    {
+        return [
+            ['name' => 'Bangla', 'group' => 'General', 'type' => 'compulsory'],
+            ['name' => 'English', 'group' => 'General', 'type' => 'compulsory'],
+            ['name' => 'ICT', 'group' => 'General', 'type' => 'compulsory'],
+            ['name' => 'Accounting', 'group' => 'Commerce', 'type' => 'compulsory'],
+            ['name' => 'Business Management', 'group' => 'Commerce', 'type' => 'compulsory'],
+            ['name' => 'Finance & Banking', 'group' => 'Commerce', 'type' => 'optional'],
+            ['name' => 'Prouduction Marketing', 'group' => 'Commerce', 'type' => 'optional'],
+            ['name' => 'Economics', 'group' => 'Commerce', 'type' => 'optional'],
+            ['name' => 'Statistics', 'group' => 'Commerce', 'type' => 'optional'],
+        ];
     }
 }

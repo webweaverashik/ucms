@@ -408,7 +408,9 @@
                                 <div class="fv-row">
                                     <label class="required fw-semibold fs-6 mb-2">Amount</label>
                                     <div class="input-group input-group-solid">
-                                        <span class="input-group-text">৳</span>
+                                        <span class="input-group-text">
+                                            <i class="ki-outline ki-dollar fs-3"></i>
+                                        </span>
                                         <input type="number" id="cost_amount" name="amount"
                                             class="form-control form-control-solid rounded-start-0 border-start" min="1" step="1"
                                             placeholder="0">
@@ -498,7 +500,9 @@
                     <div class="modal-body py-6">
                         <input type="hidden" id="inline_edit_cost_id">
                         <div class="input-group input-group-solid">
-                            <span class="input-group-text">৳</span>
+                            <span class="input-group-text">
+                                <i class="ki-outline ki-dollar fs-3"></i>
+                            </span>
                             <input type="number" id="inline_edit_amount" class="form-control form-control-solid rounded-start-0 border-start"
                                 min="1" step="1" placeholder="0">
                         </div>

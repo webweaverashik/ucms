@@ -1,11 +1,10 @@
 "use strict";
 
 // Class definition
-var KTCreateStudent = function () {
+var KTCreateStudent = (function () {
      // Elements
      var modal;
      var modalEl;
-
      var stepper;
      var form;
      var formSubmitButton;
@@ -21,52 +20,76 @@ var KTCreateStudent = function () {
           stepperObj = new KTStepper(stepper);
 
           // Stepper change event
-          stepperObj.on('kt.stepper.changed', function (stepper) {
-               let currentStep = stepperObj.getCurrentStepIndex();
-
+          stepperObj.on("kt.stepper.changed", function (stepper) {
+               var currentStep = stepperObj.getCurrentStepIndex();
                console.log("Current Step:", currentStep);
 
                // Handle button visibility
                if (currentStep === 4) {
-                    formSubmitButton.classList.remove('d-none');
-                    formSubmitButton.classList.add('d-inline-block');
-                    formContinueButton.classList.add('d-none');
+                    // Step 4: Show Submit, Hide Continue
+                    formSubmitButton.classList.remove("d-none");
+                    formSubmitButton.classList.add("d-inline-block");
+                    formContinueButton.classList.add("d-none");
                } else if (currentStep === 5) {
-                    formSubmitButton.classList.add('d-none');
-                    formContinueButton.classList.add('d-none');
+                    // Step 5 (Completed): Hide both buttons
+                    formSubmitButton.classList.add("d-none");
+                    formSubmitButton.classList.remove("d-inline-block");
+                    formContinueButton.classList.add("d-none");
                } else {
-                    formSubmitButton.classList.remove('d-inline-block', 'd-none');
-                    formContinueButton.classList.remove('d-none');
+                    // Steps 1, 2, 3: Hide Submit, Show Continue
+                    formSubmitButton.classList.add("d-none");
+                    formSubmitButton.classList.remove("d-inline-block");
+                    formContinueButton.classList.remove("d-none");
                }
 
                // Toggle step content visibility
-               document.querySelectorAll('[data-kt-stepper-element="content"]').forEach((content, index) => {
-                    content.classList.toggle('d-none', index !== (currentStep - 1));
-                    if (index === (currentStep - 1)) {
-                         content.classList.add('current'); // Mark the active step
+               document.querySelectorAll('[data-kt-stepper-element="content"]').forEach(function (content, index) {
+                    content.classList.toggle("d-none", index !== currentStep - 1);
+                    if (index === currentStep - 1) {
+                         content.classList.add("current");
                     } else {
-                         content.classList.remove('current');
+                         content.classList.remove("current");
                     }
                });
           });
 
           // Validation before going to next page
-          stepperObj.on('kt.stepper.next', function (stepper) {
-               console.log('Step: Moving to next');
+          stepperObj.on("kt.stepper.next", function (stepper) {
+               console.log("Step: Moving to next");
+
+               var currentStep = stepper.getCurrentStepIndex();
+
+               // Special validation for Step 3 (Subjects)
+               if (currentStep === 3) {
+                    // Check compulsory subjects
+                    if ($(".subject-checkbox-compulsory:checked").length === 0) {
+                         toastr.error("Please select at least one compulsory subject");
+                         return;
+                    }
+
+                    // Validate optional subjects if they exist
+                    if (typeof window.validateOptionalSubjects === "function") {
+                         var optionalValidation = window.validateOptionalSubjects();
+                         if (!optionalValidation.valid) {
+                              toastr.error(optionalValidation.message);
+                              return;
+                         }
+                    }
+               }
 
                // Get the validator for the current step
-               var validator = validations[stepper.getCurrentStepIndex() - 1];
+               var validator = validations[currentStep - 1];
 
                if (validator) {
                     validator.validate().then(function (status) {
-                         console.log('Validation result:', status);
+                         console.log("Validation result:", status);
 
-                         if (status === 'Valid') {
+                         if (status === "Valid") {
                               stepper.goNext();
                               KTUtil.scrollTop();
                          } else {
                               toastr.options.progressBar = true;
-                              toastr.warning('You have to fill up the required fields.');
+                              toastr.warning("You have to fill up the required fields.");
                               KTUtil.scrollTop();
                          }
                     });
@@ -77,59 +100,56 @@ var KTCreateStudent = function () {
           });
 
           // Prev event
-          stepperObj.on('kt.stepper.previous', function (stepper) {
-               console.log('Step: Moving to previous');
+          stepperObj.on("kt.stepper.previous", function (stepper) {
+               console.log("Step: Moving to previous");
                stepper.goPrevious();
                KTUtil.scrollTop();
           });
      };
 
-
      var handleForm = function () {
-          formSubmitButton.addEventListener('click', function (e) {
+          formSubmitButton.addEventListener("click", function (e) {
                e.preventDefault();
 
                var validator = validations[3];
 
                validator.validate().then(function (status) {
-                    console.log('Validation Status:', status);
+                    console.log("Validation Status:", status);
 
-                    if (status === 'Valid') {
+                    if (status === "Valid") {
                          // Disable button and show loading indicator
                          formSubmitButton.disabled = true;
-                         formSubmitButton.setAttribute('data-kt-indicator', 'on');
+                         formSubmitButton.setAttribute("data-kt-indicator", "on");
 
                          // Collect form data
-                         var formData = new FormData(document.getElementById('kt_create_student_form'));
+                         var formData = new FormData(document.getElementById("kt_create_student_form"));
 
-                         // Add CSRF token manually
-                         formData.append('_token', csrfToken);
+                         // Add CSRF token
+                         formData.append("_token", csrfToken);
 
                          // Send data via AJAX
                          fetch(storeStudentRoute, {
                               method: "POST",
                               body: formData,
                               headers: {
-                                   'X-CSRF-TOKEN': csrfToken,
-                                   'Accept': 'application/json' // Explicitly ask for JSON
-                              }
+                                   "X-CSRF-TOKEN": csrfToken,
+                                   Accept: "application/json",
+                              },
                          })
-                              .then(response => {
-                                   // First check if the response is OK (status 200-299)
+                              .then(function (response) {
                                    if (!response.ok) {
-                                        return response.text().then(text => {
-                                             // Try to parse as JSON even if status not OK
+                                        return response.text().then(function (text) {
                                              try {
-                                                  const data = JSON.parse(text);
+                                                  var data = JSON.parse(text);
                                                   return Promise.reject(data.errors || data.message || "Request failed");
-                                             } catch {
+                                             } catch (e) {
                                                   return Promise.reject(text || "Request failed with status " + response.status);
                                              }
                                         });
                                    }
                                    return response.json();
                               })
-                              .then(data => {
+                              .then(function (data) {
                                    if (data.success) {
                                         Swal.fire({
                                              text: "Student admission completed successfully! Pending for Branch Manager approval.",
@@ -137,19 +157,19 @@ var KTCreateStudent = function () {
                                              buttonsStyling: false,
                                              confirmButtonText: "Ok",
                                              customClass: {
-                                                  confirmButton: "btn btn-primary"
-                                             }
+                                                  confirmButton: "btn btn-primary",
+                                             },
                                         });
 
-                                        document.getElementById('admitted_name').innerText = data.student.name;
-                                        document.getElementById('admitted_id').innerText = data.student.student_unique_id;
+                                        document.getElementById("admitted_name").innerText = data.student.name;
+                                        document.getElementById("admitted_id").innerText = data.student.student_unique_id;
 
                                         stepperObj.goNext();
 
                                         setTimeout(function () {
                                              var prevButton = document.querySelector('[data-kt-stepper-action="previous"]');
                                              if (prevButton) {
-                                                  prevButton.style.display = 'none';
+                                                  prevButton.style.display = "none";
                                              }
                                         }, 300);
                                    } else {
@@ -158,46 +178,41 @@ var KTCreateStudent = function () {
                                         enablePreviousButton();
                                    }
                               })
-                              .catch(error => {
-                                   let errorMessages = [];
+                              .catch(function (error) {
+                                   var errorMessages = [];
 
-                                   // Laravel validation or structured response
                                    if (error.response && error.response.data) {
-                                        const data = error.response.data;
-
-                                        if (typeof data === 'string') {
+                                        var data = error.response.data;
+                                        if (typeof data === "string") {
                                              errorMessages.push(data);
                                         } else if (data.message) {
                                              errorMessages.push(data.message);
                                         }
-
-                                        if (data.errors && typeof data.errors === 'object') {
-                                             for (const key in data.errors) {
+                                        if (data.errors && typeof data.errors === "object") {
+                                             for (var key in data.errors) {
                                                   if (Array.isArray(data.errors[key])) {
-                                                       errorMessages.push(...data.errors[key]);
+                                                       errorMessages = errorMessages.concat(data.errors[key]);
                                                   }
                                              }
                                         }
-                                   }
-                                   // If error is directly a string or message property exists
-                                   else if (typeof error === 'string') {
+                                   } else if (typeof error === "string") {
                                         errorMessages.push(error);
                                    } else if (error.message) {
                                         errorMessages.push(error.message);
-                                   } else if (typeof error === 'object') {
-                                        // Fallback to stringify the object if nothing else
+                                   } else if (Array.isArray(error)) {
+                                        errorMessages = error;
+                                   } else if (typeof error === "object") {
                                         errorMessages.push(JSON.stringify(error));
                                    } else {
                                         errorMessages.push("Something went wrong!");
                                    }
 
-
                                    showErrors(errorMessages);
                                    console.error("Error:", error);
                                    enablePreviousButton();
                               })
-                              .finally(() => {
-                                   formSubmitButton.removeAttribute('data-kt-indicator');
+                              .finally(function () {
+                                   formSubmitButton.removeAttribute("data-kt-indicator");
                                    formSubmitButton.disabled = false;
                               });
                     } else {
@@ -209,47 +224,46 @@ var KTCreateStudent = function () {
           });
      };
 
-
-     // Function to display errors on the last step
+     // Function to display errors on the page
      function showErrors(errors) {
-          var errorContainer = document.getElementById("error-container"); // Ensure container exists
+          var errorContainer = document.getElementById("error-container");
 
           if (!errorContainer) {
                console.error("Error container not found!");
                return;
           }
 
-          errors.forEach(error => {
+          errors.forEach(function (error) {
                var errorElement = document.createElement("div");
                errorElement.classList.add(
-                    "alert", "alert-dismissible", "bg-light-danger", "border", "border-danger", "border-dashed",
-                    "d-flex", "flex-column", "flex-sm-row", "w-100", "p-5", "mb-10"
+                    "alert",
+                    "alert-dismissible",
+                    "bg-light-danger",
+                    "border",
+                    "border-danger",
+                    "border-dashed",
+                    "d-flex",
+                    "flex-column",
+                    "flex-sm-row",
+                    "w-100",
+                    "p-5",
+                    "mb-10"
                );
                errorElement.setAttribute("role", "alert");
 
-               errorElement.innerHTML = `
-                   <!--begin::Icon-->
-                   <i class="ki-duotone ki-message-text-2 fs-2hx text-danger me-4 mb-5 mb-sm-0">
-                       <span class="path1"></span>
-                       <span class="path2"></span>
-                       <span class="path3"></span>
-                   </i>
-                   <!--end::Icon-->
-           
-                   <!--begin::Content-->
-                   <div class="d-flex flex-column pe-0 pe-sm-10">
-                       <h5 class="mb-1 text-danger">The following errors have been found.</h5>
-                       <span class="text-danger">${error}</span>
-                   </div>
-                   <!--end::Content-->
-           
-                   <!--begin::Close-->
-                   <button type="button" class="position-absolute position-sm-relative m-2 m-sm-0 top-0 end-0 btn btn-icon ms-sm-auto"
-                       data-bs-dismiss="alert">
-                       <i class="ki-outline ki-cross fs-1 text-danger"></i>
-                   </button>
-                   <!--end::Close-->
-               `;
+               errorElement.innerHTML =
+                    '<i class="ki-duotone ki-message-text-2 fs-2hx text-danger me-4 mb-5 mb-sm-0">' +
+                    '<span class="path1"></span>' +
+                    '<span class="path2"></span>' +
+                    '<span class="path3"></span>' +
+                    "</i>" +
+                    '<div class="d-flex flex-column pe-0 pe-sm-10">' +
+                    '<h5 class="mb-1 text-danger">The following errors have been found.</h5>' +
+                    '<span class="text-danger">' + error + "</span>" +
+                    "</div>" +
+                    '<button type="button" class="position-absolute position-sm-relative m-2 m-sm-0 top-0 end-0 btn btn-icon ms-sm-auto" data-bs-dismiss="alert">' +
+                    '<i class="ki-outline ki-cross fs-1 text-danger"></i>' +
+                    "</button>";
 
                errorContainer.prepend(errorElement);
           });
@@ -262,545 +276,522 @@ var KTCreateStudent = function () {
           }
      }
 
-
-
-
      var initValidation = function () {
-          // Init form validation rules. For more info check the FormValidation plugin's official
-          documentation: https://formvalidation.io/
-          // Step 1
-          validations.push(FormValidation.formValidation(
-               form,
-               {
+          // Step 1 - Student Personal Information
+          validations.push(
+               FormValidation.formValidation(form, {
                     fields: {
-                         'student_name': {
+                         student_name: {
                               validators: {
                                    notEmpty: {
-                                        message: 'Full name is required'
-                                   }
-                              }
+                                        message: "Full name is required",
+                                   },
+                              },
                          },
-                         'student_home_address': {
+                         student_home_address: {
                               validators: {
                                    notEmpty: {
-                                        message: 'Home address is required'
-                                   }
-                              }
+                                        message: "Home address is required",
+                                   },
+                              },
                          },
-                         'student_phone_home': {
+                         student_phone_home: {
                               validators: {
                                    notEmpty: {
-                                        message: 'Mobile no. is required'
+                                        message: "Mobile no. is required",
                                    },
                                    regexp: {
                                         regexp: /^01[3-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
-                                        message: 'Please enter a valid Bangladeshi mobile number'
+                                        message: "Please enter a valid Bangladeshi mobile number",
                                    },
                                    stringLength: {
                                         min: 11,
                                         max: 11,
-                                        message: 'The mobile number must be exactly 11 digits'
-                                   }
-                              }
+                                        message: "The mobile number must be exactly 11 digits",
+                                   },
+                              },
                          },
-                         'avatar': {
+                         avatar: {
                               validators: {
                                    file: {
-                                        extension: 'jpg,jpeg,png',
-                                        type: 'image/jpeg,image/png',
-                                        maxSize: 51200, // 50 * 1024
-                                        message: 'The selected file type or size is not valid'
+                                        extension: "jpg,jpeg,png",
+                                        type: "image/jpeg,image/png",
+                                        maxSize: 51200,
+                                        message: "The selected file type or size is not valid",
                                    },
-                              }
+                              },
                          },
-                         'student_phone_sms': {
+                         student_phone_sms: {
                               validators: {
                                    notEmpty: {
-                                        message: 'SMS no. is required for result and notice'
+                                        message: "SMS no. is required for result and notice",
                                    },
                                    regexp: {
                                         regexp: /^01[3-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
-                                        message: 'Please enter a valid Bangladeshi mobile number'
+                                        message: "Please enter a valid Bangladeshi mobile number",
                                    },
                                    stringLength: {
                                         min: 11,
                                         max: 11,
-                                        message: 'The mobile number must be exactly 11 digits'
-                                   }
-                              }
+                                        message: "The mobile number must be exactly 11 digits",
+                                   },
+                              },
                          },
-                         'student_phone_whatsapp': {
+                         student_phone_whatsapp: {
                               validators: {
                                    regexp: {
                                         regexp: /^01[3-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
-                                        message: 'Please enter a valid Bangladeshi mobile number'
+                                        message: "Please enter a valid Bangladeshi mobile number",
                                    },
                                    stringLength: {
                                         min: 11,
                                         max: 11,
-                                        message: 'The mobile number must be exactly 11 digits'
-                                   }
-                              }
+                                        message: "The mobile number must be exactly 11 digits",
+                                   },
+                              },
                          },
-                         'student_gender': {
+                         student_gender: {
                               validators: {
                                    notEmpty: {
-                                        message: 'Gender is required'
-                                   }
-                              }
+                                        message: "Gender is required",
+                                   },
+                              },
                          },
-                         'student_email': {
+                         student_email: {
                               validators: {
                                    emailAddress: {
-                                        message: 'The value is not a valid email address',
+                                        message: "The value is not a valid email address",
                                    },
-                              }
+                              },
                          },
-                         'birth_date': {
-                              
-                         },
+                         birth_date: {},
                     },
                     plugins: {
                          trigger: new FormValidation.plugins.Trigger(),
                          bootstrap: new FormValidation.plugins.Bootstrap5({
-                              rowSelector: '.fv-row',
-                              eleInvalidClass: '',
-                              eleValidClass: ''
-                         })
-                    }
-               }
-          ));
+                              rowSelector: ".fv-row",
+                              eleInvalidClass: "",
+                              eleValidClass: "",
+                         }),
+                    },
+               })
+          );
 
-          // Step 2
+          // Step 2 - Guardian & Sibling Info
           validations.push(
                FormValidation.formValidation(form, {
                     fields: {
                          // Guardian 1 fields
-                         'guardian_1_name': {
+                         guardian_1_name: {
                               validators: {
                                    notEmpty: {
-                                        message: 'Name is required'
-                                   }
-                              }
+                                        message: "Name is required",
+                                   },
+                              },
                          },
-                         'guardian_1_mobile': {
+                         guardian_1_mobile: {
                               validators: {
                                    notEmpty: {
-                                        message: 'Mobile number is required'
+                                        message: "Mobile number is required",
                                    },
                                    regexp: {
                                         regexp: /^01[3-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
-                                        message: 'Please enter a valid Bangladeshi mobile number'
+                                        message: "Please enter a valid Bangladeshi mobile number",
                                    },
                                    stringLength: {
                                         min: 11,
                                         max: 11,
-                                        message: 'The mobile number must be exactly 11 digits'
-                                   }
-                              }
+                                        message: "The mobile number must be exactly 11 digits",
+                                   },
+                              },
                          },
-                         'guardian_1_gender': {
+                         guardian_1_gender: {
                               validators: {
                                    notEmpty: {
-                                        message: 'Select the gender'
-                                   }
-                              }
+                                        message: "Select the gender",
+                                   },
+                              },
                          },
-                         'guardian_1_relationship': {
+                         guardian_1_relationship: {
                               validators: {
                                    notEmpty: {
-                                        message: 'Required field'
-                                   }
-                              }
+                                        message: "Required field",
+                                   },
+                              },
                          },
-
                          // Guardian 2 fields
-                         'guardian_2_name': {
+                         guardian_2_name: {
                               validators: {
                                    callback: {
-                                        message: 'Name is required',
+                                        message: "Name is required",
                                         callback: function (input) {
-                                             const name = input.value.trim();
-                                             const mobile = form.querySelector('[name="guardian_2_mobile"]').value.trim();
-                                             const gender = form.querySelector('[name="guardian_2_gender"]').value.trim();
-                                             const relation = form.querySelector('[name="guardian_2_relationship"]').value.trim();
-                                             if (name === '' && mobile === '' && gender === '' && relation === '') return true;
-                                             return name !== '';
-                                        }
-                                   }
-                              }
+                                             var name = input.value.trim();
+                                             var mobile = form.querySelector('[name="guardian_2_mobile"]').value.trim();
+                                             var gender = form.querySelector('[name="guardian_2_gender"]').value.trim();
+                                             var relation = form.querySelector('[name="guardian_2_relationship"]').value.trim();
+                                             if (name === "" && mobile === "" && gender === "" && relation === "") return true;
+                                             return name !== "";
+                                        },
+                                   },
+                              },
                          },
-                         'guardian_2_mobile': {
+                         guardian_2_mobile: {
                               validators: {
                                    callback: {
-                                        message: 'Mobile number is required',
+                                        message: "Mobile number is required",
                                         callback: function (input) {
-                                             const name = form.querySelector('[name="guardian_2_name"]').value.trim();
-                                             const mobile = input.value.trim();
-                                             const gender = form.querySelector('[name="guardian_2_gender"]').value.trim();
-                                             const relation = form.querySelector('[name="guardian_2_relationship"]').value.trim();
-                                             if (name === '' && mobile === '' && gender === '' && relation === '') return true;
-                                             return mobile !== '';
-                                        }
+                                             var name = form.querySelector('[name="guardian_2_name"]').value.trim();
+                                             var mobile = input.value.trim();
+                                             var gender = form.querySelector('[name="guardian_2_gender"]').value.trim();
+                                             var relation = form.querySelector('[name="guardian_2_relationship"]').value.trim();
+                                             if (name === "" && mobile === "" && gender === "" && relation === "") return true;
+                                             return mobile !== "";
+                                        },
                                    },
                                    regexp: {
                                         regexp: /^01[3-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
-                                        message: 'Please enter a valid Bangladeshi mobile number'
+                                        message: "Please enter a valid Bangladeshi mobile number",
                                    },
                                    stringLength: {
                                         min: 11,
                                         max: 11,
-                                        message: 'The mobile number must be exactly 11 digits'
-                                   }
-                              }
+                                        message: "The mobile number must be exactly 11 digits",
+                                   },
+                              },
                          },
-                         'guardian_2_gender': {
+                         guardian_2_gender: {
                               validators: {
                                    callback: {
-                                        message: 'Gender is required',
+                                        message: "Gender is required",
                                         callback: function (input) {
-                                             const name = form.querySelector('[name="guardian_2_name"]').value.trim();
-                                             const mobile = form.querySelector('[name="guardian_2_mobile"]').value.trim();
-                                             const gender = input.value.trim();
-                                             const relation = form.querySelector('[name="guardian_2_relationship"]').value.trim();
-                                             if (name === '' && mobile === '' && gender === '' && relation === '') return true;
-                                             return gender !== '';
-                                        }
-                                   }
-                              }
+                                             var name = form.querySelector('[name="guardian_2_name"]').value.trim();
+                                             var mobile = form.querySelector('[name="guardian_2_mobile"]').value.trim();
+                                             var gender = input.value.trim();
+                                             var relation = form.querySelector('[name="guardian_2_relationship"]').value.trim();
+                                             if (name === "" && mobile === "" && gender === "" && relation === "") return true;
+                                             return gender !== "";
+                                        },
+                                   },
+                              },
                          },
-                         'guardian_2_relationship': {
+                         guardian_2_relationship: {
                               validators: {
                                    callback: {
-                                        message: 'Relationship is required',
+                                        message: "Relationship is required",
                                         callback: function (input) {
-                                             const name = form.querySelector('[name="guardian_2_name"]').value.trim();
-                                             const mobile = form.querySelector('[name="guardian_2_mobile"]').value.trim();
-                                             const gender = form.querySelector('[name="guardian_2_gender"]').value.trim();
-                                             const relation = input.value.trim();
-                                             if (name === '' && mobile === '' && gender === '' && relation === '') return true;
-                                             return relation !== '';
-                                        }
-                                   }
-                              }
+                                             var name = form.querySelector('[name="guardian_2_name"]').value.trim();
+                                             var mobile = form.querySelector('[name="guardian_2_mobile"]').value.trim();
+                                             var gender = form.querySelector('[name="guardian_2_gender"]').value.trim();
+                                             var relation = input.value.trim();
+                                             if (name === "" && mobile === "" && gender === "" && relation === "") return true;
+                                             return relation !== "";
+                                        },
+                                   },
+                              },
                          },
-
-                         // --- Sibling 1 ---
-                         'sibling_1_name': {
+                         // Sibling 1 fields
+                         sibling_1_name: {
                               validators: {
                                    callback: {
-                                        message: 'Name is required',
+                                        message: "Name is required",
                                         callback: function (input) {
-                                             const name = input.value.trim();
-                                             const age = form.querySelector('[name="sibling_1_year"]').value.trim();
-                                             const cls = form.querySelector('[name="sibling_1_class"]').value.trim();
-                                             const inst = form.querySelector('[name="sibling_1_institution"]').value.trim();
-                                             const rel = form.querySelector('[name="sibling_1_relationship"]').value.trim();
-                                             if (name === '' && age === '' && cls === '' && inst === '' && rel === '') return true;
-                                             return name !== '';
-                                        }
-                                   }
-                              }
+                                             var name = input.value.trim();
+                                             var age = form.querySelector('[name="sibling_1_year"]').value.trim();
+                                             var cls = form.querySelector('[name="sibling_1_class"]').value.trim();
+                                             var inst = form.querySelector('[name="sibling_1_institution"]').value.trim();
+                                             var rel = form.querySelector('[name="sibling_1_relationship"]').value.trim();
+                                             if (name === "" && age === "" && cls === "" && inst === "" && rel === "") return true;
+                                             return name !== "";
+                                        },
+                                   },
+                              },
                          },
-                         'sibling_1_year': {
+                         sibling_1_year: {
                               validators: {
                                    callback: {
-                                        message: 'Required',
+                                        message: "Required",
                                         callback: function (input) {
-                                             const name = form.querySelector('[name="sibling_1_name"]').value.trim();
-                                             const age = input.value.trim();
-                                             const cls = form.querySelector('[name="sibling_1_class"]').value.trim();
-                                             const inst = form.querySelector('[name="sibling_1_institution"]').value.trim();
-                                             const rel = form.querySelector('[name="sibling_1_relationship"]').value.trim();
-                                             if (name === '' && age === '' && cls === '' && inst === '' && rel === '') return true;
-                                             return age !== '';
-                                        }
-                                   }
-                              }
+                                             var name = form.querySelector('[name="sibling_1_name"]').value.trim();
+                                             var age = input.value.trim();
+                                             var cls = form.querySelector('[name="sibling_1_class"]').value.trim();
+                                             var inst = form.querySelector('[name="sibling_1_institution"]').value.trim();
+                                             var rel = form.querySelector('[name="sibling_1_relationship"]').value.trim();
+                                             if (name === "" && age === "" && cls === "" && inst === "" && rel === "") return true;
+                                             return age !== "";
+                                        },
+                                   },
+                              },
                          },
-                         'sibling_1_class': {
+                         sibling_1_class: {
                               validators: {
                                    callback: {
-                                        message: 'Required',
+                                        message: "Required",
                                         callback: function (input) {
-                                             const name = form.querySelector('[name="sibling_1_name"]').value.trim();
-                                             const age = form.querySelector('[name="sibling_1_year"]').value.trim();
-                                             const cls = input.value.trim();
-                                             const inst = form.querySelector('[name="sibling_1_institution"]').value.trim();
-                                             const rel = form.querySelector('[name="sibling_1_relationship"]').value.trim();
-                                             if (name === '' && age === '' && cls === '' && inst === '' && rel === '') return true;
-                                             return cls !== '';
-                                        }
-                                   }
-                              }
+                                             var name = form.querySelector('[name="sibling_1_name"]').value.trim();
+                                             var age = form.querySelector('[name="sibling_1_year"]').value.trim();
+                                             var cls = input.value.trim();
+                                             var inst = form.querySelector('[name="sibling_1_institution"]').value.trim();
+                                             var rel = form.querySelector('[name="sibling_1_relationship"]').value.trim();
+                                             if (name === "" && age === "" && cls === "" && inst === "" && rel === "") return true;
+                                             return cls !== "";
+                                        },
+                                   },
+                              },
                          },
-                         'sibling_1_institution': {
+                         sibling_1_institution: {
                               validators: {
                                    callback: {
-                                        message: 'Institution is required',
+                                        message: "Institution is required",
                                         callback: function (input) {
-                                             const name = form.querySelector('[name="sibling_1_name"]').value.trim();
-                                             const age = form.querySelector('[name="sibling_1_year"]').value.trim();
-                                             const cls = form.querySelector('[name="sibling_1_class"]').value.trim();
-                                             const inst = input.value.trim();
-                                             const rel = form.querySelector('[name="sibling_1_relationship"]').value.trim();
-                                             if (name === '' && age === '' && cls === '' && inst === '' && rel === '') return true;
-                                             return inst !== '';
-                                        }
-                                   }
-                              }
+                                             var name = form.querySelector('[name="sibling_1_name"]').value.trim();
+                                             var age = form.querySelector('[name="sibling_1_year"]').value.trim();
+                                             var cls = form.querySelector('[name="sibling_1_class"]').value.trim();
+                                             var inst = input.value.trim();
+                                             var rel = form.querySelector('[name="sibling_1_relationship"]').value.trim();
+                                             if (name === "" && age === "" && cls === "" && inst === "" && rel === "") return true;
+                                             return inst !== "";
+                                        },
+                                   },
+                              },
                          },
-                         'sibling_1_relationship': {
+                         sibling_1_relationship: {
                               validators: {
                                    callback: {
-                                        message: 'Required',
+                                        message: "Required",
                                         callback: function (input) {
-                                             const name = form.querySelector('[name="sibling_1_name"]').value.trim();
-                                             const age = form.querySelector('[name="sibling_1_year"]').value.trim();
-                                             const cls = form.querySelector('[name="sibling_1_class"]').value.trim();
-                                             const inst = form.querySelector('[name="sibling_1_institution"]').value.trim();
-                                             const rel = input.value.trim();
-                                             if (name === '' && age === '' && cls === '' && inst === '' && rel === '') return true;
-                                             return rel !== '';
-                                        }
-                                   }
-                              }
+                                             var name = form.querySelector('[name="sibling_1_name"]').value.trim();
+                                             var age = form.querySelector('[name="sibling_1_year"]').value.trim();
+                                             var cls = form.querySelector('[name="sibling_1_class"]').value.trim();
+                                             var inst = form.querySelector('[name="sibling_1_institution"]').value.trim();
+                                             var rel = input.value.trim();
+                                             if (name === "" && age === "" && cls === "" && inst === "" && rel === "") return true;
+                                             return rel !== "";
+                                        },
+                                   },
+                              },
                          },
-
-                         // --- Sibling 2 --- (Same logic, different field names)
-                         'sibling_2_name': {
+                         // Sibling 2 fields
+                         sibling_2_name: {
                               validators: {
                                    callback: {
-                                        message: 'Name is required',
+                                        message: "Name is required",
                                         callback: function (input) {
-                                             const name = input.value.trim();
-                                             const age = form.querySelector('[name="sibling_2_year"]').value.trim();
-                                             const cls = form.querySelector('[name="sibling_2_class"]').value.trim();
-                                             const inst = form.querySelector('[name="sibling_2_institution"]').value.trim();
-                                             const rel = form.querySelector('[name="sibling_2_relationship"]').value.trim();
-                                             if (name === '' && age === '' && cls === '' && inst === '' && rel === '') return true;
-                                             return name !== '';
-                                        }
-                                   }
-                              }
+                                             var name = input.value.trim();
+                                             var age = form.querySelector('[name="sibling_2_year"]').value.trim();
+                                             var cls = form.querySelector('[name="sibling_2_class"]').value.trim();
+                                             var inst = form.querySelector('[name="sibling_2_institution"]').value.trim();
+                                             var rel = form.querySelector('[name="sibling_2_relationship"]').value.trim();
+                                             if (name === "" && age === "" && cls === "" && inst === "" && rel === "") return true;
+                                             return name !== "";
+                                        },
+                                   },
+                              },
                          },
-                         'sibling_2_year': {
+                         sibling_2_year: {
                               validators: {
                                    callback: {
-                                        message: 'Required',
+                                        message: "Required",
                                         callback: function (input) {
-                                             const name = form.querySelector('[name="sibling_2_name"]').value.trim();
-                                             const age = input.value.trim();
-                                             const cls = form.querySelector('[name="sibling_2_class"]').value.trim();
-                                             const inst = form.querySelector('[name="sibling_2_institution"]').value.trim();
-                                             const rel = form.querySelector('[name="sibling_2_relationship"]').value.trim();
-                                             if (name === '' && age === '' && cls === '' && inst === '' && rel === '') return true;
-                                             return age !== '';
-                                        }
-                                   }
-                              }
+                                             var name = form.querySelector('[name="sibling_2_name"]').value.trim();
+                                             var age = input.value.trim();
+                                             var cls = form.querySelector('[name="sibling_2_class"]').value.trim();
+                                             var inst = form.querySelector('[name="sibling_2_institution"]').value.trim();
+                                             var rel = form.querySelector('[name="sibling_2_relationship"]').value.trim();
+                                             if (name === "" && age === "" && cls === "" && inst === "" && rel === "") return true;
+                                             return age !== "";
+                                        },
+                                   },
+                              },
                          },
-                         'sibling_2_class': {
+                         sibling_2_class: {
                               validators: {
                                    callback: {
-                                        message: 'Required',
+                                        message: "Required",
                                         callback: function (input) {
-                                             const name = form.querySelector('[name="sibling_2_name"]').value.trim();
-                                             const age = form.querySelector('[name="sibling_2_year"]').value.trim();
-                                             const cls = input.value.trim();
-                                             const inst = form.querySelector('[name="sibling_2_institution"]').value.trim();
-                                             const rel = form.querySelector('[name="sibling_2_relationship"]').value.trim();
-                                             if (name === '' && age === '' && cls === '' && inst === '' && rel === '') return true;
-                                             return cls !== '';
-                                        }
-                                   }
-                              }
+                                             var name = form.querySelector('[name="sibling_2_name"]').value.trim();
+                                             var age = form.querySelector('[name="sibling_2_year"]').value.trim();
+                                             var cls = input.value.trim();
+                                             var inst = form.querySelector('[name="sibling_2_institution"]').value.trim();
+                                             var rel = form.querySelector('[name="sibling_2_relationship"]').value.trim();
+                                             if (name === "" && age === "" && cls === "" && inst === "" && rel === "") return true;
+                                             return cls !== "";
+                                        },
+                                   },
+                              },
                          },
-                         'sibling_2_institution': {
+                         sibling_2_institution: {
                               validators: {
                                    callback: {
-                                        message: 'Institution is required',
+                                        message: "Institution is required",
                                         callback: function (input) {
-                                             const name = form.querySelector('[name="sibling_2_name"]').value.trim();
-                                             const age = form.querySelector('[name="sibling_2_year"]').value.trim();
-                                             const cls = form.querySelector('[name="sibling_2_class"]').value.trim();
-                                             const inst = input.value.trim();
-                                             const rel = form.querySelector('[name="sibling_2_relationship"]').value.trim();
-                                             if (name === '' && age === '' && cls === '' && inst === '' && rel === '') return true;
-                                             return inst !== '';
-                                        }
-                                   }
-                              }
+                                             var name = form.querySelector('[name="sibling_2_name"]').value.trim();
+                                             var age = form.querySelector('[name="sibling_2_year"]').value.trim();
+                                             var cls = form.querySelector('[name="sibling_2_class"]').value.trim();
+                                             var inst = input.value.trim();
+                                             var rel = form.querySelector('[name="sibling_2_relationship"]').value.trim();
+                                             if (name === "" && age === "" && cls === "" && inst === "" && rel === "") return true;
+                                             return inst !== "";
+                                        },
+                                   },
+                              },
                          },
-                         'sibling_2_relationship': {
+                         sibling_2_relationship: {
                               validators: {
                                    callback: {
-                                        message: 'Required',
+                                        message: "Required",
                                         callback: function (input) {
-                                             const name = form.querySelector('[name="sibling_2_name"]').value.trim();
-                                             const age = form.querySelector('[name="sibling_2_year"]').value.trim();
-                                             const cls = form.querySelector('[name="sibling_2_class"]').value.trim();
-                                             const inst = form.querySelector('[name="sibling_2_institution"]').value.trim();
-                                             const rel = input.value.trim();
-                                             if (name === '' && age === '' && cls === '' && inst === '' && rel === '') return true;
-                                             return rel !== '';
-                                        }
-                                   }
-                              }
-                         }
+                                             var name = form.querySelector('[name="sibling_2_name"]').value.trim();
+                                             var age = form.querySelector('[name="sibling_2_year"]').value.trim();
+                                             var cls = form.querySelector('[name="sibling_2_class"]').value.trim();
+                                             var inst = form.querySelector('[name="sibling_2_institution"]').value.trim();
+                                             var rel = input.value.trim();
+                                             if (name === "" && age === "" && cls === "" && inst === "" && rel === "") return true;
+                                             return rel !== "";
+                                        },
+                                   },
+                              },
+                         },
                     },
-
-
                     plugins: {
                          trigger: new FormValidation.plugins.Trigger(),
                          bootstrap: new FormValidation.plugins.Bootstrap5({
-                              rowSelector: '.fv-row',
-                              eleInvalidClass: '',
-                              eleValidClass: ''
-                         })
-                    }
+                              rowSelector: ".fv-row",
+                              eleInvalidClass: "",
+                              eleValidClass: "",
+                         }),
+                    },
                })
           );
 
-          // Step 3
-          validations.push(FormValidation.formValidation(
-               form,
-               {
+          // Step 3 - Enrolled Subjects
+          validations.push(
+               FormValidation.formValidation(form, {
                     fields: {
-                         'student_institution': {
+                         student_institution: {
                               validators: {
                                    notEmpty: {
-                                        message: 'Please, select an institution'
-                                   }
-                              }
-                         },
-                         'student_class': {
-                              validators: {
-                                   notEmpty: {
-                                        message: 'Please, assign this student to a class'
-                                   }
-                              }
-                         },
-                         'student_academic_group': {
-                              validators: {
-                                   notEmpty: {
-                                        message: 'Select a group'
-                                   }
-                              }
-                         },
-                    },
-                    plugins: {
-                         trigger: new FormValidation.plugins.Trigger(),
-                         // Bootstrap Framework Integration
-                         bootstrap: new FormValidation.plugins.Bootstrap5({
-                              rowSelector: '.fv-row',
-                              eleInvalidClass: '',
-                              eleValidClass: ''
-                         })
-                    }
-               }
-          ));
-
-          // Step 4
-          validations.push(FormValidation.formValidation(
-               form,
-               {
-                    fields: {
-                         'student_batch': {
-                              validators: {
-                                   notEmpty: {
-                                        message: 'Select a batch'
-                                   }
-                              }
-                         },
-                         'student_tuition_fee': {
-                              validators: {
-                                   notEmpty: {
-                                        message: 'Enter a tuition fee'
+                                        message: "Please, select an institution",
                                    },
-                              }
+                              },
                          },
-                         'payment_style': {
+                         student_class: {
                               validators: {
                                    notEmpty: {
-                                        message: 'Select any payment style'
-                                   }
-                              }
+                                        message: "Please, assign this student to a class",
+                                   },
+                              },
                          },
-                         'payment_due_date': {
+                         student_academic_group: {
                               validators: {
                                    notEmpty: {
-                                        message: 'Select payment deadline'
-                                   }
-                              }
-                         }
+                                        message: "Select a group",
+                                   },
+                              },
+                         },
                     },
-
                     plugins: {
                          trigger: new FormValidation.plugins.Trigger(),
-                         // Bootstrap Framework Integration
                          bootstrap: new FormValidation.plugins.Bootstrap5({
-                              rowSelector: '.fv-row',
-                              eleInvalidClass: '',
-                              eleValidClass: ''
-                         })
-                    }
-               }
-          ));
+                              rowSelector: ".fv-row",
+                              eleInvalidClass: "",
+                              eleValidClass: "",
+                         }),
+                    },
+               })
+          );
+
+          // Step 4 - Administrative Info
+          validations.push(
+               FormValidation.formValidation(form, {
+                    fields: {
+                         student_batch: {
+                              validators: {
+                                   notEmpty: {
+                                        message: "Select a batch",
+                                   },
+                              },
+                         },
+                         student_tuition_fee: {
+                              validators: {
+                                   notEmpty: {
+                                        message: "Enter a tuition fee",
+                                   },
+                              },
+                         },
+                         payment_style: {
+                              validators: {
+                                   notEmpty: {
+                                        message: "Select any payment style",
+                                   },
+                              },
+                         },
+                         payment_due_date: {
+                              validators: {
+                                   notEmpty: {
+                                        message: "Select payment deadline",
+                                   },
+                              },
+                         },
+                    },
+                    plugins: {
+                         trigger: new FormValidation.plugins.Trigger(),
+                         bootstrap: new FormValidation.plugins.Bootstrap5({
+                              rowSelector: ".fv-row",
+                              eleInvalidClass: "",
+                              eleValidClass: "",
+                         }),
+                    },
+               })
+          );
      };
 
      function toggleShiftsByBranch() {
-          const branchRadios = document.querySelectorAll('.branch-radio');
-          const batchOptions = document.querySelectorAll('.batch-option');
+          var branchRadios = document.querySelectorAll(".branch-radio");
+          var batchOptions = document.querySelectorAll(".batch-option");
 
-          branchRadios.forEach(radio => {
-               radio.addEventListener('change', () => {
-                    const selectedBranch = radio.value;
+          branchRadios.forEach(function (radio) {
+               radio.addEventListener("change", function () {
+                    var selectedBranch = radio.value;
 
                     // Hide all batches first
-                    batchOptions.forEach(option => {
-                         option.style.display = 'none';
-                         const input = option.querySelector('input[type="radio"]');
+                    batchOptions.forEach(function (option) {
+                         option.style.display = "none";
+                         var input = option.querySelector('input[type="radio"]');
                          if (input) input.checked = false;
                     });
 
                     // Show matching batches
-                    batchOptions.forEach(option => {
+                    batchOptions.forEach(function (option) {
                          if (option.dataset.branch === selectedBranch) {
-                              option.style.display = 'block';
+                              option.style.display = "block";
                          }
                     });
 
                     // Auto-check the first visible batch
-                    const firstVisible = document.querySelector(`.batch-option[data-branch="${selectedBranch}"] input[type="radio"]`);
+                    var firstVisible = document.querySelector('.batch-option[data-branch="' + selectedBranch + '"] input[type="radio"]');
                     if (firstVisible) firstVisible.checked = true;
                });
           });
 
           // Trigger for first selected branch
-          const checkedRadio = document.querySelector('.branch-radio:checked');
-          if (checkedRadio) checkedRadio.dispatchEvent(new Event('change'));
+          var checkedRadio = document.querySelector(".branch-radio:checked");
+          if (checkedRadio) checkedRadio.dispatchEvent(new Event("change"));
      }
-
-
 
      return {
           // Public Functions
           init: function () {
-               // Elements
-               modalEl = document.querySelector('#kt_modal_create_account');
-
+               modalEl = document.querySelector("#kt_modal_create_account");
                if (modalEl) {
                     modal = new bootstrap.Modal(modalEl);
                }
 
-               stepper = document.querySelector('#kt_create_student_stepper');
-
+               stepper = document.querySelector("#kt_create_student_stepper");
                if (!stepper) {
                     return;
                }
 
-               form = stepper.querySelector('#kt_create_student_form');
+               form = stepper.querySelector("#kt_create_student_form");
                formSubmitButton = stepper.querySelector('[data-kt-stepper-action="submit"]');
                formContinueButton = stepper.querySelector('[data-kt-stepper-action="next"]');
 
@@ -812,10 +803,9 @@ var KTCreateStudent = function () {
                $("#student_birth_date").flatpickr({
                     dateFormat: "d-m-Y",
                });
-
-          }
+          },
      };
-}();
+})();
 
 // On document ready
 KTUtil.onDOMContentLoaded(function () {

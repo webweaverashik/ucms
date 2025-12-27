@@ -720,33 +720,21 @@
 
                 <!--begin::Step 3-->
                 <div data-kt-stepper-element="content">
-                    <!--begin::Wrapper-->
                     <div class="w-100">
-                        <!--begin::Heading-->
-                        <div class="pb-10 pb-lg-15">
-                            <!--begin::Title-->
+                        <div class="pb-10 pb-lg-12">
                             <h2 class="fw-bold text-gray-900">Enrolled Subjects</h2>
-                            <!--end::Title-->
-                            <!--begin::Notice-->
-                            <div class="text-muted fw-semibold fs-6">Assign to the class and select enrolled subjects.
+                            <div class="text-muted fw-semibold fs-6">
+                                Assign to class and select enrolled subjects.
                             </div>
-                            <!--end::Notice-->
                         </div>
-                        <!--end::Heading-->
 
-                        {{-- Class & Group --}}
-                        <div class="row">
+                        <div class="row mb-6">
                             <div class="col-lg-7 fv-row">
-                                <!--begin::Class Input group-->
                                 <div class="fv-row mb-7">
-                                    <!--begin::Label-->
-                                    <label class="form-label required">Class</label>
-                                    <!--end::Label-->
-
-                                    <!--begin::Solid input group style-->
+                                    <label class="form-label required fs-6 fw-semibold">Class</label>
                                     <select name="student_class" id="student_class_input"
                                         class="form-select form-select-solid" data-control="select2"
-                                        data-placeholder="Assign to a class" required>
+                                        data-placeholder="Select a class" required>
                                         <option></option>
                                         @foreach ($classnames as $classname)
                                             <option value="{{ $classname->id }}"
@@ -755,74 +743,40 @@
                                             </option>
                                         @endforeach
                                     </select>
-                                    <!--end::Solid input group style-->
                                 </div>
-                                <!--end::Class Input group-->
                             </div>
 
-                            {{-- Group Selection --}}
                             <div class="col-lg-5 fv-row" id="student-group-selection">
-                                <!--begin::Class Input group-->
                                 <div class="mb-7">
-                                    <!--begin::Label-->
-                                    <label class="form-label required">Group</label>
-                                    <!--end::Label-->
-
-                                    <!--begin::Row-->
-                                    <div class="row">
-                                        <!--begin::Col-->
-                                        <div class="col-lg-6">
-                                            <!--begin::Option-->
+                                    <label class="form-label required fs-6 fw-semibold">Academic Group</label>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
                                             <input type="radio" class="btn-check" name="student_academic_group"
-                                                value="Science" checked="checked" id="academic_group_science_input"
-                                                required />
+                                                value="Science" checked id="group_science" required />
                                             <label
                                                 class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
-                                                for="academic_group_science_input">
-                                                <i class="las la-flask fs-2x me-5"></i>
-                                                <!--begin::Info-->
-                                                <span class="d-block fw-semibold text-start">
-                                                    <span class="text-gray-900 fw-bold d-block fs-6">Science</span>
-                                                </span>
-                                                <!--end::Info-->
+                                                for="group_science">
+                                                <i class="ki-outline ki-flask fs-2x me-3"></i>
+                                                <span class="fw-bold">Science</span>
                                             </label>
-                                            <!--end::Option-->
                                         </div>
-                                        <!--end::Col-->
-
-                                        <!--begin::Col-->
-                                        <div class="col-lg-6">
-                                            <!--begin::Option-->
+                                        <div class="col-md-6">
                                             <input type="radio" class="btn-check" name="student_academic_group"
-                                                value="Commerce" id="academic_group_commerce_input" required />
+                                                value="Commerce" id="group_commerce" required />
                                             <label
                                                 class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
-                                                for="academic_group_commerce_input">
-                                                <i class="las la-business-time fs-2x me-5"></i>
-                                                <!--begin::Info-->
-                                                <span class="d-block fw-semibold text-start">
-                                                    <span class="text-gray-900 fw-bold d-block fs-6">Commerce</span>
-                                                </span>
-                                                <!--end::Info-->
+                                                for="group_commerce">
+                                                <i class="ki-outline ki-chart-line-up fs-2x me-3"></i>
+                                                <span class="fw-bold">Commerce</span>
                                             </label>
-                                            <!--end::Option-->
                                         </div>
-                                        <!--end::Col-->
                                     </div>
-                                    <!--end::Row-->
                                 </div>
-                                <!--end::Class Input group-->
                             </div>
                         </div>
 
-
-                        <!--begin::Institution Input group-->
                         <div class="fv-row mb-7">
-                            <!--begin::Label-->
-                            <label class="form-label required">School/College</label>
-                            <!--end::Label-->
-
-                            <!--begin::Solid input group style-->
+                            <label class="form-label required fs-6 fw-semibold">School/College</label>
                             <div class="input-group input-group-solid flex-nowrap">
                                 <span class="input-group-text">
                                     <i class="ki-outline ki-bank fs-3"></i>
@@ -830,40 +784,34 @@
                                 <div class="overflow-hidden flex-grow-1">
                                     <select name="student_institution" id="institution_select"
                                         class="form-select form-select-solid rounded-start-0 border-start"
-                                        data-control="select2" data-placeholder="Select an instituition" required>
+                                        data-control="select2" data-placeholder="Select institution" required>
                                         <option></option>
-
                                     </select>
                                 </div>
                             </div>
-                            <!--end::Solid input group style-->
                         </div>
-                        <!--end::Institution Input group-->
 
-
-                        <!--begin::Enrolled Subjects-->
                         <div class="fv-row">
-                            <label class="form-label required">Enrolled Subjects</label>
-                            <p class="text-muted">Select all the subjects taken by the student.</p>
+                            <label class="form-label required fs-6 fw-semibold mb-3">Enrolled Subjects</label>
 
-                            <!-- Select All Toggle -->
-                            <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" id="select_all_subjects">
-                                <label class="form-check-label fw-bold fs-6" for="select_all_subjects">
-                                    All Subjects
-                                </label>
+                            <div
+                                class="notice d-flex bg-light-primary rounded border-primary border border-dashed p-4 mb-6">
+                                <i class="ki-outline ki-information-5 fs-2tx text-primary me-4"></i>
+                                <div class="fw-semibold">
+                                    <div class="fs-6 text-gray-700">
+                                        <strong>Compulsory subjects</strong> are auto-selected.
+                                        For <strong>optional subjects</strong>, select one as main and one as 4th subject.
+                                    </div>
+                                </div>
                             </div>
 
-                            <!-- begin:Subject Checkboxes -->
                             <div id="subject_list">
-                                <!-- Subjects will be loaded here dynamically via AJAX -->
+                                <div class="text-center py-10">
+                                    <span class="text-muted fs-6">Select a class to view subjects</span>
+                                </div>
                             </div>
-                            <!-- end:Subject Checkboxes -->
                         </div>
-                        <!-- end:Enrolled Subjects -->
-
                     </div>
-                    <!--end::Wrapper-->
                 </div>
                 <!--end::Step 3-->
 
@@ -1044,7 +992,7 @@
                                         <!--begin::Radio-->
                                         <div class="form-check form-check-custom form-check-solid me-5">
                                             <input class="form-check-input" type="radio" value="teacher"
-                                                name="referer_type" id="referer_type_teacher" checked="checked" />
+                                                name="referer_type" id="referer_type_teacher" />
                                             <label class="form-check-label fs-6 fw-medium"
                                                 for="referer_type_teacher">Teacher</label>
                                         </div>
@@ -1130,8 +1078,9 @@
                                     <div class="fw-semibold">
                                         <h4 class="text-gray-900 fw-bold"><span id="admitted_name">Ashikur Rahman</span>,
                                             ID: <span id="admitted_id">G-250905</span></h4>
-                                        <div class="fs-6 text-gray-700">You can download the admission form after manager
-                                            approval.
+                                        <div class="fs-6 text-gray-700">Now, receive the admission fee, current month
+                                            payment & sheet fee from the student and then inform your manager to approve the
+                                            student. Then you can download the admission copy.
                                         </div>
                                     </div>
                                     <!--end::Content-->

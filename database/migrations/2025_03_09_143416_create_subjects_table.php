@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->enum('academic_group', ['General', 'Science', 'Commerce', 'Arts'])->default('General');
+            $table->enum('subject_type', ['compulsory', 'optional'])->default('compulsory');
             $table->foreignId('class_id');
             $table->softDeletes();
             $table->timestamps();

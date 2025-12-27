@@ -14,25 +14,25 @@ return new class extends Migration
         Schema::create('students', function (Blueprint $table) {
             $table->id();
             $table->string('student_unique_id')->unique();
-            $table->foreignId('branch_id')->constrained('branches');
+            $table->foreignId('branch_id');
             $table->string('name');
             $table->date('date_of_birth')->nullable();
             $table->enum('gender', ['male', 'female']);
-            $table->foreignId('class_id')->constrained('class_names');
+            $table->foreignId('class_id');
             $table->enum('academic_group', ['General', 'Science', 'Commerce', 'Arts'])->default('General');
-            $table->foreignId('batch_id')->constrained('batches');
-            $table->foreignId('institution_id')->nullable()->constrained('institutions');
+            $table->foreignId('batch_id');
+            $table->foreignId('institution_id');
             $table->string('religion')->nullable();
             $table->string('blood_group')->nullable();
             $table->text('home_address')->nullable();
             $table->string('email')->unique()->nullable();
             $table->string('password');
-            $table->foreignId('reference_id')->nullable()->constrained('references');
-            $table->foreignId('student_activation_id')->nullable()->constrained('student_activations'); // for setting approval status
+            $table->foreignId('reference_id')->nullable();
+            $table->foreignId('student_activation_id')->nullable(); // for setting approval status
             $table->string('photo_url')->nullable();
             $table->text('remarks')->nullable();
             $table->softDeletes(); // Enables soft delete feature
-            $table->foreignId('deleted_by')->nullable()->constrained('users');
+            $table->foreignId('deleted_by')->nullable();
             $table->timestamps();
         });
     }

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('batches', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->foreignId('branch_id');
+            $table->foreignId('branch_id')->constrained('branches');
             $table->enum('day_off', ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday']);
             $table->timestamps();
         });

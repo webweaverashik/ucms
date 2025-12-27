@@ -2,8 +2,10 @@
 namespace App\Http\Controllers\Academic;
 
 use App\Http\Controllers\Controller;
+use App\Models\Academic\ClassName;
 use App\Models\Academic\Subject;
 use App\Models\Academic\SubjectTaken;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class SubjectController extends Controller
@@ -89,73 +91,234 @@ class SubjectController extends Controller
         return response()->json(['success' => true]);
     }
 
-    /**
-     * Get subjects by class ID using AJAX request
-     */
-    public function getSubjects(Request $request)
-    {
-        $validated = $request->validate([
-            'class_id'        => 'required|exists:class_names,id',
-            'group'           => 'required|in:General,Science,Commerce,Arts', // Changed to 'group'
-            'include_general' => 'required|boolean',
-        ]);
-
-        $query = Subject::where('class_id', $request->class_id)
-            ->when(
-                $request->include_general,
-                function ($q) use ($request) {
-                    return $q->where(function ($q) use ($request) {
-                        $q->where('academic_group', 'General')->orWhere('academic_group', $request->group);
-                    });
-                },
-                function ($q) {
-                    return $q->where('academic_group', 'General');
-                },
-            )
-            ->orderBy('academic_group')
-            ->orderBy('name');
-
-        return response()->json([
-            'success'  => true,
-            'subjects' => $query->get(),
-        ]);
-    }
-
-    /**
-     * Get subjects taken by the student
-     */
-    public function getTakenSubjects(Request $request)
+/**
+ * Get subjects by class ID using AJAX request
+ */
+    public function getSubjects(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'class_id'        => 'required|exists:class_names,id',
             'group'           => 'required|in:General,Science,Commerce,Arts',
             'include_general' => 'required|boolean',
-            'student_id'      => 'required|exists:students,id', // Ensure student_id is valid
         ]);
 
-        // Fetch subjects based on class_id and academic group
-        $query = Subject::where('class_id', $request->class_id)
-            ->when(
-                $request->include_general,
-                function ($q) use ($request) {
-                    return $q->where(function ($q) use ($request) {
-                        $q->where('academic_group', 'General')->orWhere('academic_group', $request->group);
-                    });
-                },
-                function ($q) {
-                    return $q->where('academic_group', 'General');
-                },
-            )
-            ->orderBy('academic_group')
-            ->orderBy('name');
+        $classId        = $validated['class_id'];
+        $group          = $validated['group'];
+        $includeGeneral = $validated['include_general'];
 
-        // Get the subjects assigned to this student
-        $takenSubjects = SubjectTaken::where('student_id', $request->student_id)->pluck('subject_id')->toArray();
+        // Get class numeral for selection mode
+        $class        = ClassName::find($classId);
+        $classNumeral = $class ? $class->class_numeral : 0;
+
+        // Get General compulsory subjects
+        $generalCompulsory = Subject::where('class_id', $classId)
+            ->where('academic_group', 'General')
+            ->where('subject_type', 'compulsory')
+            ->orderBy('name')
+            ->get();
+
+        $groupCompulsory = collect();
+        $groupOptional   = collect();
+
+        if ($includeGeneral && $group !== 'General') {
+            $groupCompulsory = Subject::where('class_id', $classId)
+                ->where('academic_group', $group)
+                ->where('subject_type', 'compulsory')
+                ->orderBy('name')
+                ->get();
+
+            $groupOptional = Subject::where('class_id', $classId)
+                ->where('academic_group', $group)
+                ->where('subject_type', 'optional')
+                ->orderBy('name')
+                ->get();
+        }
+
+        // Determine selection mode based on class numeral AND group
+        $selectionMode = $this->getSelectionMode($classNumeral, $group);
 
         return response()->json([
             'success'        => true,
-            'subjects'       => $query->get(),
-            'taken_subjects' => $takenSubjects,
+            'subjects'       => [
+                'general_compulsory' => $generalCompulsory,
+                'group_compulsory'   => $groupCompulsory,
+                'group_optional'     => $groupOptional,
+            ],
+            'group'          => $group,
+            'class_numeral'  => $classNumeral,
+            'has_optional'   => $groupOptional->count() > 0,
+            'optional_count' => $groupOptional->count(),
+            'selection_mode' => $selectionMode,
+        ]);
+    }
+
+    /**
+     * Get selection mode based on class numeral AND academic group
+     *
+     * SSC (Class 9-10):
+     *   - Science: Main Optional + 4th Subject
+     *   - Commerce: Only 4th Subject
+     *   - Arts: Only 4th Subject
+     *
+     * HSC (Class 11-12):
+     *   - Science: Main Optional + 4th Subject
+     *   - Commerce: Main Optional + 4th Subject
+     *   - Arts: Main Optional + 4th Subject
+     *
+     * @param int $classNumeral
+     * @param string $group
+     * @return array
+     */
+    private function getSelectionMode(int $classNumeral, string $group): array
+    {
+        // Class 9-10 (SSC Level)
+        if ($classNumeral >= 9 && $classNumeral <= 10) {
+            return match ($group) {
+                'Science' => [
+                    'type'          => 'main_and_4th',
+                    'requires_main' => true,
+                    'requires_4th'  => true,
+                    'main_label'    => 'Main Subject',
+                    '4th_label'     => '4th Subject',
+                    'instruction'   => 'Select one subject as Main and one different subject as 4th Subject',
+                ],
+                'Commerce', 'Arts' => [
+                    'type'          => '4th_only',
+                    'requires_main' => false,
+                    'requires_4th'  => true,
+                    'main_label'    => null,
+                    '4th_label'     => '4th Subject',
+                    'instruction'   => 'Select one subject as 4th Subject',
+                ],
+                default   => [
+                    'type'          => 'none',
+                    'requires_main' => false,
+                    'requires_4th'  => false,
+                    'main_label'    => null,
+                    '4th_label'     => null,
+                    'instruction'   => null,
+                ],
+            };
+        }
+
+        // Class 11-12 (HSC Level)
+        if ($classNumeral >= 11 && $classNumeral <= 12) {
+            return match ($group) {
+                'Science', 'Commerce', 'Arts' => [
+                    'type'          => 'main_and_4th',
+                    'requires_main' => true,
+                    'requires_4th'  => true,
+                    'main_label'    => 'Main Subject',
+                    '4th_label'     => '4th Subject',
+                    'instruction'   => 'Select one subject as Main and one different subject as 4th Subject',
+                ],
+                default => [
+                    'type'          => 'none',
+                    'requires_main' => false,
+                    'requires_4th'  => false,
+                    'main_label'    => null,
+                    '4th_label'     => null,
+                    'instruction'   => null,
+                ],
+            };
+        }
+
+        // Class 1-8 (No optional subjects)
+        return [
+            'type'          => 'none',
+            'requires_main' => false,
+            'requires_4th'  => false,
+            'main_label'    => null,
+            '4th_label'     => null,
+            'instruction'   => null,
+        ];
+    }
+
+    /**
+     * Get subjects taken by the student
+     */
+    public function getTakenSubjects(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'class_id'        => 'required|exists:class_names,id',
+            'group'           => 'required|in:General,Science,Commerce,Arts',
+            'include_general' => 'required|boolean',
+            'student_id'      => 'required|exists:students,id',
+        ]);
+
+        $classId        = $validated['class_id'];
+        $group          = $validated['group'];
+        $includeGeneral = $validated['include_general'];
+        $studentId      = $validated['student_id'];
+
+        // Get class numeral
+        $class        = ClassName::find($classId);
+        $classNumeral = $class ? $class->class_numeral : 0;
+
+        $generalCompulsory = Subject::where('class_id', $classId)
+            ->where('academic_group', 'General')
+            ->where('subject_type', 'compulsory')
+            ->orderBy('name')
+            ->get();
+
+        $groupCompulsory = collect();
+        $groupOptional   = collect();
+
+        if ($includeGeneral && $group !== 'General') {
+            $groupCompulsory = Subject::where('class_id', $classId)
+                ->where('academic_group', $group)
+                ->where('subject_type', 'compulsory')
+                ->orderBy('name')
+                ->get();
+
+            $groupOptional = Subject::where('class_id', $classId)
+                ->where('academic_group', $group)
+                ->where('subject_type', 'optional')
+                ->orderBy('name')
+                ->get();
+        }
+
+        $takenSubjects = SubjectTaken::where('student_id', $studentId)
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [
+                    $item->subject_id => [
+                        'subject_id'     => $item->subject_id,
+                        'is_4th_subject' => $item->is_4th_subject,
+                    ],
+                ];
+            });
+
+        $fourthSubjectId    = null;
+        $mainOptionalId     = null;
+        $optionalSubjectIds = $groupOptional->pluck('id')->toArray();
+
+        foreach ($takenSubjects as $subjectId => $data) {
+            if (in_array($subjectId, $optionalSubjectIds)) {
+                if ($data['is_4th_subject']) {
+                    $fourthSubjectId = $subjectId;
+                } else {
+                    $mainOptionalId = $subjectId;
+                }
+            }
+        }
+
+        $selectionMode = $this->getSelectionMode($classNumeral, $group);
+
+        return response()->json([
+            'success'           => true,
+            'subjects'          => [
+                'general_compulsory' => $generalCompulsory,
+                'group_compulsory'   => $groupCompulsory,
+                'group_optional'     => $groupOptional,
+            ],
+            'taken_subjects'    => $takenSubjects,
+            'fourth_subject_id' => $fourthSubjectId,
+            'main_optional_id'  => $mainOptionalId,
+            'group'             => $group,
+            'class_numeral'     => $classNumeral,
+            'has_optional'      => $groupOptional->count() > 0,
+            'selection_mode'    => $selectionMode,
         ]);
     }
 }

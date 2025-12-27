@@ -89,28 +89,18 @@
 
 @section('content')
     <div id="dashboard-app">
-        {{-- Branch Tabs (Admin Only) --}}
-        <div class="card mb-5">
-            <div class="card-body py-3">
-                <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <span class="fw-semibold text-gray-600 me-2">Branch:</span>
-                    <div class="nav nav-pills" id="branchTabs">
-                        <button type="button" class="nav-link branch-tab active px-4 py-2 rounded" data-branch="all">
-                            All Branches
-                        </button>
-                        @foreach ($data['branches'] as $branch)
-                            <button type="button" class="nav-link branch-tab px-4 py-2 rounded"
-                                data-branch="{{ $branch['id'] }}">
-                                {{ $branch['branch_name'] }}
-                            </button>
-                        @endforeach
+        {{-- Branch Info Banner (instead of tabs) --}}
+        <div class="card bg-light-primary mb-5">
+            <div class="card-body py-4">
+                <div class="d-flex align-items-center">
+                    <div class="symbol symbol-50px me-4">
+                        <span class="symbol-label bg-primary">
+                            <i class="ki-outline ki-bank fs-2x text-white"></i>
+                        </span>
                     </div>
-
-                    <div class="ms-auto">
-                        <button type="button" class="btn btn-sm btn-light-primary" id="refreshDashboard">
-                            <i class="ki-outline ki-arrows-circle fs-4"></i>
-                            Refresh
-                        </button>
+                    <div>
+                        <h4 class="text-primary mb-0">{{ $data['current_branch']['branch_name'] ?? 'Your Branch' }}</h4>
+                        <span class="text-muted">You are viewing data for your assigned branch</span>
                     </div>
                 </div>
             </div>
@@ -215,16 +205,15 @@
 @endpush
 
 @push('page-js')
-    <script>
-        // Dashboard Configuration
-        const DashboardConfig = {
-            apiBaseUrl: '{{ url('/dashboard/api') }}',
-            csrfToken: '{{ csrf_token() }}',
-            currentBranch: 'all',
-            isAdmin: true,
-            initialData: @json($data),
-        };
-    </script>
+<script>
+    const DashboardConfig = {
+        apiBaseUrl: '{{ url("/dashboard/api") }}',
+        csrfToken: '{{ csrf_token() }}',
+        currentBranch: '{{ auth()->user()->branch_id }}',
+        isAdmin: false,
+        initialData: @json($data),
+    };
+</script>
     <script src="{{ asset('js/dashboard/utils.js') }}"></script>
     <script src="{{ asset('js/dashboard/cache.js') }}"></script>
     <script src="{{ asset('js/dashboard/charts.js') }}"></script>

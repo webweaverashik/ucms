@@ -19,10 +19,15 @@ class PaymentInvoice extends Model
         'amount_due',
         'month_year',
         'status',
-        'invoice_type',
+        'invoice_type_id',
         'created_by',
         'deleted_by',
     ];
+
+    public function invoiceType()
+    {
+        return $this->belongsTo(PaymentInvoiceType::class, 'invoice_type_id');
+    }
 
     public function student()
     {
