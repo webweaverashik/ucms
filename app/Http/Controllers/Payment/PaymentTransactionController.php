@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Payment;
 use App\Models\Branch;
 use Illuminate\Http\Request;
 use App\Models\Student\Student;
+use App\Models\Sheet\SheetPayment;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -27,12 +29,7 @@ class PaymentTransactionController extends Controller
         $cacheKey = "transactions_branch_{$branchId}";
 
         $transactions = Cache::remember($cacheKey, now()->addHours(1), function () use ($branchId) {
-            return PaymentTransaction::with([
-                'paymentInvoice:id,invoice_number',
-                'createdBy:id,name',
-                'student:id,name,student_unique_id,branch_id',
-                'student.branch:id,branch_name',
-            ])
+            return PaymentTransaction::with(['paymentInvoice:id,invoice_number', 'createdBy:id,name', 'student:id,name,student_unique_id,branch_id', 'student.branch:id,branch_name'])
                 ->whereHas('student', function ($query) use ($branchId) {
                     if ($branchId != 0) {
                         $query->where('branch_id', $branchId);
@@ -71,6 +68,7 @@ class PaymentTransactionController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -81,95 +79,95 @@ class PaymentTransactionController extends Controller
             'transaction_remarks' => 'nullable|string|max:1000',
         ]);
 
-        $invoice = PaymentInvoice::where('id', $validated['transaction_invoice'])
-            ->where('student_id', $validated['transaction_student'])
-            ->firstOrFail();
+        DB::transaction(function () use ($validated) {
+            $invoice = PaymentInvoice::with(['invoiceType', 'student.class.sheet'])
+                ->where('id', $validated['transaction_invoice'])
+                ->where('student_id', $validated['transaction_student'])
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        $maxAmount   = $invoice->amount_due;
-        $paymentType = $validated['transaction_type'];
-        $amount      = $validated['transaction_amount'];
+            $maxAmount   = $invoice->amount_due;
+            $paymentType = $validated['transaction_type'];
+            $amount      = $validated['transaction_amount'];
 
-        // Special case for partially paid invoices - allow equal or less than amount_due
-        if ($invoice->status === 'partially_paid') {
-            if ($amount > $maxAmount) {
-                return redirect()->back()->with('warning', "Amount must be less than or equal to the due amount (৳{$maxAmount}).");
+            /* ---------------- Amount validation ---------------- */
+            if ($invoice->status === 'partially_paid') {
+                if ($amount > $maxAmount) {
+                    throw new \Exception("Amount must be ≤ due amount (৳{$maxAmount}).");
+                }
+            } else {
+                if (($paymentType === 'full' && $amount != $maxAmount) || (in_array($paymentType, ['partial', 'discounted']) && $amount >= $maxAmount)) {
+                    throw new \Exception(
+                        match ($paymentType) {
+                            'full' => "For full payments, amount must equal due (৳{$maxAmount}).",
+                            'partial' => "Partial payment must be less than due (৳{$maxAmount}).",
+                            'discounted' => "Discounted payment must be less than due (৳{$maxAmount}).",
+                        },
+                    );
+                }
             }
-        }
-        // Normal validation for other statuses
-        else {
-            if (($paymentType === 'full' && $amount != $maxAmount) ||
-                (in_array($paymentType, ['partial', 'discounted']) && $amount >= $maxAmount)) {
-                $errorMessage = match ($paymentType) {
-                    'full' => "For full payments, the amount must equal the due amount (৳{$maxAmount}).",
-                    'partial' => "Partial payment must be less than the due amount (৳{$maxAmount}).",
-                    'discounted' => "Discounted payment must be less than the due amount (৳{$maxAmount}).",
-                };
-                return redirect()->back()->with('warning', $errorMessage);
+
+            /* ---------------- Voucher number ---------------- */
+            $transactionCount = PaymentTransaction::where('payment_invoice_id', $invoice->id)->withTrashed()->count();
+
+            $voucherNo = 'TXN_' . $invoice->invoice_number . '_' . str_pad($transactionCount + 1, 2, '0', STR_PAD_LEFT);
+
+            $newAmountDue = $invoice->amount_due - $amount;
+
+            /* ---------------- Create transaction ---------------- */
+            $transaction = PaymentTransaction::create([
+                'student_id'         => $invoice->student_id,
+                'student_classname'  => $invoice->student->class->name . ' (' . $invoice->student->class->class_numeral . ')',
+                'payment_invoice_id' => $invoice->id,
+                'amount_paid'        => $amount,
+                'remaining_amount'   => $newAmountDue,
+                'payment_type'       => $paymentType,
+                'voucher_no'         => $voucherNo,
+                'created_by'         => auth()->id(),
+                'remarks'            => $validated['transaction_remarks'],
+                'is_approved'        => $paymentType !== 'discounted',
+            ]);
+
+            /* ---------------- Update invoice ---------------- */
+            if ($paymentType !== 'discounted') {
+                $invoice->update([
+                    'amount_due' => max($newAmountDue, 0),
+                    'status'     => $newAmountDue <= 0 ? 'paid' : 'partially_paid',
+                ]);
             }
-        }
 
-        // Count existing transactions for this invoice to get next sequence number
-        $transactionCount = PaymentTransaction::where('payment_invoice_id', $invoice->id)->withTrashed()->count();
-        $sequence         = str_pad($transactionCount + 1, 2, '0', STR_PAD_LEFT);
-        $voucherNo        = 'TXN_' . $invoice->invoice_number . '_' . $sequence;
+            /* =====================================================
+             * ✅ SHEET PAYMENT AUTO INSERT (CORRECTED)
+             * Sheet resolved via: student → class → sheet
+             * =====================================================
+             */
+            if ($invoice->invoiceType?->type_name === 'Sheet Fee') {
+                $sheet = $invoice->student->class?->sheet;
 
-        // Update invoice status and amount_due
-        $newAmountDue = $invoice->amount_due - $validated['transaction_amount'];
+                if ($sheet && ! SheetPayment::where('invoice_id', $invoice->id)->exists()) {
+                    SheetPayment::create([
+                        'sheet_id'   => $sheet->id,
+                        'invoice_id' => $invoice->id,
+                        'student_id' => $invoice->student_id,
+                    ]);
+                }
+            }
 
-        // Create transaction
-        $transaction = PaymentTransaction::create([
-            'student_id'         => $validated['transaction_student'],
-            'student_classname'  => $invoice->student->class->name . ' (' . $invoice->student->class->class_numeral . ')',
-            'payment_invoice_id' => $invoice->id,
-            'amount_paid'        => $validated['transaction_amount'],
-            'remaining_amount'   => $newAmountDue,
-            'payment_type'       => $validated['transaction_type'],
-            'voucher_no'         => $voucherNo,
-            'created_by'         => auth()->user()->id,
-            'remarks'            => $validated['transaction_remarks'],
-            'is_approved'        => $validated['transaction_type'] !== 'discounted', // true for full/partial, false for discounted
-        ]);
+            /* ---------------- Auto SMS ---------------- */
+            $mobile = $transaction->student->mobileNumbers->where('number_type', 'sms')->first()?->mobile_number;
 
-        if ($validated['transaction_type'] === 'discounted') {
-            // For discounted payments, mark the payment as pending and is_approved false
-            // $invoice->update([
-            //     'amount_due' => 0,
-            //     'status'     => 'paid',
-            // ]);
-        } elseif ($newAmountDue <= 0) {
-            // Full payment (regular case)
-            $invoice->update([
-                'amount_due' => 0,
-                'status'     => 'paid',
-            ]);
-        } else {
-            // Partial payment
-            $invoice->update([
-                'amount_due' => $newAmountDue,
-                'status'     => 'partially_paid',
-            ]);
-        }
+            if ($mobile) {
+                send_auto_sms('student_payment_success', $mobile, [
+                    'student_name'     => $transaction->student->name,
+                    'invoice_no'       => $invoice->invoice_number,
+                    'voucher_no'       => $transaction->voucher_no,
+                    'paid_amount'      => $transaction->amount_paid,
+                    'remaining_amount' => $transaction->remaining_amount,
+                    'payment_time'     => $transaction->created_at->format('d M Y, h:i A'),
+                ]);
+            }
+        });
 
-        // AutoSMS for transaction creation
-        $mobile = $transaction->student->mobileNumbers
-            ->where('number_type', 'sms')
-            ->first()
-            ->mobile_number;
-
-        send_auto_sms(
-            'student_payment_success',
-            $mobile,
-            [
-                'student_name'     => $transaction->student->name,
-                'invoice_no'       => $invoice->invoice_number,
-                'voucher_no'       => $transaction->voucher_no,
-                'paid_amount'      => $transaction->amount_paid,
-                'remaining_amount' => $transaction->remaining_amount,
-                'payment_time'     => $transaction->created_at->format('d M Y, h:i A'),
-            ]
-        );
-
-        // Clear the cache
         clearUCMSCaches();
 
         return redirect()->back()->with('success', 'Transaction recorded successfully.');

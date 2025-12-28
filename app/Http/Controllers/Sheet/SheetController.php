@@ -33,7 +33,7 @@ class SheetController extends Controller
             ->whereHas('class', function ($query) {
                 $query->where('is_active', true);
             })
-            ->latest()
+            ->latest('id')
             ->get();
 
         $classes = ClassName::all();
@@ -46,7 +46,7 @@ class SheetController extends Controller
      */
     public function create()
     {
-        //
+        return redirect()->route('sheets.index');
     }
 
     /**
@@ -83,7 +83,7 @@ class SheetController extends Controller
      */
     public function show(string $id)
     {
-        if (! auth()->user()->can('sheets.view')) {
+        if (auth()->user()->cannot('sheets.view')) {
             return redirect()->back()->with('warning', 'No permission to view sheets.');
         }
 
@@ -159,7 +159,7 @@ class SheetController extends Controller
 
     public function getPaidSheets($studentId)
     {
-        $payments = SheetPayment::with('sheet')->where('student_id', $studentId)->whereHas('invoice', fn($q) => $q->whereIn('status', ['paid', 'partially_paid'])->whereHas('invoiceType', fn($i) => $i->where('type_name', 'sheet_fee')))->get();
+        $payments = SheetPayment::with('sheet')->where('student_id', $studentId)->whereHas('invoice', fn($q) => $q->whereIn('status', ['paid', 'partially_paid'])->whereHas('invoiceType', fn($i) => $i->where('type_name', 'Sheet Fee')))->get();
 
         $sheets = $payments->map(function ($payment) {
             return [
