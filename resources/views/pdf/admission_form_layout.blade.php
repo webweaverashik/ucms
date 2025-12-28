@@ -94,6 +94,25 @@
             -webkit-appearance: none;
             margin: 0;
         }
+
+        /* Your existing checkbox styles (already in your PDF template) */
+        input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+            accent-color: black;
+        }
+
+        /* Add this style for the 4th Subject badge */
+        .fourth-badge {
+            background-color: #eee;
+            color: #000;
+            font-size: 10px;
+            padding: 1px 3px;
+            border-radius: 2px;
+            font-weight: 600;
+            margin-left: 2px;
+            display: inline-block;
+        }
     </style>
 </head>
 
@@ -204,7 +223,7 @@
 
                 <label class="shrink-0 font-normal mr-2 whitespace-nowrap">DoB :</label>
                 <div class="shrink-0 border-b border-dotted border-black dotted-underline min-w-[70px] mr-2">
-                    {{ optional($student->date_of_birth)->format('d/m/Y') ?? '.'}}
+                    {{ optional($student->date_of_birth)->format('d/m/Y') ?? '.' }}
                 </div>
 
                 <label class="shrink-0 ml-2 font-normal whitespace-nowrap">Gender :</label>
@@ -314,27 +333,35 @@
                 </tbody>
             </table>
 
-            <div class="inline-block mb-2 text-[15px] font-bold">&#9884; Enrolled Subjects</div>
 
             @php
                 $takenSubjectIds = $student->subjectsTaken->pluck('subject_id')->toArray();
 
+                // subject_id => is_4th_subject
+                $fourthSubjectMap = $student->subjectsTaken->pluck('is_4th_subject', 'subject_id')->toArray();
+
                 // Desired group order
                 $groupOrder = ['General', 'Science', 'Commerce'];
 
-                // Sort and group subjects by academic_group
-                $groupedSubjects = collect($student->class->subjects)
+                // Get subjects: General + student's academic group
+$groupedSubjects = collect($student->class->subjects)
+    ->filter(function ($subject) use ($student) {
+        // Always include General
+        if ($subject->academic_group === 'General') {
+            return true;
+        }
+
+        // Include student's group (Science / Commerce)
+                        return $subject->academic_group === $student->academic_group;
+                    })
                     ->sortBy(function ($subject) use ($groupOrder) {
                         return array_search($subject->academic_group, $groupOrder) !== false
                             ? array_search($subject->academic_group, $groupOrder)
-                            : count($groupOrder); // put unmatched groups at the end
+                            : count($groupOrder);
                     })
-                    ->groupBy('academic_group')
-                    ->filter(function ($subjects) use ($takenSubjectIds) {
-                        // Keep only groups that have at least one subject taken by the student
-                        return $subjects->pluck('id')->intersect($takenSubjectIds)->isNotEmpty();
-                    });
+                    ->groupBy('academic_group');
             @endphp
+
 
             <div class="mb-1 space-y-1 text-[13px] font-normal">
                 @foreach ($groupedSubjects as $group => $subjects)
@@ -342,18 +369,24 @@
                         <div class="font-semibold text-gray-600 mb-1">{{ $group ?? 'Others' }}:</div>
                         <div class="grid grid-cols-4 gap-2">
                             @foreach ($subjects as $subject)
+                                @php
+                                    $isEnrolled = in_array($subject->id, $takenSubjectIds);
+                                    $is4thSubject =
+                                        isset($fourthSubjectMap[$subject->id]) && $fourthSubjectMap[$subject->id];
+                                @endphp
                                 <label class="flex items-center space-x-1">
-                                    <input type="checkbox" class="form-checkbox" name="subjects[]"
-                                        value="{{ $subject->id }}"
-                                        {{ in_array($subject->id, $takenSubjectIds) ? 'checked' : '' }} />
+                                    <input type="checkbox" class="form-checkbox" {{ $isEnrolled ? 'checked' : '' }}
+                                        onclick="return false;" />
                                     <span>{{ $subject->name }}</span>
+                                    @if ($is4thSubject)
+                                        <span class="fourth-badge">4th</span>
+                                    @endif
                                 </label>
                             @endforeach
                         </div>
                     </div>
                 @endforeach
             </div>
-
 
 
             <div class="flex justify-around text-[12px] font-normal mt-10 mb-2">

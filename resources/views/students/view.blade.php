@@ -830,51 +830,92 @@
                         <div class="card-body py-0">
                             <!--begin::Table wrapper-->
                             @php
-                                $groupedSubjects = $student->subjectsTaken->groupBy(
-                                    fn($item) => $item->subject->academic_group ?? 'Unknown',
-                                );
+                                // Organize subjects into three categories
+
+                                // 1. Compulsory General - academic_group is 'General' and subject_type is 'compulsory'
+                                $compulsoryGeneral = $student->subjectsTaken->filter(function ($item) {
+                                    return $item->subject->academic_group === 'General' &&
+                                        $item->subject->subject_type === 'compulsory' &&
+                                        !$item->is_4th_subject;
+                                });
+
+                                // 2. Science/Commerce Subjects - All subjects (compulsory OR optional) that are NOT 4th subject
+                                $groupSubjects = $student->subjectsTaken->filter(function ($item) {
+                                    return in_array($item->subject->academic_group, ['Science', 'Commerce']) &&
+                                        !$item->is_4th_subject; // Includes both compulsory and optional
+                                });
+
+                                // 3. 4th Subject - is_4th_subject = true
+                                $fourthSubject = $student->subjectsTaken->filter(function ($item) {
+                                    return $item->is_4th_subject === true;
+                                });
+
+                                // Get the academic group name for display
+                                $groupName =
+                                    $groupSubjects->first()?->subject->academic_group ?? $student->academic_group;
                             @endphp
 
                             <div class="row">
-                                {{-- Render priority groups first --}}
-                                @foreach (['General', 'Science', 'Commerce'] as $priorityGroup)
-                                    @if ($groupedSubjects->has($priorityGroup))
-                                        <div class="col-12 mb-2">
-                                            <h5 class="fw-bold">{{ $priorityGroup }}</h5>
-                                            <div class="row">
-                                                @foreach ($groupedSubjects[$priorityGroup] as $subjectTaken)
-                                                    <div class="col-md-3 mb-3">
-                                                        <h6 class="text-gray-600">
-                                                            <i class="bi bi-check2-circle fs-3 text-success"></i>
-                                                            {{ $subjectTaken->subject->name ?? 'N/A' }}
-                                                        </h6>
-                                                    </div>
-                                                @endforeach
-                                            </div>
+                                {{-- 1. Compulsory (General) --}}
+                                @if ($compulsoryGeneral->isNotEmpty())
+                                    <div class="col-12 mb-6">
+                                        <h5 class="fw-bold text-gray-800 mb-4">
+                                            <span class="bullet bullet-dot bg-success me-2 h-10px w-10px"></span>
+                                            Compulsory (General)
+                                        </h5>
+                                        <div class="row">
+                                            @foreach ($compulsoryGeneral as $subjectTaken)
+                                                <div class="col-md-3 mb-3">
+                                                    <h6 class="text-gray-600">
+                                                        <i class="bi bi-check2-circle fs-3 text-success"></i>
+                                                        {{ $subjectTaken->subject->name ?? 'N/A' }}
+                                                    </h6>
+                                                </div>
+                                            @endforeach
                                         </div>
-                                    @endif
-                                @endforeach
+                                    </div>
+                                @endif
 
-                                {{-- Render remaining non-priority groups --}}
-                                @foreach ($groupedSubjects as $group => $subjects)
-                                    @if (!in_array($group, ['General', 'Science', 'Commerce']))
-                                        <div class="col-12 mb-2">
-                                            <h4 class="fw-bold">{{ $group }}</h4>
-                                            <div class="row">
-                                                @foreach ($subjects as $subjectTaken)
-                                                    <div class="col-md-3 mb-3">
-                                                        <h5 class="text-gray-700">
-                                                            <i class="bi bi-check2-circle fs-3 text-success"></i>
-                                                            {{ $subjectTaken->subject->name ?? 'N/A' }}
-                                                        </h5>
-                                                    </div>
-                                                @endforeach
-                                            </div>
+                                {{-- 2. Science/Commerce Subjects (includes both compulsory and optional, but NOT 4th subject) --}}
+                                @if ($groupSubjects->isNotEmpty())
+                                    <div class="col-12 mb-6">
+                                        <h5 class="fw-bold text-gray-800 mb-4">
+                                            <span class="bullet bullet-dot bg-primary me-2 h-10px w-10px"></span>
+                                            {{ $groupName }} Subjects
+                                        </h5>
+                                        <div class="row">
+                                            @foreach ($groupSubjects as $subjectTaken)
+                                                <div class="col-md-3 mb-3">
+                                                    <h6 class="text-gray-600">
+                                                        <i class="bi bi-check2-circle fs-3 text-primary"></i>
+                                                        {{ $subjectTaken->subject->name ?? 'N/A' }}
+                                                    </h6>
+                                                </div>
+                                            @endforeach
                                         </div>
-                                    @endif
-                                @endforeach
+                                    </div>
+                                @endif
+
+                                {{-- 3. 4th Subject (Optional) --}}
+                                @if ($fourthSubject->isNotEmpty())
+                                    <div class="col-12 mb-4">
+                                        <h5 class="fw-bold text-gray-800 mb-4">
+                                            <span class="bullet bullet-dot bg-info me-2 h-10px w-10px"></span>
+                                            4th Subject
+                                        </h5>
+                                        <div class="row">
+                                            @foreach ($fourthSubject as $subjectTaken)
+                                                <div class="col-md-3 mb-3">
+                                                    <h6 class="text-gray-600">
+                                                        <i class="bi bi-check2-circle fs-3 text-info"></i>
+                                                        {{ $subjectTaken->subject->name ?? 'N/A' }}
+                                                    </h6>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
-
                             <!--end::Table wrapper-->
                         </div>
                         <!--end::Card body-->
