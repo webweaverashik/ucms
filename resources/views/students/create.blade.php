@@ -831,101 +831,101 @@
                         <!--end::Heading-->
 
                         <!--begin::Branch radio-->
-                        <div class="fv-row mb-7  ">
-                            <!--begin::Label-->
-                            <label class="fs-6 fw-semibold mb-2 required">Branch
-                            </label>
-                            <!--End::Label-->
-                            <!--begin::Row-->
+                        <div class="fv-row mb-7 @if (!auth()->user()->isAdmin()) d-none @endif">
+                            <label class="fs-6 fw-semibold mb-2 required">Branch</label>
                             <div class="row row-cols-1 row-cols-md-3 row-cols-lg-1 row-cols-xl-3 g-9"
                                 data-kt-buttons="true" data-kt-buttons-target="[data-kt-button='true']">
                                 @foreach ($branches as $branch)
                                     <div class="col">
-                                        <!--begin::Option-->
                                         <label
                                             class="btn btn-outline btn-outline-dashed btn-active-light-primary @if ($loop->first) active @endif d-flex text-start p-6"
                                             data-kt-button="true">
-                                            <!--begin::Radio-->
                                             <span
                                                 class="form-check form-check-custom form-check-solid form-check-sm align-items-start mt-1">
                                                 <input class="form-check-input branch-radio" type="radio"
                                                     name="student_branch" value="{{ $branch->id }}" required
                                                     @if ($loop->first) checked="checked" @endif />
                                             </span>
-                                            <!--end::Radio-->
-                                            <!--begin::Info-->
                                             <span class="ms-5">
                                                 <span
                                                     class="fs-4 fw-bold text-gray-800 d-block">{{ $branch->branch_name }}</span>
                                             </span>
-                                            <!--end::Info-->
                                         </label>
-                                        <!--end::Option-->
                                     </div>
                                 @endforeach
                             </div>
-                            <!--end::Row-->
                         </div>
                         <!--end::Branch radio-->
 
                         <!--begin::Batch radio-->
                         <div class="fv-row mb-7">
-                            <!--begin::Label-->
-                            <label class="fs-6 fw-semibold mb-2 required">Batch
-                            </label>
-                            <!--End::Label-->
-                            <!--begin::Row-->
-                            <div id="batch-container"
-                                class="row row-cols-1 row-cols-md-3 row-cols-lg-2 row-cols-xl-4 g-9">
+                            <label class="fs-6 fw-semibold mb-2 required">Batch</label>
+                            <div id="batch-container" class="row row-cols-1 row-cols-md-3 row-cols-lg-2 row-cols-xl-4 g-9"
+                                data-kt-buttons="true" data-kt-buttons-target="[data-kt-button='true']">
+
+                                @php
+                                    $defaultBranchId = $branches->first()->id;
+                                @endphp
+
                                 @foreach ($branches as $branch)
                                     @foreach ($batches->where('branch_id', $branch->id) as $batch)
                                         <div class="col batch-option" data-branch="{{ $branch->id }}"
-                                            style="display: none;">
+                                            style="{{ $branch->id == $defaultBranchId ? '' : 'display: none;' }}">
                                             <label
                                                 class="btn btn-outline btn-outline-dashed btn-active-light-primary d-flex text-start p-6"
                                                 data-kt-button="true">
                                                 <span
-                                                    class="form-check form-check-custom form-check-solid form-check-sm align-items-start mt-1">
+                                                    class="form-check form-check-custom form-check-solid form-check-sm mt-1">
                                                     <input class="form-check-input" type="radio" name="student_batch"
                                                         value="{{ $batch->id }}" required />
                                                 </span>
                                                 <span class="ms-5">
-                                                    <span
-                                                        class="fs-4 fw-bold text-gray-800 d-block">{{ $batch->name }}</span>
+                                                    <span class="fs-4 fw-bold text-gray-800 d-block">
+                                                        {{ $batch->name }} ({{ $batch->branch->branch_prefix }})
+                                                    </span>
                                                 </span>
                                             </label>
                                         </div>
                                     @endforeach
                                 @endforeach
                             </div>
-
-                            <!--end::Row-->
                         </div>
                         <!--end::Batch radio-->
 
+
                         {{-- Tuition fee, type, due date Row --}}
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
+                                <!--begin::Input group-->
+                                <div class="mb-7 fv-row">
+                                    <!--begin::Label-->
+                                    <label class="required fw-semibold fs-6 mb-2">Admission Fee</label>
+                                    <!--end::Label-->
+                                    <!--begin::Input-->
+                                    <input type="number" class="form-control form-control-solid"
+                                        name="student_admission_fee" min="0" placeholder="Admission fee"
+                                        required />
+                                    <!--end::Input-->
+                                </div>
+                                <!--end::Input group-->
+                            </div>
+
+                            <div class="col-md-3">
                                 <!--begin::Input group-->
                                 <div class="mb-7 fv-row">
                                     <!--begin::Label-->
                                     <label class="required fw-semibold fs-6 mb-2">Tuition Fee</label>
                                     <!--end::Label-->
-                                    <!--begin::Input group-->
-                                    {{-- <div class="input-group input-group-solid mb-5 flex-nowrap"> --}}
+                                    <!--begin::Input-->
                                     <input type="number" class="form-control form-control-solid"
-                                        name="student_tuition_fee" min="0" placeholder="Write tuition fee"
+                                        name="student_tuition_fee" min="0" placeholder="Monthly tuition fee"
                                         required />
-                                    {{-- <span class="input-group-text">
-                                            Tk
-                                        </span>
-                                    </div> --}}
-                                    <!--end::Input group-->
+                                    <!--end::Input-->
                                 </div>
                                 <!--end::Input group-->
                             </div>
 
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <!--begin::Input group-->
                                 <div class="fv-row mb-7">
                                     <!--begin::Label-->
@@ -955,7 +955,7 @@
                                 <!--end::Input group-->
                             </div>
 
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <!--begin::Input group-->
                                 <div class="fv-row mb-7">
                                     <!--begin::Label-->
@@ -979,7 +979,7 @@
 
                         {{-- Referrer Row --}}
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <!--begin::Input group-->
                                 <div class="fv-row mb-7">
                                     <!--begin::Label-->
@@ -1010,7 +1010,7 @@
                                 <!--end::Input group-->
                             </div>
 
-                            <div class="col-md-8">
+                            <div class="col-md-9">
                                 <!--begin::Input group-->
                                 <div class="fv-row mb-7">
                                     <!--begin::Label-->
@@ -1149,12 +1149,5 @@
         var ajaxStudentRoute = "{{ route('admin.referrers.students') }}";
     </script>
 
-    {{-- AJAX Teacher or Student Data loading : Referred By --}}
-    <script src="{{ asset('js/students/ajax-reference.js') }}"></script>
-
-    {{-- Dynamically show subject list and group --}}
-    <script src="{{ asset('js/students/ajax-subjects.js') }}"></script>
-
-    {{-- Student admission form ajax activities --}}
     <script src="{{ asset('js/students/create.js') }}"></script>
 @endpush

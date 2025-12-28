@@ -55,7 +55,7 @@
                         <!--begin::Image-->
                         <div class="d-flex flex-center flex-shrink-0 bg-light rounded-circle w-125px h-125px me-7 mb-4">
                             <img class="w-100 p-3 rounded-circle"
-                                src="{{ $invoice->student->photo_url ?? asset($invoice->student->gender == 'male' ? 'img/boy.png' : 'img/girl.png')}}"
+                                src="{{ asset($invoice->student->photo_url) ?? asset($invoice->student->gender == 'male' ? 'img/boy.png' : 'img/girl.png')}}"
                                 alt="{{ $invoice->student->name }}" />
                         </div>
 
@@ -102,7 +102,7 @@
                         </tr>
                         <!--end::Row-->
 
-                        @if ($invoice->invoice_type == 'tuition_fee')
+                        @if ($invoice->invoiceType->type_name == 'tuition_fee')
                             <!--begin::Row-->
                             <tr class="">
                                 <td class="text-gray-500">Billing Month:</td>
@@ -144,7 +144,7 @@
                 <div class="col-md-3">
                     <!--begin::Details-->
                     <table class="table fs-6 fw-semibold gs-0 gy-1 gx-0 mt-5">
-                        @if ($invoice->invoice_type == 'tuition_fee')
+                        @if ($invoice->invoiceType->type_name == 'tuition_fee')
                             <tr class="">
                                 <td class="text-gray-500">Due Date:</td>
                                 <td class="text-gray-800">
@@ -156,11 +156,11 @@
                         <tr class="">
                             <td class="text-gray-500">Invoice Type:</td>
                             <td class="text-gray-800">
-                                {{ ucwords(str_replace('_', ' ', $invoice->invoice_type)) }}
+                                {{ ucwords(str_replace('_', ' ', $invoice->invoiceType->type_name)) }}
                             </td>
                         </tr>
 
-                        @if ($invoice->invoice_type == 'sheet_fee')
+                        @if ($invoice->invoiceType->type_name == 'sheet_fee')
                             <tr class="">
                                 <td class="text-gray-500">Sheet Group:</td>
                                 <td class="text-gray-800">
@@ -209,7 +209,7 @@
                             <td>
                                 @if ($status === 'due')
                                     @if ($isOverdue)
-                                        @if ($invoice->invoice_type != 'tuition_fee')
+                                        @if ($invoice->invoiceType->type_name != 'tuition_fee')
                                             <span class="badge badge-warning">Due</span>
                                         @else
                                             <span class="badge badge-danger ms-1">Overdue</span>

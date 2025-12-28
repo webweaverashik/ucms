@@ -32,7 +32,9 @@ class SendDueInvoiceReminderSms extends Command
 
         $dueInvoices = PaymentInvoice::with(['student.mobileNumbers', 'student.studentActivation', 'student.payments'])
             ->where('status', '!=', 'paid')
-            ->where('invoice_type', 'tuition_fee')
+            ->whereHas('invoiceType', function ($q) {
+                $q->where('type_name', 'Tuition Fee');
+            })
             ->whereHas('student', fn($q) => $q->whereHas('studentActivation', fn($q2) => $q2->where('active_status', 'active')))
             ->get()
             ->filter(function ($invoice) use ($today) {
@@ -59,11 +61,11 @@ class SendDueInvoiceReminderSms extends Command
                 send_auto_sms('student_due_invoice_reminder', $mobile, [
                     'student_name' => $invoice->student->name,
                     'month_year'   => $invoice->month_year
-                    ? Carbon::createFromDate(
+                        ? Carbon::createFromDate(
                         explode('_', $invoice->month_year)[1], // year
                         explode('_', $invoice->month_year)[0], // month
                     )->format('F')
-                    : now()->format('F'),
+                        : now()->format('F'),
                     'due_amount'   => $invoice->amount_due,
                     'due_date'     => $this->ordinal($invoice->student->payments->due_date) . ' ' . now()->format('F'),
                 ]);
@@ -76,7 +78,6 @@ class SendDueInvoiceReminderSms extends Command
 
         $this->info('Due invoice reminder SMS processed.');
     }
-
 
     /**
      * Convert number to ordinal (1st, 2nd, 3rd, etc.)

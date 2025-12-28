@@ -533,7 +533,6 @@
     </script>
 
     <script src="{{ asset('js/transactions/index.js') }}"></script>
-    <script src="{{ asset('js/transactions/ajax-form.js') }}"></script>
 
     <script>
         document.getElementById("payments_menu").classList.add("here", "show");

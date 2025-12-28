@@ -1,11 +1,11 @@
 <?php
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Carbon;
+use App\Models\Payment\PaymentInvoice;
 use App\Models\Student\Student;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use App\Models\Payment\PaymentInvoice;
 
 class AutoInvoiceController extends Controller
 {
@@ -45,7 +45,13 @@ class AutoInvoiceController extends Controller
             $monthYear = $student->payments->payment_style === 'current' ? "{$currentMonth}_{$currentYear}" : "{$lastMonth}_{$currentYear}";
 
             // Check if student already has an invoice for this month_year
-            $existingInvoice = $student->paymentInvoices()->where('month_year', $monthYear)->where('invoice_type', 'tuition_fee')->exists();
+            $existingInvoice = $student
+                ->paymentInvoices()
+                ->where('month_year', $monthYear)
+                ->whereHas('invoiceType', function ($q) {
+                    $q->where('type_name', 'Tuition Fee');
+                })
+                ->exists();
 
             if ($existingInvoice) {
                 continue;
@@ -69,6 +75,8 @@ class AutoInvoiceController extends Controller
         $branchId = auth()->user()->branch_id;
         Cache::forget('invoices_index_branch_' . $branchId);
 
-        return redirect()->back()->with('success', "Generated {$generatedInvoices} new invoices.");
+        return redirect()
+            ->back()
+            ->with('success', "Generated {$generatedInvoices} new invoices.");
     }
 }

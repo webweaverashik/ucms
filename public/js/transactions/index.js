@@ -14,13 +14,13 @@ var KTAllTransactionsList = function () {
                   "lengthMenu": [10, 25, 50, 100],
                   "pageLength": 10,
                   "lengthChange": true,
-                  "autoWidth": false,  // Disable auto width
+                  "autoWidth": false,
                   'columnDefs': [
-                        { orderable: false, targets: 9 }, // Disable ordering on column Actions                
+                        { orderable: false, targets: 9 },
                   ]
             });
 
-            // Re-init functions on every table re-draw -- more info: https://datatables.net/reference/event/draw
+            // Re-init functions on every table re-draw
             datatable.on('draw', function () {
 
             });
@@ -51,7 +51,8 @@ var KTAllTransactionsList = function () {
                         {
                               extend: 'csvHtml5',
                               className: 'buttons-csv',
-                              title: documentTitle, exportOptions: {
+                              title: documentTitle,
+                              exportOptions: {
                                     columns: ':visible:not(.not-export)'
                               }
                         },
@@ -67,19 +68,13 @@ var KTAllTransactionsList = function () {
                                     }
                               },
                               customize: function (doc) {
-                                    // Set page margins [left, top, right, bottom]
-                                    doc.pageMargins = [20, 20, 20, 40]; // reduce from default 40
-
-                                    // Optional: Set font size globally
+                                    doc.pageMargins = [20, 20, 20, 40];
                                     doc.defaultStyle.fontSize = 10;
-
-                                    // Optional: Set header or footer
-                                    doc.footer = getPdfFooterWithPrintTime(); // your custom footer function
+                                    doc.footer = getPdfFooterWithPrintTime();
                               }
                         }
-
                   ]
-            }).container().appendTo('#kt_hidden_export_buttons'); // or a hidden container
+            }).container().appendTo('#kt_hidden_export_buttons');
 
             // Hook dropdown export actions
             const exportItems = document.querySelectorAll('#kt_table_report_dropdown_menu [data-row-export]');
@@ -97,56 +92,51 @@ var KTAllTransactionsList = function () {
             });
       };
 
-
-      // Search Datatable --- official docs reference: https://datatables.net/reference/api/search()
+      // Search Datatable
       var handleSearch = function () {
             const filterSearch = document.querySelector('[data-transaction-table-filter="search"]');
-            filterSearch.addEventListener('keyup', function (e) {
-                  datatable.search(e.target.value).draw();
-            });
+            if (filterSearch) {
+                  filterSearch.addEventListener('keyup', function (e) {
+                        datatable.search(e.target.value).draw();
+                  });
+            }
       }
 
       // Filter Datatable
       var handleFilter = function () {
-            // Select filter options
             const filterForm = document.querySelector('[data-transaction-table-filter="form"]');
+            if (!filterForm) return;
+
             const filterButton = filterForm.querySelector('[data-transaction-table-filter="filter"]');
             const resetButton = filterForm.querySelector('[data-transaction-table-filter="reset"]');
             const selectOptions = filterForm.querySelectorAll('select');
 
-            // Filter datatable on submit
-            filterButton.addEventListener('click', function () {
-                  var filterString = '';
+            if (filterButton) {
+                  filterButton.addEventListener('click', function () {
+                        var filterString = '';
 
-                  // Get filter values
-                  selectOptions.forEach((item, index) => {
-                        if (item.value && item.value !== '') {
-                              if (index !== 0) {
-                                    filterString += ' ';
+                        selectOptions.forEach((item, index) => {
+                              if (item.value && item.value !== '') {
+                                    if (index !== 0) {
+                                          filterString += ' ';
+                                    }
+                                    filterString += item.value;
                               }
+                        });
 
-                              // Build filter value options
-                              filterString += item.value;
-                        }
+                        datatable.search(filterString).draw();
                   });
+            }
 
-                  // Filter datatable --- official docs reference: https://datatables.net/reference/api/search()
-                  datatable.search(filterString).draw();
-            });
-
-            // Reset datatable
-            resetButton.addEventListener('click', function () {
-                  // Reset filter form
-                  selectOptions.forEach((item, index) => {
-                        // Reset Select2 dropdown --- official docs reference: https://select2.org/programmatic-control/add-select-clear-items
-                        $(item).val(null).trigger('change');
+            if (resetButton) {
+                  resetButton.addEventListener('click', function () {
+                        selectOptions.forEach((item, index) => {
+                              $(item).val(null).trigger('change');
+                        });
+                        datatable.search('').draw();
                   });
-
-                  // Filter datatable --- official docs reference: https://datatables.net/reference/api/search()
-                  datatable.search('').draw();
-            });
+            }
       }
-
 
       // Delete Transaction
       const handleDeletion = function () {
@@ -203,7 +193,6 @@ var KTAllTransactionsList = function () {
             });
       };
 
-
       // Transaction approval AJAX
       const handleApproval = function () {
             document.querySelectorAll('.approve-txn').forEach(item => {
@@ -238,7 +227,7 @@ var KTAllTransactionsList = function () {
                                                             text: "Transaction approved successfully.",
                                                             icon: "success",
                                                       }).then(() => {
-                                                            location.reload(); // Reload to reflect changes
+                                                            location.reload();
                                                       });
                                                 } else {
                                                       Swal.fire({
@@ -263,7 +252,6 @@ var KTAllTransactionsList = function () {
       };
 
       return {
-            // Public functions  
             init: function () {
                   table = document.getElementById('kt_transactions_table');
 
@@ -288,7 +276,6 @@ var KTAddTransaction = function () {
 
       // Early return if element doesn't exist
       if (!element) {
-            console.error('Modal element not found');
             return {
                   init: function () { }
             };
@@ -298,43 +285,262 @@ var KTAddTransaction = function () {
       const modal = bootstrap.Modal.getOrCreateInstance(element);
       const studentSelect = document.getElementById('transaction_student_select');
       const invoiceSelect = document.getElementById('student_due_invoice_select');
+      const amountInput = document.getElementById('transaction_amount_input');
 
+      // Store invoices data
+      let invoices = [];
 
-      // Init add transaction form
-      var initAddTransaction = () => {
+      // Track if selected invoice is partially paid
+      let isPartiallyPaidInvoice = false;
 
+      // Format "07_2025" to "July 2025"
+      var formatMonthYear = function (raw) {
+            if (!raw) return '';
+
+            const [monthStr, year] = raw.split('_');
+            const month = parseInt(monthStr, 10);
+
+            const monthNames = [
+                  'January', 'February', 'March', 'April', 'May', 'June',
+                  'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+
+            if (month >= 1 && month <= 12 && year) {
+                  return `${monthNames[month - 1]} ${year}`;
+            }
+
+            return raw;
       }
 
-      var initCloseModal = () => {
+      // Fetch invoices on student select
+      var handleStudentSelect = function () {
+            $(studentSelect).on('change', function () {
+                  const studentId = $(this).val();
+                  if (!studentId) return;
 
-            // Reset Select2 inputs
+                  $.ajax({
+                        url: `/students/${studentId}/due-invoices`,
+                        method: 'GET',
+                        success: function (response) {
+                              invoices = response;
+                              const $invoiceSelect = $(invoiceSelect);
+                              $invoiceSelect.empty().append(`<option value="">Select Due Invoice</option>`);
 
+                              if (response.length === 0) {
+                                    $invoiceSelect.append(`<option disabled>No due invoices found</option>`);
+                              } else {
+                                    response.forEach(invoice => {
+                                          const total = Number(invoice.total_amount).toLocaleString('en-BD');
+                                          const due = Number(invoice.amount_due).toLocaleString('en-BD');
+
+                                          const label = invoice.month_year
+                                                ? formatMonthYear(invoice.month_year)
+                                                : (invoice.invoice_type || 'Unknown');
+
+                                          $invoiceSelect.append(
+                                                `<option value="${invoice.id}">
+                                    ${invoice.invoice_number} (${label}) - Total: ৳${total}, Due: ৳${due}
+                                </option>`
+                                          );
+                                    });
+                              }
+
+                              $(amountInput)
+                                    .val('')
+                                    .prop('disabled', true)
+                                    .removeClass('is-invalid');
+                              $('#transaction_amount_error').remove();
+                              $('input[name="transaction_type"]').prop('disabled', false);
+                        },
+                        error: function () {
+                              alert('Failed to load due invoices. Please try again.');
+                        }
+                  });
+            });
+      }
+
+      // Populate amount and adjust payment options when invoice selected
+      var handleInvoiceSelect = function () {
+            $(invoiceSelect).on('change', function () {
+                  const selectedId = $(this).val();
+                  const invoice = invoices.find(inv => inv.id == selectedId);
+
+                  if (invoice) {
+                        const $amountInput = $(amountInput);
+                        $amountInput
+                              .val(invoice.amount_due)
+                              .prop('disabled', false)
+                              .data('max', invoice.amount_due)
+                              .attr('min', 1);
+
+                        const $fullPaymentOption = $('input[name="transaction_type"][value="full"]');
+                        const $partialPaymentOption = $('input[name="transaction_type"][value="partial"]');
+
+                        if (invoice.amount_due < invoice.total_amount) {
+                              // Invoice is partially paid
+                              isPartiallyPaidInvoice = true;
+                              $fullPaymentOption.prop('disabled', true).prop('checked', false);
+                              $partialPaymentOption.prop('checked', true);
+                              $amountInput.val('');
+                        } else {
+                              // Fresh invoice
+                              isPartiallyPaidInvoice = false;
+                              $fullPaymentOption.prop('disabled', false);
+                              $partialPaymentOption.prop('disabled', false);
+                              $fullPaymentOption.prop('checked', true);
+                              $amountInput.val(invoice.amount_due);
+                        }
+                  }
+            });
+      }
+
+      // Toggle input behavior for payment type
+      var handlePaymentTypeChange = function () {
+            $('input[name="transaction_type"]').on('change', function () {
+                  const paymentType = $(this).val();
+                  const $amountInput = $(amountInput);
+                  const selectedId = $(invoiceSelect).val();
+                  const invoice = invoices.find(inv => inv.id == selectedId);
+
+                  if (invoice) {
+                        if (paymentType === 'partial') {
+                              $amountInput.val('');
+                        } else if (paymentType === 'discounted') {
+                              $amountInput.val('');
+                        } else {
+                              $amountInput.val(invoice.amount_due);
+                        }
+                  }
+            });
+      }
+
+      // Validate amount input
+      var handleAmountValidation = function () {
+            $(amountInput).on('input', function () {
+                  const amount = parseFloat($(this).val());
+                  const maxAmount = parseFloat($(this).data('max'));
+                  const paymentType = $('input[name="transaction_type"]:checked').val();
+
+                  // Remove previous error state
+                  $(this).removeClass('is-invalid');
+                  $('#transaction_amount_error').remove();
+
+                  // Validate the amount
+                  let isValid = true;
+                  let errorMessage = '';
+
+                  if (isNaN(amount)) {
+                        isValid = false;
+                        errorMessage = 'Please enter a valid number';
+                  } else if (amount < 1) {
+                        isValid = false;
+                        errorMessage = 'Amount must be at least ৳1';
+                  } else if (
+                        (paymentType === 'partial' || paymentType === 'discounted') &&
+                        !isPartiallyPaidInvoice &&
+                        amount >= maxAmount
+                  ) {
+                        // For fresh invoices, partial/discounted must be less than max
+                        isValid = false;
+                        errorMessage = `For ${paymentType} payment, amount must be less than the due amount of ৳${maxAmount}`;
+                  } else if (
+                        (paymentType === 'partial' || paymentType === 'discounted') &&
+                        isPartiallyPaidInvoice &&
+                        amount > maxAmount
+                  ) {
+                        // For partially paid invoices, allow equal to or less than remaining amount
+                        isValid = false;
+                        errorMessage = `Amount must be less than or equal to the due amount of ৳${maxAmount}`;
+                  } else if (paymentType === 'full' && amount != maxAmount) {
+                        isValid = false;
+                        errorMessage = `For full payment, amount must be exactly ৳${maxAmount}`;
+                  }
+
+                  if (!isValid) {
+                        $(this).addClass('is-invalid');
+                        $(this).after(
+                              `<div class="invalid-feedback" id="transaction_amount_error">
+                        ${errorMessage}
+                    </div>`
+                        );
+                  }
+            });
+      }
+
+      // Form submission validation
+      var handleFormSubmit = function () {
+            $(form).on('submit', function (e) {
+                  const amount = parseFloat($(amountInput).val());
+                  const maxAmount = parseFloat($(amountInput).data('max'));
+                  const paymentType = $('input[name="transaction_type"]:checked').val();
+
+                  let isValid = true;
+
+                  if (isNaN(amount)) {
+                        isValid = false;
+                  } else if (amount < 1) {
+                        isValid = false;
+                  } else if (
+                        (paymentType === 'partial' || paymentType === 'discounted') &&
+                        !isPartiallyPaidInvoice &&
+                        amount >= maxAmount
+                  ) {
+                        // For fresh invoices, partial/discounted must be less than max
+                        isValid = false;
+                  } else if (
+                        (paymentType === 'partial' || paymentType === 'discounted') &&
+                        isPartiallyPaidInvoice &&
+                        amount > maxAmount
+                  ) {
+                        // For partially paid invoices, allow equal to or less than remaining amount
+                        isValid = false;
+                  } else if (paymentType === 'full' && amount != maxAmount) {
+                        isValid = false;
+                  }
+
+                  if (!isValid || $(amountInput).hasClass('is-invalid')) {
+                        e.preventDefault();
+                        toastr.warning('Please enter a valid amount.');
+                        return false;
+                  }
+
+                  return true;
+            });
+      }
+
+      // Reset form and close modal
+      var resetForm = function () {
+            if (form) form.reset();
+
+            if (studentSelect && $(studentSelect).data('select2')) {
+                  $(studentSelect).val(null).trigger('change');
+            }
+
+            if (invoiceSelect && $(invoiceSelect).data('select2')) {
+                  $(invoiceSelect).val(null).trigger('change');
+            }
+
+            if (amountInput) {
+                  amountInput.value = '';
+                  amountInput.disabled = true;
+            }
+
+            $(amountInput).removeClass('is-invalid');
+            $('#transaction_amount_error').remove();
+
+            // Reset invoices array and flags
+            invoices = [];
+            isPartiallyPaidInvoice = false;
+      }
+
+      // Handle modal close actions
+      var handleCloseModal = function () {
             // Cancel button handler
             const cancelButton = element.querySelector('[data-kt-add-transaction-modal-action="cancel"]');
             if (cancelButton) {
-                  cancelButton.addEventListener('click', e => {
+                  cancelButton.addEventListener('click', function (e) {
                         e.preventDefault();
-                        if (form) form.reset();
-
-                        if (studentSelect && $(studentSelect).data('select2')) {
-                              $(studentSelect).val(null).trigger('change');
-                        }
-
-                        if (invoiceSelect && $(invoiceSelect).data('select2')) {
-                              $(invoiceSelect).val(null).trigger('change');
-                        }
-
-                        // Reset amount input
-                        const amountInput = document.getElementById('transaction_amount_input');
-                        if (amountInput) {
-                              amountInput.value = '';
-                              amountInput.disabled = true;
-                        }
-
-                        // Remove previous error state
-                        $('#transaction_amount_input').removeClass('is-invalid');
-                        $('#transaction_amount_error').remove();
-
+                        resetForm();
                         modal.hide();
                   });
             }
@@ -342,29 +548,9 @@ var KTAddTransaction = function () {
             // Close button handler
             const closeButton = element.querySelector('[data-kt-add-transaction-modal-action="close"]');
             if (closeButton) {
-                  closeButton.addEventListener('click', e => {
+                  closeButton.addEventListener('click', function (e) {
                         e.preventDefault();
-                        if (form) form.reset();
-
-                        if (studentSelect && $(studentSelect).data('select2')) {
-                              $(studentSelect).val(null).trigger('change');
-                        }
-
-                        if (invoiceSelect && $(invoiceSelect).data('select2')) {
-                              $(invoiceSelect).val(null).trigger('change');
-                        }
-
-                        // Reset amount input
-                        const amountInput = document.getElementById('transaction_amount_input');
-                        if (amountInput) {
-                              amountInput.value = '';
-                              amountInput.disabled = true;
-                        }
-
-                        // Remove previous error state
-                        $('#transaction_amount_input').removeClass('is-invalid');
-                        $('#transaction_amount_error').remove();
-
+                        resetForm();
                         modal.hide();
                   });
             }
@@ -372,8 +558,12 @@ var KTAddTransaction = function () {
 
       return {
             init: function () {
-                  // initAddTransaction();
-                  initCloseModal();
+                  handleStudentSelect();
+                  handleInvoiceSelect();
+                  handlePaymentTypeChange();
+                  handleAmountValidation();
+                  handleFormSubmit();
+                  handleCloseModal();
             }
       };
 }();

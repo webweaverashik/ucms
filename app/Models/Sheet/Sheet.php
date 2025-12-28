@@ -10,10 +10,7 @@ class Sheet extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'class_id',
-        'price',
-    ];
+    protected $fillable = ['class_id', 'price'];
 
     public function class ()
     {
@@ -22,10 +19,7 @@ class Sheet extends Model
 
     public function sheetPayments()
     {
-        return $this->hasMany(SheetPayment::class)
-            ->whereHas('invoice', function ($query) {
-                $query->where('invoice_type', 'sheet_fee');
-            });
+        return $this->hasMany(SheetPayment::class)->whereHas('invoice.invoiceType', fn($q) => $q->where('type_name', 'sheet_fee'));
     }
 
     public function sheetPaymentsCount()
@@ -41,8 +35,7 @@ class Sheet extends Model
             'class_id',   // Foreign key on Subject table
             'subject_id', // Foreign key on SheetTopic table
             'class_id',   // Local key on Sheet table
-            'id'          // Local key on Subject table
+            'id',         // Local key on Subject table
         );
     }
-
 }

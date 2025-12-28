@@ -131,14 +131,9 @@
                                             data-placeholder="Select option" data-allow-clear="true"
                                             data-kt-subscription-table-filter="product" data-hide-search="true">
                                             <option></option>
-                                            <option value="tuition_fee">Tuition Fee</option>
-                                            <option value="admission_fee">Admission Fee</option>
-                                            <option value="sheet_fee">Sheet Fee</option>
-                                            <option value="diary_fee">Diary Fee</option>
-                                            <option value="book_fee">Book Fee</option>
-                                            <option value="exam_fee">Exam Fee</option>
-                                            <option value="model_test_fee">Model Test Fee</option>
-                                            <option value="others_fee">Others</option>
+                                            @foreach ($invoice_types as $type)
+                                                <option value="ucms_{{ $type->type_name }}">{{ $type->type_name }}</option>
+                                            @endforeach
                                         </select>
                                     </div>
                                     <!--end::Input group-->
@@ -288,13 +283,15 @@
                                         </a>
                                     </td>
 
-                                    <td class="d-none">{{ $invoice->invoiceType->type_name }}</td>
-                                    <td>{{ ucwords(str_replace('_', ' ', $invoice->invoiceType->type_name)) }}</td>
+                                    <td class="d-none">ucms_{{ $invoice->invoiceType->type_name }}</td>
+                                    <td>{{ $invoice->invoiceType->type_name }}</td>
 
                                     <td class="d-none">D_{{ $invoice->month_year }}</td>
 
                                     <td>
-                                        @if ($invoice->invoiceType->type_name === 'tuition_fee' && preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year ?? '', $matches))
+                                        @if (
+                                            $invoice->invoiceType->type_name === 'Tuition Fee' &&
+                                                preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year ?? '', $matches))
                                             {{ \Carbon\Carbon::create($matches[2], $matches[1], 1)->format('F Y') }}
                                         @else
                                             N/A
@@ -308,14 +305,14 @@
                                     <td>{{ $invoice->amount_due }}</td>
 
                                     <td class="d-none">
-                                        @if ($invoice->invoiceType->type_name == 'tuition_fee')
+                                        @if ($invoice->invoiceType->type_name == 'Tuition Fee')
                                             1/{{ $invoice->student->payments->due_date }}
                                         @else
                                             N/A
                                         @endif
                                     </td>
                                     <td>
-                                        @if ($invoice->invoiceType->type_name == 'tuition_fee')
+                                        @if ($invoice->invoiceType->type_name == 'Tuition Fee')
                                             {{ ucfirst($invoice->student->payments->payment_style) }}-1/{{ $invoice->student->payments->due_date }}
                                         @else
                                             N/A
@@ -377,24 +374,19 @@
                                     </td>
 
                                     <td>
-                                        @if (optional($invoice->student->studentActivation)->active_status == 'active' &&
-                                                $invoice->status == 'due' &&
-                                                $invoice->payment_transactions_count == 0)
-                                            @if ($canEditInvoice)
-                                                <a href="#" title="Edit invoice"
-                                                    data-invoice-id="{{ $invoice->id }}" data-bs-toggle="modal"
-                                                    data-bs-target="#kt_modal_edit_invoice"
-                                                    class="btn btn-icon text-hover-primary w-30px h-30px">
-                                                    <i class="ki-outline ki-pencil fs-2"></i>
-                                                </a>
-                                            @endif
-                                            @if ($canDeleteInvoice)
-                                                <a href="#" title="Delete invoice" data-bs-toggle="tooltip"
-                                                    class="btn btn-icon text-hover-danger w-30px h-30px delete-invoice"
-                                                    data-invoice-id="{{ $invoice->id }}">
-                                                    <i class="ki-outline ki-trash fs-2"></i>
-                                                </a>
-                                            @endif
+                                        @if ($canEditInvoice)
+                                            <a href="#" title="Edit invoice" data-invoice-id="{{ $invoice->id }}"
+                                                data-bs-toggle="modal" data-bs-target="#kt_modal_edit_invoice"
+                                                class="btn btn-icon text-hover-primary w-30px h-30px">
+                                                <i class="ki-outline ki-pencil fs-2"></i>
+                                            </a>
+                                        @endif
+                                        @if ($canDeleteInvoice)
+                                            <a href="#" title="Delete invoice" data-bs-toggle="tooltip"
+                                                class="btn btn-icon text-hover-danger w-30px h-30px delete-invoice"
+                                                data-invoice-id="{{ $invoice->id }}">
+                                                <i class="ki-outline ki-trash fs-2"></i>
+                                            </a>
                                         @endif
                                     </td>
                                 </tr>
@@ -459,14 +451,10 @@
                                             data-placeholder="Select option" data-allow-clear="true"
                                             data-kt-subscription-table-filter="product" data-hide-search="true">
                                             <option></option>
-                                            <option value="tuition_fee">Tuition Fee</option>
-                                            <option value="admission_fee">Admission Fee</option>
-                                            <option value="sheet_fee">Sheet Fee</option>
-                                            <option value="diary_fee">Diary Fee</option>
-                                            <option value="book_fee">Book Fee</option>
-                                            <option value="exam_fee">Exam Fee</option>
-                                            <option value="model_test_fee">Model Test Fee</option>
-                                            <option value="others_fee">Others</option>
+                                            @foreach ($invoice_types as $type)
+                                                <option value="ucms_{{ $type->type_name }}">{{ $type->type_name }}
+                                                </option>
+                                            @endforeach
                                         </select>
                                     </div>
                                     <!--end::Input group-->
@@ -600,15 +588,17 @@
                                         </a>
                                     </td>
 
-                                    <td class="d-none">{{ $invoice->invoiceType->type_name }}</td>
-                                    <td>{{ ucwords(str_replace('_', ' ', $invoice->invoiceType->type_name)) }}</td>
+                                    <td class="d-none">ucms_{{ $invoice->invoiceType->type_name }}</td>
+                                    <td>{{ $invoice->invoiceType->type_name }}</td>
 
                                     <td>{{ $invoice->total_amount }}</td>
 
                                     <td class="d-none">P_{{ $invoice->month_year }}</td>
 
                                     <td>
-                                        @if ($invoice->invoiceType->type_name === 'tuition_fee' && preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year ?? '', $matches))
+                                        @if (
+                                            $invoice->invoiceType->type_name === 'Tuition Fee' &&
+                                                preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year ?? '', $matches))
                                             {{ \Carbon\Carbon::create($matches[2], $matches[1], 1)->format('F Y') }}
                                         @else
                                             N/A
@@ -617,14 +607,14 @@
                                     </td>
 
                                     <td class="d-none">
-                                        @if ($invoice->invoiceType->type_name == 'tuition_fee')
+                                        @if ($invoice->invoiceType->type_name == 'Tuition Fee')
                                             1/{{ $invoice->student->payments->due_date }}
                                         @else
                                             N/A
                                         @endif
                                     </td>
                                     <td>
-                                        @if ($invoice->invoiceType->type_name == 'tuition_fee')
+                                        @if ($invoice->invoiceType->type_name == 'Tuition Fee')
                                             {{ ucfirst($invoice->student->payments->payment_style) }}-1/{{ $invoice->student->payments->due_date }}
                                         @else
                                             N/A
@@ -738,14 +728,10 @@
                                                 data-placeholder="Select a invoice type" data-hide-search="false" required
                                                 disabled>
                                                 <option></option>
-                                                <option value="tuition_fee" selected>Tuition Fee</option>
-                                                <option value="admission_fee">Admission Fee</option>
-                                                <option value="sheet_fee">Sheet Fee</option>
-                                                <option value="diary_fee">Diary Fee</option>
-                                                <option value="book_fee">Book Fee</option>
-                                                <option value="exam_fee">Exam Fee</option>
-                                                <option value="model_test_fee">Model Test Fee</option>
-                                                <option value="others_fee">Others</option>
+                                                @foreach ($invoice_types as $type)
+                                                    <option value="{{ $type->id }}">{{ $type->type_name }}
+                                                    </option>
+                                                @endforeach
                                             </select>
                                         </div>
                                     </div>
@@ -952,14 +938,10 @@
                                             data-control="select2" data-dropdown-parent="#kt_modal_edit_invoice"
                                             data-placeholder="Select a invoice type" disabled>
                                             <option></option>
-                                            <option value="tuition_fee">Tuition Fee</option>
-                                            <option value="admission_fee">Admission Fee</option>
-                                            <option value="sheet_fee">Sheet Fee</option>
-                                            <option value="diary_fee">Diary Fee</option>
-                                            <option value="book_fee">Book Fee</option>
-                                            <option value="exam_fee">Exam Fee</option>
-                                            <option value="model_test_fee">Model Test Fee</option>
-                                            <option value="others_fee">Others</option>
+                                            @foreach ($invoice_types as $type)
+                                                <option value="{{ $type->id }}">{{ $type->type_name }}
+                                                </option>
+                                            @endforeach
                                         </select>
                                     </div>
                                 </div>

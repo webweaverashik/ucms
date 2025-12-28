@@ -1006,7 +1006,7 @@
                                                         {{ $invoice->invoice_number }}
                                                     </a>
                                                 </td>
-                                                <td>{{ ucwords(str_replace('_', ' ', $invoice->invoice_type)) }}</td>
+                                                <td>{{ $invoice->invoiceType->type_name }}</td>
                                                 <td>
                                                     @if (preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year, $matches))
                                                         {{ \Carbon\Carbon::create($matches[2], $matches[1], 1)->format('F Y') }}

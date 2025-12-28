@@ -40,6 +40,42 @@ class User extends Authenticatable
         ];
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Role Helper Methods
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Check if user is an Admin.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin');
+    }
+
+    /**
+     * Check if user is a Manager.
+     */
+    public function isManager(): bool
+    {
+        return $this->hasRole('manager');
+    }
+
+    /**
+     * Check if user is an Accountant.
+     */
+    public function isAccountant(): bool
+    {
+        return $this->hasRole('accountant');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
+
     /**
      * Get the associated branch of the current user.
      */
@@ -62,7 +98,9 @@ class User extends Authenticatable
      */
     public function latestLoginActivity()
     {
-        return $this->hasOne(LoginActivity::class)->where('user_type', 'user')->latestOfMany()->select('login_activities.*');
+        return $this->hasOne(LoginActivity::class)
+            ->where('user_type', 'user')
+            ->latestOfMany()
+            ->select('login_activities.*');
     }
-
 }

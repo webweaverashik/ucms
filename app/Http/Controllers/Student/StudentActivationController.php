@@ -18,11 +18,13 @@ class StudentActivationController extends Controller
         // Check if the student has any unpaid (due or partially_paid) invoice
         $hasDueInvoice = $student->paymentInvoices()
             ->whereIn('status', ['due', 'partially_paid'])
-            ->where('invoice_type', 'tuition_fee')
+            ->whereHas('invoiceType', function ($query) {
+                $query->where('type_name', 'Tuition Fee');
+            })
             ->exists();
 
         if ($hasDueInvoice) {
-            return response()->json(['success' => false, 'message' => 'Admission fee is still due. Cannot approve.']);
+            return response()->json(['success' => false, 'message' => 'First tuition fee is still due. Cannot approve.']);
         }
 
         $request->validate([

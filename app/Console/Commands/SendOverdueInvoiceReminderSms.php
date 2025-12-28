@@ -10,17 +10,13 @@ class SendOverdueInvoiceReminderSms extends Command
 {
     /**
      * The name and signature of the console command.
-     *
-     * @var string
      */
     protected $signature = 'sms:send-overdue-invoice-reminder';
 
     /**
      * The console command description.
-     *
-     * @var string
      */
-    protected $description = 'Send SMS to students with overdue invoices i.e. due date passed';
+    protected $description = 'Send SMS to students with overdue tuition fee invoices';
 
     /**
      * Execute the console command.
@@ -31,45 +27,49 @@ class SendOverdueInvoiceReminderSms extends Command
 
         $dueInvoices = PaymentInvoice::with(['student.mobileNumbers', 'student.studentActivation', 'student.payments'])
             ->where('status', '!=', 'paid')
-            ->where('invoice_type', 'tuition_fee')
-            ->whereHas('student', fn($q) => $q->whereHas('studentActivation', fn($q2) => $q2->where('active_status', 'active')))
-            ->whereHas('student.payments', fn($q) => $q->where('due_date', '<', $today))
-            ->get();
-
-        $dueInvoices = PaymentInvoice::with(['student.mobileNumbers', 'student.studentActivation', 'student.payments' => fn($q) => $q->whereDate('due_date', '<', $today)])
-            ->where('status', '!=', 'paid')
-            ->where('invoice_type', 'tuition_fee')
-            ->whereHas('student', fn($q) => $q->whereHas('studentActivation', fn($q2) => $q2->where('active_status', 'active')))
+            ->whereHas('invoiceType', fn($q) => $q->where('type_name', 'tuition_fee'))
+            ->whereHas('student.studentActivation', fn($q) => $q->where('active_status', 'active'))
             ->whereHas('student.payments', fn($q) => $q->whereDate('due_date', '<', $today))
             ->get();
 
-        Log::info('Found overdue invoices count: ' . $dueInvoices->count());
+        Log::info('Overdue invoice reminder: found ' . $dueInvoices->count() . ' invoices');
 
         foreach ($dueInvoices as $invoice) {
-            $mobile = $invoice->student->mobileNumbers->where('number_type', 'sms')->first()->mobile_number ?? null;
+            $student = $invoice->student;
 
-            Log::info("Processing overdue invoice {$invoice->id} for student {$invoice->student->id}, mobile: {$mobile}");
-
-            if ($mobile) {
-                send_auto_sms('student_overdue_invoice_reminder', $mobile, [
-                    'student_name' => $invoice->student->name,
-                    'month_year'   => $invoice->month_year
-                    ? Carbon::createFromDate(
-                        explode('_', $invoice->month_year)[1], // year
-                        explode('_', $invoice->month_year)[0], // month
-                    )->format('F')
-                    : now()->format('F'),
-                    'due_date'     => $this->ordinal($invoice->student->payments->due_date) . ' ' . now()->format('F'),
-                    'due_amount'   => $invoice->amount_due,
-                ]);
-
-                Log::info("SMS sent for invoice {$invoice->id} to {$mobile}");
-            } else {
-                Log::warning("No mobile number found for student {$invoice->student->id}");
+            if (! $student) {
+                continue;
             }
+
+            $mobile = $student->mobileNumbers->where('number_type', 'sms')->first()?->mobile_number;
+
+            if (! $mobile) {
+                Log::warning("No SMS number found for student ID {$student->id}");
+                continue;
+            }
+
+            $dueDate = $student->payments?->due_date;
+
+            $formattedDueDate = $dueDate ? $this->ordinal(Carbon::parse($dueDate)->day) . ' ' . Carbon::parse($dueDate)->format('F') : '';
+
+            $invoiceMonth = $invoice->month_year
+                ? Carbon::createFromDate(
+                explode('_', $invoice->month_year)[1], // year
+                explode('_', $invoice->month_year)[0], // month
+            )->format('F')
+                : now()->format('F');
+
+            send_auto_sms('student_overdue_invoice_reminder', $mobile, [
+                'student_name' => $student->name,
+                'month_year'   => $invoiceMonth,
+                'due_date'     => $formattedDueDate,
+                'due_amount'   => $invoice->amount_due,
+            ]);
+
+            Log::info("Overdue invoice SMS sent | Invoice ID: {$invoice->id} | Student ID: {$student->id}");
         }
 
-        $this->info('Overdue invoice reminder SMS processed.');
+        $this->info('Overdue invoice reminder SMS processing completed.');
     }
 
     /**
@@ -78,15 +78,14 @@ class SendOverdueInvoiceReminderSms extends Command
     private function ordinal(int $number): string
     {
         if (! in_array($number % 100, [11, 12, 13])) {
-            switch ($number % 10) {
-                case 1:
-                    return $number . 'st';
-                case 2:
-                    return $number . 'nd';
-                case 3:
-                    return $number . 'rd';
-            }
+            return match ($number % 10) {
+                1       => $number . 'st',
+                2       => $number . 'nd',
+                3       => $number . 'rd',
+                default => $number . 'th',
+            };
         }
+
         return $number . 'th';
     }
 }

@@ -19,7 +19,6 @@ return new class extends Migration
             $table->integer('amount_due');
             $table->string('month_year')->nullable();
             $table->enum('status', ['due', 'partially_paid', 'paid'])->default('due');
-            // $table->enum('invoice_type', ['tuition_fee', 'model_test_fee', 'exam_fee', 'others_fee', 'sheet_fee', 'admission_fee', 'diary_fee', 'book_fee'])->default('tuition_fee');
             $table->foreignId('invoice_type_id');
             $table->foreignId('created_by')->nullable();
             $table->softDeletes();

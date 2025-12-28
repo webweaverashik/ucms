@@ -87,9 +87,7 @@ class PdfController extends Controller
                 ['is_approved', '=', true],
             ])
             ->whereYear('created_at', $year)
-            // ->whereHas('paymentInvoice', function ($q) {
-            //     $q->where('invoice_type', 'tuition_fee');
-            // })
+
             ->get();
 
         if ($transactions->isEmpty()) {

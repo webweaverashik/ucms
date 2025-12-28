@@ -15,9 +15,7 @@ class SubjectController extends Controller
      */
     public function index()
     {
-        $subjects = Subject::all();
-
-        return view('subjects.index', compact('subjects'));
+        return redirect()->back();
     }
 
     /**
@@ -91,9 +89,9 @@ class SubjectController extends Controller
         return response()->json(['success' => true]);
     }
 
-/**
- * Get subjects by class ID using AJAX request
- */
+    /**
+     * Get subjects by class ID using AJAX request
+     */
     public function getSubjects(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -152,23 +150,6 @@ class SubjectController extends Controller
         ]);
     }
 
-    /**
-     * Get selection mode based on class numeral AND academic group
-     *
-     * SSC (Class 9-10):
-     *   - Science: Main Optional + 4th Subject
-     *   - Commerce: Only 4th Subject
-     *   - Arts: Only 4th Subject
-     *
-     * HSC (Class 11-12):
-     *   - Science: Main Optional + 4th Subject
-     *   - Commerce: Main Optional + 4th Subject
-     *   - Arts: Main Optional + 4th Subject
-     *
-     * @param int $classNumeral
-     * @param string $group
-     * @return array
-     */
     private function getSelectionMode(int $classNumeral, string $group): array
     {
         // Class 9-10 (SSC Level)

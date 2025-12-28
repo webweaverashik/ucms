@@ -1,7 +1,6 @@
 @push('page-css')
 @endpush
 
-
 @extends('layouts.app')
 
 @section('title', 'Edit Student')
@@ -23,7 +22,8 @@
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
                 <a href="#" class="text-muted text-hover-primary">
-                    Academic </a>
+                    Academic
+                </a>
             </li>
             <!--end::Item-->
             <!--begin::Item-->
@@ -33,13 +33,13 @@
             <!--end::Item-->
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                Admission </li>
+                Admission
+            </li>
             <!--end::Item-->
         </ul>
         <!--end::Breadcrumb-->
     </div>
 @endsection
-
 
 @section('content')
     <div id="error-container"></div>
@@ -48,14 +48,14 @@
         $bloodGroups = ['A+', 'B+', 'AB+', 'O+', 'A-', 'B-', 'AB-', 'O-'];
         $relationships = ['father', 'mother', 'brother', 'sister', 'uncle', 'aunt'];
         $dueDates = [7 => '1 to 7', 10 => '1 to 10', 15 => '1 to 15', 30 => '1 to 30'];
-        $refererType = $student->reference->referer_type ?? 'teacher'; // Default to 'teacher' if not set
+        $refererType = $student->reference->referer_type ?? 'teacher';
     @endphp
+
     <input type="hidden" id="student_id_input" name="student_id" value="{{ $student->id }}">
 
     <!--begin::Stepper-->
     <div class="stepper stepper-pills stepper-column d-flex flex-column flex-xl-row flex-row-fluid gap-10"
         id="kt_update_student_stepper">
-
         <!--begin::Aside-->
         <div class="card d-flex justify-content-center justify-content-xl-start flex-row-auto w-100 w-xl-300px w-xxl-400px">
             <!--begin::Wrapper-->
@@ -185,12 +185,12 @@
         </div>
         <!--begin::Aside-->
 
-
         <!--begin::Form Content-->
         <div class="card d-flex flex-row-fluid flex-center">
             <!--begin::Form-->
             <form class="card-body py-20 w-100 px-9" novalidate="novalidate" enctype="multipart/form-data"
                 id="kt_update_student_form">
+
                 <!--begin::Step 1-->
                 <div data-kt-stepper-element="content" class="current">
                     <!--begin::Wrapper-->
@@ -206,13 +206,12 @@
                             </h2>
                             <!--end::Title-->
                             <!--begin::Notice-->
-                            <div class="text-muted fw-semibold fs-6">If you need to change anything, just update that and
-                                keep others unchanged.
+                            <div class="text-muted fw-semibold fs-6">If you need to change anything, just update that
+                                and keep others unchanged.
                             </div>
                             <!--end::Notice-->
                         </div>
                         <!--end::Heading-->
-
 
                         <div class="row">
                             {{-- Personal Information --}}
@@ -261,7 +260,6 @@
                                         </div>
                                         <!--end::Input group-->
                                     </div>
-
                                     <div class="col-md-6">
                                         <!--begin::Input group-->
                                         <div class="fv-row mb-7">
@@ -277,7 +275,6 @@
                                         </div>
                                         <!--end::Input group-->
                                     </div>
-
                                     <div class="col-md-6">
                                         <!--begin::Input group-->
                                         <div class="fv-row mb-7">
@@ -314,7 +311,6 @@
                                         </div>
                                         <!--end::Email Input group-->
                                     </div>
-
                                     <div class="col-md-6">
                                         <!--begin::Birthday group-->
                                         <div class="fv-row">
@@ -349,17 +345,14 @@
                                     <label class="d-block fw-semibold fs-6 mb-5">Profile Photo <span
                                             class="text-muted">(optional)</span></label>
                                     <!--end::Label-->
-
                                     <!--begin::Image input-->
                                     <div class="image-input image-input-circle image-input-outline {{ $student->photo_url ? '' : 'image-input-empty image-input-placeholder' }}"
                                         data-kt-image-input="true">
-
                                         <!--begin::Preview existing avatar-->
                                         <div class="image-input-wrapper w-125px h-125px"
                                             style="background-image: url('{{ $student->photo_url ? asset($student->photo_url) : asset('assets/media/svg/files/blank-image.svg') }}');">
                                         </div>
                                         <!--end::Preview existing avatar-->
-
                                         <!--begin::Label-->
                                         <label
                                             class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
@@ -372,7 +365,6 @@
                                             <!--end::Inputs-->
                                         </label>
                                         <!--end::Label-->
-
                                         <!--begin::Cancel-->
                                         <span
                                             class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
@@ -381,7 +373,6 @@
                                             <i class="ki-outline ki-cross fs-2"></i>
                                         </span>
                                         <!--end::Cancel-->
-
                                         <!--begin::Remove-->
                                         <span
                                             class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
@@ -392,13 +383,11 @@
                                         <!--end::Remove-->
                                     </div>
                                     <!--end::Image input-->
-
                                     <!--begin::Hint-->
                                     <div class="form-text">Allowed file types: png, jpg, jpeg. Max 50kB</div>
                                     <!--end::Hint-->
                                 </div>
                                 <!--end::Photo Input group-->
-
 
                                 <!--begin::Gender Input group-->
                                 <div class="fv-row mb-7">
@@ -455,7 +444,6 @@
                                     <!--begin::Label-->
                                     <label class="form-label">Religion <span class="text-muted">(optional)</span></label>
                                     <!--end::Label-->
-
                                     <!--begin::Solid input group style-->
                                     <div class="input-group input-group-solid flex-nowrap">
                                         <span class="input-group-text">
@@ -485,7 +473,6 @@
                                     <label class="form-label">Blood Group <span
                                             class="text-muted">(optional)</span></label>
                                     <!--end::Label-->
-
                                     <!--begin::Solid input group style-->
                                     <div class="input-group input-group-solid flex-nowrap">
                                         <span class="input-group-text">
@@ -525,7 +512,7 @@
                             <h2 class="fw-bold text-gray-900">Guardian & Sibling Info</h2>
                             <!--end::Title-->
                             <!--begin::Notice-->
-                            <div class="text-muted fw-semibold fs-6">If you need more info, please check out
+                            <div class="text-muted fw-semibold fs-6">Update guardian and sibling information as needed.
                             </div>
                             <!--end::Notice-->
                         </div>
@@ -535,11 +522,9 @@
                         @if ($student->guardians->get(0))
                             <input type="hidden" name="guardian_1_id" value="{{ $student->guardians[0]->id }}">
                         @endif
-
                         @if ($student->guardians->get(1))
                             <input type="hidden" name="guardian_2_id" value="{{ $student->guardians[1]->id }}">
                         @endif
-
 
                         <!--begin::Parents Input group-->
                         <div class="mb-15">
@@ -566,7 +551,6 @@
                                     <!--begin::Label-->
                                     <label class="form-label required">Gender</label>
                                     <!--end::Label-->
-
                                     <!--begin::Solid input group style-->
                                     <select name="guardian_1_gender" data-hide-search="true"
                                         class="form-select form-select-solid" data-control="select2"
@@ -585,7 +569,6 @@
                                     <!--begin::Label-->
                                     <label class="form-label required">Relationship</label>
                                     <!--end::Label-->
-
                                     <!--begin::Solid input group style-->
                                     <select name="guardian_1_relationship" data-hide-search="true"
                                         class="form-select form-select-solid" data-control="select2"
@@ -621,7 +604,6 @@
                                     <!--begin::Label-->
                                     <label class="form-label">Gender</label>
                                     <!--end::Label-->
-
                                     <!--begin::Solid input group style-->
                                     <select name="guardian_2_gender" data-hide-search="true"
                                         class="form-select form-select-solid" data-control="select2"
@@ -640,7 +622,6 @@
                                     <!--begin::Label-->
                                     <label class="form-label">Relationship</label>
                                     <!--end::Label-->
-
                                     <!--begin::Solid input group style-->
                                     <select name="guardian_2_relationship" data-hide-search="true"
                                         class="form-select form-select-solid" data-control="select2"
@@ -670,11 +651,9 @@
                             @if ($student->siblings->get(0))
                                 <input type="hidden" name="sibling_1_id" value="{{ $student->siblings[0]->id }}">
                             @endif
-
                             @if ($student->siblings->get(1))
                                 <input type="hidden" name="sibling_2_id" value="{{ $student->siblings[1]->id }}">
                             @endif
-
 
                             {{-- Sibling - 1 --}}
                             <div class="form-group row mb-3 border border-dashed px-2 py-3 rounded">
@@ -706,7 +685,6 @@
                                     <!--begin::Label-->
                                     <label class="form-label">Relationship</label>
                                     <!--end::Label-->
-
                                     <!--begin::Solid input group style-->
                                     <select name="sibling_1_relationship" data-hide-search="true"
                                         class="form-select form-select-solid" data-control="select2"
@@ -754,7 +732,6 @@
                                     <!--begin::Label-->
                                     <label class="form-label">Relationship</label>
                                     <!--end::Label-->
-
                                     <!--begin::Solid input group style-->
                                     <select name="sibling_2_relationship" data-hide-search="true"
                                         class="form-select form-select-solid" data-control="select2"
@@ -772,7 +749,6 @@
                             </div>
                         </div>
                         <!--end::Siblings group-->
-
                     </div>
                     <!--end::Wrapper-->
                 </div>
@@ -788,12 +764,12 @@
                             <h2 class="fw-bold text-gray-900">Enrolled Subjects</h2>
                             <!--end::Title-->
                             <!--begin::Notice-->
-                            <div class="text-muted fw-semibold fs-6">Assign to the class and select enrolled subjects.
+                            <div class="text-muted fw-semibold fs-6">Update class, group, institution and subjects
+                                enrolled.
                             </div>
                             <!--end::Notice-->
                         </div>
                         <!--end::Heading-->
-
 
                         {{-- Class & Group --}}
                         <div class="row">
@@ -803,12 +779,11 @@
                                     <!--begin::Label-->
                                     <label class="form-label required">Class</label>
                                     <!--end::Label-->
-
                                     <!--begin::Solid input group style-->
                                     <select name="student_class" id="student_class_input"
                                         class="form-select form-select-solid" data-control="select2"
                                         data-placeholder="Assign to a class" required
-                                        @if (auth()->user()->hasRole('accountant')) disabled @endif>
+                                        @if (auth()->user()->isAccountant()) disabled @endif>
                                         <option></option>
                                         @foreach ($classnames as $classname)
                                             <option value="{{ $classname->id }}"
@@ -830,20 +805,19 @@
                                     <!--begin::Label-->
                                     <label class="form-label required">Group</label>
                                     <!--end::Label-->
-
                                     <!--begin::Row-->
                                     <div class="row">
                                         <!--begin::Col-->
-                                        <div class="col-lg-6">
+                                        <div class="col-md-6">
                                             <!--begin::Option-->
                                             <input type="radio" class="btn-check" name="student_academic_group"
                                                 value="Science" @if ($student->academic_group == 'Science' || $student->academic_group == 'General') checked="checked" @endif
                                                 id="academic_group_science_input" required
-                                                @if (auth()->user()->hasRole('accountant')) disabled @endif />
+                                                @if (auth()->user()->isAccountant()) disabled @endif />
                                             <label
-                                                class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center @if (auth()->user()->hasRole('accountant')) disabled @endif"
+                                                class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center @if (auth()->user()->isAccountant()) disabled @endif"
                                                 for="academic_group_science_input">
-                                                <i class="las la-flask fs-2x me-5"></i>
+                                                <i class="las la-flask fs-2x me-3"></i>
                                                 <!--begin::Info-->
                                                 <span class="d-block fw-semibold text-start">
                                                     <span class="text-gray-900 fw-bold d-block fs-6">Science</span>
@@ -853,19 +827,18 @@
                                             <!--end::Option-->
                                         </div>
                                         <!--end::Col-->
-
                                         <!--begin::Col-->
-                                        <div class="col-lg-6">
+                                        <div class="col-md-6">
                                             <!--begin::Option-->
                                             <input type="radio" class="btn-check" name="student_academic_group"
                                                 value="Commerce"
                                                 @if ($student->academic_group == 'Commerce') checked="checked" @endif
                                                 id="academic_group_commerce_input" required
-                                                @if (auth()->user()->hasRole('accountant')) disabled @endif />
+                                                @if (auth()->user()->isAccountant()) disabled @endif />
                                             <label
-                                                class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center @if (auth()->user()->hasRole('accountant')) disabled @endif"
+                                                class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center @if (auth()->user()->isAccountant()) disabled @endif"
                                                 for="academic_group_commerce_input">
-                                                <i class="las la-business-time fs-2x me-5"></i>
+                                                <i class="las la-business-time fs-2x me-3"></i>
                                                 <!--begin::Info-->
                                                 <span class="d-block fw-semibold text-start">
                                                     <span class="text-gray-900 fw-bold d-block fs-6">Commerce</span>
@@ -887,7 +860,6 @@
                             <!--begin::Label-->
                             <label class="form-label required">School/College</label>
                             <!--end::Label-->
-
                             <!--begin::Solid input group style-->
                             <div class="input-group input-group-solid flex-nowrap">
                                 <span class="input-group-text">
@@ -897,7 +869,7 @@
                                     <select name="student_institution" id="institution_select"
                                         class="form-select form-select-solid rounded-start-0 border-start"
                                         data-control="select2" data-placeholder="Select an instituition" required
-                                        @if (auth()->user()->hasRole('accountant')) disabled @endif>
+                                        @if (auth()->user()->isAccountant()) disabled @endif>
                                         <option></option>
                                         @foreach ($institutions as $institution)
                                             <option value="{{ $institution->id }}"
@@ -914,25 +886,27 @@
 
                         <!--begin::Enrolled Subjects-->
                         <div class="fv-row">
-                            <label class="form-label required">Enrolled Subjects</label>
-                            <p class="text-muted">Select all the subjects taken by the student.</p>
-
-                            <!-- Select All Toggle -->
-                            <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" id="select_all_subjects">
-                                <label class="form-check-label fw-bold fs-6" for="select_all_subjects">
-                                    All Subjects
-                                </label>
+                            <label class="form-label required fs-6 fw-semibold mb-3">Enrolled Subjects</label>
+                            <div
+                                class="notice d-flex bg-light-primary rounded border-primary border border-dashed p-4 mb-6">
+                                <i class="ki-outline ki-information-5 fs-2tx text-primary me-4"></i>
+                                <div class="fw-semibold">
+                                    <div class="fs-6 text-gray-700">
+                                        <strong>Compulsory subjects</strong> are auto-selected. For <strong>optional
+                                            subjects</strong>, select one as main and one as 4th subject.
+                                    </div>
+                                </div>
                             </div>
-
-                            <!-- begin:Subject Checkboxes -->
                             <div id="subject_list">
-                                <!-- Subjects will be loaded here dynamically via AJAX -->
+                                <div class="text-center py-10">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="text-muted mt-3">Loading subjects...</p>
+                                </div>
                             </div>
-                            <!-- end:Subject Checkboxes -->
                         </div>
                         <!-- end:Enrolled Subjects -->
-
                     </div>
                     <!--end::Wrapper-->
                 </div>
@@ -959,39 +933,35 @@
                         <div class="fv-row mb-7">
                             <!--begin::Label-->
                             <label class="fs-6 fw-semibold mb-2 required">Batch
+                                <span>
+                                    <i class="ki-outline ki-information fs-4" data-bs-toggle="tooltip"
+                                        data-bs-placement="top" title="Admin and Manager can change this."></i>
+                                </span>
                             </label>
                             <!--End::Label-->
                             <!--begin::Row-->
                             <div class="row row-cols-1 row-cols-md-3 row-cols-lg-2 row-cols-xl-4 g-9"
                                 data-kt-buttons="true" data-kt-buttons-target="[data-kt-button='true']">
                                 @foreach ($batches as $batch)
-                                    <!--begin::Col-->
                                     <div class="col">
-                                        <!--begin::Option-->
                                         <label
-                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary @if ($student->batch_id == $batch->id) active @endif d-flex text-start p-6 @if (auth()->user()->hasRole('accountant')) disabled @endif"
+                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary @if ($student->batch_id == $batch->id) active @endif d-flex text-start p-6 @if (auth()->user()->isAccountant()) disabled @endif"
                                             data-kt-button="true">
-                                            <!--begin::Radio-->
                                             <span
                                                 class="form-check form-check-custom form-check-solid form-check-sm align-items-start mt-1">
                                                 <input class="form-check-input" type="radio" name="student_batch"
                                                     value="{{ $batch->id }}" required
-                                                    @if (auth()->user()->hasRole('accountant')) disabled @endif
+                                                    @if (auth()->user()->isAccountant()) disabled @endif
                                                     @if ($student->batch_id == $batch->id) checked="checked" @endif />
                                             </span>
-                                            <!--end::Radio-->
-                                            <!--begin::Info-->
                                             <span class="ms-5">
-                                                <span
-                                                    class="fs-4 fw-bold text-gray-800 d-block">{{ $batch->name }}</span>
+                                                <span class="fs-4 fw-bold text-gray-800 d-block">
+                                                    {{ $batch->name }} ({{ $batch->branch->branch_prefix }})
+                                                </span>
                                             </span>
-                                            <!--end::Info-->
                                         </label>
-                                        <!--end::Option-->
                                     </div>
-                                    <!--end::Col-->
                                 @endforeach
-
                             </div>
                             <!--end::Row-->
                         </div>
@@ -1003,44 +973,52 @@
                                 <!--begin::Input group-->
                                 <div class="mb-7 fv-row">
                                     <!--begin::Label-->
-                                    <label class="required fw-semibold fs-6 mb-2">Tuition Fee (Tk)</label>
+                                    <label class="required fw-semibold fs-6 mb-2">Tuition Fee (Tk)
+                                        <span>
+                                            <i class="ki-outline ki-information fs-4" data-bs-toggle="tooltip"
+                                                data-bs-placement="top" title="Admin and Manager can change this."></i>
+                                        </span>
+                                    </label>
                                     <!--end::Label-->
                                     <!--begin::Input group-->
                                     <input type="number" class="form-control form-control-solid"
                                         name="student_tuition_fee" min="0" placeholder="Write tuition fee"
                                         required value="{{ $student->payments->tuition_fee }}"
-                                        @if (auth()->user()->hasRole('accountant')) disabled @endif />
+                                        @if (auth()->user()->isAccountant()) disabled @endif />
                                     <!--end::Input group-->
                                 </div>
                                 <!--end::Input group-->
                             </div>
-
                             <div class="col-md-4">
                                 <!--begin::Input group-->
                                 <div class="fv-row mb-7">
                                     <!--begin::Label-->
-                                    <label class="required fw-semibold fs-6 mb-2">Payment Style:</label>
+                                    <label class="required fw-semibold fs-6 mb-2">Payment Style:
+                                        <span>
+                                            <i class="ki-outline ki-information fs-4" data-bs-toggle="tooltip"
+                                                data-bs-placement="top" title="Admin and Manager can change this."></i>
+                                        </span>
+                                    </label>
                                     <!--end::Label-->
-
                                     <!--begin::Input-->
                                     <div class="d-flex mt-3">
                                         <!--begin::Radio-->
                                         <div class="form-check form-check-custom form-check-solid me-5">
                                             <input class="form-check-input" type="radio" value="current"
                                                 name="payment_style" id="payment_style_current" required
-                                                @if (auth()->user()->hasRole('accountant')) disabled @endif
+                                                @if (auth()->user()->isAccountant()) disabled @endif
                                                 @if ($student->payments->payment_style == 'current') checked="checked" @endif />
                                             <label
-                                                class="form-check-label fs-6 fw-medium @if (auth()->user()->hasRole('accountant')) disabled @endif"
+                                                class="form-check-label fs-6 fw-medium @if (auth()->user()->isAccountant()) disabled @endif"
                                                 for="payment_style_current">Current</label>
                                         </div>
                                         <div class="form-check form-check-custom form-check-solid">
                                             <input class="form-check-input" type="radio" value="due"
                                                 name="payment_style" id="payment_style_due" required
-                                                @if (auth()->user()->hasRole('accountant')) disabled @endif
+                                                @if (auth()->user()->isAccountant()) disabled @endif
                                                 @if ($student->payments->payment_style == 'due') checked="checked" @endif />
                                             <label
-                                                class="form-check-label fs-6 fw-medium @if (auth()->user()->hasRole('accountant')) disabled @endif"
+                                                class="form-check-label fs-6 fw-medium @if (auth()->user()->isAccountant()) disabled @endif"
                                                 for="payment_style_due">Due</label>
                                         </div>
                                         <!--end::Radio-->
@@ -1049,17 +1027,21 @@
                                 </div>
                                 <!--end::Input group-->
                             </div>
-
                             <div class="col-md-4">
                                 <!--begin::Input group-->
                                 <div class="fv-row mb-7">
                                     <!--begin::Label-->
-                                    <label class="fw-semibold fs-6 mb-2 required">Due Date:</label>
+                                    <label class="fw-semibold fs-6 mb-2 required">Due Date:
+                                        <span>
+                                            <i class="ki-outline ki-information fs-4" data-bs-toggle="tooltip"
+                                                data-bs-placement="top" title="Admin and Manager can change this."></i>
+                                        </span>
+                                    </label>
                                     <!--end::Label-->
                                     <!--begin::Input-->
                                     <select name="payment_due_date" class="form-select form-select-solid"
                                         data-control="select2" data-hide-search="true" data-placeholder="Select due date"
-                                        required @if (auth()->user()->hasRole('accountant')) disabled @endif>
+                                        required @if (auth()->user()->isAccountant()) disabled @endif>
                                         <option></option>
                                         @foreach ($dueDates as $value => $label)
                                             <option value="{{ $value }}"
@@ -1074,57 +1056,8 @@
                             </div>
                         </div>
 
-                        {{-- Referrer & Remarks Row --}}
+                        {{-- Remarks Row --}}
                         <div class="row">
-                            {{-- <div class="col-md-4">
-                                <!--begin::Input group-->
-                                <div class="fv-row mb-7">
-                                    <!--begin::Label-->
-                                    <label class="fw-semibold fs-6 mb-2">Referer Type <span
-                                            class="text-muted">(optional)</span></label>
-                                    <!--end::Label-->
-
-                                    <!--begin::Input-->
-                                    <div class="d-flex mt-3">
-                                        <!--begin::Radio-->
-                                        <div class="form-check form-check-custom form-check-solid me-5">
-                                            <input class="form-check-input" type="radio" value="teacher"
-                                                name="referer_type" id="referer_type_teacher" {{ $refererType == 'teacher' ? 'checked' : '' }} />
-                                            <label class="form-check-label fs-6 fw-medium"
-                                                for="referer_type_teacher">Teacher</label>
-                                        </div>
-
-                                        <div class="form-check form-check-custom form-check-solid">
-                                            <input class="form-check-input" type="radio" value="student" {{ $refererType == 'teacher' ? 'checked' : '' }}
-                                                name="referer_type" id="referer_type_student" />
-                                            <label class="form-check-label fs-6 fw-medium"
-                                                for="referer_type_student">Student</label>
-                                        </div>
-                                        <!--end::Radio-->
-                                    </div>
-                                    <!--end::Input-->
-                                </div>
-                                <!--end::Input group-->
-                            </div>
-
-                            <div class="col-md-8">
-                                <!--begin::Input group-->
-                                <div class="fv-row mb-7">
-                                    <!--begin::Label-->
-                                    <label class="fw-semibold fs-6 mb-2">Referred By <span
-                                            class="text-muted">(optional)</span></label>
-                                    <!--end::Label-->
-                                    <!--begin::Input-->
-                                    <select name="referred_by" id="referred_by" class="form-select form-select-solid"
-                                        data-control="select2" data-placeholder="Select the person">
-                                        <option></option>
-                                    </select>
-                                    <!--end::Input-->
-                                </div>
-                                <!--end::Input group-->
-                            </div> --}}
-
-                            {{-- Remarks Row --}}
                             <div class="col-md-12">
                                 <label class="form-label">Remarks <span class="text-muted">(optional)</span></label>
                                 <input type="text" class="form-control form-control-solid mb-2 mb-md-0"
@@ -1132,7 +1065,6 @@
                                     value="{{ $student->remarks }}" />
                             </div>
                         </div>
-
                     </div>
                     <!--end::Wrapper-->
                 </div>
@@ -1147,7 +1079,6 @@
                             <!--begin::Title-->
                             <h2 class="fw-bold text-gray-900">Update Done!</h2>
                             <!--end::Title-->
-
                             <!--begin::Notice-->
                             <div class="text-muted fw-semibold fs-6">Student data has been updated successfully.
                             </div>
@@ -1157,12 +1088,6 @@
 
                         <!--begin::Body-->
                         <div class="mb-0">
-                            {{-- <!--begin::Text-->
-                            <div class="fs-6 text-gray-600 mb-5">Writing headlines for blog posts is as much an art
-                                as it is a science and probably warrants its own post, but for all advise is with
-                                what works for your great & amazing audience.</div>
-                            <!--end::Text--> --}}
-
                             <!--begin::Alert-->
                             <!--begin::Notice-->
                             <div class="notice d-flex bg-light-success rounded border-success border border-dashed p-6">
@@ -1174,9 +1099,11 @@
                                 <div class="d-flex flex-stack flex-grow-1">
                                     <!--begin::Content-->
                                     <div class="fw-semibold">
-                                        <h4 class="text-gray-900 fw-bold"><span id="admitted_name">Ashikur Rahman</span>,
-                                            ID: <span id="admitted_id">G-250905</span></h4>
-                                        <div class="fs-6 text-gray-700">Please, recheck student data if everything is ok.
+                                        <h4 class="text-gray-900 fw-bold"><span
+                                                id="admitted_name">{{ $student->name }}</span>, ID: <span
+                                                id="admitted_id">{{ $student->student_unique_id }}</span></h4>
+                                        <div class="fs-6 text-gray-700">Please, recheck student data if everything is
+                                            ok.
                                         </div>
                                     </div>
                                     <!--end::Content-->
@@ -1202,15 +1129,17 @@
                             </i>Back</button>
                     </div>
                     <!--end::Wrapper-->
+
                     <!--begin::Wrapper-->
                     <div>
                         <button type="button" class="btn btn-lg btn-primary me-3" data-kt-stepper-action="submit">
-                            <span class="indicator-label">Submit
+                            <span class="indicator-label">Update
                                 <i class="ki-outline ki-arrow-right fs-3 ms-2 me-0">
                                 </i></span>
                             <span class="indicator-progress">Please wait...
                                 <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
                         </button>
+
                         <button type="button" class="btn btn-lg btn-primary" data-kt-stepper-action="next">Continue
                             <i class="ki-outline ki-arrow-right fs-4 ms-1 me-0">
                             </i></button>
@@ -1222,11 +1151,9 @@
             <!--end::Form-->
         </div>
         <!--end::Form Content-->
-
     </div>
     <!--end::Stepper-->
 @endsection
-
 
 @push('vendor-js')
 @endpush
@@ -1241,27 +1168,13 @@
             document.getElementById("pending_approval_link").classList.add("active");
         @endif
     </script>
-
     <script>
         var studentId = document.getElementById('student_id_input').value;
-
         var updateStudentRoute = function(studentId) {
             return "{{ route('students.update', ':id') }}".replace(':id', studentId);
         };
         var csrfToken = "{{ csrf_token() }}";
-
-        // --- For reference ajax request ---
-        // var ajaxTeacherRoute = "{{ route('admin.referrers.teachers') }}";
-        // var ajaxStudentRoute = "{{ route('admin.referrers.students') }}";
     </script>
-
-
-    {{-- AJAX Teacher or Student Data loading : Referred By --}}
-    {{-- <script src="{{ asset('js/students/ajax-reference.js') }}"></script> --}}
-
-    {{-- Dynamically show subject list and group --}}
-    <script src="{{ asset('js/students/ajax-subjects-update.js') }}"></script>
-
-    {{-- Student admission form ajax activities --}}
+    {{-- Single combined script --}}
     <script src="{{ asset('js/students/edit.js') }}"></script>
 @endpush

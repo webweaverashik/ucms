@@ -1,8 +1,7 @@
 <?php
-
 namespace Database\Seeders\Payment;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Payment\PaymentInvoiceType;
 use Illuminate\Database\Seeder;
 
 class PaymentInvoiceTypeSeeder extends Seeder
@@ -12,6 +11,21 @@ class PaymentInvoiceTypeSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        $types = [
+            'Tuition Fee',
+            'Admission Fee',
+            'Sheet Fee',
+            'Book Fee',
+            'Diary Fee',
+            'Exam Fee',
+            'Model Test Fee',
+            'Others Fee',
+        ];
+
+        foreach ($types as $type) {
+            PaymentInvoiceType::firstOrCreate([
+                'type_name' => $type,
+            ]);
+        }
     }
 }

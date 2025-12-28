@@ -23,9 +23,9 @@ class SheetController extends Controller
         }
 
         $sheets = Sheet::withCount([
-            'sheetPaymentsCount as sheetPayments_count' => function ($query) {
-                $query->whereHas('invoice', function ($q) {
-                    $q->where('invoice_type', 'sheet_fee');
+            'sheetPayments as sheetPayments_count' => function ($query) {
+                $query->whereHas('invoice.invoiceType', function ($q) {
+                    $q->where('type_name', 'Sheet Fee');
                 });
             },
         ])
@@ -159,12 +159,7 @@ class SheetController extends Controller
 
     public function getPaidSheets($studentId)
     {
-        $payments = SheetPayment::with('sheet')
-            ->where('student_id', $studentId)
-            ->whereHas('invoice', function ($query) {
-                $query->where('invoice_type', 'sheet_fee')->whereIn('status', ['paid', 'partially_paid']);
-            })
-            ->get();
+        $payments = SheetPayment::with('sheet')->where('student_id', $studentId)->whereHas('invoice', fn($q) => $q->whereIn('status', ['paid', 'partially_paid'])->whereHas('invoiceType', fn($i) => $i->where('type_name', 'sheet_fee')))->get();
 
         $sheets = $payments->map(function ($payment) {
             return [

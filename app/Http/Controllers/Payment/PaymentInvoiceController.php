@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Payment;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment\PaymentInvoice;
+use App\Models\Payment\PaymentInvoiceType;
 use App\Models\Sheet\SheetPayment;
 use App\Models\Student\Student;
 use Carbon\Carbon;
@@ -78,7 +79,9 @@ class PaymentInvoiceController extends Controller
                 ->select('id', 'name', 'student_unique_id', 'student_activation_id', 'branch_id')
                 ->get();
 
-            return compact('unpaid_invoices', 'paid_invoices', 'dueMonths', 'paidMonths', 'students');
+            $invoice_types = PaymentInvoiceType::all();
+
+            return compact('unpaid_invoices', 'paid_invoices', 'dueMonths', 'paidMonths', 'students', 'invoice_types');
         });
 
         return view('invoices.index', $data);
@@ -375,12 +378,18 @@ class PaymentInvoiceController extends Controller
     {
         $dueInvoices = PaymentInvoice::where('student_id', $studentId)
             ->where('status', '!=', 'paid')
+            ->with('invoiceType:id,type_name') // Eager load relationship
             ->latest('id')
-            ->get(['id', 'invoice_number', 'total_amount', 'amount_due', 'month_year', 'invoice_type'])
+            ->get(['id', 'invoice_number', 'total_amount', 'amount_due', 'month_year', 'invoice_type_id'])
             ->map(function ($invoice) {
-                $invoice->total_amount = $invoice->total_amount;
-                $invoice->amount_due   = $invoice->amount_due;
-                return $invoice;
+                return [
+                    'id'             => $invoice->id,
+                    'invoice_number' => $invoice->invoice_number,
+                    'total_amount'   => $invoice->total_amount,
+                    'amount_due'     => $invoice->amount_due,
+                    'month_year'     => $invoice->month_year,
+                    'invoice_type'   => $invoice->invoiceType?->type_name, // Returns the type name string
+                ];
             });
 
         return response()->json($dueInvoices);

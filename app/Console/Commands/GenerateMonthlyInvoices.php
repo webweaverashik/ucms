@@ -42,7 +42,9 @@ class GenerateMonthlyInvoices extends Command
 
             $existingInvoice = $student->paymentInvoices()
                 ->where('month_year', $monthYear)
-                ->where('invoice_type', 'tuition_fee')
+                        ->whereHas('invoiceType', function ($q) {
+                $q->where('type_name', 'Tuition Fee');
+            })
                 ->exists();
 
             if ($existingInvoice) {

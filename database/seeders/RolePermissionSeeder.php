@@ -183,7 +183,6 @@ class RolePermissionSeeder extends Seeder
             'invoices.view',
             'invoices.create',
             'invoices.edit',
-            'invoices.delete',
 
             // 💸 transactions
             'transactions.view',
@@ -245,7 +244,6 @@ class RolePermissionSeeder extends Seeder
             // 💸 invoices
             'invoices.view',
             'invoices.create',
-            'invoices.edit',
 
             // 💸 transactions
             'transactions.view',
