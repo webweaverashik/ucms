@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\Academic\Batch;
 use App\Models\Academic\ClassName;
 use App\Models\Branch;
-use App\Models\Payment\Cost;
+use App\Models\Cost\Cost;
 use App\Models\Payment\PaymentTransaction;
 use App\Models\Student\Student;
 use App\Models\Student\StudentAttendance;

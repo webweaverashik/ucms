@@ -10,7 +10,7 @@ use App\Http\Controllers\AutoInvoiceController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Misc\MiscController;
-use App\Http\Controllers\Payment\CostController;
+use App\Http\Controllers\Cost\CostController;
 use App\Http\Controllers\Payment\PaymentInvoiceController;
 use App\Http\Controllers\Payment\PaymentTransactionController;
 use App\Http\Controllers\PdfController;

@@ -16,7 +16,7 @@ class StudentSeeder extends Seeder
 {
     public function run(): void
     {
-        $TOTAL = 200;
+        $TOTAL = 50;
         $year  = Carbon::now()->format('y');
 
         // --- PREPARE DATA POOLS ---

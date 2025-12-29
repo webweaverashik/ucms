@@ -19,7 +19,6 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
-            $table->softDeletes();
 
             // Unique constraint: one cost per date per branch
             $table->unique(['branch_id', 'cost_date']);

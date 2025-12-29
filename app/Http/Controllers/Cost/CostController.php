@@ -1,8 +1,8 @@
 <?php
-namespace App\Http\Controllers\Payment;
+namespace App\Http\Controllers\Cost;
 
 use App\Http\Controllers\Controller;
-use App\Models\Payment\Cost;
+use App\Models\Cost\Cost;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

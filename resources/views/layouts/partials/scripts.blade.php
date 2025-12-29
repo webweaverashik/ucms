@@ -130,7 +130,8 @@
                                 const elapsed = Date.now() - startTime;
                                 const minDelay = 1500; // 1.5 seconds minimum wait
 
-                                const waitTime = elapsed < minDelay ? minDelay - elapsed : 0;
+                                const waitTime = elapsed < minDelay ? minDelay - elapsed :
+                                    0;
 
                                 setTimeout(() => {
                                     if (data.success) {
@@ -140,7 +141,8 @@
                                             text: 'All caches have been cleared successfully.',
                                             showConfirmButton: false,
                                             timer: 2000,
-                                            willClose: () => location.reload()
+                                            willClose: () => location
+                                                .reload()
                                         });
                                     } else {
                                         throw new Error('Cache clear failed');
@@ -164,7 +166,7 @@
 
             const url = this.getAttribute('href');
             console.log(url);
-            
+
             Swal.fire({
                 title: 'Are you sure?',
                 text: 'You would like to generate new invoices.',

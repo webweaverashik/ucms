@@ -1,14 +1,23 @@
 <?php
 namespace Database\Seeders;
 
+use Illuminate\Database\Seeder;
+use Database\Seeders\Cost\CostSeeder;
+use Database\Seeders\Sheet\SheetSeeder;
 use Database\Seeders\Academic\BatchSeeder;
+use Database\Seeders\Payment\PaymentSeeder;
+use Database\Seeders\Student\SiblingSeeder;
+use Database\Seeders\Student\StudentSeeder;
+use Database\Seeders\Academic\SubjectSeeder;
+use Database\Seeders\Sheet\SheetTopicSeeder;
+use Database\Seeders\Student\GuardianSeeder;
 use Database\Seeders\Academic\ClassNameSeeder;
 use Database\Seeders\Academic\InstitutionSeeder;
-use Database\Seeders\Academic\SubjectSeeder;
-use Database\Seeders\Payment\PaymentInvoiceTypeSeeder;
-use Database\Seeders\Sheet\SheetSeeder;
+use Database\Seeders\Student\MobileNumberSeeder;
 use Database\Seeders\SMS\SmsTemplatesTableSeeder;
-use Illuminate\Database\Seeder;
+use Database\Seeders\Payment\PaymentInvoiceSeeder;
+use Database\Seeders\Payment\PaymentInvoiceTypeSeeder;
+use Database\Seeders\Payment\PaymentTransactionSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -27,21 +36,24 @@ class DatabaseSeeder extends Seeder
 
             // TeacherSeeder::class,
             // ReferenceSeeder::class,
-            // StudentSeeder::class,
-            // GuardianSeeder::class,
-            // MobileNumberSeeder::class,
-            // SiblingSeeder::class,
+            StudentSeeder::class,
+            GuardianSeeder::class,
+            MobileNumberSeeder::class,
+            SiblingSeeder::class,
 
             SubjectSeeder::class,
 
             // SubjectTakenSeeder::class,
-            // PaymentSeeder::class,
-            // PaymentInvoiceSeeder::class,
-            // PaymentTransactionSeeder::class,
+            PaymentSeeder::class,
             PaymentInvoiceTypeSeeder::class,
+            PaymentInvoiceSeeder::class,
+            PaymentTransactionSeeder::class,
+
+            CostSeeder::class,
+            // CostTypeSeeder::class,
 
             SheetSeeder::class,
-            // SheetTopicSeeder::class,
+            SheetTopicSeeder::class,
 
             SmsTemplatesTableSeeder::class,
             // SmsCampaignsTableSeeder::class,

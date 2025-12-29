@@ -2,9 +2,10 @@
 namespace Database\Seeders\Payment;
 
 use App\Models\Payment\Payment;
-use App\Models\Payment\PaymentInvoice;
 use App\Models\Student\Student;
 use Illuminate\Database\Seeder;
+use App\Models\Payment\PaymentInvoice;
+use App\Models\Payment\PaymentInvoiceType;
 
 class PaymentInvoiceSeeder extends Seeder
 {
@@ -54,7 +55,6 @@ class PaymentInvoiceSeeder extends Seeder
                 'amount_due'      => $payment->tuition_fee,
                 'invoice_number'  => $invoiceNumber,
                 'month_year'      => now()->format('m_Y'),
-                'status'          => 'unpaid', // optional but recommended
             ]);
 
             $branchSequences[$prefix]++;

@@ -3,6 +3,7 @@ namespace Database\Seeders\Payment;
 
 use App\Models\Payment\PaymentInvoice;
 use App\Models\Payment\PaymentTransaction;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
@@ -11,9 +12,12 @@ class PaymentTransactionSeeder extends Seeder
 {
     public function run(): void
     {
-        $invoices = PaymentInvoice::where('status', '!=', 'paid')->get();
+        $invoices = PaymentInvoice::where('status', '!=', 'paid')
+            ->with(['student.branch']) // eager load for safety
+            ->get();
 
         foreach ($invoices as $invoice) {
+
             $totalAmount = $invoice->total_amount;
             $remaining   = $totalAmount;
 
@@ -30,14 +34,31 @@ class PaymentTransactionSeeder extends Seeder
                 ->addHours(rand(9, 18))
                 ->addMinutes(rand(0, 59));
 
+            // 🔹 Resolve branch-wise users
+            $branchId = $invoice->student->branch_id ?? null;
+
+            $branchUsers = $branchId
+                ? User::where('branch_id', $branchId)->get()
+                : collect();
+
+            // Fallback: any user if branch users missing
+            if ($branchUsers->isEmpty()) {
+                $branchUsers = User::all();
+            }
+
+            // Absolute fallback safety
+            if ($branchUsers->isEmpty()) {
+                $this->command->warn('No users found. PaymentTransactionSeeder skipped.');
+                return;
+            }
+
             for ($i = 1; $i <= $transactionCount && $remaining > 0; $i++) {
+
                 $isLastTransaction = $i === $transactionCount || $remaining < 100;
 
-                if ($isLastTransaction) {
-                    $amountPaid = $remaining;
-                } else {
-                    $amountPaid = round(rand(100, $remaining - 50), 2);
-                }
+                $amountPaid = $isLastTransaction
+                    ? $remaining
+                    : rand(100, max(100, $remaining - 50));
 
                 $paymentType = $amountPaid == $remaining ? 'full' : 'partial';
 
@@ -52,9 +73,11 @@ class PaymentTransactionSeeder extends Seeder
                     'amount_paid'        => $amountPaid,
                     'remaining_amount'   => $remaining,
                     'voucher_no'         => strtoupper(Str::random(10)),
-                    'created_by'         => 2,
 
-                    // ✅ THIS IS THE KEY
+                    // ✅ RANDOM USER FROM SAME BRANCH
+                    'created_by'         => $branchUsers->random()->id,
+
+                    // Preserve transaction time
                     'created_at'         => $transactionDate,
                     'updated_at'         => $transactionDate,
                 ]);
@@ -64,9 +87,13 @@ class PaymentTransactionSeeder extends Seeder
 
             // Update invoice status
             $invoice->amount_due = max(0, $remaining);
-            $invoice->status     = $invoice->amount_due == 0 ? 'paid' : 'partially_paid';
+            $invoice->status     = $invoice->amount_due == 0
+                ? 'paid'
+                : 'partially_paid';
 
             $invoice->save();
         }
+
+        $this->command->info('PaymentTransactionSeeder executed with branch-wise random users.');
     }
 }

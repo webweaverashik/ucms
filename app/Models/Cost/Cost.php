@@ -1,5 +1,5 @@
 <?php
-namespace App\Models\Payment;
+namespace App\Models\Cost;
 
 use App\Models\Branch;
 use App\Models\User;
