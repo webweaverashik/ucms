@@ -15,6 +15,7 @@ class SheetTopic extends Model
         'topic_name',
         'subject_id',
         'status',
+        'pdf_path',
     ];
 
     public function subject()

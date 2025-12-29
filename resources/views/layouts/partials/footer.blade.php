@@ -1,16 +1,16 @@
 <div id="kt_app_footer" class="app-footer ">
     <!--begin::Footer container-->
-    <div class="app-container  container-fluid d-flex flex-column flex-md-row flex-center flex-md-stack py-3 ">
+    <div class="app-container  container-fluid d-flex flex-row justify-content-between flex-center flex-md-stack py-3 ">
         <!--begin::Copyright-->
         <div class="text-gray-900 order-2 order-md-1">
             <span class="text-muted fw-semibold me-1">{{ date('Y') }} &copy;</span>
-            <a href="https://ashikur-rahman.com" target="_blank" class="text-gray-800 text-hover-primary">Ashikur
+            <a href="https://facebook.com/webweaverashik" target="_blank" class="text-gray-800 text-hover-primary">Ashikur
                 Rahman</a>
         </div>
         <!--end::Copyright-->
         <!--begin::Menu-->
         <ul class="menu menu-gray-600 menu-hover-primary fw-semibold order-1">
-            <li class="menu-item"><a href="#" target="_blank" class="menu-link px-2">UCMS v2.0.1</a></li>
+            <li class="menu-item"><a href="#" target="_blank" class="menu-link px-2">UCMS v2.2.5</a></li>
         </ul>
         <!--end::Menu-->
     </div>

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('topic_name');
             $table->foreignId('subject_id');
             $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->string('pdf_path')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

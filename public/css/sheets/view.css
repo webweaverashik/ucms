@@ -1,0 +1,359 @@
+/**
+ * Sheet View Page Styles
+ * ===========================
+ */
+
+/* ===== Subject Section Styles ===== */
+.subject-section {
+      background: linear-gradient(135deg, var(--bs-primary-light, #f1faff) 0%, var(--bs-info-light, #f8f5ff) 100%);
+      border-radius: 0.75rem;
+      border: 1px solid var(--bs-gray-200);
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+      transition: all 0.3s ease;
+}
+
+.subject-section:hover {
+      box-shadow: 0 0.5rem 1.5rem rgba(var(--bs-primary-rgb), 0.08);
+}
+
+.subject-header {
+      background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 100%);
+      padding: 1rem 1.5rem;
+      border-bottom: none;
+}
+
+.subject-header h6 {
+      color: #fff !important;
+}
+
+.subject-header .ki-book-square {
+      color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.subject-header .badge {
+      background-color: rgba(255, 255, 255, 0.2) !important;
+      color: #fff !important;
+}
+
+.subject-header .notes-count {
+      color: rgba(255, 255, 255, 0.85);
+}
+
+/* ===== Note Card Styles ===== */
+.note-card {
+      transition: all 0.3s ease;
+      border: 1px solid var(--bs-gray-200);
+      border-radius: 0.625rem;
+      background-color: var(--bs-body-bg);
+      position: relative;
+      overflow: hidden;
+}
+
+.note-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, var(--bs-primary) 0%, var(--bs-info) 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+}
+
+.note-card:hover {
+      border-color: var(--bs-primary);
+      box-shadow: 0 0.5rem 1.5rem rgba(var(--bs-primary-rgb), 0.15);
+      transform: translateY(-2px);
+}
+
+.note-card:hover::before {
+      opacity: 1;
+}
+
+.note-card .note-actions {
+      opacity: 0;
+      transition: opacity 0.2s ease;
+}
+
+.note-card:hover .note-actions {
+      opacity: 1;
+}
+
+/* ===== Note Icon Styles ===== */
+.note-icon {
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.5rem;
+      background: linear-gradient(135deg, var(--bs-gray-100) 0%, var(--bs-gray-200) 100%);
+      transition: all 0.3s ease;
+}
+
+.note-icon i {
+      color: var(--bs-gray-600);
+      font-size: 1.25rem;
+}
+
+.note-icon.has-pdf {
+      background: linear-gradient(135deg, #fff5f8 0%, #ffe2ec 100%);
+}
+
+.note-icon.has-pdf i {
+      color: var(--bs-danger);
+}
+
+.note-card:hover .note-icon {
+      transform: scale(1.05);
+}
+
+/* ===== PDF Preview Link Styles ===== */
+.pdf-preview-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: 0.5rem;
+      background: linear-gradient(135deg, #fff5f8 0%, #ffe2ec 100%);
+      color: var(--bs-danger);
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+}
+
+.pdf-preview-link:hover {
+      background: linear-gradient(135deg, var(--bs-danger) 0%, #f1416c 100%);
+      color: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 0.25rem 0.75rem rgba(var(--bs-danger-rgb), 0.35);
+}
+
+.pdf-preview-link.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+      background: var(--bs-gray-200);
+      color: var(--bs-gray-500);
+}
+
+.pdf-badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+}
+
+/* ===== Icon Color Inheritance ===== */
+.pdf-preview-link i,
+.pdf-badge i,
+.status-badge i,
+.notes-count i {
+      color: inherit;
+}
+
+/* ===== Status Badge Styles ===== */
+.status-badge {
+      padding: 0.35rem 0.75rem;
+      border-radius: 0.375rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+}
+
+.status-badge.active {
+      background: linear-gradient(135deg, #e8fff3 0%, #d1fadf 100%);
+      color: var(--bs-success);
+}
+
+.status-badge.inactive {
+      background: var(--bs-gray-200);
+      color: var(--bs-gray-600);
+}
+
+/* ===== Inactive Note Styles ===== */
+.note-inactive {
+      opacity: 0.65;
+}
+
+.note-inactive .note-title {
+      text-decoration: line-through;
+}
+
+.note-inactive .note-icon {
+      filter: grayscale(100%);
+}
+
+/* ===== File Upload Wrapper Styles ===== */
+.file-upload-wrapper {
+      position: relative;
+      border: 2px dashed var(--bs-gray-300);
+      border-radius: 0.75rem;
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      background-color: var(--bs-gray-100);
+}
+
+.file-upload-wrapper:hover {
+      border-color: var(--bs-primary);
+      background: linear-gradient(135deg, var(--bs-primary-light, #f1faff) 0%, var(--bs-light) 100%);
+}
+
+.file-upload-wrapper.has-file {
+      border-color: var(--bs-success);
+      background: linear-gradient(135deg, #e8fff3 0%, #d1fadf 100%);
+}
+
+.file-upload-wrapper input[type="file"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+}
+
+/* ===== Current PDF Info Styles ===== */
+.current-pdf-info {
+      background: linear-gradient(135deg, var(--bs-gray-100) 0%, var(--bs-gray-200) 100%);
+      border: 1px solid var(--bs-gray-300);
+      border-radius: 0.625rem;
+      padding: 1rem;
+}
+
+/* ===== Animation Styles ===== */
+.spinning {
+      animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+      from {
+            transform: rotate(0deg);
+      }
+
+      to {
+            transform: rotate(360deg);
+      }
+}
+
+/* ===== Empty State Styles ===== */
+.empty-state-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--bs-primary-light, #f1faff) 0%, var(--bs-info-light, #f8f5ff) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+}
+
+.empty-state-icon i {
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+}
+
+/* ==========================================================================
+   Dark Mode Support
+   ========================================================================== */
+
+[data-bs-theme="dark"] .subject-section {
+      background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.1) 0%, rgba(var(--bs-info-rgb), 0.1) 100%);
+      border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .subject-header {
+      background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.85) 0%, rgba(var(--bs-info-rgb), 0.85) 100%);
+}
+
+[data-bs-theme="dark"] .note-card {
+      background-color: var(--bs-gray-900);
+      border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .note-card:hover {
+      border-color: var(--bs-primary);
+      box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="dark"] .note-icon {
+      background: linear-gradient(135deg, var(--bs-gray-800) 0%, var(--bs-gray-700) 100%);
+}
+
+[data-bs-theme="dark"] .note-icon i {
+      color: var(--bs-gray-400);
+}
+
+[data-bs-theme="dark"] .note-icon.has-pdf {
+      background: linear-gradient(135deg, rgba(var(--bs-danger-rgb), 0.2) 0%, rgba(var(--bs-danger-rgb), 0.1) 100%);
+}
+
+[data-bs-theme="dark"] .note-icon.has-pdf i {
+      color: var(--bs-danger);
+}
+
+[data-bs-theme="dark"] .pdf-preview-link {
+      background: linear-gradient(135deg, rgba(var(--bs-danger-rgb), 0.2) 0%, rgba(var(--bs-danger-rgb), 0.1) 100%);
+      color: var(--bs-danger);
+}
+
+[data-bs-theme="dark"] .pdf-preview-link:hover {
+      background: linear-gradient(135deg, var(--bs-danger) 0%, #f1416c 100%);
+      color: #fff;
+}
+
+[data-bs-theme="dark"] .pdf-preview-link.disabled {
+      background: var(--bs-gray-800);
+      color: var(--bs-gray-600);
+}
+
+[data-bs-theme="dark"] .status-badge.active {
+      background: linear-gradient(135deg, rgba(var(--bs-success-rgb), 0.2) 0%, rgba(var(--bs-success-rgb), 0.1) 100%);
+      color: var(--bs-success);
+}
+
+[data-bs-theme="dark"] .status-badge.inactive {
+      background: var(--bs-gray-800);
+      color: var(--bs-gray-500);
+}
+
+[data-bs-theme="dark"] .file-upload-wrapper {
+      background-color: var(--bs-gray-900);
+      border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .file-upload-wrapper:hover {
+      border-color: var(--bs-primary);
+      background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.1) 0%, var(--bs-gray-900) 100%);
+}
+
+[data-bs-theme="dark"] .file-upload-wrapper.has-file {
+      border-color: var(--bs-success);
+      background: linear-gradient(135deg, rgba(var(--bs-success-rgb), 0.15) 0%, rgba(var(--bs-success-rgb), 0.05) 100%);
+}
+
+[data-bs-theme="dark"] .current-pdf-info {
+      background: linear-gradient(135deg, var(--bs-gray-800) 0%, var(--bs-gray-900) 100%);
+      border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .empty-state-icon {
+      background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.15) 0%, rgba(var(--bs-info-rgb), 0.15) 100%);
+}
+
+[data-bs-theme="dark"] .note-title {
+      color: var(--bs-gray-200) !important;
+}
+
+[data-bs-theme="dark"] .border-top {
+      border-color: var(--bs-gray-700) !important;
+}

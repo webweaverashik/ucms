@@ -1,176 +1,267 @@
 $(document).ready(function () {
-      // Initialize select2
+
+      /* ===============================
+       * Init
+       * =============================== */
       $('[data-control="select2"]').select2();
 
-      // Student select change handler
+      /* ===============================
+       * Student change → Load sheet groups
+       * =============================== */
       $('#student_select_id').on('change', function () {
             const studentId = $(this).val();
 
-            if (!studentId) {
-                  $('#student_paid_sheet_group').val(null).trigger('change').prop('disabled', true);
-                  $('#student_notes_distribution').empty();
-                  return;
-            }
+            // Reset UI
+            $('#student_paid_sheet_group')
+                  .empty()
+                  .append('<option></option>')
+                  .prop('disabled', true)
+                  .trigger('change');
 
-            // Fetch paid sheets
+            $('#load_topics_btn').prop('disabled', true);
+            $('#student_notes_distribution').empty();
+
+            if (!studentId) return;
+
             $.ajax({
                   url: `/sheets/paid/${studentId}`,
                   method: 'GET',
-                  success: function (response) {
-                        const $sheetSelect = $('#student_paid_sheet_group');
-                        $sheetSelect.empty().append('<option></option>');
+                  success(response) {
+                        const $sheet = $('#student_paid_sheet_group');
 
-                        response.sheets.forEach(function (sheet) {
-                              $sheetSelect.append(
-                                    `<option value="${sheet.id}">${sheet.name} (${sheet.payment_status})</option>`
+                        response.sheets.forEach(sheet => {
+                              $sheet.append(
+                                    `<option value="${sheet.id}">
+                            ${sheet.name} (${sheet.payment_status})
+                        </option>`
                               );
                         });
 
-                        $sheetSelect.prop('disabled', false).trigger('change');
+                        $sheet.prop('disabled', false).trigger('change');
                   },
-                  error: function (xhr) {
-                        console.error(xhr);
+                  error() {
                         toastr.error('Failed to fetch paid sheets');
                   }
             });
       });
 
-      // Sheet select change handler
+      /* ===============================
+       * Enable Load Topics button
+       * =============================== */
       $('#student_paid_sheet_group').on('change', function () {
-            const sheetId = $(this).val();
-            const studentId = $('#student_select_id').val();
+            $('#load_topics_btn').prop('disabled', !$(this).val());
+            $('#student_notes_distribution').empty();
+      });
 
-            if (!sheetId || !studentId) {
-                  $('#student_notes_distribution').empty();
+      /* ===============================
+       * Load Topics button
+       * =============================== */
+      $('#load_topics_btn').on('click', function () {
+            const studentId = $('#student_select_id').val();
+            const sheetId = $('#student_paid_sheet_group').val();
+
+            if (!studentId || !sheetId) {
+                  toastr.warning('Please select student and sheet');
                   return;
             }
 
-            // Fetch sheet topics
             $.ajax({
                   url: `/sheets/${sheetId}/topics/${studentId}`,
                   method: 'GET',
-                  success: function (response) {
-                        // Map topic_name to name for frontend compatibility
-                        response.topics = response.topics.map(topic => {
-                              return {
-                                    ...topic,
-                                    name: topic.topic_name
-                              };
-                        });
+                  beforeSend() {
+                        $('#load_topics_btn')
+                              .prop('disabled', true)
+                              .text('Loading...');
+                  },
+                  success(response) {
+                        // Normalize topic name
+                        response.topics = response.topics.map(t => ({
+                              ...t,
+                              name: t.topic_name
+                        }));
+
                         renderNotesDistribution(response);
                   },
-                  error: function (xhr) {
-                        console.error(xhr);
+                  error() {
                         toastr.error('Failed to fetch sheet topics');
+                  },
+                  complete() {
+                        $('#load_topics_btn')
+                              .prop('disabled', false)
+                              .html('<i class="ki-outline ki-eye fs-3 me-2"></i> Load Topics');
                   }
             });
       });
 
-      // Render function
+      /* ===============================
+       * Render Notes Distribution
+       * =============================== */
       function renderNotesDistribution(data) {
-            console.log("Debug Data:", data.debug); // Check debug output
-
             const $container = $('#student_notes_distribution');
             $container.empty();
 
-            if (data.topics.length === 0) {
-                  $container.html(`
-            <div class="alert alert-warning">
-                No topics found. Debug info: 
-                Class ${data.classNumeral}, 
-                Group ${data.studentGroup}, 
-                Subjects: ${data.debug.subject_count},
-                Science Subjects: ${data.debug.science_subjects}
-            </div>
-        `);
+            if (!data.topics || data.topics.length === 0) {
+                  $container.html(`<div class="alert alert-warning">No topics found.</div>`);
                   return;
             }
 
-            // Group topics by subject (including all filtered topics)
+            /* ---------- Counts ---------- */
+            let totalTopics = data.topics.length;
+            let takenTopics = 0;
+            let inactiveTopics = 0;
+
+            data.topics.forEach(topic => {
+                  if (data.distributedTopics.map(String).includes(String(topic.id))) {
+                        takenTopics++;
+                  } else if (topic.status !== 'active') {
+                        inactiveTopics++;
+                  }
+            });
+
+            const availableTopics = totalTopics - takenTopics - inactiveTopics;
+
+            /* ---------- Group by subject ---------- */
             const subjects = {};
             data.topics.forEach(topic => {
                   const subjectName = topic.subject?.name || 'Uncategorized';
-                  if (!subjects[subjectName]) {
-                        subjects[subjectName] = {
-                              academicGroup: topic.subject?.academic_group || 'General',
-                              topics: []
-                        };
-                  }
+
+                  subjects[subjectName] ??= {
+                        academicGroup: topic.subject?.academic_group || 'General',
+                        topics: []
+                  };
+
                   subjects[subjectName].topics.push(topic);
             });
 
-            // Build calendar header
+            /* ---------- Order subjects: General → Others ---------- */
+            const orderedSubjects = Object.entries(subjects).sort((a, b) => {
+                  const gA = a[1].academicGroup;
+                  const gB = b[1].academicGroup;
+
+                  if (gA === 'General' && gB !== 'General') return -1;
+                  if (gA !== 'General' && gB === 'General') return 1;
+
+                  return gA.localeCompare(gB);
+            });
+
+            /* ===============================
+             * Build HTML
+             * =============================== */
             let html = `
+        <!-- Summary Counts -->
+        <div class="row g-4 mb-6">
+
+            <div class="col-6 col-md-3">
+                <div class="card topic-count total h-100">
+                    <div class="card-body text-center">
+                        <div class="fs-2hx fw-bold">${totalTopics}</div>
+                        <div class="fs-7">Total Topics</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="card topic-count taken h-100">
+                    <div class="card-body text-center">
+                        <div class="fs-2hx fw-bold">${takenTopics}</div>
+                        <div class="fs-7">Already Taken</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="card topic-count available h-100">
+                    <div class="card-body text-center">
+                        <div class="fs-2hx fw-bold">${availableTopics}</div>
+                        <div class="fs-7">Available</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="card topic-count inactive h-100">
+                    <div class="card-body text-center">
+                        <div class="fs-2hx fw-bold">${inactiveTopics}</div>
+                        <div class="fs-7">Inactive</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Calendar -->
         <div class="sheet-calendar">
             <div class="calendar-header">
                 <div class="header-cell corner-cell"></div>
-    `;
+        `;
 
-            // Add subject headers
-            Object.entries(subjects).forEach(([subject, subjectData]) => {
-                  const groupBadge = subjectData.academicGroup !== 'General'
-                        ? `<span class="subject-group-badge ${subjectData.academicGroup.toLowerCase()}">${subjectData.academicGroup}</span>`
+            orderedSubjects.forEach(([subject, s]) => {
+                  const badge = s.academicGroup !== 'General'
+                        ? `<span class="subject-group-badge ${s.academicGroup.toLowerCase()}">${s.academicGroup}</span>`
                         : '';
 
-                  html += `<div class="header-cell subject-header">${subject}${groupBadge}</div>`;
+                  html += `<div class="header-cell subject-header">${subject}${badge}</div>`;
             });
 
             html += `</div><div class="calendar-body">`;
 
-            // Build rows
-            const maxTopics = Math.max(...Object.values(subjects).map(s => s.topics.length));
+            const maxRows = Math.max(...orderedSubjects.map(([_, s]) => s.topics.length));
 
-            for (let i = 0; i < maxTopics; i++) {
-                  html += `<div class="calendar-row"><div class="row-header">Topic ${i + 1}</div>`;
+            for (let i = 0; i < maxRows; i++) {
+                  html += `<div class="calendar-row">
+                        <div class="row-header">Topic ${i + 1}</div>`;
 
-                  Object.entries(subjects).forEach(([subject, subjectData]) => {
-                        const topic = subjectData.topics[i];
-                        if (topic) {
-                              // const isTaken = data.distributedTopics.includes(topic.id);
-                              const isTaken = data.distributedTopics.map(String).includes(String(topic.id));
-                              const isActive = topic.status === 'active';
-                              const isSelectable = isActive && !isTaken;
+                  orderedSubjects.forEach(([_, s]) => {
+                        const topic = s.topics[i];
 
-
-
-
-                              let cellClass = 'calendar-cell';
-                              if (isTaken) cellClass += ' taken';
-                              if (!isActive) cellClass += ' inactive';
-                              if (isSelectable) cellClass += ' selectable';
-
-                              html += `
-                    <div class="${cellClass}" 
-                         data-topic-id="${topic.id}"
-                         data-topic-name="${topic.name}"
-                         data-subject="${subject}">
-                        ${topic.name}
-                    </div>
-                `;
-                        } else {
+                        if (!topic) {
                               html += `<div class="calendar-cell empty-cell"></div>`;
+                              return;
                         }
+
+                        const isTaken = data.distributedTopics.map(String).includes(String(topic.id));
+                        const isActive = topic.status === 'active';
+
+                        let cls = 'calendar-cell';
+                        if (isTaken) cls += ' taken';
+                        if (!isActive) cls += ' inactive';
+                        if (isActive && !isTaken) cls += ' selectable';
+
+                        html += `<div class="${cls}" data-topic-id="${topic.id}">${topic.name}</div>`;
                   });
 
                   html += `</div>`;
             }
 
-            console.log("Distributed Topics:", data.distributedTopics);
-            console.log("Sample topic.id:", data.topics?.[0]?.id);
-            
+            html += `
+        </div></div>
 
-            html += `</div></div>
-        <div class="mt-4">
-            <button type="button" id="reset_notes_distribution" class="btn btn-light">Clear Selection</button>
-            <button type="button" id="save_notes_distribution" class="btn btn-primary ms-2">Save Distribution</button>
+        <!-- Actions -->
+        <div class="mt-4 d-flex gap-2">
+            <button id="reset_notes_distribution" class="btn btn-light">
+                Clear Selection
+            </button>
+            <button id="save_notes_distribution" class="btn btn-primary">
+                Save Distribution
+            </button>
         </div>
-        <div class="calendar-legend mt-3">
-            <div><span class="legend-color available"></span> Available</div>
-            <div><span class="legend-color taken"></span> Already Taken</div>
-            <div><span class="legend-color inactive"></span> Inactive</div>
-            <div><span class="legend-color selected"></span> Selected</div>
+
+        <!-- Legend -->
+        <div class="calendar-legend mt-4 d-flex flex-wrap gap-6 fs-7">
+            <div class="d-flex align-items-center gap-2">
+                <span class="legend-color available"></span> Available
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="legend-color taken"></span> Already Taken
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="legend-color inactive"></span> Inactive
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="legend-color selected"></span> Selected
+            </div>
         </div>
-    `;
+        `;
 
             $container.html(html);
 
@@ -179,54 +270,39 @@ $(document).ready(function () {
             });
       }
 
-      // Save distribution function
-      function saveDistribution() {
-            const studentId = $('#student_select_id').val();
-            const sheetId = $('#student_paid_sheet_group').val();
-
-            if (!studentId || !sheetId) {
-                  toastr.error('Please select both student and sheet');
-                  return;
-            }
-
-            const selectedTopics = [];
-            $('.calendar-cell.selected').each(function () {
-                  selectedTopics.push($(this).data('topic-id'));
-            });
+      /* ===============================
+       * Save Distribution
+       * =============================== */
+      $(document).on('click', '#save_notes_distribution', function () {
+            const selectedTopics = $('.calendar-cell.selected')
+                  .map((_, el) => $(el).data('topic-id'))
+                  .get();
 
             $.ajax({
                   url: '/sheet-topics/distribute',
                   method: 'POST',
                   data: {
-                        student_id: studentId,
-                        sheet_id: sheetId,
+                        student_id: $('#student_select_id').val(),
+                        sheet_id: $('#student_paid_sheet_group').val(),
                         topics: selectedTopics,
                         _token: $('meta[name="csrf-token"]').attr('content')
                   },
-                  success: function (response) {
-                        toastr.success(response.message);
-                        // Refresh the distribution view
-                        $('#student_paid_sheet_group').trigger('change');
+                  success(res) {
+                        toastr.success(res.message);
+                        $('#load_topics_btn').trigger('click');
                   },
-                  error: function (xhr) {
-                        console.error(xhr);
-                        const errorMsg = xhr.responseJSON?.message || 'Failed to save distribution';
-                        toastr.error(errorMsg);
+                  error() {
+                        toastr.error('Failed to save distribution');
                   }
             });
-      }
+      });
 
-      // Reset button handler - clears only selected topics
+      /* ===============================
+       * Reset Selection
+       * =============================== */
       $(document).on('click', '#reset_notes_distribution', function () {
-            // Clear all selected topics
             $('.calendar-cell.selected').removeClass('selected');
-
-            // Show feedback
-            toastr.info('Selection cleared', '', { timeOut: 1000 });
+            toastr.info('Selection cleared');
       });
 
-      // Save button handler
-      $(document).on('click', '#save_notes_distribution', function () {
-            saveDistribution();
-      });
 });

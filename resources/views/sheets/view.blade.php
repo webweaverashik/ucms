@@ -1,5 +1,6 @@
 @push('page-css')
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('css/sheets/view.css') }}" rel="stylesheet" type="text/css" />
 @endpush
 
 
@@ -45,6 +46,7 @@
 @section('content')
     @php
         $canNotesManage = auth()->user()->can('notes.manage');
+        $isAdmin = auth()->user()->isAdmin();
     @endphp
     <!--begin::Layout-->
     <div class="d-flex flex-column flex-xl-row">
@@ -249,81 +251,177 @@
                                 <h2>Notes</h2>
                             </div>
                             <!--end::Card title-->
+                            <!--begin::Card toolbar-->
+                            <div class="card-toolbar">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge badge-light-primary fs-7">
+                                        <i class="ki-outline ki-book fs-6 me-1"></i>
+                                        {{ $sheet->class->subjects->sum(fn($s) => $s->sheetTopics->count()) }} Notes
+                                    </span>
+                                </div>
+                            </div>
+                            <!--end::Card toolbar-->
                         </div>
                         <!--end::Card header-->
                         <!--begin::Card body-->
-                        <div class="card-body py-0">
-                            <!--begin::Table wrapper-->
-                            <div class="row">
+                        <div class="card-body py-4">
+                            @forelse ($sheet->class->subjects as $subject)
+                                @if ($subject->sheetTopics->isNotEmpty())
+                                    <!--begin::Subject Section-->
+                                    <div class="subject-section">
+                                        <!--begin::Subject Header-->
+                                        <div class="subject-header d-flex align-items-center justify-content-between">
+                                            <div class="d-flex align-items-center">
+                                                <i class="ki-outline ki-book-square fs-3 me-2"></i>
+                                                <h6 class="mb-0 fw-bold">{{ $subject->name }}</h6>
+                                                @if ($subject->academic_group !== 'General')
+                                                    <span class="badge ms-2 fs-8">{{ $subject->academic_group }}</span>
+                                                @endif
+                                            </div>
+                                            <span class="notes-count fs-7 fw-semibold">
+                                                <i class="ki-outline ki-notepad-bookmark fs-6 me-1"></i>
+                                                {{ $subject->sheetTopics->count() }} notes
+                                            </span>
+                                        </div>
+                                        <!--end::Subject Header-->
 
-                                @foreach ($sheet->class->subjects as $subject)
-                                    @if ($subject->sheetTopics->isNotEmpty())
-                                        <div class="col-12 mb-4">
-                                            <h5 class="fw-bold text-dark mb-3">{{ $subject->name }}</h5>
-                                            <div class="row">
-
+                                        <!--begin::Notes Grid-->
+                                        <div class="p-4">
+                                            <div class="row g-4">
                                                 @foreach ($subject->sheetTopics as $topic)
-                                                    <div class="col-md-6 col-xxl-4 mb-3">
-                                                        <div class="topic-editable py-2 px-3"
-                                                            data-id="{{ $topic->id }}">
-                                                            <div class="d-flex align-items-center">
-                                                                <i class="bi bi-dot fs-3 text-info me-2"></i>
-                                                                <div class="flex-grow-1">
-                                                                    <span
-                                                                        class="topic-text text-gray-700 fs-6 @if ($topic->status == 'inactive') text-decoration-line-through @endif"
-                                                                        title="{{ $topic->sheetsTaken->count() }} students taken this topic"
-                                                                        data-bs-toggle="tooltip">
-                                                                        {{ $topic->topic_name }}
-                                                                        ({{ $topic->sheetsTaken->count() }})
-                                                                    </span>
-                                                                    <input type="text"
-                                                                        class="topic-input form-control form-control-sm d-none fs-6"
-                                                                        value="{{ $topic->topic_name }}" />
-                                                                </div>
-                                                                @if ($canNotesManage)
+                                                    <div class="col-md-6 col-xl-4">
+                                                        <!--begin::Note Card-->
+                                                        <div class="note-card p-3 h-100 {{ $topic->status == 'inactive' ? 'note-inactive' : '' }}"
+                                                            data-id="{{ $topic->id }}"
+                                                            data-topic-name="{{ $topic->topic_name }}"
+                                                            data-pdf-path="{{ $topic->pdf_path }}">
+
+                                                            <!--begin::Note Header-->
+                                                            <div
+                                                                class="d-flex align-items-start justify-content-between mb-3">
+                                                                <div class="d-flex align-items-center flex-grow-1 me-2">
                                                                     <div
-                                                                        class="action-icons ms-2 d-flex align-items-center">
+                                                                        class="note-icon {{ $topic->pdf_path ? 'has-pdf' : '' }} me-3">
+                                                                        <i
+                                                                            class="ki-outline ki-{{ $topic->pdf_path ? 'document' : 'notepad' }}"></i>
+                                                                    </div>
+                                                                    <div class="flex-grow-1 min-w-0">
+                                                                        <span
+                                                                            class="note-title fw-semibold fs-6 d-block text-truncate"
+                                                                            data-bs-toggle="tooltip"
+                                                                            title="{{ $topic->topic_name }}">
+                                                                            {{ $topic->topic_name }}
+                                                                        </span>
+                                                                        <span class="text-muted fs-8">
+                                                                            <i class="ki-outline ki-people fs-8 me-1"></i>
+                                                                            {{ $topic->sheetsTaken->count() }} students
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+
+                                                                @if ($canNotesManage)
+                                                                    <!--begin::Actions-->
+                                                                    <div
+                                                                        class="note-actions d-flex align-items-center gap-1">
                                                                         <div
-                                                                            class="form-check form-switch d-flex align-items-center m-0">
-                                                                            <input
-                                                                                class="form-check-input status-toggle h-15px w-30px"
-                                                                                data-bs-toggle="tooltip"
-                                                                                title="Active/Inactive" type="checkbox"
+                                                                            class="form-check form-switch form-check-custom form-check-solid form-check-sm">
+                                                                            <input class="form-check-input status-toggle"
+                                                                                type="checkbox"
                                                                                 data-id="{{ $topic->id }}"
+                                                                                data-bs-toggle="tooltip"
+                                                                                title="Toggle Active/Inactive"
                                                                                 @if ($topic->status == 'active') checked @endif>
                                                                         </div>
-                                                                        <i class="ki-outline ki-pencil fs-3 text-muted edit-icon text-hover-primary"
-                                                                            role="button" data-bs-toggle="tooltip"
-                                                                            title="Edit"></i>
+                                                                        <button type="button"
+                                                                            class="btn btn-icon btn-sm btn-light-primary edit-note-btn"
+                                                                            data-bs-toggle="modal"
+                                                                            data-bs-target="#kt_modal_edit_notes"
+                                                                            data-topic-id="{{ $topic->id }}"
+                                                                            data-topic-name="{{ $topic->topic_name }}"
+                                                                            data-topic-pdf="{{ $topic->pdf_path }}"
+                                                                            title="Edit Note">
+                                                                            <i class="ki-outline ki-pencil fs-5"></i>
+                                                                        </button>
                                                                         @if ($topic->sheetsTaken->count() == 0)
-                                                                            <i class="ki-outline ki-trash fs-3 text-muted delete-note text-hover-danger ms-3"
-                                                                                role="button"
+                                                                            <button type="button"
+                                                                                class="btn btn-icon btn-sm btn-light-danger delete-note"
                                                                                 data-topic-id="{{ $topic->id }}"
-                                                                                data-bs-toggle="tooltip"
-                                                                                title="Delete"></i>
-                                                                        @else
-                                                                            {{-- Just for placeholder purpose --}}
-                                                                            <span class="delete-note"></span>
+                                                                                title="Delete Note">
+                                                                                <i class="ki-outline ki-trash fs-5"></i>
+                                                                            </button>
                                                                         @endif
-                                                                        <i class="bi bi-check-circle fs-3 text-success check-icon d-none"
-                                                                            role="button" data-bs-toggle="tooltip"
-                                                                            title="Save"></i>
-                                                                        <i class="bi bi-x-circle fs-3 text-danger cancel-icon d-none ms-2"
-                                                                            role="button" data-bs-toggle="tooltip"
-                                                                            title="Cancel"></i>
                                                                     </div>
+                                                                    <!--end::Actions-->
                                                                 @endif
                                                             </div>
+                                                            <!--end::Note Header-->
+
+                                                            <!--begin::Note Footer-->
+                                                            <div
+                                                                class="d-flex align-items-center justify-content-between pt-3 mt-2 border-top">
+                                                                @if ($topic->pdf_path)
+                                                                    @if ($isAdmin || $topic->status == 'active')
+                                                                        <a href="{{ asset($topic->pdf_path) }}"
+                                                                            download="{{ basename($topic->pdf_path) }}"
+                                                                            class="pdf-preview-link">
+                                                                            <i class="ki-outline ki-file-down fs-5"></i>
+                                                                            <span>Download PDF</span>
+                                                                        </a>
+                                                                    @else
+                                                                        <span class="pdf-preview-link disabled"
+                                                                            data-bs-toggle="tooltip"
+                                                                            title="PDF is not available for inactive notes">
+                                                                            <i class="ki-outline ki-file-down fs-5"></i>
+                                                                            <span>Download PDF</span>
+                                                                        </span>
+                                                                    @endif
+                                                                @else
+                                                                    <span class="text-muted fs-8">
+                                                                        <i
+                                                                            class="ki-outline ki-information-2 fs-7 me-1"></i>
+                                                                        No PDF attached
+                                                                    </span>
+                                                                @endif
+
+                                                                <span
+                                                                    class="status-badge {{ $topic->status == 'active' ? 'active' : 'inactive' }}">
+                                                                    <i
+                                                                        class="ki-outline ki-{{ $topic->status == 'active' ? 'check-circle' : 'cross-circle' }} fs-7 me-1"></i>
+                                                                    {{ ucfirst($topic->status) }}
+                                                                </span>
+                                                            </div>
+                                                            <!--end::Note Footer-->
                                                         </div>
+                                                        <!--end::Note Card-->
                                                     </div>
                                                 @endforeach
-
                                             </div>
                                         </div>
-                                    @endif
-                                @endforeach
-                            </div>
-                            <!--end::Table wrapper-->
+                                        <!--end::Notes Grid-->
+                                    </div>
+                                    <!--end::Subject Section-->
+                                @endif
+                            @empty
+                                <!--begin::Empty State-->
+                                <div class="text-center py-15">
+                                    <div class="empty-state-icon">
+                                        <i class="ki-outline ki-notepad-bookmark"></i>
+                                    </div>
+                                    <h4 class="text-gray-800 fw-bold mb-3">No Notes Added Yet</h4>
+                                    <p class="text-muted fs-6 mb-6 mw-400px mx-auto">
+                                        Start by adding your first note for this sheet group. Notes help students access
+                                        study materials easily.
+                                    </p>
+                                    @can('notes.manage')
+                                        <a href="#" class="btn btn-primary" data-bs-toggle="modal"
+                                            data-bs-target="#kt_modal_add_notes">
+                                            <i class="ki-outline ki-plus fs-3 me-1"></i>
+                                            Add First Note
+                                        </a>
+                                    @endcan
+                                </div>
+                                <!--end::Empty State-->
+                            @endforelse
                         </div>
                         <!--end::Card body-->
                     </div>
@@ -545,7 +643,7 @@
     <div class="modal fade" id="kt_modal_add_notes" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
         data-bs-keyboard="false">
         <!--begin::Modal dialog-->
-        <div class="modal-dialog modal-dialog-centered mw-500px">
+        <div class="modal-dialog modal-dialog-centered mw-650px">
             <!--begin::Modal content-->
             <div class="modal-content">
                 <!--begin::Modal header-->
@@ -564,7 +662,8 @@
                 <!--begin::Modal body-->
                 <div class="modal-body px-5 my-5">
                     <!--begin::Form-->
-                    <form id="kt_modal_add_notes_form" class="form" action="#" novalidate="novalidate">
+                    <form id="kt_modal_add_notes_form" class="form" action="#" enctype="multipart/form-data"
+                        novalidate="novalidate">
                         <!--begin::Scroll-->
                         <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_add_notes_scroll"
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
@@ -604,6 +703,32 @@
                                 <!--end::Input-->
                             </div>
                             <!--end::Note name Input group-->
+
+                            <!--begin::PDF Upload Input group-->
+                            <div class="fv-row mb-7">
+                                <!--begin::Label-->
+                                <label class="fw-semibold fs-6 mb-2">Upload PDF (Optional)</label>
+                                <!--end::Label-->
+                                <!--begin::File Upload-->
+                                <div class="file-upload-wrapper" id="add_notes_file_wrapper">
+                                    <input type="file" name="pdf_file" id="add_notes_pdf_file" accept=".pdf" />
+                                    <div class="file-upload-content">
+                                        <i class="ki-outline ki-file-up fs-3x text-primary mb-3"></i>
+                                        <div class="fs-6 fw-semibold text-gray-700 mb-1">Drop PDF here or click to upload
+                                        </div>
+                                        <div class="fs-7 text-muted">Max file size: 10MB</div>
+                                    </div>
+                                    <div class="file-selected-info d-none">
+                                        <i class="ki-outline ki-document fs-2x text-success mb-2"></i>
+                                        <div class="fs-6 fw-semibold text-success file-name"></div>
+                                        <button type="button" class="btn btn-sm btn-light-danger mt-2 remove-file-btn">
+                                            <i class="ki-outline ki-trash fs-5"></i> Remove
+                                        </button>
+                                    </div>
+                                </div>
+                                <!--end::File Upload-->
+                            </div>
+                            <!--end::PDF Upload Input group-->
                         </div>
                         <!--end::Scroll-->
 
@@ -628,6 +753,130 @@
         <!--end::Modal dialog-->
     </div>
     <!--end::Modal - Add Notes-->
+
+    <!--begin::Modal - Edit Notes-->
+    <div class="modal fade" id="kt_modal_edit_notes" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+        data-bs-keyboard="false">
+        <!--begin::Modal dialog-->
+        <div class="modal-dialog modal-dialog-centered mw-650px">
+            <!--begin::Modal content-->
+            <div class="modal-content">
+                <!--begin::Modal header-->
+                <div class="modal-header" id="kt_modal_edit_notes_header">
+                    <!--begin::Modal title-->
+                    <h2 class="fw-bold">Edit Note</h2>
+                    <!--end::Modal title-->
+                    <!--begin::Close-->
+                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-edit-note-modal-action="close">
+                        <i class="ki-outline ki-cross fs-1">
+                        </i>
+                    </div>
+                    <!--end::Close-->
+                </div>
+                <!--end::Modal header-->
+                <!--begin::Modal body-->
+                <div class="modal-body px-5 my-5">
+                    <!--begin::Form-->
+                    <form id="kt_modal_edit_notes_form" class="form" action="#" enctype="multipart/form-data"
+                        novalidate="novalidate">
+                        <input type="hidden" name="topic_id" id="edit_topic_id" />
+                        <!--begin::Scroll-->
+                        <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_edit_notes_scroll"
+                            data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
+                            data-kt-scroll-dependencies="#kt_modal_edit_notes_header"
+                            data-kt-scroll-wrappers="#kt_modal_edit_notes_scroll" data-kt-scroll-offset="300px">
+
+                            <!--begin::Note name Input group-->
+                            <div class="fv-row mb-7">
+                                <!--begin::Label-->
+                                <label class="required fw-semibold fs-6 mb-2">Note name</label>
+                                <!--end::Label-->
+                                <!--begin::Input-->
+                                <input type="text" name="topic_name" id="edit_topic_name"
+                                    class="form-control form-control-solid mb-3 mb-lg-0"
+                                    placeholder="e.g. Chapter 1 Notes" required />
+                                <!--end::Input-->
+                            </div>
+                            <!--end::Note name Input group-->
+
+                            <!--begin::Current PDF Info-->
+                            <div class="fv-row mb-7" id="current_pdf_section">
+                                <label class="fw-semibold fs-6 mb-2">Current PDF</label>
+                                <div class="current-pdf-info d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <i class="ki-outline ki-document fs-2x text-primary me-3"></i>
+                                        <div>
+                                            <span class="fs-6 fw-semibold text-gray-800" id="current_pdf_name">No PDF
+                                                uploaded</span>
+                                            <span class="d-block fs-7 text-muted">Click below to replace</span>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        @if ($isAdmin)
+                                            <a href="#" id="download_current_pdf"
+                                                class="btn btn-sm btn-light-primary" download>
+                                                <i class="ki-outline ki-file-down fs-5"></i> Download
+                                            </a>
+                                        @endif
+                                        <button type="button" id="remove_current_pdf"
+                                            class="btn btn-sm btn-light-danger">
+                                            <i class="ki-outline ki-trash fs-5"></i> Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--end::Current PDF Info-->
+
+                            <!--begin::PDF Upload Input group-->
+                            <div class="fv-row mb-7">
+                                <!--begin::Label-->
+                                <label class="fw-semibold fs-6 mb-2" id="edit_pdf_label">Upload New PDF</label>
+                                <!--end::Label-->
+                                <!--begin::File Upload-->
+                                <div class="file-upload-wrapper" id="edit_notes_file_wrapper">
+                                    <input type="file" name="pdf_file" id="edit_notes_pdf_file" accept=".pdf" />
+                                    <input type="hidden" name="remove_pdf" id="remove_pdf_flag" value="0" />
+                                    <div class="file-upload-content">
+                                        <i class="ki-outline ki-file-up fs-3x text-primary mb-3"></i>
+                                        <div class="fs-6 fw-semibold text-gray-700 mb-1">Drop PDF here or click to upload
+                                        </div>
+                                        <div class="fs-7 text-muted">Max file size: 10MB</div>
+                                    </div>
+                                    <div class="file-selected-info d-none">
+                                        <i class="ki-outline ki-document fs-2x text-success mb-2"></i>
+                                        <div class="fs-6 fw-semibold text-success file-name"></div>
+                                        <button type="button" class="btn btn-sm btn-light-danger mt-2 remove-file-btn">
+                                            <i class="ki-outline ki-trash fs-5"></i> Remove
+                                        </button>
+                                    </div>
+                                </div>
+                                <!--end::File Upload-->
+                            </div>
+                            <!--end::PDF Upload Input group-->
+                        </div>
+                        <!--end::Scroll-->
+
+                        <!--begin::Actions-->
+                        <div class="text-center pt-10">
+                            <button type="reset" class="btn btn-light me-3"
+                                data-kt-edit-note-modal-action="cancel">Discard</button>
+                            <button type="submit" class="btn btn-primary" data-kt-edit-note-modal-action="submit">
+                                <span class="indicator-label">Update</span>
+                                <span class="indicator-progress">Please wait...
+                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                            </button>
+                        </div>
+                        <!--end::Actions-->
+                    </form>
+                    <!--end::Form-->
+                </div>
+                <!--end::Modal body-->
+            </div>
+            <!--end::Modal content-->
+        </div>
+        <!--end::Modal dialog-->
+    </div>
+    <!--end::Modal - Edit Notes-->
 
 
     <!--begin::Modal - Edit Sheet-->
@@ -706,6 +955,7 @@
 @push('page-js')
     <script>
         const routeDeleteNote = "{{ route('notes.destroy', ':id') }}";
+        const routeUpdateNote = "{{ route('notes.update', ':id') }}";
     </script>
 
     <script src="{{ asset('js/sheets/view.js') }}"></script>
