@@ -251,6 +251,102 @@ var KTAllTransactionsList = function () {
             });
       };
 
+      // Statement Download Handler
+      const handleStatementDownload = function () {
+            document.addEventListener('click', function (e) {
+                  const downloadBtn = e.target.closest('.download-statement');
+                  if (!downloadBtn) return;
+
+                  e.preventDefault();
+
+                  const studentId = downloadBtn.getAttribute('data-student-id');
+                  const year = downloadBtn.getAttribute('data-year');
+
+                  if (!studentId || !year) {
+                        Swal.fire({
+                              title: 'Error!',
+                              text: 'Missing student or year information.',
+                              icon: 'error',
+                        });
+                        return;
+                  }
+
+                  // Show loading state on button
+                  const originalIcon = downloadBtn.innerHTML;
+                  downloadBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+                  downloadBtn.style.pointerEvents = 'none';
+
+                  // Create FormData for POST request
+                  const formData = new FormData();
+                  formData.append('student_id', studentId);
+                  formData.append('statement_year', year);
+
+                  fetch(routeDownloadStatement, {
+                        method: "POST",
+                        headers: {
+                              "X-CSRF-TOKEN": csrfToken,
+                        },
+                        body: formData
+                  })
+                        .then(response => {
+                              if (!response.ok) {
+                                    // Try to parse error message from response
+                                    return response.text().then(text => {
+                                          throw new Error(text || 'Server error occurred');
+                                    });
+                              }
+                              return response.text();
+                        })
+                        .then(html => {
+                              // Create a new window with the HTML content
+                              const printWindow = window.open("", "_blank", "width=900,height=700,scrollbars=yes,resizable=yes");
+
+                              if (printWindow) {
+                                    printWindow.document.open();
+                                    printWindow.document.write(html);
+                                    printWindow.document.close();
+
+                                    // Focus on the new window
+                                    printWindow.focus();
+                              } else {
+                                    // Popup blocked
+                                    Swal.fire({
+                                          title: 'Popup Blocked!',
+                                          text: 'Please allow popups for this website to view the statement.',
+                                          icon: 'warning',
+                                    });
+                              }
+
+                              // Restore button state
+                              downloadBtn.innerHTML = originalIcon;
+                              downloadBtn.style.pointerEvents = 'auto';
+                        })
+                        .catch(error => {
+                              console.error("Statement Download Error:", error);
+
+                              // Check if the error message indicates no transactions
+                              const errorMessage = error.message.toLowerCase();
+                              if (errorMessage.includes('no transactions')) {
+                                    Swal.fire({
+                                          title: 'No Data Found',
+                                          text: 'No transactions found for the selected year.',
+                                          icon: 'info',
+                                    });
+                              } else {
+                                    Swal.fire({
+                                          title: 'Error!',
+                                          text: 'Failed to load statement. Please try again.',
+                                          icon: 'error',
+                                    });
+                              }
+
+                              // Restore button state
+                              downloadBtn.innerHTML = originalIcon;
+                              downloadBtn.style.pointerEvents = 'auto';
+                        });
+            });
+      };
+
       return {
             init: function () {
                   table = document.getElementById('kt_transactions_table');
@@ -265,6 +361,7 @@ var KTAllTransactionsList = function () {
                   handleFilter();
                   handleDeletion();
                   handleApproval();
+                  handleStatementDownload();
             }
       }
 }();

@@ -1002,14 +1002,13 @@
                             <!--begin::Toolbar-->
                             <div class="card-toolbar flex-shrink-0" style="white-space: nowrap;">
                                 <form class="form d-flex align-items-center gap-2 flex-nowrap" id="statement_form">
-                                    {{-- method="POST" action="{{ route('student.statement.download') }}" target="_blank"> --}}
                                     @csrf
                                     <input type="hidden" name="student_id" value="{{ $student->id }}">
                                     <label class="required fw-semibold fs-6 mb-0 me-2">Download statements</label>
                                     <select class="form-select form-select-sm w-150px" name="statement_year"
                                         data-control="select2" data-hide-search="true" required>
                                         <option value="">Select a year</option>
-                                        @for ($year = now()->year; $year >= 2025; $year--)
+                                        @for ($year = now()->year + 1; $year >= 2025; $year--)
                                             <option value="{{ $year }}">{{ $year }}</option>
                                         @endfor
                                     </select>
@@ -1205,10 +1204,11 @@
                                                         @endcannot
                                                     @else
                                                         @can('transactions.payslip.download')
-                                                            <a href="{{ route('transactions.download', $transaction->id) }}"
-                                                                target="_blank" data-bs-toggle="tooltip"
-                                                                title="Download Payslip"
-                                                                class="btn btn-icon text-hover-primary w-30px h-30px">
+                                                            <a href="#" data-bs-toggle="tooltip"
+                                                                title="Download Statement"
+                                                                class="btn btn-icon text-hover-primary w-30px h-30px download-statement"
+                                                                data-student-id="{{ $student->id }}"
+                                                                data-year="{{ $transaction->created_at->format('Y') }}">
                                                                 <i class="bi bi-download fs-2"></i>
                                                             </a>
                                                         @endcan
@@ -1227,7 +1227,7 @@
                 </div>
                 <!--end:::Transaction Tab pane-->
 
-                <!--begin:::Tab pane-->
+                <!--begin:::Sheets Tab pane-->
                 <div class="tab-pane fade" id="kt_student_view_sheets_tab" role="tabpanel">
                     <!--begin::Statements-->
                     <div class="card mb-6 mb-xl-9">
@@ -1367,7 +1367,7 @@
                     </div>
                     <!--end::Statements-->
                 </div>
-                <!--end:::Tab pane-->
+                <!--end:::Sheets Tab pane-->
 
                 <!--begin:::Attendance Tab pane-->
                 <div class="tab-pane fade" id="kt_student_view_attendance_tab" role="tabpanel">
@@ -1699,6 +1699,9 @@
         const routeDeleteInvoice = "{{ route('invoices.destroy', ':id') }}";
         const routeDeleteTxn = "{{ route('transactions.destroy', ':id') }}";
         const routeApproveTxn = "{{ route('transactions.approve', ':id') }}";
+
+        const routeDownloadStatement = "{{ route('student.statement.download') }}";
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
     </script>
 
     <script src="{{ asset('js/students/view.js') }}"></script>

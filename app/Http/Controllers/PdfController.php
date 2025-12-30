@@ -78,31 +78,55 @@ class PdfController extends Controller
         $student = Student::findOrFail($request->student_id);
         $year    = $request->statement_year;
 
-        $transactions = PaymentTransaction::with([
-            'paymentInvoice',
+        // Get tuition fee transactions where month_year belongs to the requested year
+        $tuitionFeeTransactions = PaymentTransaction::with([
+            'paymentInvoice.invoiceType',
             'createdBy:id,name',
         ])
             ->where([
                 ['student_id', '=', $student->id],
                 ['is_approved', '=', true],
             ])
-            ->whereYear('created_at', $year)
-
+            ->whereHas('paymentInvoice', function ($query) use ($year) {
+                $query->whereHas('invoiceType', function ($q) {
+                    $q->where('type_name', 'Tuition Fee');
+                })
+                    ->where('month_year', 'LIKE', '%_' . $year);
+            })
             ->get();
 
+        // Get other fee transactions where invoice was created in the requested year
+        $otherFeeTransactions = PaymentTransaction::with([
+            'paymentInvoice.invoiceType',
+            'createdBy:id,name',
+        ])
+            ->where([
+                ['student_id', '=', $student->id],
+                ['is_approved', '=', true],
+            ])
+            ->whereHas('paymentInvoice', function ($query) use ($year) {
+                $query->whereHas('invoiceType', function ($q) {
+                    $q->where('type_name', '!=', 'Tuition Fee');
+                })
+                    ->whereYear('created_at', $year);
+            })
+            ->get();
+
+        // Merge both collections
+        $transactions = $tuitionFeeTransactions->merge($otherFeeTransactions);
+
         if ($transactions->isEmpty()) {
-            return back()->with('error', "No transactions found for {$year}.");
+            return response()->json(['error' => "No transactions found for {$year}."], 404);
         }
 
         $totalPaid = $transactions->sum('amount_paid');
 
-        // Group transactions by month number
-        $monthlyPayments = $transactions
-            ->where('paymentInvoice.invoice_type', 'tuition_fee') // optional filter
+        // Group tuition fee transactions by month number
+        $monthlyPayments = $tuitionFeeTransactions
             ->groupBy(function ($t) {
                 $monthYear = $t->paymentInvoice->month_year;
 
-                // Handle formats like "10_2025"
+                // Handle formats like "01_2026"
                 if ($monthYear && preg_match('/^(\d{1,2})_(\d{4})$/', $monthYear, $matches)) {
                     return (int) $matches[1]; // Extract month number
                 }
@@ -111,7 +135,7 @@ class PdfController extends Controller
                 return (int) Carbon::parse($t->paymentInvoice->created_at)->format('n');
             })
             ->map(function (Collection $monthGroup) {
-                // Now group within month by invoice
+                // Group within month by invoice
                 return $monthGroup
                     ->groupBy('payment_invoice_id')
                     ->map(function (Collection $invoiceGroup) {
@@ -125,7 +149,6 @@ class PdfController extends Controller
                     });
             });
 
-        return view('pdf.student_statement', compact('student', 'monthlyPayments', 'transactions', 'totalPaid'));
+        return view('pdf.student_statement', compact('student', 'monthlyPayments', 'transactions', 'totalPaid', 'year'));
     }
-
 }

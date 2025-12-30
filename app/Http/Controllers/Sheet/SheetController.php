@@ -29,7 +29,9 @@ class SheetController extends Controller
                 });
             },
         ])
-            ->with('class')
+            ->withWhereHas('class', function ($query) {
+                $query->active();
+            })
             ->latest('id')
             ->get();
 
@@ -76,7 +78,7 @@ class SheetController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified sheet.
      */
     public function show(string $id)
     {
@@ -84,13 +86,27 @@ class SheetController extends Controller
             return redirect()->back()->with('warning', 'No permission to view sheets.');
         }
 
-        $sheet = Sheet::with(['class.subjects.sheetTopics.sheetsTaken'])->find($id);
+        // Eager load all necessary relationships
+        $sheet = Sheet::with(['class.subjects.sheetTopics.sheetsTaken', 'sheetPayments.invoice.paymentTransactions', 'sheetPayments.student'])->find($id);
 
         if (! $sheet) {
             return redirect()->route('sheets.index')->with('warning', 'Sheet group not found.');
         }
 
-        return view('sheets.view', compact('sheet'));
+        // Calculate statistics
+        $subjects = $sheet->class->subjects;
+
+        $stats = [
+            'totalNotes'        => $subjects->sum(fn($s) => $s->sheetTopics->count()),
+            'activeNotes'       => $subjects->sum(fn($s) => $s->sheetTopics->where('status', 'active')->count()),
+            'inactiveNotes'     => $subjects->sum(fn($s) => $s->sheetTopics->where('status', 'inactive')->count()),
+            'subjectsWithNotes' => $subjects->filter(fn($s) => $s->sheetTopics->isNotEmpty())->count(),
+            'totalRevenue'      => $sheet->sheetPayments->sum(fn($payment) => $payment->invoice?->paymentTransactions->sum('amount_paid') ?? 0),
+            'totalDue'          => $sheet->sheetPayments->sum(fn($payment) => $payment->invoice->amount_due ?? 0),
+            'totalSales'        => $sheet->sheetPayments->count(),
+        ];
+
+        return view('sheets.view', compact('sheet', 'stats'));
     }
 
     /**

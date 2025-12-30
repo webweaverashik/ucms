@@ -148,7 +148,14 @@
                                 {{ ucwords(str_replace('_', ' ', $invoice->invoiceType->type_name)) }}
                             </td>
                         </tr>
-                        @if ($invoice->invoiceType->type_name == 'sheet_fee')
+                        @if ($invoice->invoiceType->type_name == 'Tuition Fee')
+                            <tr class="">
+                                <td class="text-gray-500">Month Year:</td>
+                                <td class="text-gray-800">
+                                    {{ \Carbon\Carbon::createFromFormat('m_Y', $invoice->month_year)->format('F Y') }}
+                                </td>
+                            </tr>
+                        @elseif ($invoice->invoiceType->type_name == 'Sheet Fee')
                             <tr class="">
                                 <td class="text-gray-500">Sheet Group:</td>
                                 <td class="text-gray-800">
@@ -357,9 +364,10 @@
                                         @endcannot
                                     @else
                                         @can('transactions.payslip.download')
-                                            <a href="{{ route('transactions.download', $transaction->id) }}" target="_blank"
-                                                data-bs-toggle="tooltip" title="Download Payslip"
-                                                class="btn btn-icon text-hover-primary w-30px h-30px">
+                                            <a href="#" data-bs-toggle="tooltip" title="Download Statement"
+                                                class="btn btn-icon text-hover-primary w-30px h-30px download-statement"
+                                                data-student-id="{{ $transaction->student_id }}"
+                                                data-year="{{ $transaction->created_at->format('Y') }}">
                                                 <i class="bi bi-download fs-2"></i>
                                             </a>
                                         @endcan
@@ -685,6 +693,8 @@
         const routeDeleteTxn = "{{ route('transactions.destroy', ':id') }}";
         const routeApproveTxn = "{{ route('transactions.approve', ':id') }}";
         const routeUpdateInvoice = "{{ route('invoices.update', ':id') }}";
+        const routeDownloadStatement = "{{ route('student.statement.download') }}";
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
     </script>
     <script src="{{ asset('js/invoices/view.js') }}"></script>
     <script>

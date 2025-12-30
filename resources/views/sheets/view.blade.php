@@ -3,9 +3,7 @@
     <link href="{{ asset('css/sheets/view.css') }}" rel="stylesheet" type="text/css" />
 @endpush
 
-
 @extends('layouts.app')
-
 @section('title', 'Sheet Group - ' . $sheet->class->name)
 
 @section('header-title')
@@ -25,7 +23,8 @@
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
                 <a href="#" class="text-muted text-hover-primary">
-                    Sheet Group </a>
+                    Sheet Group
+                </a>
             </li>
             <!--end::Item-->
             <!--begin::Item-->
@@ -35,19 +34,20 @@
             <!--end::Item-->
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                View </li>
+                View
+            </li>
             <!--end::Item-->
         </ul>
         <!--end::Breadcrumb-->
     </div>
 @endsection
 
-
 @section('content')
     @php
         $canNotesManage = auth()->user()->can('notes.manage');
         $isAdmin = auth()->user()->isAdmin();
     @endphp
+
     <!--begin::Layout-->
     <div class="d-flex flex-column flex-xl-row">
         <!--begin::Sidebar-->
@@ -64,15 +64,13 @@
                         <h3 class="text-gray-600">Sheet Group Info</h3>
                     </div>
                     <!--end::Card title-->
-
                     @canany(['sheets.edit', 'notes.manage'])
                         <!--begin::Card toolbar-->
                         <div class="card-toolbar">
                             <!--begin::More options-->
                             <a href="#" class="btn btn-sm btn-light btn-icon" data-kt-menu-trigger="click"
                                 data-kt-menu-placement="bottom-end">
-                                <i class="ki-outline ki-dots-horizontal fs-3">
-                                </i>
+                                <i class="ki-outline ki-dots-horizontal fs-3"> </i>
                             </a>
                             <!--begin::Menu-->
                             <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-6 w-175px py-4"
@@ -83,12 +81,11 @@
                                         <a href="#" data-bs-toggle="modal" data-bs-target="#kt_modal_edit_sheet"
                                             data-sheet-id="{{ $sheet->id }}" data-sheet-price="{{ $sheet->price }}"
                                             data-sheet-class="{{ $sheet->class->name }} ({{ $sheet->class->class_numeral }})"
-                                            class="menu-link text-hover-primary px-3"><i class="las la-pen fs-3 me-2"></i> Edit
-                                            Price</a>
+                                            class="menu-link text-hover-primary px-3"><i class="las la-pen fs-3 me-2"></i>
+                                            Edit Price</a>
                                     </div>
                                     <!--end::Menu item-->
                                 @endcan
-
                                 @can('notes.manage')
                                     <!--begin::Menu item-->
                                     <div class="menu-item px-3">
@@ -106,7 +103,6 @@
                     @endcanany
                 </div>
                 <!--end::Card header-->
-
                 <!--begin::Card body-->
                 <div class="card-body pt-0 fs-6">
                     <!--begin::Section-->
@@ -133,8 +129,47 @@
                     <!--begin::Section-->
                     <div class="mb-7">
                         <!--begin::Title-->
-                        <h5 class="mb-4">Pricing
-                        </h5>
+                        <h5 class="mb-4">Statistics</h5>
+                        <!--end::Title-->
+                        <!--begin::Stats Grid-->
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="stats-mini-card">
+                                    <div class="stats-value text-primary">{{ $stats['totalNotes'] }}</div>
+                                    <div class="stats-label">Total Notes</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stats-mini-card">
+                                    <div class="stats-value text-success">{{ $stats['activeNotes'] }}</div>
+                                    <div class="stats-label">Active Notes</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stats-mini-card">
+                                    <div class="stats-value text-danger">{{ $stats['inactiveNotes'] }}</div>
+                                    <div class="stats-label">Inactive Notes</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stats-mini-card">
+                                    <div class="stats-value text-info">{{ $stats['subjectsWithNotes'] }}</div>
+                                    <div class="stats-label">Subjects</div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--end::Stats Grid-->
+                    </div>
+                    <!--end::Section-->
+
+                    <!--begin::Seperator-->
+                    <div class="separator separator-dashed mb-7"></div>
+                    <!--end::Seperator-->
+
+                    <!--begin::Section-->
+                    <div class="mb-7">
+                        <!--begin::Title-->
+                        <h5 class="mb-4">Pricing & Sales</h5>
                         <!--end::Title-->
                         <!--begin::Details-->
                         <div class="mb-0">
@@ -143,17 +178,29 @@
                                 <!--begin::Row-->
                                 <tr class="">
                                     <td class="text-gray-500">Price:</td>
-                                    <td class="text-gray-800">৳ {{ $sheet->price }}</td>
+                                    <td class="text-gray-800">৳ {{ number_format($sheet->price) }}</td>
                                 </tr>
                                 <!--end::Row-->
-
                                 <!--begin::Row-->
                                 <tr class="">
                                     <td class="text-gray-500">No. of Sales:</td>
-                                    <td class="text-gray-800">{{ $sheet->sheetPayments->count() }}</td>
+                                    <td class="text-gray-800">{{ $stats['totalSales'] }}</td>
                                 </tr>
                                 <!--end::Row-->
-
+                                <!--begin::Row-->
+                                <tr class="">
+                                    <td class="text-gray-500">Total Revenue:</td>
+                                    <td class="text-gray-800 text-success fw-bold">৳
+                                        {{ number_format($stats['totalRevenue']) }}</td>
+                                </tr>
+                                <!--end::Row-->
+                                <!--begin::Row-->
+                                <tr class="">
+                                    <td class="text-gray-500">Total Due:</td>
+                                    <td class="text-gray-800 text-warning fw-bold">৳
+                                        {{ number_format($stats['totalDue']) }}</td>
+                                </tr>
+                                <!--end::Row-->
                             </table>
                             <!--end::Details-->
                         </div>
@@ -174,7 +221,6 @@
                         <table class="table fs-6 fw-semibold gs-0 gy-2 gx-2">
                             <tr class="">
                                 <td class="text-gray-500">Created Since:</td>
-
                                 <td class="text-gray-800">
                                     {{ $sheet->created_at->diffForHumans() }}
                                     <span class="ms-1" data-bs-toggle="tooltip"
@@ -183,10 +229,8 @@
                                     </span>
                                 </td>
                             </tr>
-
                             <tr class="">
                                 <td class="text-gray-500">Updated Since:</td>
-
                                 <td class="text-gray-800">
                                     {{ $sheet->updated_at->diffForHumans() }}
                                     <span class="ms-1" data-bs-toggle="tooltip"
@@ -212,25 +256,23 @@
             <ul class="nav nav-custom nav-tabs nav-line-tabs nav-line-tabs-2x border-0 fs-4 fw-semibold mb-8">
                 <!--begin:::Tab item-->
                 <li class="nav-item">
-                    <a class="nav-link text-active-primary pb-4 active" data-bs-toggle="tab" href="#kt_sheet_notes_tab"><i
-                            class="ki-outline ki-book-open fs-3 me-2"></i>Notes</a>
+                    <a class="nav-link text-active-primary pb-4 active" data-bs-toggle="tab"
+                        href="#kt_sheet_notes_tab"><i class="ki-outline ki-book-open fs-3 me-2"></i>Notes</a>
                 </li>
                 <!--end:::Tab item-->
-
                 <!--begin:::Tab item-->
                 <li class="nav-item">
                     <a class="nav-link text-active-primary pb-4" data-kt-countup-tabs="true" data-bs-toggle="tab"
                         href="#kt_sheet_payments_tab"><i class="ki-outline ki-credit-cart fs-3 me-2"></i>Payments</a>
                 </li>
                 <!--end:::Tab item-->
-
                 @can('notes.manage')
                     <!--begin:::Tab item-->
                     <li class="nav-item ms-auto">
                         <!--begin::Action menu-->
                         <a href="#" class="btn btn-primary ps-7" data-bs-toggle="modal"
-                            data-bs-target="#kt_modal_add_notes"><i class="ki-outline ki-plus fs-2 me-0"></i>New Notes
-                        </a>
+                            data-bs-target="#kt_modal_add_notes"><i class="ki-outline ki-plus fs-2 me-0"></i>New
+                            Notes </a>
                         <!--end::Action Menu-->
                     </li>
                     <!--end:::Tab item-->
@@ -256,7 +298,7 @@
                                 <div class="d-flex align-items-center gap-2">
                                     <span class="badge badge-light-primary fs-7">
                                         <i class="ki-outline ki-book fs-6 me-1"></i>
-                                        {{ $sheet->class->subjects->sum(fn($s) => $s->sheetTopics->count()) }} Notes
+                                        {{ $stats['totalNotes'] }} Notes
                                     </span>
                                 </div>
                             </div>
@@ -295,7 +337,6 @@
                                                             data-id="{{ $topic->id }}"
                                                             data-topic-name="{{ $topic->topic_name }}"
                                                             data-pdf-path="{{ $topic->pdf_path }}">
-
                                                             <!--begin::Note Header-->
                                                             <div
                                                                 class="d-flex align-items-start justify-content-between mb-3">
@@ -307,7 +348,9 @@
                                                                     </div>
                                                                     <div class="flex-grow-1 min-w-0">
                                                                         <span
-                                                                            class="note-title fw-semibold fs-6 d-block text-truncate">
+                                                                            class="note-title fw-semibold fs-6 d-block text-truncate"
+                                                                            data-bs-toggle="tooltip"
+                                                                            title="{{ $topic->topic_name }}">
                                                                             {{ $topic->topic_name }}
                                                                         </span>
                                                                         <span class="text-muted fs-8">
@@ -380,7 +423,6 @@
                                                                         No PDF attached
                                                                     </span>
                                                                 @endif
-
                                                                 <span
                                                                     class="status-badge {{ $topic->status == 'active' ? 'active' : 'inactive' }}">
                                                                     <i
@@ -413,8 +455,7 @@
                                     @can('notes.manage')
                                         <a href="#" class="btn btn-primary" data-bs-toggle="modal"
                                             data-bs-target="#kt_modal_add_notes">
-                                            <i class="ki-outline ki-plus fs-3 me-1"></i>
-                                            Add First Note
+                                            <i class="ki-outline ki-plus fs-3 me-1"></i> Add First Note
                                         </a>
                                     @endcan
                                 </div>
@@ -450,7 +491,7 @@
                                     <div class="border border-dashed border-gray-300 w-150px rounded my-3 p-4 me-6">
                                         <span class="fs-1 fw-bold text-gray-800 lh-1">
                                             <span data-kt-countup="true"
-                                                data-kt-countup-value="{{ $sheet->sheetPayments->sum(fn($payment) => $payment->invoice?->paymentTransactions->sum('amount_paid') ?? 0) }}"
+                                                data-kt-countup-value="{{ $stats['totalRevenue'] }}"
                                                 data-kt-countup-prefix="৳">0</span>
                                         </span>
                                         <span class="fs-6 fw-semibold text-muted d-block lh-1 pt-2">Total Paid</span>
@@ -460,15 +501,14 @@
                                     <div class="border border-dashed border-gray-300 w-125px rounded my-3 p-4 me-6">
                                         <span class="fs-1 fw-bold text-gray-800 lh-1">
                                             <span class="" data-kt-countup="true"
-                                                data-kt-countup-value="{{ $sheet->sheetPayments->count() }}">0</span></span>
+                                                data-kt-countup-value="{{ $stats['totalSales'] }}">0</span></span>
                                         <span class="fs-6 fw-semibold text-muted d-block lh-1 pt-2">Invoices</span>
                                     </div>
                                     <!--end::Col-->
                                     <!--begin::Col-->
                                     <div class="border border-dashed border-warning w-150px rounded my-3 p-4 me-6">
                                         <span class="fs-1 fw-bold text-gray-800 lh-1">
-                                            <span data-kt-countup="true"
-                                                data-kt-countup-value="{{ $sheet->sheetPayments->sum(fn($payment) => $payment->invoice->amount_due ?? 0) }}"
+                                            <span data-kt-countup="true" data-kt-countup-value="{{ $stats['totalDue'] }}"
                                                 data-kt-countup-prefix="৳">0</span>
                                         </span>
                                         <span class="fs-6 fw-semibold text-muted d-block lh-1 pt-2">Due</span>
@@ -490,15 +530,14 @@
                             <div class="card-title">
                                 <!--begin::Search-->
                                 <div class="d-flex align-items-center position-relative my-1">
-                                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input
-                                        type="text" data-sheet-payments-table-filter="search"
+                                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
+                                    <input type="text" data-sheet-payments-table-filter="search"
                                         class="form-control form-control-solid w-350px ps-12"
                                         placeholder="Search in payments">
                                 </div>
                                 <!--end::Search-->
                             </div>
                             <!--begin::Card title-->
-
                             <!--begin::Card toolbar-->
                             <div class="card-toolbar">
                                 <!--begin::Toolbar-->
@@ -533,7 +572,6 @@
                                                 </select>
                                             </div>
                                             <!--end::Input group-->
-
                                             <!--begin::Actions-->
                                             <div class="d-flex justify-content-end">
                                                 <button type="reset"
@@ -549,16 +587,13 @@
                                         <!--end::Content-->
                                     </div>
                                     <!--end::Menu 1-->
-
                                     <!--end::Filter-->
                                 </div>
                                 <!--end::Toolbar-->
-
                             </div>
                             <!--end::Card toolbar-->
                         </div>
                         <!--end::Card header-->
-
                         <!--begin::Card body-->
                         <div class="card-body pb-5 tab-content">
                             <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table"
@@ -584,7 +619,6 @@
                                                     {{ $payment->invoice->invoice_number }}
                                                 </a>
                                             </td>
-
                                             <td>{{ $payment->invoice->total_amount }}</td>
                                             <td class="d-none">
                                                 @if ($payment->invoice->status === 'due')
@@ -595,8 +629,6 @@
                                                     T_paid
                                                 @endif
                                             </td>
-
-
                                             <td>
                                                 @if ($payment->invoice->status === 'due')
                                                     <span class="badge badge-warning">Due</span>
@@ -606,20 +638,16 @@
                                                     <span class="badge badge-success">Paid</span>
                                                 @endif
                                             </td>
-
                                             <td>{{ $payment->invoice->paymentTransactions->sum('amount_paid') }}</td>
-
                                             <td>
                                                 <a href="{{ route('students.show', $payment->student->id) }}">
                                                     {{ $payment->student->name }},
                                                     {{ $payment->student->student_unique_id }}
                                                 </a>
                                             </td>
-
                                             <td>
                                                 {{ $payment->created_at->format('h:i A, d-M-Y') }}
                                             </td>
-
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -651,8 +679,7 @@
                     <!--end::Modal title-->
                     <!--begin::Close-->
                     <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-add-note-modal-action="close">
-                        <i class="ki-outline ki-cross fs-1">
-                        </i>
+                        <i class="ki-outline ki-cross fs-1"> </i>
                     </div>
                     <!--end::Close-->
                 </div>
@@ -667,7 +694,6 @@
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_edit_sheet_header"
                             data-kt-scroll-wrappers="#kt_modal_add_notes_scroll" data-kt-scroll-offset="300px">
-
                             <!--begin::Subject Input group-->
                             <div class="fv-row mb-7">
                                 <!--begin::Label-->
@@ -684,11 +710,9 @@
                                         </option>
                                     @endforeach
                                 </select>
-
                                 <!--end::Input-->
                             </div>
                             <!--end::Subject Input group-->
-
                             <!--begin::Note name Input group-->
                             <div class="fv-row mb-7">
                                 <!--begin::Label-->
@@ -701,7 +725,6 @@
                                 <!--end::Input-->
                             </div>
                             <!--end::Note name Input group-->
-
                             <!--begin::PDF Upload Input group-->
                             <div class="fv-row mb-7">
                                 <!--begin::Label-->
@@ -712,7 +735,8 @@
                                     <input type="file" name="pdf_file" id="add_notes_pdf_file" accept=".pdf" />
                                     <div class="file-upload-content">
                                         <i class="ki-outline ki-file-up fs-3x text-primary mb-3"></i>
-                                        <div class="fs-6 fw-semibold text-gray-700 mb-1">Drop PDF here or click to upload
+                                        <div class="fs-6 fw-semibold text-gray-700 mb-1">Drop PDF here or click to
+                                            upload
                                         </div>
                                         <div class="fs-7 text-muted">Max file size: 10MB</div>
                                     </div>
@@ -729,7 +753,6 @@
                             <!--end::PDF Upload Input group-->
                         </div>
                         <!--end::Scroll-->
-
                         <!--begin::Actions-->
                         <div class="text-center pt-10">
                             <button type="reset" class="btn btn-light me-3"
@@ -766,8 +789,7 @@
                     <!--end::Modal title-->
                     <!--begin::Close-->
                     <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-edit-note-modal-action="close">
-                        <i class="ki-outline ki-cross fs-1">
-                        </i>
+                        <i class="ki-outline ki-cross fs-1"> </i>
                     </div>
                     <!--end::Close-->
                 </div>
@@ -783,7 +805,6 @@
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_edit_notes_header"
                             data-kt-scroll-wrappers="#kt_modal_edit_notes_scroll" data-kt-scroll-offset="300px">
-
                             <!--begin::Note name Input group-->
                             <div class="fv-row mb-7">
                                 <!--begin::Label-->
@@ -796,7 +817,6 @@
                                 <!--end::Input-->
                             </div>
                             <!--end::Note name Input group-->
-
                             <!--begin::Current PDF Info-->
                             <div class="fv-row mb-7" id="current_pdf_section">
                                 <label class="fw-semibold fs-6 mb-2">Current PDF</label>
@@ -824,7 +844,6 @@
                                 </div>
                             </div>
                             <!--end::Current PDF Info-->
-
                             <!--begin::PDF Upload Input group-->
                             <div class="fv-row mb-7">
                                 <!--begin::Label-->
@@ -836,7 +855,8 @@
                                     <input type="hidden" name="remove_pdf" id="remove_pdf_flag" value="0" />
                                     <div class="file-upload-content">
                                         <i class="ki-outline ki-file-up fs-3x text-primary mb-3"></i>
-                                        <div class="fs-6 fw-semibold text-gray-700 mb-1">Drop PDF here or click to upload
+                                        <div class="fs-6 fw-semibold text-gray-700 mb-1">Drop PDF here or click to
+                                            upload
                                         </div>
                                         <div class="fs-7 text-muted">Max file size: 10MB</div>
                                     </div>
@@ -853,7 +873,6 @@
                             <!--end::PDF Upload Input group-->
                         </div>
                         <!--end::Scroll-->
-
                         <!--begin::Actions-->
                         <div class="text-center pt-10">
                             <button type="reset" class="btn btn-light me-3"
@@ -876,7 +895,6 @@
     </div>
     <!--end::Modal - Edit Notes-->
 
-
     <!--begin::Modal - Edit Sheet-->
     <div class="modal fade" id="kt_modal_edit_sheet" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
         data-bs-keyboard="false">
@@ -891,8 +909,7 @@
                     <!--end::Modal title-->
                     <!--begin::Close-->
                     <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-sheet-modal-action="close">
-                        <i class="ki-outline ki-cross fs-1">
-                        </i>
+                        <i class="ki-outline ki-cross fs-1"> </i>
                     </div>
                     <!--end::Close-->
                 </div>
@@ -906,7 +923,6 @@
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_edit_sheet_header"
                             data-kt-scroll-wrappers="#kt_modal_edit_sheet_scroll" data-kt-scroll-offset="300px">
-
                             <!--begin::Price Input group-->
                             <div class="fv-row mb-7">
                                 <!--begin::Label-->
@@ -919,7 +935,6 @@
                                 <!--end::Input-->
                             </div>
                             <!--end::Price Input group-->
-
                         </div>
                         <!--end::Scroll-->
                         <!--begin::Actions-->
@@ -945,7 +960,6 @@
     <!--end::Modal - Edit Sheet-->
 @endsection
 
-
 @push('vendor-js')
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
 @endpush
@@ -955,15 +969,12 @@
         const routeDeleteNote = "{{ route('notes.destroy', ':id') }}";
         const routeUpdateNote = "{{ route('notes.update', ':id') }}";
     </script>
-
     <script src="{{ asset('js/sheets/view.js') }}"></script>
-
     <script>
         $('select[data-control="select2"]').select2({
             width: 'resolve'
         });
     </script>
-
     <script>
         document.getElementById("notes_sheets_menu").classList.add("here", "show");
         document.getElementById("all_sheets_link").classList.add("active");

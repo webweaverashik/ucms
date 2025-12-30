@@ -283,14 +283,15 @@
                                     @endif
 
                                     {{-- Showing a placeholder text for other users --}}
-                                    @if (! $canApproveTxn)
+                                    @if (!$canApproveTxn)
                                         <span class="badge rounded-pill text-bg-secondary">Pending Approval</span>
                                     @endif
                                 @else
                                     @if ($canDownloadPayslip)
-                                        <a href="{{ route('transactions.download', $transaction->id) }}" target="_blank"
-                                            data-bs-toggle="tooltip" title="Download Payslip"
-                                            class="btn btn-icon text-hover-primary w-30px h-30px">
+                                        <a href="#" data-bs-toggle="tooltip" title="Download Statement"
+                                            class="btn btn-icon text-hover-primary w-30px h-30px download-statement"
+                                            data-student-id="{{ $transaction->student_id }}"
+                                            data-year="{{ $transaction->created_at->format('Y') }}">
                                             <i class="bi bi-download fs-2"></i>
                                         </a>
                                     @endif
@@ -305,7 +306,6 @@
         <!--end::Card body-->
     </div>
     <!--end::Card-->
-
 
 
     <!--begin::Modal - Add Transaction-->
@@ -530,6 +530,8 @@
     <script>
         const routeDeleteTxn = "{{ route('transactions.destroy', ':id') }}";
         const routeApproveTxn = "{{ route('transactions.approve', ':id') }}";
+        const routeDownloadStatement = "{{ route('student.statement.download') }}";
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
     </script>
 
     <script src="{{ asset('js/transactions/index.js') }}"></script>

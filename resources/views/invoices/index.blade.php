@@ -278,7 +278,7 @@
                                                 preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year ?? '', $matches))
                                             {{ \Carbon\Carbon::create($matches[2], $matches[1], 1)->format('F Y') }}
                                         @else
-                                            N/A
+                                            -
                                         @endif
                                     </td>
                                     <td>{{ $invoice->total_amount }}</td>
@@ -287,14 +287,14 @@
                                         @if ($invoice->invoiceType?->type_name == 'Tuition Fee')
                                             1/{{ $invoice->student->payments->due_date }}
                                         @else
-                                            N/A
+                                            -
                                         @endif
                                     </td>
                                     <td>
                                         @if ($invoice->invoiceType?->type_name == 'Tuition Fee')
                                             {{ ucfirst($invoice->student->payments->payment_style) }}-1/{{ $invoice->student->payments->due_date }}
                                         @else
-                                            N/A
+                                            -
                                         @endif
                                     </td>
                                     @php
@@ -564,21 +564,21 @@
                                                 preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year ?? '', $matches))
                                             {{ \Carbon\Carbon::create($matches[2], $matches[1], 1)->format('F Y') }}
                                         @else
-                                            N/A
+                                            -
                                         @endif
                                     </td>
                                     <td class="d-none">
                                         @if ($invoice->invoiceType?->type_name == 'Tuition Fee')
                                             1/{{ $invoice->student->payments->due_date }}
                                         @else
-                                            N/A
+                                            -
                                         @endif
                                     </td>
                                     <td>
                                         @if ($invoice->invoiceType?->type_name == 'Tuition Fee')
                                             {{ ucfirst($invoice->student->payments->payment_style) }}-1/{{ $invoice->student->payments->due_date }}
                                         @else
-                                            N/A
+                                            -
                                         @endif
                                     </td>
                                     <td>

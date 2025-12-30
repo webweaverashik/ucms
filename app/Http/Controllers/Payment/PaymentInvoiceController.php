@@ -1,15 +1,16 @@
 <?php
 namespace App\Http\Controllers\Payment;
 
-use App\Http\Controllers\Controller;
-use App\Models\Payment\PaymentInvoice;
-use App\Models\Payment\PaymentInvoiceType;
-use App\Models\Sheet\SheetPayment;
-use App\Models\Student\Student;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Models\Student\Student;
+use App\Models\Sheet\SheetPayment;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use App\Models\Payment\PaymentInvoice;
+use Illuminate\Support\Facades\Validator;
+use App\Models\Payment\PaymentInvoiceType;
 
 class PaymentInvoiceController extends Controller
 {
@@ -78,7 +79,7 @@ class PaymentInvoiceController extends Controller
                 ->select('id', 'name', 'student_unique_id', 'student_activation_id', 'branch_id')
                 ->get();
 
-            $invoice_types = PaymentInvoiceType::select('id', 'type_name')->get();
+            $invoice_types = PaymentInvoiceType::select('id', 'type_name')->oldest('type_name')->get();
 
             return compact('unpaid_invoices', 'paid_invoices', 'dueMonths', 'paidMonths', 'students', 'invoice_types');
         });
@@ -132,7 +133,7 @@ class PaymentInvoiceController extends Controller
             $validatedMonthYear = null;
         }
 
-        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), $rules);
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             if ($request->expectsJson()) {
@@ -154,7 +155,7 @@ class PaymentInvoiceController extends Controller
 
         // ✅ Prevent duplicate tuition_fee invoice (same student + same month_year)
         if ($invoiceTypeName === 'tuition_fee' && PaymentInvoice::where('student_id', $student->id)->where('invoice_type_id', $invoiceType->id)->where('month_year', $validatedMonthYear)->exists()) {
-            $message = 'Tuition fee invoice already exists for this student and month.';
+            $message = 'A tuition fee invoice for ' . $student->name . ' of this month already exists';
             if ($request->expectsJson()) {
                 return response()->json(['success' => false, 'message' => $message], 422);
             }
@@ -165,12 +166,21 @@ class PaymentInvoiceController extends Controller
         if ($invoiceTypeName === 'sheet_fee') {
             $alreadyPaid = SheetPayment::where('student_id', $student->id)->whereHas('sheet', fn($q) => $q->where('class_id', $classId))->exists();
             if ($alreadyPaid) {
-                $message = 'Sheet invoice already exists for this student.';
+                $message = 'Sheet invoice already exists for ' . $student->name;
                 if ($request->expectsJson()) {
                     return response()->json(['success' => false, 'message' => $message], 422);
                 }
                 return back()->with('warning', $message);
             }
+        }
+
+        // ✅ Prevent duplicate admission_fee for same student + class
+        if ($invoiceTypeName === 'admission_fee' && PaymentInvoice::where('student_id', $student->id)->where('invoice_type_id', $invoiceType->id)->where('month_year', $validatedMonthYear)->exists()) {
+            $message = 'Admission fee invoice already exists for ' . $student->name;
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $message], 422);
+            }
+            return back()->with('warning', $message);
         }
 
         // ✅ Generate unique invoice number

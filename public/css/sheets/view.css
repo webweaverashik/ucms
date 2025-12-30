@@ -146,15 +146,6 @@
       padding: 0.25rem 0.5rem;
 }
 
-/* ===== Icon Color Inheritance ===== */
-.pdf-preview-link i,
-.pdf-badge i,
-.status-badge i,
-.notes-count i,
-.badge i {
-      color: inherit;
-}
-
 /* ===== Status Badge Styles ===== */
 .status-badge {
       padding: 0.35rem 0.75rem;
@@ -228,6 +219,33 @@
       padding: 1rem;
 }
 
+/* ===== Stats Mini Cards ===== */
+.stats-mini-card {
+      background: linear-gradient(135deg, var(--bs-gray-100) 0%, var(--bs-gray-200) 100%);
+      border-radius: 0.5rem;
+      padding: 0.75rem 1rem;
+      text-align: center;
+      transition: all 0.3s ease;
+}
+
+.stats-mini-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
+}
+
+.stats-mini-card .stats-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--bs-gray-800);
+}
+
+.stats-mini-card .stats-label {
+      font-size: 0.75rem;
+      color: var(--bs-gray-600);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+}
+
 /* ===== Animation Styles ===== */
 .spinning {
       animation: spin 1s linear infinite;
@@ -263,8 +281,29 @@
       background-clip: text;
 }
 
-/* ==========================================================================
-   Dark Mode Support
+/* ===== Universal Icon Color Inheritance ===== */
+.stats-mini-card i,
+.pdf-preview-link i,
+.pdf-badge i,
+.status-badge i,
+.notes-count i,
+.subject-header i,
+.note-actions i {
+      color: inherit;
+}
+
+[class*="badge"] i,
+[class*="link"] i {
+      color: inherit;
+}
+
+.btn i,
+.btn-icon i {
+      color: inherit;
+}
+
+/* ========================================================================== 
+   Dark Mode Support 
    ========================================================================== */
 
 [data-bs-theme="dark"] .subject-section {
@@ -345,6 +384,14 @@
 [data-bs-theme="dark"] .current-pdf-info {
       background: linear-gradient(135deg, var(--bs-gray-800) 0%, var(--bs-gray-900) 100%);
       border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .stats-mini-card {
+      background: linear-gradient(135deg, var(--bs-gray-800) 0%, var(--bs-gray-900) 100%);
+}
+
+[data-bs-theme="dark"] .stats-mini-card .stats-value {
+      color: var(--bs-gray-200);
 }
 
 [data-bs-theme="dark"] .empty-state-icon {

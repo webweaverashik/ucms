@@ -79,7 +79,7 @@ $(document).ready(function () {
                               ...t,
                               name: t.topic_name
                         }));
-
+                        toastr.success('Sheet topics loaded successfully');
                         renderNotesDistribution(response);
                   },
                   error() {

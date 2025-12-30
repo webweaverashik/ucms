@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $student->name }} - টাকা প্রদানের রশিদ</title>
+    <title>{{ $student->name }} - টাকা প্রদানের রশিদ ({{ $year }})</title>
 
     <link href="https://fonts.maateen.me/solaiman-lipi/font.css" rel="stylesheet">
 
@@ -59,8 +59,12 @@
 <body>
     @php
         use Rakibhstu\Banglanumber\NumberToBangla;
+        use Illuminate\Support\Str;
 
         $numto = new NumberToBangla();
+
+        // Convert year to Bangla
+        $yearBn = ashikBnNum($year);
     @endphp
 
     <div class="d-flex flex-column mx-auto">
@@ -103,12 +107,12 @@
         </div>
 
 
-        <h6 class="text-center fw-bold my-1" style="font-size: 10px;">মাসিক বেতন</h6>
+        <h6 class="text-center fw-bold my-1" style="font-size: 10px;">মাসিক বেতন ({{ $yearBn }})</h6>
 
         @php
             $months = [
-                'জানুয়ারি',
-                'ফেব্রুয়ারি',
+                'জানুয়ারি',
+                'ফেব্রুয়ারি',
                 'মার্চ',
                 'এপ্রিল',
                 'মে',
@@ -121,6 +125,9 @@
                 'ডিসেম্বর',
             ];
             $chunks = array_chunk($months, 6);
+
+            // Calculate total tuition fee dues from filtered monthlyPayments
+            $tuitionFeeDue = $monthlyPayments->flatten(1)->sum(fn($t) => optional($t->paymentInvoice)->amount_due ?? 0);
         @endphp
 
         @foreach ($chunks as $chunkIndex => $chunk)
@@ -148,7 +155,7 @@
                         @endforeach
                     </tr>
                     <tr>
-                        <th>বকেয়া</th>
+                        <th>বকেয়া</th>
                         @foreach ($chunk as $i => $month)
                             @php
                                 $monthNumber = $chunkIndex * 6 + ($i + 1);
@@ -199,37 +206,43 @@
         @endforeach
 
         <p style="display: flex; align-items: center;" class="mb-2">
-            বকেয়া বেতনের পরিমাণ:
+            বকেয়া বেতনের পরিমাণ:
             <span style="flex: 1; border-bottom: 1px dotted #000; margin-left: 5px;">
-                {{ $numto->bnMoney($transactions->where('paymentInvoice.invoice_type', 'tuition_fee')->sum(fn($t) => optional($t->paymentInvoice)->amount_due)) }}
+                {{ $numto->bnMoney($tuitionFeeDue) }}
             </span>
         </p>
 
 
-        <h6 class="text-center fw-bold mb-1 mt-0" style="font-size: 10px;">অন্যান্য ফি সমূহ</h6>
+        <h6 class="text-center fw-bold mb-1 mt-0" style="font-size: 10px;">অন্যান্য ফি সমূহ ({{ $yearBn }})</h6>
 
         @php
-            use Illuminate\Support\Str;
+            // Filter all non-tuition transactions from the year
+            $otherPayments = $transactions->filter(
+                fn($t) => $t->paymentInvoice->invoiceType->type_name !== 'Tuition Fee',
+            );
 
-            // Filter all non-tuition transactions
-            $otherPayments = $transactions->filter(fn($t) => $t->paymentInvoice->invoice_type !== 'tuition_fee');
-
-            // Group by invoice_type
-            $groupedByType = $otherPayments->groupBy(fn($t) => $t->paymentInvoice->invoice_type);
+            // Group by invoice type
+            $groupedByType = $otherPayments->groupBy(fn($t) => $t->paymentInvoice->invoiceType->type_name);
 
             // Define Bangla labels for all known invoice types
             $typeLabels = [
-                'model_test_fee' => 'মডেল টেস্ট ফি',
-                'exam_fee' => 'পরীক্ষা ফি',
-                'sheet_fee' => 'শীট ফি',
-                'admission_fee' => 'ভর্তি ফি',
-                'diary_fee' => 'ডায়েরি ফি',
-                'book_fee' => 'বই ফি',
-                'others_fee' => 'অন্যান্য',
+                'Model Test Fee' => 'মডেল টেস্ট ফি',
+                'Exam Fee' => 'পরীক্ষা ফি',
+                'Sheet Fee' => 'শীট ফি',
+                'Admission Fee' => 'ভর্তি ফি',
+                'Diary Fee' => 'ডায়েরি ফি',
+                'Book Fee' => 'বই ফি',
+                'Others Fee' => 'অন্যান্য',
             ];
 
             // Always display all known types as columns, even if empty
             $feeTypes = collect(array_keys($typeLabels));
+
+            // Calculate total other fees due
+            $otherFeeDue = $otherPayments
+                ->groupBy('payment_invoice_id')
+                ->map(fn($group) => optional($group->first()->paymentInvoice)->amount_due ?? 0)
+                ->sum();
         @endphp
 
         <table class="table table-sm table-bordered text-center w-100 mb-2 table-tight" style="table-layout: fixed;">
@@ -258,13 +271,17 @@
 
                 {{-- Due Row --}}
                 <tr>
-                    <th>বকেয়া</th>
+                    <th>বকেয়া</th>
                     @foreach ($feeTypes as $type)
                         @php
                             $transactionsOfType = $groupedByType[$type] ?? collect();
-                            $invoice = optional($transactionsOfType->first()?->paymentInvoice);
+                            // Group by invoice and get sum of dues (to handle multiple transactions per invoice)
+                            $totalDue = $transactionsOfType
+                                ->groupBy('payment_invoice_id')
+                                ->map(fn($group) => optional($group->first()->paymentInvoice)->amount_due ?? 0)
+                                ->sum();
                         @endphp
-                        <td>{{ $invoice?->amount_due ? $numto->bnCommaLakh($invoice->amount_due) : '-' }}</td>
+                        <td>{{ $totalDue > 0 ? $numto->bnCommaLakh($totalDue) : '-' }}</td>
                     @endforeach
                 </tr>
 
@@ -298,18 +315,18 @@
                     @foreach ($feeTypes as $type)
                         @php
                             $transactionsOfType = $groupedByType[$type] ?? collect();
-                            $date = optional($transactionsOfType->first()?->created_at);
+                            $date = $transactionsOfType->first()?->created_at;
                         @endphp
-                        <td>{{ $date ? ashikBnNumericDate($date->format('d-M-Y')) : '-' }}</td>
+                        <td>{{ $date ? ashikBnNumericDate($date) : '-' }}</td>
                     @endforeach
                 </tr>
             </tbody>
         </table>
 
         <p style="display: flex; align-items: center;" class="mb-2">
-            বকেয়া পরিমাণ:
+            বকেয়া পরিমাণ:
             <span style="flex: 1; border-bottom: 1px dotted #000; margin-left: 5px;">
-                {{ $numto->bnMoney($transactions->where('paymentInvoice.invoice_type', '!=', 'tuition_fee')->sum(fn($t) => optional($t->paymentInvoice)->amount_due)) }}
+                {{ $numto->bnMoney($otherFeeDue) }}
             </span>
         </p>
 
@@ -321,7 +338,7 @@
                 <td style="width: 70%">
                     {{ $numto->bnCommaLakh($totalPaid) }}/-
                     <p style="display: flex; align-items: center; margin-bottom: 0;">
-                        কথায়:
+                        কথায়:
                         <span style="flex: 1; border-bottom: 1px dotted #000; margin-left: 5px;">
                             {{ $numto->bnMoney($totalPaid) }}
                         </span>
