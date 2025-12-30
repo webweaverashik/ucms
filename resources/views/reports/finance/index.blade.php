@@ -5,6 +5,143 @@
 @push('page-css')
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="{{ asset('css/reports/finance/index.css') }}">
+    <style>
+        /* Tagify custom styles */
+        .tagify {
+            --tag-bg: var(--bs-primary);
+            --tag-text-color: #fff;
+            --tag-hover: var(--bs-primary);
+            --tag-remove-btn-color: #fff;
+            border: 1px solid var(--bs-gray-300);
+            border-radius: 0.475rem;
+            min-height: 44px;
+        }
+
+        .tagify--focus {
+            border-color: var(--bs-primary);
+        }
+
+        .tagify__tag {
+            border-radius: 0.375rem;
+        }
+
+        .tagify__dropdown {
+            border-radius: 0.475rem;
+            border: 1px solid var(--bs-gray-300);
+            box-shadow: 0 0 50px 0 rgba(82, 63, 105, .15);
+        }
+
+        .tagify__dropdown__item--active {
+            background: var(--bs-primary);
+            color: #fff;
+        }
+
+        /* Cost entries styling */
+        .cost-entry-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: var(--bs-gray-100);
+            border-radius: 0.475rem;
+            margin-bottom: 8px;
+            animation: slideIn 0.2s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .cost-entry-row .cost-type-name {
+            flex: 1;
+            font-weight: 500;
+            color: var(--bs-gray-800);
+        }
+
+        .cost-entry-row .cost-type-badge {
+            background: var(--bs-primary);
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 0.375rem;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .cost-entry-row .amount-input {
+            width: 150px;
+        }
+
+        /* Total section */
+        .cost-total-section {
+            background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 100%);
+            color: #fff;
+            padding: 15px 20px;
+            border-radius: 0.475rem;
+            margin-top: 15px;
+        }
+
+        .cost-total-section .total-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .cost-total-section .total-amount {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        /* Entry badges in table */
+        .entry-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--bs-light);
+            border: 1px solid var(--bs-gray-300);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin: 2px;
+        }
+
+        .entry-badge .type-name {
+            color: var(--bs-gray-700);
+            font-weight: 500;
+        }
+
+        .entry-badge .type-amount {
+            color: var(--bs-primary);
+            font-weight: 600;
+        }
+
+        /* Edit modal entry rows */
+        .edit-entry-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            background: var(--bs-gray-100);
+            border-radius: 0.475rem;
+            margin-bottom: 8px;
+        }
+
+        .edit-entry-row .entry-type-name {
+            flex: 1;
+            font-weight: 500;
+            color: var(--bs-gray-800);
+        }
+
+        .edit-entry-row .entry-amount-input {
+            width: 150px;
+        }
+    </style>
 @endpush
 
 @section('header-title')
@@ -118,7 +255,6 @@
                                         <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
                                     </span>
                                 </button>
-                                {{-- Add Cost button visible to all users --}}
                                 <button type="button" class="btn btn-success" id="add_cost_btn">
                                     <i class="ki-outline ki-plus fs-4 me-1"></i>
                                     Add Cost
@@ -194,7 +330,7 @@
                         </div>
                     </div>
 
-                    <!-- Chart Section (Full Width) -->
+                    <!-- Chart Section -->
                     <div id="chart_section" class="mb-8 d-none">
                         <div class="bg-light rounded p-5">
                             <h4 class="fw-bold text-gray-800 mb-4">Revenue vs Cost Chart</h4>
@@ -204,7 +340,7 @@
                         </div>
                     </div>
 
-                    <!-- Export Buttons (Before Table) -->
+                    <!-- Export Buttons -->
                     <div id="export_buttons" class="export-section gap-3 mb-5">
                         <button type="button" class="btn btn-light-success" id="export_excel_btn">
                             <i class="ki-outline ki-file-down fs-4 me-2"></i>
@@ -216,7 +352,7 @@
                         </button>
                     </div>
 
-                    <!-- Report Table (includes Collector-wise breakdown) -->
+                    <!-- Report Table -->
                     <div id="finance_report_result"></div>
                 </div>
                 <!--end::Tab - Revenue vs Cost-->
@@ -227,7 +363,6 @@
                     <div class="d-flex justify-content-between align-items-center mb-5">
                         <h4 class="fw-bold text-gray-800 mb-0">Daily Cost Records</h4>
                         <div class="d-flex gap-2">
-                            {{-- Add Cost button visible to all users --}}
                             <button type="button" class="btn btn-sm btn-success" id="add_cost_btn_tab">
                                 <i class="ki-outline ki-plus fs-4 me-1"></i>
                                 Add Cost
@@ -250,8 +385,8 @@
                                 <tr class="fw-bold text-muted bg-light">
                                     <th class="ps-4 rounded-start min-w-100px">Date</th>
                                     <th class="min-w-125px">Branch</th>
-                                    <th class="min-w-100px text-end">Amount</th>
-                                    <th class="min-w-200px">Description</th>
+                                    <th class="min-w-250px">Cost Entries</th>
+                                    <th class="min-w-100px text-end">Total Amount</th>
                                     <th class="min-w-100px">Created By</th>
                                     @if ($isAdmin)
                                         <th class="pe-4 rounded-end text-center min-w-100px">Actions</th>
@@ -270,9 +405,9 @@
     </div>
     <!--end::Card with Tabs-->
 
-    <!--begin::Add/Edit Cost Modal (Available to all users for Add, Admin only for Edit) -->
+    <!--begin::Add Cost Modal-->
     <div class="modal fade" id="cost_modal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered mw-650px">
+        <div class="modal-dialog modal-dialog-centered mw-700px">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3 id="cost_modal_title" class="modal-title fw-bold">Add Daily Cost</h3>
@@ -281,14 +416,11 @@
                     </button>
                 </div>
                 <form id="cost_form">
-                    <div class="modal-body py-10 px-lg-12">
-                        <input type="hidden" id="cost_id" value="">
-
+                    <div class="modal-body py-10 px-lg-12" style="max-height: 70vh; overflow-y: auto;">
                         <!-- Branch Selection -->
                         <div class="fv-row mb-7">
                             <label class="required fw-semibold fs-6 mb-2">Branch</label>
                             @if ($isAdmin)
-                                {{-- Admin can select any branch --}}
                                 <select id="cost_branch_id" name="branch_id" class="form-select form-select-solid"
                                     data-control="select2" data-placeholder="Select branch first"
                                     data-dropdown-parent="#cost_modal" data-hide-search="true">
@@ -301,55 +433,51 @@
                                 </select>
                                 <div class="form-text text-muted">Select branch first to enable date selection</div>
                             @else
-                                {{-- Non-admin users: branch is pre-selected and readonly --}}
                                 <input type="text" class="form-control form-control-solid bg-secondary"
                                     value="{{ $branches->first()->branch_name ?? '' }} ({{ $branches->first()->branch_prefix ?? '' }})"
                                     readonly disabled>
                                 <input type="hidden" id="cost_branch_id" name="branch_id"
                                     value="{{ $branches->first()->id ?? '' }}">
-                                <div class="form-text text-muted">Your branch is automatically selected</div>
                             @endif
                         </div>
 
-                        <!-- Date & Amount Row -->
-                        <div class="row mb-7">
-                            <!-- Date -->
-                            <div class="col-md-6">
-                                <div class="fv-row">
-                                    <label class="required fw-semibold fs-6 mb-2">Date</label>
-                                    <input type="text" id="cost_date" name="cost_date"
-                                        class="form-control form-control-solid {{ $isAdmin ? 'bg-secondary' : '' }}"
-                                        placeholder="{{ $isAdmin ? 'Select branch first' : 'Select date' }}" readonly
-                                        {{ $isAdmin ? 'disabled' : '' }}>
-                                    <div id="date_help_text" class="form-text text-muted">
-                                        {{ $isAdmin ? 'Select branch first' : 'Select an available date' }}
-                                    </div>
-                                </div>
+                        <!-- Date -->
+                        <div class="fv-row mb-7">
+                            <label class="required fw-semibold fs-6 mb-2">Date</label>
+                            <input type="text" id="cost_date" name="cost_date"
+                                class="form-control form-control-solid {{ $isAdmin ? 'bg-secondary' : '' }}"
+                                placeholder="{{ $isAdmin ? 'Select branch first' : 'Select date' }}" readonly
+                                {{ $isAdmin ? 'disabled' : '' }}>
+                            <div id="date_help_text" class="form-text text-muted">
+                                {{ $isAdmin ? 'Select branch first' : 'Select an available date' }}
                             </div>
+                        </div>
 
-                            <!-- Amount -->
-                            <div class="col-md-6">
-                                <div class="fv-row">
-                                    <label class="required fw-semibold fs-6 mb-2">Amount</label>
-                                    <div class="input-group input-group-solid">
-                                        <span class="input-group-text">
-                                            <i class="ki-outline ki-dollar fs-3"></i>
-                                        </span>
-                                        <input type="number" id="cost_amount" name="amount"
-                                            class="form-control form-control-solid rounded-start-0 border-start" min="1" step="1"
-                                            placeholder="0">
-                                    </div>
-                                    <div class="form-text text-muted">Whole number only</div>
+                        <!-- Cost Types Selection with Tagify -->
+                        <div class="fv-row mb-7">
+                            <label class="required fw-semibold fs-6 mb-2">Cost Types</label>
+                            <input type="text" id="cost_types_tagify" class="form-control form-control-solid"
+                                placeholder="Select cost types...">
+                            <div class="form-text text-muted">Select one or more cost types to add entries</div>
+                        </div>
+
+                        <!-- Cost Entries Container -->
+                        <div id="cost_entries_container" class="mb-5">
+                            <label class="fw-semibold fs-6 mb-3">Cost Entries</label>
+                            <div id="cost_entries_list">
+                                <div class="text-center text-muted py-5">
+                                    <i class="ki-outline ki-information fs-3x text-gray-400 mb-3"></i>
+                                    <p class="mb-0">Select cost types above to add entries</p>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Description -->
-                        <div class="fv-row mb-7">
-                            <label class="fw-semibold fs-6 mb-2">Description</label>
-                            <textarea id="cost_description" name="description" class="form-control form-control-solid" rows="3"
-                                placeholder="Enter cost description..." maxlength="500"></textarea>
-                            <div class="form-text text-muted">Maximum 500 characters</div>
+                        <!-- Total Cost -->
+                        <div id="cost_total_section" class="cost-total-section d-none">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="total-label">Total Cost</span>
+                                <span id="cost_total_amount" class="total-amount">৳0</span>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer flex-center">
@@ -369,10 +497,70 @@
             </div>
         </div>
     </div>
-    <!--end::Add/Edit Cost Modal-->
+    <!--end::Add Cost Modal-->
 
     @if ($isAdmin)
-        <!--begin::Delete Confirmation Modal-->
+        <!--begin::Edit Cost Modal-->
+        <div class="modal fade" id="edit_cost_modal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered mw-650px">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title fw-bold">Edit Cost Entries</h3>
+                        <button type="button" class="btn btn-icon btn-sm btn-active-light-primary"
+                            data-bs-dismiss="modal">
+                            <i class="ki-outline ki-cross fs-1"></i>
+                        </button>
+                    </div>
+                    <form id="edit_cost_form">
+                        <div class="modal-body py-10 px-lg-12" style="max-height: 70vh; overflow-y: auto;">
+                            <input type="hidden" id="edit_cost_id">
+
+                            <!-- Cost Info -->
+                            <div class="d-flex justify-content-between align-items-center mb-5 p-4 bg-light rounded">
+                                <div>
+                                    <span class="text-muted fs-7">Date:</span>
+                                    <span id="edit_cost_date" class="fw-bold text-gray-800 ms-2"></span>
+                                </div>
+                                <div>
+                                    <span class="text-muted fs-7">Branch:</span>
+                                    <span id="edit_cost_branch" class="fw-bold text-gray-800 ms-2"></span>
+                                </div>
+                            </div>
+
+                            <!-- Entries List -->
+                            <div class="mb-5">
+                                <label class="fw-semibold fs-6 mb-3">Cost Entries</label>
+                                <div id="edit_entries_list"></div>
+                            </div>
+
+                            <!-- Total -->
+                            <div class="cost-total-section">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="total-label">Total Cost</span>
+                                    <span id="edit_cost_total" class="total-amount">৳0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer flex-center">
+                            <button type="button" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary" id="update_cost_btn">
+                                <span class="indicator-label">
+                                    <i class="ki-outline ki-check fs-4 me-1"></i>
+                                    Update Cost
+                                </span>
+                                <span class="indicator-progress">
+                                    Please wait...
+                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!--end::Edit Cost Modal-->
+
+        <!--begin::Delete Cost Modal-->
         <div class="modal fade" id="delete_cost_modal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -389,7 +577,8 @@
                         </div>
                         <p class="fs-5 fw-semibold text-gray-700 mb-2">Are you sure you want to delete this cost record?
                         </p>
-                        <p class="fs-7 text-muted">This action cannot be undone.</p>
+                        <p class="fs-7 text-muted">This will permanently remove all entries. This action cannot be undone.
+                        </p>
                         <input type="hidden" id="delete_cost_id">
                     </div>
                     <div class="modal-footer flex-center">
@@ -408,46 +597,7 @@
                 </div>
             </div>
         </div>
-        <!--end::Delete Confirmation Modal-->
-
-        <!--begin::Inline Edit Amount Modal-->
-        <div class="modal fade" id="inline_edit_modal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal">
-                <div class="modal-content">
-                    <div class="modal-header py-4">
-                        <h4 class="modal-title fw-bold">Edit Amount</h4>
-                        <button type="button" class="btn btn-icon btn-sm btn-active-light-primary"
-                            data-bs-dismiss="modal">
-                            <i class="ki-outline ki-cross fs-1"></i>
-                        </button>
-                    </div>
-                    <div class="modal-body py-6">
-                        <input type="hidden" id="inline_edit_cost_id">
-                        <div class="input-group input-group-solid">
-                            <span class="input-group-text">
-                                <i class="ki-outline ki-dollar fs-3"></i>
-                            </span>
-                            <input type="number" id="inline_edit_amount" class="form-control form-control-solid rounded-start-0 border-start"
-                                min="1" step="1" placeholder="0">
-                        </div>
-                        <div class="form-text text-muted">Enter whole number only</div>
-                    </div>
-                    <div class="modal-footer py-4 flex-center">
-                        <button type="button" class="btn btn-sm btn-light me-2" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-sm btn-primary" id="save_inline_edit_btn">
-                            <span class="indicator-label">
-                                <i class="ki-outline ki-check fs-4 me-1"></i>
-                                Save
-                            </span>
-                            <span class="indicator-progress">
-                                <span class="spinner-border spinner-border-sm align-middle"></span>
-                            </span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!--end::Inline Edit Amount Modal-->
+        <!--end::Delete Cost Modal-->
     @endif
 @endsection
 
@@ -465,11 +615,10 @@
             routes: {
                 generate: "{{ route('reports.finance.generate') }}",
                 costs: "{{ route('reports.finance.costs') }}",
-                // Store cost available to all users
+                costTypes: "{{ route('costs.types') }}",
                 storeCost: "{{ route('costs.store') }}",
                 getCostByDate: "{{ route('costs.by-date') }}",
                 @if ($isAdmin)
-                    // Edit/Delete only for admin
                     showCost: "{{ route('costs.show', ':id') }}",
                     updateCost: "{{ route('costs.update', ':id') }}",
                     deleteCost: "{{ route('costs.destroy', ':id') }}"

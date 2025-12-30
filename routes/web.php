@@ -8,9 +8,9 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\AutoInvoiceController;
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\Cost\CostController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Misc\MiscController;
-use App\Http\Controllers\Cost\CostController;
 use App\Http\Controllers\Payment\PaymentInvoiceController;
 use App\Http\Controllers\Payment\PaymentTransactionController;
 use App\Http\Controllers\PdfController;
@@ -132,21 +132,23 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('reports/attendance', [ReportController::class, 'attendanceReport'])->name('reports.attendance.index');
     Route::get('reports/attendance/data', [ReportController::class, 'attendanceReportData'])->name('reports.attendance.data');
 
-    // Finance Reports
-    Route::prefix('reports')->name('reports.')->group(function () {
-        Route::get('finance', [ReportController::class, 'financeReport'])->name('finance.index');
-        Route::post('finance', [ReportController::class, 'financeReportGenerate'])->name('finance.generate');
-        Route::get('finance/costs', [ReportController::class, 'getReportCosts'])->name('finance.costs');
-    });
-
     // Costs CRUD
     Route::prefix('costs')->name('costs.')->group(function () {
         Route::get('/', [CostController::class, 'index'])->name('index');
+        Route::get('/types', [CostController::class, 'getCostTypes'])->name('types');
         Route::post('/', [CostController::class, 'store'])->name('store');
         Route::get('/by-date', [CostController::class, 'getByDate'])->name('by-date');
         Route::get('/{cost}', [CostController::class, 'show'])->name('show');
         Route::put('/{cost}', [CostController::class, 'update'])->name('update');
         Route::delete('/{cost}', [CostController::class, 'destroy'])->name('destroy');
+        Route::delete('/entry/{entry}', [CostController::class, 'destroyEntry'])->name('entry.destroy');
+    });
+
+    // Finance Reports
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('finance', [ReportController::class, 'financeReport'])->name('finance.index');
+        Route::post('finance', [ReportController::class, 'financeReportGenerate'])->name('finance.generate');
+        Route::get('finance/costs', [ReportController::class, 'getReportCosts'])->name('finance.costs');
     });
 
     // ----- SMS Routes Start -----

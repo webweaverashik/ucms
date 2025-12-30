@@ -125,162 +125,175 @@ class ReportController extends Controller
         ]);
     }
 
-    /**
-     * Finance report page
-     */
-    public function financeReport()
-    {
-        $user = Auth::user();
-        $isAdmin = !$user->branch_id;
+/**
+ * Finance report page
+ */
+public function financeReport()
+{
+    $user = Auth::user();
+    $isAdmin = !$user->branch_id;
+    
+    $branches = Branch::when(!$isAdmin, function ($q) use ($user) {
+        $q->where('id', $user->branch_id);
+    })
+        ->select('id', 'branch_name', 'branch_prefix')
+        ->get();
+        
+    return view('reports.finance.index', compact('branches', 'isAdmin'));
+}
 
-        $branches = Branch::when(!$isAdmin, function ($q) use ($user) {
-            $q->where('id', $user->branch_id);
+/**
+ * Generate finance report
+ * Updated to use Cost with CostEntries
+ */
+public function financeReportGenerate(Request $request): JsonResponse
+{
+    $request->validate([
+        'date_range' => 'required|string',
+        'branch_id' => 'nullable|integer|exists:branches,id',
+    ]);
+
+    try {
+        [$start, $end] = explode(' - ', $request->date_range);
+        $startDate = Carbon::createFromFormat('d-m-Y', trim($start))->startOfDay();
+        $endDate = Carbon::createFromFormat('d-m-Y', trim($end))->endOfDay();
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Invalid date format',
+        ], 422);
+    }
+
+    $user = Auth::user();
+    $branchId = $user->branch_id ?: $request->branch_id;
+
+    // Get transactions with relationships
+    $transactions = PaymentTransaction::with(['student', 'createdBy'])
+        ->whereBetween(DB::raw('DATE(created_at)'), [$startDate->toDateString(), $endDate->toDateString()])
+        ->where('is_approved', true)
+        ->when($branchId, function ($q) use ($branchId) {
+            $q->whereHas('student.branch', fn($b) => $b->where('id', $branchId));
         })
-            ->select('id', 'branch_name', 'branch_prefix')
-            ->get();
+        ->get();
 
-        return view('reports.finance.index', compact('branches', 'isAdmin'));
+    // Get class IDs with transactions
+    $classIdsWithRevenue = $transactions->pluck('student.class_id')->filter()->unique()->values()->toArray();
+
+    // Get classes data
+    $classesData = ClassName::orderBy('id')
+        ->where(function ($query) use ($classIdsWithRevenue) {
+            $query->where('is_active', true)->orWhereIn('id', $classIdsWithRevenue);
+        })
+        ->select('id', 'name', 'is_active')
+        ->get();
+
+    $classes = $classesData->pluck('name', 'id');
+    $classesInfo = $classesData->map(fn($class) => [
+        'id' => $class->id,
+        'name' => $class->name,
+        'is_active' => $class->is_active,
+    ])->values();
+
+    // Get collectors
+    $collectors = $transactions
+        ->pluck('createdBy')
+        ->filter()
+        ->unique('id')
+        ->sortBy('name')
+        ->mapWithKeys(fn($user) => [$user->id => $user->name]);
+
+    // Get costs with entries - calculate total from entries
+    $costs = Cost::with('entries')
+        ->betweenDates($startDate->toDateString(), $endDate->toDateString())
+        ->forBranch($branchId)
+        ->get()
+        ->keyBy(fn($c) => $c->cost_date->format('d-m-Y'));
+
+    $transactionsByDate = $transactions->groupBy(fn($t) => $t->created_at->format('d-m-Y'));
+
+    // Get dates with data
+    $dates = collect();
+    $cursor = $startDate->copy();
+    while ($cursor <= $endDate) {
+        $d = $cursor->format('d-m-Y');
+        if ($transactionsByDate->has($d) || $costs->has($d)) {
+            $dates->push($d);
+        }
+        $cursor->addDay();
     }
 
-    /**
-     * Generate finance report
-     */
-    public function financeReportGenerate(Request $request): JsonResponse
-    {
-        $request->validate([
-            'date_range' => 'required|string',
-            'branch_id' => 'nullable|integer|exists:branches,id',
-        ]);
+    $report = [];
+    $costReport = [];
+    $collectorReport = [];
 
-        try {
-            [$start, $end] = explode(' - ', $request->date_range);
-            $startDate = Carbon::createFromFormat('d-m-Y', trim($start))->startOfDay();
-            $endDate = Carbon::createFromFormat('d-m-Y', trim($end))->endOfDay();
-        } catch (\Exception $e) {
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => 'Invalid date format',
-                ],
-                422,
-            );
+    foreach ($dates as $date) {
+        $dailyTx = $transactionsByDate->get($date, collect());
+
+        // Class-wise revenue
+        foreach ($classes as $id => $name) {
+            $report[$date][$name] = (float) $dailyTx->where('student.class_id', $id)->sum('amount_paid');
         }
 
-        $user = Auth::user();
-        $branchId = $user->branch_id ?: $request->branch_id;
-
-        // Include createdBy relationship for user-wise breakdown
-        $transactions = PaymentTransaction::with(['student', 'createdBy'])
-            ->whereBetween(DB::raw('DATE(created_at)'), [$startDate->toDateString(), $endDate->toDateString()])
-            ->where('is_approved', true)
-            ->when($branchId, function ($q) use ($branchId) {
-                $q->whereHas('student.branch', fn($b) => $b->where('id', $branchId));
-            })
-            ->get();
-
-        // Get class IDs that have transactions in the selected date range
-        $classIdsWithRevenue = $transactions->pluck('student.class_id')->filter()->unique()->values()->toArray();
-
-        // Get classes: active classes OR inactive classes with revenue
-        $classesData = ClassName::orderBy('id')
-            ->where(function ($query) use ($classIdsWithRevenue) {
-                $query->where('is_active', true)->orWhereIn('id', $classIdsWithRevenue);
-            })
-            ->select('id', 'name', 'is_active')
-            ->get();
-
-        // Create classes array with id => name mapping for backward compatibility
-        $classes = $classesData->pluck('name', 'id');
-
-        // Create classes info with active status
-        $classesInfo = $classesData
-            ->map(function ($class) {
-                return [
-                    'id' => $class->id,
-                    'name' => $class->name,
-                    'is_active' => $class->is_active,
-                ];
-            })
-            ->values();
-
-        // Get unique users who created transactions (collectors)
-        $collectors = $transactions
-            ->pluck('createdBy')
-            ->filter()
-            ->unique('id')
-            ->sortBy('name')
-            ->mapWithKeys(function ($user) {
-                return [$user->id => $user->name];
-            });
-
-        $costs = Cost::betweenDates($startDate->toDateString(), $endDate->toDateString())->forBranch($branchId)->get()->keyBy(fn($c) => $c->cost_date->format('d-m-Y'));
-
-        $transactionsByDate = $transactions->groupBy(fn($t) => $t->created_at->format('d-m-Y'));
-
-        $dates = collect();
-        $cursor = $startDate->copy();
-        while ($cursor <= $endDate) {
-            $d = $cursor->format('d-m-Y');
-            if ($transactionsByDate->has($d) || $costs->has($d)) {
-                $dates->push($d);
-            }
-            $cursor->addDay();
+        // Collector-wise collection
+        foreach ($collectors as $collectorId => $collectorName) {
+            $collectorReport[$date][$collectorId] = (float) $dailyTx->where('created_by', $collectorId)->sum('amount_paid');
         }
 
-        $report = [];
-        $costReport = [];
-        $collectorReport = [];
-
-        foreach ($dates as $date) {
-            $dailyTx = $transactionsByDate->get($date, collect());
-
-            // Class-wise revenue
-            foreach ($classes as $id => $name) {
-                $report[$date][$name] = (float) $dailyTx->where('student.class_id', $id)->sum('amount_paid');
-            }
-
-            // User/Collector-wise collection
-            foreach ($collectors as $collectorId => $collectorName) {
-                $collectorReport[$date][$collectorId] = (float) $dailyTx->where('created_by', $collectorId)->sum('amount_paid');
-            }
-
-            $costReport[$date] = (float) optional($costs->get($date))->amount ?? 0;
-        }
-
-        return response()->json([
-            'success' => true,
-            'report' => $report,
-            'costs' => $costReport,
-            'classes' => $classes->values(),
-            'classesInfo' => $classesInfo, // Class list with id, name, is_active
-            'collectors' => $collectors, // User list with id => name
-            'collectorReport' => $collectorReport, // Date => [userId => amount]
-        ]);
+        // Cost total from entries
+        $cost = $costs->get($date);
+        $costReport[$date] = $cost ? (float) $cost->totalAmount() : 0;
     }
 
-    /**
-     * Load cost list (AJAX)
-     */
-    public function getReportCosts(Request $request): JsonResponse
-    {
-        $request->validate([
-            'start_date' => 'nullable|date_format:d-m-Y',
-            'end_date' => 'nullable|date_format:d-m-Y',
-            'branch_id' => 'nullable|exists:branches,id',
-        ]);
+    return response()->json([
+        'success' => true,
+        'report' => $report,
+        'costs' => $costReport,
+        'classes' => $classes->values(),
+        'classesInfo' => $classesInfo,
+        'collectors' => $collectors,
+        'collectorReport' => $collectorReport,
+    ]);
+}
 
-        $user = Auth::user();
-        $branchId = $user->branch_id ?: $request->branch_id;
+/**
+ * Load cost list (AJAX)
+ * Updated to include entries
+ */
+public function getReportCosts(Request $request): JsonResponse
+{
+    $request->validate([
+        'start_date' => 'nullable|date_format:d-m-Y',
+        'end_date' => 'nullable|date_format:d-m-Y',
+        'branch_id' => 'nullable|exists:branches,id',
+    ]);
 
-        $query = Cost::with(['branch:id,branch_name,branch_prefix', 'createdBy:id,name'])->forBranch($branchId);
+    $user = Auth::user();
+    $branchId = $user->branch_id ?: $request->branch_id;
 
-        if ($request->start_date && $request->end_date) {
-            $query->betweenDates(Carbon::createFromFormat('d-m-Y', $request->start_date)->toDateString(), Carbon::createFromFormat('d-m-Y', $request->end_date)->toDateString());
-        }
+    $query = Cost::with([
+        'branch:id,branch_name,branch_prefix',
+        'createdBy:id,name',
+        'entries.costType:id,name'
+    ])->forBranch($branchId);
 
-        return response()->json([
-            'success' => true,
-            'data' => $query->orderBy('cost_date', 'desc')->get(),
-        ]);
+    if ($request->start_date && $request->end_date) {
+        $query->betweenDates(
+            Carbon::createFromFormat('d-m-Y', $request->start_date)->toDateString(),
+            Carbon::createFromFormat('d-m-Y', $request->end_date)->toDateString()
+        );
     }
+
+    $costs = $query->orderBy('cost_date', 'desc')->get();
+
+    // Add total_amount to each cost
+    $costs->each(function ($cost) {
+        $cost->total_amount = $cost->totalAmount();
+    });
+
+    return response()->json([
+        'success' => true,
+        'data' => $costs,
+    ]);
+}
+
 }

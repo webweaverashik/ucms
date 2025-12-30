@@ -13,11 +13,9 @@ return new class extends Migration
     {
         Schema::create('costs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
-            $table->date('cost_date'); // One record per day
-            $table->unsignedBigInteger('amount');
-            $table->text('description')->nullable();
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('branch_id');
+            $table->date('cost_date');
+            $table->foreignId('created_by');
             $table->timestamps();
 
             // Unique constraint: one cost per date per branch

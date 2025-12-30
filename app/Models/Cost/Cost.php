@@ -6,17 +6,41 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Cost extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['branch_id', 'cost_date', 'amount', 'description', 'created_by'];
+    protected $fillable = ['branch_id', 'cost_date', 'created_by'];
 
     protected $casts = [
         'cost_date' => 'date',
-        'amount'    => 'integer',
     ];
+
+    /**
+     * Get the cost entries for this cost.
+     */
+    public function entries(): HasMany
+    {
+        return $this->hasMany(CostEntry::class);
+    }
+
+    /**
+     * Calculate the total amount from all entries.
+     */
+    public function totalAmount(): int
+    {
+        return (int) $this->entries()->sum('amount');
+    }
+
+    /**
+     * Get the total amount attribute.
+     */
+    public function getTotalAmountAttribute(): int
+    {
+        return $this->totalAmount();
+    }
 
     /**
      * Get the branch that owns the cost.
@@ -31,11 +55,11 @@ class Cost extends Model
      */
     public function createdBy(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by')->withTrashed();
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**
-     * Scope a query to filter by branch.
+     * Scope to filter by branch.
      */
     public function scopeForBranch($query, $branchId)
     {
@@ -46,26 +70,10 @@ class Cost extends Model
     }
 
     /**
-     * Scope a query to filter by date range.
+     * Scope to filter by date range.
      */
     public function scopeBetweenDates($query, $startDate, $endDate)
     {
         return $query->whereBetween('cost_date', [$startDate, $endDate]);
-    }
-
-    /**
-     * Get the formatted amount with currency.
-     */
-    public function getFormattedAmountAttribute(): string
-    {
-        return '৳ ' . number_format($this->amount);
-    }
-
-    /**
-     * Get formatted date.
-     */
-    public function getFormattedDateAttribute(): string
-    {
-        return $this->cost_date->format('d-m-Y');
     }
 }

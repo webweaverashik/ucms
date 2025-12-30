@@ -4,6 +4,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Database\Seeders\Cost\CostSeeder;
 use Database\Seeders\Sheet\SheetSeeder;
+use Database\Seeders\Cost\CostTypeSeeder;
 use Database\Seeders\Academic\BatchSeeder;
 use Database\Seeders\Payment\PaymentSeeder;
 use Database\Seeders\Student\SiblingSeeder;
@@ -49,8 +50,8 @@ class DatabaseSeeder extends Seeder
             PaymentInvoiceSeeder::class,
             PaymentTransactionSeeder::class,
 
-            CostSeeder::class,
-            // CostTypeSeeder::class,
+            // CostSeeder::class,
+            CostTypeSeeder::class,
 
             SheetSeeder::class,
             SheetTopicSeeder::class,

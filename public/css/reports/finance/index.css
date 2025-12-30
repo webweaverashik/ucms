@@ -1,75 +1,333 @@
+/**
+ * Finance Report Styles
+ * Revenue vs Cost Module with Cost Management
+ */
+
+/* ============================================
+   CHART & REPORT STYLES (Existing - Do Not Modify)
+   ============================================ */
+
+/* Chart Container */
 .chart-container {
-      position: relative;
-      height: 400px;
-      width: 100%;
+    position: relative;
+    height: 400px;
+    width: 100%;
 }
 
+/* Summary Cards Animation */
 .summary-card {
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .summary-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
 }
 
+/* Disabled Dates in DateRangePicker */
 .daterangepicker td.disabled-date {
-      background: #fff5f5 !important;
-      color: #dc3545 !important;
-      text-decoration: line-through;
-      pointer-events: none;
-      opacity: 0.6;
+    background: #fff5f5 !important;
+    color: #dc3545 !important;
+    text-decoration: line-through;
+    pointer-events: none;
+    opacity: 0.6;
 }
 
+/* Amount Edit Button (Legacy - kept for compatibility) */
 .amount-edit-btn {
-      opacity: 0;
-      transition: opacity 0.2s ease;
+    opacity: 0;
+    transition: opacity 0.2s ease;
 }
 
 tr:hover .amount-edit-btn {
-      opacity: 1;
+    opacity: 1;
 }
 
+/* Export Buttons */
 .export-section {
-      display: none;
+    display: none;
 }
 
 .export-section.show {
-      display: flex;
+    display: flex;
 }
 
 /* Collector column styling */
 .collector-col {
-      background-color: rgba(80, 205, 137, 0.05) !important;
+    background-color: rgba(80, 205, 137, 0.05) !important;
 }
 
 /* Table header styling for multi-row headers */
 .table thead th[rowspan] {
-      vertical-align: middle;
+    vertical-align: middle;
 }
 
 /* Responsive table improvements */
 .table-responsive {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* Inactive class column styling */
 .table thead th .badge-light-danger {
-      padding: 2px 4px;
-      vertical-align: middle;
+    padding: 2px 4px;
+    vertical-align: middle;
 }
 
 .table thead th .text-gray-500 {
-      font-style: italic;
+    font-style: italic;
 }
 
 /* Collector summary cards */
 .collector-summary-card {
-      transition: all 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .collector-summary-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   MODAL SCROLLING FIX
+   ============================================ */
+
+#cost_modal .modal-body,
+#edit_cost_modal .modal-body {
+    overflow-y: auto;
+    max-height: 70vh;
+}
+
+/* ============================================
+   COST MODULE STYLES - Tagify & Cost Entries
+   ============================================ */
+
+/* Tagify Enhancements */
+.tagify {
+    --tag-bg: var(--bs-primary);
+    --tag-text-color: #fff;
+    --tag-hover: var(--bs-primary);
+    --tag-remove-btn-color: #fff;
+    border: 1px solid var(--bs-gray-300);
+    border-radius: 0.475rem;
+    min-height: 44px;
+    padding: 5px;
+}
+
+.tagify--focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.25rem rgba(0, 158, 247, 0.25);
+}
+
+.tagify__tag {
+    border-radius: 0.375rem;
+    margin: 3px;
+}
+
+.tagify__tag > div {
+    padding: 0.35em 0.5em;
+}
+
+.tagify__dropdown {
+    border-radius: 0.475rem;
+    border: 1px solid var(--bs-gray-300);
+    box-shadow: 0 0 50px 0 rgba(82, 63, 105, 0.15);
+    z-index: 1060;
+}
+
+.tagify__dropdown__item {
+    padding: 0.5rem 0.75rem;
+    margin: 0;
+}
+
+.tagify__dropdown__item--active {
+    background: var(--bs-primary);
+    color: #fff;
+}
+
+/* Cost Entry Rows - Add Modal */
+.cost-entry-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 15px;
+    background: var(--bs-gray-100);
+    border-radius: 0.475rem;
+    margin-bottom: 8px;
+    animation: slideIn 0.2s ease-out;
+    border: 1px solid var(--bs-gray-200);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.cost-entry-row .cost-type-name {
+    flex: 1;
+    font-weight: 500;
+    color: var(--bs-gray-800);
+}
+
+.cost-entry-row .cost-type-badge {
+    background: var(--bs-primary);
+    color: #fff;
+    padding: 5px 12px;
+    border-radius: 0.375rem;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.cost-entry-row .amount-input {
+    width: 160px;
+}
+
+/* Total Section */
+.cost-total-section {
+    background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 100%);
+    color: #fff;
+    padding: 15px 20px;
+    border-radius: 0.475rem;
+    margin-top: 15px;
+}
+
+.cost-total-section .total-label {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.cost-total-section .total-amount {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* Entry Badges in DataTable */
+.entry-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bs-light);
+    border: 1px solid var(--bs-gray-300);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    margin: 3px;
+    transition: all 0.2s;
+}
+
+.entry-badge:hover {
+    background: var(--bs-gray-200);
+    border-color: var(--bs-gray-400);
+}
+
+.entry-badge .type-name {
+    color: var(--bs-gray-700);
+    font-weight: 500;
+}
+
+.entry-badge .type-amount {
+    color: var(--bs-primary);
+    font-weight: 600;
+}
+
+/* Edit Modal Entry Rows */
+.edit-entry-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 15px;
+    background: var(--bs-gray-100);
+    border-radius: 0.475rem;
+    margin-bottom: 8px;
+    border: 1px solid var(--bs-gray-200);
+}
+
+.edit-entry-row .entry-type-name {
+    flex: 1;
+    font-weight: 500;
+    color: var(--bs-gray-800);
+    font-size: 14px;
+}
+
+.edit-entry-row .entry-amount-input {
+    width: 160px;
+}
+
+/* DataTable Enhancements */
+#costs_datatable tbody tr:hover {
+    background-color: var(--bs-gray-100);
+}
+
+#costs_datatable .entry-badge {
+    margin: 2px;
+}
+
+/* Loading State */
+#finance_report_loader {
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* No Data State */
+.no-data-state {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.no-data-state i {
+    display: block;
+    margin-bottom: 15px;
+}
+
+/* ============================================
+   MOBILE RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* Modal body max height adjustment for mobile */
+    #cost_modal .modal-body,
+    #edit_cost_modal .modal-body {
+        max-height: 60vh;
+    }
+
+    /* Cost Entry Rows */
+    .cost-entry-row {
+        flex-wrap: wrap;
+    }
+
+    .cost-entry-row .amount-input {
+        width: 100%;
+        margin-top: 8px;
+    }
+
+    /* Edit Entry Rows */
+    .edit-entry-row {
+        flex-wrap: wrap;
+    }
+
+    .edit-entry-row .entry-amount-input {
+        width: 100%;
+        margin-top: 8px;
+    }
+
+    /* Entry Badges */
+    .entry-badge {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+
+    /* Chart Height */
+    .chart-container {
+        height: 280px;
+    }
 }

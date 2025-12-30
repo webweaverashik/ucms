@@ -2,27 +2,24 @@
 
 /**
  * UCMS Finance Report Module
- * Revenue vs Cost Report with Cost Management
- * Metronic 8 + Bootstrap 5 + DataTables + Toastr + FormValidation
- * 
- * Note: Cost Edit/Delete functionality is restricted to Admin users only
- * Updated: Now includes user-wise (collector) revenue breakdown
+ * Revenue vs Cost Report with Cost Management (CostType & CostEntry)
+ * Metronic 8 + Bootstrap 5 + DataTables + Toastr + Tagify
  */
-
 var KTFinanceReport = (function () {
-
       // ============================================
       // STATE & CONFIGURATION
       // ============================================
       let financeChart = null;
       let costsDataTable = null;
       let costDatePicker = null;
+      let costTypesTagify = null;
       let costModal = null;
+      let editCostModal = null;
       let deleteModal = null;
-      let inlineEditModal = null;
       let existingCostDates = [];
+      let availableCostTypes = [];
+      let selectedCostEntries = {};
       let reportData = null;
-      let costFormValidator = null;
 
       const config = window.FinanceReportConfig || {};
       const csrfToken = config.csrfToken || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -37,30 +34,31 @@ var KTFinanceReport = (function () {
             elements.dateRangeInput = document.getElementById('finance_daterangepicker');
             elements.branchSelect = document.getElementById('branch_id');
             elements.generateBtn = document.getElementById('generate_report_btn');
-
             elements.loader = document.getElementById('finance_report_loader');
             elements.summaryCards = document.getElementById('summary_cards');
             elements.resultContainer = document.getElementById('finance_report_result');
             elements.chartSection = document.getElementById('chart_section');
             elements.chartCanvas = document.getElementById('finance_report_graph');
             elements.exportButtons = document.getElementById('export_buttons');
-
             elements.exportExcelBtn = document.getElementById('export_excel_btn');
             elements.exportChartBtn = document.getElementById('export_chart_btn');
-
             elements.refreshCostsBtn = document.getElementById('refresh_costs_btn');
             elements.costRecordsTab = document.getElementById('cost_records_tab');
 
-            // Add Cost elements - available to all users
+            // Add Cost elements
             elements.addCostBtn = document.getElementById('add_cost_btn');
             elements.addCostBtnTab = document.getElementById('add_cost_btn_tab');
             elements.costForm = document.getElementById('cost_form');
             elements.saveCostBtn = document.getElementById('save_cost_btn');
+            elements.costEntriesList = document.getElementById('cost_entries_list');
+            elements.costTotalSection = document.getElementById('cost_total_section');
+            elements.costTotalAmount = document.getElementById('cost_total_amount');
 
-            // Admin-only elements (Edit/Delete)
+            // Admin-only elements
             if (config.isAdmin) {
+                  elements.editCostForm = document.getElementById('edit_cost_form');
+                  elements.updateCostBtn = document.getElementById('update_cost_btn');
                   elements.confirmDeleteBtn = document.getElementById('confirm_delete_cost_btn');
-                  elements.saveInlineEditBtn = document.getElementById('save_inline_edit_btn');
             }
       };
 
@@ -103,164 +101,209 @@ var KTFinanceReport = (function () {
             elements.loader?.classList.add('d-none');
       };
 
-      // Generate random color for collector chart
-      const generateColors = function (count) {
-            const colors = [
-                  { bg: 'rgba(0, 158, 247, 0.85)', border: 'rgb(0, 158, 247)' },      // Primary blue
-                  { bg: 'rgba(80, 205, 137, 0.85)', border: 'rgb(80, 205, 137)' },    // Success green
-                  { bg: 'rgba(255, 199, 0, 0.85)', border: 'rgb(255, 199, 0)' },      // Warning yellow
-                  { bg: 'rgba(125, 82, 179, 0.85)', border: 'rgb(125, 82, 179)' },    // Purple
-                  { bg: 'rgba(255, 87, 34, 0.85)', border: 'rgb(255, 87, 34)' },      // Orange
-                  { bg: 'rgba(0, 188, 212, 0.85)', border: 'rgb(0, 188, 212)' },      // Cyan
-                  { bg: 'rgba(233, 30, 99, 0.85)', border: 'rgb(233, 30, 99)' },      // Pink
-                  { bg: 'rgba(63, 81, 181, 0.85)', border: 'rgb(63, 81, 181)' },      // Indigo
-                  { bg: 'rgba(139, 195, 74, 0.85)', border: 'rgb(139, 195, 74)' },    // Light green
-                  { bg: 'rgba(121, 85, 72, 0.85)', border: 'rgb(121, 85, 72)' },      // Brown
-            ];
-
-            const result = [];
-            for (let i = 0; i < count; i++) {
-                  result.push(colors[i % colors.length]);
-            }
-            return result;
-      };
-
       // ============================================
       // MODALS INITIALIZATION
       // ============================================
       const initModals = function () {
-            // Cost modal available to all users (for Add)
             const costEl = document.getElementById('cost_modal');
             if (costEl) costModal = new bootstrap.Modal(costEl);
 
-            // Delete and Inline Edit modals - Admin only
             if (config.isAdmin) {
+                  const editCostEl = document.getElementById('edit_cost_modal');
                   const deleteEl = document.getElementById('delete_cost_modal');
-                  const inlineEditEl = document.getElementById('inline_edit_modal');
 
+                  if (editCostEl) editCostModal = new bootstrap.Modal(editCostEl);
                   if (deleteEl) deleteModal = new bootstrap.Modal(deleteEl);
-                  if (inlineEditEl) inlineEditModal = new bootstrap.Modal(inlineEditEl);
             }
       };
 
       // ============================================
-      // FORM VALIDATION (FormValidation Plugin) - Available to all users
+      // COST TYPES LOADING
       // ============================================
-      const initCostFormValidation = function () {
-            const form = document.getElementById('cost_form');
-            if (!form) return;
-
-            // Define validators - branch validation only for admin (non-admin has fixed branch)
-            const validators = {};
-
-            // Branch validation only for admin
-            if (config.isAdmin) {
-                  validators['branch_id'] = {
-                        validators: {
-                              notEmpty: {
-                                    message: 'Branch is required'
-                              },
-                              callback: {
-                                    message: 'Please select a branch',
-                                    callback: function (input) {
-                                          return input.value !== '' && input.value !== null;
-                                    }
-                              }
+      const loadCostTypes = function (callback) {
+            fetch(config.routes.costTypes, {
+                  method: 'GET',
+                  headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                  }
+            })
+                  .then(r => r.json())
+                  .then(res => {
+                        if (res.success && res.data) {
+                              availableCostTypes = res.data;
+                              if (callback) callback();
                         }
-                  };
+                  })
+                  .catch(err => {
+                        console.error('Error loading cost types:', err);
+                        toastr.error('Failed to load cost types');
+                  });
+      };
+
+      // ============================================
+      // TAGIFY INITIALIZATION
+      // ============================================
+      const initCostTypesTagify = function () {
+            const input = document.getElementById('cost_types_tagify');
+            if (!input) return;
+
+            // Destroy existing tagify instance if exists
+            if (costTypesTagify) {
+                  costTypesTagify.destroy();
+                  costTypesTagify = null;
             }
 
-            // Common validators for all users
-            validators['cost_date'] = {
-                  'cost_date': {
-                        validators: {
-                              notEmpty: {
-                                    message: 'Date is required'
-                              },
-                              callback: {
-                                    message: 'Please select an available date',
-                                    callback: function (input) {
-                                          const value = input.value;
-                                          if (!value) return false;
+            // Prepare whitelist from available cost types
+            const whitelist = availableCostTypes.map(ct => ({
+                  value: ct.name,
+                  id: ct.id
+            }));
 
-                                          // Check if date is in existing dates (only for new costs)
-                                          const costId = document.getElementById('cost_id').value;
-                                          if (!costId && existingCostDates.includes(value)) {
-                                                return {
-                                                      valid: false,
-                                                      message: 'A cost record already exists for this date'
-                                                };
-                                          }
-                                          return true;
-                                    }
-                              }
-                        }
+            costTypesTagify = new Tagify(input, {
+                  whitelist: whitelist,
+                  enforceWhitelist: true,
+                  dropdown: {
+                        maxItems: 20,
+                        enabled: 0,
+                        closeOnSelect: false
                   },
-                  'amount': {
-                        validators: {
-                              notEmpty: {
-                                    message: 'Amount is required'
-                              },
-                              integer: {
-                                    message: 'Amount must be a whole number (no decimals)'
-                              },
-                              greaterThan: {
-                                    min: 1,
-                                    message: 'Amount must be at least 1'
-                              }
-                        }
-                  },
-                  'description': {
-                        validators: {
-                              stringLength: {
-                                    max: 500,
-                                    message: 'Description must be less than 500 characters'
-                              }
-                        }
-                  }
+                  originalInputValueFormat: valuesArr => valuesArr.map(item => item.id).join(',')
+            });
+
+            // Handle tag add
+            costTypesTagify.on('add', function (e) {
+                  const tagData = e.detail.data;
+                  addCostEntryRow(tagData.id, tagData.value);
+                  updateCostTotal();
+            });
+
+            // Handle tag remove
+            costTypesTagify.on('remove', function (e) {
+                  const tagData = e.detail.data;
+                  removeCostEntryRow(tagData.id);
+                  updateCostTotal();
+            });
+      };
+
+      const resetTagify = function () {
+            if (costTypesTagify) {
+                  costTypesTagify.removeAllTags();
+            }
+            selectedCostEntries = {};
+            renderEmptyEntriesList();
+            updateCostTotal();
+      };
+
+      // ============================================
+      // COST ENTRIES MANAGEMENT
+      // ============================================
+      const renderEmptyEntriesList = function () {
+            elements.costEntriesList.innerHTML = `
+            <div class="text-center text-muted py-5">
+                <i class="ki-outline ki-information fs-3x text-gray-400 mb-3"></i>
+                <p class="mb-0">Select cost types above to add entries</p>
+            </div>`;
+            elements.costTotalSection?.classList.add('d-none');
+      };
+
+      const addCostEntryRow = function (costTypeId, costTypeName) {
+            // Convert to string for consistent comparison
+            const costTypeIdStr = String(costTypeId);
+            
+            // Check if entry already exists
+            if (selectedCostEntries[costTypeIdStr]) return;
+
+            selectedCostEntries[costTypeIdStr] = {
+                  cost_type_id: costTypeId,
+                  name: costTypeName,
+                  amount: 0
             };
 
-            // Initialize FormValidation with delayed trigger (only on blur/submit)
-            costFormValidator = FormValidation.formValidation(form, {
-                  fields: validators,
-                  plugins: {
-                        trigger: new FormValidation.plugins.Trigger({
-                              event: {
-                                    default: 'blur',
-                                    'branch_id': 'change',
-                                    'cost_date': 'change'
-                              }
-                        }),
-                        bootstrap: new FormValidation.plugins.Bootstrap5({
-                              rowSelector: '.fv-row',
-                              eleInvalidClass: 'is-invalid',
-                              eleValidClass: ''
-                        }),
-                        submitButton: new FormValidation.plugins.SubmitButton()
-                  }
+            // Remove empty state if present
+            const emptyState = elements.costEntriesList.querySelector('.text-center');
+            if (emptyState) {
+                  elements.costEntriesList.innerHTML = '';
+            }
+
+            const row = document.createElement('div');
+            row.className = 'cost-entry-row';
+            row.id = `cost_entry_row_${costTypeIdStr}`;
+            row.innerHTML = `
+            <span class="cost-type-badge">${costTypeName}</span>
+            <div class="flex-grow-1"></div>
+            <div class="input-group input-group-solid amount-input">
+                <span class="input-group-text">৳</span>
+                <input type="number" class="form-control form-control-solid entry-amount-input"
+                    data-cost-type-id="${costTypeIdStr}"
+                    min="1" step="1" placeholder="0">
+            </div>`;
+
+            elements.costEntriesList.appendChild(row);
+            elements.costTotalSection?.classList.remove('d-none');
+
+            // Add event listener for amount input
+            const amountInput = row.querySelector('.entry-amount-input');
+            amountInput.addEventListener('input', function() {
+                  updateEntryAmount(costTypeIdStr, this.value);
             });
 
-            // Handle form submission
-            costFormValidator.on('core.form.valid', function () {
-                  saveCost();
-            });
-
-            costFormValidator.on('core.form.invalid', function () {
-                  toastr.error('Please fill all required fields correctly');
-            });
+            // Focus on the amount input
+            setTimeout(() => {
+                  amountInput?.focus();
+            }, 100);
       };
 
-      // Revalidate specific field
-      const revalidateField = function (fieldName) {
-            if (costFormValidator) {
-                  costFormValidator.revalidateField(fieldName);
+      const removeCostEntryRow = function (costTypeId) {
+            const costTypeIdStr = String(costTypeId);
+            delete selectedCostEntries[costTypeIdStr];
+            const row = document.getElementById(`cost_entry_row_${costTypeIdStr}`);
+            if (row) {
+                  row.remove();
+            }
+
+            // Show empty state if no entries
+            if (Object.keys(selectedCostEntries).length === 0) {
+                  renderEmptyEntriesList();
             }
       };
 
-      // Reset form validation
-      const resetFormValidation = function () {
-            if (costFormValidator) {
-                  costFormValidator.resetForm(true);
+      const removeEntryFromTagify = function (costTypeId) {
+            const costTypeIdStr = String(costTypeId);
+            if (costTypesTagify) {
+                  const tagToRemove = costTypesTagify.value.find(tag => String(tag.id) === costTypeIdStr);
+                  if (tagToRemove) {
+                        costTypesTagify.removeTags([tagToRemove]);
+                  }
+            }
+      };
+
+      const updateEntryAmount = function (costTypeId, value) {
+            const costTypeIdStr = String(costTypeId);
+            if (selectedCostEntries[costTypeIdStr]) {
+                  selectedCostEntries[costTypeIdStr].amount = parseInt(value) || 0;
+                  updateCostTotal();
+            }
+      };
+
+      const updateCostTotal = function () {
+            let total = 0;
+            Object.values(selectedCostEntries).forEach(entry => {
+                  total += entry.amount || 0;
+            });
+
+            if (elements.costTotalAmount) {
+                  elements.costTotalAmount.textContent = formatCurrency(total);
+            }
+
+            // Also update edit modal total if visible
+            const editTotal = document.getElementById('edit_cost_total');
+            if (editTotal && editCostModal?._isShown) {
+                  let editSum = 0;
+                  document.querySelectorAll('#edit_entries_list .edit-entry-amount').forEach(input => {
+                        editSum += parseInt(input.value) || 0;
+                  });
+                  editTotal.textContent = formatCurrency(editSum);
             }
       };
 
@@ -277,9 +320,7 @@ var KTFinanceReport = (function () {
                   startDate: start,
                   endDate: end,
                   maxDate: moment(),
-                  locale: {
-                        format: 'DD-MM-YYYY'
-                  },
+                  locale: { format: 'DD-MM-YYYY' },
                   ranges: {
                         'Today': [moment(), moment()],
                         'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
@@ -288,15 +329,13 @@ var KTFinanceReport = (function () {
                         'This Month': [moment().startOf('month'), moment().endOf('month')],
                         'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
                   }
-            }, function (s, e) {
-                  elements.dateRangeInput.value = s.format('DD-MM-YYYY') + ' - ' + e.format('DD-MM-YYYY');
             });
 
             elements.dateRangeInput.value = start.format('DD-MM-YYYY') + ' - ' + end.format('DD-MM-YYYY');
       };
 
       // ============================================
-      // COST DATE PICKER (with disabled dates) - Available to all users
+      // COST DATE PICKER
       // ============================================
       const initCostDatePicker = function (branchId = null) {
             const $costDate = $('#cost_date');
@@ -308,64 +347,40 @@ var KTFinanceReport = (function () {
                   $costDate.data('daterangepicker').remove();
             }
 
-            // Clear the date value - user must select
             $costDate.val('');
 
-            // Branch must be selected first
             if (!branchId) {
                   costDateInput.disabled = true;
                   costDateInput.classList.add('bg-secondary');
                   costDateInput.placeholder = 'Select branch first';
-                  if (dateHelpText) {
-                        dateHelpText.textContent = 'Please select a branch first';
-                  }
+                  if (dateHelpText) dateHelpText.textContent = 'Please select a branch first';
                   return;
             }
 
-            // Enable the date field
             costDateInput.disabled = false;
             costDateInput.classList.remove('bg-secondary');
             costDateInput.placeholder = 'Select available date';
-            if (dateHelpText) {
-                  dateHelpText.textContent = 'Select an available date (dates with existing costs are disabled)';
-            }
+            if (dateHelpText) dateHelpText.textContent = 'Dates with existing costs are disabled';
 
-            // Initialize date picker with disabled dates
             $costDate.daterangepicker({
                   singleDatePicker: true,
                   showDropdowns: true,
                   autoApply: true,
                   autoUpdateInput: false,
                   maxDate: moment(),
-                  locale: {
-                        format: 'DD-MM-YYYY'
-                  },
+                  locale: { format: 'DD-MM-YYYY' },
                   isInvalidDate: function (date) {
-                        const dateStr = date.format('DD-MM-YYYY');
-                        return existingCostDates.includes(dateStr);
-                  }
-            }, function (selectedDate) {
-                  const dateStr = selectedDate.format('DD-MM-YYYY');
-
-                  if (!existingCostDates.includes(dateStr)) {
-                        $costDate.val(dateStr);
+                        return existingCostDates.includes(date.format('DD-MM-YYYY'));
                   }
             });
 
-            // Handle apply event to ensure date is set
             $costDate.on('apply.daterangepicker', function (ev, picker) {
                   const dateStr = picker.startDate.format('DD-MM-YYYY');
                   if (!existingCostDates.includes(dateStr)) {
                         $(this).val(dateStr);
-                        if (!isModalInitializing) {
-                              revalidateField('cost_date');
-                        }
                   } else {
                         $(this).val('');
-                        toastr.warning('This date already has a cost record. Please select another date.');
-                        if (!isModalInitializing) {
-                              revalidateField('cost_date');
-                        }
+                        toastr.warning('This date already has a cost record.');
                   }
             });
       };
@@ -381,22 +396,14 @@ var KTFinanceReport = (function () {
 
             fetch(config.routes.costs + '?branch_id=' + targetBranchId, {
                   method: 'GET',
-                  headers: {
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
-                  }
+                  headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
             })
                   .then(r => r.json())
                   .then(res => {
-                        if (res.success && res.data) {
-                              existingCostDates = res.data.map(c => formatDate(c.cost_date));
-                        } else {
-                              existingCostDates = [];
-                        }
+                        existingCostDates = res.success && res.data ? res.data.map(c => formatDate(c.cost_date)) : [];
                         if (callback) callback();
                   })
-                  .catch(err => {
-                        console.error('Error fetching cost dates:', err);
+                  .catch(() => {
                         existingCostDates = [];
                         if (callback) callback();
                   });
@@ -409,77 +416,55 @@ var KTFinanceReport = (function () {
             const table = document.getElementById('costs_datatable');
             if (!table) return;
 
-            // Define columns based on user role
             const columns = [
                   {
                         data: 'cost_date',
                         className: 'ps-4',
-                        render: function (data) {
-                              return `<span class="fw-semibold text-gray-800">${formatDate(data)}</span>`;
-                        }
+                        render: data => `<span class="fw-semibold text-gray-800">${formatDate(data)}</span>`
                   },
                   {
                         data: 'branch',
+                        render: data => data ? `<span class="badge badge-light-primary">${data.branch_name} (${data.branch_prefix})</span>` : '-'
+                  },
+                  {
+                        data: 'entries',
                         render: function (data) {
-                              if (!data) return '-';
-                              return `<span class="badge badge-light-primary">${data.branch_name} (${data.branch_prefix})</span>`;
+                              if (!data || data.length === 0) return '<span class="text-muted">No entries</span>';
+                              return data.map(entry => `
+                        <span class="entry-badge">
+                            <span class="type-name">${entry.cost_type?.name || 'Unknown'}</span>
+                            <span class="type-amount">${formatCurrency(entry.amount)}</span>
+                        </span>
+                    `).join('');
                         }
                   },
                   {
-                        data: 'amount',
-                        className: 'text-center',
-                        render: function (data, type, row) {
-                              // Only show inline edit button for admin
-                              if (config.isAdmin) {
-                                    return `
-                                    <div class="d-flex align-items-center justify-content-end gap-2">
-                                          <span class="fw-bold text-gray-900">${formatCurrency(data)}</span>
-                                          <button type="button" class="btn btn-icon btn-sm btn-light-primary amount-edit-btn"
-                                                onclick="KTFinanceReport.openInlineEditModal(${row.id}, ${data})" title="Edit Amount">
-                                                <i class="ki-outline ki-pencil fs-6"></i>
-                                          </button>
-                                    </div>`;
-                              } else {
-                                    return `<span class="fw-bold text-gray-900">${formatCurrency(data)}</span>`;
-                              }
-                        }
-                  },
-                  {
-                        data: 'description',
-                        className: 'text-center',
-                        render: function (data) {
-                              if (!data) return '<span class="text-muted fst-italic">No description</span>';
-                              return `<span class="text-gray-700">${data.length > 50 ? data.substring(0, 50) + '...' : data}</span>`;
-                        }
+                        data: 'total_amount',
+                        className: 'text-end',
+                        render: data => `<span class="fw-bold text-primary fs-5">${formatCurrency(data)}</span>`
                   },
                   {
                         data: 'created_by',
-                        render: function (data, type, row) {
-                              if (!row.created_by) return '-';
-                              return `<span class="text-gray-600">${row.created_by.name}</span>`;
-                        }
+                        render: data => data ? `<span class="text-gray-600">${data.name}</span>` : '-'
                   }
             ];
 
-            // Add actions column only for admin
             if (config.isAdmin) {
                   columns.push({
                         data: null,
                         className: 'text-center pe-4',
                         orderable: false,
-                        render: function (data, type, row) {
-                              return `
-                              <div class="d-flex justify-content-center gap-1">
-                                    <button type="button" class="btn btn-icon btn-sm btn-light-primary"
-                                          onclick="KTFinanceReport.openEditCostModal(${row.id})" title="Edit">
-                                          <i class="ki-outline ki-pencil fs-6"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-icon btn-sm btn-light-danger"
-                                          onclick="KTFinanceReport.openDeleteModal(${row.id})" title="Delete">
-                                          <i class="ki-outline ki-trash fs-6"></i>
-                                    </button>
-                              </div>`;
-                        }
+                        render: (data, type, row) => `
+                    <div class="d-flex justify-content-center gap-1">
+                        <button type="button" class="btn btn-icon btn-sm btn-light-primary"
+                            onclick="KTFinanceReport.openEditCostModal(${row.id})" title="Edit">
+                            <i class="ki-outline ki-pencil fs-6"></i>
+                        </button>
+                        <button type="button" class="btn btn-icon btn-sm btn-light-danger"
+                            onclick="KTFinanceReport.openDeleteModal(${row.id})" title="Delete">
+                            <i class="ki-outline ki-trash fs-6"></i>
+                        </button>
+                    </div>`
                   });
             }
 
@@ -489,39 +474,282 @@ var KTFinanceReport = (function () {
                   ajax: {
                         url: config.routes.costs,
                         type: 'GET',
-                        headers: {
-                              'X-CSRF-TOKEN': csrfToken
-                        },
+                        headers: { 'X-CSRF-TOKEN': csrfToken },
                         dataSrc: function (json) {
                               if (json.success) {
                                     existingCostDates = json.data.map(c => formatDate(c.cost_date));
                                     return json.data;
                               }
                               return [];
-                        },
-                        error: function (xhr, error, thrown) {
-                              console.error('DataTable AJAX error:', error);
-                              toastr.error('Failed to load cost records');
                         }
                   },
                   columns: columns,
                   order: [[0, 'desc']],
                   pageLength: 10,
-                  lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-                  language: {
-                        emptyTable: "No cost records found",
-                        zeroRecords: "No matching records found"
-                  },
-                  drawCallback: function () {
-                        KTMenu.init();
-                  }
+                  language: { emptyTable: "No cost records found" },
+                  drawCallback: () => KTMenu.init()
             });
       };
 
       const reloadCostsDataTable = function () {
-            if (costsDataTable) {
-                  costsDataTable.ajax.reload(null, false);
+            if (costsDataTable) costsDataTable.ajax.reload(null, false);
+      };
+
+      // ============================================
+      // ADD COST MODAL
+      // ============================================
+      const openAddCostModal = function () {
+            document.getElementById('cost_modal_title').textContent = 'Add Daily Cost';
+            elements.costForm?.reset();
+            resetTagify();
+
+            if (config.isAdmin) {
+                  $('#cost_branch_id').val(null).trigger('change.select2');
+                  const costDateInput = document.getElementById('cost_date');
+                  costDateInput.disabled = true;
+                  costDateInput.classList.add('bg-secondary');
+                  costDateInput.placeholder = 'Select branch first';
+                  existingCostDates = [];
+            } else {
+                  const branchId = config.userBranchId;
+                  if (branchId) {
+                        updateExistingCostDates(branchId, () => initCostDatePicker(branchId));
+                  }
             }
+
+            // Load cost types and init tagify
+            loadCostTypes(() => {
+                  initCostTypesTagify();
+            });
+
+            costModal?.show();
+      };
+
+      const saveCost = function () {
+            const costDate = document.getElementById('cost_date').value;
+            const branchId = document.getElementById('cost_branch_id')?.value;
+
+            // Validation
+            if (!costDate) {
+                  toastr.error('Please select a date');
+                  return;
+            }
+
+            if (config.isAdmin && !branchId) {
+                  toastr.error('Please select a branch');
+                  return;
+            }
+
+            const entries = Object.values(selectedCostEntries).filter(e => e.amount > 0);
+            if (entries.length === 0) {
+                  toastr.error('Please add at least one cost entry with amount');
+                  return;
+            }
+
+            // Check for invalid amounts
+            const invalidEntries = Object.values(selectedCostEntries).filter(e => e.amount < 1 && e.amount !== 0);
+            if (invalidEntries.length > 0) {
+                  toastr.error('Amount must be at least 1 for each entry');
+                  return;
+            }
+
+            setButtonLoading(elements.saveCostBtn, true);
+
+            fetch(config.routes.storeCost, {
+                  method: 'POST',
+                  headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                  },
+                  body: JSON.stringify({
+                        cost_date: costDate,
+                        branch_id: branchId || config.userBranchId,
+                        entries: entries.map(e => ({
+                              cost_type_id: e.cost_type_id,
+                              amount: e.amount
+                        }))
+                  })
+            })
+                  .then(r => r.json())
+                  .then(res => {
+                        setButtonLoading(elements.saveCostBtn, false);
+                        if (res.success) {
+                              costModal?.hide();
+                              reloadCostsDataTable();
+                              toastr.success(res.message || 'Cost added successfully!');
+                        } else {
+                              toastr.error(res.message || 'Failed to save cost');
+                        }
+                  })
+                  .catch(err => {
+                        setButtonLoading(elements.saveCostBtn, false);
+                        toastr.error('Failed to save cost');
+                        console.error('Save cost error:', err);
+                  });
+      };
+
+      // ============================================
+      // EDIT COST MODAL (Admin Only)
+      // ============================================
+      const openEditCostModal = function (id) {
+            if (!config.isAdmin) {
+                  toastr.error('Permission denied');
+                  return;
+            }
+
+            const url = config.routes.showCost.replace(':id', id);
+
+            fetch(url, {
+                  method: 'GET',
+                  headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
+            })
+                  .then(r => r.json())
+                  .then(res => {
+                        if (res.success && res.data) {
+                              const cost = res.data;
+                              document.getElementById('edit_cost_id').value = cost.id;
+                              document.getElementById('edit_cost_date').textContent = formatDate(cost.cost_date);
+                              document.getElementById('edit_cost_branch').textContent = cost.branch ? `${cost.branch.branch_name} (${cost.branch.branch_prefix})` : '-';
+
+                              // Render entries (without delete button)
+                              const entriesList = document.getElementById('edit_entries_list');
+                              entriesList.innerHTML = '';
+
+                              cost.entries.forEach(entry => {
+                                    const row = document.createElement('div');
+                                    row.className = 'edit-entry-row';
+                                    row.id = `edit_entry_row_${entry.id}`;
+                                    row.innerHTML = `
+                            <span class="entry-type-name">${entry.cost_type?.name || 'Unknown'}</span>
+                            <div class="input-group input-group-solid entry-amount-input">
+                                <span class="input-group-text">৳</span>
+                                <input type="number" class="form-control form-control-solid edit-entry-amount"
+                                    data-entry-id="${entry.id}"
+                                    value="${entry.amount}"
+                                    min="1" step="1"
+                                    oninput="KTFinanceReport.updateEditTotal()">
+                            </div>`;
+                                    entriesList.appendChild(row);
+                              });
+
+                              updateEditTotal();
+                              editCostModal?.show();
+                        } else {
+                              toastr.error('Failed to load cost data');
+                        }
+                  })
+                  .catch(err => {
+                        toastr.error('Failed to load cost data');
+                        console.error('Load cost error:', err);
+                  });
+      };
+
+      const updateEditTotal = function () {
+            let total = 0;
+            document.querySelectorAll('#edit_entries_list .edit-entry-amount').forEach(input => {
+                  total += parseInt(input.value) || 0;
+            });
+            const editTotal = document.getElementById('edit_cost_total');
+            if (editTotal) editTotal.textContent = formatCurrency(total);
+      };
+
+      const updateCost = function () {
+            if (!config.isAdmin) return;
+
+            const costId = document.getElementById('edit_cost_id').value;
+            const entries = [];
+            let hasError = false;
+
+            document.querySelectorAll('#edit_entries_list .edit-entry-amount').forEach(input => {
+                  const amount = parseInt(input.value) || 0;
+                  if (amount < 1) {
+                        hasError = true;
+                  }
+                  entries.push({
+                        id: parseInt(input.dataset.entryId),
+                        amount: amount
+                  });
+            });
+
+            if (hasError) {
+                  toastr.error('Amount must be at least 1 for each entry');
+                  return;
+            }
+
+            if (entries.length === 0) {
+                  toastr.error('No valid entries to update');
+                  return;
+            }
+
+            setButtonLoading(elements.updateCostBtn, true);
+
+            const url = config.routes.updateCost.replace(':id', costId);
+
+            fetch(url, {
+                  method: 'PUT',
+                  headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                  },
+                  body: JSON.stringify({ entries: entries })
+            })
+                  .then(r => r.json())
+                  .then(res => {
+                        setButtonLoading(elements.updateCostBtn, false);
+                        if (res.success) {
+                              editCostModal?.hide();
+                              reloadCostsDataTable();
+                              toastr.success(res.message || 'Cost updated successfully!');
+                        } else {
+                              toastr.error(res.message || 'Failed to update cost');
+                        }
+                  })
+                  .catch(err => {
+                        setButtonLoading(elements.updateCostBtn, false);
+                        toastr.error('Failed to update cost');
+                        console.error('Update cost error:', err);
+                  });
+      };
+
+      // ============================================
+      // DELETE MODAL (Admin Only)
+      // ============================================
+      const openDeleteModal = function (id) {
+            if (!config.isAdmin) return;
+            document.getElementById('delete_cost_id').value = id;
+            deleteModal?.show();
+      };
+
+      const confirmDelete = function () {
+            if (!config.isAdmin) return;
+
+            const id = document.getElementById('delete_cost_id').value;
+            setButtonLoading(elements.confirmDeleteBtn, true);
+
+            const url = config.routes.deleteCost.replace(':id', id);
+
+            fetch(url, {
+                  method: 'DELETE',
+                  headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
+            })
+                  .then(r => r.json())
+                  .then(res => {
+                        setButtonLoading(elements.confirmDeleteBtn, false);
+                        if (res.success) {
+                              deleteModal?.hide();
+                              reloadCostsDataTable();
+                              toastr.success(res.message || 'Cost deleted successfully!');
+                        } else {
+                              toastr.error(res.message || 'Failed to delete cost');
+                        }
+                  })
+                  .catch(err => {
+                        setButtonLoading(elements.confirmDeleteBtn, false);
+                        toastr.error('Failed to delete cost');
+                        console.error('Delete error:', err);
+                  });
       };
 
       // ============================================
@@ -535,7 +763,6 @@ var KTFinanceReport = (function () {
                   return;
             }
 
-            // Check if branch is selected (required for admin)
             const branchId = document.getElementById('branch_id')?.value;
             if (config.isAdmin && !branchId) {
                   toastr.error('Please select a branch');
@@ -549,10 +776,7 @@ var KTFinanceReport = (function () {
 
             fetch(config.routes.generate, {
                   method: 'POST',
-                  headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json'
-                  },
+                  headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                   body: formData
             })
                   .then(r => r.json())
@@ -567,38 +791,21 @@ var KTFinanceReport = (function () {
 
                         if (!Object.keys(res.report).length) {
                               elements.resultContainer.innerHTML = `
-                              <div class="alert alert-warning d-flex align-items-center">
-                                    <i class="ki-outline ki-information-3 fs-2x me-3 text-warning"></i>
-                                    <div>No data found for the selected date range and branch.</div>
-                              </div>`;
+                        <div class="alert alert-warning d-flex align-items-center">
+                            <i class="ki-outline ki-information-3 fs-2x me-3 text-warning"></i>
+                            <div>No data found for the selected date range and branch.</div>
+                        </div>`;
                               return;
                         }
 
                         reportData = res;
-
-                        // Calculate totals
-                        let totalRevenue = 0;
-                        let totalCost = 0;
-                        Object.keys(res.report).forEach(date => {
-                              totalRevenue += Object.values(res.report[date]).reduce((a, b) => a + parseInt(b), 0);
-                              totalCost += parseInt(res.costs[date] || 0);
-                        });
-                        const netProfit = totalRevenue - totalCost;
-                        const profitMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : 0;
-
-                        // Update summary cards
-                        document.getElementById('total_revenue').textContent = formatCurrency(totalRevenue);
-                        document.getElementById('total_cost').textContent = formatCurrency(totalCost);
-                        document.getElementById('net_profit').textContent = formatCurrency(netProfit);
-                        document.getElementById('profit_margin').textContent = profitMargin + '%';
+                        renderSummaryCards(res);
+                        renderChart(res);
+                        renderReportTable(res);
 
                         elements.summaryCards?.classList.remove('d-none');
-                        elements.exportButtons?.classList.add('show');
-
-                        renderChart(res);
                         elements.chartSection?.classList.remove('d-none');
-
-                        renderReportTable(res);
+                        elements.exportButtons?.classList.add('show');
 
                         toastr.success('Report generated successfully!');
                   })
@@ -606,216 +813,34 @@ var KTFinanceReport = (function () {
                         setButtonLoading(elements.generateBtn, false);
                         hideLoader();
                         toastr.error(err.message || 'Failed to generate report');
-                        console.error('Generate report error:', err);
                   });
       };
 
-      // ============================================
-      // RENDER REPORT TABLE (with User/Collector columns)
-      // ============================================
-      const renderReportTable = function (data) {
-            const dates = Object.keys(data.report).sort().reverse();
-            const classes = data.classes;
-            const classesInfo = data.classesInfo || []; // Contains id, name, is_active
-            const collectors = data.collectors || {};
-            const collectorIds = Object.keys(collectors);
-            const collectorReport = data.collectorReport || {};
+      const renderSummaryCards = function (data) {
+            let totalRevenue = 0;
+            let totalCost = 0;
 
-            let grandTotalRevenue = 0;
-            let grandTotalCost = 0;
-            let collectorGrandTotals = {};
-
-            // Initialize collector grand totals
-            collectorIds.forEach(id => {
-                  collectorGrandTotals[id] = 0;
+            Object.keys(data.report).forEach(date => {
+                  totalRevenue += Object.values(data.report[date]).reduce((a, b) => a + parseInt(b), 0);
+                  totalCost += parseInt(data.costs[date] || 0);
             });
 
-            // Calculate number of class columns for colspan
-            const classColCount = classes.length;
-            const collectorColCount = collectorIds.length;
+            const netProfit = totalRevenue - totalCost;
+            const profitMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : 0;
 
-            let html = `
-            <h4 class="fw-bold text-gray-800 mb-4">Revenue vs Cost Details</h4>
-            <div class="table-responsive">
-                <table class="table table-bordered table-row-bordered align-middle text-center">
-                    <thead>
-                        <tr class="fw-bold text-gray-700 bg-light">
-                            <th rowspan="2" class="min-w-100px align-middle">Date</th>`;
-
-            // Class columns header
-            if (classColCount > 0) {
-                  html += `<th colspan="${classColCount}" class="bg-light-info text-info">Class-wise Revenue</th>`;
-            }
-
-            html += `<th rowspan="2" class="min-w-120px bg-light-primary align-middle">Total Revenue</th>`;
-
-            // Collector columns header (if any collectors exist)
-            if (collectorColCount > 0) {
-                  html += `<th colspan="${collectorColCount}" class="bg-light-success text-success">Collected By (User-wise)</th>`;
-            }
-
-            html += `
-                            <th rowspan="2" class="min-w-100px bg-light-danger align-middle">Cost</th>
-                            <th rowspan="2" class="min-w-100px bg-light-warning align-middle">Net Profit</th>
-                        </tr>
-                        <tr class="fw-bold text-muted bg-light">`;
-
-            // Class sub-headers with inactive indicator
-            classesInfo.forEach(cls => {
-                  if (cls.is_active) {
-                        html += `<th class="min-w-80px fs-7">${cls.name}</th>`;
-                  } else {
-                        html += `<th class="min-w-80px fs-7">
-                              <span class="text-gray-500">${cls.name}</span>
-                              <span class="badge badge-light-danger fs-8 ms-1" title="Inactive Class">
-                                    <i class="ki-outline ki-cross-circle fs-7"></i>
-                              </span>
-                        </th>`;
-                  }
-            });
-
-            // Collector sub-headers
-            collectorIds.forEach(id => {
-                  const name = collectors[id];
-                  // Truncate long names
-                  const displayName = name.length > 15 ? name.substring(0, 12) + '...' : name;
-                  html += `<th class="min-w-100px fs-7 text-success" title="${name}">${displayName}</th>`;
-            });
-
-            html += `</tr>
-                    </thead>
-                    <tbody>`;
-
-            dates.forEach(date => {
-                  const dailyData = data.report[date];
-                  const dailyCollectorData = collectorReport[date] || {};
-                  let dailyTotal = 0;
-
-                  html += `<tr><td class="fw-semibold">${date}</td>`;
-
-                  // Class columns
-                  classes.forEach(cls => {
-                        const value = parseInt(dailyData[cls] || 0);
-                        dailyTotal += value;
-                        html += `<td class="text-gray-700">${value > 0 ? formatCurrency(value) : '<span class="text-muted">-</span>'}</td>`;
-                  });
-
-                  // Total Revenue
-                  html += `<td class="fw-bold bg-light-primary text-primary">${formatCurrency(dailyTotal)}</td>`;
-
-                  // Collector columns
-                  collectorIds.forEach(id => {
-                        const value = parseInt(dailyCollectorData[id] || 0);
-                        collectorGrandTotals[id] += value;
-                        html += `<td class="text-gray-700">${value > 0 ? formatCurrency(value) : '<span class="text-muted">-</span>'}</td>`;
-                  });
-
-                  const cost = parseInt(data.costs[date] || 0);
-                  const net = dailyTotal - cost;
-                  grandTotalRevenue += dailyTotal;
-                  grandTotalCost += cost;
-
-                  html += `
-                  <td class="fw-bold text-danger bg-light-danger">${formatCurrency(cost)}</td>
-                  <td class="fw-bold ${net >= 0 ? 'text-success bg-light-success' : 'text-danger bg-light-danger'}">${formatCurrency(net)}</td>
-                  </tr>`;
-            });
-
-            const grandNet = grandTotalRevenue - grandTotalCost;
-
-            html += `
-                    </tbody>
-                    <tfoot>
-                        <tr class="fw-bolder bg-gray-900 text-white">
-                            <td>Grand Total</td>`;
-
-            // Empty cells for class columns
-            classes.forEach(() => {
-                  html += `<td>-</td>`;
-            });
-
-            // Grand total revenue
-            html += `<td class="text-warning">${formatCurrency(grandTotalRevenue)}</td>`;
-
-            // Collector grand totals
-            collectorIds.forEach(id => {
-                  html += `<td class="text-info">${formatCurrency(collectorGrandTotals[id])}</td>`;
-            });
-
-            // Grand total cost and net profit
-            html += `
-                            <td class="text-danger">${formatCurrency(grandTotalCost)}</td>
-                            <td class="${grandNet >= 0 ? 'text-success' : 'text-danger'}">${formatCurrency(grandNet)}</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>`;
-
-            // Add Collector Summary Card
-            if (collectorColCount > 0) {
-                  html += `
-                  <div class="separator separator-dashed my-8"></div>
-                  <h4 class="fw-bold text-gray-800 mb-4">
-                        <i class="ki-outline ki-profile-user fs-2 text-primary me-2"></i>
-                        Collector-wise Summary
-                  </h4>
-                  <div class="row g-4 mb-5">`;
-
-                  // Sort collectors by total amount (descending)
-                  const sortedCollectors = collectorIds.sort((a, b) => collectorGrandTotals[b] - collectorGrandTotals[a]);
-
-                  sortedCollectors.forEach((id, index) => {
-                        const name = collectors[id];
-                        const total = collectorGrandTotals[id];
-                        const percentage = grandTotalRevenue > 0 ? ((total / grandTotalRevenue) * 100).toFixed(1) : 0;
-
-                        // Different colors for each card
-                        const cardColors = ['primary', 'success', 'info', 'warning', 'danger', 'dark'];
-                        const color = cardColors[index % cardColors.length];
-
-                        html += `
-                        <div class="col-xl-3 col-md-4 col-sm-6">
-                              <div class="card border border-${color} border-dashed bg-light-${color}">
-                                    <div class="card-body py-4 px-5">
-                                          <div class="d-flex align-items-center">
-                                                <div class="symbol symbol-45px symbol-circle me-3">
-                                                      <span class="symbol-label bg-${color} text-white fs-4 fw-bold">
-                                                            ${name.charAt(0).toUpperCase()}
-                                                      </span>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                      <span class="text-gray-800 fw-bold d-block fs-6">${name}</span>
-                                                      <span class="text-${color} fw-semibold d-block fs-3">${formatCurrency(total)}</span>
-                                                </div>
-                                                <div class="text-end">
-                                                      <span class="badge badge-light-${color} fs-7">${percentage}%</span>
-                                                </div>
-                                          </div>
-                                    </div>
-                              </div>
-                        </div>`;
-                  });
-
-                  html += `</div>`;
-            }
-
-            elements.resultContainer.innerHTML = html;
+            document.getElementById('total_revenue').textContent = formatCurrency(totalRevenue);
+            document.getElementById('total_cost').textContent = formatCurrency(totalCost);
+            document.getElementById('net_profit').textContent = formatCurrency(netProfit);
+            document.getElementById('profit_margin').textContent = profitMargin + '%';
       };
 
-      // ============================================
-      // RENDER CHART (Full Width - Revenue & Cost only)
-      // ============================================
       const renderChart = function (data) {
             if (!elements.chartCanvas) return;
 
-            if (financeChart) {
-                  financeChart.destroy();
-            }
+            if (financeChart) financeChart.destroy();
 
             const labels = Object.keys(data.report).sort();
-            const revenue = labels.map(d =>
-                  Object.values(data.report[d]).reduce((a, b) => a + parseInt(b), 0)
-            );
+            const revenue = labels.map(d => Object.values(data.report[d]).reduce((a, b) => a + parseInt(b), 0));
             const costs = labels.map(d => parseInt(data.costs[d] || 0));
 
             financeChart = new Chart(elements.chartCanvas, {
@@ -845,46 +870,110 @@ var KTFinanceReport = (function () {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                              legend: {
-                                    position: 'top',
-                                    labels: {
-                                          usePointStyle: true,
-                                          padding: 20,
-                                          font: {
-                                                family: 'inherit',
-                                                size: 13
-                                          }
-                                    }
-                              },
+                              legend: { position: 'top' },
                               tooltip: {
                                     callbacks: {
-                                          label: function (context) {
-                                                return context.dataset.label + ': ' + formatCurrency(context.raw);
-                                          }
+                                          label: ctx => ctx.dataset.label + ': ' + formatCurrency(ctx.raw)
                                     }
                               }
                         },
                         scales: {
-                              x: {
-                                    grid: {
-                                          display: false
-                                    }
-                              },
+                              x: { grid: { display: false } },
                               y: {
                                     beginAtZero: true,
-                                    ticks: {
-                                          callback: function (value) {
-                                                return '৳' + value.toLocaleString();
-                                          }
-                                    }
+                                    ticks: { callback: value => '৳' + value.toLocaleString() }
                               }
                         }
                   }
             });
       };
 
+      const renderReportTable = function (data) {
+            const dates = Object.keys(data.report).sort().reverse();
+            const classes = data.classes;
+            const classesInfo = data.classesInfo || [];
+            const collectors = data.collectors || {};
+            const collectorIds = Object.keys(collectors);
+            const collectorReport = data.collectorReport || {};
+
+            let grandTotalRevenue = 0, grandTotalCost = 0;
+            let collectorGrandTotals = {};
+            collectorIds.forEach(id => { collectorGrandTotals[id] = 0; });
+
+            let html = `
+            <h4 class="fw-bold text-gray-800 mb-4">Revenue vs Cost Details</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered table-row-bordered align-middle text-center">
+                    <thead>
+                        <tr class="fw-bold text-gray-700 bg-light">
+                            <th rowspan="2" class="min-w-100px align-middle">Date</th>
+                            ${classes.length > 0 ? `<th colspan="${classes.length}" class="bg-light-info text-info">Class-wise Revenue</th>` : ''}
+                            <th rowspan="2" class="min-w-120px bg-light-primary align-middle">Total Revenue</th>
+                            ${collectorIds.length > 0 ? `<th colspan="${collectorIds.length}" class="bg-light-success text-success">Collected By</th>` : ''}
+                            <th rowspan="2" class="min-w-100px bg-light-danger align-middle">Cost</th>
+                            <th rowspan="2" class="min-w-100px bg-light-warning align-middle">Net Profit</th>
+                        </tr>
+                        <tr class="fw-bold text-muted bg-light">`;
+
+            classesInfo.forEach(cls => {
+                  html += cls.is_active
+                        ? `<th class="min-w-80px fs-7">${cls.name}</th>`
+                        : `<th class="min-w-80px fs-7"><span class="text-gray-500">${cls.name}</span><span class="badge badge-light-danger fs-8 ms-1"><i class="ki-outline ki-cross-circle fs-7"></i></span></th>`;
+            });
+
+            collectorIds.forEach(id => {
+                  const name = collectors[id];
+                  html += `<th class="min-w-100px fs-7 text-success" title="${name}">${name.length > 15 ? name.substring(0, 12) + '...' : name}</th>`;
+            });
+
+            html += `</tr></thead><tbody>`;
+
+            dates.forEach(date => {
+                  const dailyData = data.report[date];
+                  const dailyCollectorData = collectorReport[date] || {};
+                  let dailyTotal = 0;
+
+                  html += `<tr><td class="fw-semibold">${date}</td>`;
+
+                  classes.forEach(cls => {
+                        const value = parseInt(dailyData[cls] || 0);
+                        dailyTotal += value;
+                        html += `<td class="text-gray-700">${value > 0 ? formatCurrency(value) : '<span class="text-muted">-</span>'}</td>`;
+                  });
+
+                  html += `<td class="fw-bold bg-light-primary text-primary">${formatCurrency(dailyTotal)}</td>`;
+
+                  collectorIds.forEach(id => {
+                        const value = parseInt(dailyCollectorData[id] || 0);
+                        collectorGrandTotals[id] += value;
+                        html += `<td class="text-gray-700">${value > 0 ? formatCurrency(value) : '<span class="text-muted">-</span>'}</td>`;
+                  });
+
+                  const cost = parseInt(data.costs[date] || 0);
+                  const net = dailyTotal - cost;
+                  grandTotalRevenue += dailyTotal;
+                  grandTotalCost += cost;
+
+                  html += `
+                <td class="fw-bold text-danger bg-light-danger">${formatCurrency(cost)}</td>
+                <td class="fw-bold ${net >= 0 ? 'text-success bg-light-success' : 'text-danger bg-light-danger'}">${formatCurrency(net)}</td>
+            </tr>`;
+            });
+
+            const grandNet = grandTotalRevenue - grandTotalCost;
+
+            html += `</tbody><tfoot><tr class="fw-bolder bg-gray-900 text-white"><td>Grand Total</td>`;
+            classes.forEach(() => { html += `<td>-</td>`; });
+            html += `<td class="text-warning">${formatCurrency(grandTotalRevenue)}</td>`;
+            collectorIds.forEach(id => { html += `<td class="text-info">${formatCurrency(collectorGrandTotals[id])}</td>`; });
+            html += `<td class="text-danger">${formatCurrency(grandTotalCost)}</td>`;
+            html += `<td class="${grandNet >= 0 ? 'text-success' : 'text-danger'}">${formatCurrency(grandNet)}</td></tr></tfoot></table></div>`;
+
+            elements.resultContainer.innerHTML = html;
+      };
+
       // ============================================
-      // EXPORT FUNCTIONS (Updated for collectors)
+      // EXPORT FUNCTIONS
       // ============================================
       const exportToExcel = function () {
             if (!reportData) {
@@ -894,84 +983,39 @@ var KTFinanceReport = (function () {
 
             const dates = Object.keys(reportData.report).sort();
             const classes = reportData.classes;
-            const classesInfo = reportData.classesInfo || [];
-            const collectors = reportData.collectors || {};
-            const collectorIds = Object.keys(collectors);
-            const collectorReport = reportData.collectorReport || {};
             const wsData = [];
 
-            // Header row with inactive indicator
-            const classHeaders = classesInfo.map(cls => cls.is_active ? cls.name : `${cls.name} (Inactive)`);
-            const header = ['Date', ...classHeaders, 'Total Revenue'];
-
-            // Add collector headers
-            collectorIds.forEach(id => {
-                  header.push(collectors[id] + ' (Collected)');
-            });
-
-            header.push('Cost', 'Net Profit');
+            const header = ['Date', ...classes, 'Total Revenue', 'Cost', 'Net Profit'];
             wsData.push(header);
 
-            // Data rows
             let grandRevenue = 0, grandCost = 0;
-            let collectorGrandTotals = {};
-            collectorIds.forEach(id => { collectorGrandTotals[id] = 0; });
 
             dates.forEach(date => {
                   const row = [date];
                   let dailyTotal = 0;
 
-                  // Class-wise values
                   classes.forEach(cls => {
                         const value = parseInt(reportData.report[date][cls] || 0);
                         dailyTotal += value;
                         row.push(value);
                   });
 
-                  row.push(dailyTotal);
-
-                  // Collector-wise values
-                  const dailyCollectorData = collectorReport[date] || {};
-                  collectorIds.forEach(id => {
-                        const value = parseInt(dailyCollectorData[id] || 0);
-                        collectorGrandTotals[id] += value;
-                        row.push(value);
-                  });
-
                   const cost = parseInt(reportData.costs[date] || 0);
-                  const net = dailyTotal - cost;
-                  row.push(cost, net);
+                  row.push(dailyTotal, cost, dailyTotal - cost);
                   wsData.push(row);
+
                   grandRevenue += dailyTotal;
                   grandCost += cost;
             });
 
-            // Grand total row
-            const grandTotalRow = ['Grand Total', ...Array(classes.length).fill(''), grandRevenue];
-            collectorIds.forEach(id => {
-                  grandTotalRow.push(collectorGrandTotals[id]);
-            });
-            grandTotalRow.push(grandCost, grandRevenue - grandCost);
-            wsData.push(grandTotalRow);
-
-            // Add empty row and collector summary
-            wsData.push([]);
-            wsData.push(['Collector Summary']);
-            wsData.push(['Collector Name', 'Total Collected', 'Percentage']);
-            collectorIds.forEach(id => {
-                  const total = collectorGrandTotals[id];
-                  const percentage = grandRevenue > 0 ? ((total / grandRevenue) * 100).toFixed(1) + '%' : '0%';
-                  wsData.push([collectors[id], total, percentage]);
-            });
+            wsData.push(['Grand Total', ...Array(classes.length).fill(''), grandRevenue, grandCost, grandRevenue - grandCost]);
 
             const ws = XLSX.utils.aoa_to_sheet(wsData);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Finance Report');
+            XLSX.writeFile(wb, 'finance_report_' + moment().format('YYYY-MM-DD_HH-mm') + '.xlsx');
 
-            const fileName = 'finance_report_' + moment().format('YYYY-MM-DD_HH-mm') + '.xlsx';
-            XLSX.writeFile(wb, fileName);
-
-            toastr.success('Excel file downloaded successfully!');
+            toastr.success('Excel file downloaded!');
       };
 
       const exportChart = function () {
@@ -980,555 +1024,78 @@ var KTFinanceReport = (function () {
                   return;
             }
 
-            // Create a temporary canvas with white background
-            const originalCanvas = elements.chartCanvas;
+            const canvas = elements.chartCanvas;
             const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
+            const ctx = tempCanvas.getContext('2d');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+            ctx.drawImage(canvas, 0, 0);
 
-            // Set dimensions
-            tempCanvas.width = originalCanvas.width;
-            tempCanvas.height = originalCanvas.height;
-
-            // Fill with white background
-            tempCtx.fillStyle = '#ffffff';
-            tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-
-            // Draw the chart on top of white background
-            tempCtx.drawImage(originalCanvas, 0, 0);
-
-            // Download the image
             const link = document.createElement('a');
             link.download = 'finance_chart_' + moment().format('YYYY-MM-DD_HH-mm') + '.png';
             link.href = tempCanvas.toDataURL('image/png', 1.0);
             link.click();
 
-            toastr.success('Chart image downloaded successfully!');
-      };
-
-      // ============================================
-      // COST MODAL FUNCTIONS
-      // Add Cost: Available to all users
-      // Edit Cost: Admin only
-      // ============================================
-      let isModalInitializing = false;
-
-      const openAddCostModal = function () {
-            isModalInitializing = true;
-
-            document.getElementById('cost_modal_title').textContent = 'Add Daily Cost';
-            elements.costForm?.reset();
-            document.getElementById('cost_id').value = '';
-            document.getElementById('cost_date').value = '';
-
-            // Reset form validation
-            resetFormValidation();
-
-            if (config.isAdmin) {
-                  // Admin: Reset branch select and disable date until branch is selected
-                  $('#cost_branch_id').val(null).trigger('change.select2');
-
-                  const costDateInput = document.getElementById('cost_date');
-                  costDateInput.disabled = true;
-                  costDateInput.classList.add('bg-secondary');
-                  costDateInput.placeholder = 'Select branch first';
-
-                  const dateHelpText = document.getElementById('date_help_text');
-                  if (dateHelpText) {
-                        dateHelpText.textContent = 'Please select a branch first';
-                  }
-
-                  existingCostDates = [];
-            } else {
-                  // Non-admin: Branch is pre-selected, initialize date picker immediately
-                  const branchId = config.userBranchId;
-                  if (branchId) {
-                        updateExistingCostDates(branchId, function () {
-                              initCostDatePicker(branchId);
-                        });
-                  }
-            }
-
-            costModal?.show();
-
-            // Reset flag after modal is shown
-            setTimeout(function () {
-                  isModalInitializing = false;
-            }, 300);
-      };
-
-      const openEditCostModal = function (id) {
-            // Check if user is admin
-            if (!config.isAdmin) {
-                  toastr.error('You do not have permission to edit costs');
-                  return;
-            }
-
-            isModalInitializing = true;
-
-            document.getElementById('cost_modal_title').textContent = 'Edit Cost';
-
-            // Reset form validation
-            resetFormValidation();
-
-            const url = config.routes.showCost.replace(':id', id);
-
-            fetch(url, {
-                  method: 'GET',
-                  headers: {
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
-                  }
-            })
-                  .then(r => r.json())
-                  .then(res => {
-                        if (res.success && res.data) {
-                              const cost = res.data;
-                              document.getElementById('cost_id').value = cost.id;
-                              document.getElementById('cost_amount').value = parseInt(cost.amount);
-                              document.getElementById('cost_description').value = cost.description || '';
-
-                              const branchId = cost.branch_id;
-
-                              if (document.getElementById('cost_branch_id')) {
-                                    $('#cost_branch_id').val(branchId).trigger('change');
-                              }
-
-                              // Fetch existing dates for this branch, excluding current cost date
-                              updateExistingCostDates(branchId, function () {
-                                    // Remove the current date from existing dates for edit mode
-                                    const currentDate = formatDate(cost.cost_date);
-                                    const filteredDates = existingCostDates.filter(d => d !== currentDate);
-                                    existingCostDates = filteredDates;
-
-                                    // Enable date field
-                                    const costDateInput = document.getElementById('cost_date');
-                                    costDateInput.disabled = false;
-                                    costDateInput.classList.remove('bg-secondary');
-
-                                    const dateHelpText = document.getElementById('date_help_text');
-                                    if (dateHelpText) {
-                                          dateHelpText.textContent = 'Select an available date (dates with existing costs are disabled)';
-                                    }
-
-                                    // Destroy existing picker
-                                    const $costDate = $('#cost_date');
-                                    if ($costDate.data('daterangepicker')) {
-                                          $costDate.data('daterangepicker').remove();
-                                    }
-
-                                    // Initialize with current date selected
-                                    $costDate.daterangepicker({
-                                          singleDatePicker: true,
-                                          showDropdowns: true,
-                                          autoApply: true,
-                                          autoUpdateInput: true,
-                                          maxDate: moment(),
-                                          startDate: moment(cost.cost_date),
-                                          locale: {
-                                                format: 'DD-MM-YYYY'
-                                          },
-                                          isInvalidDate: function (date) {
-                                                const dateStr = date.format('DD-MM-YYYY');
-                                                return filteredDates.includes(dateStr);
-                                          }
-                                    }, function (selectedDate) {
-                                          const dateStr = selectedDate.format('DD-MM-YYYY');
-                                          if (!filteredDates.includes(dateStr)) {
-                                                $costDate.val(dateStr);
-                                                revalidateField('cost_date');
-                                          }
-                                    });
-
-                                    // Set the current date value
-                                    $costDate.val(currentDate);
-
-                                    // Handle apply event
-                                    $costDate.on('apply.daterangepicker', function (ev, picker) {
-                                          const dateStr = picker.startDate.format('DD-MM-YYYY');
-                                          if (!filteredDates.includes(dateStr)) {
-                                                $(this).val(dateStr);
-                                                if (!isModalInitializing) {
-                                                      revalidateField('cost_date');
-                                                }
-                                          } else {
-                                                $(this).val(currentDate);
-                                                toastr.warning('This date already has a cost record. Please select another date.');
-                                          }
-                                    });
-
-                                    costModal?.show();
-
-                                    // Reset flag after modal is shown
-                                    setTimeout(function () {
-                                          isModalInitializing = false;
-                                    }, 300);
-                              });
-                        } else {
-                              toastr.error('Failed to load cost data');
-                              isModalInitializing = false;
-                        }
-                  })
-                  .catch(err => {
-                        toastr.error('Failed to load cost data');
-                        console.error('Load cost error:', err);
-                        isModalInitializing = false;
-                  });
-      };
-
-      const saveCost = function () {
-            const costId = document.getElementById('cost_id').value;
-
-            // Only admin can update existing costs
-            if (costId && !config.isAdmin) {
-                  toastr.error('You do not have permission to edit costs');
-                  return;
-            }
-
-            const costDate = document.getElementById('cost_date').value;
-            const amount = document.getElementById('cost_amount').value;
-            const description = document.getElementById('cost_description').value;
-            const branchId = document.getElementById('cost_branch_id')?.value;
-
-            // Double-check date is not in existing dates (for new costs)
-            if (!costId && existingCostDates.includes(costDate)) {
-                  toastr.error('A cost record already exists for this date. Please select another date.');
-                  return;
-            }
-
-            setButtonLoading(elements.saveCostBtn, true);
-
-            const isUpdate = !!costId;
-
-            // Only admin can use update route
-            if (isUpdate && !config.isAdmin) {
-                  setButtonLoading(elements.saveCostBtn, false);
-                  toastr.error('You do not have permission to edit costs');
-                  return;
-            }
-
-            const url = isUpdate
-                  ? config.routes.updateCost.replace(':id', costId)
-                  : config.routes.storeCost;
-            const method = isUpdate ? 'PUT' : 'POST';
-
-            fetch(url, {
-                  method: method,
-                  headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
-                  },
-                  body: JSON.stringify({
-                        cost_date: costDate,
-                        amount: parseInt(amount),
-                        description: description,
-                        branch_id: branchId
-                  })
-            })
-                  .then(r => r.json())
-                  .then(res => {
-                        setButtonLoading(elements.saveCostBtn, false);
-
-                        if (res.success) {
-                              costModal?.hide();
-                              reloadCostsDataTable();
-                              toastr.success(res.message || 'Cost saved successfully!');
-                        } else {
-                              toastr.error(res.message || 'Failed to save cost');
-                        }
-                  })
-                  .catch(err => {
-                        setButtonLoading(elements.saveCostBtn, false);
-                        toastr.error('Failed to save cost');
-                        console.error('Save cost error:', err);
-                  });
-      };
-
-      // Handle form submit event (for validation)
-      const handleCostFormSubmit = function (e) {
-            e.preventDefault();
-
-            if (costFormValidator) {
-                  costFormValidator.validate();
-            } else {
-                  saveCost();
-            }
-      };
-
-      // ============================================
-      // INLINE EDIT MODAL (Admin Only)
-      // ============================================
-      const openInlineEditModal = function (id, amount) {
-            // Check if user is admin
-            if (!config.isAdmin) {
-                  toastr.error('You do not have permission to edit costs');
-                  return;
-            }
-
-            document.getElementById('inline_edit_cost_id').value = id;
-            document.getElementById('inline_edit_amount').value = parseInt(amount);
-            inlineEditModal?.show();
-
-            setTimeout(() => {
-                  document.getElementById('inline_edit_amount')?.focus();
-            }, 300);
-      };
-
-      const saveInlineEdit = function () {
-            // Check if user is admin
-            if (!config.isAdmin) {
-                  toastr.error('You do not have permission to edit costs');
-                  return;
-            }
-
-            const id = document.getElementById('inline_edit_cost_id').value;
-            const amount = document.getElementById('inline_edit_amount').value;
-
-            if (!amount || !Number.isInteger(Number(amount)) || Number(amount) < 1) {
-                  toastr.error('Please enter a valid whole number');
-                  return;
-            }
-
-            setButtonLoading(elements.saveInlineEditBtn, true);
-
-            // First get the current cost data
-            const showUrl = config.routes.showCost.replace(':id', id);
-
-            fetch(showUrl, {
-                  method: 'GET',
-                  headers: {
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
-                  }
-            })
-                  .then(r => r.json())
-                  .then(res => {
-                        if (res.success && res.data) {
-                              const cost = res.data;
-                              const updateUrl = config.routes.updateCost.replace(':id', id);
-
-                              return fetch(updateUrl, {
-                                    method: 'PUT',
-                                    headers: {
-                                          'Content-Type': 'application/json',
-                                          'Accept': 'application/json',
-                                          'X-CSRF-TOKEN': csrfToken
-                                    },
-                                    body: JSON.stringify({
-                                          cost_date: formatDate(cost.cost_date),
-                                          amount: parseInt(amount),
-                                          description: cost.description,
-                                          branch_id: cost.branch_id
-                                    })
-                              });
-                        }
-                        throw new Error('Failed to fetch cost data');
-                  })
-                  .then(r => r.json())
-                  .then(res => {
-                        setButtonLoading(elements.saveInlineEditBtn, false);
-
-                        if (res.success) {
-                              inlineEditModal?.hide();
-                              reloadCostsDataTable();
-                              toastr.success('Amount updated successfully!');
-                        } else {
-                              toastr.error(res.message || 'Failed to update amount');
-                        }
-                  })
-                  .catch(err => {
-                        setButtonLoading(elements.saveInlineEditBtn, false);
-                        toastr.error('Failed to update amount');
-                        console.error('Inline edit error:', err);
-                  });
-      };
-
-      // ============================================
-      // DELETE MODAL (Admin Only)
-      // ============================================
-      const openDeleteModal = function (id) {
-            // Check if user is admin
-            if (!config.isAdmin) {
-                  toastr.error('You do not have permission to delete costs');
-                  return;
-            }
-
-            document.getElementById('delete_cost_id').value = id;
-            deleteModal?.show();
-      };
-
-      const confirmDelete = function () {
-            // Check if user is admin
-            if (!config.isAdmin) {
-                  toastr.error('You do not have permission to delete costs');
-                  return;
-            }
-
-            const id = document.getElementById('delete_cost_id').value;
-
-            setButtonLoading(elements.confirmDeleteBtn, true);
-
-            const url = config.routes.deleteCost.replace(':id', id);
-
-            fetch(url, {
-                  method: 'DELETE',
-                  headers: {
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
-                  }
-            })
-                  .then(r => r.json())
-                  .then(res => {
-                        setButtonLoading(elements.confirmDeleteBtn, false);
-
-                        if (res.success) {
-                              deleteModal?.hide();
-                              reloadCostsDataTable();
-                              toastr.success(res.message || 'Cost deleted successfully!');
-                        } else {
-                              toastr.error(res.message || 'Failed to delete cost');
-                        }
-                  })
-                  .catch(err => {
-                        setButtonLoading(elements.confirmDeleteBtn, false);
-                        toastr.error('Failed to delete cost');
-                        console.error('Delete error:', err);
-                  });
+            toastr.success('Chart downloaded!');
       };
 
       // ============================================
       // EVENT LISTENERS
       // ============================================
       const initEvents = function () {
-            // Form submit
-            if (elements.form) {
-                  elements.form.addEventListener('submit', generateReport);
-            }
+            elements.form?.addEventListener('submit', generateReport);
 
-            // Cost Records tab - refresh DataTable when shown
-            if (elements.costRecordsTab) {
-                  elements.costRecordsTab.addEventListener('shown.bs.tab', function () {
-                        if (costsDataTable) {
-                              costsDataTable.columns.adjust().draw(false);
-                        }
-                  });
-            }
-
-            // Refresh costs button
-            if (elements.refreshCostsBtn) {
-                  elements.refreshCostsBtn.addEventListener('click', function () {
-                        reloadCostsDataTable();
-                        toastr.info('Cost records refreshed!');
-                  });
-            }
-
-            // Export buttons
-            if (elements.exportExcelBtn) {
-                  elements.exportExcelBtn.addEventListener('click', exportToExcel);
-            }
-
-            if (elements.exportChartBtn) {
-                  elements.exportChartBtn.addEventListener('click', exportChart);
-            }
-
-            // Add cost buttons - available to all users
-            if (elements.addCostBtn) {
-                  elements.addCostBtn.addEventListener('click', openAddCostModal);
-            }
-
-            if (elements.addCostBtnTab) {
-                  elements.addCostBtnTab.addEventListener('click', openAddCostModal);
-            }
-
-            // Cost form submit - available to all users (for Add)
-            if (elements.costForm) {
-                  elements.costForm.addEventListener('submit', handleCostFormSubmit);
-            }
-
-            // Revalidate amount field on input
-            document.getElementById('cost_amount')?.addEventListener('input', function () {
-                  revalidateField('amount');
+            elements.costRecordsTab?.addEventListener('shown.bs.tab', () => {
+                  if (costsDataTable) costsDataTable.columns.adjust().draw(false);
             });
 
-            // Revalidate description field on input
-            document.getElementById('cost_description')?.addEventListener('input', function () {
-                  revalidateField('description');
+            elements.refreshCostsBtn?.addEventListener('click', () => {
+                  reloadCostsDataTable();
+                  toastr.info('Cost records refreshed!');
             });
 
-            // Branch change in cost modal - Admin only (non-admin has fixed branch)
+            elements.exportExcelBtn?.addEventListener('click', exportToExcel);
+            elements.exportChartBtn?.addEventListener('click', exportChart);
+
+            elements.addCostBtn?.addEventListener('click', openAddCostModal);
+            elements.addCostBtnTab?.addEventListener('click', openAddCostModal);
+
+            elements.costForm?.addEventListener('submit', e => {
+                  e.preventDefault();
+                  saveCost();
+            });
+
             if (config.isAdmin) {
                   $('#cost_branch_id').on('change', function () {
-                        if (isModalInitializing) {
-                              return;
-                        }
-
-                        const selectedBranchId = $(this).val();
-
-                        revalidateField('branch_id');
-
-                        if (selectedBranchId) {
-                              const costDateInput = document.getElementById('cost_date');
-                              costDateInput.placeholder = 'Loading available dates...';
-
-                              updateExistingCostDates(selectedBranchId, function () {
-                                    initCostDatePicker(selectedBranchId);
-                              });
+                        const branchId = $(this).val();
+                        if (branchId) {
+                              updateExistingCostDates(branchId, () => initCostDatePicker(branchId));
                         } else {
-                              const costDateInput = document.getElementById('cost_date');
-                              const $costDate = $('#cost_date');
-
-                              if ($costDate.data('daterangepicker')) {
-                                    $costDate.data('daterangepicker').remove();
-                              }
-
-                              costDateInput.value = '';
-                              costDateInput.disabled = true;
-                              costDateInput.classList.add('bg-secondary');
-                              costDateInput.placeholder = 'Select branch first';
-
-                              const dateHelpText = document.getElementById('date_help_text');
-                              if (dateHelpText) {
-                                    dateHelpText.textContent = 'Please select a branch first';
-                              }
-
-                              existingCostDates = [];
+                              initCostDatePicker(null);
                         }
                   });
 
-                  // Delete confirm - Admin only
-                  if (elements.confirmDeleteBtn) {
-                        elements.confirmDeleteBtn.addEventListener('click', confirmDelete);
-                  }
-
-                  // Inline edit save - Admin only
-                  if (elements.saveInlineEditBtn) {
-                        elements.saveInlineEditBtn.addEventListener('click', saveInlineEdit);
-                  }
-
-                  // Enter key on inline edit - Admin only
-                  document.getElementById('inline_edit_amount')?.addEventListener('keypress', function (e) {
-                        if (e.key === 'Enter') {
-                              e.preventDefault();
-                              saveInlineEdit();
-                        }
+                  elements.editCostForm?.addEventListener('submit', e => {
+                        e.preventDefault();
+                        updateCost();
                   });
+
+                  elements.confirmDeleteBtn?.addEventListener('click', confirmDelete);
             }
       };
 
       // ============================================
-      // PUBLIC INIT
+      // INIT
       // ============================================
       const init = function () {
             initElements();
             initModals();
             initDateRangePicker();
-
-            // Initialize cost form validation for all users (Add Cost available to all)
-            initCostFormValidation();
-
             initCostsDataTable();
             initEvents();
-            updateExistingCostDates();
+            loadCostTypes();
       };
 
       // ============================================
@@ -1538,15 +1105,12 @@ var KTFinanceReport = (function () {
             init: init,
             openEditCostModal: openEditCostModal,
             openDeleteModal: openDeleteModal,
-            openInlineEditModal: openInlineEditModal,
+            updateEditTotal: updateEditTotal,
             reloadCostsDataTable: reloadCostsDataTable
       };
-
 })();
 
-// ============================================
-// DOM READY
-// ============================================
+// DOM Ready
 KTUtil.onDOMContentLoaded(function () {
       KTFinanceReport.init();
 });
