@@ -307,9 +307,7 @@
                                                                     </div>
                                                                     <div class="flex-grow-1 min-w-0">
                                                                         <span
-                                                                            class="note-title fw-semibold fs-6 d-block text-truncate"
-                                                                            data-bs-toggle="tooltip"
-                                                                            title="{{ $topic->topic_name }}">
+                                                                            class="note-title fw-semibold fs-6 d-block text-truncate">
                                                                             {{ $topic->topic_name }}
                                                                         </span>
                                                                         <span class="text-muted fs-8">

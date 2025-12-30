@@ -34,6 +34,14 @@ class ClassName extends Model
     }
 
     /* ------------------
+     | Helpers
+     |------------------*/
+    public function isActive(): bool
+    {
+        return $this->is_active;
+    }
+
+    /* ------------------
      | Relationships
      |------------------*/
 

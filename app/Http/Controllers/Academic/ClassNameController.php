@@ -72,11 +72,6 @@ class ClassNameController extends Controller
             ->withCount(['activeStudents', 'inactiveStudents'])
             ->find($id);
             
-        // $classname = ClassName::withoutGlobalScope('active')
-        //     ->withCount(['activeStudents', 'inactiveStudents'])
-        //     ->with(['subjects.students']) // Eager load students for each subject
-        //     ->find($id);
-
         if (! $classname) {
             return redirect()->route('classnames.index')->with('warning', 'Class not found.');
         }

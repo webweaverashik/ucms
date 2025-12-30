@@ -150,7 +150,8 @@
 .pdf-preview-link i,
 .pdf-badge i,
 .status-badge i,
-.notes-count i {
+.notes-count i,
+.badge i {
       color: inherit;
 }
 

@@ -23,6 +23,8 @@ var KTAddSubject = function () {
                   cancelButton.addEventListener('click', e => {
                         e.preventDefault();
                         if (form) form.reset();
+                        // Reset select2
+                        $(form).find('select[data-control="select2"]').val(null).trigger('change');
                         modal.hide();
                   });
             }
@@ -33,6 +35,7 @@ var KTAddSubject = function () {
                   closeButton.addEventListener('click', e => {
                         e.preventDefault();
                         if (form) form.reset();
+                        $(form).find('select[data-control="select2"]').val(null).trigger('change');
                         modal.hide();
                   });
             }
@@ -61,6 +64,7 @@ var KTAddSubject = function () {
                                     }
                               },
                         },
+
                         plugins: {
                               trigger: new FormValidation.plugins.Trigger(),
                               bootstrap: new FormValidation.plugins.Bootstrap5({
@@ -73,6 +77,7 @@ var KTAddSubject = function () {
             );
 
             const submitButton = element.querySelector('[data-kt-add-subject-modal-action="submit"]');
+
             if (submitButton && validator) {
                   submitButton.addEventListener('click', function (e) {
                         e.preventDefault();
@@ -91,7 +96,7 @@ var KTAddSubject = function () {
 
                                     // Submit via AJAX
                                     fetch(`/subjects`, {
-                                          method: 'POST', // Laravel expects POST for PUT routes
+                                          method: 'POST',
                                           body: formData,
                                           headers: {
                                                 'Accept': 'application/json',
@@ -101,7 +106,6 @@ var KTAddSubject = function () {
                                           .then(response => {
                                                 if (!response.ok) {
                                                       return response.json().then(errorData => {
-                                                            // Show error from Laravel if available
                                                             throw new Error(errorData.message || 'Network response was not ok');
                                                       });
                                                 }
@@ -114,7 +118,6 @@ var KTAddSubject = function () {
                                                 if (data.success) {
                                                       toastr.success(data.message || 'Subject added successfully');
                                                       modal.hide();
-
                                                       setTimeout(() => {
                                                             window.location.reload();
                                                       }, 1500);
@@ -128,7 +131,6 @@ var KTAddSubject = function () {
                                                 toastr.error(error.message || 'Failed to add subject');
                                                 console.error('Error:', error);
                                           });
-
                               } else {
                                     toastr.warning('Please fill all required fields');
                               }
@@ -146,50 +148,49 @@ var KTAddSubject = function () {
 }();
 
 var KTEditSubject = function () {
-      // Main topic editing functionality
-      const setupTopicEditing = () => {
-            document.querySelectorAll('.subject-editable').forEach(wrapper => {
-                  const card = wrapper;
-                  const subjectText = wrapper.querySelector('.subject-text');
-                  const subjectInput = wrapper.querySelector('.subject-input');
-                  const editIcon = wrapper.querySelector('.edit-icon');
-                  const deleteIcon = wrapper.querySelector('.delete-subject');
-                  const checkIcon = wrapper.querySelector('.check-icon');
-                  const cancelIcon = wrapper.querySelector('.cancel-icon');
+      // Main subject editing functionality
+      const setupSubjectEditing = () => {
+            document.querySelectorAll('.subject-editable').forEach(card => {
+                  const subjectText = card.querySelector('.subject-text');
+                  const subjectInput = card.querySelector('.subject-input');
+                  const editIcon = card.querySelector('.edit-icon');
+                  const deleteIcon = card.querySelector('.delete-subject');
+                  const checkIcon = card.querySelector('.check-icon');
+                  const cancelIcon = card.querySelector('.cancel-icon');
+
+                  if (!subjectText || !subjectInput) return;
+
                   const originalValue = subjectInput.value;
 
-                  // Hover effects
-                  card.addEventListener('mouseenter', () => {
-                        card.classList.add('border-primary', 'shadow-sm');
-                  });
-
-                  card.addEventListener('mouseleave', () => {
-                        if (!subjectInput.classList.contains('d-none')) return;
-                        card.classList.remove('border-primary', 'shadow-sm');
-                  });
-
                   // Edit handler
-                  editIcon.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        enterEditMode();
-                  });
+                  if (editIcon) {
+                        editIcon.addEventListener('click', (e) => {
+                              e.stopPropagation();
+                              enterEditMode();
+                        });
+                  }
 
                   // Cancel handler
-                  cancelIcon.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        exitEditMode();
-                        subjectInput.value = originalValue;
-                  });
+                  if (cancelIcon) {
+                        cancelIcon.addEventListener('click', (e) => {
+                              e.stopPropagation();
+                              exitEditMode();
+                              subjectInput.value = originalValue;
+                        });
+                  }
 
                   // Save handler
-                  checkIcon.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        saveChanges();
-                  });
+                  if (checkIcon) {
+                        checkIcon.addEventListener('click', (e) => {
+                              e.stopPropagation();
+                              saveChanges();
+                        });
+                  }
 
                   // Handle Enter/Escape keys
                   subjectInput.addEventListener('keydown', (e) => {
                         if (e.key === 'Enter') {
+                              e.preventDefault();
                               saveChanges();
                         } else if (e.key === 'Escape') {
                               exitEditMode();
@@ -198,30 +199,42 @@ var KTEditSubject = function () {
                   });
 
                   const enterEditMode = () => {
+                        // Hide view mode elements
                         subjectText.classList.add('d-none');
+                        if (editIcon) editIcon.classList.add('d-none');
+                        if (deleteIcon) deleteIcon.classList.add('d-none');
+
+                        // Show edit mode elements
                         subjectInput.classList.remove('d-none');
-                        editIcon.classList.add('d-none');
-                        deleteIcon.classList.add('d-none');
-                        checkIcon.classList.remove('d-none');
-                        cancelIcon.classList.remove('d-none');
+                        if (checkIcon) checkIcon.classList.remove('d-none');
+                        if (cancelIcon) cancelIcon.classList.remove('d-none');
+
+                        // Add editing class for styling
+                        card.classList.add('is-editing');
+
+                        // Focus and select input
                         subjectInput.focus();
                         subjectInput.select();
-                        card.classList.add('border-primary', 'shadow-sm');
                   };
 
                   const exitEditMode = () => {
+                        // Show view mode elements
                         subjectText.classList.remove('d-none');
+                        if (editIcon) editIcon.classList.remove('d-none');
+                        if (deleteIcon) deleteIcon.classList.remove('d-none');
+
+                        // Hide edit mode elements
                         subjectInput.classList.add('d-none');
-                        editIcon.classList.remove('d-none');
-                        deleteIcon.classList.remove('d-none');
-                        checkIcon.classList.add('d-none');
-                        cancelIcon.classList.add('d-none');
-                        card.classList.remove('border-primary', 'shadow-sm');
+                        if (checkIcon) checkIcon.classList.add('d-none');
+                        if (cancelIcon) cancelIcon.classList.add('d-none');
+
+                        // Remove editing class
+                        card.classList.remove('is-editing');
                   };
 
                   const saveChanges = async () => {
                         const updatedValue = subjectInput.value.trim();
-                        const topicId = wrapper.dataset.id;
+                        const subjectId = card.dataset.id;
 
                         if (!updatedValue) {
                               toastr.error("Subject name cannot be empty");
@@ -235,11 +248,15 @@ var KTEditSubject = function () {
                         }
 
                         // Show loading state
-                        checkIcon.classList.replace('bi-check-circle', 'bi-arrow-repeat');
-                        checkIcon.classList.add('spinning');
+                        const saveIcon = checkIcon.querySelector('i');
+                        if (saveIcon) {
+                              saveIcon.classList.remove('ki-check');
+                              saveIcon.classList.add('ki-arrows-circle', 'spinning');
+                        }
+                        checkIcon.disabled = true;
 
                         try {
-                              const response = await fetch(`/subjects/${topicId}`, {
+                              const response = await fetch(`/subjects/${subjectId}`, {
                                     method: 'PUT',
                                     headers: {
                                           'Content-Type': 'application/json',
@@ -264,24 +281,27 @@ var KTEditSubject = function () {
                               toastr.error(error.message || 'Failed to update subject');
                               subjectInput.value = originalValue;
                         } finally {
-                              checkIcon.classList.replace('bi-arrow-repeat', 'bi-check-circle');
-                              checkIcon.classList.remove('spinning');
+                              if (saveIcon) {
+                                    saveIcon.classList.remove('ki-arrows-circle', 'spinning');
+                                    saveIcon.classList.add('ki-check');
+                              }
+                              checkIcon.disabled = false;
                         }
                   };
             });
       };
 
-
-      // Delete pending students
-      const handleTopicDeletion = function () {
+      // Delete subject handler
+      const handleSubjectDeletion = function () {
             document.querySelectorAll('.delete-subject').forEach(item => {
                   item.addEventListener('click', function (e) {
                         e.preventDefault();
+                        e.stopPropagation();
 
-                        let noteId = this.getAttribute('data-subject-id');
-                        console.log('Subject ID:', noteId);
+                        let subjectId = this.getAttribute('data-subject-id');
+                        if (!subjectId) return;
 
-                        let url = routeDeleteSubject.replace(':id', noteId);  // Replace ':id' with actual student ID
+                        let url = routeDeleteSubject.replace(':id', subjectId);
 
                         Swal.fire({
                               title: "Are you sure to delete this subject?",
@@ -304,7 +324,6 @@ var KTEditSubject = function () {
                                           .then(data => {
                                                 if (data.success) {
                                                       toastr.success('Subject deleted successfully');
-
                                                       setTimeout(() => {
                                                             window.location.reload();
                                                       }, 1500);
@@ -328,8 +347,8 @@ var KTEditSubject = function () {
 
       return {
             init: function () {
-                  setupTopicEditing();
-                  handleTopicDeletion();
+                  setupSubjectEditing();
+                  handleSubjectDeletion();
             }
       };
 }();
@@ -348,8 +367,7 @@ var KTEditClassName = function () {
 
       const form = element.querySelector('#kt_modal_edit_class_form');
       const modal = bootstrap.Modal.getOrCreateInstance(element);
-
-      let classId = null; // Declare globally
+      let classId = null;
 
       // Init edit institution modal
       var initEditClass = () => {
@@ -378,8 +396,7 @@ var KTEditClassName = function () {
             if (editButtons.length) {
                   editButtons.forEach((button) => {
                         button.addEventListener("click", function () {
-                              classId = this.getAttribute("data-class-id"); // Assign value globally
-                              console.log("Class ID:", classId);
+                              classId = this.getAttribute("data-class-id");
 
                               if (!classId) return;
 
@@ -390,7 +407,6 @@ var KTEditClassName = function () {
                                     .then(response => {
                                           if (!response.ok) {
                                                 return response.json().then(errorData => {
-                                                      // Show error from Laravel if available
                                                       throw new Error(errorData.message || 'Network response was not ok');
                                                 });
                                           }
@@ -417,11 +433,9 @@ var KTEditClassName = function () {
                                                       modalTitle.textContent = `Update - ${classname.class_name} (${classname.class_numeral})`;
                                                 }
 
-
                                                 // Trigger change events
                                                 const classNumeralSelect = document.querySelector("select[name='class_numeral_edit']");
                                                 if (classNumeralSelect) classNumeralSelect.dispatchEvent(new Event("change"));
-
 
                                                 // Show modal
                                                 modal.show();
@@ -454,6 +468,7 @@ var KTEditClassName = function () {
                                     }
                               },
                         },
+
                         plugins: {
                               trigger: new FormValidation.plugins.Trigger(),
                               bootstrap: new FormValidation.plugins.Bootstrap5({
@@ -466,6 +481,7 @@ var KTEditClassName = function () {
             );
 
             const submitButton = element.querySelector('[data-kt-edit-class-modal-action="submit"]');
+
             if (submitButton && validator) {
                   submitButton.addEventListener('click', function (e) {
                         e.preventDefault();
@@ -481,11 +497,11 @@ var KTEditClassName = function () {
 
                                     // Add CSRF token for Laravel
                                     formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
-                                    formData.append('_method', 'PUT'); // For Laravel resource route
+                                    formData.append('_method', 'PUT');
 
                                     // Submit via AJAX
                                     fetch(`/classnames/${classId}`, {
-                                          method: 'POST', // Laravel expects POST for PUT routes
+                                          method: 'POST',
                                           body: formData,
                                           headers: {
                                                 'Accept': 'application/json',
@@ -495,7 +511,6 @@ var KTEditClassName = function () {
                                           .then(response => {
                                                 if (!response.ok) {
                                                       return response.json().then(errorData => {
-                                                            // Show error from Laravel if available
                                                             throw new Error(errorData.message || 'Network response was not ok');
                                                       });
                                                 }
@@ -508,7 +523,6 @@ var KTEditClassName = function () {
                                                 if (data.success) {
                                                       toastr.success(data.message || 'Class updated successfully');
                                                       modal.hide();
-
                                                       // Reload the page
                                                       setTimeout(() => {
                                                             window.location.reload();
@@ -520,7 +534,7 @@ var KTEditClassName = function () {
                                           .catch(error => {
                                                 submitButton.removeAttribute('data-kt-indicator');
                                                 submitButton.disabled = false;
-                                                toastr.error(error.message || 'Failed to update institution');
+                                                toastr.error(error.message || 'Failed to update class');
                                                 console.error('Error:', error);
                                           });
                               } else {
@@ -538,7 +552,6 @@ var KTEditClassName = function () {
             }
       };
 }();
-
 
 // On document ready
 KTUtil.onDOMContentLoaded(function () {

@@ -1,0 +1,482 @@
+/**
+ * Classnames View Page Styles
+ * ===========================
+ */
+
+/* ===== Academic Group Section Styles ===== */
+.academic-group-section {
+      background: linear-gradient(135deg, var(--bs-primary-light, #f1faff) 0%, var(--bs-info-light, #f8f5ff) 100%);
+      border-radius: 0.75rem;
+      border: 1px solid var(--bs-gray-200);
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+      transition: all 0.3s ease;
+}
+
+.academic-group-section:hover {
+      box-shadow: 0 0.5rem 1.5rem rgba(var(--bs-primary-rgb), 0.08);
+}
+
+.group-header {
+      background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 100%);
+      padding: 1rem 1.5rem;
+      border-bottom: none;
+}
+
+.group-header h5 {
+      color: #fff !important;
+      margin: 0;
+}
+
+.group-header .ki-abstract-26,
+.group-header .ki-book-open {
+      color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.group-header .badge {
+      background-color: rgba(255, 255, 255, 0.2) !important;
+      color: #fff !important;
+}
+
+.group-header .subjects-count {
+      color: rgba(255, 255, 255, 0.85);
+}
+
+/* ===== Subject Card Styles ===== */
+.subject-card {
+      transition: all 0.3s ease;
+      border: 1px solid var(--bs-gray-200);
+      border-radius: 0.625rem;
+      background-color: var(--bs-body-bg);
+      position: relative;
+      overflow: hidden;
+      padding: 1rem;
+      height: 100%;
+}
+
+.subject-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, var(--bs-primary) 0%, var(--bs-info) 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+}
+
+.subject-card:hover {
+      border-color: var(--bs-primary);
+      box-shadow: 0 0.5rem 1.5rem rgba(var(--bs-primary-rgb), 0.15);
+      transform: translateY(-2px);
+}
+
+.subject-card:hover::before {
+      opacity: 1;
+}
+
+.subject-card .subject-actions {
+      opacity: 0;
+      transition: opacity 0.2s ease;
+}
+
+.subject-card:hover .subject-actions {
+      opacity: 1;
+}
+
+.subject-card.is-editing {
+      border-color: var(--bs-primary);
+      box-shadow: 0 0.5rem 1.5rem rgba(var(--bs-primary-rgb), 0.2);
+}
+
+.subject-card.is-editing::before {
+      opacity: 1;
+}
+
+.subject-card.is-editing .subject-actions {
+      opacity: 1;
+}
+
+/* ===== Subject Icon Styles ===== */
+.subject-icon {
+      width: 42px;
+      height: 42px;
+      min-width: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.5rem;
+      background: linear-gradient(135deg, var(--bs-gray-100) 0%, var(--bs-gray-200) 100%);
+      transition: all 0.3s ease;
+}
+
+.subject-icon i {
+      color: var(--bs-gray-600);
+      font-size: 1.25rem;
+}
+
+.subject-icon.science {
+      background: linear-gradient(135deg, #e8fff3 0%, #d1fadf 100%);
+}
+
+.subject-icon.science i {
+      color: var(--bs-success);
+}
+
+.subject-icon.commerce {
+      background: linear-gradient(135deg, #fff8dd 0%, #fff3cd 100%);
+}
+
+.subject-icon.commerce i {
+      color: var(--bs-warning);
+}
+
+.subject-icon.arts {
+      background: linear-gradient(135deg, #fff5f8 0%, #ffe2ec 100%);
+}
+
+.subject-icon.arts i {
+      color: var(--bs-danger);
+}
+
+.subject-icon.general {
+      background: linear-gradient(135deg, #f1faff 0%, #e0f3ff 100%);
+}
+
+.subject-icon.general i {
+      color: var(--bs-primary);
+}
+
+.subject-card:hover .subject-icon {
+      transform: scale(1.05);
+}
+
+/* ===== Subject Title Styles ===== */
+.subject-title {
+      font-weight: 600;
+      color: var(--bs-gray-800);
+      transition: color 0.2s ease;
+}
+
+.subject-card:hover .subject-title {
+      color: var(--bs-primary);
+}
+
+/* ===== Student Count Badge ===== */
+.student-count-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 0.5rem;
+      background: linear-gradient(135deg, var(--bs-gray-100) 0%, var(--bs-gray-200) 100%);
+      color: var(--bs-gray-700);
+      font-size: 0.8rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+}
+
+.student-count-badge:hover {
+      background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 100%);
+      color: #fff;
+}
+
+/* ===== Universal Icon Color Inheritance ===== */
+/* 
+ * This ensures icons inherit their parent's color.
+ * Works for all styled components in this file.
+ */
+
+/* Method 1: Target all icons within styled components */
+.student-count-badge i,
+.group-badge i,
+.stats-mini-card i,
+.subject-actions i,
+.subjects-count i,
+.empty-state-icon i,
+.badge i {
+      color: inherit;
+}
+
+
+
+/* ===== Action Button Styles ===== */
+.subject-actions .btn-icon {
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+}
+
+.subject-actions .action-edit {
+      background: linear-gradient(135deg, #f1faff 0%, #e0f3ff 100%);
+      color: var(--bs-primary);
+      border: none;
+}
+
+.subject-actions .action-edit:hover {
+      background: var(--bs-primary);
+      color: #fff;
+}
+
+.subject-actions .action-delete {
+      background: linear-gradient(135deg, #fff5f8 0%, #ffe2ec 100%);
+      color: var(--bs-danger);
+      border: none;
+}
+
+.subject-actions .action-delete:hover {
+      background: var(--bs-danger);
+      color: #fff;
+}
+
+.subject-actions .action-save {
+      background: linear-gradient(135deg, #e8fff3 0%, #d1fadf 100%);
+      color: var(--bs-success);
+      border: none;
+}
+
+.subject-actions .action-save:hover {
+      background: var(--bs-success);
+      color: #fff;
+}
+
+.subject-actions .action-cancel {
+      background: linear-gradient(135deg, var(--bs-gray-100) 0%, var(--bs-gray-200) 100%);
+      color: var(--bs-gray-600);
+      border: none;
+}
+
+.subject-actions .action-cancel:hover {
+      background: var(--bs-gray-600);
+      color: #fff;
+}
+
+/* ===== Edit Mode Input ===== */
+.subject-input {
+      border: 1px solid var(--bs-primary) !important;
+      background-color: var(--bs-gray-100) !important;
+}
+
+.subject-input:focus {
+      box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25) !important;
+}
+
+/* ===== Animation Styles ===== */
+.spinning {
+      animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+      from {
+            transform: rotate(0deg);
+      }
+
+      to {
+            transform: rotate(360deg);
+      }
+}
+
+/* ===== Empty State Styles ===== */
+.empty-state-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--bs-primary-light, #f1faff) 0%, var(--bs-info-light, #f8f5ff) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+}
+
+.empty-state-icon i {
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+}
+
+/* ===== Group Badge Colors ===== */
+.group-badge {
+      padding: 0.25rem 0.6rem;
+      border-radius: 0.375rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+}
+
+.group-badge.science {
+      background: linear-gradient(135deg, #e8fff3 0%, #d1fadf 100%);
+      color: var(--bs-success);
+}
+
+.group-badge.commerce {
+      background: linear-gradient(135deg, #fff8dd 0%, #fff3cd 100%);
+      color: #b38600;
+}
+
+.group-badge.arts {
+      background: linear-gradient(135deg, #fff5f8 0%, #ffe2ec 100%);
+      color: var(--bs-danger);
+}
+
+.group-badge.general {
+      background: linear-gradient(135deg, #f1faff 0%, #e0f3ff 100%);
+      color: var(--bs-primary);
+}
+
+/* ===== Stats Cards ===== */
+.stats-mini-card {
+      background: linear-gradient(135deg, var(--bs-gray-100) 0%, var(--bs-gray-200) 100%);
+      border-radius: 0.5rem;
+      padding: 0.75rem 1rem;
+      text-align: center;
+      transition: all 0.3s ease;
+}
+
+.stats-mini-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
+}
+
+.stats-mini-card .stats-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--bs-gray-800);
+}
+
+.stats-mini-card .stats-label {
+      font-size: 0.75rem;
+      color: var(--bs-gray-600);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+}
+
+/* ========================================================================== 
+   Dark Mode Support 
+   ========================================================================== */
+
+[data-bs-theme="dark"] .academic-group-section {
+      background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.1) 0%, rgba(var(--bs-info-rgb), 0.1) 100%);
+      border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .group-header {
+      background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.85) 0%, rgba(var(--bs-info-rgb), 0.85) 100%);
+}
+
+[data-bs-theme="dark"] .subject-card {
+      background-color: var(--bs-gray-900);
+      border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .subject-card:hover {
+      border-color: var(--bs-primary);
+      box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="dark"] .subject-icon {
+      background: linear-gradient(135deg, var(--bs-gray-800) 0%, var(--bs-gray-700) 100%);
+}
+
+[data-bs-theme="dark"] .subject-icon i {
+      color: var(--bs-gray-400);
+}
+
+[data-bs-theme="dark"] .subject-icon.science {
+      background: linear-gradient(135deg, rgba(var(--bs-success-rgb), 0.2) 0%, rgba(var(--bs-success-rgb), 0.1) 100%);
+}
+
+[data-bs-theme="dark"] .subject-icon.science i {
+      color: var(--bs-success);
+}
+
+[data-bs-theme="dark"] .subject-icon.commerce {
+      background: linear-gradient(135deg, rgba(var(--bs-warning-rgb), 0.2) 0%, rgba(var(--bs-warning-rgb), 0.1) 100%);
+}
+
+[data-bs-theme="dark"] .subject-icon.commerce i {
+      color: var(--bs-warning);
+}
+
+[data-bs-theme="dark"] .subject-icon.arts {
+      background: linear-gradient(135deg, rgba(var(--bs-danger-rgb), 0.2) 0%, rgba(var(--bs-danger-rgb), 0.1) 100%);
+}
+
+[data-bs-theme="dark"] .subject-icon.arts i {
+      color: var(--bs-danger);
+}
+
+[data-bs-theme="dark"] .subject-icon.general {
+      background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.2) 0%, rgba(var(--bs-primary-rgb), 0.1) 100%);
+}
+
+[data-bs-theme="dark"] .subject-icon.general i {
+      color: var(--bs-primary);
+}
+
+[data-bs-theme="dark"] .subject-title {
+      color: var(--bs-gray-200) !important;
+}
+
+[data-bs-theme="dark"] .student-count-badge {
+      background: linear-gradient(135deg, var(--bs-gray-800) 0%, var(--bs-gray-700) 100%);
+      color: var(--bs-gray-400);
+}
+
+[data-bs-theme="dark"] .student-count-badge:hover {
+      background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 100%);
+      color: #fff;
+}
+
+[data-bs-theme="dark"] .subject-actions .action-edit {
+      background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.2) 0%, rgba(var(--bs-primary-rgb), 0.1) 100%);
+}
+
+[data-bs-theme="dark"] .subject-actions .action-delete {
+      background: linear-gradient(135deg, rgba(var(--bs-danger-rgb), 0.2) 0%, rgba(var(--bs-danger-rgb), 0.1) 100%);
+}
+
+[data-bs-theme="dark"] .subject-actions .action-save {
+      background: linear-gradient(135deg, rgba(var(--bs-success-rgb), 0.2) 0%, rgba(var(--bs-success-rgb), 0.1) 100%);
+}
+
+[data-bs-theme="dark"] .subject-actions .action-cancel {
+      background: linear-gradient(135deg, var(--bs-gray-800) 0%, var(--bs-gray-700) 100%);
+}
+
+[data-bs-theme="dark"] .group-badge.science {
+      background: linear-gradient(135deg, rgba(var(--bs-success-rgb), 0.2) 0%, rgba(var(--bs-success-rgb), 0.1) 100%);
+}
+
+[data-bs-theme="dark"] .group-badge.commerce {
+      background: linear-gradient(135deg, rgba(var(--bs-warning-rgb), 0.2) 0%, rgba(var(--bs-warning-rgb), 0.1) 100%);
+}
+
+[data-bs-theme="dark"] .group-badge.arts {
+      background: linear-gradient(135deg, rgba(var(--bs-danger-rgb), 0.2) 0%, rgba(var(--bs-danger-rgb), 0.1) 100%);
+}
+
+[data-bs-theme="dark"] .group-badge.general {
+      background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.2) 0%, rgba(var(--bs-primary-rgb), 0.1) 100%);
+}
+
+[data-bs-theme="dark"] .stats-mini-card {
+      background: linear-gradient(135deg, var(--bs-gray-800) 0%, var(--bs-gray-900) 100%);
+}
+
+[data-bs-theme="dark"] .stats-mini-card .stats-value {
+      color: var(--bs-gray-200);
+}
+
+[data-bs-theme="dark"] .empty-state-icon {
+      background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.15) 0%, rgba(var(--bs-info-rgb), 0.15) 100%);
+}
+
+[data-bs-theme="dark"] .border-top {
+      border-color: var(--bs-gray-700) !important;
+}

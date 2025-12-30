@@ -30,9 +30,6 @@ class SheetController extends Controller
             },
         ])
             ->with('class')
-            ->whereHas('class', function ($query) {
-                $query->where('is_active', true);
-            })
             ->latest('id')
             ->get();
 
