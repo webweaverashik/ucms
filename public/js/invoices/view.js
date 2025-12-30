@@ -14,26 +14,24 @@ var KTInvoiceWithTransactionsList = function () {
                   "lengthMenu": [10, 25, 50, 100],
                   "pageLength": 10,
                   "lengthChange": true,
-                  "autoWidth": false,  // Disable auto width
+                  "autoWidth": false, // Disable auto width
                   'columnDefs': [
-                        { orderable: false, targets: 7 }, // Disable ordering on column Actions                
+                        { orderable: false, targets: 7 }, // Disable ordering on column Actions
                   ]
             });
 
             // Re-init functions on every table re-draw -- more info: https://datatables.net/reference/event/draw
             datatable.on('draw', function () {
-
             });
       }
 
       // Delete pending Invoice
-      const handleInvoiceDeletion = function () {
+      var handleInvoiceDeletion = function () {
             document.querySelectorAll('.delete-invoice').forEach(item => {
                   item.addEventListener('click', function (e) {
                         e.preventDefault();
-
                         let invoiceId = this.getAttribute('data-invoice-id');
-                        let url = routeDeleteInvoice.replace(':id', invoiceId);  // Replace ':id' with actual invoice ID
+                        let url = routeDeleteInvoice.replace(':id', invoiceId); // Replace ':id' with actual invoice ID
 
                         Swal.fire({
                               title: "Are you sure to delete this invoice?",
@@ -84,18 +82,15 @@ var KTInvoiceWithTransactionsList = function () {
             });
       };
 
-
       // Delete Transaction
-      const handleTransactionDeletion = function () {
+      var handleTransactionDeletion = function () {
             document.addEventListener('click', function (e) {
                   const deleteBtn = e.target.closest('.delete-txn');
                   if (!deleteBtn) return;
 
                   e.preventDefault();
-
                   let txnId = deleteBtn.getAttribute('data-txn-id');
                   console.log('TXN ID:', txnId);
-
                   let url = routeDeleteTxn.replace(':id', txnId);
 
                   Swal.fire({
@@ -141,11 +136,10 @@ var KTInvoiceWithTransactionsList = function () {
       };
 
       // Transaction approval AJAX
-      const handleTransactionApproval = function () {
+      var handleTransactionApproval = function () {
             document.querySelectorAll('.approve-txn').forEach(item => {
                   item.addEventListener('click', function (e) {
                         e.preventDefault();
-
                         let txnId = this.getAttribute('data-txn-id');
                         console.log("TXN ID: ", txnId);
 
@@ -199,7 +193,7 @@ var KTInvoiceWithTransactionsList = function () {
       };
 
       return {
-            // Public functions  
+            // Public functions
             init: function () {
                   table = document.getElementById('kt_invoice_transactions_table');
 
@@ -215,205 +209,621 @@ var KTInvoiceWithTransactionsList = function () {
       }
 }();
 
-
 var KTEditInvoiceModal = function () {
       // Shared variables
-      const element = document.getElementById('kt_modal_edit_invoice');
+      var element;
+      var form;
+      var modal;
+      var submitButton;
+      var invoiceId = null;
+      var maxTuitionFee = 0;
 
-      // Early return if element doesn't exist
-      if (!element) {
-            console.error('Modal element not found');
-            return {
-                  init: function () { }
-            };
-      }
+      // Format month_year (e.g., "01_2025" to "January 2025")
+      var formatMonthYear = function (monthYear) {
+            if (!monthYear || monthYear === 'null' || monthYear === '') return 'N/A';
 
-      const form = element.querySelector('#kt_modal_edit_invoice_form');
-      const modal = bootstrap.Modal.getOrCreateInstance(element);
+            var parts = monthYear.split('_');
+            if (parts.length !== 2) return monthYear;
 
-      let invoiceId = null; // Declare globally
+            var month = parseInt(parts[0], 10);
+            var year = parts[1];
+
+            var monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                  'July', 'August', 'September', 'October', 'November', 'December'];
+
+            if (month >= 1 && month <= 12) {
+                  return monthNames[month - 1] + ' ' + year;
+            }
+            return monthYear;
+      };
+
+      // Clear validation error
+      var clearValidationError = function () {
+            var amountInput = document.getElementById('invoice_amount_edit');
+            var errorDiv = document.getElementById('invoice_amount_error');
+
+            if (amountInput) {
+                  amountInput.classList.remove('is-invalid');
+            }
+            if (errorDiv) {
+                  errorDiv.style.display = 'none';
+                  errorDiv.textContent = '';
+            }
+      };
+
+      // Show validation error
+      var showValidationError = function (message) {
+            var amountInput = document.getElementById('invoice_amount_edit');
+            var errorDiv = document.getElementById('invoice_amount_error');
+
+            if (amountInput) {
+                  amountInput.classList.add('is-invalid');
+            }
+            if (errorDiv) {
+                  errorDiv.style.display = 'block';
+                  errorDiv.textContent = message;
+            }
+      };
+
+      // Validate amount
+      var validateAmount = function (amount, showToast) {
+            // Clear previous error
+            clearValidationError();
+
+            // Check if empty
+            if (amount === '' || amount === null || amount === undefined) {
+                  showValidationError('Amount is required');
+                  if (showToast && typeof toastr !== 'undefined') {
+                        toastr.warning('Amount is required');
+                  }
+                  return false;
+            }
+
+            var numAmount = parseFloat(amount);
+
+            // Check if valid number
+            if (isNaN(numAmount)) {
+                  showValidationError('Please enter a valid number');
+                  if (showToast && typeof toastr !== 'undefined') {
+                        toastr.warning('Please enter a valid number');
+                  }
+                  return false;
+            }
+
+            // Check minimum
+            if (numAmount < 1) {
+                  showValidationError('Amount must be at least ৳1');
+                  if (showToast && typeof toastr !== 'undefined') {
+                        toastr.warning('Amount must be at least ৳1');
+                  }
+                  return false;
+            }
+
+            // Check maximum (tuition fee)
+            if (maxTuitionFee > 0 && numAmount > maxTuitionFee) {
+                  showValidationError('Amount cannot exceed the tuition fee of ৳' + maxTuitionFee);
+                  if (showToast && typeof toastr !== 'undefined') {
+                        toastr.warning('Amount cannot exceed the tuition fee of ৳' + maxTuitionFee);
+                  }
+                  return false;
+            }
+
+            return true;
+      };
+
+      // Reset form and modal state
+      var resetForm = function () {
+            if (form) {
+                  form.reset();
+            }
+            // Reset hidden field
+            var hiddenInput = document.getElementById('edit_invoice_id');
+            if (hiddenInput) hiddenInput.value = '';
+
+            // Reset input fields
+            var amountInput = document.getElementById('invoice_amount_edit');
+            if (amountInput) {
+                  amountInput.value = '';
+                  amountInput.removeAttribute('data-max-tuition-fee');
+            }
+
+            var typeInput = document.getElementById('invoice_type_edit');
+            if (typeInput) typeInput.value = '';
+
+            var monthInput = document.getElementById('invoice_month_year_edit');
+            if (monthInput) monthInput.value = '';
+
+            // Reset Select2 for student
+            var studentSelect = $('select[name="invoice_student_edit"]');
+            if (studentSelect.length) {
+                  studentSelect.val('').trigger('change');
+            }
+
+            // Show month year wrapper by default
+            var monthYearWrapper = document.getElementById('month_year_edit_wrapper');
+            if (monthYearWrapper) monthYearWrapper.style.display = '';
+
+            // Reset title
+            var titleEl = document.getElementById('kt_modal_edit_invoice_title');
+            if (titleEl) titleEl.textContent = 'Update Invoice';
+
+            // Reset hint
+            var hintDiv = document.getElementById('invoice_amount_hint');
+            if (hintDiv) hintDiv.textContent = '';
+
+            // Clear validation error
+            clearValidationError();
+
+            invoiceId = null;
+            maxTuitionFee = 0;
+      };
+
+      // Populate modal with invoice data from data attributes
+      var populateModal = function (button) {
+            // Get data from button attributes
+            invoiceId = button.getAttribute('data-invoice-id');
+            var invoiceNumber = button.getAttribute('data-invoice-number');
+            var studentId = button.getAttribute('data-student-id');
+            var invoiceTypeId = button.getAttribute('data-invoice-type-id');
+            var invoiceTypeName = button.getAttribute('data-invoice-type-name');
+            var monthYear = button.getAttribute('data-month-year');
+            var totalAmount = button.getAttribute('data-total-amount');
+            var tuitionFee = button.getAttribute('data-tuition-fee');
+
+            // Store tuition fee for validation
+            maxTuitionFee = tuitionFee ? parseFloat(tuitionFee) : 0;
+
+            console.log('Edit Invoice:', {
+                  id: invoiceId,
+                  invoiceNumber: invoiceNumber,
+                  studentId: studentId,
+                  invoiceTypeName: invoiceTypeName,
+                  monthYear: monthYear,
+                  totalAmount: totalAmount,
+                  tuitionFee: tuitionFee
+            });
+
+            if (!invoiceId) {
+                  console.error('No invoice ID found');
+                  return;
+            }
+
+            // Store invoice ID in hidden field
+            document.getElementById('edit_invoice_id').value = invoiceId;
+
+            // Set modal title
+            var titleEl = document.getElementById('kt_modal_edit_invoice_title');
+            if (titleEl) {
+                  titleEl.textContent = 'Update Invoice ' + invoiceNumber;
+            }
+
+            // Set student Select2
+            var studentSelect = $('select[name="invoice_student_edit"]');
+            if (studentSelect.length && studentId) {
+                  studentSelect.val(studentId).trigger('change');
+            }
+
+            // Set invoice type (text input)
+            var typeInput = document.getElementById('invoice_type_edit');
+            if (typeInput) {
+                  typeInput.value = invoiceTypeName || '';
+            }
+
+            // Show/hide month_year wrapper based on invoice type
+            var monthYearWrapper = document.getElementById('month_year_edit_wrapper');
+            var monthInput = document.getElementById('invoice_month_year_edit');
+
+            // Convert invoice type name to snake_case for comparison
+            var typeNameLower = invoiceTypeName ? invoiceTypeName.toLowerCase().replace(/ /g, '_') : '';
+
+            if (monthYearWrapper) {
+                  if (typeNameLower !== 'tuition_fee') {
+                        monthYearWrapper.style.display = 'none';
+                  } else {
+                        monthYearWrapper.style.display = '';
+                        // Set month year (formatted)
+                        if (monthInput) {
+                              monthInput.value = formatMonthYear(monthYear);
+                        }
+                  }
+            }
+
+            // Set amount
+            var amountInput = document.getElementById('invoice_amount_edit');
+            if (amountInput) {
+                  amountInput.value = totalAmount || '';
+                  amountInput.setAttribute('data-max-tuition-fee', maxTuitionFee);
+            }
+
+            // Set hint text
+            var hintDiv = document.getElementById('invoice_amount_hint');
+            if (hintDiv && maxTuitionFee > 0) {
+                  hintDiv.textContent = 'Maximum allowed: ৳' + maxTuitionFee + ' (Tuition Fee)';
+            }
+
+            // Show modal
+            modal.show();
+      };
+
+      // Handle real-time validation on amount input
+      var handleAmountInputValidation = function () {
+            var amountInput = document.getElementById('invoice_amount_edit');
+            if (!amountInput) return;
+
+            amountInput.addEventListener('input', function () {
+                  validateAmount(this.value, false); // No toastr on input
+            });
+
+            amountInput.addEventListener('blur', function () {
+                  validateAmount(this.value, false); // No toastr on blur
+            });
+      };
+
+      // Handle form submission via AJAX
+      var handleFormSubmit = function () {
+            form.addEventListener('submit', function (e) {
+                  e.preventDefault();
+
+                  // Get the amount value
+                  var amountInput = document.getElementById('invoice_amount_edit');
+                  var amountValue = amountInput ? amountInput.value : '';
+
+                  // Validate amount (with toastr warning)
+                  if (!validateAmount(amountValue, true)) {
+                        return;
+                  }
+
+                  if (!invoiceId) {
+                        if (typeof toastr !== 'undefined') {
+                              toastr.error('Invoice ID not found');
+                        } else {
+                              Swal.fire({
+                                    title: 'Error!',
+                                    text: 'Invoice ID not found',
+                                    icon: 'error'
+                              });
+                        }
+                        return;
+                  }
+
+                  // Show loading indicator
+                  submitButton.setAttribute('data-kt-indicator', 'on');
+                  submitButton.disabled = true;
+
+                  // Prepare form data
+                  var formData = new FormData();
+                  formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+                  formData.append('_method', 'PUT');
+                  formData.append('invoice_amount_edit', amountValue);
+
+                  // Build URL
+                  var url = routeUpdateInvoice.replace(':id', invoiceId);
+
+                  fetch(url, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                              'Accept': 'application/json',
+                              'X-Requested-With': 'XMLHttpRequest'
+                        }
+                  })
+                        .then(function (response) {
+                              return response.json().then(function (data) {
+                                    if (!response.ok) {
+                                          throw new Error(data.message || 'Network response was not ok');
+                                    }
+                                    return data;
+                              });
+                        })
+                        .then(function (data) {
+                              // Hide loading indicator
+                              submitButton.removeAttribute('data-kt-indicator');
+                              submitButton.disabled = false;
+
+                              if (data.success) {
+                                    // Hide modal
+                                    modal.hide();
+
+                                    Swal.fire({
+                                          title: 'Success!',
+                                          text: data.message || 'Invoice updated successfully',
+                                          icon: 'success',
+                                          confirmButtonText: 'OK'
+                                    }).then(function () {
+                                          window.location.reload();
+                                    });
+                              } else {
+                                    throw new Error(data.message || 'Invoice update failed');
+                              }
+                        })
+                        .catch(function (error) {
+                              // Hide loading indicator
+                              submitButton.removeAttribute('data-kt-indicator');
+                              submitButton.disabled = false;
+
+                              console.error('Error:', error);
+                              if (typeof toastr !== 'undefined') {
+                                    toastr.error(error.message || 'Failed to update invoice');
+                              } else {
+                                    Swal.fire({
+                                          title: 'Error!',
+                                          text: error.message || 'Failed to update invoice',
+                                          icon: 'error'
+                                    });
+                              }
+                        });
+            });
+      };
 
       // Init edit invoice modal
-      var initEditInvoice = () => {
+      var initEditInvoice = function () {
             // Cancel button handler
-            const cancelButton = element.querySelector('[data-kt-edit-invoice-modal-action="cancel"]');
+            var cancelButton = element.querySelector('[data-kt-edit-invoice-modal-action="cancel"]');
             if (cancelButton) {
-                  cancelButton.addEventListener('click', e => {
+                  cancelButton.addEventListener('click', function (e) {
                         e.preventDefault();
-                        if (form) form.reset();
+                        resetForm();
                         modal.hide();
                   });
             }
 
             // Close button handler
-            const closeButton = element.querySelector('[data-kt-edit-invoice-modal-action="close"]');
+            var closeButton = element.querySelector('[data-kt-edit-invoice-modal-action="close"]');
             if (closeButton) {
-                  closeButton.addEventListener('click', e => {
+                  closeButton.addEventListener('click', function (e) {
                         e.preventDefault();
-                        if (form) form.reset();
+                        resetForm();
                         modal.hide();
                   });
             }
 
-            // AJAX form data load
-            const editButtons = document.querySelectorAll("[data-bs-target='#kt_modal_edit_invoice']");
+            // Modal hidden event - reset form when modal is closed
+            element.addEventListener('hidden.bs.modal', function () {
+                  resetForm();
+            });
+
+            // Edit button click handlers
+            var editButtons = document.querySelectorAll('.edit-invoice-btn');
             if (editButtons.length) {
-                  editButtons.forEach((button) => {
-                        button.addEventListener("click", function () {
-                              invoiceId = this.getAttribute("data-invoice-id"); // Assign value globally
-                              console.log("Invoice ID:", invoiceId);
-                              if (!invoiceId) return;
+                  editButtons.forEach(function (button) {
+                        button.addEventListener('click', function (e) {
+                              e.preventDefault();
 
-                              // Clear form
-                              if (form) form.reset();
+                              // Reset form before loading new data
+                              resetForm();
 
-                              fetch(`/invoices/${invoiceId}/view-ajax`)
-                                    .then(response => {
-                                          if (!response.ok) throw new Error('Network response was not ok');
-                                          return response.json();
-                                    })
-                                    .then(data => {
-                                          if (data.success && data.data) {
-                                                if (!data.success || !data.data) {
-                                                      throw new Error("Invalid response data");
-                                                }
-
-                                                const invoice = data.data;
-
-                                                // Set modal title
-                                                const titleEl = document.getElementById("kt_modal_edit_invoice_title");
-                                                if (titleEl) {
-                                                      titleEl.textContent = `Update Invoice ${invoice.invoice_number}`;
-                                                }
-
-                                                // Show/hide #invoice_type_id_edit based on invoice_type
-                                                const monthYearWrapper = document.querySelector("#month_year_id_edit");
-                                                if (monthYearWrapper) {
-                                                      if (invoice.invoice_type !== 'tuition_fee') {
-                                                            monthYearWrapper.style.display = 'none';
-                                                      } else {
-                                                            monthYearWrapper.style.display = '';
-                                                      }
-                                                }
-
-                                                // Populate regular input fields
-                                                document.querySelector("input[name='invoice_amount_edit']").value = invoice.total_amount;
-
-                                                // Set Select2 values and trigger change
-                                                const setSelect2Value = (name, value) => {
-                                                      const el = $(`select[name="${name}"]`);
-                                                      if (el.length) {
-                                                            el.val(value).trigger('change');
-                                                      }
-                                                };
-
-                                                // Populate form fields
-                                                setSelect2Value("invoice_student_edit", invoice.student_id);
-                                                setSelect2Value("invoice_type_edit", invoice.invoice_type);
-                                                setSelect2Value("invoice_month_year_edit", invoice.month_year);
-
-                                                // Show modal (assumes Bootstrap modal)
-                                                modal.show();
-                                          } else {
-                                                throw new Error(data.message || 'Invalid response data');
-                                          }
-                                    })
-                                    .catch(error => {
-                                          console.error("Error:", error);
-                                          toastr.error(error.message || "Failed to load invoice details");
-                                    });
+                              // Populate modal with data from button attributes
+                              populateModal(this);
                         });
                   });
             }
 
-      }
-
-      // Form validation
-      var initValidation = function () {
-            if (!form) return;
-
-            var validator = FormValidation.formValidation(
-                  form,
-                  {
-                        fields: {
-                              'invoice_amount_edit': {
-                                    validators: {
-                                          notEmpty: {
-                                                message: 'Amount is required'
-                                          }
-                                    }
-                              }
-                        },
-                        plugins: {
-                              trigger: new FormValidation.plugins.Trigger(),
-                              bootstrap: new FormValidation.plugins.Bootstrap5({
-                                    rowSelector: '.fv-row',
-                                    eleInvalidClass: '',
-                                    eleValidClass: ''
-                              })
-                        }
-                  }
-            );
-
-            const submitButton = element.querySelector('[data-kt-edit-invoice-modal-action="submit"]');
-
-            if (submitButton && validator) {
-                  submitButton.addEventListener('click', function (e) {
-                        e.preventDefault(); // Prevent default button behavior
-
-                        validator.validate().then(function (status) {
-                              if (status === 'Valid') {
-                                    // Show loading indicator
-                                    submitButton.setAttribute('data-kt-indicator', 'on');
-                                    submitButton.disabled = true;
-
-                                    const formData = new FormData(form);
-                                    formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
-                                    formData.append('_method', 'PUT');
-
-                                    fetch(`/invoices/${invoiceId}`, {
-                                          method: 'POST',
-                                          body: formData,
-                                          headers: {
-                                                'Accept': 'application/json',
-                                                'X-Requested-With': 'XMLHttpRequest'
-                                          }
-                                    })
-                                          .then(response => {
-                                                if (!response.ok) throw new Error('Network response was not ok');
-                                                return response.json();
-                                          })
-                                          .then(data => {
-                                                submitButton.removeAttribute('data-kt-indicator');
-                                                submitButton.disabled = false;
-
-                                                if (data.success) {
-                                                      toastr.success(data.message || 'Invoice updated successfully');
-                                                      modal.hide();
-                                                      window.location.reload();
-                                                } else {
-                                                      throw new Error(data.message || 'Invoice Update failed');
-                                                }
-                                          })
-                                          .catch(error => {
-                                                submitButton.removeAttribute('data-kt-indicator');
-                                                submitButton.disabled = false;
-                                                toastr.error(error.message || 'Failed to update invoice');
-                                                console.error('Error:', error);
-                                          });
-                              } else {
-                                    toastr.warning('Please fill all required fields correctly');
-                              }
-                        });
-                  });
-            }
-
-      }
+            // Initialize amount input validation
+            handleAmountInputValidation();
+      };
 
       return {
             init: function () {
+                  element = document.getElementById('kt_modal_edit_invoice');
+
+                  // Early return if element doesn't exist
+                  if (!element) {
+                        return;
+                  }
+
+                  form = element.querySelector('#kt_modal_edit_invoice_form');
+                  submitButton = element.querySelector('#kt_modal_edit_invoice_submit');
+                  modal = bootstrap.Modal.getOrCreateInstance(element);
+
+                  if (!form || !submitButton) {
+                        console.error('Form or submit button not found');
+                        return;
+                  }
+
                   initEditInvoice();
-                  initValidation();
+                  handleFormSubmit();
+            }
+      };
+}();
+
+var KTTransactionForm = function () {
+      // Shared variables
+      var invoice = {};
+      var amountInput;
+      var fullPaymentOption;
+      var partialPaymentOption;
+      var discountedPaymentOption;
+      var form;
+
+      // Private functions
+      var initInvoiceData = function () {
+            var invoiceInput = document.querySelector('input[name="transaction_invoice"]');
+            var studentInput = document.querySelector('input[name="transaction_student"]');
+            var amountInputEl = document.getElementById('transaction_amount_input');
+            var statusIndicator = document.getElementById('invoice_status_indicator');
+
+            invoice = {
+                  id: invoiceInput ? invoiceInput.value : null,
+                  student_id: studentInput ? studentInput.value : null,
+                  amount_due: amountInputEl ? parseFloat(amountInputEl.value) : 0,
+                  total_amount: amountInputEl ? parseFloat(amountInputEl.getAttribute('data-total-amount')) : 0,
+                  status: statusIndicator ? (statusIndicator.getAttribute('data-status') || 'unpaid') : 'unpaid'
+            };
+      };
+
+      var initializeForm = function () {
+            if (!amountInput) return;
+
+            // Set up amount input
+            amountInput.value = invoice.amount_due;
+            amountInput.disabled = false;
+            amountInput.setAttribute('data-max', invoice.amount_due);
+            amountInput.setAttribute('min', 1);
+
+            // Check invoice status to determine payment options
+            if (invoice.status === 'partially_paid' || invoice.amount_due < invoice.total_amount) {
+                  // Disable full payment for partially paid invoices
+                  if (fullPaymentOption) {
+                        fullPaymentOption.disabled = true;
+                        fullPaymentOption.checked = false;
+                  }
+                  if (partialPaymentOption) {
+                        partialPaymentOption.checked = true;
+                  }
+                  if (discountedPaymentOption) {
+                        discountedPaymentOption.disabled = false;
+                  }
+                  amountInput.value = ''; // Clear value for partial payment
+            } else {
+                  // Enable all options for unpaid invoices
+                  if (fullPaymentOption) {
+                        fullPaymentOption.disabled = false;
+                        fullPaymentOption.checked = true;
+                  }
+                  if (partialPaymentOption) {
+                        partialPaymentOption.disabled = false;
+                  }
+                  if (discountedPaymentOption) {
+                        discountedPaymentOption.disabled = false;
+                  }
+                  amountInput.value = invoice.amount_due;
+            }
+      };
+
+      var handlePaymentTypeChange = function () {
+            var paymentTypeInputs = document.querySelectorAll('input[name="transaction_type"]');
+
+            paymentTypeInputs.forEach(function (input) {
+                  input.addEventListener('change', function () {
+                        var paymentType = this.value;
+
+                        if (!amountInput) return;
+
+                        if (paymentType === 'partial') {
+                              amountInput.value = ''; // Clear value for partial payment
+                        } else if (paymentType === 'discounted') {
+                              amountInput.value = ''; // Clear value for discounted payment
+                        } else {
+                              amountInput.value = invoice.amount_due; // Set to full amount
+                        }
+                  });
+            });
+      };
+
+      var validateAmount = function () {
+            if (!amountInput) return;
+
+            amountInput.addEventListener('input', function () {
+                  var amount = parseFloat(this.value);
+                  var maxAmount = parseFloat(this.getAttribute('data-max'));
+                  var checkedPaymentType = document.querySelector('input[name="transaction_type"]:checked');
+                  var paymentType = checkedPaymentType ? checkedPaymentType.value : 'full';
+
+                  // Remove previous error state
+                  this.classList.remove('is-invalid');
+                  var existingError = document.getElementById('transaction_amount_error');
+                  if (existingError) {
+                        existingError.remove();
+                  }
+
+                  // Validate the amount
+                  var isValid = true;
+                  var errorMessage = '';
+
+                  if (isNaN(amount)) {
+                        isValid = false;
+                        errorMessage = 'Please enter a valid number';
+                  } else if (amount < 1) {
+                        isValid = false;
+                        errorMessage = 'Amount must be at least ৳1';
+                  } else if (invoice.status === 'partially_paid') {
+                        // For partially paid invoices, allow amount equal to or less than due amount
+                        if (amount > maxAmount) {
+                              isValid = false;
+                              errorMessage = 'Amount must be less than or equal to the due amount of ৳' + maxAmount;
+                        }
+                  } else if (paymentType === 'partial' && amount >= maxAmount) {
+                        isValid = false;
+                        errorMessage = 'For partial payment, amount must be less than the due amount of ৳' + maxAmount;
+                  } else if (paymentType === 'discounted' && amount >= maxAmount) {
+                        isValid = false;
+                        errorMessage = 'For discounted payment, amount must be less than the due amount of ৳' + maxAmount;
+                  } else if (paymentType === 'full' && amount != maxAmount) {
+                        isValid = false;
+                        errorMessage = 'For full payment, amount must be exactly ৳' + maxAmount;
+                  }
+
+                  if (!isValid) {
+                        this.classList.add('is-invalid');
+                        var errorDiv = document.createElement('div');
+                        errorDiv.className = 'invalid-feedback';
+                        errorDiv.id = 'transaction_amount_error';
+                        errorDiv.textContent = errorMessage;
+                        this.parentNode.insertBefore(errorDiv, this.nextSibling);
+                  }
+            });
+      };
+
+      var handleFormSubmission = function () {
+            if (!form) return;
+
+            form.addEventListener('submit', function (e) {
+                  var amount = parseFloat(amountInput.value);
+                  var maxAmount = parseFloat(amountInput.getAttribute('data-max'));
+                  var checkedPaymentType = document.querySelector('input[name="transaction_type"]:checked');
+                  var paymentType = checkedPaymentType ? checkedPaymentType.value : 'full';
+
+                  // Check validation
+                  var isValid = true;
+
+                  if (isNaN(amount)) {
+                        isValid = false;
+                  } else if (amount < 1) {
+                        isValid = false;
+                  } else if (invoice.status === 'partially_paid') {
+                        // For partially paid invoices, allow amount equal to or less than due amount
+                        if (amount > maxAmount) {
+                              isValid = false;
+                        }
+                  } else if (paymentType === 'partial' && amount >= maxAmount) {
+                        isValid = false;
+                  } else if (paymentType === 'discounted' && amount >= maxAmount) {
+                        isValid = false;
+                  } else if (paymentType === 'full' && amount != maxAmount) {
+                        isValid = false;
+                  }
+
+                  if (!isValid || amountInput.classList.contains('is-invalid')) {
+                        e.preventDefault();
+                        toastr.warning('Please enter a valid amount.');
+                        return false;
+                  }
+
+                  return true;
+            });
+      };
+
+      return {
+            // Public functions
+            init: function () {
+                  // Get DOM elements
+                  amountInput = document.getElementById('transaction_amount_input');
+                  fullPaymentOption = document.querySelector('input[name="transaction_type"][value="full"]');
+                  partialPaymentOption = document.querySelector('input[name="transaction_type"][value="partial"]');
+                  discountedPaymentOption = document.querySelector('input[name="transaction_type"][value="discounted"]');
+                  form = document.getElementById('kt_modal_add_transaction_form');
+
+                  // Early return if required elements don't exist
+                  if (!amountInput) {
+                        return;
+                  }
+
+                  // Initialize
+                  initInvoiceData();
+                  initializeForm();
+                  handlePaymentTypeChange();
+                  validateAmount();
+                  handleFormSubmission();
             }
       };
 }();
@@ -422,4 +832,5 @@ var KTEditInvoiceModal = function () {
 KTUtil.onDOMContentLoaded(function () {
       KTInvoiceWithTransactionsList.init();
       KTEditInvoiceModal.init();
+      KTTransactionForm.init();
 });

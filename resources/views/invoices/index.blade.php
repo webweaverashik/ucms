@@ -2,9 +2,7 @@
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
 @endpush
 
-
 @extends('layouts.app')
-
 @section('title', 'All Invoices')
 
 @section('header-title')
@@ -24,7 +22,8 @@
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
                 <a href="#" class="text-muted text-hover-primary">
-                    Payments Info </a>
+                    Payments Info
+                </a>
             </li>
             <!--end::Item-->
             <!--begin::Item-->
@@ -34,13 +33,13 @@
             <!--end::Item-->
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                Invoices </li>
+                Invoices
+            </li>
             <!--end::Item-->
         </ul>
         <!--end::Breadcrumb-->
     </div>
 @endsection
-
 
 @section('content')
     @php
@@ -58,7 +57,6 @@
             </a>
         </li>
         <!--end:::Tab item-->
-
         <!--begin:::Tab item-->
         <li class="nav-item">
             <a class="nav-link text-active-primary pb-4" data-bs-toggle="tab" href="#kt_paid_invoices_tab"><i
@@ -66,7 +64,6 @@
             </a>
         </li>
         <!--end:::Tab item-->
-
         @can('invoices.create')
             <!--begin:::Tab item-->
             <li class="nav-item ms-auto">
@@ -92,18 +89,16 @@
                     <div class="card-title">
                         <!--begin::Search-->
                         <div class="d-flex align-items-center position-relative my-1">
-                            <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
-                                data-kt-due-invoice-table-filter="search"
+                            <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
+                            <input type="text" data-kt-due-invoice-table-filter="search"
                                 class="form-control form-control-solid w-350px ps-12" placeholder="Search in due invoices">
                         </div>
                         <!--end::Search-->
-
                         <!--begin::Export hidden buttons-->
                         <div id="kt_hidden_export_buttons" class="d-none"></div>
                         <!--end::Export buttons-->
                     </div>
                     <!--begin::Card title-->
-
                     <!--begin::Card toolbar-->
                     <div class="card-toolbar">
                         <!--begin::Toolbar-->
@@ -137,7 +132,6 @@
                                         </select>
                                     </div>
                                     <!--end::Input group-->
-
                                     <!--begin::Input group-->
                                     <div class="mb-10">
                                         <label class="form-label fs-6 fw-semibold">Due Date:</label>
@@ -152,7 +146,6 @@
                                         </select>
                                     </div>
                                     <!--end::Input group-->
-
                                     <!--begin::Input group-->
                                     <div class="mb-10">
                                         <label class="form-label fs-6 fw-semibold">Invoice Status:</label>
@@ -166,7 +159,6 @@
                                         </select>
                                     </div>
                                     <!--end::Input group-->
-
                                     <!--begin::Input group-->
                                     <div class="mb-10">
                                         <label class="form-label fs-6 fw-semibold">Billing Month:</label>
@@ -187,7 +179,6 @@
                                         </select>
                                     </div>
                                     <!--end::Input group-->
-
                                     <!--begin::Actions-->
                                     <div class="d-flex justify-content-end">
                                         <button type="reset"
@@ -211,7 +202,6 @@
                                     data-kt-menu-placement="bottom-end">
                                     <i class="ki-outline ki-exit-up fs-2"></i>Export
                                 </button>
-
                                 <!--begin::Menu-->
                                 <div id="kt_table_report_dropdown_menu"
                                     class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
@@ -238,12 +228,10 @@
                             <!--end::Export dropdown-->
                         </div>
                         <!--end::Toolbar-->
-
                     </div>
                     <!--end::Card toolbar-->
                 </div>
                 <!--end::Card header-->
-
                 <!--begin::Card body-->
                 <div class="card-body py-4">
                     <!--begin::Table-->
@@ -276,49 +264,39 @@
                                             {{ $invoice->invoice_number }}
                                         </a>
                                     </td>
-
                                     <td>
                                         <a href="{{ route('students.show', $invoice->student->id) }}" target="_blank">
                                             {{ $invoice->student->name }}, {{ $invoice->student->student_unique_id }}
                                         </a>
                                     </td>
-
-                                    <td class="d-none">ucms_{{ $invoice->invoiceType->type_name }}</td>
-                                    <td>{{ $invoice->invoiceType->type_name }}</td>
-
+                                    <td class="d-none">ucms_{{ $invoice->invoiceType?->type_name }}</td>
+                                    <td>{{ $invoice->invoiceType?->type_name }}</td>
                                     <td class="d-none">D_{{ $invoice->month_year }}</td>
-
                                     <td>
                                         @if (
-                                            $invoice->invoiceType->type_name === 'Tuition Fee' &&
+                                            $invoice->invoiceType?->type_name === 'Tuition Fee' &&
                                                 preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year ?? '', $matches))
                                             {{ \Carbon\Carbon::create($matches[2], $matches[1], 1)->format('F Y') }}
                                         @else
                                             N/A
                                         @endif
-
                                     </td>
-
-
                                     <td>{{ $invoice->total_amount }}</td>
-
                                     <td>{{ $invoice->amount_due }}</td>
-
                                     <td class="d-none">
-                                        @if ($invoice->invoiceType->type_name == 'Tuition Fee')
+                                        @if ($invoice->invoiceType?->type_name == 'Tuition Fee')
                                             1/{{ $invoice->student->payments->due_date }}
                                         @else
                                             N/A
                                         @endif
                                     </td>
                                     <td>
-                                        @if ($invoice->invoiceType->type_name == 'Tuition Fee')
+                                        @if ($invoice->invoiceType?->type_name == 'Tuition Fee')
                                             {{ ucfirst($invoice->student->payments->payment_style) }}-1/{{ $invoice->student->payments->due_date }}
                                         @else
                                             N/A
                                         @endif
                                     </td>
-
                                     @php
                                         $status = $invoice->status;
                                         $payment = optional($invoice->student)->payments;
@@ -330,7 +308,7 @@
                                                 $monthYearRaw = trim($invoice->month_year);
                                                 if (preg_match('/^\d{2}_\d{4}$/', $monthYearRaw)) {
                                                     $monthYear = \Carbon\Carbon::createFromFormat('m_Y', $monthYearRaw);
-                                                    $dueDate = $monthYear->copy()->day((int) $payment->due_date); // 👈 Cast to int
+                                                    $dueDate = $monthYear->copy()->day((int) $payment->due_date);
 
                                                     if (
                                                         in_array($status, ['due', 'partially_paid']) &&
@@ -344,19 +322,16 @@
                                             }
                                         }
                                     @endphp
-
                                     <td class="d-none">
                                         @if ($status === 'due')
                                             I_due
                                         @elseif ($status === 'partially_paid')
                                             I_partial
                                         @endif
-
                                         @if ($isOverdue)
                                             I_overdue
                                         @endif
                                     </td>
-
                                     <td>
                                         @if ($status === 'due')
                                             @if ($isOverdue)
@@ -370,23 +345,24 @@
                                                 <span class="badge badge-danger rounded-pill ms-1">Overdue</span>
                                             @endif
                                         @endif
-
                                     </td>
-
                                     <td>
-                                        @if ($canEditInvoice)
-                                            <a href="#" title="Edit invoice" data-invoice-id="{{ $invoice->id }}"
-                                                data-bs-toggle="modal" data-bs-target="#kt_modal_edit_invoice"
-                                                class="btn btn-icon text-hover-primary w-30px h-30px">
-                                                <i class="ki-outline ki-pencil fs-2"></i>
-                                            </a>
-                                        @endif
-                                        @if ($canDeleteInvoice)
-                                            <a href="#" title="Delete invoice" data-bs-toggle="tooltip"
-                                                class="btn btn-icon text-hover-danger w-30px h-30px delete-invoice"
-                                                data-invoice-id="{{ $invoice->id }}">
-                                                <i class="ki-outline ki-trash fs-2"></i>
-                                            </a>
+                                        @if ($status  != 'partially_paid')
+                                            @if ($canEditInvoice)
+                                                <a href="#" title="Edit invoice"
+                                                    data-invoice-id="{{ $invoice->id }}" data-bs-toggle="modal"
+                                                    data-bs-target="#kt_modal_edit_invoice"
+                                                    class="btn btn-icon text-hover-primary w-30px h-30px">
+                                                    <i class="ki-outline ki-pencil fs-2"></i>
+                                                </a>
+                                            @endif
+                                            @if ($canDeleteInvoice)
+                                                <a href="#" title="Delete invoice" data-bs-toggle="tooltip"
+                                                    class="btn btn-icon text-hover-danger w-30px h-30px delete-invoice"
+                                                    data-invoice-id="{{ $invoice->id }}">
+                                                    <i class="ki-outline ki-trash fs-2"></i>
+                                                </a>
+                                            @endif
                                         @endif
                                     </td>
                                 </tr>
@@ -411,19 +387,17 @@
                     <div class="card-title">
                         <!--begin::Search-->
                         <div class="d-flex align-items-center position-relative my-1">
-                            <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
-                                data-kt-paid-invoice-table-filter="search"
+                            <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
+                            <input type="text" data-kt-paid-invoice-table-filter="search"
                                 class="form-control form-control-solid w-350px ps-12"
                                 placeholder="Search in paid invoices">
                         </div>
                         <!--end::Search-->
-
                         <!--begin::Export hidden buttons-->
                         <div id="kt_hidden_export_buttons_2" class="d-none"></div>
                         <!--end::Export buttons-->
                     </div>
                     <!--begin::Card title-->
-
                     <!--begin::Card toolbar-->
                     <div class="card-toolbar">
                         <!--begin::Toolbar-->
@@ -458,7 +432,6 @@
                                         </select>
                                     </div>
                                     <!--end::Input group-->
-
                                     <!--begin::Input group-->
                                     <div class="mb-10">
                                         <label class="form-label fs-6 fw-semibold">Due Date:</label>
@@ -473,7 +446,6 @@
                                         </select>
                                     </div>
                                     <!--end::Input group-->
-
                                     <!--begin::Input group-->
                                     <div class="mb-10">
                                         <label class="form-label fs-6 fw-semibold">Billing Month:</label>
@@ -494,7 +466,6 @@
                                         </select>
                                     </div>
                                     <!--end::Input group-->
-
                                     <!--begin::Actions-->
                                     <div class="d-flex justify-content-end">
                                         <button type="reset"
@@ -518,7 +489,6 @@
                                     data-kt-menu-placement="bottom-end">
                                     <i class="ki-outline ki-exit-up fs-2"></i>Export
                                 </button>
-
                                 <!--begin::Menu-->
                                 <div id="kt_table_report_dropdown_menu_2"
                                     class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
@@ -545,12 +515,10 @@
                             <!--end::Export dropdown-->
                         </div>
                         <!--end::Toolbar-->
-
                     </div>
                     <!--end::Card toolbar-->
                 </div>
                 <!--end::Card header-->
-
                 <!--begin::Card body-->
                 <div class="card-body py-4">
                     <!--begin::Table-->
@@ -581,40 +549,33 @@
                                             {{ $invoice->invoice_number }}
                                         </a>
                                     </td>
-
                                     <td>
                                         <a href="{{ route('students.show', $invoice->student->id) }}">
                                             {{ $invoice->student->name }}, {{ $invoice->student->student_unique_id }}
                                         </a>
                                     </td>
-
-                                    <td class="d-none">ucms_{{ $invoice->invoiceType->type_name }}</td>
-                                    <td>{{ $invoice->invoiceType->type_name }}</td>
-
+                                    <td class="d-none">ucms_{{ $invoice->invoiceType?->type_name }}</td>
+                                    <td>{{ $invoice->invoiceType?->type_name }}</td>
                                     <td>{{ $invoice->total_amount }}</td>
-
                                     <td class="d-none">P_{{ $invoice->month_year }}</td>
-
                                     <td>
                                         @if (
-                                            $invoice->invoiceType->type_name === 'Tuition Fee' &&
+                                            $invoice->invoiceType?->type_name === 'Tuition Fee' &&
                                                 preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year ?? '', $matches))
                                             {{ \Carbon\Carbon::create($matches[2], $matches[1], 1)->format('F Y') }}
                                         @else
                                             N/A
                                         @endif
-
                                     </td>
-
                                     <td class="d-none">
-                                        @if ($invoice->invoiceType->type_name == 'Tuition Fee')
+                                        @if ($invoice->invoiceType?->type_name == 'Tuition Fee')
                                             1/{{ $invoice->student->payments->due_date }}
                                         @else
                                             N/A
                                         @endif
                                     </td>
                                     <td>
-                                        @if ($invoice->invoiceType->type_name == 'Tuition Fee')
+                                        @if ($invoice->invoiceType?->type_name == 'Tuition Fee')
                                             {{ ucfirst($invoice->student->payments->payment_style) }}-1/{{ $invoice->student->payments->due_date }}
                                         @else
                                             N/A
@@ -645,7 +606,6 @@
     </div>
     <!--end:::Tab content-->
 
-
     <!--begin::Modal - Create Invoice-->
     <div class="modal fade" id="kt_modal_create_invoice" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
         data-bs-keyboard="false">
@@ -660,8 +620,7 @@
                     <!--end::Modal title-->
                     <!--begin::Close-->
                     <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-add-invoice-modal-action="close">
-                        <i class="ki-outline ki-cross fs-1">
-                        </i>
+                        <i class="ki-outline ki-cross fs-1"> </i>
                     </div>
                     <!--end::Close-->
                 </div>
@@ -669,22 +628,18 @@
                 <!--begin::Modal body-->
                 <div class="modal-body px-5 my-7">
                     <!--begin::Form-->
-                    <form id="kt_modal_add_invoice_form" class="form" action="{{ route('invoices.store') }}"
-                        method="POST">
-                        @csrf
+                    <form id="kt_modal_add_invoice_form" class="form" novalidate="novalidate">
                         <!--begin::Scroll-->
                         <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_add_invoice_scroll"
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_transaction_header"
                             data-kt-scroll-wrappers="#kt_modal_add_invoice_scroll" data-kt-scroll-offset="300px">
-
                             <div class="row">
                                 <!--begin::Name Input group-->
                                 <div class="fv-row mb-7 col-12">
                                     <!--begin::Label-->
                                     <label class="required fw-semibold fs-6 mb-2">Select Student</label>
                                     <!--end::Label-->
-
                                     <!--begin::Solid input group style-->
                                     <div class="input-group input-group-solid flex-nowrap">
                                         <span class="input-group-text">
@@ -699,7 +654,8 @@
                                                 @foreach ($students as $student)
                                                     <option value="{{ $student->id }}">{{ $student->name }}
                                                         ({{ $student->student_unique_id }})
-                                                        - {{ ucfirst($student->payments->payment_style) }} -
+                                                        -
+                                                        {{ ucfirst($student->payments->payment_style) }} -
                                                         1/{{ $student->payments->due_date }}
                                                     </option>
                                                 @endforeach
@@ -715,7 +671,6 @@
                                     <!--begin::Label-->
                                     <label class="required fw-semibold fs-6 mb-2">Invoice Type</label>
                                     <!--end::Label-->
-
                                     <!--begin::Solid input group style-->
                                     <div class="input-group input-group-solid flex-nowrap">
                                         <span class="input-group-text">
@@ -729,7 +684,8 @@
                                                 disabled>
                                                 <option></option>
                                                 @foreach ($invoice_types as $type)
-                                                    <option value="{{ $type->id }}">{{ $type->type_name }}
+                                                    <option value="{{ $type->id }}"
+                                                        data-type-name="{{ $type->type_name }}">{{ $type->type_name }}
                                                     </option>
                                                 @endforeach
                                             </select>
@@ -744,7 +700,6 @@
                                     <!--begin::Label-->
                                     <label class="required fw-semibold fs-6 mb-2">Billing Type</label>
                                     <!--end::Label-->
-
                                     <!--begin::Solid input group style-->
                                     <div class="row">
                                         <!--begin::New Month Year-->
@@ -765,7 +720,6 @@
                                             <!--end::Option-->
                                         </div>
                                         <!--end::New Month Year-->
-
                                         <!--begin::Old Month Year-->
                                         <div class="col-lg-6">
                                             <!--begin::Option-->
@@ -794,7 +748,6 @@
                                     <!--begin::Label-->
                                     <label class="required fw-semibold fs-6 mb-2">Billing Month</label>
                                     <!--end::Label-->
-
                                     <!--begin::Solid input group style-->
                                     <div class="input-group input-group-solid flex-nowrap">
                                         <span class="input-group-text">
@@ -841,7 +794,7 @@
                         <div class="text-center pt-10">
                             <button type="reset" class="btn btn-light me-3"
                                 data-kt-add-invoice-modal-action="cancel">Discard</button>
-                            <button type="submit" class="btn btn-primary" data-kt-add-invoice-modal-action="submit">
+                            <button type="button" class="btn btn-primary" data-kt-add-invoice-modal-action="submit">
                                 <span class="indicator-label">Submit</span>
                                 <span class="indicator-progress">Please wait...
                                     <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
@@ -859,7 +812,6 @@
     </div>
     <!--end::Modal - Create Invoice-->
 
-
     <!--begin::Modal - Edit Invoice-->
     <div class="modal fade" id="kt_modal_edit_invoice" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
         data-bs-keyboard="false">
@@ -874,8 +826,7 @@
                     <!--end::Modal title-->
                     <!--begin::Close-->
                     <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-edit-invoice-modal-action="close">
-                        <i class="ki-outline ki-cross fs-1">
-                        </i>
+                        <i class="ki-outline ki-cross fs-1"> </i>
                     </div>
                     <!--end::Close-->
                 </div>
@@ -889,13 +840,11 @@
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_transaction_header"
                             data-kt-scroll-wrappers="#kt_modal_edit_invoice_scroll" data-kt-scroll-offset="300px">
-
                             <!--begin::Name Input group-->
                             <div class="fv-row mb-7">
                                 <!--begin::Label-->
                                 <label class="fw-semibold fs-6 mb-2">Corrosponding Student</label>
                                 <!--end::Label-->
-
                                 <!--begin::Solid input group style-->
                                 <div class="input-group input-group-solid flex-nowrap">
                                     <span class="input-group-text">
@@ -910,7 +859,8 @@
                                             @foreach ($students as $student)
                                                 <option value="{{ $student->id }}">{{ $student->name }}
                                                     ({{ $student->student_unique_id }})
-                                                    - {{ ucfirst($student->payments->payment_style) }} -
+                                                    -
+                                                    {{ ucfirst($student->payments->payment_style) }} -
                                                     1/{{ $student->payments->due_date }}
                                                 </option>
                                             @endforeach
@@ -926,7 +876,6 @@
                                 <!--begin::Label-->
                                 <label class="fw-semibold fs-6 mb-2">Invoice Type</label>
                                 <!--end::Label-->
-
                                 <!--begin::Solid input group style-->
                                 <div class="input-group input-group-solid flex-nowrap">
                                     <span class="input-group-text">
@@ -939,7 +888,8 @@
                                             data-placeholder="Select a invoice type" disabled>
                                             <option></option>
                                             @foreach ($invoice_types as $type)
-                                                <option value="{{ $type->id }}">{{ $type->type_name }}
+                                                <option value="{{ $type->id }}"
+                                                    data-type-name="{{ $type->type_name }}">{{ $type->type_name }}
                                                 </option>
                                             @endforeach
                                         </select>
@@ -954,7 +904,6 @@
                                 <!--begin::Label-->
                                 <label class="fw-semibold fs-6 mb-2">Month Year</label>
                                 <!--end::Label-->
-
                                 <!--begin::Solid input group style-->
                                 <div class="input-group input-group-solid flex-nowrap">
                                     <span class="input-group-text">
@@ -1000,7 +949,9 @@
                             <button type="reset" class="btn btn-light me-3"
                                 data-kt-edit-invoice-modal-action="cancel">Discard</button>
                             <button type="button" class="btn btn-primary" data-kt-edit-invoice-modal-action="submit">
-                                Update
+                                <span class="indicator-label">Update</span>
+                                <span class="indicator-progress">Please wait...
+                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
                             </button>
                         </div>
                         <!--end::Actions-->
@@ -1016,7 +967,6 @@
     <!--end::Modal - Edit Invoice-->
 @endsection
 
-
 @push('vendor-js')
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
 @endpush
@@ -1024,11 +974,9 @@
 @push('page-js')
     <script>
         const routeDeleteInvoice = "{{ route('invoices.destroy', ':id') }}";
+        const routeStoreInvoice = "{{ route('invoices.store') }}";
     </script>
-
     <script src="{{ asset('js/invoices/index.js') }}"></script>
-    <script src="{{ asset('js/invoices/index-ajax.js') }}"></script>
-
     <script>
         document.getElementById("payments_menu").classList.add("here", "show");
         document.getElementById("invoices_link").classList.add("active");

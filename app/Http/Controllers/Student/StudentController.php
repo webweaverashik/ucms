@@ -1046,6 +1046,9 @@ class StudentController extends Controller
      */
     public function getInvoiceMonthsData(Student $student)
     {
+        // Eager load the payments relationship
+        $student->load('payments');
+
         $tuitionInvoices = $student->paymentInvoices()->whereHas('invoiceType', function ($q) {
             $q->where('type_name', 'Tuition Fee');
         });
@@ -1055,7 +1058,7 @@ class StudentController extends Controller
                 "
             CAST(SUBSTRING_INDEX(month_year, '_', -1) AS UNSIGNED) DESC,
             CAST(SUBSTRING_INDEX(month_year, '_', 1) AS UNSIGNED) DESC
-        ",
+            ",
             )
             ->first();
 
@@ -1064,15 +1067,15 @@ class StudentController extends Controller
                 "
             CAST(SUBSTRING_INDEX(month_year, '_', -1) AS UNSIGNED) ASC,
             CAST(SUBSTRING_INDEX(month_year, '_', 1) AS UNSIGNED) ASC
-        ",
+            ",
             )
             ->first();
 
         return response()->json([
             'last_invoice_month' => optional($lastInvoice)->month_year,
             'oldest_invoice_month' => optional($oldestInvoice)->month_year,
-            'tuition_fee' => optional($student->payment)->tuition_fee,
-            'payment_style' => optional($student->payment)->payment_style,
+            'tuition_fee' => optional($student->payments)->tuition_fee, // Changed from payment to payments
+            'payment_style' => optional($student->payments)->payment_style, // Changed from payment to payments
         ]);
     }
 
