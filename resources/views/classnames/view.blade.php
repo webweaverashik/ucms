@@ -544,6 +544,9 @@
                                 </select>
                             </div>
                             <!--end::Name Input group-->
+
+                            <input type="hidden" name="activation_status" value="{{ $classname->isActive() ? 'active' : 'inactive' }}" />
+
                             <!--begin::Name Input group-->
                             <div class="fv-row mb-7">
                                 <label class="fw-semibold fs-6 mb-2">Description <span
