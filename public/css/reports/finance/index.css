@@ -78,14 +78,197 @@ tr:hover .amount-edit-btn {
     font-style: italic;
 }
 
-/* Collector summary cards */
+/* ============================================
+   COLLECTOR SUMMARY SECTION
+   ============================================ */
+
+#collector_summary_section {
+    animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Collector Summary Card */
 .collector-summary-card {
-    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    border: none;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
 }
 
 .collector-summary-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px);
+    box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.12);
+}
+
+.collector-summary-card .card-body {
+    position: relative;
+    z-index: 1;
+}
+
+/* Collector Card Gradient Backgrounds */
+.collector-summary-card.collector-gradient-1 {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.collector-summary-card.collector-gradient-2 {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.collector-summary-card.collector-gradient-3 {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.collector-summary-card.collector-gradient-4 {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.collector-summary-card.collector-gradient-5 {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.collector-summary-card.collector-gradient-6 {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    color: #333 !important;
+}
+
+.collector-summary-card.collector-gradient-6 .collector-name,
+.collector-summary-card.collector-gradient-6 .collector-amount,
+.collector-summary-card.collector-gradient-6 .collector-percentage {
+    color: #333 !important;
+}
+
+.collector-summary-card.collector-gradient-7 {
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+    color: #333 !important;
+}
+
+.collector-summary-card.collector-gradient-7 .collector-name,
+.collector-summary-card.collector-gradient-7 .collector-amount,
+.collector-summary-card.collector-gradient-7 .collector-percentage {
+    color: #333 !important;
+}
+
+.collector-summary-card.collector-gradient-8 {
+    background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+}
+
+.collector-summary-card.collector-gradient-9 {
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+    color: #333 !important;
+}
+
+.collector-summary-card.collector-gradient-9 .collector-name,
+.collector-summary-card.collector-gradient-9 .collector-amount,
+.collector-summary-card.collector-gradient-9 .collector-percentage {
+    color: #333 !important;
+}
+
+.collector-summary-card.collector-gradient-10 {
+    background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+}
+
+/* Collector Card Content */
+.collector-summary-card .collector-icon-wrapper {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.collector-summary-card .collector-icon {
+    font-size: 1.5rem;
+    color: #fff;
+}
+
+.collector-summary-card .collector-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.collector-summary-card .collector-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.collector-summary-card .collector-amount {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+}
+
+.collector-summary-card .collector-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.collector-summary-card .collector-percentage {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.collector-summary-card .collector-rank {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.15);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+/* Decorative Circle */
+.collector-summary-card::before {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -20%;
+    width: 120px;
+    height: 120px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    z-index: 0;
+}
+
+.collector-summary-card::after {
+    content: '';
+    position: absolute;
+    bottom: -40%;
+    left: -15%;
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 50%;
+    z-index: 0;
 }
 
 /* ============================================
@@ -124,7 +307,7 @@ tr:hover .amount-edit-btn {
     margin: 3px;
 }
 
-.tagify__tag > div {
+.tagify__tag>div {
     padding: 0.35em 0.5em;
 }
 
@@ -163,6 +346,7 @@ tr:hover .amount-edit-btn {
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -294,6 +478,7 @@ tr:hover .amount-edit-btn {
    ============================================ */
 
 @media (max-width: 768px) {
+
     /* Modal body max height adjustment for mobile */
     #cost_modal .modal-body,
     #edit_cost_modal .modal-body {
@@ -329,5 +514,28 @@ tr:hover .amount-edit-btn {
     /* Chart Height */
     .chart-container {
         height: 280px;
+    }
+
+    /* Collector Summary Cards */
+    .collector-summary-card .collector-amount {
+        font-size: 1.1rem;
+    }
+
+    .collector-summary-card .collector-icon-wrapper {
+        width: 40px;
+        height: 40px;
+    }
+
+    .collector-summary-card .collector-icon {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 576px) {
+
+    /* Collector cards full width on very small screens */
+    #collector_summary_cards .col-sm-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
     }
 }

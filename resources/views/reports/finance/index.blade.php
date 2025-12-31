@@ -330,6 +330,18 @@
                         </div>
                     </div>
 
+                    <!-- Collector Summary Section -->
+                    <div id="collector_summary_section" class="mb-8 d-none">
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <h4 class="fw-bold text-gray-800 mb-0">
+                                <i class="ki-outline ki-people fs-3 text-success me-2"></i>
+                                Collector-wise Collection Summary
+                            </h4>
+                            <span id="collector_count_badge" class="badge badge-light-success fs-7"></span>
+                        </div>
+                        <div id="collector_summary_cards" class="row g-4"></div>
+                    </div>
+
                     <!-- Chart Section -->
                     <div id="chart_section" class="mb-8 d-none">
                         <div class="bg-light rounded p-5">
@@ -480,6 +492,7 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="modal-footer flex-center">
                         <button type="button" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary" id="save_cost_btn">
@@ -514,7 +527,6 @@
                     <form id="edit_cost_form">
                         <div class="modal-body py-10 px-lg-12" style="max-height: 70vh; overflow-y: auto;">
                             <input type="hidden" id="edit_cost_id">
-
                             <!-- Cost Info -->
                             <div class="d-flex justify-content-between align-items-center mb-5 p-4 bg-light rounded">
                                 <div>
@@ -575,9 +587,11 @@
                         <div class="mb-5">
                             <i class="ki-outline ki-trash text-danger fs-5x"></i>
                         </div>
-                        <p class="fs-5 fw-semibold text-gray-700 mb-2">Are you sure you want to delete this cost record?
+                        <p class="fs-5 fw-semibold text-gray-700 mb-2">Are you sure you want to delete this cost
+                            record?
                         </p>
-                        <p class="fs-7 text-muted">This will permanently remove all entries. This action cannot be undone.
+                        <p class="fs-7 text-muted">This will permanently remove all entries. This action cannot be
+                            undone.
                         </p>
                         <input type="hidden" id="delete_cost_id">
                     </div>

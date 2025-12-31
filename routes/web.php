@@ -126,8 +126,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('classnames/ajax-data/{class}', [ClassNameController::class, 'getClassName'])->name('classnames.ajax');
 
     // Reports
-    Route::get('reports', [ReportController::class, 'studentReport']);
-    Route::get('reports/students', [ReportController::class, 'studentReport'])->name('reports.student.index');
+    Route::get('reports', [ReportController::class, 'attendanceReport'])->name('reports.index');
 
     // Attendance Reports
     Route::get('reports/attendance', [ReportController::class, 'attendanceReport'])->name('reports.attendance.index');
