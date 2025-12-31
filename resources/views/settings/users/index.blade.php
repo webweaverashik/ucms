@@ -159,17 +159,15 @@
                                 <div class="d-flex align-items-center">
                                     <!--begin:: Avatar -->
                                     <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
-                                        <a href="#">
-                                            <div class="symbol-label">
-                                                <img src="{{ $user->photo_url ? asset($user->photo_url) : asset('img/male-placeholder.png') }}"
-                                                    alt="{{ $user->name }}" class="w-100" />
-                                            </div>
-                                        </a>
+                                        <div class="symbol-label">
+                                            <img src="{{ $user->photo_url ? asset($user->photo_url) : asset('img/male-placeholder.png') }}"
+                                                alt="{{ $user->name }}" class="w-100" />
+                                        </div>
                                     </div>
                                     <!--end::Avatar-->
                                     <!--begin::user details-->
                                     <div class="d-flex flex-column text-start">
-                                        <a href="#" class="text-gray-800 mb-1">{{ $user->name }}</a>
+                                        <p class="text-gray-800 mb-1">{{ $user->name }}</p>
                                         <span class="fw-bold fs-base">{{ $user->email }}</span>
                                     </div>
                                     <!--begin::user details-->
