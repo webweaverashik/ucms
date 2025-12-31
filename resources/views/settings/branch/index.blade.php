@@ -98,33 +98,38 @@
                         <!--begin::Input group-->
                         <div class="row mb-7">
                             <!--begin::Col-->
-                            <div class="col-md-8 fv-row">
+                            <div class="col-md-7 fv-row">
                                 <label class="required fw-semibold fs-6 mb-2">Branch Name</label>
                                 <input type="text" name="branch_name" id="branch_name"
                                     class="form-control form-control-solid" placeholder="Enter branch name" />
                             </div>
                             <!--end::Col-->
                             <!--begin::Col-->
-                            <div class="col-md-4 fv-row">
-                                <label class="required fw-semibold fs-6 mb-2">Prefix</label>
+                            <div class="col-md-5 fv-row">
+                                <label class="required fw-semibold fs-6 mb-2">Prefix 
+                                    <span>
+                                    <i class="ki-outline ki-information fs-4" data-bs-toggle="tooltip"
+                                        data-bs-placement="top" title="This is used to generate student unique id e.g. G-260901"></i>
+                                </span>
+                                </label>
                                 <input type="text" name="branch_prefix" id="branch_prefix"
-                                    class="form-control form-control-solid text-uppercase" placeholder="e.g. D" />
+                                    class="form-control form-control-solid text-uppercase" placeholder="one letter prefix" />
                             </div>
                             <!--end::Col-->
                         </div>
                         <!--end::Input group-->
                         <!--begin::Input group-->
                         <div class="fv-row mb-7">
-                            <label class="fw-semibold fs-6 mb-2">Address</label>
+                            <label class="fw-semibold fs-6 mb-2 required">Address</label>
                             <textarea name="address" id="branch_address" class="form-control form-control-solid" rows="3"
-                                placeholder="Enter branch address (optional)"></textarea>
+                                placeholder="Enter branch address" required></textarea>
                         </div>
                         <!--end::Input group-->
                         <!--begin::Input group-->
                         <div class="fv-row mb-7">
-                            <label class="fw-semibold fs-6 mb-2">Phone Number</label>
+                            <label class="fw-semibold fs-6 mb-2 required">Phone Number</label>
                             <input type="text" name="phone_number" id="branch_phone_number"
-                                class="form-control form-control-solid" placeholder="Enter phone number (optional)" />
+                                class="form-control form-control-solid" placeholder="Enter phone number" required />
                         </div>
                         <!--end::Input group-->
                         <!--begin::Actions-->

@@ -29,4 +29,12 @@ class CostType extends Model
     {
         return $query->where('is_active', true);
     }
+
+    /**
+     * Get the total amount of all cost entries for this cost type.
+     */
+    public function getTotalAmountAttribute(): int
+    {
+        return (int) $this->costEntries()->sum('amount');
+    }
 }

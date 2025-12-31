@@ -7,7 +7,7 @@
             <div
                 class="d-flex flex-center flex-shrink-0 bg-light-primary rounded w-100px h-100px w-lg-150px h-lg-150px me-7 mb-4">
                 <img src="{{ asset('assets/img/icon.png') }}" alt="Settings"
-                    class="w-50px h-50px w-lg-75px h-lg-75px object-fit-contain">
+                    class="w-50px h-50px w-lg-100px h-lg-100px object-fit-contain">
             </div>
             <!--end::Icon-->
 
@@ -19,8 +19,7 @@
                     <div class="d-flex flex-column">
                         <!--begin::Title-->
                         <div class="d-flex align-items-center mb-1">
-                            <span class="text-gray-900 fs-2 fw-bold me-3">System Settings</span>
-                            <span class="badge badge-light-success fw-bold fs-8 px-2 py-1">Active</span>
+                            <span class="text-gray-900 fs-2 fw-bold me-3">UCMS Settings</span>
                         </div>
                         <!--end::Title-->
 

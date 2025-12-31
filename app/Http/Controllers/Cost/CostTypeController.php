@@ -13,7 +13,9 @@ class CostTypeController extends Controller
      */
     public function index()
     {
-        $costTypes = CostType::withCount('costEntries')->get();
+        $costTypes = CostType::withCount('costEntries')
+            ->withSum('costEntries', 'amount') // relationship first, then column
+            ->get();
 
         return view('settings.cost-types.index', compact('costTypes'));
     }

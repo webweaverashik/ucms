@@ -62,8 +62,8 @@ class BranchController extends Controller
         $validator = Validator::make($request->all(), [
             'branch_name'   => 'required|string|max:255|unique:branches,branch_name,' . $branch->id,
             'branch_prefix' => 'required|string|size:1|alpha|unique:branches,branch_prefix,' . $branch->id,
-            'address'       => 'nullable|string|max:500',
-            'phone_number'  => 'nullable|string|max:20',
+            'address'       => 'required|string|max:500',
+            'phone_number'  => 'required|string|max:11',
         ], [
             'branch_prefix.size'  => 'The branch prefix must be exactly 1 letter.',
             'branch_prefix.alpha' => 'The branch prefix must be a letter.',

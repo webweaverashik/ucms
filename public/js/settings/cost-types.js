@@ -155,6 +155,8 @@ var KTCostTypes = function () {
                         validator.validate().then(function (status) {
                               if (status === 'Valid') {
                                     submitForm();
+                              } else {
+                                    toastr.error('Please fill all required fields correctly.');
                               }
                         });
                   }

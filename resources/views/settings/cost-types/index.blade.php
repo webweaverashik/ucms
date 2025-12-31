@@ -67,10 +67,13 @@
                     <div class="card-body pt-1">
                         <h5 class="text-gray-500 cost-type-description">
                             <i class="ki-outline ki-price-tag fs-4 me-2"></i>
-                            <span >{{ $type->description ?? 'No description available' }}</span>
+                            <span class="fs-4">{{ $type->description ?? 'No description available' }}</span>
                         </h5>
                         <div class="fw-semibold text-gray-600 mt-10 fs-5">
                             No. of Cost Entry: <span class="cost-entries-count fw-bold">{{ $type->cost_entries_count }}</span>
+                        </div>
+                        <div class="fw-semibold text-gray-600 mt-2 fs-5">
+                            Total Cost Amount: <span class="cost-entries-count fw-bold">{{ $type->cost_entries_sum_amount ?? 0 }} ৳</span>
                         </div>
                     </div>
                 </div>

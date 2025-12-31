@@ -37,8 +37,8 @@ var KTBranches = function () {
                                                 message: 'Branch name is required'
                                           },
                                           stringLength: {
-                                                max: 255,
-                                                message: 'Branch name must be less than 255 characters'
+                                                max: 20,
+                                                message: 'Branch name must be less than 20 characters'
                                           }
                                     }
                               },
@@ -60,6 +60,9 @@ var KTBranches = function () {
                               },
                               'address': {
                                     validators: {
+                                          notEmpty: {
+                                                message: 'Address is required'
+                                          },
                                           stringLength: {
                                                 max: 500,
                                                 message: 'Address must be less than 500 characters'
@@ -68,10 +71,18 @@ var KTBranches = function () {
                               },
                               'phone_number': {
                                     validators: {
+                                          notEmpty: {
+                                                message: 'Phone number is required'
+                                          },
+                                          regexp: {
+                                                regexp: /^01[3-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
+                                                message: "Please enter a valid Bangladeshi mobile number",
+                                          },
                                           stringLength: {
-                                                max: 20,
-                                                message: 'Phone number must be less than 20 characters'
-                                          }
+                                                min: 11,
+                                                max: 11,
+                                                message: "The mobile number must be exactly 11 digits",
+                                          },
                                     }
                               }
                         },
@@ -149,6 +160,8 @@ var KTBranches = function () {
                         validator.validate().then(function (status) {
                               if (status === 'Valid') {
                                     submitForm();
+                              } else {
+                                    toastr.error('Please fill all required fields correctly.');
                               }
                         });
                   }
