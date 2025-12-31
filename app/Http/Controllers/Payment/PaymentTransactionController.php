@@ -1,16 +1,16 @@
 <?php
 namespace App\Http\Controllers\Payment;
 
-use App\Models\Branch;
-use Illuminate\Http\Request;
-use App\Models\Student\Student;
-use App\Models\Sheet\SheetPayment;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
+use App\Models\Branch;
 use App\Models\Payment\PaymentInvoice;
 use App\Models\Payment\PaymentTransaction;
+use App\Models\Sheet\SheetPayment;
+use App\Models\Student\Student;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class PaymentTransactionController extends Controller
 {
@@ -68,7 +68,6 @@ class PaymentTransactionController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -79,7 +78,9 @@ class PaymentTransactionController extends Controller
             'transaction_remarks' => 'nullable|string|max:1000',
         ]);
 
-        DB::transaction(function () use ($validated) {
+        $transactionData = null;
+
+        DB::transaction(function () use ($validated, &$transactionData) {
             $invoice = PaymentInvoice::with(['invoiceType', 'student.class.sheet'])
                 ->where('id', $validated['transaction_invoice'])
                 ->where('student_id', $validated['transaction_student'])
@@ -137,10 +138,10 @@ class PaymentTransactionController extends Controller
             }
 
             /* =====================================================
-             * ✅ SHEET PAYMENT AUTO INSERT (CORRECTED)
-             * Sheet resolved via: student → class → sheet
-             * =====================================================
-             */
+         * ✅ SHEET PAYMENT AUTO INSERT (CORRECTED)
+         * Sheet resolved via: student → class → sheet
+         * =====================================================
+         */
             if ($invoice->invoiceType?->type_name === 'Sheet Fee') {
                 $sheet = $invoice->student->class?->sheet;
 
@@ -166,9 +167,29 @@ class PaymentTransactionController extends Controller
                     'payment_time'     => $transaction->created_at->format('d M Y, h:i A'),
                 ]);
             }
+
+            // Store transaction data for response
+            $transactionData = [
+                'id'          => $transaction->id,
+                'student_id'  => $transaction->student_id,
+                'invoice_id'  => $transaction->payment_invoice_id,
+                'voucher_no'  => $transaction->voucher_no,
+                'amount_paid' => $transaction->amount_paid,
+                'year'        => $invoice->created_at->format('Y'),
+                'is_approved' => $transaction->is_approved,
+            ];
         });
 
         clearUCMSCaches();
+
+        // Return JSON for AJAX requests
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success'     => true,
+                'message'     => 'Transaction recorded successfully.',
+                'transaction' => $transactionData,
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Transaction recorded successfully.');
     }

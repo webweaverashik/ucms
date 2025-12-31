@@ -30,6 +30,7 @@ var KTInvoiceWithTransactionsList = function () {
             document.querySelectorAll('.delete-invoice').forEach(item => {
                   item.addEventListener('click', function (e) {
                         e.preventDefault();
+
                         let invoiceId = this.getAttribute('data-invoice-id');
                         let url = routeDeleteInvoice.replace(':id', invoiceId); // Replace ':id' with actual invoice ID
 
@@ -91,6 +92,7 @@ var KTInvoiceWithTransactionsList = function () {
                   e.preventDefault();
                   let txnId = deleteBtn.getAttribute('data-txn-id');
                   console.log('TXN ID:', txnId);
+
                   let url = routeDeleteTxn.replace(':id', txnId);
 
                   Swal.fire({
@@ -140,6 +142,7 @@ var KTInvoiceWithTransactionsList = function () {
             document.querySelectorAll('.approve-txn').forEach(item => {
                   item.addEventListener('click', function (e) {
                         e.preventDefault();
+
                         let txnId = this.getAttribute('data-txn-id');
                         console.log("TXN ID: ", txnId);
 
@@ -288,7 +291,6 @@ var KTInvoiceWithTransactionsList = function () {
             });
       };
 
-
       return {
             // Public functions
             init: function () {
@@ -332,6 +334,7 @@ var KTEditInvoiceModal = function () {
             if (month >= 1 && month <= 12) {
                   return monthNames[month - 1] + ' ' + year;
             }
+
             return monthYear;
       };
 
@@ -343,6 +346,7 @@ var KTEditInvoiceModal = function () {
             if (amountInput) {
                   amountInput.classList.remove('is-invalid');
             }
+
             if (errorDiv) {
                   errorDiv.style.display = 'none';
                   errorDiv.textContent = '';
@@ -357,6 +361,7 @@ var KTEditInvoiceModal = function () {
             if (amountInput) {
                   amountInput.classList.add('is-invalid');
             }
+
             if (errorDiv) {
                   errorDiv.style.display = 'block';
                   errorDiv.textContent = message;
@@ -414,6 +419,7 @@ var KTEditInvoiceModal = function () {
             if (form) {
                   form.reset();
             }
+
             // Reset hidden field
             var hiddenInput = document.getElementById('edit_invoice_id');
             if (hiddenInput) hiddenInput.value = '';
@@ -640,6 +646,7 @@ var KTEditInvoiceModal = function () {
                               submitButton.disabled = false;
 
                               console.error('Error:', error);
+
                               if (typeof toastr !== 'undefined') {
                                     toastr.error(error.message || 'Failed to update invoice');
                               } else {
@@ -732,6 +739,8 @@ var KTTransactionForm = function () {
       var partialPaymentOption;
       var discountedPaymentOption;
       var form;
+      var modal;
+      var element;
 
       // Private functions
       var initInvoiceData = function () {
@@ -790,7 +799,6 @@ var KTTransactionForm = function () {
 
       var handlePaymentTypeChange = function () {
             var paymentTypeInputs = document.querySelectorAll('input[name="transaction_type"]');
-
             paymentTypeInputs.forEach(function (input) {
                   input.addEventListener('change', function () {
                         var paymentType = this.value;
@@ -862,10 +870,89 @@ var KTTransactionForm = function () {
             });
       };
 
+      // Reset form
+      var resetForm = function () {
+            if (form) form.reset();
+
+            if (amountInput) {
+                  amountInput.classList.remove('is-invalid');
+                  amountInput.value = invoice.amount_due;
+            }
+
+            var existingError = document.getElementById('transaction_amount_error');
+            if (existingError) {
+                  existingError.remove();
+            }
+
+            // Reset payment type selection
+            if (invoice.status === 'partially_paid' || invoice.amount_due < invoice.total_amount) {
+                  if (partialPaymentOption) {
+                        partialPaymentOption.checked = true;
+                  }
+                  if (amountInput) {
+                        amountInput.value = '';
+                  }
+            } else {
+                  if (fullPaymentOption) {
+                        fullPaymentOption.checked = true;
+                  }
+                  if (amountInput) {
+                        amountInput.value = invoice.amount_due;
+                  }
+            }
+      };
+
+      // Download statement and then reload page
+      var downloadStatementAndReload = function (studentId, year) {
+            var formData = new FormData();
+            formData.append('student_id', studentId);
+            formData.append('statement_year', year);
+
+            fetch(routeDownloadStatement, {
+                  method: 'POST',
+                  headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                  },
+                  body: formData
+            })
+                  .then(function (response) {
+                        if (!response.ok) {
+                              throw new Error('Failed to load statement');
+                        }
+                        return response.text();
+                  })
+                  .then(function (html) {
+                        // Open statement in new window
+                        var printWindow = window.open('', '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes');
+                        if (printWindow) {
+                              printWindow.document.open();
+                              printWindow.document.write(html);
+                              printWindow.document.close();
+                              printWindow.focus();
+                        } else {
+                              Swal.fire({
+                                    title: 'Popup Blocked!',
+                                    text: 'Please allow popups for this website to view the statement.',
+                                    icon: 'warning',
+                              });
+                        }
+
+                        // Reload the page after opening statement
+                        location.reload();
+                  })
+                  .catch(function (error) {
+                        console.error('Statement Download Error:', error);
+                        toastr.error('Failed to download statement. Page will reload.');
+                        location.reload();
+                  });
+      };
+
       var handleFormSubmission = function () {
             if (!form) return;
 
             form.addEventListener('submit', function (e) {
+                  e.preventDefault();
+
                   var amount = parseFloat(amountInput.value);
                   var maxAmount = parseFloat(amountInput.getAttribute('data-max'));
                   var checkedPaymentType = document.querySelector('input[name="transaction_type"]:checked');
@@ -892,12 +979,109 @@ var KTTransactionForm = function () {
                   }
 
                   if (!isValid || amountInput.classList.contains('is-invalid')) {
-                        e.preventDefault();
                         toastr.warning('Please enter a valid amount.');
                         return false;
                   }
 
-                  return true;
+                  // Get submit button and show loading state
+                  var submitBtn = form.querySelector('button[type="submit"]');
+                  var originalBtnText = submitBtn.innerHTML;
+                  submitBtn.innerHTML = '<span class="indicator-label" style="display: none;">Submit</span><span class="indicator-progress" style="display: inline-block;">Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>';
+                  submitBtn.disabled = true;
+
+                  // Prepare form data
+                  var formData = new FormData(form);
+
+                  // Submit via AJAX
+                  fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                              'X-CSRF-TOKEN': csrfToken,
+                              'Accept': 'application/json',
+                              'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                  })
+                        .then(function (response) {
+                              if (!response.ok) {
+                                    return response.json().then(function (err) {
+                                          throw err;
+                                    });
+                              }
+                              return response.json();
+                        })
+                        .then(function (data) {
+                              if (data.success) {
+                                    // Show success message
+                                    toastr.success(data.message || 'Transaction recorded successfully.');
+
+                                    // Store transaction data for download
+                                    var transactionData = data.transaction;
+
+                                    // Reset form and close modal
+                                    resetForm();
+                                    if (modal) {
+                                          modal.hide();
+                                    }
+
+                                    // Check if transaction is approved (non-discounted)
+                                    if (transactionData && transactionData.is_approved) {
+                                          // Show confirmation to download statement
+                                          Swal.fire({
+                                                title: 'Transaction Successful!',
+                                                text: 'Do you want to download the payment statement?',
+                                                icon: 'success',
+                                                showCancelButton: true,
+                                                confirmButtonColor: '#3085d6',
+                                                cancelButtonColor: '#6c757d',
+                                                confirmButtonText: 'Yes, download',
+                                                cancelButtonText: 'No, just reload'
+                                          }).then(function (result) {
+                                                if (result.isConfirmed) {
+                                                      // Download statement then reload
+                                                      downloadStatementAndReload(transactionData.student_id, transactionData.year);
+                                                } else {
+                                                      // Just reload the page
+                                                      location.reload();
+                                                }
+                                          });
+                                    } else {
+                                          // For discounted transactions (pending approval), just reload
+                                          Swal.fire({
+                                                title: 'Transaction Recorded!',
+                                                text: 'This transaction requires approval before the statement can be downloaded.',
+                                                icon: 'info',
+                                                confirmButtonText: 'OK'
+                                          }).then(function () {
+                                                location.reload();
+                                          });
+                                    }
+                              } else {
+                                    toastr.error(data.message || 'Failed to record transaction.');
+                                    // Reset button state
+                                    submitBtn.innerHTML = originalBtnText;
+                                    submitBtn.disabled = false;
+                              }
+                        })
+                        .catch(function (error) {
+                              console.error('Transaction Error:', error);
+
+                              var errorMessage = 'An error occurred. Please try again.';
+                              if (error.message) {
+                                    errorMessage = error.message;
+                              } else if (error.errors) {
+                                    // Laravel validation errors
+                                    errorMessage = Object.values(error.errors).flat().join('\n');
+                              }
+
+                              toastr.error(errorMessage);
+
+                              // Reset button state
+                              submitBtn.innerHTML = originalBtnText;
+                              submitBtn.disabled = false;
+                        });
+
+                  return false;
             });
       };
 
@@ -905,6 +1089,7 @@ var KTTransactionForm = function () {
             // Public functions
             init: function () {
                   // Get DOM elements
+                  element = document.getElementById('kt_modal_add_transaction');
                   amountInput = document.getElementById('transaction_amount_input');
                   fullPaymentOption = document.querySelector('input[name="transaction_type"][value="full"]');
                   partialPaymentOption = document.querySelector('input[name="transaction_type"][value="partial"]');
@@ -912,9 +1097,12 @@ var KTTransactionForm = function () {
                   form = document.getElementById('kt_modal_add_transaction_form');
 
                   // Early return if required elements don't exist
-                  if (!amountInput) {
+                  if (!amountInput || !element) {
                         return;
                   }
+
+                  // Initialize modal
+                  modal = bootstrap.Modal.getOrCreateInstance(element);
 
                   // Initialize
                   initInvoiceData();

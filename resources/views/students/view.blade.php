@@ -1008,7 +1008,7 @@
                                     <select class="form-select form-select-sm w-150px" name="statement_year"
                                         data-control="select2" data-hide-search="true" required>
                                         <option value="">Select a year</option>
-                                        @for ($year = now()->year + 1; $year >= 2025; $year--)
+                                        @for ($year = now()->year; $year >= 2025; $year--)
                                             <option value="{{ $year }}">{{ $year }}</option>
                                         @endfor
                                     </select>

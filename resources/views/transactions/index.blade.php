@@ -308,6 +308,7 @@
     <!--end::Card-->
 
 
+
     <!--begin::Modal - Add Transaction-->
     <div class="modal fade" id="kt_modal_add_transaction" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
         data-bs-keyboard="false">

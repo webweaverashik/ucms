@@ -16,7 +16,7 @@ var KTAllTransactionsList = function () {
                   "lengthChange": true,
                   "autoWidth": false,
                   'columnDefs': [
-                        { orderable: false, targets: 9 },
+                        { orderable: false, targets: 10 },
                   ]
             });
 
@@ -24,6 +24,19 @@ var KTAllTransactionsList = function () {
             datatable.on('draw', function () {
 
             });
+      }
+
+      // Reload datatable via AJAX
+      var reloadDatatable = function () {
+            if (datatable) {
+                  // Reload the page to get fresh data since we're using server-side blade rendering
+                  location.reload();
+            }
+      }
+
+      // Get datatable instance
+      var getDatatable = function () {
+            return datatable;
       }
 
       // Hook export buttons
@@ -362,7 +375,9 @@ var KTAllTransactionsList = function () {
                   handleDeletion();
                   handleApproval();
                   handleStatementDownload();
-            }
+            },
+            reload: reloadDatatable,
+            getDatatable: getDatatable
       }
 }();
 
@@ -564,9 +579,11 @@ var KTAddTransaction = function () {
             });
       }
 
-      // Form submission validation
+      // Form submission via AJAX
       var handleFormSubmit = function () {
             $(form).on('submit', function (e) {
+                  e.preventDefault();
+
                   const amount = parseFloat($(amountInput).val());
                   const maxAmount = parseFloat($(amountInput).data('max'));
                   const paymentType = $('input[name="transaction_type"]:checked').val();
@@ -582,27 +599,164 @@ var KTAddTransaction = function () {
                         !isPartiallyPaidInvoice &&
                         amount >= maxAmount
                   ) {
-                        // For fresh invoices, partial/discounted must be less than max
                         isValid = false;
                   } else if (
                         (paymentType === 'partial' || paymentType === 'discounted') &&
                         isPartiallyPaidInvoice &&
                         amount > maxAmount
                   ) {
-                        // For partially paid invoices, allow equal to or less than remaining amount
                         isValid = false;
                   } else if (paymentType === 'full' && amount != maxAmount) {
                         isValid = false;
                   }
 
                   if (!isValid || $(amountInput).hasClass('is-invalid')) {
-                        e.preventDefault();
                         toastr.warning('Please enter a valid amount.');
                         return false;
                   }
 
-                  return true;
+                  // Get submit button and show loading state
+                  const submitBtn = form.querySelector('[data-kt-add-transaction-modal-action="submit"]');
+                  const originalBtnText = submitBtn.innerHTML;
+                  submitBtn.setAttribute('data-kt-indicator', 'on');
+                  submitBtn.disabled = true;
+
+                  // Prepare form data
+                  const formData = new FormData(form);
+
+                  // Submit via AJAX
+                  fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                              'X-CSRF-TOKEN': csrfToken,
+                              'Accept': 'application/json',
+                              'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                  })
+                        .then(response => {
+                              if (!response.ok) {
+                                    return response.json().then(err => { throw err; });
+                              }
+                              return response.json();
+                        })
+                        .then(data => {
+                              if (data.success) {
+                                    // Show success message
+                                    toastr.success(data.message || 'Transaction recorded successfully.');
+
+                                    // Store transaction data for download
+                                    const transactionData = data.transaction;
+
+                                    // Reset form and close modal
+                                    resetForm();
+                                    modal.hide();
+
+                                    // Check if transaction is approved (non-discounted)
+                                    if (transactionData && transactionData.is_approved) {
+                                          // Show confirmation to download statement
+                                          Swal.fire({
+                                                title: 'Transaction Successful!',
+                                                text: 'Do you want to download the payment statement?',
+                                                icon: 'success',
+                                                showCancelButton: true,
+                                                confirmButtonColor: '#3085d6',
+                                                cancelButtonColor: '#6c757d',
+                                                confirmButtonText: 'Yes, download',
+                                                cancelButtonText: 'No, just reload'
+                                          }).then((result) => {
+                                                if (result.isConfirmed) {
+                                                      // Download statement then reload
+                                                      downloadStatementAndReload(transactionData.student_id, transactionData.year);
+                                                } else {
+                                                      // Just reload the page
+                                                      location.reload();
+                                                }
+                                          });
+                                    } else {
+                                          // For discounted transactions (pending approval), just reload
+                                          Swal.fire({
+                                                title: 'Transaction Recorded!',
+                                                text: 'This transaction requires approval before the statement can be downloaded.',
+                                                icon: 'info',
+                                                confirmButtonText: 'OK'
+                                          }).then(() => {
+                                                location.reload();
+                                          });
+                                    }
+                              } else {
+                                    toastr.error(data.message || 'Failed to record transaction.');
+                                    // Reset button state
+                                    submitBtn.removeAttribute('data-kt-indicator');
+                                    submitBtn.disabled = false;
+                              }
+                        })
+                        .catch(error => {
+                              console.error('Transaction Error:', error);
+
+                              let errorMessage = 'An error occurred. Please try again.';
+                              if (error.message) {
+                                    errorMessage = error.message;
+                              } else if (error.errors) {
+                                    // Laravel validation errors
+                                    errorMessage = Object.values(error.errors).flat().join('\n');
+                              }
+
+                              toastr.error(errorMessage);
+
+                              // Reset button state
+                              submitBtn.removeAttribute('data-kt-indicator');
+                              submitBtn.disabled = false;
+                        });
+
+                  return false;
             });
+      }
+
+      // Download statement and then reload page
+      var downloadStatementAndReload = function (studentId, year) {
+            const formData = new FormData();
+            formData.append('student_id', studentId);
+            formData.append('statement_year', year);
+
+            fetch(routeDownloadStatement, {
+                  method: 'POST',
+                  headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                  },
+                  body: formData
+            })
+                  .then(response => {
+                        if (!response.ok) {
+                              throw new Error('Failed to load statement');
+                        }
+                        return response.text();
+                  })
+                  .then(html => {
+                        // Open statement in new window
+                        const printWindow = window.open('', '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes');
+
+                        if (printWindow) {
+                              printWindow.document.open();
+                              printWindow.document.write(html);
+                              printWindow.document.close();
+                              printWindow.focus();
+                        } else {
+                              Swal.fire({
+                                    title: 'Popup Blocked!',
+                                    text: 'Please allow popups for this website to view the statement.',
+                                    icon: 'warning',
+                              });
+                        }
+
+                        // Reload the page after opening statement
+                        location.reload();
+                  })
+                  .catch(error => {
+                        console.error('Statement Download Error:', error);
+                        toastr.error('Failed to download statement. Page will reload.');
+                        location.reload();
+                  });
       }
 
       // Reset form and close modal
