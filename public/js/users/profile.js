@@ -82,7 +82,7 @@ var KEditUserForm = function () {
                   e.preventDefault();
 
                   if (!hasChanges()) {
-                        toastr.info('কোনো পরিবর্তন করা হয়নি।');
+                        toastr.info('No changes detected to update.');
                         return;
                   }
 
@@ -125,7 +125,7 @@ var KEditUserForm = function () {
                         })
                         .then(data => {
                               if (data.success) {
-                                    toastr.success(data.message || 'প্রোফাইল সফলভাবে আপডেট করা হয়েছে।');
+                                    toastr.success(data.message || 'Profile updated successfully.');
                                     storeOriginalValues(); // Update originals after save
                               } else {
                                     if (data.errors) {
@@ -133,7 +133,7 @@ var KEditUserForm = function () {
                                                 showError(field, data.errors[field][0]);
                                           });
                                     } else {
-                                          toastr.error(data.message || 'আপডেট করতে সমস্যা হয়েছে।');
+                                          toastr.error(data.message || 'Failed to update profile.');
                                     }
                               }
                         })
@@ -144,7 +144,7 @@ var KEditUserForm = function () {
                                           showError(field, error.errors[field][0]);
                                     });
                               } else {
-                                    toastr.error(error.message || 'সার্ভারের সাথে যোগাযোগ করা যায়নি।');
+                                    toastr.error(error.message || 'Failed to connect with the server.');
                               }
                         })
                         .finally(() => {

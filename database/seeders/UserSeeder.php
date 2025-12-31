@@ -40,7 +40,7 @@ class UserSeeder extends Seeder
 
         // Goran Branch Manager
         $manager1 = User::create([
-            'name'          => 'Manager Goran',
+            'name'          => 'Milon',
             'email'         => 'manager.goran@uniquecoachingbd.com',
             'mobile_number' => '01973033299',
             'password'      => Hash::make('manager123'),
@@ -70,7 +70,7 @@ class UserSeeder extends Seeder
 
         // Khilgaon Branch Accountant
         $accountant2 = User::create([
-            'name'          => 'Arafat Sunny',
+            'name'          => 'Joshim',
             'email'         => 'accountant.khilgaon@uniquecoachingbd.com',
             'mobile_number' => '01900000000',
             'password'      => Hash::make('accountant123'),
