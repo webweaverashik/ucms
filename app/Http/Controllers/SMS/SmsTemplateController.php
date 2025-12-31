@@ -10,7 +10,7 @@ class SmsTemplateController extends Controller
     public function index()
     {
         if (! auth()->user()->can('sms.templates.manage')) {
-            return redirect()->back()->with('warning', 'No permission to manage SMS templates.');
+            return redirect()->back()->with('error', 'No permission to manage SMS templates.');
         }
 
         $templates = SmsTemplate::all();
