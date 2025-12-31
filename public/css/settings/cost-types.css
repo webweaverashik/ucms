@@ -1,0 +1,57 @@
+/**
+ * Cost Types - Settings Module Styles
+ */
+
+/* Card inactive state */
+.card.inactive {
+      opacity: 0.5;
+}
+
+/* Card hover effect */
+.card.border-hover-primary:hover {
+      border-color: var(--bs-primary) !important;
+}
+
+/* Toggle switch alignment */
+.toggle-active-wrapper {
+      display: flex;
+      align-items: center;
+}
+
+/* Card title flex container */
+.card-title-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      width: 100%;
+}
+
+/* Action buttons container */
+.card-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+}
+
+/* Description text styling */
+.cost-type-description {
+      color: var(--bs-gray-500);
+      font-size: 0.95rem;
+      line-height: 1.5;
+}
+
+/* Cost entries count badge */
+.cost-entries-badge {
+      font-size: 0.875rem;
+      font-weight: 600;
+}
+
+/* Modal form spacing */
+#kt_modal_cost_type .form-control-solid {
+      background-color: var(--bs-gray-100);
+}
+
+/* FormValidation error styling */
+.fv-plugins-message-container.invalid-feedback {
+      display: block;
+}

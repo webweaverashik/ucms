@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\AutoInvoiceController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\Cost\CostController;
+use App\Http\Controllers\Cost\CostTypeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Misc\MiscController;
 use App\Http\Controllers\Payment\PaymentInvoiceController;
@@ -144,6 +145,14 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
         Route::delete('/entry/{entry}', [CostController::class, 'destroyEntry'])->name('entry.destroy');
     });
 
+    // Cost Type
+    Route::prefix('settings')->group(function () {
+        Route::get('cost-types', [CostTypeController::class, 'index'])->name('cost-types.index');
+        Route::post('cost-types', [CostTypeController::class, 'store'])->name('cost-types.store');
+        Route::put('cost-types/{costType}', [CostTypeController::class, 'update'])->name('cost-types.update');
+        Route::post('cost-types/toggle-active', [CostTypeController::class, 'toggleActive'])->name('cost-types.toggleActive');
+    });
+
     // Finance Reports
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('finance', [ReportController::class, 'financeReport'])->name('finance.index');
@@ -173,6 +182,9 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     // ----- SMS Routes End -----
 
     // ----- Settings Start -----
+    Route::get('settings/branches', [BranchController::class, 'index'])->name('branches.index');
+    Route::post('settings/branches', [BranchController::class, 'store'])->name('branches.store');
+    Route::put('settings/branches/{branch}', [BranchController::class, 'update'])->name('branches.update');
 
     // ----- Settings End -----
 
@@ -199,7 +211,6 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     // Resource Routes
     Route::resources([
         'settings/users'    => UserController::class,
-        'settings/branch'   => BranchController::class,
         'students'          => StudentController::class,
         'guardians'         => GuardianController::class,
         'siblings'          => SiblingController::class,

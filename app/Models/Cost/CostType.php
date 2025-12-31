@@ -8,7 +8,7 @@ class CostType extends Model
 {
     protected $table = 'cost_types';
 
-    protected $fillable = ['name', 'is_active'];
+    protected $fillable = ['name', 'description', 'is_active'];
 
     protected $casts = [
         'is_active' => 'boolean',

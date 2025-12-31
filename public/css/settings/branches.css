@@ -1,0 +1,54 @@
+/**
+ * Branches - Settings Module Styles
+ */
+
+/* Card hover effect */
+.card.border-hover-primary:hover {
+      border-color: var(--bs-primary) !important;
+}
+
+/* Card title flex container */
+.card-title-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      width: 100%;
+}
+
+/* Branch info styling */
+.branch-info {
+      color: var(--bs-gray-600);
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+}
+
+.branch-info i {
+      width: 24px;
+}
+
+/* Students count styling */
+.students-count {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--bs-gray-600);
+}
+
+/* Modal form spacing */
+#kt_modal_branch .form-control-solid {
+      background-color: var(--bs-gray-100);
+}
+
+/* Branch prefix input */
+#branch_prefix {
+      text-transform: uppercase;
+}
+
+/* Card body padding adjustment */
+.card-body.pt-1 h4 {
+      margin-bottom: 0.5rem;
+}
+
+/* FormValidation error styling */
+.fv-plugins-message-container.invalid-feedback {
+      display: block;
+}
