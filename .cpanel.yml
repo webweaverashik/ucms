@@ -1,8 +1,0 @@
----
-deployment:
-  tasks:
-    - export DEPLOYPATH=/home/uniqueco/ucms.uniquecoachingbd.com/
-    - /bin/rsync -av --delete \
-      --exclude='.git/' \
-      --exclude='.cpanel.yml' \
-      ./ $DEPLOYPATH
