@@ -13,6 +13,10 @@ class CostTypeController extends Controller
      */
     public function index()
     {
+        if (! auth()->user()->isAdmin()) {
+            return redirect()->back()->with('error', 'Admin access only.');
+        }
+
         $costTypes = CostType::withCount('costEntries')
             ->withSum('costEntries', 'amount') // relationship first, then column
             ->get();

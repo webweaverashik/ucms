@@ -12,6 +12,10 @@ class BranchController extends Controller
      */
     public function index()
     {
+        if (auth()->user()->cannot('branches.manage')) {
+            return redirect()->back()->with('error', 'No permission to manage branches.');
+        }
+
         $branches = Branch::with('activeStudents')->get();
 
         return view('settings.branch.index', compact('branches'));
