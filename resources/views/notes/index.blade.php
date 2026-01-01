@@ -2,7 +2,6 @@
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
 @endpush
 
-
 @extends('layouts.app')
 
 @section('title', 'Notes Distribution')
@@ -20,11 +19,10 @@
         <span class="h-20px border-gray-300 border-start mx-4"></span>
         <!--end::Separator-->
         <!--begin::Breadcrumb-->
-        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 ">
+        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                <a href="#" class="text-muted text-hover-primary">
-                    Notes & Sheets </a>
+                <a href="#" class="text-muted text-hover-primary">Notes & Sheets</a>
             </li>
             <!--end::Item-->
             <!--begin::Item-->
@@ -33,14 +31,12 @@
             </li>
             <!--end::Item-->
             <!--begin::Item-->
-            <li class="breadcrumb-item text-muted">
-                Notes </li>
+            <li class="breadcrumb-item text-muted">Distribution</li>
             <!--end::Item-->
         </ul>
         <!--end::Breadcrumb-->
     </div>
 @endsection
-
 
 @section('content')
     <!--begin::Distributed Notes List-->
@@ -53,10 +49,9 @@
                 <div class="card-title">
                     <!--begin::Search-->
                     <div class="d-flex align-items-center position-relative my-1">
-                        <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
-                            data-kt-notes-distribution-table-filter="search"
-                            class="form-control form-control-solid w-350px ps-12"
-                            placeholder="Search in Notes Distribution">
+                        <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
+                        <input type="text" data-kt-notes-distribution-table-filter="search"
+                            class="form-control form-control-solid w-250px ps-12" placeholder="Search distributions...">
                     </div>
                     <!--end::Search-->
                 </div>
@@ -65,11 +60,24 @@
                 <!--begin::Card toolbar-->
                 <div class="card-toolbar">
                     <!--begin::Toolbar-->
-                    <div class="d-flex justify-content-end" data-kt-subscription-table-toolbar="base">
+                    <div class="d-flex justify-content-end gap-3" data-kt-subscription-table-toolbar="base">
+
+                        <!--begin::Distribution Buttons-->
+                        <a href="{{ route('notes.single.create') }}" class="btn btn-light-primary">
+                            <i class="ki-outline ki-user fs-2"></i>
+                            Single Distribution
+                        </a>
+                        <a href="{{ route('notes.bulk.create') }}" class="btn btn-light-success">
+                            <i class="ki-outline ki-people fs-2"></i>
+                            Bulk Distribution
+                        </a>
+                        <!--end::Distribution Buttons-->
+
                         <!--begin::Filter-->
-                        <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
+                        <button type="button" class="btn btn-light-primary" data-kt-menu-trigger="click"
                             data-kt-menu-placement="bottom-end">
-                            <i class="ki-outline ki-filter fs-2"></i>Filter</button>
+                            <i class="ki-outline ki-filter fs-2"></i>Filter
+                        </button>
                         <!--begin::Menu 1-->
                         <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
                             <!--begin::Header-->
@@ -82,31 +90,43 @@
                             <!--end::Separator-->
                             <!--begin::Content-->
                             <div class="px-7 py-5" data-kt-notes-distribution-table-filter="form">
-                                <!--begin::Input group-->
-                                <div class="mb-10">
+                                <!--begin::Input group - Sheet Group-->
+                                <div class="mb-5">
                                     <label class="form-label fs-6 fw-semibold">Sheet Group:</label>
-                                    <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                        data-placeholder="Select option" data-allow-clear="true"
-                                        data-kt-notes-distribution-table-filter="product">
+                                    <select id="filter_sheet_group" class="form-select form-select-solid fw-bold"
+                                        data-kt-select2="true" data-placeholder="Select Sheet Group" data-allow-clear="true"
+                                        data-kt-notes-distribution-table-filter="sheet_group">
                                         <option></option>
-                                        @foreach ($class_names as $class)
-                                            <option value="{{ $class->name }} ({{ $class->class_numeral }})">
-                                                {{ $class->name }} ({{ $class->class_numeral }})</option>
+                                        @foreach ($sheetGroups as $sheet)
+                                            <option value="{{ $sheet->id }}"
+                                                data-filter-value="{{ $sheet->class->name }} ({{ $sheet->class->class_numeral }})">
+                                                {{ $sheet->class->name }} ({{ $sheet->class->class_numeral }})
+                                            </option>
                                         @endforeach
                                     </select>
                                 </div>
                                 <!--end::Input group-->
 
-                                <!--begin::Input group-->
+                                <!--begin::Input group - Topic-->
+                                <div class="mb-5">
+                                    <label class="form-label fs-6 fw-semibold">Topic:</label>
+                                    <select id="filter_topic" class="form-select form-select-solid fw-bold"
+                                        data-kt-select2="true" data-placeholder="Select Topic" data-allow-clear="true"
+                                        data-kt-notes-distribution-table-filter="topic" disabled>
+                                        <option></option>
+                                    </select>
+                                </div>
+                                <!--end::Input group-->
+
+                                <!--begin::Input group - Subject-->
                                 <div class="mb-10">
                                     <label class="form-label fs-6 fw-semibold">Subject:</label>
-                                    <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                        data-placeholder="Select option" data-allow-clear="true"
-                                        data-kt-notes-distribution-table-filter="product">
+                                    <select id="filter_subject" class="form-select form-select-solid fw-bold"
+                                        data-kt-select2="true" data-placeholder="Select Subject" data-allow-clear="true"
+                                        data-kt-notes-distribution-table-filter="subject">
                                         <option></option>
                                         @foreach ($subjectNames as $subject)
-                                            <option value="{{ $subject }}">
-                                                {{ $subject }}</option>
+                                            <option value="{{ $subject }}">{{ $subject }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -129,11 +149,6 @@
                         <!--end::Menu 1-->
                         <!--end::Filter-->
 
-                        <!--begin::Add New Guardian-->
-                        <a href="{{ route('notes.distribution.create') }}" class="btn btn-primary">
-                            <i class="ki-outline ki-plus fs-2"></i>New Distribution
-                        </a>
-                        <!--end::Add New Guardian-->
                     </div>
                     <!--end::Toolbar-->
                 </div>
@@ -144,39 +159,56 @@
             <!--begin::Card body-->
             <div class="card-body pt-0">
                 <!--begin::Table-->
-                <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table"
-                    id="kt_notes_distribution_table">
+                <table class="table table-hover align-middle table-row-dashed fs-6 gy-5" id="kt_notes_distribution_table">
                     <thead>
-                        <tr class="fw-bold fs-7 text-uppercase gs-0">
-                            <th class="w-30px">SL</th>
-                            <th>Topic Name</th>
-                            <th>Sujbect</th>
-                            <th class="w-250px">Sheet Group</th>
-                            <th class="w-250px">Student</th>
-                            <th class="w-150px">Received Date</th>
+                        <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+                            <th class="w-50px">SL</th>
+                            <th class="min-w-150px">Topic Name</th>
+                            <th class="min-w-120px">Subject</th>
+                            <th class="min-w-150px">Sheet Group</th>
+                            <th class="min-w-200px">Student</th>
+                            <th class="min-w-100px">Distributed By</th>
+                            <th class="min-w-120px">Distributed At</th>
                         </tr>
                     </thead>
                     <tbody class="text-gray-600 fw-semibold">
                         @foreach ($notes_taken as $note)
                             <tr>
-                                <td class="pe-2">{{ $loop->index + 1 }}</td>
-                                <td class="text-gray-800 mb-1">{{ $note->sheetTopic->topic_name }}</td>
+                                <td>{{ $loop->iteration }}</td>
+                                <td class="text-gray-800">{{ $note->sheetTopic->topic_name }}</td>
                                 <td>{{ $note->sheetTopic->subject->name }}</td>
                                 <td>
-                                    <a href="{{ route('sheets.show', $note->class->sheet->id) }}" target="_blank">
+                                    <a href="{{ route('sheets.show', $note->class->sheet->id) }}"
+                                        class="text-gray-800 text-hover-primary" target="_blank">
                                         {{ $note->class->name }} ({{ $note->class->class_numeral }})
                                     </a>
                                 </td>
                                 <td>
-                                    <a href="{{ route('students.show', $note->student->id) }}" target="_blank">
-                                        {{ $note->student->name }}, {{ $note->student->student_unique_id }}
-                                    </a>
+                                    <div class="d-flex align-items-center">
+                                        <div class="symbol symbol-circle symbol-35px me-3">
+                                            <span class="symbol-label bg-light-primary text-primary fw-bold">
+                                                {{ substr($note->student->name, 0, 1) }}
+                                            </span>
+                                        </div>
+                                        <div class="d-flex flex-column">
+                                            <a href="{{ route('students.show', $note->student->id) }}"
+                                                class="text-gray-800 text-hover-primary fw-bold" target="_blank">
+                                                {{ $note->student->name }}
+                                            </a>
+                                            <span class="text-muted fs-7">{{ $note->student->student_unique_id }}</span>
+                                        </div>
+                                    </div>
                                 </td>
-                                <td>{{ $note->created_at->format('d-m-Y') }}
-                                    <span class="ms-1" data-bs-toggle="tooltip"
-                                        title="{{ $note->created_at->format('h:i:s A, d-M-Y') }}">
-                                        <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
-                                    </span>
+                                <td>
+                                    @if ($note->distributedBy)
+                                        <span class="badge badge-light-info">{{ $note->distributedBy->name }}</span>
+                                    @else
+                                        <span class="badge badge-light">System</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <span class="text-muted">{{ $note->created_at->format('d M Y') }}</span>
+                                    <span class="d-block text-muted fs-7">{{ $note->created_at->format('h:i A') }}</span>
                                 </td>
                             </tr>
                         @endforeach
@@ -191,7 +223,6 @@
     <!--end::Distributed Notes List-->
 @endsection
 
-
 @push('vendor-js')
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
 @endpush
@@ -200,7 +231,7 @@
     <script src="{{ asset('js/notes/index.js') }}"></script>
 
     <script>
-        document.getElementById("notes_sheets_menu").classList.add("here", "show");
-        document.getElementById("notes_distribution_link").classList.add("active");
+        document.getElementById("notes_menu").classList.add("here", "show");
+        document.getElementById("all_distributions_link").classList.add("active");
     </script>
 @endpush

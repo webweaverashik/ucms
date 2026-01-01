@@ -257,7 +257,7 @@
     <script src="{{ asset('js/sheets/payments.js') }}"></script>
 
     <script>
-        document.getElementById("notes_sheets_menu").classList.add("here", "show");
+        document.getElementById("sheets_menu").classList.add("here", "show");
         document.getElementById("sheet_payments_link").classList.add("active");
     </script>
 @endpush

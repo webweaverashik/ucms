@@ -226,4 +226,130 @@ class SheetController extends Controller
             ],
         ]);
     }
+
+    /* --- Added After 01.01.2026 12.45 AM --- */
+    /**
+     * Get all topics for a sheet group
+     * Used in bulk distribution dropdown
+     */
+    public function getTopicsList(Sheet $sheet)
+    {
+        // Get all subjects for this sheet's class
+        $subjects = Subject::where('class_id', $sheet->class_id)->get();
+
+        // Get all active topics for these subjects
+        $topics = SheetTopic::whereIn('subject_id', $subjects->pluck('id'))->where('status', 'active')->with('subject:id,name,academic_group')->orderBy('subject_id')->orderBy('topic_name')->get();
+
+        $formattedTopics = $topics->map(function ($topic) {
+            return [
+                'id'             => $topic->id,
+                'name'           => $topic->topic_name,
+                'subject'        => $topic->subject->name ?? 'Unknown',
+                'academic_group' => $topic->subject->academic_group ?? 'General',
+                'status'         => $topic->status,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'topics'  => $formattedTopics,
+            'sheet'   => [
+                'id'         => $sheet->id,
+                'class_name' => $sheet->class->name ?? 'Unknown',
+            ],
+        ]);
+    }
+
+    /**
+     * Get students who paid for sheet but haven't received specific topic
+     * Used in bulk distribution
+     */
+    public function getPendingStudents(Sheet $sheet, SheetTopic $topic)
+    {
+        $branchId = auth()->user()->branch_id;
+
+        // Get all students who paid for this sheet
+        $paidPayments = SheetPayment::where('sheet_id', $sheet->id)
+            ->whereHas('invoice', function ($query) {
+                $query->whereIn('status', ['paid', 'partially_paid'])->whereHas('invoiceType', function ($q) {
+                    $q->where('type_name', 'Sheet Fee');
+                });
+            })
+            ->with(['student:id,name,student_unique_id,class_id,academic_group,branch_id', 'student.class:id,name,class_numeral'])
+            ->when($branchId != 0, function ($query) use ($branchId) {
+                $query->whereHas('student', function ($q) use ($branchId) {
+                    $q->where('branch_id', $branchId);
+                });
+            })
+            ->get();
+
+        // Get students who already have this topic
+        $distributedStudentIds = SheetTopicTaken::where('sheet_topic_id', $topic->id)->pluck('student_id')->toArray();
+
+        // Get topic's academic group
+        $topicSubject       = Subject::find($topic->subject_id);
+        $topicAcademicGroup = $topicSubject->academic_group ?? 'General';
+
+        // Filter students
+        $pendingStudents         = [];
+        $alreadyDistributedCount = 0;
+        $totalPaidCount          = $paidPayments->count();
+
+        foreach ($paidPayments as $payment) {
+            $student = $payment->student;
+
+            if (! $student) {
+                continue;
+            }
+
+            // Check if already distributed
+            if (in_array($student->id, $distributedStudentIds)) {
+                $alreadyDistributedCount++;
+                continue;
+            }
+
+            // Check academic group compatibility
+            // General topics are available to all students
+            // Group-specific topics are only for students in that group
+            if ($topicAcademicGroup !== 'General') {
+                $classNumeral = $student->class->class_numeral ?? '';
+
+                // Only check academic group for classes 09, 10, 11, 12
+                if (in_array($classNumeral, ['09', '10', '11', '12'])) {
+                    if ($student->academic_group !== $topicAcademicGroup) {
+                        continue; // Skip students from different academic groups
+                    }
+                }
+            }
+
+            $pendingStudents[] = [
+                'id'                => $student->id,
+                'name'              => $student->name,
+                'student_unique_id' => $student->student_unique_id,
+                'class_name'        => $student->class->name ?? 'N/A',
+                'academic_group'    => $student->academic_group ?? 'General',
+            ];
+        }
+
+        return response()->json([
+            'success'  => true,
+            'students' => $pendingStudents,
+            'stats'    => [
+                'total_paid'          => $totalPaidCount,
+                'already_distributed' => $alreadyDistributedCount,
+                'pending'             => count($pendingStudents),
+            ],
+            'topic'    => [
+                'id'             => $topic->id,
+                'name'           => $topic->topic_name,
+                'subject'        => $topicSubject->name ?? 'Unknown',
+                'academic_group' => $topicAcademicGroup,
+            ],
+            'sheet'    => [
+                'id'         => $sheet->id,
+                'class_name' => $sheet->class->name ?? 'Unknown',
+            ],
+        ]);
+    }
+    /* --- Till Now --- */
 }

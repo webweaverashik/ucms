@@ -72,10 +72,8 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('students/transfer', [StudentTransferController::class, 'index'])->name('students.transfer');
 
     Route::get('students/{student}/info', [StudentTransferController::class, 'studentInfo'])->name('students.transfer.studentInfo');
-    Route::get('students/{student}/available-branches', [StudentTransferController::class, 'availableBranches'])
-        ->name('students.transfer.availableBranches');
-    Route::get('branches/{branch}/batches', [StudentTransferController::class, 'batchesByBranch'])
-        ->name('students.transfer.batchesByBranch');
+    Route::get('students/{student}/available-branches', [StudentTransferController::class, 'availableBranches'])->name('students.transfer.availableBranches');
+    Route::get('branches/{branch}/batches', [StudentTransferController::class, 'batchesByBranch'])->name('students.transfer.batchesByBranch');
     Route::post('students/transfer/store', [StudentTransferController::class, 'store'])->name('students.transfer.store');
     /* --- Student Transfer Ends --- */
 
@@ -118,9 +116,25 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
 
     // Notes
     Route::put('notes/{sheetTopic}/status', [SheetTopicController::class, 'updateStatus'])->name('notes.updateStatus');
-    Route::get('notes/distribution', [SheetTopicTakenController::class, 'index'])->name('notes.distribution');
-    Route::get('notes/distribution/create', [SheetTopicTakenController::class, 'create'])->name('notes.distribution.create');
+    Route::get('notes/distribution', [SheetTopicTakenController::class, 'index'])->name('notes.distribution.index');
+    Route::get('notes/distribution/create', [SheetTopicTakenController::class, 'create'])->name('notes.single.create');
     Route::post('sheet-topics/distribute', [SheetTopicTakenController::class, 'store'])->name('sheet-topics.distribute');
+
+    // -------------Bulk Distribution Starts-------------
+    // Bulk distribution page
+    Route::get('notes/bulk-distribution', [SheetTopicTakenController::class, 'bulkCreate'])->name('notes.bulk.create');
+
+    // Sheet Topics API Routes (for AJAX)
+    // Get all topics for a sheet group (used in filters and bulk distribution)
+    Route::get('sheets/{sheet}/topics-list', [SheetController::class, 'getTopicsList'])->name('sheets.topics.list');
+
+    // Get pending students for a specific topic (bulk distribution)
+    Route::get('sheets/{sheet}/topics/{topic}/pending-students', [SheetController::class, 'getPendingStudents'])->name('sheets.pending.students');
+
+    // Bulk Distribution Store
+    Route::post('sheet-topics/bulk-distribute', [SheetTopicTakenController::class, 'bulkStore'])->name('sheet-topics.bulk.distribute');
+
+    // -------------Bulk Distribution Ends-------------
 
     // Class Names
     Route::get('classnames/ajax-data/{class}', [ClassNameController::class, 'getClassName'])->name('classnames.ajax');
@@ -133,16 +147,18 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('reports/attendance/data', [ReportController::class, 'attendanceReportData'])->name('reports.attendance.data');
 
     // Costs CRUD
-    Route::prefix('costs')->name('costs.')->group(function () {
-        Route::get('/', [CostController::class, 'index'])->name('index');
-        Route::get('/types', [CostController::class, 'getCostTypes'])->name('types');
-        Route::post('/', [CostController::class, 'store'])->name('store');
-        Route::get('/by-date', [CostController::class, 'getByDate'])->name('by-date');
-        Route::get('/{cost}', [CostController::class, 'show'])->name('show');
-        Route::put('/{cost}', [CostController::class, 'update'])->name('update');
-        Route::delete('/{cost}', [CostController::class, 'destroy'])->name('destroy');
-        Route::delete('/entry/{entry}', [CostController::class, 'destroyEntry'])->name('entry.destroy');
-    });
+    Route::prefix('costs')
+        ->name('costs.')
+        ->group(function () {
+            Route::get('/', [CostController::class, 'index'])->name('index');
+            Route::get('/types', [CostController::class, 'getCostTypes'])->name('types');
+            Route::post('/', [CostController::class, 'store'])->name('store');
+            Route::get('/by-date', [CostController::class, 'getByDate'])->name('by-date');
+            Route::get('/{cost}', [CostController::class, 'show'])->name('show');
+            Route::put('/{cost}', [CostController::class, 'update'])->name('update');
+            Route::delete('/{cost}', [CostController::class, 'destroy'])->name('destroy');
+            Route::delete('/entry/{entry}', [CostController::class, 'destroyEntry'])->name('entry.destroy');
+        });
 
     // Cost Type
     Route::prefix('settings')->group(function () {
@@ -153,11 +169,13 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     });
 
     // Finance Reports
-    Route::prefix('reports')->name('reports.')->group(function () {
-        Route::get('finance', [ReportController::class, 'financeReport'])->name('finance.index');
-        Route::post('finance', [ReportController::class, 'financeReportGenerate'])->name('finance.generate');
-        Route::get('finance/costs', [ReportController::class, 'getReportCosts'])->name('finance.costs');
-    });
+    Route::prefix('reports')
+        ->name('reports.')
+        ->group(function () {
+            Route::get('finance', [ReportController::class, 'financeReport'])->name('finance.index');
+            Route::post('finance', [ReportController::class, 'financeReportGenerate'])->name('finance.generate');
+            Route::get('finance/costs', [ReportController::class, 'getReportCosts'])->name('finance.costs');
+        });
 
     // ----- SMS Routes Start -----
     Route::get('sms', [SmsController::class, 'sendSingleIndex']);

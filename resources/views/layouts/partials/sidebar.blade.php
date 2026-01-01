@@ -268,15 +268,14 @@
 
 
                     <!--begin:Notes & Sheets Menu item-->
-                    @canany(['sheets.view', 'sheets.distribute'])
-                        <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="notes_sheets_menu">
+                    @canany(['sheets.view', 'notes.manage'])
+                        <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="sheets_menu">
                             <!--begin:Menu link-->
                             <span class="menu-link">
                                 <span class="menu-icon">
                                     <i class="ki-outline ki-note-2 fs-2"></i>
-                                    {{-- <i class="fa-solid fa-book fs-2"></i> --}}
                                 </span>
-                                <span class="menu-title">Notes & Sheets</span>
+                                <span class="menu-title">Sheets</span>
                                 <span class="menu-arrow"></span>
                             </span>
                             <!--end:Menu link-->
@@ -311,22 +310,62 @@
                                     </div>
                                     <!--end:Menu item-->
                                 @endcan
-
-                                @can('notes.distribute')
-                                    <!--begin:Menu item-->
-                                    <div class="menu-item">
-                                        <!--begin:Menu link--><a class="menu-link" id="notes_distribution_link"
-                                            href="{{ route('notes.distribution') }}"><span class="menu-bullet"><span
-                                                    class="bullet bullet-dot"></span></span><span class="menu-title">Notes
-                                                Distribution</span></a>
-                                        <!--end:Menu link-->
-                                    </div>
-                                    <!--end:Menu item-->
-                                @endcan
                             </div>
                             <!--end:Menu sub-->
                         </div>
                     @endcanany
+
+                    @can('notes.distribute')
+                        <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="notes_menu">
+                            <!--begin:Menu link-->
+                            <span class="menu-link">
+                                <span class="menu-icon">
+                                    <i class="ki-outline ki-notepad-bookmark fs-2"></i>
+                                </span>
+                                <span class="menu-title">Notes</span>
+                                <span class="menu-arrow"></span>
+                            </span>
+                            <!--end:Menu link-->
+
+                            <!--begin:Menu sub-->
+                            <div class="menu-sub menu-sub-accordion">
+                                <!--begin:Menu item-->
+                                <div class="menu-item">
+                                    <!--begin:Menu link-->
+                                    <a class="menu-link" id="all_distributions_link"
+                                        href="{{ route('notes.distribution.index') }}"><span class="menu-bullet"><span
+                                                class="bullet bullet-dot"></span></span><span class="menu-title">All
+                                            Distributions</span>
+                                    </a>
+                                    <!--end:Menu link-->
+                                </div>
+                                <!--end:Menu item-->
+
+
+                                <!--begin:Menu item-->
+                                <div class="menu-item">
+                                    <!--begin:Menu link--><a class="menu-link" id="single_distribution_link"
+                                        href="{{ route('notes.single.create') }}"><span class="menu-bullet"><span
+                                                class="bullet bullet-dot"></span></span><span class="menu-title">Single
+                                            Distribution</span></a>
+                                    <!--end:Menu link-->
+                                </div>
+                                <!--end:Menu item-->
+
+
+                                <!--begin:Menu item-->
+                                <div class="menu-item">
+                                    <!--begin:Menu link--><a class="menu-link" id="bulk_distribution_link"
+                                        href="{{ route('notes.bulk.create') }}"><span class="menu-bullet"><span
+                                                class="bullet bullet-dot"></span></span><span class="menu-title">Bulk
+                                            Distribution</span></a>
+                                    <!--end:Menu link-->
+                                </div>
+                                <!--end:Menu item-->
+                            </div>
+                            <!--end:Menu sub-->
+                        </div>
+                    @endcan
                     <!--end: Notes & Sheets Menu item-->
 
 

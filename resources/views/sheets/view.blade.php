@@ -976,7 +976,7 @@
         });
     </script>
     <script>
-        document.getElementById("notes_sheets_menu").classList.add("here", "show");
+        document.getElementById("sheets_menu").classList.add("here", "show");
         document.getElementById("all_sheets_link").classList.add("active");
     </script>
 @endpush

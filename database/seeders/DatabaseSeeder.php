@@ -15,6 +15,7 @@ use Database\Seeders\Student\GuardianSeeder;
 use Database\Seeders\Academic\ClassNameSeeder;
 use Database\Seeders\Academic\InstitutionSeeder;
 use Database\Seeders\Student\MobileNumberSeeder;
+use Database\Seeders\Academic\SubjectTakenSeeder;
 use Database\Seeders\SMS\SmsTemplatesTableSeeder;
 use Database\Seeders\Payment\PaymentInvoiceSeeder;
 use Database\Seeders\Payment\PaymentInvoiceTypeSeeder;
@@ -37,24 +38,24 @@ class DatabaseSeeder extends Seeder
 
             // TeacherSeeder::class,
             // ReferenceSeeder::class,
-            // StudentSeeder::class,
-            // GuardianSeeder::class,
-            // MobileNumberSeeder::class,
-            // SiblingSeeder::class,
+            StudentSeeder::class,
+            GuardianSeeder::class,
+            MobileNumberSeeder::class,
+            SiblingSeeder::class,
 
             SubjectSeeder::class,
+            SubjectTakenSeeder::class,
 
-            // SubjectTakenSeeder::class,
-            // PaymentSeeder::class,
+            PaymentSeeder::class,
             PaymentInvoiceTypeSeeder::class,
-            // PaymentInvoiceSeeder::class,
-            // PaymentTransactionSeeder::class,
+            PaymentInvoiceSeeder::class,
+            PaymentTransactionSeeder::class,
 
             // CostSeeder::class,
             CostTypeSeeder::class,
 
             SheetSeeder::class,
-            // SheetTopicSeeder::class,
+            SheetTopicSeeder::class,
 
             SmsTemplatesTableSeeder::class,
             // SmsCampaignsTableSeeder::class,

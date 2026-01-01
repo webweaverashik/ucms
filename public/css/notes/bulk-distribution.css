@@ -1,0 +1,345 @@
+/**
+ * Bulk Notes Distribution Styles
+ */
+
+/* ===============================
+   Topic Count Cards
+   =============================== */
+.topic-count {
+      border: 1px solid #e4e6ef;
+      border-radius: 8px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.topic-count:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.topic-count.total {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-color: #dee2e6;
+}
+
+.topic-count.distributed {
+      background: linear-gradient(135deg, #e8f4fd 0%, #d0e3fa 100%);
+      border-color: #bee1fa;
+}
+
+.topic-count.pending {
+      background: linear-gradient(135deg, #fff8dd 0%, #ffeeba 100%);
+      border-color: #ffc107;
+}
+
+.topic-count.selected {
+      background: linear-gradient(135deg, #d6f5e3 0%, #c3e6cb 100%);
+      border-color: #28a745;
+}
+
+/* Pulse Animation for Selected Count */
+@keyframes pulseGreen {
+
+      0%,
+      100% {
+            box-shadow: 0 0 0 0 rgba(80, 205, 137, 0.4);
+      }
+
+      50% {
+            box-shadow: 0 0 0 10px rgba(80, 205, 137, 0);
+      }
+}
+
+.topic-count.selected.pulse-animation {
+      animation: pulseGreen 2s infinite;
+}
+
+/* ===============================
+   Students Grid Container
+   =============================== */
+.students-grid-container {
+      max-height: 500px;
+      overflow-y: auto;
+      padding: 4px;
+}
+
+/* Custom Scrollbar for Students Grid */
+.students-grid-container::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+}
+
+.students-grid-container::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 3px;
+}
+
+.students-grid-container::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 3px;
+}
+
+.students-grid-container::-webkit-scrollbar-thumb:hover {
+      background: #a1a1a1;
+}
+
+/* ===============================
+   Student Card Styles
+   =============================== */
+.student-card {
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 2px solid transparent !important;
+}
+
+.student-card:hover {
+      border-color: #3699ff !important;
+      box-shadow: 0 4px 12px rgba(54, 153, 255, 0.15);
+}
+
+.student-card.selected {
+      background: linear-gradient(135deg, #d6f5e3 0%, #c3e6cb 100%) !important;
+      border-color: #50cd89 !important;
+}
+
+.student-card.selected .symbol-label {
+      background-color: #50cd89 !important;
+      color: #fff !important;
+}
+
+.student-card .form-check-input {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+}
+
+.student-card .form-check-input:checked {
+      background-color: #50cd89;
+      border-color: #50cd89;
+}
+
+/* Card Selection Animation */
+@keyframes selectPulse {
+      0% {
+            transform: scale(1);
+      }
+
+      50% {
+            transform: scale(1.02);
+      }
+
+      100% {
+            transform: scale(1);
+      }
+}
+
+.student-card.selected {
+      animation: selectPulse 0.3s ease;
+}
+
+/* ===============================
+   Topic Banner Styles
+   =============================== */
+#bulk_topic_banner {
+      background: linear-gradient(135deg, #e8f4fd 0%, #d0e3fa 100%);
+      border: 1px solid #bee1fa;
+      border-radius: 8px;
+}
+
+#bulk_topic_banner .badge {
+      font-size: 11px;
+      padding: 5px 10px;
+      border-radius: 6px;
+}
+
+/* ===============================
+   Empty State Styles
+   =============================== */
+#bulk_empty_state {
+      background: linear-gradient(135deg, #f8f9fa 0%, #f1f5f9 100%);
+      border: 2px dashed #cbd5e1;
+      border-radius: 16px;
+      margin: 20px 0;
+}
+
+/* ===============================
+   Search Input Enhancement
+   =============================== */
+#bulk_student_search {
+      transition: all 0.2s ease;
+}
+
+#bulk_student_search:focus {
+      box-shadow: 0 0 0 3px rgba(54, 153, 255, 0.2);
+}
+
+/* ===============================
+   DataTable Enhancements
+   =============================== */
+#distributed_datatable_wrapper .dataTables_filter input {
+      border: 1px solid #e4e6ef;
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-left: 8px;
+}
+
+#distributed_datatable_wrapper .dataTables_length select {
+      border: 1px solid #e4e6ef;
+      border-radius: 6px;
+      padding: 6px 30px 6px 12px;
+}
+
+#distributed_datatable tbody tr:hover {
+      background-color: #f8f9fa;
+}
+
+/* ===============================
+   Tab Styling Enhancements
+   =============================== */
+.nav-tabs .nav-link {
+      transition: all 0.2s ease;
+}
+
+.nav-tabs .nav-link.active {
+      font-weight: 600;
+}
+
+.nav-tabs .nav-link:hover:not(.active) {
+      background-color: #f3f4f6;
+      border-radius: 6px 6px 0 0;
+}
+
+/* ===============================
+   Button Enhancements
+   =============================== */
+#bulk_load_students_btn,
+#bulk_distribute_btn,
+#apply_filter_btn {
+      transition: all 0.2s ease;
+}
+
+#bulk_load_students_btn:hover:not(:disabled),
+#bulk_distribute_btn:hover:not(:disabled),
+#apply_filter_btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+#bulk_distribute_btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+}
+
+/* ===============================
+   Academic Group Badges
+   =============================== */
+.badge-light-info {
+      background-color: #e8f4fd !important;
+      color: #0095e8 !important;
+}
+
+.badge-light-primary {
+      background-color: #f0e6ff !important;
+      color: #7239ea !important;
+}
+
+.badge-light-warning {
+      background-color: #fff8dd !important;
+      color: #ffc700 !important;
+}
+
+.badge-light-secondary {
+      background-color: #f4f4f4 !important;
+      color: #7e8299 !important;
+}
+
+/* ===============================
+   Responsive Adjustments
+   =============================== */
+@media (max-width: 992px) {
+      .students-grid-container {
+            max-height: 400px;
+      }
+
+      .student-card .card-body {
+            padding: 12px !important;
+      }
+
+      .student-card .symbol {
+            width: 35px !important;
+            height: 35px !important;
+      }
+
+      .student-card .symbol .symbol-label {
+            font-size: 14px !important;
+      }
+}
+
+@media (max-width: 768px) {
+      .topic-count .card-body {
+            padding: 15px 10px !important;
+      }
+
+      .topic-count .fs-2hx {
+            font-size: 1.75rem !important;
+      }
+
+      #bulk_topic_banner .d-flex {
+            flex-wrap: wrap;
+            gap: 10px;
+      }
+
+      #bulk_topic_banner .badge {
+            margin-top: 10px;
+      }
+}
+
+@media (max-width: 576px) {
+      .student-card .card-body {
+            flex-wrap: wrap;
+            gap: 8px;
+      }
+
+      .student-card .form-check {
+            order: -1;
+      }
+
+      #bulk_student_search {
+            width: 100% !important;
+      }
+
+      .d-flex.gap-3 {
+            flex-wrap: wrap;
+      }
+}
+
+/* ===============================
+   Loading States
+   =============================== */
+.btn .spinner-border {
+      width: 1rem;
+      height: 1rem;
+      border-width: 2px;
+}
+
+/* ===============================
+   SweetAlert2 Customization
+   =============================== */
+.swal2-popup {
+      border-radius: 12px !important;
+}
+
+.swal2-title {
+      font-size: 1.25rem !important;
+      font-weight: 600 !important;
+}
+
+.swal2-html-container {
+      font-size: 1rem !important;
+}
+
+.swal2-confirm,
+.swal2-cancel {
+      border-radius: 6px !important;
+      font-weight: 500 !important;
+      padding: 10px 24px !important;
+}

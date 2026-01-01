@@ -4,7 +4,7 @@
 
 @extends('layouts.app')
 
-@section('title', 'Assign Notes')
+@section('title', 'Single Distribution')
 
 @section('header-title')
     <div data-kt-swapper="true" data-kt-swapper-mode="{default: 'prepend', lg: 'prepend'}"
@@ -12,19 +12,19 @@
         class="page-title d-flex align-items-center flex-wrap me-3 mb-5 mb-lg-0">
 
         <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 align-items-center my-0">
-            Notes Distribution
+            Single Distribution
         </h1>
 
         <span class="h-20px border-gray-300 border-start mx-4"></span>
 
         <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
             <li class="breadcrumb-item text-muted">
-                <a href="#" class="text-muted text-hover-primary">Notes & Sheets</a>
+                <a href="{{ route('notes.distribution.index') }}" class="text-muted text-hover-primary">Notes & Sheets</a>
             </li>
             <li class="breadcrumb-item">
                 <span class="bullet bg-gray-500 w-5px h-2px"></span>
             </li>
-            <li class="breadcrumb-item text-muted">Assign Notes</li>
+            <li class="breadcrumb-item text-muted">Assign to a Student</li>
         </ul>
     </div>
 @endsection
@@ -96,7 +96,7 @@
     <script src="{{ asset('js/notes/distribution.js') }}"></script>
 
     <script>
-        document.getElementById("notes_sheets_menu").classList.add("here", "show");
-        document.getElementById("notes_distribution_link").classList.add("active");
+        document.getElementById("notes_menu").classList.add("here", "show");
+        document.getElementById("single_distribution_link").classList.add("active");
     </script>
 @endpush

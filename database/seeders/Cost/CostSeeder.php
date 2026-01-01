@@ -49,15 +49,6 @@ class CostSeeder extends Seeder
                 Cost::create([
                     'branch_id'   => $branch->id,
                     'cost_date'   => $date,
-                    'amount'      => rand(500, 6000),
-                    'description' => fake()->randomElement([
-                        'Electricity bill',
-                        'Internet bill',
-                        'Office maintenance',
-                        'Staff refreshment',
-                        'Stationery purchase',
-                        'Cleaning service',
-                    ]),
                     // ✅ Random user but SAME branch
                     'created_by'  => $branchUsers->random()->id,
                 ]);
