@@ -453,9 +453,9 @@ var KTUpdateStudent = (function () {
                '<div class="d-flex justify-content-between align-items-center mb-3">' +
                '<label class="form-label fw-bold text-warning fs-5 mb-0">' +
                '<i class="ki-outline ki-abstract-26 fs-4 me-2"></i>' + title + '</label>' +
-               '<button type="button" class="btn btn-sm btn-icon btn-light-danger clear-optional-selections" ' +
+               '<button type="button" class="btn btn-sm btn-light-danger clear-optional-selections" ' +
                'data-bs-toggle="tooltip" data-bs-placement="top" title="Clear selections">' +
-               '<i class="ki-outline ki-cross fs-2"></i></button>' +
+               'Clear</button>' +
                '</div>' +
                '<div class="alert alert-info d-flex align-items-center py-3 mb-4">' +
                '<i class="ki-outline ki-information-5 fs-2 text-info me-3"></i>' +

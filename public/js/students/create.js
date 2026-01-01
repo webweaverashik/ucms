@@ -409,9 +409,9 @@ var KTCreateStudent = (function () {
           var titleHtml = '<div class="d-flex justify-content-between align-items-center mb-3">' +
                '<label class="form-label fw-bold text-warning fs-5 mb-0">' +
                '<i class="ki-outline ki-abstract-26 fs-4 me-2"></i>' + title + '</label>' +
-               '<button type="button" class="btn btn-icon btn-sm btn-light-danger clear-optional-selections" ' +
+               '<button type="button" class="btn btn-sm btn-light-danger clear-optional-selections" ' +
                'data-bs-toggle="tooltip" data-bs-placement="top" title="Clear selections">' +
-               '<i class="ki-outline ki-cross fs-2"></i></button></div>';
+               'Clear</button></div>';
 
           return '<div class="subject-section mb-6 p-4 border border-dashed border-warning rounded">' +
                titleHtml +
