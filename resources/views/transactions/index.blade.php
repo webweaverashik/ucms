@@ -291,7 +291,7 @@
                                         <a href="#" data-bs-toggle="tooltip" title="Download Statement"
                                             class="btn btn-icon text-hover-primary w-30px h-30px download-statement"
                                             data-student-id="{{ $transaction->student_id }}"
-                                            data-year="{{ $transaction->created_at->format('Y') }}">
+                                            data-year="{{ $transaction->paymentInvoice->created_at->format('Y') }}">
                                             <i class="bi bi-download fs-2"></i>
                                         </a>
                                     @endif

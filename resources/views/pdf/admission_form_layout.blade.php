@@ -379,7 +379,7 @@ $groupedSubjects = collect($student->class->subjects)
                                         onclick="return false;" />
                                     <span>{{ $subject->name }}</span>
                                     @if ($is4thSubject)
-                                        <span class="fourth-badge">4th</span>
+                                        <span class="fourth-badge">4th Subject</span>
                                     @endif
                                 </label>
                             @endforeach

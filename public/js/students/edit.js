@@ -605,9 +605,9 @@ var KTUpdateStudent = (function () {
           // But if user selects any, validate the combination
 
           // If main is required and user selected a 4th but not a main, warn them
-          if (requiresMain && fourthSelected && !mainSelected) {
-               return { valid: false, message: 'Please also select a Main Optional Subject when choosing a 4th Subject' };
-          }
+          // if (requiresMain && fourthSelected && !mainSelected) {
+          //      return { valid: false, message: 'Please also select a Main Optional Subject when choosing a 4th Subject' };
+          // }
 
           // Prevent same subject selected as both main and 4th
           if (mainSelected && fourthSelected && mainSelected === fourthSelected) {

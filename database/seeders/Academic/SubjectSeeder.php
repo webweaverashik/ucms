@@ -127,7 +127,7 @@ class SubjectSeeder extends Seeder
             ['name' => 'Accounting', 'group' => 'Commerce', 'type' => 'compulsory'],
             ['name' => 'Business Management', 'group' => 'Commerce', 'type' => 'compulsory'],
             ['name' => 'Finance & Banking', 'group' => 'Commerce', 'type' => 'optional'],
-            ['name' => 'Prouduction Marketing', 'group' => 'Commerce', 'type' => 'optional'],
+            ['name' => 'Production Marketing', 'group' => 'Commerce', 'type' => 'optional'],
             ['name' => 'Economics', 'group' => 'Commerce', 'type' => 'optional'],
             ['name' => 'Statistics', 'group' => 'Commerce', 'type' => 'optional'],
         ];
