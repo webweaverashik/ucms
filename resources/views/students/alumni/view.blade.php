@@ -412,13 +412,13 @@
                 </li>
                 <!--end:::Tab item-->
 
-                <!--begin:::Tab item-->
+                {{-- <!--begin:::Tab item-->
                 <li class="nav-item">
                     <a class="nav-link text-active-primary pb-4" data-kt-countup-tabs="true" data-bs-toggle="tab"
                         href="#kt_student_view_attendance_tab"><i
                             class="ki-outline ki-calendar fs-3 me-2"></i>Attendance</a>
                 </li>
-                <!--end:::Tab item-->
+                <!--end:::Tab item--> --}}
 
                 <!--begin:::Tab item-->
                 <li class="nav-item">
@@ -968,7 +968,7 @@
                                                         {{ $invoice->invoice_number }}
                                                     </a>
                                                 </td>
-                                                <td>{{ ucwords(str_replace('_', ' ', $invoice->invoice_type)) }}</td>
+                                                <td>{{ $invoice->invoiceType->type_name }}</td>
                                                 <td>
                                                     @if (preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year, $matches))
                                                         {{ \Carbon\Carbon::create($matches[2], $matches[1], 1)->format('F Y') }}
@@ -1126,10 +1126,11 @@
                                                         @endcannot
                                                     @else
                                                         @can('transactions.payslip.download')
-                                                            <a href="{{ route('transactions.download', $transaction->id) }}"
-                                                                target="_blank" data-bs-toggle="tooltip"
-                                                                title="Download Payslip"
-                                                                class="btn btn-icon text-hover-primary w-30px h-30px">
+                                                            <a href="#" data-bs-toggle="tooltip"
+                                                                title="Download Statement"
+                                                                class="btn btn-icon text-hover-primary w-30px h-30px download-statement"
+                                                                data-student-id="{{ $student->id }}"
+                                                                data-year="{{ $transaction->created_at->format('Y') }}">
                                                                 <i class="bi bi-download fs-2"></i>
                                                             </a>
                                                         @endcan
@@ -1291,7 +1292,7 @@
                 <!--end:::Tab pane-->
 
                 <!--begin:::Attendance Tab pane-->
-                <div class="tab-pane fade" id="kt_student_view_attendance_tab" role="tabpanel">
+                {{-- <div class="tab-pane fade" id="kt_student_view_attendance_tab" role="tabpanel">
                     <div class="card pt-4 mb-6 mb-xl-9">
                         <div class="card-header border-0">
                             <div class="card-title">
@@ -1333,7 +1334,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> --}}
                 <!--end:::Attendance Tab pane-->
 
                 <!--begin:::Activity Tab pane-->
@@ -1620,6 +1621,9 @@
         const routeDeleteInvoice = "{{ route('invoices.destroy', ':id') }}";
         const routeDeleteTxn = "{{ route('transactions.destroy', ':id') }}";
         const routeApproveTxn = "{{ route('transactions.approve', ':id') }}";
+
+        const routeDownloadStatement = "{{ route('student.statement.download') }}";
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
     </script>
 
     <script src="{{ asset('js/students/alumni/view.js') }}"></script>

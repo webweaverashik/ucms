@@ -10,7 +10,7 @@ var KTNotesDistributionList = function () {
         // Init datatable --- more info on datatables: https://datatables.net/manual/
         datatable = $(table).DataTable({
             "info": true,
-            'order': [[6, 'desc']], // Order by distributed date descending
+            'order': [], // Order by distributed date descending
             "lengthMenu": [10, 25, 50, 100],
             "pageLength": 25,
             "lengthChange": true,

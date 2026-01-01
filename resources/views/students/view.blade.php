@@ -444,7 +444,7 @@
                         <!--end::Menu item-->
                         @can('notes.distribute')
                             <div class="menu-item px-5">
-                                <a href="{{ route('notes.distribution.create') }}"
+                                <a href="{{ route('notes.single.create') }}"
                                     class="menu-link text-hover-primary px-5"><i class="ki-outline ki-note-2 fs-2 me-2"></i>
                                     Note Distribution</a>
                             </div>
