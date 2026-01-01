@@ -1208,7 +1208,7 @@
                                                                 title="Download Statement"
                                                                 class="btn btn-icon text-hover-primary w-30px h-30px download-statement"
                                                                 data-student-id="{{ $student->id }}"
-                                                                data-year="{{ $transaction->created_at->format('Y') }}">
+                                                                data-year="{{ $transaction->paymentInvoice->created_at->format('Y') }}">
                                                                 <i class="bi bi-download fs-2"></i>
                                                             </a>
                                                         @endcan

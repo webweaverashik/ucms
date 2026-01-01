@@ -1,5 +1,9 @@
 "use strict";
 
+/**
+ * Notes Distribution Index JavaScript
+ * Handles DataTable and AJAX filters for Sheet Group, Subject, and Topic
+ */
 var KTNotesDistributionList = function () {
     // Define shared variables
     var table;
@@ -7,10 +11,10 @@ var KTNotesDistributionList = function () {
 
     // Private functions
     var initDatatable = function () {
-        // Init datatable --- more info on datatables: https://datatables.net/manual/
+        // Init datatable
         datatable = $(table).DataTable({
             "info": true,
-            'order': [], // Order by distributed date descending
+            'order': [[6, 'desc']], // Order by distributed date descending
             "lengthMenu": [10, 25, 50, 100],
             "pageLength": 25,
             "lengthChange": true,
@@ -39,24 +43,76 @@ var KTNotesDistributionList = function () {
         }
     }
 
-    // Handle Sheet Group change to load Topics via AJAX
+    // Handle Sheet Group change to load Subjects via AJAX
     var handleSheetGroupChange = function () {
         const sheetGroupSelect = document.getElementById('filter_sheet_group');
+        const subjectSelect = document.getElementById('filter_subject');
         const topicSelect = document.getElementById('filter_topic');
 
-        if (!sheetGroupSelect || !topicSelect) return;
+        if (!sheetGroupSelect || !subjectSelect || !topicSelect) return;
 
         $(sheetGroupSelect).on('change', function () {
             const sheetId = $(this).val();
 
-            // Reset topic select
+            // Reset subject and topic selects
+            $(subjectSelect).empty().append('<option></option>').prop('disabled', true).trigger('change');
             $(topicSelect).empty().append('<option></option>').prop('disabled', true).trigger('change');
 
             if (!sheetId) return;
 
+            // Fetch subjects via AJAX
+            $.ajax({
+                url: `/sheets/${sheetId}/subjects-list`,
+                method: 'GET',
+                beforeSend: function () {
+                    $(subjectSelect).prop('disabled', true);
+                },
+                success: function (response) {
+                    if (response.success && response.subjects) {
+                        response.subjects.forEach(function (subject) {
+                            const groupBadge = subject.academic_group !== 'General'
+                                ? ` (${subject.academic_group})`
+                                : '';
+                            $(subjectSelect).append(
+                                `<option value="${subject.name}" data-subject-id="${subject.id}">${subject.name}${groupBadge}</option>`
+                            );
+                        });
+                        $(subjectSelect).prop('disabled', false);
+                    }
+                },
+                error: function () {
+                    toastr.error('Failed to load subjects');
+                },
+                complete: function () {
+                    // Keep disabled if no sheet selected
+                    if (!sheetId) {
+                        $(subjectSelect).prop('disabled', true);
+                    }
+                }
+            });
+        });
+    }
+
+    // Handle Subject change to load Topics via AJAX
+    var handleSubjectChange = function () {
+        const sheetGroupSelect = document.getElementById('filter_sheet_group');
+        const subjectSelect = document.getElementById('filter_subject');
+        const topicSelect = document.getElementById('filter_topic');
+
+        if (!subjectSelect || !topicSelect) return;
+
+        $(subjectSelect).on('change', function () {
+            const sheetId = $(sheetGroupSelect).val();
+            const subjectId = $(this).find(':selected').data('subject-id');
+
+            // Reset topic select
+            $(topicSelect).empty().append('<option></option>').prop('disabled', true).trigger('change');
+
+            if (!sheetId || !subjectId) return;
+
             // Fetch topics via AJAX
             $.ajax({
-                url: `/sheets/${sheetId}/topics-list`,
+                url: `/sheets/${sheetId}/subjects/${subjectId}/topics`,
                 method: 'GET',
                 beforeSend: function () {
                     $(topicSelect).prop('disabled', true);
@@ -64,11 +120,8 @@ var KTNotesDistributionList = function () {
                 success: function (response) {
                     if (response.success && response.topics) {
                         response.topics.forEach(function (topic) {
-                            const groupBadge = topic.academic_group !== 'General'
-                                ? ` (${topic.academic_group})`
-                                : '';
                             $(topicSelect).append(
-                                `<option value="${topic.name}">${topic.name} - ${topic.subject}${groupBadge}</option>`
+                                `<option value="${topic.name}">${topic.name}</option>`
                             );
                         });
                         $(topicSelect).prop('disabled', false);
@@ -78,7 +131,9 @@ var KTNotesDistributionList = function () {
                     toastr.error('Failed to load topics');
                 },
                 complete: function () {
-                    $(topicSelect).prop('disabled', false);
+                    if (!subjectId) {
+                        $(topicSelect).prop('disabled', true);
+                    }
                 }
             });
         });
@@ -93,8 +148,8 @@ var KTNotesDistributionList = function () {
         const resetButton = filterForm.querySelector('[data-kt-notes-distribution-table-filter="reset"]');
 
         const sheetGroupSelect = document.getElementById('filter_sheet_group');
-        const topicSelect = document.getElementById('filter_topic');
         const subjectSelect = document.getElementById('filter_subject');
+        const topicSelect = document.getElementById('filter_topic');
 
         // Filter datatable on submit
         if (filterButton) {
@@ -110,16 +165,16 @@ var KTNotesDistributionList = function () {
                     }
                 }
 
-                // Get topic filter value
-                if (topicSelect && topicSelect.value) {
-                    if (filterString) filterString += ' ';
-                    filterString += topicSelect.value;
-                }
-
                 // Get subject filter value
                 if (subjectSelect && subjectSelect.value) {
                     if (filterString) filterString += ' ';
                     filterString += subjectSelect.value;
+                }
+
+                // Get topic filter value
+                if (topicSelect && topicSelect.value) {
+                    if (filterString) filterString += ' ';
+                    filterString += topicSelect.value;
                 }
 
                 // Apply filter
@@ -132,8 +187,8 @@ var KTNotesDistributionList = function () {
             resetButton.addEventListener('click', function () {
                 // Reset all select2 dropdowns
                 $(sheetGroupSelect).val(null).trigger('change');
+                $(subjectSelect).empty().append('<option></option>').prop('disabled', true).trigger('change');
                 $(topicSelect).empty().append('<option></option>').prop('disabled', true).trigger('change');
-                $(subjectSelect).val(null).trigger('change');
 
                 // Clear datatable search
                 datatable.search('').draw();
@@ -153,6 +208,7 @@ var KTNotesDistributionList = function () {
             initDatatable();
             handleSearch();
             handleSheetGroupChange();
+            handleSubjectChange();
             handleFilter();
         }
     }

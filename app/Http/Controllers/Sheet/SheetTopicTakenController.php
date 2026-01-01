@@ -1,16 +1,15 @@
 <?php
 namespace App\Http\Controllers\Sheet;
 
-use App\Models\Sheet\Sheet;
-use Illuminate\Http\Request;
-use App\Models\Student\Student;
-use App\Models\Academic\Subject;
-use App\Models\Sheet\SheetTopic;
-use App\Models\Academic\ClassName;
-use App\Models\Sheet\SheetPayment;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\Academic\Subject;
+use App\Models\Sheet\Sheet;
+use App\Models\Sheet\SheetPayment;
+use App\Models\Sheet\SheetTopic;
 use App\Models\Sheet\SheetTopicTaken;
+use App\Models\Student\Student;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SheetTopicTakenController extends Controller
 {
@@ -28,9 +27,6 @@ class SheetTopicTakenController extends Controller
             ->latest('id')
             ->get();
 
-        $class_names  = ClassName::select('name', 'class_numeral')->get();
-        $subjectNames = Subject::select('name')->distinct()->orderBy('name')->pluck('name');
-
         // Get all active sheet groups for filter dropdown
         $sheetGroups = Sheet::whereHas('class', function ($query) {
             $query->where('is_active', true);
@@ -38,7 +34,7 @@ class SheetTopicTakenController extends Controller
             ->with('class')
             ->get();
 
-        return view('notes.index', compact('notes_taken', 'class_names', 'subjectNames', 'sheetGroups'));
+        return view('notes.index', compact('notes_taken', 'sheetGroups'));
     }
 
     /**
@@ -120,9 +116,7 @@ class SheetTopicTakenController extends Controller
         // Get all active sheet groups
         $sheetGroups = Sheet::whereHas('class', function ($query) {
             $query->where('is_active', true);
-        })
-            ->with('class')
-            ->get();
+        })->with('class')->get();
 
         return view('notes.bulk-distribution', compact('sheetGroups'));
     }
@@ -158,28 +152,29 @@ class SheetTopicTakenController extends Controller
         }
 
         // Get already distributed students for this topic
-        $existingDistributions = SheetTopicTaken::where('sheet_topic_id', $topicId)->whereIn('student_id', $studentIds)->pluck('student_id')->toArray();
+        $existingDistributions = SheetTopicTaken::where('sheet_topic_id', $topicId)
+            ->whereIn('student_id', $studentIds)
+            ->pluck('student_id')
+            ->toArray();
 
         // Filter out students who already have this topic
         $newStudentIds = array_diff($studentIds, $existingDistributions);
 
         if (empty($newStudentIds)) {
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => 'All selected students already have this topic distributed.',
-                ],
-                400,
-            );
+            return response()->json([
+                'success' => false,
+                'message' => 'All selected students already have this topic distributed.',
+            ], 400);
         }
 
         // Verify all students have paid for this sheet
         $paidStudentIds = SheetPayment::where('sheet_id', $sheetId)
             ->whereIn('student_id', $newStudentIds)
             ->whereHas('invoice', function ($query) {
-                $query->whereIn('status', ['paid', 'partially_paid'])->whereHas('invoiceType', function ($q) {
-                    $q->where('type_name', 'Sheet Fee');
-                });
+                $query->whereIn('status', ['paid', 'partially_paid'])
+                    ->whereHas('invoiceType', function ($q) {
+                        $q->where('type_name', 'Sheet Fee');
+                    });
             })
             ->pluck('student_id')
             ->toArray();
@@ -188,13 +183,10 @@ class SheetTopicTakenController extends Controller
         $validStudentIds = array_intersect($newStudentIds, $paidStudentIds);
 
         if (empty($validStudentIds)) {
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => 'No valid students found. Students must have paid for this sheet.',
-                ],
-                400,
-            );
+            return response()->json([
+                'success' => false,
+                'message' => 'No valid students found. Students must have paid for this sheet.',
+            ], 400);
         }
 
         // Create distribution records
@@ -214,82 +206,21 @@ class SheetTopicTakenController extends Controller
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => 'Failed to distribute: ' . $e->getMessage(),
-                ],
-                500,
-            );
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to distribute: ' . $e->getMessage(),
+            ], 500);
         }
 
         $skippedCount = count($studentIds) - $distributedCount;
 
         return response()->json([
             'success' => true,
-            'message' => "Successfully distributed to {$distributedCount} student(s)." . ($skippedCount > 0 ? " {$skippedCount} student(s) were skipped." : ''),
+            'message' => "Successfully distributed to {$distributedCount} student(s)." .
+            ($skippedCount > 0 ? " {$skippedCount} student(s) were skipped." : ''),
             'distributed_count' => $distributedCount,
             'skipped_count'     => $skippedCount,
         ]);
-    }
-
-    /**
-     * Get distributed students for DataTable
-     */
-    public function getDistributed(Request $request)
-    {
-        $query = SheetTopicTaken::with(['student:id,name,student_unique_id', 'sheetTopic:id,topic_name,subject_id', 'sheetTopic.subject:id,name,class_id', 'sheetTopic.subject.class:id,name', 'distributedBy:id,name']);
-
-        // Filter by branch
-        if (auth()->user()->branch_id != 0) {
-            $query->whereHas('student', function ($q) {
-                $q->where('branch_id', auth()->user()->branch_id);
-            });
-        }
-
-        // Filter by sheet group
-        if ($request->filled('sheet_id')) {
-            $sheet = Sheet::find($request->sheet_id);
-            if ($sheet) {
-                $query->whereHas('sheetTopic.subject', function ($q) use ($sheet) {
-                    $q->where('class_id', $sheet->class_id);
-                });
-            }
-        }
-
-        // Filter by topic
-        if ($request->filled('topic_id')) {
-            $query->where('sheet_topic_id', $request->topic_id);
-        }
-
-        // Search
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('student', function ($sq) use ($search) {
-                    $sq->where('name', 'like', "%{$search}%")->orWhere('student_unique_id', 'like', "%{$search}%");
-                })->orWhereHas('sheetTopic', function ($tq) use ($search) {
-                    $tq->where('topic_name', 'like', "%{$search}%");
-                });
-            });
-        }
-
-        $distributions = $query->latest('id')->get();
-
-        $data = $distributions->map(function ($item, $index) {
-            return [
-                'sl'                => $index + 1,
-                'name'              => $item->student->name ?? 'N/A',
-                'student_unique_id' => $item->student->student_unique_id ?? 'N/A',
-                'topic'             => $item->sheetTopic->topic_name ?? 'N/A',
-                'subject'           => $item->sheetTopic->subject->name ?? 'N/A',
-                'sheet_group'       => $item->sheetTopic->subject->class->name ?? 'N/A',
-                'distributed_at'    => $item->created_at->format('d M Y, h:i A'),
-                'distributed_by'    => $item->distributedBy->name ?? 'N/A',
-            ];
-        });
-
-        return response()->json(['data' => $data]);
     }
     /** Till Now */
 }

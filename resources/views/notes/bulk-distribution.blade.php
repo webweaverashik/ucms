@@ -12,7 +12,7 @@
         class="page-title d-flex align-items-center flex-wrap me-3 mb-5 mb-lg-0">
 
         <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 align-items-center my-0">
-            Bulk Distribution
+            Bulk Notes Distribution
         </h1>
 
         <span class="h-20px border-gray-300 border-start mx-4"></span>
@@ -52,7 +52,7 @@
             {{-- Selection Form --}}
             <div class="row align-items-end g-5 mb-6">
                 {{-- Sheet Group --}}
-                <div class="col-lg-4">
+                <div class="col-lg-3">
                     <label class="required fw-semibold fs-6 mb-2">Sheet Group</label>
                     <div class="input-group input-group-solid flex-nowrap">
                         <span class="input-group-text">
@@ -60,8 +60,8 @@
                         </span>
                         <div class="overflow-hidden flex-grow-1">
                             <select id="bulk_sheet_group_select"
-                                class="form-select form-select-solid rounded-start-0 border-start" data-control="select2"
-                                data-placeholder="Select Sheet Group">
+                                class="form-select form-select-solid rounded-start-0 border-start"
+                                data-control="select2" data-placeholder="Select Sheet Group">
                                 <option></option>
                                 @foreach ($sheetGroups as $sheet)
                                     <option value="{{ $sheet->id }}">
@@ -73,8 +73,25 @@
                     </div>
                 </div>
 
+                {{-- Subject --}}
+                <div class="col-lg-3">
+                    <label class="required fw-semibold fs-6 mb-2">Subject</label>
+                    <div class="input-group input-group-solid flex-nowrap">
+                        <span class="input-group-text">
+                            <i class="ki-outline ki-book fs-3"></i>
+                        </span>
+                        <div class="overflow-hidden flex-grow-1">
+                            <select id="bulk_subject_select"
+                                class="form-select form-select-solid rounded-start-0 border-start"
+                                data-control="select2" data-placeholder="Select Subject" disabled>
+                                <option></option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 {{-- Sheet Topic --}}
-                <div class="col-lg-5">
+                <div class="col-lg-4">
                     <label class="required fw-semibold fs-6 mb-2">Sheet Topic</label>
                     <div class="input-group input-group-solid flex-nowrap">
                         <span class="input-group-text">
@@ -82,8 +99,8 @@
                         </span>
                         <div class="overflow-hidden flex-grow-1">
                             <select id="bulk_sheet_topic_select"
-                                class="form-select form-select-solid rounded-start-0 border-start" data-control="select2"
-                                data-placeholder="Select Sheet Topic" disabled>
+                                class="form-select form-select-solid rounded-start-0 border-start"
+                                data-control="select2" data-placeholder="Select Sheet Topic" disabled>
                                 <option></option>
                             </select>
                         </div>
@@ -91,7 +108,7 @@
                 </div>
 
                 {{-- Load Button --}}
-                <div class="col-lg-3">
+                <div class="col-lg-2">
                     <button type="button" id="bulk_load_students_btn" class="btn btn-primary w-100" disabled>
                         <i class="ki-outline ki-people fs-3 me-2"></i>
                         Load Students
@@ -160,7 +177,7 @@
                     </div>
                     <h3 class="fs-4 fw-bold text-gray-700 mb-3">No Students Loaded</h3>
                     <p class="text-gray-500 fs-6 mb-0">
-                        Select a Sheet Group and Topic, then click "Load Students" to view<br>
+                        Select a Sheet Group, Subject, and Topic, then click "Load Students" to view<br>
                         students who have paid but not yet received this topic.
                     </p>
                 </div>
@@ -171,7 +188,8 @@
                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-5">
                         <div class="position-relative w-250px">
                             <i class="ki-outline ki-magnifier fs-4 position-absolute top-50 translate-middle-y ms-4"></i>
-                            <input type="text" id="bulk_student_search" class="form-control form-control-solid ps-12"
+                            <input type="text" id="bulk_student_search"
+                                class="form-control form-control-solid ps-12"
                                 placeholder="Search students...">
                         </div>
                         <div class="d-flex gap-3">

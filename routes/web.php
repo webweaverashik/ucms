@@ -117,19 +117,29 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     // Notes
     Route::put('notes/{sheetTopic}/status', [SheetTopicController::class, 'updateStatus'])->name('notes.updateStatus');
     Route::get('notes/distribution', [SheetTopicTakenController::class, 'index'])->name('notes.distribution.index');
-    Route::get('notes/distribution/create', [SheetTopicTakenController::class, 'create'])->name('notes.single.create');
+    Route::get('notes/single-distribution', [SheetTopicTakenController::class, 'create'])->name('notes.single.create');
     Route::post('sheet-topics/distribute', [SheetTopicTakenController::class, 'store'])->name('sheet-topics.distribute');
 
-    // -------------Bulk Distribution Starts-------------
+    // ============================================
+    // Bulk Distribution Routes
+    // ============================================
     // Bulk distribution page
     Route::get('notes/bulk-distribution', [SheetTopicTakenController::class, 'bulkCreate'])->name('notes.bulk.create');
 
     // Sheet Topics API Routes (for AJAX)
-    // Get all topics for a sheet group (used in filters and bulk distribution)
-    Route::get('sheets/{sheet}/topics-list', [SheetController::class, 'getTopicsList'])->name('sheets.topics.list');
+    Route::prefix('sheets')->group(function () {
+        // Get all subjects for a sheet group (used in index filter)
+        Route::get('{sheet}/subjects-list', [SheetController::class, 'getSubjectsList'])->name('sheets.subjects.list');
 
-    // Get pending students for a specific topic (bulk distribution)
-    Route::get('sheets/{sheet}/topics/{topic}/pending-students', [SheetController::class, 'getPendingStudents'])->name('sheets.pending.students');
+        // Get topics for a specific subject within a sheet group (used in index filter)
+        Route::get('{sheet}/subjects/{subject}/topics', [SheetController::class, 'getSubjectTopics'])->name('sheets.subject.topics');
+
+        // Get all topics for a sheet group (used in bulk distribution)
+        Route::get('{sheet}/topics-list', [SheetController::class, 'getTopicsList'])->name('sheets.topics.list');
+
+        // Get pending students for a specific topic (bulk distribution)
+        Route::get('{sheet}/topics/{topic}/pending-students', [SheetController::class, 'getPendingStudents'])->name('sheets.pending.students');
+    });
 
     // Bulk Distribution Store
     Route::post('sheet-topics/bulk-distribute', [SheetTopicTakenController::class, 'bulkStore'])->name('sheet-topics.bulk.distribute');
@@ -227,19 +237,19 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
 
     // Resource Routes
     Route::resources([
-        'settings/users'    => UserController::class,
-        'students'          => StudentController::class,
-        'guardians'         => GuardianController::class,
-        'siblings'          => SiblingController::class,
-        'teachers'          => TeacherController::class,
-        'institutions'      => InstitutionController::class,
-        'classnames'        => ClassNameController::class,
-        'batches'           => BatchController::class,
-        'subjects'          => SubjectController::class,
-        'invoices'          => PaymentInvoiceController::class,
-        'transactions'      => PaymentTransactionController::class,
-        'sheets'            => SheetController::class,
-        'notes'             => SheetTopicController::class,
+        'settings/users' => UserController::class,
+        'students' => StudentController::class,
+        'guardians' => GuardianController::class,
+        'siblings' => SiblingController::class,
+        'teachers' => TeacherController::class,
+        'institutions' => InstitutionController::class,
+        'classnames' => ClassNameController::class,
+        'batches' => BatchController::class,
+        'subjects' => SubjectController::class,
+        'invoices' => PaymentInvoiceController::class,
+        'transactions' => PaymentTransactionController::class,
+        'sheets' => SheetController::class,
+        'notes' => SheetTopicController::class,
         'sms/send-campaign' => SmsCampaignController::class,
     ]);
 });

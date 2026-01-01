@@ -229,8 +229,84 @@ class SheetController extends Controller
 
     /* --- Added After 01.01.2026 12.45 AM --- */
     /**
+     * Get all subjects for a sheet group
+     * Used in index page filter dropdown
+     *
+     * @param Sheet $sheet
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getSubjectsList(Sheet $sheet)
+    {
+        $subjects = Subject::where('class_id', $sheet->class_id)
+            ->orderBy('academic_group')
+            ->orderBy('name')
+            ->get();
+
+        $formattedSubjects = $subjects->map(function ($subject) {
+            return [
+                'id'             => $subject->id,
+                'name'           => $subject->name,
+                'academic_group' => $subject->academic_group ?? 'General',
+            ];
+        });
+
+        return response()->json([
+            'success'  => true,
+            'subjects' => $formattedSubjects,
+            'sheet'    => [
+                'id'         => $sheet->id,
+                'class_name' => $sheet->class->name ?? 'Unknown',
+            ],
+        ]);
+    }
+
+    /**
+     * Get topics for a specific subject within a sheet group
+     * Used in index page filter dropdown (after subject selection)
+     *
+     * @param Sheet $sheet
+     * @param Subject $subject
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getSubjectTopics(Sheet $sheet, Subject $subject)
+    {
+        // Verify subject belongs to this sheet's class
+        if ($subject->class_id !== $sheet->class_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Subject does not belong to this sheet group',
+            ], 400);
+        }
+
+        $topics = SheetTopic::where('subject_id', $subject->id)
+            ->where('status', 'active')
+            ->orderBy('topic_name')
+            ->get();
+
+        $formattedTopics = $topics->map(function ($topic) {
+            return [
+                'id'     => $topic->id,
+                'name'   => $topic->topic_name,
+                'status' => $topic->status,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'topics'  => $formattedTopics,
+            'subject' => [
+                'id'   => $subject->id,
+                'name' => $subject->name,
+            ],
+        ]);
+    }
+
+    /**
      * Get all topics for a sheet group
      * Used in bulk distribution dropdown
+     *
+     * @param Sheet $sheet
+     * @return \Illuminate\Http\JsonResponse
      */
     public function getTopicsList(Sheet $sheet)
     {
@@ -238,7 +314,12 @@ class SheetController extends Controller
         $subjects = Subject::where('class_id', $sheet->class_id)->get();
 
         // Get all active topics for these subjects
-        $topics = SheetTopic::whereIn('subject_id', $subjects->pluck('id'))->where('status', 'active')->with('subject:id,name,academic_group')->orderBy('subject_id')->orderBy('topic_name')->get();
+        $topics = SheetTopic::whereIn('subject_id', $subjects->pluck('id'))
+            ->where('status', 'active')
+            ->with('subject:id,name,academic_group')
+            ->orderBy('subject_id')
+            ->orderBy('topic_name')
+            ->get();
 
         $formattedTopics = $topics->map(function ($topic) {
             return [
@@ -263,6 +344,10 @@ class SheetController extends Controller
     /**
      * Get students who paid for sheet but haven't received specific topic
      * Used in bulk distribution
+     *
+     * @param Sheet $sheet
+     * @param SheetTopic $topic
+     * @return \Illuminate\Http\JsonResponse
      */
     public function getPendingStudents(Sheet $sheet, SheetTopic $topic)
     {
@@ -271,9 +356,10 @@ class SheetController extends Controller
         // Get all students who paid for this sheet
         $paidPayments = SheetPayment::where('sheet_id', $sheet->id)
             ->whereHas('invoice', function ($query) {
-                $query->whereIn('status', ['paid', 'partially_paid'])->whereHas('invoiceType', function ($q) {
-                    $q->where('type_name', 'Sheet Fee');
-                });
+                $query->whereIn('status', ['paid', 'partially_paid'])
+                    ->whereHas('invoiceType', function ($q) {
+                        $q->where('type_name', 'Sheet Fee');
+                    });
             })
             ->with(['student:id,name,student_unique_id,class_id,academic_group,branch_id', 'student.class:id,name,class_numeral'])
             ->when($branchId != 0, function ($query) use ($branchId) {
@@ -284,7 +370,9 @@ class SheetController extends Controller
             ->get();
 
         // Get students who already have this topic
-        $distributedStudentIds = SheetTopicTaken::where('sheet_topic_id', $topic->id)->pluck('student_id')->toArray();
+        $distributedStudentIds = SheetTopicTaken::where('sheet_topic_id', $topic->id)
+            ->pluck('student_id')
+            ->toArray();
 
         // Get topic's academic group
         $topicSubject       = Subject::find($topic->subject_id);

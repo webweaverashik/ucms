@@ -1110,6 +1110,7 @@
                                 </div>
                                 <!--end::Wrapper-->
                             </div>
+                            <a href="{{ route('students.show', $student->id) }}" class="btn btn-primary mt-5">Go to Student Profile</a>
                             <!--end::Notice-->
                             <!--end::Alert-->
                         </div>

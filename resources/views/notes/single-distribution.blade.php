@@ -93,7 +93,7 @@
 @endsection
 
 @push('page-js')
-    <script src="{{ asset('js/notes/distribution.js') }}"></script>
+    <script src="{{ asset('js/notes/single-distribution.js') }}"></script>
 
     <script>
         document.getElementById("notes_menu").classList.add("here", "show");

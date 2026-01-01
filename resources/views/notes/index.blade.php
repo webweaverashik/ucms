@@ -107,27 +107,24 @@
                                 </div>
                                 <!--end::Input group-->
 
-                                <!--begin::Input group - Topic-->
+                                <!--begin::Input group - Subject-->
                                 <div class="mb-5">
-                                    <label class="form-label fs-6 fw-semibold">Topic:</label>
-                                    <select id="filter_topic" class="form-select form-select-solid fw-bold"
-                                        data-kt-select2="true" data-placeholder="Select Topic" data-allow-clear="true"
-                                        data-kt-notes-distribution-table-filter="topic" disabled>
+                                    <label class="form-label fs-6 fw-semibold">Subject:</label>
+                                    <select id="filter_subject" class="form-select form-select-solid fw-bold"
+                                        data-kt-select2="true" data-placeholder="Select Subject" data-allow-clear="true"
+                                        data-kt-notes-distribution-table-filter="subject" disabled>
                                         <option></option>
                                     </select>
                                 </div>
                                 <!--end::Input group-->
 
-                                <!--begin::Input group - Subject-->
+                                <!--begin::Input group - Topic-->
                                 <div class="mb-10">
-                                    <label class="form-label fs-6 fw-semibold">Subject:</label>
-                                    <select id="filter_subject" class="form-select form-select-solid fw-bold"
-                                        data-kt-select2="true" data-placeholder="Select Subject" data-allow-clear="true"
-                                        data-kt-notes-distribution-table-filter="subject">
+                                    <label class="form-label fs-6 fw-semibold">Topic:</label>
+                                    <select id="filter_topic" class="form-select form-select-solid fw-bold"
+                                        data-kt-select2="true" data-placeholder="Select Topic" data-allow-clear="true"
+                                        data-kt-notes-distribution-table-filter="topic" disabled>
                                         <option></option>
-                                        @foreach ($subjectNames as $subject)
-                                            <option value="{{ $subject }}">{{ $subject }}</option>
-                                        @endforeach
                                     </select>
                                 </div>
                                 <!--end::Input group-->
@@ -232,6 +229,6 @@
 
     <script>
         document.getElementById("notes_menu").classList.add("here", "show");
-        document.getElementById("all_distributions_link").classList.add("active");
+        document.getElementById("all_distributions_link")?.classList.add("active");
     </script>
 @endpush
