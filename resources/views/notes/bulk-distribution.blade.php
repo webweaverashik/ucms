@@ -60,8 +60,8 @@
                         </span>
                         <div class="overflow-hidden flex-grow-1">
                             <select id="bulk_sheet_group_select"
-                                class="form-select form-select-solid rounded-start-0 border-start"
-                                data-control="select2" data-placeholder="Select Sheet Group">
+                                class="form-select form-select-solid rounded-start-0 border-start" data-control="select2"
+                                data-placeholder="Select Sheet Group">
                                 <option></option>
                                 @foreach ($sheetGroups as $sheet)
                                     <option value="{{ $sheet->id }}">
@@ -82,8 +82,8 @@
                         </span>
                         <div class="overflow-hidden flex-grow-1">
                             <select id="bulk_subject_select"
-                                class="form-select form-select-solid rounded-start-0 border-start"
-                                data-control="select2" data-placeholder="Select Subject" disabled>
+                                class="form-select form-select-solid rounded-start-0 border-start" data-control="select2"
+                                data-placeholder="Select Subject" disabled>
                                 <option></option>
                             </select>
                         </div>
@@ -99,8 +99,8 @@
                         </span>
                         <div class="overflow-hidden flex-grow-1">
                             <select id="bulk_sheet_topic_select"
-                                class="form-select form-select-solid rounded-start-0 border-start"
-                                data-control="select2" data-placeholder="Select Sheet Topic" disabled>
+                                class="form-select form-select-solid rounded-start-0 border-start" data-control="select2"
+                                data-placeholder="Select Sheet Topic" disabled>
                                 <option></option>
                             </select>
                         </div>
@@ -127,10 +127,14 @@
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="card topic-count distributed h-100">
+                    <div class="card topic-count distributed h-100 cursor-pointer" id="card_already_distributed"
+                        data-bs-toggle="tooltip" title="Click to view distributed students">
                         <div class="card-body text-center py-4">
                             <div id="stat_already_distributed" class="fs-2hx fw-bold text-primary">0</div>
-                            <div class="fs-7 text-gray-600">Already Distributed</div>
+                            <div class="fs-7 text-gray-600">
+                                Already Distributed
+                                <i class="ki-outline ki-down fs-7 ms-1"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -188,8 +192,7 @@
                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-5">
                         <div class="position-relative w-250px">
                             <i class="ki-outline ki-magnifier fs-4 position-absolute top-50 translate-middle-y ms-4"></i>
-                            <input type="text" id="bulk_student_search"
-                                class="form-control form-control-solid ps-12"
+                            <input type="text" id="bulk_student_search" class="form-control form-control-solid ps-12"
                                 placeholder="Search students...">
                         </div>
                         <div class="d-flex gap-3">
@@ -225,6 +228,31 @@
                             </button>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            {{-- Already Distributed Section (Hidden initially) --}}
+            <div id="bulk_distributed_section" class="d-none mt-10">
+                <div class="separator separator-dashed my-6"></div>
+
+                {{-- Section Header --}}
+                <div class="d-flex align-items-center mb-5">
+                    <div class="d-flex align-items-center">
+                        <i class="ki-outline ki-check-circle fs-2 text-success me-3"></i>
+                        <h3 class="fs-4 fw-bold text-gray-800 mb-0">Already Distributed</h3>
+                    </div>
+                    <span id="distributed_count_badge" class="badge badge-light-success ms-3">0 students</span>
+                </div>
+
+                {{-- Distributed Students List --}}
+                <div id="bulk_distributed_list" class="row g-3">
+                    {{-- Distributed student cards will be inserted here --}}
+                </div>
+
+                {{-- Empty State for Distributed --}}
+                <div id="bulk_distributed_empty" class="text-center py-8 d-none">
+                    <i class="ki-outline ki-information-4 fs-3x text-gray-400 mb-3"></i>
+                    <p class="text-gray-500 fs-6 mb-0">No students have received this topic yet.</p>
                 </div>
             </div>
         </div>

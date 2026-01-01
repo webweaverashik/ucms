@@ -36,6 +36,23 @@
       border-color: #28a745;
 }
 
+/* Clickable Distributed Card */
+.topic-count.distributed.cursor-pointer {
+      cursor: pointer;
+      position: relative;
+}
+
+.topic-count.distributed.cursor-pointer:hover {
+      background: linear-gradient(135deg, #d0e3fa 0%, #b8d4f8 100%);
+      border-color: #3699ff;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(54, 153, 255, 0.2);
+}
+
+.topic-count.distributed.cursor-pointer:active {
+      transform: translateY(-1px);
+}
+
 /* Pulse Animation for Selected Count */
 @keyframes pulseGreen {
 
@@ -250,6 +267,35 @@
 .badge-light-secondary {
       background-color: #f4f4f4 !important;
       color: #7e8299 !important;
+}
+
+/* ===============================
+   Already Distributed Section
+   =============================== */
+#bulk_distributed_section {
+      scroll-margin-top: 20px;
+}
+
+#bulk_distributed_section h3 {
+      position: relative;
+}
+
+#bulk_distributed_list .card {
+      transition: all 0.2s ease;
+}
+
+#bulk_distributed_list .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(40, 167, 69, 0.15);
+}
+
+/* Distributed Student Card Styling */
+.bg-light-success {
+      background-color: #e8f5e9 !important;
+}
+
+.border-success {
+      border-color: #28a745 !important;
 }
 
 /* ===============================

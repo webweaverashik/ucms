@@ -19,11 +19,19 @@ var KTBulkNotesDistribution = function () {
       var distributeBtn;
       var csrfToken;
 
+      // Distributed section elements
+      var distributedSection;
+      var distributedList;
+      var distributedEmpty;
+      var distributedCountBadge;
+      var cardAlreadyDistributed;
+
       // Current state
       var currentSheetId = null;
       var currentSubjectId = null;
       var currentTopicId = null;
       var pendingStudents = [];
+      var distributedStudents = [];
 
       /**
        * Initialize Select2 dropdowns
@@ -236,10 +244,16 @@ var KTBulkNotesDistribution = function () {
                                     // Store students data
                                     pendingStudents = data.students;
 
-                                    // Render students
+                                    // Render pending students
                                     renderStudents(data.students);
 
-                                    showToast('success', data.students.length + ' pending students loaded');
+                                    // Render already distributed students
+                                    if (data.distributed_students) {
+                                          renderDistributedStudents(data.distributed_students);
+                                    }
+
+                                    // showToast('success', data.students.length + ' pending students loaded');
+                                    showToast('success', 'Students data loaded');
                               }
                         })
                         .catch(function (error) {
@@ -620,7 +634,12 @@ var KTBulkNotesDistribution = function () {
             if (infoBanner) infoBanner.classList.add('d-none');
             if (studentsGrid) studentsGrid.innerHTML = '';
 
+            // Reset distributed section
+            if (distributedSection) distributedSection.classList.add('d-none');
+            if (distributedList) distributedList.innerHTML = '';
+
             pendingStudents = [];
+            distributedStudents = [];
       };
 
       /**
@@ -667,6 +686,92 @@ var KTBulkNotesDistribution = function () {
             }
       };
 
+      /**
+       * Handle click on Already Distributed card to scroll to section
+       */
+      var handleDistributedCardClick = function () {
+            if (!cardAlreadyDistributed) return;
+
+            cardAlreadyDistributed.addEventListener('click', function () {
+                  if (distributedSection && !distributedSection.classList.contains('d-none')) {
+                        distributedSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+            });
+      };
+
+      /**
+       * Render distributed students list
+       */
+      var renderDistributedStudents = function (students) {
+            if (!distributedList || !distributedSection) return;
+
+            distributedStudents = students;
+            distributedList.innerHTML = '';
+
+            // Update badge
+            if (distributedCountBadge) {
+                  distributedCountBadge.textContent = students.length + ' student' + (students.length !== 1 ? 's' : '');
+            }
+
+            if (students.length === 0) {
+                  distributedSection.classList.remove('d-none');
+                  distributedList.classList.add('d-none');
+                  if (distributedEmpty) distributedEmpty.classList.remove('d-none');
+                  return;
+            }
+
+            distributedSection.classList.remove('d-none');
+            distributedList.classList.remove('d-none');
+            if (distributedEmpty) distributedEmpty.classList.add('d-none');
+
+            students.forEach(function (student) {
+                  var initials = getInitials(student.name);
+                  var avatarColor = getAvatarColor(student.id);
+                  var distributedDate = student.distributed_at ? formatDate(student.distributed_at) : 'N/A';
+                  var distributedBy = student.distributed_by_name || 'System';
+
+                  var col = document.createElement('div');
+                  col.className = 'col-sm-6 col-lg-4 col-xl-3';
+
+                  col.innerHTML =
+                        '<div class="card card-flush bg-light-success border border-success border-dashed h-100">' +
+                        '<div class="card-body p-4">' +
+                        '<div class="d-flex align-items-center">' +
+                        '<div class="symbol symbol-40px symbol-circle me-3">' +
+                        '<span class="symbol-label bg-success text-white fs-6 fw-bold">' +
+                        initials +
+                        '</span>' +
+                        '</div>' +
+                        '<div class="flex-grow-1 overflow-hidden">' +
+                        '<div class="fw-bold text-gray-800 text-truncate">' + student.name + '</div>' +
+                        '<div class="text-gray-600 fs-7">' + student.student_unique_id + '</div>' +
+                        '</div>' +
+                        '<div class="ms-2">' +
+                        '<i class="ki-outline ki-check-circle fs-2 text-success"></i>' +
+                        '</div>' +
+                        '</div>' +
+                        '<div class="separator separator-dashed my-3"></div>' +
+                        '<div class="d-flex justify-content-between fs-7 text-gray-600">' +
+                        '<span><i class="ki-outline ki-calendar fs-7 me-1"></i>' + distributedDate + '</span>' +
+                        '<span><i class="ki-outline ki-user fs-7 me-1"></i>' + distributedBy + '</span>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>';
+
+                  distributedList.appendChild(col);
+            });
+      };
+
+      /**
+       * Format date string
+       */
+      var formatDate = function (dateString) {
+            if (!dateString) return 'N/A';
+            var date = new Date(dateString);
+            var options = { day: '2-digit', month: 'short', year: 'numeric' };
+            return date.toLocaleDateString('en-GB', options);
+      };
+
       return {
             // Public functions
             init: function () {
@@ -680,6 +785,13 @@ var KTBulkNotesDistribution = function () {
                   studentsList = document.getElementById('bulk_students_list');
                   infoBanner = document.getElementById('bulk_topic_banner');
                   infoCards = document.getElementById('bulk_info_cards');
+
+                  // Distributed section elements
+                  distributedSection = document.getElementById('bulk_distributed_section');
+                  distributedList = document.getElementById('bulk_distributed_list');
+                  distributedEmpty = document.getElementById('bulk_distributed_empty');
+                  distributedCountBadge = document.getElementById('distributed_count_badge');
+                  cardAlreadyDistributed = document.getElementById('card_already_distributed');
 
                   // Get CSRF token
                   var csrfMeta = document.querySelector('meta[name="csrf-token"]');
@@ -702,6 +814,7 @@ var KTBulkNotesDistribution = function () {
                   handleClearSelection();
                   handleStudentSearch();
                   handleDistribute();
+                  handleDistributedCardClick();
             }
       };
 }();

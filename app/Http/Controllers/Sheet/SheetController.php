@@ -237,10 +237,7 @@ class SheetController extends Controller
      */
     public function getSubjectsList(Sheet $sheet)
     {
-        $subjects = Subject::where('class_id', $sheet->class_id)
-            ->orderBy('academic_group')
-            ->orderBy('name')
-            ->get();
+        $subjects = Subject::where('class_id', $sheet->class_id)->orderBy('academic_group')->orderBy('name')->get();
 
         $formattedSubjects = $subjects->map(function ($subject) {
             return [
@@ -272,16 +269,16 @@ class SheetController extends Controller
     {
         // Verify subject belongs to this sheet's class
         if ($subject->class_id !== $sheet->class_id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Subject does not belong to this sheet group',
-            ], 400);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Subject does not belong to this sheet group',
+                ],
+                400,
+            );
         }
 
-        $topics = SheetTopic::where('subject_id', $subject->id)
-            ->where('status', 'active')
-            ->orderBy('topic_name')
-            ->get();
+        $topics = SheetTopic::where('subject_id', $subject->id)->where('status', 'active')->orderBy('topic_name')->get();
 
         $formattedTopics = $topics->map(function ($topic) {
             return [
@@ -314,12 +311,7 @@ class SheetController extends Controller
         $subjects = Subject::where('class_id', $sheet->class_id)->get();
 
         // Get all active topics for these subjects
-        $topics = SheetTopic::whereIn('subject_id', $subjects->pluck('id'))
-            ->where('status', 'active')
-            ->with('subject:id,name,academic_group')
-            ->orderBy('subject_id')
-            ->orderBy('topic_name')
-            ->get();
+        $topics = SheetTopic::whereIn('subject_id', $subjects->pluck('id'))->where('status', 'active')->with('subject:id,name,academic_group')->orderBy('subject_id')->orderBy('topic_name')->get();
 
         $formattedTopics = $topics->map(function ($topic) {
             return [
@@ -356,10 +348,9 @@ class SheetController extends Controller
         // Get all students who paid for this sheet
         $paidPayments = SheetPayment::where('sheet_id', $sheet->id)
             ->whereHas('invoice', function ($query) {
-                $query->whereIn('status', ['paid', 'partially_paid'])
-                    ->whereHas('invoiceType', function ($q) {
-                        $q->where('type_name', 'Sheet Fee');
-                    });
+                $query->whereIn('status', ['paid', 'partially_paid'])->whereHas('invoiceType', function ($q) {
+                    $q->where('type_name', 'Sheet Fee');
+                });
             })
             ->with(['student:id,name,student_unique_id,class_id,academic_group,branch_id', 'student.class:id,name,class_numeral'])
             ->when($branchId != 0, function ($query) use ($branchId) {
@@ -369,10 +360,12 @@ class SheetController extends Controller
             })
             ->get();
 
-        // Get students who already have this topic
-        $distributedStudentIds = SheetTopicTaken::where('sheet_topic_id', $topic->id)
-            ->pluck('student_id')
-            ->toArray();
+        // Get students who already have this topic with distribution details
+        $distributedRecords = SheetTopicTaken::where('sheet_topic_id', $topic->id)
+            ->with(['student:id,name,student_unique_id', 'distributedBy:id,name'])
+            ->get();
+
+        $distributedStudentIds = $distributedRecords->pluck('student_id')->toArray();
 
         // Get topic's academic group
         $topicSubject       = Subject::find($topic->subject_id);
@@ -419,21 +412,36 @@ class SheetController extends Controller
             ];
         }
 
+        // Format distributed students for response
+        $distributedStudents = $distributedRecords
+            ->map(function ($record) {
+                return [
+                    'id'                  => $record->student->id ?? null,
+                    'name'                => $record->student->name ?? 'Unknown',
+                    'student_unique_id'   => $record->student->student_unique_id ?? 'N/A',
+                    'distributed_at'      => $record->created_at->toISOString(),
+                    'distributed_by_name' => $record->distributedBy->name ?? 'System',
+                ];
+            })
+            ->values()
+            ->toArray();
+
         return response()->json([
-            'success'  => true,
-            'students' => $pendingStudents,
-            'stats'    => [
+            'success'              => true,
+            'students'             => $pendingStudents,
+            'distributed_students' => $distributedStudents,
+            'stats'                => [
                 'total_paid'          => $totalPaidCount,
                 'already_distributed' => $alreadyDistributedCount,
                 'pending'             => count($pendingStudents),
             ],
-            'topic'    => [
+            'topic'                => [
                 'id'             => $topic->id,
                 'name'           => $topic->topic_name,
                 'subject'        => $topicSubject->name ?? 'Unknown',
                 'academic_group' => $topicAcademicGroup,
             ],
-            'sheet'    => [
+            'sheet'                => [
                 'id'         => $sheet->id,
                 'class_name' => $sheet->class->name ?? 'Unknown',
             ],
