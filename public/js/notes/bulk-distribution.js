@@ -253,7 +253,7 @@ var KTBulkNotesDistribution = function () {
                                     }
 
                                     // showToast('success', data.students.length + ' pending students loaded');
-                                    showToast('success', 'Students data loaded');
+                                    showToast('success', 'Students data loaded successfully');
                               }
                         })
                         .catch(function (error) {
