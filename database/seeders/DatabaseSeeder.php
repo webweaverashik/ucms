@@ -38,18 +38,18 @@ class DatabaseSeeder extends Seeder
 
             // TeacherSeeder::class,
             // ReferenceSeeder::class,
-            StudentSeeder::class,
-            GuardianSeeder::class,
-            MobileNumberSeeder::class,
-            SiblingSeeder::class,
+            // StudentSeeder::class,
+            // GuardianSeeder::class,
+            // MobileNumberSeeder::class,
+            // SiblingSeeder::class,
 
             SubjectSeeder::class,
-            SubjectTakenSeeder::class,
+            // SubjectTakenSeeder::class,
 
-            PaymentSeeder::class,
+            // PaymentSeeder::class,
             PaymentInvoiceTypeSeeder::class,
-            PaymentInvoiceSeeder::class,
-            PaymentTransactionSeeder::class,
+            // PaymentInvoiceSeeder::class,
+            // PaymentTransactionSeeder::class,
 
             // CostSeeder::class,
             CostTypeSeeder::class,
