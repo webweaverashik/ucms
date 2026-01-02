@@ -30,7 +30,7 @@ class PaymentTransactionController extends Controller
         $cacheKey = "transactions_branch_{$branchId}";
 
         $transactions = Cache::remember($cacheKey, now()->addHours(1), function () use ($branchId) {
-            return PaymentTransaction::with(['paymentInvoice:id,invoice_number', 'createdBy:id,name', 'student:id,name,student_unique_id,branch_id', 'student.branch:id,branch_name'])
+            return PaymentTransaction::with(['paymentInvoice:id,invoice_number,created_at', 'createdBy:id,name', 'student:id,name,student_unique_id,branch_id', 'student.branch:id,branch_name'])
                 ->whereHas('student', function ($query) use ($branchId) {
                     if ($branchId != 0) {
                         $query->where('branch_id', $branchId);
@@ -180,7 +180,10 @@ class PaymentTransactionController extends Controller
                 'is_approved' => $transaction->is_approved,
             ];
 
-            $walletService->recordCollection(user: auth()->user(), amount: $payment->amount_paid, payment: $payment, description: "Collection from Student #{$payment->student_id}");
+            /* ---------------- Update wallet ---------------- */
+            $walletService = new WalletService();
+
+            $walletService->recordCollection(user: auth()->user(), amount: $transaction->amount_paid, payment: $transaction, description: "Collection from Student #{$transaction->student->student_unique_id} for Invoice #{$invoice->invoice_number} (Voucher #{$transaction->voucher_no})");
         });
 
         clearUCMSCaches();

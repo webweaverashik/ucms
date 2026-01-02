@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Settlement;
 
 use App\Http\Controllers\Controller;
+use App\Models\Branch;
 use App\Models\User;
 use App\Models\UserWalletLog;
 use App\Services\WalletService;
@@ -17,15 +18,42 @@ class SettlementController extends Controller
     }
 
     /**
-     * Display list of users with pending balances.
+     * Display list of all users with their balances grouped by branch.
      */
     public function index()
     {
-        $users = User::where('current_balance', '>', 0)->with('branch')->orderBy('current_balance', 'desc')->get();
+        $branches = Branch::orderBy('branch_name')->get();
 
-        $totalPending = $users->sum('current_balance');
+        // Get admin users (shown in all tabs)
+        $adminUsers = User::with('branch')->role('admin')->orderBy('current_balance', 'desc')->orderBy('name')->get();
 
-        return view('settlements.index', compact('users', 'totalPending'));
+        // Group users by branch (excluding admins to avoid duplicates in counting)
+        $usersByBranch = [];
+        $allUsers      = collect();
+
+        foreach ($branches as $branch) {
+            // Get non-admin users for this branch
+            $branchUsers = User::with('branch')
+                ->where('branch_id', $branch->id)
+                ->whereDoesntHave('roles', function ($q) {
+                    $q->where('name', 'admin');
+                })
+                ->orderBy('current_balance', 'desc')
+                ->orderBy('name')
+                ->get();
+
+            // Merge with admin users for display
+            $usersByBranch[$branch->id] = $adminUsers->merge($branchUsers)->sortByDesc('current_balance');
+            $allUsers                   = $allUsers->merge($branchUsers);
+        }
+
+        // Add admin users to allUsers for total calculations
+        $allUsers = $allUsers->merge($adminUsers);
+
+        $usersWithBalance = $allUsers->where('current_balance', '>', 0)->count();
+        $totalPending     = $allUsers->sum('current_balance');
+
+        return view('settlements.index', compact('branches', 'usersByBranch', 'adminUsers', 'usersWithBalance', 'totalPending'));
     }
 
     /**
@@ -54,8 +82,26 @@ class SettlementController extends Controller
         try {
             $this->walletService->recordSettlement(user: $user, amount: $request->amount, description: $request->notes);
 
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "Successfully settled ৳{$request->amount} from {$user->name}",
+                    'new_balance' => $user->fresh()->current_balance,
+                ]);
+            }
+
             return back()->with('success', "Successfully settled ৳{$request->amount} from {$user->name}");
         } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => $e->getMessage(),
+                    ],
+                    422,
+                );
+            }
+
             return back()->with('error', $e->getMessage());
         }
     }
@@ -65,10 +111,11 @@ class SettlementController extends Controller
      */
     public function show(User $user)
     {
+        // Load all logs for client-side DataTable
         $logs = $user
             ->walletLogs()
             ->with(['paymentTransaction.student', 'creator'])
-            ->paginate(20);
+            ->get();
 
         $summary = $this->walletService->getSummary($user);
 
@@ -80,24 +127,11 @@ class SettlementController extends Controller
      */
     public function logs(Request $request)
     {
-        $query = UserWalletLog::with(['user', 'creator', 'paymentTransaction'])->latest('created_at');
+        // Load all logs for client-side DataTable
+        $logs = UserWalletLog::with(['user', 'creator', 'paymentTransaction'])
+            ->latest('created_at')
+            ->get();
 
-        // Filter by user
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->user_id);
-        }
-
-        // Filter by type
-        if ($request->filled('type')) {
-            $query->where('type', $request->type);
-        }
-
-        // Filter by date range
-        if ($request->filled('from_date') && $request->filled('to_date')) {
-            $query->betweenDates($request->from_date, $request->to_date);
-        }
-
-        $logs  = $query->paginate(30);
         $users = User::orderBy('name')->get(['id', 'name']);
 
         return view('settlements.logs', compact('logs', 'users'));
