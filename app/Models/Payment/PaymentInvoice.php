@@ -44,6 +44,12 @@ class PaymentInvoice extends Model
         return $this->belongsTo(User::class, 'created_by')->withTrashed();
     }
 
+    // Check if the student has an associated sheet
+    public function hasSheet()
+    {
+        return $this->sheetPayment && $this->sheetPayment->sheet;
+    }
+
     /*
         Get all the sheet payments for this invoice
     */

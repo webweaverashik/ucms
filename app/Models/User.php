@@ -1,7 +1,6 @@
 <?php
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -10,33 +9,34 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, SoftDeletes, HasRoles;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $fillable = ['name', 'email', 'mobile_number', 'password', 'branch_id', 'is_active', 'photo_url'];
+    protected $fillable = [
+        'name',
+        'email',
+        'mobile_number',
+        'password',
+        'branch_id',
+        'is_active',
+        'photo_url',
+        'current_balance',
+        'total_collected',
+        'total_settled',
+    ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password'          => 'hashed',
+            'current_balance'   => 'decimal:2',
+            'total_collected'   => 'decimal:2',
+            'total_settled'     => 'decimal:2',
         ];
     }
 
@@ -46,25 +46,16 @@ class User extends Authenticatable
     |--------------------------------------------------------------------------
     */
 
-    /**
-     * Check if user is an Admin.
-     */
     public function isAdmin(): bool
     {
         return $this->hasRole('admin');
     }
 
-    /**
-     * Check if user is a Manager.
-     */
     public function isManager(): bool
     {
         return $this->hasRole('manager');
     }
 
-    /**
-     * Check if user is an Accountant.
-     */
     public function isAccountant(): bool
     {
         return $this->hasRole('accountant');
@@ -76,31 +67,74 @@ class User extends Authenticatable
     |--------------------------------------------------------------------------
     */
 
-    /**
-     * Get the associated branch of the current user.
-     */
     public function branch()
     {
         return $this->belongsTo(Branch::class);
     }
 
-    /**
-     * Get the login activities for the user.
-     */
     public function loginActivities()
     {
         return $this->hasMany(LoginActivity::class, 'user_id')
             ->where('user_type', 'user');
     }
 
-    /**
-     * Get the latest login activities for the user.
-     */
     public function latestLoginActivity()
     {
         return $this->hasOne(LoginActivity::class)
             ->where('user_type', 'user')
             ->latestOfMany()
             ->select('login_activities.*');
+    }
+
+    /**
+     * Get wallet transaction logs for this user.
+     */
+    public function walletLogs()
+    {
+        return $this->hasMany(UserWalletLog::class)->latest('created_at');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Wallet Helper Methods
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Get current wallet balance.
+     */
+    public function getWalletBalance(): float
+    {
+        return (float) ($this->current_balance ?? 0);
+    }
+
+    /**
+     * Check if user has sufficient balance for settlement.
+     */
+    public function hasSufficientBalance(float $amount): bool
+    {
+        return $this->getWalletBalance() >= $amount;
+    }
+
+    /**
+     * Get today's collection total.
+     */
+    public function getTodayCollection(): float
+    {
+        return (float) $this->walletLogs()
+            ->collections()
+            ->today()
+            ->sum('amount');
+    }
+
+    /**
+     * Get today's settlement total.
+     */
+    public function getTodaySettlement(): float
+    {
+        return (float) abs($this->walletLogs()
+                ->settlements()
+                ->today()
+                ->sum('amount'));
     }
 }

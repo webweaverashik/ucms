@@ -501,22 +501,24 @@
                                 </div>
                                 <!--end:SMS Campaign item-->
 
-                                <!--begin:SMS template item-->
-                                <div class="menu-item">
-                                    <!--begin:Menu link-->
-                                    <a class="menu-link" id="finance_report_link"
-                                        href="{{ route('reports.finance.index') }}">
-                                        <span class="menu-bullet">
-                                            <span class="bullet bullet-dot">
+                                @if (!auth()->user()->isAccountant())
+                                    <!--begin:SMS template item-->
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <a class="menu-link" id="finance_report_link"
+                                            href="{{ route('reports.finance.index') }}">
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot">
+                                                </span>
                                             </span>
-                                        </span>
-                                        <span class="menu-title">Finance Reports</span>
-                                    </a>
-                                    <!--end:Menu link-->
-                                </div>
-                                <!--end:SMS template item-->
+                                            <span class="menu-title">Finance Reports</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                    <!--end:SMS template item-->
+                                @endif
 
-                                @if (auth()->user()->hasRole('admin'))
+                                @if (auth()->user()->isAdmin())
                                     <!--begin:Activity Logs item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link-->

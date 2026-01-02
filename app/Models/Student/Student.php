@@ -37,6 +37,7 @@ class Student extends Model
         return $query->whereNull('student_activation_id');
     }
 
+
     // Get the branch of the student:
     public function branch()
     {

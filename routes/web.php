@@ -235,21 +235,30 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
         Route::get('/referrers/students', [ReferenceController::class, 'getStudents'])->name('admin.referrers.students');
     });
 
+    // Settlements
+    Route::prefix('settlements')->name('settlements.')->group(function () {
+        Route::get('/', [SettlementController::class, 'index'])->name('index');
+        Route::get('/logs', [SettlementController::class, 'logs'])->name('logs');
+        Route::get('/create/{user}', [SettlementController::class, 'create'])->name('create');
+        Route::post('/', [SettlementController::class, 'store'])->name('store');
+        Route::get('/{user}', [SettlementController::class, 'show'])->name('show');
+    });
+
     // Resource Routes
     Route::resources([
-        'settings/users' => UserController::class,
-        'students' => StudentController::class,
-        'guardians' => GuardianController::class,
-        'siblings' => SiblingController::class,
-        'teachers' => TeacherController::class,
-        'institutions' => InstitutionController::class,
-        'classnames' => ClassNameController::class,
-        'batches' => BatchController::class,
-        'subjects' => SubjectController::class,
-        'invoices' => PaymentInvoiceController::class,
-        'transactions' => PaymentTransactionController::class,
-        'sheets' => SheetController::class,
-        'notes' => SheetTopicController::class,
+        'settings/users'    => UserController::class,
+        'students'          => StudentController::class,
+        'guardians'         => GuardianController::class,
+        'siblings'          => SiblingController::class,
+        'teachers'          => TeacherController::class,
+        'institutions'      => InstitutionController::class,
+        'classnames'        => ClassNameController::class,
+        'batches'           => BatchController::class,
+        'subjects'          => SubjectController::class,
+        'invoices'          => PaymentInvoiceController::class,
+        'transactions'      => PaymentTransactionController::class,
+        'sheets'            => SheetController::class,
+        'notes'             => SheetTopicController::class,
         'sms/send-campaign' => SmsCampaignController::class,
     ]);
 });

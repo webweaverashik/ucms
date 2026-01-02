@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use App\Services\WalletService;
 
 class PaymentTransactionController extends Controller
 {
@@ -138,10 +139,10 @@ class PaymentTransactionController extends Controller
             }
 
             /* =====================================================
-         * ✅ SHEET PAYMENT AUTO INSERT (CORRECTED)
-         * Sheet resolved via: student → class → sheet
-         * =====================================================
-         */
+             * ✅ SHEET PAYMENT AUTO INSERT (CORRECTED)
+             * Sheet resolved via: student → class → sheet
+             * =====================================================
+             */
             if ($invoice->invoiceType?->type_name === 'Sheet Fee') {
                 $sheet = $invoice->student->class?->sheet;
 
@@ -178,6 +179,8 @@ class PaymentTransactionController extends Controller
                 'year'        => $invoice->created_at->format('Y'),
                 'is_approved' => $transaction->is_approved,
             ];
+
+            $walletService->recordCollection(user: auth()->user(), amount: $payment->amount_paid, payment: $payment, description: "Collection from Student #{$payment->student_id}");
         });
 
         clearUCMSCaches();

@@ -155,8 +155,8 @@
                                     {{ \Carbon\Carbon::createFromFormat('m_Y', $invoice->month_year)->format('F Y') }}
                                 </td>
                             </tr>
-                        @elseif ($invoice->invoiceType->type_name == 'Sheet Fee')
-                            <tr class="">
+                        @elseif ($invoice->invoiceType->type_name === 'Sheet Fee' && $invoice->hasSheet())
+                            <tr>
                                 <td class="text-gray-500">Sheet Group:</td>
                                 <td class="text-gray-800">
                                     <a href="{{ route('sheets.show', $invoice->sheetPayment->sheet->id) }}"
@@ -226,50 +226,52 @@
                     <!--end::Details-->
                 </div>
                 <div class="col-md-1">
-                    <!--begin::Actions-->
-                    <div class="d-flex justify-content-end mb-4">
-                        @if ($invoice->paymentTransactions->count() == 0)
-                            <!--begin::Three Dots-->
-                            <div class="me-0">
-                                <button class="btn btn-sm btn-icon btn-bg-light btn-active-color-primary"
-                                    data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
-                                    <i class="ki-solid ki-dots-horizontal fs-2x"></i>
-                                </button>
+                    @canany(['invoices.edit', 'invoices.delete'])
+                        <!--begin::Actions-->
+                        <div class="d-flex justify-content-end mb-4">
+                            @if ($invoice->paymentTransactions->count() == 0)
                                 <!--begin::Three Dots-->
-                                <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-semibold w-150px py-3"
-                                    data-kt-menu="true">
-                                    @can('invoices.edit')
-                                        <div class="menu-item px-3">
-                                            <a href="#" class="menu-link px-3 text-hover-primary edit-invoice-btn"
-                                                data-invoice-id="{{ $invoice->id }}"
-                                                data-invoice-number="{{ $invoice->invoice_number }}"
-                                                data-student-id="{{ $invoice->student_id }}"
-                                                data-invoice-type-id="{{ $invoice->invoice_type_id }}"
-                                                data-invoice-type-name="{{ $invoice->invoiceType->type_name }}"
-                                                data-month-year="{{ $invoice->month_year }}"
-                                                data-total-amount="{{ $invoice->total_amount }}"
-                                                data-tuition-fee="{{ $invoice->student->payments->tuition_fee ?? 0 }}"><i
-                                                    class="las la-pen fs-2 me-2"></i> Edit</a>
-                                        </div>
-                                    @endcan
-                                    @if (optional($invoice->student->studentActivation)->active_status == 'active' && $invoice->status == 'due')
-                                        @can('invoices.delete')
-                                            <!--begin::Menu item-->
+                                <div class="me-0">
+                                    <button class="btn btn-sm btn-icon btn-bg-light btn-active-color-primary"
+                                        data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
+                                        <i class="ki-solid ki-dots-horizontal fs-2x"></i>
+                                    </button>
+                                    <!--begin::Three Dots-->
+                                    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-semibold w-150px py-3"
+                                        data-kt-menu="true">
+                                        @can('invoices.edit')
                                             <div class="menu-item px-3">
-                                                <a href="#" class="menu-link text-hover-danger px-3 delete-invoice"
-                                                    data-invoice-id={{ $invoice->id }}><i class="las la-trash fs-2 me-2"></i>
-                                                    Delete</a>
+                                                <a href="#" class="menu-link px-3 text-hover-primary edit-invoice-btn"
+                                                    data-invoice-id="{{ $invoice->id }}"
+                                                    data-invoice-number="{{ $invoice->invoice_number }}"
+                                                    data-student-id="{{ $invoice->student_id }}"
+                                                    data-invoice-type-id="{{ $invoice->invoice_type_id }}"
+                                                    data-invoice-type-name="{{ $invoice->invoiceType->type_name }}"
+                                                    data-month-year="{{ $invoice->month_year }}"
+                                                    data-total-amount="{{ $invoice->total_amount }}"
+                                                    data-tuition-fee="{{ $invoice->student->payments->tuition_fee ?? 0 }}"><i
+                                                        class="las la-pen fs-2 me-2"></i> Edit</a>
                                             </div>
-                                            <!--end::Menu item-->
                                         @endcan
-                                    @endif
+                                        @if (optional($invoice->student->studentActivation)->active_status == 'active' && $invoice->status == 'due')
+                                            @can('invoices.delete')
+                                                <!--begin::Menu item-->
+                                                <div class="menu-item px-3">
+                                                    <a href="#" class="menu-link text-hover-danger px-3 delete-invoice"
+                                                        data-invoice-id={{ $invoice->id }}><i class="las la-trash fs-2 me-2"></i>
+                                                        Delete</a>
+                                                </div>
+                                                <!--end::Menu item-->
+                                            @endcan
+                                        @endif
+                                    </div>
+                                    <!--end::Menu 3-->
                                 </div>
-                                <!--end::Menu 3-->
-                            </div>
-                        @endif
-                        <!--end::Menu-->
-                    </div>
-                    <!--end::Actions-->
+                            @endif
+                            <!--end::Menu-->
+                        </div>
+                        <!--end::Actions-->
+                    @endcanany
                 </div>
             </div>
             <!--end::Details-->
