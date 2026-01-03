@@ -67,19 +67,6 @@ class SettlementController extends Controller
     }
 
     /**
-     * Show settlement form for a specific user.
-     */
-    public function create(User $user)
-    {
-        $recentLogs = $user->walletLogs()
-            ->with('creator')
-            ->limit(10)
-            ->get();
-
-        return view('settlements.create', compact('user', 'recentLogs'));
-    }
-
-    /**
      * Process settlement from a user.
      */
     public function store(Request $request)

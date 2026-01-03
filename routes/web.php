@@ -240,7 +240,6 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::prefix('settlements')->name('settlements.')->group(function () {
         Route::get('/', [SettlementController::class, 'index'])->name('index');
         Route::get('/logs', [SettlementController::class, 'logs'])->name('logs');
-        Route::get('/create/{user}', [SettlementController::class, 'create'])->name('create');
         Route::post('/', [SettlementController::class, 'store'])->name('store');
         Route::post('/adjustment', [SettlementController::class, 'adjustment'])->name('adjustment');
         Route::get('/{user}', [SettlementController::class, 'show'])->name('show');
