@@ -319,6 +319,7 @@
                             <th>Payment Type</th>
                             <th>Payment Date</th>
                             <th>Remarks</th>
+                            <th>Received By</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -344,6 +345,7 @@
                                     {{ $transaction->created_at->format('h:i:s A, d-M-Y') }}
                                 </td>
                                 <td>{{ $transaction->remarks }}</td>
+                                <td>{{ $transaction->createdBy->name }}</td>
                                 <td>
                                     @if ($transaction->is_approved === false)
                                         @can('transactions.approve')

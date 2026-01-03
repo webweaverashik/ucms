@@ -22,6 +22,10 @@ class SettlementController extends Controller
      */
     public function index()
     {
+        if (! auth()->user()->isAdmin()) {
+            return back()->with('error', 'Access to this page is restricted.');
+        }
+
         $branches = Branch::orderBy('branch_name')->get();
 
         // Get admin users (shown in all tabs)
@@ -112,6 +116,10 @@ class SettlementController extends Controller
      */
     public function show(User $user)
     {
+        if (! auth()->user()->isAdmin()) {
+            return back()->with('error', 'Access to this page is restricted.');
+        }
+
         // Load all logs for client-side DataTable
         $logs = $user->walletLogs()
             ->with(['paymentTransaction.student', 'creator'])
@@ -186,8 +194,12 @@ class SettlementController extends Controller
      */
     public function logs(Request $request)
     {
+        if (! auth()->user()->isAdmin()) {
+            return back()->with('error', 'Access to this page is restricted.');
+        }
+
         // Load all logs for client-side DataTable
-        $logs = UserWalletLog::with(['user', 'creator', 'paymentTransaction'])
+        $logs = UserWalletLog::with(['user:id,name', 'creator:id,name', 'paymentTransaction:id,payment_invoice_id'])
             ->latest('created_at')
             ->get();
 

@@ -12,9 +12,9 @@ var KTWalletLogs = function () {
       var initDatatable = function () {
             datatable = $(table).DataTable({
                   info: true,
-                  order: [[0, 'desc']],
-                  pageLength: 25,
-                  lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                  order: [],
+                  pageLength: 10,
+                  lengthMenu: [10, 25, 50, 100],
                   columnDefs: [
                         { orderable: false, targets: [3] }
                   ],

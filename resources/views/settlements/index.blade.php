@@ -7,18 +7,37 @@
 @section('title', 'User Settlements')
 
 @section('header-title')
-    <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
-        User Settlements
-    </h1>
-    <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
-        <li class="breadcrumb-item text-muted">
-            <a href="{{ route('dashboard') }}" class="text-muted text-hover-primary">Dashboard</a>
-        </li>
-        <li class="breadcrumb-item">
-            <span class="bullet bg-gray-500 w-5px h-2px"></span>
-        </li>
-        <li class="breadcrumb-item text-muted">Settlements</li>
-    </ul>
+    <div data-kt-swapper="true" data-kt-swapper-mode="{default: 'prepend', lg: 'prepend'}"
+        data-kt-swapper-parent="{default: '#kt_app_content_container', lg: '#kt_app_header_wrapper'}"
+        class="page-title d-flex align-items-center flex-wrap me-3 mb-5 mb-lg-0">
+        <!--begin::Title-->
+        <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 align-items-center my-0">
+            User Settlements
+        </h1>
+        <!--end::Title-->
+        <!--begin::Separator-->
+        <span class="h-20px border-gray-300 border-start mx-4"></span>
+        <!--end::Separator-->
+        <!--begin::Breadcrumb-->
+        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 ">
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-muted">
+                <a href="{{ route('settlements.index') }}" class="text-muted text-hover-primary">
+                    Settlements</a>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item">
+                <span class="bullet bg-gray-500 w-5px h-2px"></span>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-muted">
+                User Wise Settlements </li>
+            <!--end::Item-->
+        </ul>
+        <!--end::Breadcrumb-->
+    </div>
 @endsection
 
 @section('content')
@@ -112,23 +131,17 @@
                     {{-- Search --}}
                     <div class="d-flex align-items-center position-relative">
                         <i class="ki-outline ki-magnifier fs-3 position-absolute ms-4"></i>
-                        <input type="text" data-kt-filter="search" class="form-control form-control-solid w-200px ps-12"
+                        <input type="text" data-kt-filter="search" class="form-control form-control-solid w-300px ps-12"
                             placeholder="Search user..." />
                     </div>
 
                     {{-- Balance Filter --}}
-                    <select class="form-select form-select-solid w-150px" data-kt-filter="balance" data-control="select2"
+                    <select class="form-select form-select-solid w-200px" data-kt-filter="balance" data-control="select2"
                         data-placeholder="All Balances" data-allow-clear="true" data-hide-search="true">
                         <option></option>
                         <option value="with_balance">With Balance</option>
                         <option value="zero_balance">Zero Balance</option>
                     </select>
-
-                    {{-- View Logs Button --}}
-                    <a href="{{ route('settlements.logs') }}" class="btn btn-sm btn-flex btn-light-primary">
-                        <i class="ki-outline ki-document fs-4 me-1"></i>
-                        View All Logs
-                    </a>
                 </div>
             </div>
         </div>
@@ -139,10 +152,11 @@
                 @foreach ($branches as $index => $branch)
                     <div class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}"
                         id="kt_tab_branch_{{ $branch->id }}">
-                        <table class="table align-middle table-row-dashed fs-6 gy-5 kt-settlements-table ucms-table"
+                        <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 kt-settlements-table ucms-table"
                             data-branch-id="{{ $branch->id }}">
                             <thead>
-                                <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
+                                <tr class="fw-bold fs-7 text-uppercase gs-0">
+                                    <th class="w-50px">#</th>
                                     <th class="min-w-150px">User</th>
                                     <th class="min-w-80px">Role</th>
                                     <th class="min-w-100px text-end">Total Collected</th>
@@ -154,12 +168,13 @@
                             <tbody class="fw-semibold text-gray-600">
                                 @forelse($usersByBranch[$branch->id] as $user)
                                     <tr>
+                                        <td>{{ $loop->index + 1 }}</td>
                                         <td class="d-flex align-items-center">
                                             <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
                                                 @if ($user->photo_url)
                                                     <div class="symbol-label">
-                                                        <img src="{{ asset($user->photo_url) }}" alt="{{ $user->name }}"
-                                                            class="w-100" />
+                                                        <img src="{{ asset($user->photo_url) }}"
+                                                            alt="{{ $user->name }}" class="w-100" />
                                                     </div>
                                                 @else
                                                     <div class="symbol-label fs-3 bg-light-primary text-primary">
@@ -167,7 +182,7 @@
                                                     </div>
                                                 @endif
                                             </div>
-                                            <div class="d-flex flex-column">
+                                            <div class="d-flex flex-column  text-start">
                                                 <a href="{{ route('settlements.show', $user) }}"
                                                     class="text-gray-800 text-hover-primary mb-1">{{ $user->name }}</a>
                                                 <span>{{ $user->mobile_number }}</span>
@@ -177,7 +192,7 @@
                                             @if ($user->isAdmin())
                                                 <span class="badge badge-light-danger">Admin</span>
                                             @elseif($user->isManager())
-                                                <span class="badge badge-light-warning">Manager</span>
+                                                <span class="badge badge-light-success">Manager</span>
                                             @elseif($user->isAccountant())
                                                 <span class="badge badge-light-info">Accountant</span>
                                             @else
@@ -331,7 +346,7 @@
     <script src="{{ asset('js/settlements/index.js') }}"></script>
 
     <script>
-        document.getElementById("reports_menu")?.classList.add("here", "show");
+        document.getElementById("settlements_menu")?.classList.add("here", "show");
         document.getElementById("settlements_link")?.classList.add("active");
     </script>
 @endpush

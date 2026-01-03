@@ -7,24 +7,37 @@
 @section('title', 'Wallet History - ' . $user->name)
 
 @section('header-title')
-    <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
-        Wallet History
-    </h1>
-    <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
-        <li class="breadcrumb-item text-muted">
-            <a href="{{ route('dashboard') }}" class="text-muted text-hover-primary">Dashboard</a>
-        </li>
-        <li class="breadcrumb-item">
-            <span class="bullet bg-gray-500 w-5px h-2px"></span>
-        </li>
-        <li class="breadcrumb-item text-muted">
-            <a href="{{ route('settlements.index') }}" class="text-muted text-hover-primary">Settlements</a>
-        </li>
-        <li class="breadcrumb-item">
-            <span class="bullet bg-gray-500 w-5px h-2px"></span>
-        </li>
-        <li class="breadcrumb-item text-muted">{{ $user->name }}</li>
-    </ul>
+    <div data-kt-swapper="true" data-kt-swapper-mode="{default: 'prepend', lg: 'prepend'}"
+        data-kt-swapper-parent="{default: '#kt_app_content_container', lg: '#kt_app_header_wrapper'}"
+        class="page-title d-flex align-items-center flex-wrap me-3 mb-5 mb-lg-0">
+        <!--begin::Title-->
+        <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 align-items-center my-0">
+            {{ $user->name }} - Wallet History
+        </h1>
+        <!--end::Title-->
+        <!--begin::Separator-->
+        <span class="h-20px border-gray-300 border-start mx-4"></span>
+        <!--end::Separator-->
+        <!--begin::Breadcrumb-->
+        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 ">
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-muted">
+                <a href="{{ route('settlements.index') }}" class="text-muted text-hover-primary">
+                    Settlements</a>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item">
+                <span class="bullet bg-gray-500 w-5px h-2px"></span>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-muted">
+                Personal Wallet </li>
+            <!--end::Item-->
+        </ul>
+        <!--end::Breadcrumb-->
+    </div>
 @endsection
 
 @section('content')
@@ -59,7 +72,7 @@
                             <div class="d-flex flex-wrap fw-semibold fs-6 mb-4 pe-2">
                                 <span class="d-flex align-items-center text-gray-500 me-5 mb-2">
                                     <i class="ki-outline ki-profile-circle fs-4 me-1"></i>
-                                    {{ $user->roles->first()?->name ?? 'User' }}
+                                    {{ ucfirst($user->roles->first()?->name) ?? 'User' }}
                                 </span>
                                 <span class="d-flex align-items-center text-gray-500 me-5 mb-2">
                                     <i class="ki-outline ki-geolocation fs-4 me-1"></i>
@@ -149,7 +162,7 @@
     </div>
 
     {{-- Transaction History Table --}}
-    <div class="card card-flush">
+    <div class="card">
         <div class="card-header border-0 pt-6">
             <div class="card-title">
                 <div class="d-flex align-items-center position-relative my-1">
@@ -161,7 +174,7 @@
             <div class="card-toolbar">
                 <div class="d-flex align-items-center gap-3">
                     {{-- Type Filter --}}
-                    <select class="form-select form-select-solid w-150px" data-kt-filter="type" data-control="select2"
+                    <select class="form-select form-select-solid w-200px" data-kt-filter="type" data-control="select2"
                         data-placeholder="All Types" data-allow-clear="true" data-hide-search="true">
                         <option></option>
                         <option value="collection">Collection</option>
@@ -169,13 +182,7 @@
                         <option value="adjustment">Adjustment</option>
                     </select>
 
-                    {{-- Back Button --}}
-                    <a href="{{ route('settlements.index') }}" class="btn btn-sm btn-flex btn-light">
-                        <i class="ki-outline ki-arrow-left fs-4 me-1"></i>
-                        Back
-                    </a>
-
-                    <button type="button" class="btn btn-sm btn-flex btn-light-warning btn-adjustment"
+                    <button type="button" class="btn btn-light-warning btn-adjustment text-nowrap"
                         data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}"
                         data-balance="{{ $user->current_balance }}">
                         <i class="ki-outline ki-wrench fs-4 me-1"></i>
@@ -183,7 +190,7 @@
                     </button>
 
                     @if ($user->current_balance > 0)
-                        <button type="button" class="btn btn-sm btn-flex btn-primary btn-settle"
+                        <button type="button" class="btn btn-primary btn-settle text-nowrap"
                             data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}"
                             data-balance="{{ $user->current_balance }}">
                             <i class="ki-outline ki-dollar fs-4 me-1"></i>
@@ -195,9 +202,9 @@
         </div>
 
         <div class="card-body pt-0">
-            <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_wallet_logs_table">
+            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_wallet_logs_table">
                 <thead>
-                    <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
+                    <tr class="fw-bold fs-7 text-uppercase gs-0">
                         <th class="min-w-100px">Date</th>
                         <th class="min-w-100px">Type</th>
                         <th class="min-w-150px">Description</th>
@@ -328,7 +335,7 @@
 
     {{-- Adjustment Modal --}}
     <div class="modal fade" id="kt_modal_adjustment" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered mw-500px">
+        <div class="modal-dialog modal-dialog-centered mw-650px">
             <div class="modal-content">
                 <div class="modal-header pb-0 border-0 justify-content-end">
                     <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
@@ -432,7 +439,7 @@
     <script src="{{ asset('js/settlements/show.js') }}"></script>
 
     <script>
-        document.getElementById("reports_menu")?.classList.add("here", "show");
+        document.getElementById("settlements_menu")?.classList.add("here", "show");
         document.getElementById("settlements_link")?.classList.add("active");
     </script>
 @endpush

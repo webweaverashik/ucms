@@ -140,7 +140,7 @@
             <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_users_table">
                 <thead>
                     <tr class="fw-bold fs-7 text-uppercase gs-0">
-                        <th class="w-50px">SL</th>
+                        <th class="w-50px">#</th>
                         <th class="min-w-125px">User Info</th>
                         <th>Mobile No.</th>
                         <th class="w-150px">Branch</th>

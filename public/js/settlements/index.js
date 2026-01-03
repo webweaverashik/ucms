@@ -18,11 +18,11 @@ var KTSettlements = function () {
 
                   datatables[branchId] = $(table).DataTable({
                         "info": false,
-                        "order": [[4, "desc"]],
+                        "order": [],
                         "pageLength": 10,
                         "lengthChange": true,
                         "columnDefs": [
-                              { orderable: false, targets: 5 }
+                              { orderable: false, targets: 6 }
                         ]
                   });
             });
@@ -47,7 +47,7 @@ var KTSettlements = function () {
 
                   if (!row) return true;
 
-                  var balanceCell = $(row).find('td:eq(4)');
+                  var balanceCell = $(row).find('td:eq(5)');
                   var filterVal = balanceCell.data('filter');
 
                   if (currentBalanceFilter === 'with_balance') {

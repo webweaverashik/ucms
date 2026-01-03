@@ -522,20 +522,6 @@
                                     <!--begin:Activity Logs item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" id="settlements_link" href="{{ route('settlements.index') }}">
-                                            <span class="menu-bullet">
-                                                <span class="bullet bullet-dot">
-                                                </span>
-                                            </span>
-                                            <span class="menu-title">Settlements</span>
-                                        </a>
-                                        <!--end:Menu link-->
-                                    </div>
-                                    <!--end:Activity Logs item-->
-
-                                    <!--begin:Activity Logs item-->
-                                    <div class="menu-item">
-                                        <!--begin:Menu link-->
                                         <a class="menu-link" id="activity_logs_link" href="#">
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot">
@@ -547,12 +533,61 @@
                                     </div>
                                     <!--end:Activity Logs item-->
                                 @endif
-
                             </div>
                             <!--end:Menu sub-->
                         </div>
                     @endcan
                     <!--end:Reports Menu-->
+
+                    <!--begin:Settlements Menu-->
+                    @if (auth()->user()->isAdmin())
+                        <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="settlements_menu">
+                            <!--begin:Menu link-->
+                            <span class="menu-link">
+                                <span class="menu-icon">
+                                    <i class="ki-outline ki-wallet fs-2"></i>
+                                </span>
+                                <span class="menu-title">Settlements</span>
+                                <span class="menu-arrow"></span>
+                            </span>
+                            <!--end:Menu link-->
+
+                            <!--begin:Menu sub-->
+                            <div class="menu-sub menu-sub-accordion">
+                                <!--begin:Settlement Index-->
+                                <div class="menu-item">
+                                    <!--begin:Menu link-->
+                                    <a class="menu-link" id="settlements_link"
+                                        href="{{ route('settlements.index') }}">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot">
+                                            </span>
+                                        </span>
+                                        <span class="menu-title">User Settlements</span>
+                                    </a>
+                                    <!--end:Menu link-->
+                                </div>
+                                <!--end:Settlement Index-->
+
+                                <!--begin:Settlment Logs item-->
+                                <div class="menu-item">
+                                    <!--begin:Menu link-->
+                                    <a class="menu-link" id="settlements_logs_link"
+                                        href="{{ route('settlements.logs') }}">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot">
+                                            </span>
+                                        </span>
+                                        <span class="menu-title">Wallet Logs</span>
+                                    </a>
+                                    <!--end:Menu link-->
+                                </div>
+                                <!--end:Settlment Logs item-->
+                            </div>
+                            <!--end:Menu sub-->
+                        </div>
+                    @endif
+                    <!--end:Settlements Menu-->
 
                     <!--begin:SMS Menu-->
                     @canany(['sms.send', 'sms.logs.view', 'sms.templates.manage'])

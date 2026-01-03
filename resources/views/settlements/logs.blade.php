@@ -6,24 +6,37 @@
 @section('title', 'All Wallet Logs')
 
 @section('header-title')
-    <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 flex-column justify-content-center my-0">
-        All Wallet Transactions
-    </h1>
-    <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
-        <li class="breadcrumb-item text-muted">
-            <a href="{{ route('dashboard') }}" class="text-muted text-hover-primary">Dashboard</a>
-        </li>
-        <li class="breadcrumb-item">
-            <span class="bullet bg-gray-500 w-5px h-2px"></span>
-        </li>
-        <li class="breadcrumb-item text-muted">
-            <a href="{{ route('settlements.index') }}" class="text-muted text-hover-primary">Settlements</a>
-        </li>
-        <li class="breadcrumb-item">
-            <span class="bullet bg-gray-500 w-5px h-2px"></span>
-        </li>
-        <li class="breadcrumb-item text-muted">All Logs</li>
-    </ul>
+    <div data-kt-swapper="true" data-kt-swapper-mode="{default: 'prepend', lg: 'prepend'}"
+        data-kt-swapper-parent="{default: '#kt_app_content_container', lg: '#kt_app_header_wrapper'}"
+        class="page-title d-flex align-items-center flex-wrap me-3 mb-5 mb-lg-0">
+        <!--begin::Title-->
+        <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 align-items-center my-0">
+            All Wallet Transactions
+        </h1>
+        <!--end::Title-->
+        <!--begin::Separator-->
+        <span class="h-20px border-gray-300 border-start mx-4"></span>
+        <!--end::Separator-->
+        <!--begin::Breadcrumb-->
+        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 ">
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-muted">
+                <a href="{{ route('settlements.index') }}" class="text-muted text-hover-primary">
+                    Settlements</a>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item">
+                <span class="bullet bg-gray-500 w-5px h-2px"></span>
+            </li>
+            <!--end::Item-->
+            <!--begin::Item-->
+            <li class="breadcrumb-item text-muted">
+                All Logs </li>
+            <!--end::Item-->
+        </ul>
+        <!--end::Breadcrumb-->
+    </div>
 @endsection
 
 @section('content')
@@ -32,14 +45,14 @@
             <div class="card-title">
                 <div class="d-flex align-items-center position-relative my-1">
                     <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
-                    <input type="text" data-kt-filter="search" class="form-control form-control-solid w-250px ps-13"
+                    <input type="text" data-kt-filter="search" class="form-control form-control-solid w-350px ps-13"
                         placeholder="Search..." />
                 </div>
             </div>
             <div class="card-toolbar">
                 <div class="d-flex justify-content-end align-items-center gap-3">
                     {{-- User Filter --}}
-                    <select class="form-select form-select-solid w-200px" data-kt-filter="user" data-control="select2"
+                    <select class="form-select form-select-solid w-200px w-md-250px" data-kt-filter="user" data-control="select2"
                         data-placeholder="All Users" data-allow-clear="true">
                         <option></option>
                         @foreach ($users as $user)
@@ -48,40 +61,36 @@
                     </select>
 
                     {{-- Type Filter --}}
-                    <select class="form-select form-select-solid w-150px" data-kt-filter="type" data-control="select2"
+                    <select class="form-select form-select-solid w-150px w-md-250px" data-kt-filter="type" data-control="select2"
                         data-placeholder="All Types" data-allow-clear="true" data-hide-search="true">
                         <option></option>
                         <option value="collection">Collection</option>
                         <option value="settlement">Settlement</option>
                         <option value="adjustment">Adjustment</option>
                     </select>
-
-                    {{-- Back Button --}}
-                    <a href="{{ route('settlements.index') }}" class="btn btn-sm btn-flex btn-light">
-                        <i class="ki-outline ki-arrow-left fs-4 me-1"></i>
-                        Back to Settlements
-                    </a>
                 </div>
             </div>
         </div>
 
         <div class="card-body pt-0">
-            <table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_logs_table">
+            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_logs_table">
                 <thead>
-                    <tr class="text-start text-gray-500 fw-bold fs-7 text-uppercase gs-0">
-                        <th class="min-w-100px">Date</th>
-                        <th class="min-w-125px">User</th>
-                        <th class="min-w-100px">Type</th>
-                        <th class="min-w-150px">Description</th>
-                        <th class="min-w-100px text-end">Amount</th>
-                        <th class="min-w-100px text-end">Old Balance</th>
-                        <th class="min-w-100px text-end">New Balance</th>
-                        <th class="min-w-100px">Created By</th>
+                    <tr class="fw-bold fs-7 text-uppercase gs-0">
+                        <th class="w-20px">#</th>
+                        <th class="w-100px">Date</th>
+                        <th class="w-150px">User</th>
+                        <th class="w-100px">Type</th>
+                        <th class="w-250px">Description</th>
+                        <th class="w-100px">Amount</th>
+                        <th class="w-100px">Old Balance</th>
+                        <th class="w-100px">New Balance</th>
+                        <th class="w-100px">Created By</th>
                     </tr>
                 </thead>
                 <tbody class="fw-semibold text-gray-600">
                     @forelse($logs as $log)
                         <tr data-type="{{ $log->type }}" data-user="{{ $log->user->name ?? '' }}">
+                            <td>{{ $loop->index + 1 }}</td>
                             <td data-order="{{ $log->created_at->timestamp }}">
                                 <span class="text-gray-800">{{ $log->created_at->format('d M, Y') }}</span>
                                 <span class="text-gray-500 d-block fs-7">{{ $log->created_at->format('h:i A') }}</span>
@@ -116,12 +125,13 @@
                                 @endif
                             </td>
                             <td>
-                                <span class="text-gray-800">{{ Str::limit($log->description, 40) ?? '-' }}</span>
                                 @if ($log->paymentTransaction)
-                                    <a href="{{ route('transactions.show', $log->payment_transaction_id) }}"
-                                        class="text-primary d-block fs-7">
-                                        Payment #{{ $log->payment_transaction_id }}
+                                    <a href="{{ route('invoices.show', $log->paymentTransaction->payment_invoice_id) }}"
+                                        class="text-gray-800 text-hover-primary text-wrap">
+                                        {{ $log->description }}
                                     </a>
+                                @else
+                                    <span class="text-gray-800">{{ $log->description ?? '-' }}</span>
                                 @endif
                             </td>
                             <td class="text-end" data-order="{{ $log->amount }}">
@@ -156,7 +166,7 @@
 @push('page-js')
     <script src="{{ asset('js/settlements/logs.js') }}"></script>
     <script>
-        document.getElementById("reports_menu")?.classList.add("here", "show");
-        document.getElementById("settlements_link")?.classList.add("active");
+        document.getElementById("settlements_menu")?.classList.add("here", "show");
+        document.getElementById("settlements_logs_link")?.classList.add("active");
     </script>
 @endpush
