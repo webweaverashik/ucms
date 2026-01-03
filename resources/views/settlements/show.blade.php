@@ -175,6 +175,13 @@
                         Back
                     </a>
 
+                    <button type="button" class="btn btn-sm btn-flex btn-light-warning btn-adjustment"
+                        data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}"
+                        data-balance="{{ $user->current_balance }}">
+                        <i class="ki-outline ki-wrench fs-4 me-1"></i>
+                        Adjustment
+                    </button>
+
                     @if ($user->current_balance > 0)
                         <button type="button" class="btn btn-sm btn-flex btn-primary btn-settle"
                             data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}"
@@ -308,6 +315,103 @@
                             <button type="button" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
                             <button type="submit" class="btn btn-primary" id="btn_submit_settlement">
                                 <span class="indicator-label">Record Settlement</span>
+                                <span class="indicator-progress">Please wait...
+                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Adjustment Modal --}}
+    <div class="modal fade" id="kt_modal_adjustment" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered mw-500px">
+            <div class="modal-content">
+                <div class="modal-header pb-0 border-0 justify-content-end">
+                    <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
+                        <i class="ki-outline ki-cross fs-1"></i>
+                    </div>
+                </div>
+                <div class="modal-body scroll-y mx-5 mx-xl-10 pt-0 pb-15">
+                    <div class="text-center mb-13">
+                        <h1 class="mb-3">Balance Adjustment</h1>
+                        <div class="text-muted fw-semibold fs-5">
+                            Adjust balance for <span id="adj_modal_user_name"
+                                class="text-primary fw-bold">{{ $user->name }}</span>
+                        </div>
+                    </div>
+
+                    <form id="kt_modal_adjustment_form" class="form" action="{{ route('settlements.adjustment') }}"
+                        method="POST">
+                        @csrf
+                        <input type="hidden" name="user_id" id="adjustment_user_id" value="{{ $user->id }}">
+
+                        <div class="d-flex flex-column mb-8">
+                            <div class="d-flex flex-stack bg-light-info rounded p-4 mb-5">
+                                <div class="d-flex align-items-center me-2">
+                                    <i class="ki-outline ki-wallet fs-2x text-info me-3"></i>
+                                    <div class="flex-grow-1">
+                                        <span class="text-gray-700 fw-semibold d-block fs-6">Current Balance</span>
+                                        <span class="text-info fw-bolder fs-2"
+                                            id="adj_modal_current_balance">৳{{ number_format($user->current_balance, 2) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-column mb-8 fv-row">
+                            <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="required">Adjustment Type</span>
+                            </label>
+                            <div class="d-flex gap-5">
+                                <label class="form-check form-check-custom form-check-solid form-check-sm">
+                                    <input class="form-check-input" type="radio" name="adjustment_type"
+                                        value="increase" checked />
+                                    <span class="form-check-label text-success fw-semibold">
+                                        <i class="ki-outline ki-arrow-up fs-4 me-1"></i>
+                                        Increase Balance
+                                    </span>
+                                </label>
+                                <label class="form-check form-check-custom form-check-solid form-check-sm">
+                                    <input class="form-check-input" type="radio" name="adjustment_type"
+                                        value="decrease" />
+                                    <span class="form-check-label text-danger fw-semibold">
+                                        <i class="ki-outline ki-arrow-down fs-4 me-1"></i>
+                                        Decrease Balance
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-column mb-8 fv-row">
+                            <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="required">Amount</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">৳</span>
+                                <input type="number" step="0.01" min="0.01"
+                                    class="form-control form-control-solid" placeholder="Enter amount" name="amount"
+                                    id="adjustment_amount" required />
+                            </div>
+                            <div class="fv-plugins-message-container invalid-feedback" id="adj_amount_error"></div>
+                        </div>
+
+                        <div class="d-flex flex-column mb-8 fv-row">
+                            <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="required">Reason</span>
+                            </label>
+                            <textarea class="form-control form-control-solid" rows="3" name="reason" id="adjustment_reason"
+                                placeholder="Enter reason for adjustment..." required></textarea>
+                            <div class="form-text text-muted">This will be recorded in the audit log.</div>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="button" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-warning" id="btn_submit_adjustment">
+                                <span class="indicator-label">Record Adjustment</span>
                                 <span class="indicator-progress">Please wait...
                                     <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
                                 </span>

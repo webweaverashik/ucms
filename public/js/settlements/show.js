@@ -11,6 +11,12 @@ var KTWalletHistory = function () {
       var submitButton;
       var currentBalance = 0;
 
+      // Adjustment modal variables
+      var adjustmentModal;
+      var adjustmentModalElement;
+      var adjustmentForm;
+      var adjustmentSubmitButton;
+
       // Init DataTable
       var initDatatable = function () {
             datatable = $(table).DataTable({
@@ -187,6 +193,125 @@ var KTWalletHistory = function () {
             });
       }
 
+      // Handle adjustment button click
+      var handleAdjustmentButton = function () {
+            $(document).on('click', '.btn-adjustment', function (e) {
+                  e.preventDefault();
+
+                  var balance = parseFloat($(this).data('balance'));
+                  currentBalance = balance;
+
+                  $('#adj_modal_current_balance').text('৳' + balance.toLocaleString('en-US', { minimumFractionDigits: 2 }));
+                  $('#adjustment_amount').val('');
+                  $('#adjustment_reason').val('');
+                  $('#adj_amount_error').text('');
+                  $('input[name="adjustment_type"][value="increase"]').prop('checked', true);
+
+                  if (adjustmentModal) {
+                        adjustmentModal.show();
+                  }
+            });
+      }
+
+      // Handle adjustment form submit
+      var handleAdjustmentFormSubmit = function () {
+            if (!adjustmentForm) return;
+
+            adjustmentForm.addEventListener('submit', function (e) {
+                  e.preventDefault();
+
+                  var amount = parseFloat($('#adjustment_amount').val());
+                  var adjustmentType = $('input[name="adjustment_type"]:checked').val();
+                  var reason = $('#adjustment_reason').val().trim();
+
+                  // Validate amount
+                  if (isNaN(amount) || amount <= 0) {
+                        $('#adj_amount_error').text('Please enter a valid amount');
+                        return;
+                  }
+
+                  // Validate reason
+                  if (!reason) {
+                        $('#adj_amount_error').text('Please enter a reason for the adjustment');
+                        return;
+                  }
+
+                  // Check if decrease would result in negative balance
+                  if (adjustmentType === 'decrease' && amount > currentBalance) {
+                        $('#adj_amount_error').text('Cannot decrease more than current balance (৳' + currentBalance.toLocaleString('en-US', { minimumFractionDigits: 2 }) + ')');
+                        return;
+                  }
+
+                  $('#adj_amount_error').text('');
+
+                  // Prepare the actual amount (negative for decrease)
+                  var finalAmount = adjustmentType === 'decrease' ? -amount : amount;
+
+                  // Show loading
+                  adjustmentSubmitButton.setAttribute('data-kt-indicator', 'on');
+                  adjustmentSubmitButton.disabled = true;
+
+                  // Submit via AJAX
+                  $.ajax({
+                        url: adjustmentForm.action,
+                        method: 'POST',
+                        data: {
+                              _token: $('meta[name="csrf-token"]').attr('content'),
+                              user_id: $('#adjustment_user_id').val(),
+                              amount: finalAmount,
+                              reason: reason
+                        },
+                        success: function (response) {
+                              adjustmentSubmitButton.removeAttribute('data-kt-indicator');
+                              adjustmentSubmitButton.disabled = false;
+
+                              adjustmentModal.hide();
+
+                              Swal.fire({
+                                    text: response.message || "Adjustment recorded successfully!",
+                                    icon: "success",
+                                    buttonsStyling: false,
+                                    confirmButtonText: "Ok!",
+                                    customClass: {
+                                          confirmButton: "btn btn-primary"
+                                    }
+                              }).then(function () {
+                                    location.reload();
+                              });
+                        },
+                        error: function (xhr) {
+                              adjustmentSubmitButton.removeAttribute('data-kt-indicator');
+                              adjustmentSubmitButton.disabled = false;
+
+                              var message = 'Something went wrong!';
+                              if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    message = xhr.responseJSON.message;
+                              }
+
+                              Swal.fire({
+                                    text: message,
+                                    icon: "error",
+                                    buttonsStyling: false,
+                                    confirmButtonText: "Ok",
+                                    customClass: {
+                                          confirmButton: "btn btn-primary"
+                                    }
+                              });
+                        }
+                  });
+            });
+      }
+
+      // Handle adjustment modal hidden event - reset form
+      var handleAdjustmentModalReset = function () {
+            if (!adjustmentModalElement) return;
+
+            adjustmentModalElement.addEventListener('hidden.bs.modal', function () {
+                  adjustmentForm.reset();
+                  $('#adj_amount_error').text('');
+            });
+      }
+
       // Initialize Select2
       var initSelect2 = function () {
             $('[data-control="select2"]').select2({
@@ -202,8 +327,17 @@ var KTWalletHistory = function () {
                   form = document.getElementById('kt_modal_settlement_form');
                   submitButton = document.getElementById('btn_submit_settlement');
 
+                  // Adjustment modal elements
+                  adjustmentModalElement = document.getElementById('kt_modal_adjustment');
+                  adjustmentForm = document.getElementById('kt_modal_adjustment_form');
+                  adjustmentSubmitButton = document.getElementById('btn_submit_adjustment');
+
                   if (modalElement) {
                         modal = new bootstrap.Modal(modalElement);
+                  }
+
+                  if (adjustmentModalElement) {
+                        adjustmentModal = new bootstrap.Modal(adjustmentModalElement);
                   }
 
                   if (table) {
@@ -220,6 +354,13 @@ var KTWalletHistory = function () {
                   if (form) {
                         handleFormSubmit();
                         handleModalReset();
+                  }
+
+                  // Initialize adjustment handlers
+                  handleAdjustmentButton();
+                  if (adjustmentForm) {
+                        handleAdjustmentFormSubmit();
+                        handleAdjustmentModalReset();
                   }
             }
       }

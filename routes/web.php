@@ -1,39 +1,39 @@
 <?php
 
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PdfController;
-use App\Http\Controllers\BranchController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\SMS\SmsController;
-use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Cost\CostController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\Misc\MiscController;
-use App\Http\Controllers\User\UserController;
-use App\Http\Controllers\AutoInvoiceController;
-use App\Http\Controllers\Sheet\SheetController;
-use App\Http\Controllers\Auth\PasswordController;
-use App\Http\Controllers\Cost\CostTypeController;
 use App\Http\Controllers\Academic\BatchController;
-use App\Http\Controllers\SMS\SmsCampaignController;
-use App\Http\Controllers\SMS\SmsTemplateController;
-use App\Http\Controllers\Student\SiblingController;
-use App\Http\Controllers\Student\StudentController;
-use App\Http\Controllers\Teacher\TeacherController;
-use App\Http\Controllers\Academic\SubjectController;
-use App\Http\Controllers\Sheet\SheetTopicController;
-use App\Http\Controllers\Student\GuardianController;
-use App\Http\Controllers\Student\ReferenceController;
 use App\Http\Controllers\Academic\ClassNameController;
 use App\Http\Controllers\Academic\InstitutionController;
-use App\Http\Controllers\Settlement\SettlementController;
-use App\Http\Controllers\Sheet\SheetTopicTakenController;
+use App\Http\Controllers\Academic\SubjectController;
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\AutoInvoiceController;
+use App\Http\Controllers\BranchController;
+use App\Http\Controllers\Cost\CostController;
+use App\Http\Controllers\Cost\CostTypeController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Misc\MiscController;
 use App\Http\Controllers\Payment\PaymentInvoiceController;
-use App\Http\Controllers\Student\StudentTransferController;
+use App\Http\Controllers\Payment\PaymentTransactionController;
+use App\Http\Controllers\PdfController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\Settlement\SettlementController;
+use App\Http\Controllers\Sheet\SheetController;
+use App\Http\Controllers\Sheet\SheetTopicController;
+use App\Http\Controllers\Sheet\SheetTopicTakenController;
+use App\Http\Controllers\SMS\SmsCampaignController;
+use App\Http\Controllers\SMS\SmsController;
+use App\Http\Controllers\SMS\SmsTemplateController;
+use App\Http\Controllers\Student\GuardianController;
+use App\Http\Controllers\Student\ReferenceController;
+use App\Http\Controllers\Student\SiblingController;
 use App\Http\Controllers\Student\StudentActivationController;
 use App\Http\Controllers\Student\StudentAttendanceController;
-use App\Http\Controllers\Payment\PaymentTransactionController;
+use App\Http\Controllers\Student\StudentController;
+use App\Http\Controllers\Student\StudentTransferController;
+use App\Http\Controllers\Teacher\TeacherController;
+use App\Http\Controllers\User\UserController;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AuthController::class, 'showLogin'])->name('home');
 
@@ -242,6 +242,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
         Route::get('/logs', [SettlementController::class, 'logs'])->name('logs');
         Route::get('/create/{user}', [SettlementController::class, 'create'])->name('create');
         Route::post('/', [SettlementController::class, 'store'])->name('store');
+        Route::post('/adjustment', [SettlementController::class, 'adjustment'])->name('adjustment');
         Route::get('/{user}', [SettlementController::class, 'show'])->name('show');
     });
 

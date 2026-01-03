@@ -25,7 +25,11 @@ class SettlementController extends Controller
         $branches = Branch::orderBy('branch_name')->get();
 
         // Get admin users (shown in all tabs)
-        $adminUsers = User::with('branch')->role('admin')->orderBy('current_balance', 'desc')->orderBy('name')->get();
+        $adminUsers = User::with('branch')
+            ->role('admin')
+            ->orderBy('current_balance', 'desc')
+            ->orderBy('name')
+            ->get();
 
         // Group users by branch (excluding admins to avoid duplicates in counting)
         $usersByBranch = [];
@@ -53,7 +57,13 @@ class SettlementController extends Controller
         $usersWithBalance = $allUsers->where('current_balance', '>', 0)->count();
         $totalPending     = $allUsers->sum('current_balance');
 
-        return view('settlements.index', compact('branches', 'usersByBranch', 'adminUsers', 'usersWithBalance', 'totalPending'));
+        return view('settlements.index', compact(
+            'branches',
+            'usersByBranch',
+            'adminUsers',
+            'usersWithBalance',
+            'totalPending'
+        ));
     }
 
     /**
@@ -61,7 +71,10 @@ class SettlementController extends Controller
      */
     public function create(User $user)
     {
-        $recentLogs = $user->walletLogs()->with('creator')->limit(10)->get();
+        $recentLogs = $user->walletLogs()
+            ->with('creator')
+            ->limit(10)
+            ->get();
 
         return view('settlements.create', compact('user', 'recentLogs'));
     }
@@ -80,7 +93,11 @@ class SettlementController extends Controller
         $user = User::findOrFail($request->user_id);
 
         try {
-            $this->walletService->recordSettlement(user: $user, amount: $request->amount, description: $request->notes);
+            $this->walletService->recordSettlement(
+                user: $user,
+                amount: $request->amount,
+                description: $request->notes
+            );
 
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
@@ -93,13 +110,10 @@ class SettlementController extends Controller
             return back()->with('success', "Successfully settled ৳{$request->amount} from {$user->name}");
         } catch (\Exception $e) {
             if ($request->ajax() || $request->wantsJson()) {
-                return response()->json(
-                    [
-                        'success' => false,
-                        'message' => $e->getMessage(),
-                    ],
-                    422,
-                );
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                ], 422);
             }
 
             return back()->with('error', $e->getMessage());
@@ -112,14 +126,72 @@ class SettlementController extends Controller
     public function show(User $user)
     {
         // Load all logs for client-side DataTable
-        $logs = $user
-            ->walletLogs()
+        $logs = $user->walletLogs()
             ->with(['paymentTransaction.student', 'creator'])
             ->get();
 
         $summary = $this->walletService->getSummary($user);
 
         return view('settlements.show', compact('user', 'logs', 'summary'));
+    }
+
+    /**
+     * Record an adjustment for a user's wallet.
+     */
+    public function adjustment(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'amount'  => 'required|numeric|not_in:0',
+            'reason'  => 'required|string|max:255',
+        ]);
+
+        $user   = User::findOrFail($request->user_id);
+        $amount = (float) $request->amount;
+
+        // Check if negative adjustment would result in negative balance
+        if ($amount < 0 && $user->current_balance < abs($amount)) {
+            $message = "Cannot decrease balance by ৳" . number_format(abs($amount), 2) .
+            ". Current balance is only ৳" . number_format($user->current_balance, 2);
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $message,
+                ], 422);
+            }
+            return back()->with('error', $message);
+        }
+
+        try {
+            $this->walletService->recordAdjustment(
+                user: $user,
+                amount: $amount,
+                reason: $request->reason
+            );
+
+            $action  = $amount > 0 ? 'increased' : 'decreased';
+            $message = "Successfully {$action} {$user->name}'s balance by ৳" . number_format(abs($amount), 2);
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success'     => true,
+                    'message'     => $message,
+                    'new_balance' => $user->fresh()->current_balance,
+                ]);
+            }
+
+            return back()->with('success', $message);
+        } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                ], 422);
+            }
+
+            return back()->with('error', $e->getMessage());
+        }
     }
 
     /**

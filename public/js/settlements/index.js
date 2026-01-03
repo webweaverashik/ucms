@@ -9,6 +9,7 @@ var KTSettlements = function () {
       var form;
       var submitButton;
       var currentBalance = 0;
+      var currentBalanceFilter = '';
 
       // Init DataTables for each branch tab
       var initDatatables = function () {
@@ -24,6 +25,38 @@ var KTSettlements = function () {
                               { orderable: false, targets: 5 }
                         ]
                   });
+            });
+
+            // Add global custom filter for balance
+            $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+                  // If no filter is set, show all
+                  if (!currentBalanceFilter) {
+                        return true;
+                  }
+
+                  // Get the table element from settings
+                  var tableId = settings.nTable.id;
+                  var $table = $('#' + tableId);
+
+                  if (!$table.hasClass('kt-settlements-table')) {
+                        return true; // Not our table, skip
+                  }
+
+                  var api = $table.DataTable();
+                  var row = api.row(dataIndex).node();
+
+                  if (!row) return true;
+
+                  var balanceCell = $(row).find('td:eq(4)');
+                  var filterVal = balanceCell.data('filter');
+
+                  if (currentBalanceFilter === 'with_balance') {
+                        return filterVal === 'with_balance';
+                  } else if (currentBalanceFilter === 'zero_balance') {
+                        return filterVal === 'zero_balance';
+                  }
+
+                  return true;
             });
       }
 
@@ -58,35 +91,10 @@ var KTSettlements = function () {
             const filterBalance = $('[data-kt-filter="balance"]');
             if (filterBalance.length) {
                   filterBalance.on('change', function () {
-                        var val = $(this).val();
+                        currentBalanceFilter = $(this).val() || '';
 
-                        // Apply filter to all datatables
+                        // Redraw all datatables
                         Object.values(datatables).forEach(function (dt) {
-                              // Clear existing custom filter
-                              $.fn.dataTable.ext.search = $.fn.dataTable.ext.search.filter(function (fn) {
-                                    return fn.name !== 'balanceFilter';
-                              });
-
-                              if (val) {
-                                    // Add custom filter
-                                    var balanceFilter = function (settings, data, dataIndex) {
-                                          var row = dt.row(dataIndex).node();
-                                          if (!row) return true;
-
-                                          var balanceCell = $(row).find('td:eq(4)');
-                                          var filterVal = balanceCell.data('filter');
-
-                                          if (val === 'with_balance') {
-                                                return filterVal === 'with_balance';
-                                          } else if (val === 'zero_balance') {
-                                                return filterVal === 'zero_balance';
-                                          }
-                                          return true;
-                                    };
-                                    balanceFilter.name = 'balanceFilter';
-                                    $.fn.dataTable.ext.search.push(balanceFilter);
-                              }
-
                               dt.draw();
                         });
                   });
