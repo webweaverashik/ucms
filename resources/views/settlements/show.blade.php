@@ -167,7 +167,7 @@
             <div class="card-title">
                 <div class="d-flex align-items-center position-relative my-1">
                     <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
-                    <input type="text" data-kt-filter="search" class="form-control form-control-solid w-250px ps-13"
+                    <input type="text" data-kt-filter="search" class="form-control form-control-solid w-300px ps-13"
                         placeholder="Search..." />
                 </div>
             </div>
@@ -205,19 +205,21 @@
             <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_wallet_logs_table">
                 <thead>
                     <tr class="fw-bold fs-7 text-uppercase gs-0">
-                        <th class="min-w-100px">Date</th>
-                        <th class="min-w-100px">Type</th>
-                        <th class="min-w-150px">Description</th>
-                        <th class="min-w-100px text-end">Amount</th>
-                        <th class="min-w-100px text-end">Old Balance</th>
-                        <th class="min-w-100px text-end">New Balance</th>
-                        <th class="min-w-100px">Created By</th>
+                        <th class="w-20px">#</th>
+                        <th class="w-100px">Date</th>
+                        <th class="w-100px">Type</th>
+                        <th class="w-250px">Description</th>
+                        <th class="w-100px">Amount</th>
+                        <th class="w-100px">Old Balance</th>
+                        <th class="w-100px">New Balance</th>
+                        <th class="w-100px">Created By</th>
                     </tr>
                 </thead>
                 <tbody class="fw-semibold text-gray-600">
                     @forelse($logs as $log)
                         <tr data-type="{{ $log->type }}">
-                            <td data-order="{{ $log->created_at->timestamp }}">
+                            <td>{{ $loop->iteration }}</td>
+                            <td>
                                 <span class="text-gray-800">{{ $log->created_at->format('d M, Y') }}</span>
                                 <span class="text-gray-500 d-block fs-7">{{ $log->created_at->format('h:i A') }}</span>
                             </td>
@@ -231,25 +233,26 @@
                                 @endif
                             </td>
                             <td>
-                                <span class="text-gray-800">{{ $log->description ?? '-' }}</span>
                                 @if ($log->paymentTransaction)
-                                    <a href="{{ route('transactions.show', $log->payment_transaction_id) }}"
-                                        class="text-primary d-block fs-7">
-                                        View Payment #{{ $log->payment_transaction_id }}
+                                    <a href="{{ route('invoices.show', $log->paymentTransaction->payment_invoice_id) }}"
+                                        class="text-gray-800 text-hover-primary text-wrap" target="_blank">
+                                        {{ $log->description }}
                                     </a>
+                                @else
+                                    <span class="text-gray-800">{{ $log->description ?? '-' }}</span>
                                 @endif
                             </td>
-                            <td class="text-end" data-order="{{ $log->amount }}">
+                            <td>
                                 @if ($log->amount >= 0)
                                     <span class="text-success fw-bold">+৳{{ number_format($log->amount, 2) }}</span>
                                 @else
                                     <span class="text-danger fw-bold">৳{{ number_format($log->amount, 2) }}</span>
                                 @endif
                             </td>
-                            <td class="text-end">
+                            <td>
                                 <span class="text-gray-600">৳{{ number_format($log->old_balance, 2) }}</span>
                             </td>
-                            <td class="text-end">
+                            <td>
                                 <span class="text-gray-800 fw-bold">৳{{ number_format($log->new_balance, 2) }}</span>
                             </td>
                             <td>
@@ -264,7 +267,8 @@
     </div>
 
     {{-- Settlement Modal --}}
-    <div class="modal fade" id="kt_modal_settlement" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="kt_modal_settlement" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+        data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered mw-500px">
             <div class="modal-content">
                 <div class="modal-header pb-0 border-0 justify-content-end">
@@ -300,14 +304,16 @@
                         </div>
 
                         <div class="d-flex flex-column mb-8 fv-row">
-                            <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                <span class="required">Settlement Amount</span>
+                            <label class="fs-6 fw-semibold mb-2 required">
+                                Settlement Amount
                             </label>
-                            <div class="input-group">
-                                <span class="input-group-text">৳</span>
+                            <div class="input-group input-group-solid flex-nowrap">
+                                <span class="input-group-text">
+                                    <i class="ki-outline ki-dollar fs-3"></i>
+                                </span>
                                 <input type="number" step="0.01" min="1" max="{{ $user->current_balance }}"
-                                    class="form-control form-control-solid" placeholder="Enter amount" name="amount"
-                                    id="settlement_amount" required />
+                                    class="form-control form-control-solid rounded-start-0 border-start"
+                                    placeholder="Enter amount" name="amount" id="settlement_amount" required />
                                 <button type="button" class="btn btn-light-primary" id="btn_full_amount">Full</button>
                             </div>
                             <div class="fv-plugins-message-container invalid-feedback" id="amount_error"></div>
@@ -334,7 +340,8 @@
     </div>
 
     {{-- Adjustment Modal --}}
-    <div class="modal fade" id="kt_modal_adjustment" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="kt_modal_adjustment" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+        data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered mw-650px">
             <div class="modal-content">
                 <div class="modal-header pb-0 border-0 justify-content-end">
@@ -394,14 +401,16 @@
                         </div>
 
                         <div class="d-flex flex-column mb-8 fv-row">
-                            <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                <span class="required">Amount</span>
+                            <label class="fs-6 fw-semibold mb-2 required">
+                                Amount
                             </label>
-                            <div class="input-group">
-                                <span class="input-group-text">৳</span>
+                            <div class="input-group input-group-solid flex-nowrap">
+                                <span class="input-group-text">
+                                    <i class="ki-outline ki-dollar fs-3"></i>
+                                </span>
                                 <input type="number" step="0.01" min="0.01"
-                                    class="form-control form-control-solid" placeholder="Enter amount" name="amount"
-                                    id="adjustment_amount" required />
+                                    class="form-control form-control-solid rounded-start-0 border-start"
+                                    placeholder="Enter amount" name="amount" id="adjustment_amount" required />
                             </div>
                             <div class="fv-plugins-message-container invalid-feedback" id="adj_amount_error"></div>
                         </div>

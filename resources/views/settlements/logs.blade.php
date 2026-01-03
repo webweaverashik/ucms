@@ -127,7 +127,7 @@
                             <td>
                                 @if ($log->paymentTransaction)
                                     <a href="{{ route('invoices.show', $log->paymentTransaction->payment_invoice_id) }}"
-                                        class="text-gray-800 text-hover-primary text-wrap">
+                                        class="text-gray-800 text-hover-primary text-wrap" target="_blank">
                                         {{ $log->description }}
                                     </a>
                                 @else

@@ -122,7 +122,8 @@ class SettlementController extends Controller
 
         // Load all logs for client-side DataTable
         $logs = $user->walletLogs()
-            ->with(['paymentTransaction.student', 'creator'])
+            ->with(['paymentTransaction:id,payment_invoice_id', 'creator:id,name'])
+            ->latest('created_at')
             ->get();
 
         $summary = $this->walletService->getSummary($user);
@@ -203,7 +204,7 @@ class SettlementController extends Controller
             ->latest('created_at')
             ->get();
 
-        $users = User::orderBy('name')->get(['id', 'name']);
+        $users = User::oldest('name')->get(['id', 'name']);
 
         return view('settlements.logs', compact('logs', 'users'));
     }

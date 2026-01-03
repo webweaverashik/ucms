@@ -152,7 +152,8 @@
                 @foreach ($branches as $index => $branch)
                     <div class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}"
                         id="kt_tab_branch_{{ $branch->id }}">
-                        <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 kt-settlements-table ucms-table"
+                        <table
+                            class="table table-hover align-middle table-row-dashed fs-6 gy-5 kt-settlements-table ucms-table"
                             data-branch-id="{{ $branch->id }}">
                             <thead>
                                 <tr class="fw-bold fs-7 text-uppercase gs-0">
@@ -173,8 +174,8 @@
                                             <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
                                                 @if ($user->photo_url)
                                                     <div class="symbol-label">
-                                                        <img src="{{ asset($user->photo_url) }}"
-                                                            alt="{{ $user->name }}" class="w-100" />
+                                                        <img src="{{ asset($user->photo_url) }}" alt="{{ $user->name }}"
+                                                            class="w-100" />
                                                     </div>
                                                 @else
                                                     <div class="symbol-label fs-3 bg-light-primary text-primary">
@@ -266,7 +267,8 @@
     </div>
 
     {{-- Settlement Modal --}}
-    <div class="modal fade" id="kt_modal_settlement" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="kt_modal_settlement" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+        data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered mw-500px">
             <div class="modal-content">
                 <div class="modal-header pb-0 border-0 justify-content-end">
@@ -300,18 +302,20 @@
                         </div>
 
                         <div class="d-flex flex-column mb-8 fv-row">
-                            <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                <span class="required">Settlement Amount</span>
+                            <label class="fs-6 fw-semibold mb-2 required">
+                                Settlement Amount
                                 <span class="ms-1" data-bs-toggle="tooltip" title="Enter amount received from user">
-                                    <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
+                                    <i class="ki-outline ki-information text-gray-500 fs-6"></i>
                                 </span>
                             </label>
-                            <div class="input-group">
-                                <span class="input-group-text">৳</span>
+                            <div class="input-group input-group-solid flex-nowrap">
+                                <span class="input-group-text">
+                                    <i class="ki-outline ki-dollar fs-3"></i>
+                                </span>
                                 <input type="number" step="0.01" min="1"
-                                    class="form-control form-control-solid" placeholder="Enter amount" name="amount"
+                                    class="form-control form-control-solid rounded-start-0 border-start" placeholder="Enter amount" name="amount"
                                     id="settlement_amount" required />
-                                <button type="button" class="btn btn-light-primary" id="btn_full_amount">Full</button>
+                                <button type="button" class="btn btn-light-primary" id="btn_full_amount" data-bs-toggle="tooltip" title="Settle full balance">Full</button>
                             </div>
                             <div class="fv-plugins-message-container invalid-feedback" id="amount_error"></div>
                         </div>
