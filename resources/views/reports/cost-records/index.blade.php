@@ -411,7 +411,7 @@
             routes: {
                 costs: "{{ route('reports.finance.costs') }}",
                 costTypes: "{{ route('costs.types') }}",
-                storeCwost: "{{ route('costs.store') }}",
+                storeCost: "{{ route('costs.store') }}",
                 checkTodayCost: "{{ route('costs.check-today') }}",
                 @if ($isAdmin)
                     showCost: "{{ route('costs.show', ':id') }}",

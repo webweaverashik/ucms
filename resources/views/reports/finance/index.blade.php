@@ -104,10 +104,6 @@
                                 <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
                             </span>
                         </button>
-                        <button type="button" class="btn btn-success" id="add_cost_btn">
-                            <i class="ki-outline ki-plus fs-4 me-1"></i>
-                            Add Cost
-                        </button>
                     </div>
                 </div>
             </form>
@@ -219,99 +215,6 @@
         <!--end::Card Body-->
     </div>
     <!--end::Card-->
-
-    <!--begin::Add Cost Modal-->
-    <div class="modal fade" id="cost_modal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered mw-700px">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 id="cost_modal_title" class="modal-title fw-bold">Add Today's Cost</h3>
-                    <button type="button" class="btn btn-icon btn-sm btn-active-light-primary" data-bs-dismiss="modal">
-                        <i class="ki-outline ki-cross fs-1"></i>
-                    </button>
-                </div>
-                <form id="cost_form">
-                    <div class="modal-body py-10 px-lg-12" style="max-height: 70vh; overflow-y: auto;">
-                        <!-- Branch Selection -->
-                        <div class="fv-row mb-7">
-                            <label class="required fw-semibold fs-6 mb-2">Branch</label>
-                            @if ($isAdmin)
-                                <select id="cost_branch_id" name="branch_id" class="form-select form-select-solid"
-                                    data-control="select2" data-placeholder="Select branch"
-                                    data-dropdown-parent="#cost_modal" data-hide-search="true">
-                                    <option value="">-- Select Branch --</option>
-                                    @foreach ($branches as $branch)
-                                        <option value="{{ $branch->id }}">
-                                            {{ $branch->branch_name }} ({{ $branch->branch_prefix }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                            @else
-                                <input type="text" class="form-control form-control-solid bg-secondary"
-                                    value="{{ $branches->first()->branch_name ?? '' }} ({{ $branches->first()->branch_prefix ?? '' }})"
-                                    readonly disabled>
-                                <input type="hidden" id="cost_branch_id" name="branch_id"
-                                    value="{{ $branches->first()->id ?? '' }}">
-                            @endif
-                        </div>
-
-                        <!-- Date (Today Only - Read Only) -->
-                        <div class="fv-row mb-7">
-                            <label class="required fw-semibold fs-6 mb-2">Date</label>
-                            <input type="text" id="cost_date" name="cost_date"
-                                class="form-control form-control-solid bg-secondary" value="{{ now()->format('d-m-Y') }}"
-                                readonly>
-                            <div class="form-text text-muted">
-                                <i class="ki-outline ki-information-3 fs-7 me-1"></i>
-                                Cost can only be added for today's date
-                            </div>
-                        </div>
-
-                        <!-- Cost Types Selection with Tagify -->
-                        <div class="fv-row mb-7">
-                            <label class="required fw-semibold fs-6 mb-2">Cost Types</label>
-                            <input type="text" id="cost_types_tagify" class="form-control form-control-solid"
-                                placeholder="Select cost types...">
-                            <div class="form-text text-muted">Select one or more cost types to add entries</div>
-                        </div>
-
-                        <!-- Cost Entries Container -->
-                        <div id="cost_entries_container" class="mb-5">
-                            <label class="fw-semibold fs-6 mb-3">Cost Entries</label>
-                            <div id="cost_entries_list">
-                                <div class="text-center text-muted py-5">
-                                    <i class="ki-outline ki-information fs-3x text-gray-400 mb-3"></i>
-                                    <p class="mb-0">Select cost types above to add entries</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Total Cost -->
-                        <div id="cost_total_section" class="cost-total-section d-none">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="total-label">Total Cost</span>
-                                <span id="cost_total_amount" class="total-amount">৳0</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer flex-center">
-                        <button type="button" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary" id="save_cost_btn">
-                            <span class="indicator-label">
-                                <i class="ki-outline ki-check fs-4 me-1"></i>
-                                Save Cost
-                            </span>
-                            <span class="indicator-progress">
-                                Please wait...
-                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
-                            </span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    <!--end::Add Cost Modal-->
 @endsection
 
 @push('vendor-js')
@@ -326,9 +229,6 @@
             todayDate: "{{ now()->format('d-m-Y') }}",
             routes: {
                 generate: "{{ route('reports.finance.generate') }}",
-                costTypes: "{{ route('costs.types') }}",
-                storeCost: "{{ route('costs.store') }}",
-                checkTodayCost: "{{ route('costs.check-today') }}"
             },
             csrfToken: "{{ csrf_token() }}"
         };
