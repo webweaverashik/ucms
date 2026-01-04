@@ -55,7 +55,7 @@ class DatabaseSeeder extends Seeder
             CostTypeSeeder::class,
 
             SheetSeeder::class,
-            SheetTopicSeeder::class,
+            // SheetTopicSeeder::class,
 
             SmsTemplatesTableSeeder::class,
             // SmsCampaignsTableSeeder::class,
