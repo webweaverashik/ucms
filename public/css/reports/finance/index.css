@@ -1,10 +1,10 @@
 /**
  * Finance Report Styles
- * Revenue vs Cost Module with Cost Management
+ * Revenue vs Cost Module
  */
 
 /* ============================================
-   CHART & REPORT STYLES (Existing - Do Not Modify)
+   CHART & REPORT STYLES
    ============================================ */
 
 /* Chart Container */
@@ -22,25 +22,6 @@
 .summary-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
-}
-
-/* Disabled Dates in DateRangePicker */
-.daterangepicker td.disabled-date {
-    background: #fff5f5 !important;
-    color: #dc3545 !important;
-    text-decoration: line-through;
-    pointer-events: none;
-    opacity: 0.6;
-}
-
-/* Amount Edit Button (Legacy - kept for compatibility) */
-.amount-edit-btn {
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-
-tr:hover .amount-edit-btn {
-    opacity: 1;
 }
 
 /* Export Buttons */
@@ -81,7 +62,6 @@ tr:hover .amount-edit-btn {
 /* ============================================
    COLLECTOR SUMMARY SECTION
    ============================================ */
-
 #collector_summary_section {
     animation: fadeInUp 0.4s ease-out;
 }
@@ -272,20 +252,8 @@ tr:hover .amount-edit-btn {
 }
 
 /* ============================================
-   MODAL SCROLLING FIX
+   TAGIFY STYLES
    ============================================ */
-
-#cost_modal .modal-body,
-#edit_cost_modal .modal-body {
-    overflow-y: auto;
-    max-height: 70vh;
-}
-
-/* ============================================
-   COST MODULE STYLES - Tagify & Cost Entries
-   ============================================ */
-
-/* Tagify Enhancements */
 .tagify {
     --tag-bg: var(--bs-primary);
     --tag-text-color: #fff;
@@ -328,7 +296,9 @@ tr:hover .amount-edit-btn {
     color: #fff;
 }
 
-/* Cost Entry Rows - Add Modal */
+/* ============================================
+   COST ENTRY ROWS - ADD MODAL
+   ============================================ */
 .cost-entry-row {
     display: flex;
     align-items: center;
@@ -373,7 +343,9 @@ tr:hover .amount-edit-btn {
     width: 160px;
 }
 
-/* Total Section */
+/* ============================================
+   TOTAL SECTION
+   ============================================ */
 .cost-total-section {
     background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 100%);
     color: #fff;
@@ -392,68 +364,17 @@ tr:hover .amount-edit-btn {
     font-weight: 700;
 }
 
-/* Entry Badges in DataTable */
-.entry-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--bs-light);
-    border: 1px solid var(--bs-gray-300);
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    margin: 3px;
-    transition: all 0.2s;
+/* ============================================
+   MODAL SCROLLING FIX
+   ============================================ */
+#cost_modal .modal-body {
+    overflow-y: auto;
+    max-height: 70vh;
 }
 
-.entry-badge:hover {
-    background: var(--bs-gray-200);
-    border-color: var(--bs-gray-400);
-}
-
-.entry-badge .type-name {
-    color: var(--bs-gray-700);
-    font-weight: 500;
-}
-
-.entry-badge .type-amount {
-    color: var(--bs-primary);
-    font-weight: 600;
-}
-
-/* Edit Modal Entry Rows */
-.edit-entry-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 15px;
-    background: var(--bs-gray-100);
-    border-radius: 0.475rem;
-    margin-bottom: 8px;
-    border: 1px solid var(--bs-gray-200);
-}
-
-.edit-entry-row .entry-type-name {
-    flex: 1;
-    font-weight: 500;
-    color: var(--bs-gray-800);
-    font-size: 14px;
-}
-
-.edit-entry-row .entry-amount-input {
-    width: 160px;
-}
-
-/* DataTable Enhancements */
-#costs_datatable tbody tr:hover {
-    background-color: var(--bs-gray-100);
-}
-
-#costs_datatable .entry-badge {
-    margin: 2px;
-}
-
-/* Loading State */
+/* ============================================
+   LOADING STATE
+   ============================================ */
 #finance_report_loader {
     min-height: 200px;
     display: flex;
@@ -462,30 +383,14 @@ tr:hover .amount-edit-btn {
     justify-content: center;
 }
 
-/* No Data State */
-.no-data-state {
-    text-align: center;
-    padding: 40px 20px;
-}
-
-.no-data-state i {
-    display: block;
-    margin-bottom: 15px;
-}
-
 /* ============================================
    MOBILE RESPONSIVE
    ============================================ */
-
 @media (max-width: 768px) {
-
-    /* Modal body max height adjustment for mobile */
-    #cost_modal .modal-body,
-    #edit_cost_modal .modal-body {
+    #cost_modal .modal-body {
         max-height: 60vh;
     }
 
-    /* Cost Entry Rows */
     .cost-entry-row {
         flex-wrap: wrap;
     }
@@ -495,28 +400,10 @@ tr:hover .amount-edit-btn {
         margin-top: 8px;
     }
 
-    /* Edit Entry Rows */
-    .edit-entry-row {
-        flex-wrap: wrap;
-    }
-
-    .edit-entry-row .entry-amount-input {
-        width: 100%;
-        margin-top: 8px;
-    }
-
-    /* Entry Badges */
-    .entry-badge {
-        padding: 4px 8px;
-        font-size: 11px;
-    }
-
-    /* Chart Height */
     .chart-container {
         height: 280px;
     }
 
-    /* Collector Summary Cards */
     .collector-summary-card .collector-amount {
         font-size: 1.1rem;
     }
@@ -532,8 +419,6 @@ tr:hover .amount-edit-btn {
 }
 
 @media (max-width: 576px) {
-
-    /* Collector cards full width on very small screens */
     #collector_summary_cards .col-sm-6 {
         flex: 0 0 100%;
         max-width: 100%;

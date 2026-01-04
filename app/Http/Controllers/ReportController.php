@@ -103,14 +103,18 @@ class ReportController extends Controller
             'data'    => $attendances,
         ]);
     }
-
-/**
- * Finance report page
- */
-    public function financeReport()
+    /**
+     * Finance report page (Revenue vs Cost)
+     */
+    public function financeReportIndex()
     {
-        $user    = Auth::user();
-        $isAdmin = ! $user->branch_id;
+        $user = auth()->user();
+
+        if (! $user->isAdmin() && ! $user->isManager()) {
+            return redirect()->route('reports.cost-records.index')->with('error', 'Unauthorized access to this page.');
+        }
+
+        $isAdmin = $user->isAdmin();
 
         $branches = Branch::when(! $isAdmin, function ($q) use ($user) {
             $q->where('id', $user->branch_id);
@@ -121,10 +125,26 @@ class ReportController extends Controller
         return view('reports.finance.index', compact('branches', 'isAdmin'));
     }
 
-/**
- * Generate finance report
- * Updated to use Cost with CostEntries
- */
+    /**
+     * Cost Records page
+     */
+    public function costRecordsIndex()
+    {
+        $user    = Auth::user();
+        $isAdmin = ! $user->branch_id;
+
+        $branches = Branch::when(! $isAdmin, function ($q) use ($user) {
+            $q->where('id', $user->branch_id);
+        })
+            ->select('id', 'branch_name', 'branch_prefix')
+            ->get();
+
+        return view('reports.cost-records.index', compact('branches', 'isAdmin'));
+    }
+
+    /**
+     * Generate finance report
+     */
     public function financeReportGenerate(Request $request): JsonResponse
     {
         $request->validate([
@@ -137,10 +157,13 @@ class ReportController extends Controller
             $startDate     = Carbon::createFromFormat('d-m-Y', trim($start))->startOfDay();
             $endDate       = Carbon::createFromFormat('d-m-Y', trim($end))->endOfDay();
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid date format',
-            ], 422);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Invalid date format',
+                ],
+                422,
+            );
         }
 
         $user     = Auth::user();
@@ -167,26 +190,21 @@ class ReportController extends Controller
             ->get();
 
         $classes     = $classesData->pluck('name', 'id');
-        $classesInfo = $classesData->map(fn($class) => [
-            'id'        => $class->id,
-            'name'      => $class->name,
-            'is_active' => $class->is_active,
-        ])->values();
+        $classesInfo = $classesData
+            ->map(
+                fn($class) => [
+                    'id'        => $class->id,
+                    'name'      => $class->name,
+                    'is_active' => $class->is_active,
+                ],
+            )
+            ->values();
 
         // Get collectors
-        $collectors = $transactions
-            ->pluck('createdBy')
-            ->filter()
-            ->unique('id')
-            ->sortBy('name')
-            ->mapWithKeys(fn($user) => [$user->id => $user->name]);
+        $collectors = $transactions->pluck('createdBy')->filter()->unique('id')->sortBy('name')->mapWithKeys(fn($user) => [$user->id => $user->name]);
 
-        // Get costs with entries - calculate total from entries
-        $costs = Cost::with('entries')
-            ->betweenDates($startDate->toDateString(), $endDate->toDateString())
-            ->forBranch($branchId)
-            ->get()
-            ->keyBy(fn($c) => $c->cost_date->format('d-m-Y'));
+        // Get costs with entries
+        $costs = Cost::with('entries')->betweenDates($startDate->toDateString(), $endDate->toDateString())->forBranch($branchId)->get()->keyBy(fn($c) => $c->cost_date->format('d-m-Y'));
 
         $transactionsByDate = $transactions->groupBy(fn($t) => $t->created_at->format('d-m-Y'));
 
@@ -234,10 +252,9 @@ class ReportController extends Controller
         ]);
     }
 
-/**
- * Load cost list (AJAX)
- * Updated to include entries
- */
+    /**
+     * Load cost list (AJAX)
+     */
     public function getReportCosts(Request $request): JsonResponse
     {
         $request->validate([
@@ -249,17 +266,10 @@ class ReportController extends Controller
         $user     = Auth::user();
         $branchId = $user->branch_id ?: $request->branch_id;
 
-        $query = Cost::with([
-            'branch:id,branch_name,branch_prefix',
-            'createdBy:id,name',
-            'entries.costType:id,name',
-        ])->forBranch($branchId);
+        $query = Cost::with(['branch:id,branch_name,branch_prefix', 'createdBy:id,name', 'entries.costType:id,name'])->forBranch($branchId);
 
         if ($request->start_date && $request->end_date) {
-            $query->betweenDates(
-                Carbon::createFromFormat('d-m-Y', $request->start_date)->toDateString(),
-                Carbon::createFromFormat('d-m-Y', $request->end_date)->toDateString()
-            );
+            $query->betweenDates(Carbon::createFromFormat('d-m-Y', $request->start_date)->toDateString(), Carbon::createFromFormat('d-m-Y', $request->end_date)->toDateString());
         }
 
         $costs = $query->orderBy('cost_date', 'desc')->get();
@@ -274,5 +284,4 @@ class ReportController extends Controller
             'data'    => $costs,
         ]);
     }
-
 }

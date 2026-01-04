@@ -69,7 +69,39 @@ class CostController extends Controller
     }
 
     /**
+     * Check if cost exists for today.
+     */
+    public function checkToday(Request $request): JsonResponse
+    {
+        $request->validate([
+            'branch_id' => 'nullable|exists:branches,id',
+        ]);
+
+        $user     = Auth::user();
+        $branchId = $user->branch_id ?: $request->branch_id;
+
+        if (! $branchId) {
+            return response()->json([
+                'success' => true,
+                'exists'  => false,
+            ]);
+        }
+
+        $today = Carbon::today()->toDateString();
+
+        $exists = Cost::where('cost_date', $today)
+            ->where('branch_id', $branchId)
+            ->exists();
+
+        return response()->json([
+            'success' => true,
+            'exists'  => $exists,
+        ]);
+    }
+
+    /**
      * Store a newly created cost with entries.
+     * Only allows today's date - no backdate entries.
      */
     public function store(Request $request): JsonResponse
     {
@@ -92,6 +124,15 @@ class CostController extends Controller
         }
 
         $costDate = Carbon::createFromFormat('d-m-Y', $request->cost_date)->toDateString();
+        $today    = Carbon::today()->toDateString();
+
+        // Enforce no backdate entries - only today's date is allowed
+        if ($costDate !== $today) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cost can only be added for today\'s date. Backdate entries are not allowed.',
+            ], 422);
+        }
 
         // Check if cost already exists for this date and branch
         $existingCost = Cost::where('cost_date', $costDate)
@@ -101,7 +142,7 @@ class CostController extends Controller
         if ($existingCost) {
             return response()->json([
                 'success' => false,
-                'message' => 'A cost record already exists for this date. Please edit the existing record.',
+                'message' => 'A cost record already exists for today. Please edit the existing record.',
             ], 422);
         }
 
@@ -131,6 +172,7 @@ class CostController extends Controller
                 'createdBy:id,name',
                 'entries.costType:id,name',
             ]);
+
             $cost->total_amount = $cost->totalAmount();
 
             return response()->json([
@@ -138,9 +180,9 @@ class CostController extends Controller
                 'message' => 'Cost added successfully',
                 'data'    => $cost,
             ], 201);
-
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to save cost: ' . $e->getMessage(),
@@ -168,6 +210,7 @@ class CostController extends Controller
             'createdBy:id,name',
             'entries.costType:id,name',
         ]);
+
         $cost->total_amount = $cost->totalAmount();
 
         return response()->json([
@@ -218,6 +261,7 @@ class CostController extends Controller
                 'createdBy:id,name',
                 'entries.costType:id,name',
             ]);
+
             $cost->total_amount = $cost->totalAmount();
 
             return response()->json([
@@ -225,9 +269,9 @@ class CostController extends Controller
                 'message' => 'Cost updated successfully',
                 'data'    => $cost,
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update cost: ' . $e->getMessage(),
@@ -265,9 +309,9 @@ class CostController extends Controller
                 'success' => true,
                 'message' => 'Cost deleted successfully',
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to delete cost: ' . $e->getMessage(),
@@ -293,6 +337,7 @@ class CostController extends Controller
 
         // Check if this is the last entry
         $entryCount = $cost->entries()->count();
+
         if ($entryCount <= 1) {
             return response()->json([
                 'success' => false,

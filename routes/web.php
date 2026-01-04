@@ -163,12 +163,26 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
         ->group(function () {
             Route::get('/', [CostController::class, 'index'])->name('index');
             Route::get('/types', [CostController::class, 'getCostTypes'])->name('types');
+            Route::get('/check-today', [CostController::class, 'checkToday'])->name('check-today');
             Route::post('/', [CostController::class, 'store'])->name('store');
             Route::get('/by-date', [CostController::class, 'getByDate'])->name('by-date');
             Route::get('/{cost}', [CostController::class, 'show'])->name('show');
             Route::put('/{cost}', [CostController::class, 'update'])->name('update');
             Route::delete('/{cost}', [CostController::class, 'destroy'])->name('destroy');
             Route::delete('/entry/{entry}', [CostController::class, 'destroyEntry'])->name('entry.destroy');
+        });
+
+    // Finance Reports
+    Route::prefix('reports')
+        ->name('reports.')
+        ->group(function () {
+            // Revenue vs Cost Report
+            Route::get('finance', [ReportController::class, 'financeReportIndex'])->name('finance.index');
+            Route::post('finance', [ReportController::class, 'financeReportGenerate'])->name('finance.generate');
+            Route::get('finance/costs', [ReportController::class, 'getReportCosts'])->name('finance.costs');
+
+            // Cost Records (separate page)
+            Route::get('cost-records', [ReportController::class, 'costRecordsIndex'])->name('cost-records.index');
         });
 
     // Cost Type
@@ -178,15 +192,6 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
         Route::put('cost-types/{costType}', [CostTypeController::class, 'update'])->name('cost-types.update');
         Route::post('cost-types/toggle-active', [CostTypeController::class, 'toggleActive'])->name('cost-types.toggleActive');
     });
-
-    // Finance Reports
-    Route::prefix('reports')
-        ->name('reports.')
-        ->group(function () {
-            Route::get('finance', [ReportController::class, 'financeReport'])->name('finance.index');
-            Route::post('finance', [ReportController::class, 'financeReportGenerate'])->name('finance.generate');
-            Route::get('finance/costs', [ReportController::class, 'getReportCosts'])->name('finance.costs');
-        });
 
     // ----- SMS Routes Start -----
     Route::get('sms', [SmsController::class, 'sendSingleIndex']);
@@ -237,13 +242,15 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     });
 
     // Settlements
-    Route::prefix('settlements')->name('settlements.')->group(function () {
-        Route::get('/', [SettlementController::class, 'index'])->name('index');
-        Route::get('/logs', [SettlementController::class, 'logs'])->name('logs');
-        Route::post('/', [SettlementController::class, 'store'])->name('store');
-        Route::post('/adjustment', [SettlementController::class, 'adjustment'])->name('adjustment');
-        Route::get('/{user}', [SettlementController::class, 'show'])->name('show');
-    });
+    Route::prefix('settlements')
+        ->name('settlements.')
+        ->group(function () {
+            Route::get('/', [SettlementController::class, 'index'])->name('index');
+            Route::get('/logs', [SettlementController::class, 'logs'])->name('logs');
+            Route::post('/', [SettlementController::class, 'store'])->name('store');
+            Route::post('/adjustment', [SettlementController::class, 'adjustment'])->name('adjustment');
+            Route::get('/{user}', [SettlementController::class, 'show'])->name('show');
+        });
 
     // Resource Routes
     Route::resources([

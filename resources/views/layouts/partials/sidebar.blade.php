@@ -502,7 +502,7 @@
                                 <!--end:SMS Campaign item-->
 
                                 @if (!auth()->user()->isAccountant())
-                                    <!--begin:SMS template item-->
+                                    <!--begin:Finance Report item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <a class="menu-link" id="finance_report_link"
@@ -515,8 +515,24 @@
                                         </a>
                                         <!--end:Menu link-->
                                     </div>
-                                    <!--end:SMS template item-->
+                                    <!--end:Finance Report item-->
                                 @endif
+
+                                <!--begin:Cost Records item-->
+                                <div class="menu-item">
+                                    <!--begin:Menu link-->
+                                    <a class="menu-link" id="cost_records_link"
+                                        href="{{ route('reports.cost-records.index') }}">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot">
+                                            </span>
+                                        </span>
+                                        <span class="menu-title">Cost Records</span>
+                                    </a>
+                                    <!--end:Menu link-->
+                                </div>
+                                <!--end:Cost Records item-->
+
 
                                 @if (auth()->user()->isAdmin())
                                     <!--begin:Activity Logs item-->
