@@ -444,8 +444,8 @@
                         <!--end::Menu item-->
                         @can('notes.distribute')
                             <div class="menu-item px-5">
-                                <a href="{{ route('notes.single.create') }}"
-                                    class="menu-link text-hover-primary px-5"><i class="ki-outline ki-note-2 fs-2 me-2"></i>
+                                <a href="{{ route('notes.single.create') }}" class="menu-link text-hover-primary px-5"><i
+                                        class="ki-outline ki-note-2 fs-2 me-2"></i>
                                     Note Distribution</a>
                             </div>
                         @endcan
@@ -1125,6 +1125,8 @@
                                                                 <i class="ki-outline ki-trash fs-2"></i>
                                                             </a>
                                                         @endcan
+                                                    @else
+                                                        <span class="text-muted">-</span>
                                                     @endif
                                                 </td>
 
@@ -1573,8 +1575,7 @@
                     <!--end::Modal title-->
                     <!--begin::Close-->
                     <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-edit-invoice-modal-action="close">
-                        <i class="ki-outline ki-cross fs-1">
-                        </i>
+                        <i class="ki-outline ki-cross fs-1"> </i>
                     </div>
                     <!--end::Close-->
                 </div>
@@ -1588,29 +1589,56 @@
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_transaction_header"
                             data-kt-scroll-wrappers="#kt_modal_edit_invoice_scroll" data-kt-scroll-offset="300px">
+                            <!--begin::Name Input group-->
+                            <div class="fv-row mb-7">
+                                <!--begin::Label-->
+                                <label class="fw-semibold fs-6 mb-2">Corrosponding Student</label>
+                                <!--end::Label-->
+                                <!--begin::Solid input group style-->
+                                <div class="input-group input-group-solid flex-nowrap">
+                                    <span class="input-group-text">
+                                        <i class="las la-graduation-cap fs-3"></i>
+                                    </span>
+                                    <div class="overflow-hidden flex-grow-1">
+                                        <select name="invoice_student_edit"
+                                            class="form-select form-select-solid rounded-start-0 border-start"
+                                            data-control="select2" data-dropdown-parent="#kt_modal_edit_invoice"
+                                            data-placeholder="Select a student" disabled>
+                                            <option></option>
+                                            <option value="{{ $student->id }}">{{ $student->name }}
+                                                ({{ $student->student_unique_id }})
+                                                -
+                                                {{ ucfirst($student->payments->payment_style) }} -
+                                                1/{{ $student->payments->due_date }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <!--end::Solid input group style-->
+                            </div>
+                            <!--end::Name Input group-->
 
                             <!--begin::Invoice Type Input group-->
                             <div class="fv-row mb-7">
                                 <!--begin::Label-->
                                 <label class="fw-semibold fs-6 mb-2">Invoice Type</label>
                                 <!--end::Label-->
-
                                 <!--begin::Solid input group style-->
                                 <div class="input-group input-group-solid flex-nowrap">
                                     <span class="input-group-text">
                                         <i class="ki-outline ki-save-2 fs-3"></i>
                                     </span>
                                     <div class="overflow-hidden flex-grow-1">
-                                        <select name="invoice_type_edit"
+                                        <select name="invoice_type_edit" data-hide-search="false"
                                             class="form-select form-select-solid rounded-start-0 border-start"
                                             data-control="select2" data-dropdown-parent="#kt_modal_edit_invoice"
                                             data-placeholder="Select a invoice type" disabled>
                                             <option></option>
-                                            <option value="tuition_fee">Tuition Fee</option>
-                                            <option value="exam_fee">Exam Fee</option>
-                                            <option value="model_test_fee">Model Test Fee</option>
-                                            <option value="sheet_fee">Sheet Fee</option>
-                                            <option value="others_fee">Others</option>
+                                            @foreach ($invoice_types as $type)
+                                                <option value="{{ $type->id }}"
+                                                    data-type-name="{{ $type->type_name }}">{{ $type->type_name }}
+                                                </option>
+                                            @endforeach
                                         </select>
                                     </div>
                                 </div>
@@ -1623,7 +1651,6 @@
                                 <!--begin::Label-->
                                 <label class="fw-semibold fs-6 mb-2">Month Year</label>
                                 <!--end::Label-->
-
                                 <!--begin::Solid input group style-->
                                 <div class="input-group input-group-solid flex-nowrap">
                                     <span class="input-group-text">
@@ -1653,7 +1680,7 @@
                                     </span>
                                     <div class="overflow-hidden flex-grow-1">
                                         <!--begin::Input-->
-                                        <input type="number" name="invoice_amount_edit" min="500"
+                                        <input type="number" name="invoice_amount_edit" min="50"
                                             class="form-control form-control-solid mb-3 mb-lg-0 rounded-start-0 border-start"
                                             placeholder="Enter the amount" required />
                                         <!--end::Input-->
@@ -1669,7 +1696,9 @@
                             <button type="reset" class="btn btn-light me-3"
                                 data-kt-edit-invoice-modal-action="cancel">Discard</button>
                             <button type="button" class="btn btn-primary" data-kt-edit-invoice-modal-action="submit">
-                                Update
+                                <span class="indicator-label">Update</span>
+                                <span class="indicator-progress">Please wait...
+                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
                             </button>
                         </div>
                         <!--end::Actions-->

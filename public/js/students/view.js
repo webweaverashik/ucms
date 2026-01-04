@@ -206,113 +206,144 @@ var KTStudentsInvoicesView = function () {
 
 var KTEditInvoiceModal = function () {
     // Shared variables
-    const element = document.getElementById('kt_modal_edit_invoice');
+    var element;
+    var form;
+    var modal;
+    var submitButton;
+    var validator;
+    var invoiceId = null;
 
-    // Early return if element doesn't exist
-    if (!element) {
-        console.error('Modal element not found');
-        return {
-            init: function () { }
-        };
-    }
+    // Helper function to get CSRF token
+    var getCsrfToken = function () {
+        return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    };
 
-    const form = element.querySelector('#kt_modal_edit_invoice_form');
-    const modal = bootstrap.Modal.getOrCreateInstance(element);
+    // Helper function to format month year for display
+    var formatMonthYear = function (monthYear) {
+        if (!monthYear) return '';
+        const [month, year] = monthYear.split('_');
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'];
+        return `${monthNames[parseInt(month) - 1]} ${year}`;
+    };
 
-    let invoiceId = null; // Declare globally
-
-    // Init edit invoice modal
-    var initEditInvoice = () => {
-        // Cancel and close button handlers
-        ['cancel', 'close'].forEach(action => {
-            const btn = element.querySelector(`[data-kt-edit-invoice-modal-action="${action}"]`);
-            if (btn) {
-                btn.addEventListener('click', e => {
-                    e.preventDefault();
-                    if (form) form.reset();
-                    modal.hide();
-                });
-            }
-        });
-
-        // Delegate edit button click using document
+    // Handle edit button click
+    var handleEditClick = function () {
         document.addEventListener('click', function (e) {
             const button = e.target.closest("[data-bs-target='#kt_modal_edit_invoice']");
             if (!button) return;
 
-            invoiceId = button.getAttribute("data-invoice-id");
+            invoiceId = button.getAttribute('data-invoice-id');
             if (!invoiceId) return;
 
-            console.log("Invoice ID:", invoiceId);
+            // Clear form
             if (form) form.reset();
 
-            fetch(`/invoices/${invoiceId}/view-ajax`)
+            // Fetch invoice data
+            fetch(`/invoices/${invoiceId}/view-ajax`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
                 .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(errorData => {
-                            // Show error from Laravel if available
-                            throw new Error(errorData.message || 'Network response was not ok');
-                        });
-                    }
+                    if (!response.ok) throw new Error('Network response was not ok');
                     return response.json();
                 })
                 .then(data => {
-                    if (!data.success || !data.data) throw new Error(data.message || 'Invalid response data');
+                    if (!data.success || !data.data) {
+                        throw new Error(data.message || 'Invalid response data');
+                    }
 
                     const invoice = data.data;
 
                     // Set modal title
-                    const titleEl = document.getElementById("kt_modal_edit_invoice_title");
+                    const titleEl = document.getElementById('kt_modal_edit_invoice_title');
                     if (titleEl) {
                         titleEl.textContent = `Update Invoice ${invoice.invoice_number}`;
                     }
 
-                    // Show/hide #month_year_id_edit based on invoice_type
-                    const monthYearWrapper = document.querySelector("#month_year_id_edit");
+                    // Get the type name from the response
+                    const invoiceTypeName = invoice.invoice_type_name || '';
+
+                    // Show/hide month year wrapper based on type name
+                    const monthYearWrapper = document.getElementById('month_year_id_edit');
                     if (monthYearWrapper) {
-                        monthYearWrapper.style.display = (invoice.invoice_type === 'tuition_fee') ? '' : 'none';
+                        monthYearWrapper.style.display = invoiceTypeName === 'Tuition Fee' ? '' : 'none';
                     }
 
-                    // Populate inputs
-                    document.querySelector("input[name='invoice_amount_edit']").value = invoice.total_amount;
+                    // Set invoice amount
+                    const amountInput = element.querySelector("input[name='invoice_amount_edit']");
+                    if (amountInput) {
+                        amountInput.value = invoice.total_amount;
+                    }
 
-                    // Helper for select2 values
-                    const setSelect2Value = (name, value) => {
-                        const el = $(`select[name="${name}"]`);
-                        if (el.length) {
-                            el.val(value).trigger('change');
-                        }
-                    };
+                    // Set student select (using Select2)
+                    const studentSelect = $("select[name='invoice_student_edit']");
+                    if (studentSelect.length) {
+                        studentSelect.val(invoice.student_id).trigger('change');
+                    }
 
-                    setSelect2Value("invoice_type_edit", invoice.invoice_type);
+                    // Set invoice type select (using Select2)
+                    const typeSelect = $("select[name='invoice_type_edit']");
+                    if (typeSelect.length) {
+                        typeSelect.val(invoice.invoice_type_id).trigger('change');
+                    }
 
-                    // Month-year handling
+                    // Set month_year field
                     const monthYearSelect = $("select[name='invoice_month_year_edit']");
                     if (monthYearSelect.length) {
                         monthYearSelect.empty();
-                        const [month, year] = (invoice.month_year || '').split('_');
-                        const monthName = new Date(`${year}-${month}-01`).toLocaleString('default', { month: 'long' });
-
-                        const formatted = `${monthName} ${year}`;
-                        const option = new Option(formatted, invoice.month_year, true, true);
+                        const formattedMonthYear = formatMonthYear(invoice.month_year);
+                        const option = new Option(formattedMonthYear, invoice.month_year, true, true);
                         monthYearSelect.append(option).trigger('change');
                     }
 
                     modal.show();
                 })
                 .catch(error => {
-                    console.error("Error:", error);
-                    toastr.error(error.message || "Failed to load invoice details");
+                    console.error('Error:', error);
+                    toastr.error(error.message || 'Failed to load invoice details');
                 });
         });
     };
 
+    // Handle modal close/cancel
+    var handleModalClose = function () {
+        const cancelButton = element.querySelector('[data-kt-edit-invoice-modal-action="cancel"]');
+        const closeButton = element.querySelector('[data-kt-edit-invoice-modal-action="close"]');
 
-    // Form validation
+        if (cancelButton) {
+            cancelButton.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (form) form.reset();
+                if (validator) validator.resetForm();
+                modal.hide();
+            });
+        }
+
+        if (closeButton) {
+            closeButton.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (form) form.reset();
+                if (validator) validator.resetForm();
+                modal.hide();
+            });
+        }
+
+        // Reset form when modal is hidden
+        element.addEventListener('hidden.bs.modal', function () {
+            if (form) form.reset();
+            if (validator) validator.resetForm();
+        });
+    };
+
+    // Initialize form validation
     var initValidation = function () {
         if (!form) return;
 
-        var validator = FormValidation.formValidation(
+        validator = FormValidation.formValidation(
             form,
             {
                 fields: {
@@ -320,6 +351,10 @@ var KTEditInvoiceModal = function () {
                         validators: {
                             notEmpty: {
                                 message: 'Amount is required'
+                            },
+                            greaterThan: {
+                                min: 50,
+                                message: 'Amount must be at least 50'
                             }
                         }
                     }
@@ -334,23 +369,30 @@ var KTEditInvoiceModal = function () {
                 }
             }
         );
+    };
 
-        const submitButton = element.querySelector('[data-kt-edit-invoice-modal-action="submit"]');
+    // Handle form submission via AJAX
+    var handleFormSubmit = function () {
+        submitButton = element.querySelector('[data-kt-edit-invoice-modal-action="submit"]');
 
-        if (submitButton && validator) {
-            submitButton.addEventListener('click', function (e) {
-                e.preventDefault(); // Prevent default button behavior
+        if (!submitButton) return;
 
+        submitButton.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            if (validator) {
                 validator.validate().then(function (status) {
                     if (status === 'Valid') {
                         // Show loading indicator
                         submitButton.setAttribute('data-kt-indicator', 'on');
                         submitButton.disabled = true;
 
+                        // Prepare form data
                         const formData = new FormData(form);
-                        formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+                        formData.append('_token', getCsrfToken());
                         formData.append('_method', 'PUT');
 
+                        // Submit via AJAX
                         fetch(`/invoices/${invoiceId}`, {
                             method: 'POST',
                             body: formData,
@@ -360,40 +402,95 @@ var KTEditInvoiceModal = function () {
                             }
                         })
                             .then(response => {
-                                if (!response.ok) throw new Error('Network response was not ok');
-                                return response.json();
+                                return response.json().then(data => {
+                                    if (!response.ok) {
+                                        // Handle validation errors
+                                        if (response.status === 422 && data.errors) {
+                                            let errorMessages = [];
+                                            Object.keys(data.errors).forEach(key => {
+                                                errorMessages.push(data.errors[key][0]);
+                                            });
+                                            throw new Error(errorMessages.join('<br>'));
+                                        }
+                                        throw new Error(data.message || 'Something went wrong');
+                                    }
+                                    return data;
+                                });
                             })
                             .then(data => {
+                                // Hide loading indicator
                                 submitButton.removeAttribute('data-kt-indicator');
                                 submitButton.disabled = false;
 
                                 if (data.success) {
-                                    toastr.success(data.message || 'Invoice updated successfully');
-                                    modal.hide();
-                                    window.location.reload();
+                                    // Show success message
+                                    Swal.fire({
+                                        text: data.message || 'Invoice updated successfully!',
+                                        icon: 'success',
+                                        buttonsStyling: false,
+                                        confirmButtonText: 'Ok, got it!',
+                                        customClass: {
+                                            confirmButton: 'btn btn-primary'
+                                        }
+                                    }).then(function (result) {
+                                        if (result.isConfirmed) {
+                                            modal.hide();
+                                            // Reload the page
+                                            window.location.reload();
+                                        }
+                                    });
                                 } else {
-                                    throw new Error(data.message || 'Invoice Update failed');
+                                    throw new Error(data.message || 'Failed to update invoice');
                                 }
                             })
                             .catch(error => {
+                                // Hide loading indicator
                                 submitButton.removeAttribute('data-kt-indicator');
                                 submitButton.disabled = false;
-                                toastr.error(error.message || 'Failed to update invoice');
-                                console.error('Error:', error);
+
+                                // Show error message
+                                Swal.fire({
+                                    html: error.message || 'Something went wrong. Please try again.',
+                                    icon: 'error',
+                                    buttonsStyling: false,
+                                    confirmButtonText: 'Ok, got it!',
+                                    customClass: {
+                                        confirmButton: 'btn btn-primary'
+                                    }
+                                });
                             });
                     } else {
-                        toastr.warning('Please fill all required fields correctly');
+                        // Show validation error message
+                        Swal.fire({
+                            text: 'Please fill all required fields correctly.',
+                            icon: 'warning',
+                            buttonsStyling: false,
+                            confirmButtonText: 'Ok, got it!',
+                            customClass: {
+                                confirmButton: 'btn btn-primary'
+                            }
+                        });
                     }
                 });
-            });
-        }
-
-    }
+            }
+        });
+    };
 
     return {
         init: function () {
-            initEditInvoice();
+            element = document.getElementById('kt_modal_edit_invoice');
+
+            if (!element) {
+                return;
+            }
+
+            form = element.querySelector('#kt_modal_edit_invoice_form');
+            modal = bootstrap.Modal.getOrCreateInstance(element);
+
+            handleEditClick();
+            handleModalClose();
             initValidation();
+            handleFormSubmit();
         }
     };
 }();

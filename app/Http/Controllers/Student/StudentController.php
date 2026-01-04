@@ -738,10 +738,12 @@ class StudentController extends Controller
             ->sort()
             ->values();
 
+        $invoice_types = PaymentInvoiceType::select('id', 'type_name')->oldest('type_name')->get();
+
         if ($student->class->isActive() === false) {
             return view('students.alumni.view', compact('student', 'sheet_class_names', 'sheet_subjectNames'));
         } else {
-            return view('students.view', compact('student', 'sheet_class_names', 'sheet_subjectNames', 'attendance_events'));
+            return view('students.view', compact('student', 'sheet_class_names', 'sheet_subjectNames', 'attendance_events', 'invoice_types'));
         }
     }
 
@@ -1194,24 +1196,6 @@ class StudentController extends Controller
         $sheetFee = optional($student->class->sheet)->price;
 
         return response()->json(['sheet_fee' => $sheetFee]);
-    }
-
-    /* Transfer a student from one branch to another */
-    public function promoteStudents()
-    {
-        if (! auth()->user()->can('students.promote')) {
-            return redirect()->back()->with('warning', 'No permission to promote students.');
-        }
-
-        $students = Student::whereHas('studentActivation', function ($query) {
-            $query->where('active_status', 'active');
-        })
-            ->select('id', 'name', 'student_unique_id', 'branch_id', 'class_id', 'batch_id')
-            ->get();
-
-        $classes = ClassName::where('is_active', true)->get();
-
-        return view('students.promote', compact('students', 'classes'));
     }
 
     /* Old Student - Alumni */

@@ -347,7 +347,8 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @if ($status  != 'partially_paid')
+                                        {{-- @if ($status != 'partially_paid') --}}
+                                        @if (optional($invoice->student->studentActivation)->active_status == 'active' && $invoice->status == 'due')
                                             @if ($canEditInvoice)
                                                 <a href="#" title="Edit invoice"
                                                     data-invoice-id="{{ $invoice->id }}" data-bs-toggle="modal"
@@ -363,6 +364,8 @@
                                                     <i class="ki-outline ki-trash fs-2"></i>
                                                 </a>
                                             @endif
+                                        @else
+                                            <span class="text-muted">-</span>
                                         @endif
                                     </td>
                                 </tr>
