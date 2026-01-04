@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models\Cost;
 
 use Illuminate\Database\Eloquent\Model;
@@ -9,7 +8,7 @@ class CostEntry extends Model
 {
     protected $table = 'cost_entries';
 
-    protected $fillable = ['cost_id', 'cost_type_id', 'amount'];
+    protected $fillable = ['cost_id', 'cost_type_id', 'amount', 'description'];
 
     protected $casts = [
         'amount' => 'integer',
@@ -29,5 +28,25 @@ class CostEntry extends Model
     public function costType(): BelongsTo
     {
         return $this->belongsTo(CostType::class);
+    }
+
+    /**
+     * Check if this is an "Others" type entry.
+     */
+    public function isOthersType(): bool
+    {
+        return $this->costType && strtolower($this->costType->name) === 'others';
+    }
+
+    /**
+     * Get display name (with description for Others type).
+     */
+    public function getDisplayNameAttribute(): string
+    {
+        if ($this->isOthersType() && $this->description) {
+            return "Others: {$this->description}";
+        }
+
+        return $this->costType?->name ?? 'Unknown';
     }
 }

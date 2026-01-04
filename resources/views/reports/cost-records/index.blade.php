@@ -43,17 +43,11 @@
                 </h3>
             </div>
             <div class="card-toolbar gap-2">
-                {{-- <a href="{{ route('reports.finance.index') }}" class="btn btn-light-primary">
-                    <i class="ki-outline ki-chart-simple fs-4 me-1"></i>
-                    Finance Report
-                </a> --}}
                 <button type="button" class="btn btn-success" id="add_cost_btn">
-                    <i class="ki-outline ki-plus fs-4 me-1"></i>
-                    Add Cost
+                    <i class="ki-outline ki-plus fs-4 me-1"></i> Add Cost
                 </button>
                 <button type="button" class="btn btn-light-info" id="refresh_costs_btn">
-                    <i class="ki-outline ki-arrows-circle fs-4 me-1"></i>
-                    Refresh
+                    <i class="ki-outline ki-arrows-circle fs-4 me-1"></i> Refresh
                 </button>
             </div>
         </div>
@@ -63,25 +57,92 @@
         <div class="card-body pt-0">
             <div class="separator separator-dashed mb-5"></div>
 
-            <!--begin::DataTable-->
-            <div class="table-responsive">
-                <table id="costs_datatable" class="table table-row-bordered table-row-gray-200 align-middle gs-0 gy-4">
-                    <thead>
-                        <tr class="fw-bold text-muted bg-light">
-                            <th class="ps-4 rounded-start min-w-100px">Date</th>
-                            <th class="min-w-125px">Branch</th>
-                            <th class="min-w-250px">Cost Entries</th>
-                            <th class="min-w-100px text-end">Total Amount</th>
-                            <th class="min-w-100px">Created By</th>
-                            @if ($isAdmin)
-                                <th class="pe-4 rounded-end text-center min-w-100px">Actions</th>
-                            @endif
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            <!--end::DataTable-->
+            @if ($isAdmin && $branches->count() > 1)
+                <!--begin::Branch Tabs for Admin-->
+                <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-5 fs-6" id="branch_tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link active" id="tab_all_branches" data-bs-toggle="tab" href="#pane_all_branches"
+                            role="tab" data-branch-id="">
+                            <i class="ki-outline ki-abstract-14 fs-4 me-1"></i>
+                            All Branches
+                        </a>
+                    </li>
+                    @foreach ($branches as $branch)
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" id="tab_branch_{{ $branch->id }}" data-bs-toggle="tab"
+                                href="#pane_branch_{{ $branch->id }}" role="tab" data-branch-id="{{ $branch->id }}">
+                                <span class="badge badge-light-primary me-2">{{ $branch->branch_prefix }}</span>
+                                {{ $branch->branch_name }}
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+                <!--end::Branch Tabs for Admin-->
+
+                <!--begin::Tab Content-->
+                <div class="tab-content" id="branch_tabs_content">
+                    <div class="tab-pane fade show active" id="pane_all_branches" role="tabpanel">
+                        <div class="table-responsive">
+                            <table id="costs_datatable_all"
+                                class="table table-row-bordered table-row-gray-200 align-middle gs-0 gy-4 costs-datatable">
+                                <thead>
+                                    <tr class="fw-bold text-muted bg-light">
+                                        <th class="ps-4 rounded-start min-w-100px">Date</th>
+                                        <th class="min-w-125px">Branch</th>
+                                        <th class="min-w-250px">Cost Entries</th>
+                                        <th class="min-w-100px text-end">Total Amount</th>
+                                        <th class="min-w-100px">Created By</th>
+                                        <th class="pe-4 rounded-end text-center min-w-100px">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    @foreach ($branches as $branch)
+                        <div class="tab-pane fade" id="pane_branch_{{ $branch->id }}" role="tabpanel">
+                            <div class="table-responsive">
+                                <table id="costs_datatable_{{ $branch->id }}"
+                                    class="table table-row-bordered table-row-gray-200 align-middle gs-0 gy-4 costs-datatable">
+                                    <thead>
+                                        <tr class="fw-bold text-muted bg-light">
+                                            <th class="ps-4 rounded-start min-w-100px">Date</th>
+                                            <th class="min-w-125px">Branch</th>
+                                            <th class="min-w-250px">Cost Entries</th>
+                                            <th class="min-w-100px text-end">Total Amount</th>
+                                            <th class="min-w-100px">Created By</th>
+                                            <th class="pe-4 rounded-end text-center min-w-100px">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                <!--end::Tab Content-->
+            @else
+                <!--begin::Single Branch DataTable-->
+                <div class="table-responsive">
+                    <table id="costs_datatable"
+                        class="table table-row-bordered table-row-gray-200 align-middle gs-0 gy-4 costs-datatable">
+                        <thead>
+                            <tr class="fw-bold text-muted bg-light">
+                                <th class="ps-4 rounded-start min-w-100px">Date</th>
+                                <th class="min-w-125px">Branch</th>
+                                <th class="min-w-250px">Cost Entries</th>
+                                <th class="min-w-100px text-end">Total Amount</th>
+                                <th class="min-w-100px">Created By</th>
+                                @if ($isAdmin)
+                                    <th class="pe-4 rounded-end text-center min-w-100px">Actions</th>
+                                @endif
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <!--end::Single Branch DataTable-->
+            @endif
         </div>
         <!--end::Card Body-->
     </div>
@@ -153,6 +214,23 @@
                             </div>
                         </div>
 
+                        <!-- Others Cost Section -->
+                        <div class="fv-row mb-5">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <label class="fw-semibold fs-6">Other Costs</label>
+                                <button type="button" class="btn btn-sm btn-light-primary" id="add_other_cost_btn">
+                                    <i class="ki-outline ki-plus fs-6"></i> Add Other
+                                </button>
+                            </div>
+                            <div id="other_costs_container">
+                                <!-- Other cost rows will be added here -->
+                            </div>
+                            <div class="form-text text-muted">
+                                <i class="ki-outline ki-information-3 fs-7 me-1"></i>
+                                Add custom cost types that are not in the predefined list
+                            </div>
+                        </div>
+
                         <!-- Total Cost -->
                         <div id="cost_total_section" class="cost-total-section d-none">
                             <div class="d-flex justify-content-between align-items-center">
@@ -165,8 +243,7 @@
                         <button type="button" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary" id="save_cost_btn">
                             <span class="indicator-label">
-                                <i class="ki-outline ki-check fs-4 me-1"></i>
-                                Save Cost
+                                <i class="ki-outline ki-check fs-4 me-1"></i> Save Cost
                             </span>
                             <span class="indicator-progress">
                                 Please wait...
@@ -183,7 +260,7 @@
     @if ($isAdmin)
         <!--begin::Edit Cost Modal-->
         <div class="modal fade" id="edit_cost_modal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered mw-650px">
+            <div class="modal-dialog modal-dialog-centered mw-700px">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h3 class="modal-title fw-bold">Edit Cost Entries</h3>
@@ -195,7 +272,6 @@
                     <form id="edit_cost_form">
                         <div class="modal-body py-10 px-lg-12" style="max-height: 70vh; overflow-y: auto;">
                             <input type="hidden" id="edit_cost_id">
-
                             <!-- Cost Info -->
                             <div class="d-flex justify-content-between align-items-center mb-5 p-4 bg-light rounded">
                                 <div>
@@ -214,6 +290,46 @@
                                 <div id="edit_entries_list"></div>
                             </div>
 
+                            <!-- Add New Entry Section -->
+                            <div class="mb-5">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <label class="fw-semibold fs-6">Add New Entry</label>
+                                </div>
+                                <div class="d-flex gap-2 mb-3">
+                                    <select id="edit_new_cost_type" class="form-select form-select-solid flex-grow-1"
+                                        data-control="select2" data-placeholder="Select cost type"
+                                        data-dropdown-parent="#edit_cost_modal" data-hide-search="true">
+                                        <option value="">-- Select Cost Type --</option>
+                                    </select>
+                                    <div class="input-group input-group-solid" style="width: 160px;">
+                                        <span class="input-group-text">৳</span>
+                                        <input type="number" id="edit_new_amount"
+                                            class="form-control form-control-solid" min="1" placeholder="Amount">
+                                    </div>
+                                    <button type="button" class="btn btn-primary btn-icon" id="add_edit_entry_btn">
+                                        <i class="ki-outline ki-plus fs-4"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Add Other Entry -->
+                                <div class="separator separator-dashed my-4"></div>
+                                <label class="fw-semibold fs-7 mb-2 text-muted">Or add custom "Others" entry:</label>
+                                <div class="d-flex gap-2">
+                                    <input type="text" id="edit_other_description"
+                                        class="form-control form-control-solid flex-grow-1"
+                                        placeholder="Description (e.g., Office Supplies)">
+                                    <div class="input-group input-group-solid" style="width: 160px;">
+                                        <span class="input-group-text">৳</span>
+                                        <input type="number" id="edit_other_amount"
+                                            class="form-control form-control-solid" min="1" placeholder="Amount">
+                                    </div>
+                                    <button type="button" class="btn btn-light-primary btn-icon"
+                                        id="add_edit_other_btn">
+                                        <i class="ki-outline ki-plus fs-4"></i>
+                                    </button>
+                                </div>
+                            </div>
+
                             <!-- Total -->
                             <div class="cost-total-section">
                                 <div class="d-flex justify-content-between align-items-center">
@@ -226,8 +342,7 @@
                             <button type="button" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
                             <button type="submit" class="btn btn-primary" id="update_cost_btn">
                                 <span class="indicator-label">
-                                    <i class="ki-outline ki-check fs-4 me-1"></i>
-                                    Update Cost
+                                    <i class="ki-outline ki-check fs-4 me-1"></i> Update Cost
                                 </span>
                                 <span class="indicator-progress">
                                     Please wait...
@@ -266,8 +381,7 @@
                         <button type="button" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
                         <button type="button" class="btn btn-danger" id="confirm_delete_cost_btn">
                             <span class="indicator-label">
-                                <i class="ki-outline ki-trash fs-4 me-1"></i>
-                                Delete
+                                <i class="ki-outline ki-trash fs-4 me-1"></i> Delete
                             </span>
                             <span class="indicator-progress">
                                 Deleting...
@@ -292,15 +406,19 @@
             isAdmin: @json($isAdmin),
             userBranchId: @json(auth()->user()->branch_id),
             todayDate: "{{ now()->format('d-m-Y') }}",
+            branches: @json($branches),
+            hasMultipleBranches: @json($isAdmin && $branches->count() > 1),
             routes: {
                 costs: "{{ route('reports.finance.costs') }}",
                 costTypes: "{{ route('costs.types') }}",
-                storeCost: "{{ route('costs.store') }}",
+                storeCwost: "{{ route('costs.store') }}",
                 checkTodayCost: "{{ route('costs.check-today') }}",
                 @if ($isAdmin)
                     showCost: "{{ route('costs.show', ':id') }}",
                     updateCost: "{{ route('costs.update', ':id') }}",
-                    deleteCost: "{{ route('costs.destroy', ':id') }}"
+                    deleteCost: "{{ route('costs.destroy', ':id') }}",
+                    addEntry: "{{ route('costs.add-entry', ':id') }}",
+                    deleteEntry: "{{ route('costs.delete-entry', ':id') }}"
                 @endif
             },
             csrfToken: "{{ csrf_token() }}"

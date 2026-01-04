@@ -16,9 +16,10 @@ return new class extends Migration
             $table->foreignId('cost_id');
             $table->foreignId('cost_type_id');
             $table->unsignedBigInteger('amount');
+            $table->string('description')->nullable();
             $table->timestamps();
 
-            $table->unique(['cost_id', 'cost_type_id']);
+            $table->index(['cost_id', 'cost_type_id']);
         });
 
     }

@@ -96,6 +96,17 @@
 }
 
 /* ============================================
+   OTHER COST ROWS
+   ============================================ */
+.other-cost-row {
+      animation: slideIn 0.2s ease-out;
+}
+
+.other-cost-row .other-description {
+      min-width: 200px;
+}
+
+/* ============================================
    TOTAL SECTION
    ============================================ */
 .cost-total-section {
@@ -140,6 +151,10 @@
 .entry-badge .type-name {
       color: var(--bs-gray-700);
       font-weight: 500;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
 }
 
 .entry-badge .type-amount {
@@ -169,17 +184,50 @@
 }
 
 .edit-entry-row .entry-amount-input {
-      width: 160px;
+      width: 140px;
+}
+
+/* ============================================
+   BRANCH TABS
+   ============================================ */
+#branch_tabs {
+      border-bottom: 2px solid var(--bs-gray-200);
+}
+
+#branch_tabs .nav-link {
+      padding: 0.75rem 1.25rem;
+      font-weight: 500;
+      color: var(--bs-gray-600);
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s ease;
+}
+
+#branch_tabs .nav-link:hover {
+      color: var(--bs-primary);
+      border-color: var(--bs-gray-300);
+}
+
+#branch_tabs .nav-link.active {
+      color: var(--bs-primary);
+      border-color: var(--bs-primary);
+      background: transparent;
+}
+
+#branch_tabs .nav-link .badge {
+      font-size: 10px;
+      padding: 3px 6px;
 }
 
 /* ============================================
    DATATABLE ENHANCEMENTS
    ============================================ */
-#costs_datatable tbody tr:hover {
+.costs-datatable tbody tr:hover {
       background-color: var(--bs-gray-100);
 }
 
-#costs_datatable .entry-badge {
+.costs-datatable .entry-badge {
       margin: 2px;
 }
 
@@ -223,6 +271,34 @@
       .entry-badge {
             padding: 4px 8px;
             font-size: 11px;
+      }
+
+      .entry-badge .type-name {
+            max-width: 120px;
+      }
+
+      #branch_tabs {
+            overflow-x: auto;
+            white-space: nowrap;
+            flex-wrap: nowrap;
+      }
+
+      #branch_tabs .nav-item {
+            flex-shrink: 0;
+      }
+
+      #branch_tabs .nav-link {
+            padding: 0.5rem 0.75rem;
+            font-size: 13px;
+      }
+
+      .other-cost-row .d-flex {
+            flex-wrap: wrap;
+      }
+
+      .other-cost-row .other-description {
+            min-width: 100%;
+            margin-bottom: 0.5rem;
       }
 }
 

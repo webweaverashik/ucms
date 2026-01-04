@@ -1,66 +1,27 @@
 <?php
 namespace App\Http\Controllers\Cost;
 
-use App\Http\Controllers\Controller;
-use App\Models\Cost\Cost;
-use App\Models\Cost\CostEntry;
-use App\Models\Cost\CostType;
 use Carbon\Carbon;
-use Illuminate\Http\JsonResponse;
+use App\Models\Cost\Cost;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Cost\CostType;
+use App\Models\Cost\CostEntry;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 
 class CostController extends Controller
 {
     /**
-     * Display a listing of costs.
+     * Get all active cost types
      */
-    public function index(Request $request): JsonResponse
-    {
-        $request->validate([
-            'start_date' => 'nullable|date_format:d-m-Y',
-            'end_date'   => 'nullable|date_format:d-m-Y',
-            'branch_id'  => 'nullable|exists:branches,id',
-            'per_page'   => 'nullable|integer|min:1|max:100',
-        ]);
-
-        $user     = Auth::user();
-        $branchId = $user->branch_id ?: $request->branch_id;
-
-        $query = Cost::with([
-            'branch:id,branch_name,branch_prefix',
-            'createdBy:id,name',
-            'entries.costType:id,name',
-        ])->forBranch($branchId);
-
-        if ($request->start_date && $request->end_date) {
-            $startDate = Carbon::createFromFormat('d-m-Y', $request->start_date)->toDateString();
-            $endDate   = Carbon::createFromFormat('d-m-Y', $request->end_date)->toDateString();
-            $query->betweenDates($startDate, $endDate);
-        }
-
-        $costs = $query->orderBy('cost_date', 'desc')->get();
-
-        // Add total_amount to each cost
-        $costs->each(function ($cost) {
-            $cost->total_amount = $cost->totalAmount();
-        });
-
-        return response()->json([
-            'success' => true,
-            'data'    => $costs,
-        ]);
-    }
-
-    /**
-     * Get active cost types for Tagify.
-     */
-    public function getCostTypes(): JsonResponse
+    public function types(): JsonResponse
     {
         $costTypes = CostType::active()
             ->orderBy('name')
-            ->get(['id', 'name']);
+            ->select('id', 'name', 'description')
+            ->get();
 
         return response()->json([
             'success' => true,
@@ -69,28 +30,16 @@ class CostController extends Controller
     }
 
     /**
-     * Check if cost exists for today.
+     * Check if cost exists for today
      */
     public function checkToday(Request $request): JsonResponse
     {
         $request->validate([
-            'branch_id' => 'nullable|exists:branches,id',
+            'branch_id' => 'required|exists:branches,id',
         ]);
 
-        $user     = Auth::user();
-        $branchId = $user->branch_id ?: $request->branch_id;
-
-        if (! $branchId) {
-            return response()->json([
-                'success' => true,
-                'exists'  => false,
-            ]);
-        }
-
-        $today = Carbon::today()->toDateString();
-
-        $exists = Cost::where('cost_date', $today)
-            ->where('branch_id', $branchId)
+        $exists = Cost::where('branch_id', $request->branch_id)
+            ->whereDate('cost_date', Carbon::today())
             ->exists();
 
         return response()->json([
@@ -100,86 +49,67 @@ class CostController extends Controller
     }
 
     /**
-     * Store a newly created cost with entries.
-     * Only allows today's date - no backdate entries.
+     * Store a new cost with entries
      */
     public function store(Request $request): JsonResponse
     {
         $request->validate([
             'cost_date'              => 'required|date_format:d-m-Y',
-            'branch_id'              => 'nullable|exists:branches,id',
+            'branch_id'              => 'required|exists:branches,id',
             'entries'                => 'required|array|min:1',
             'entries.*.cost_type_id' => 'required|exists:cost_types,id',
             'entries.*.amount'       => 'required|integer|min:1',
+            'entries.*.description'  => 'nullable|string|max:255',
         ]);
 
         $user     = Auth::user();
-        $branchId = $user->branch_id ?: $request->branch_id;
+        $costDate = Carbon::createFromFormat('d-m-Y', $request->cost_date);
 
-        if (! $branchId) {
+        // Non-admin users can only add for their branch
+        if (! $user->isAdmin() && $user->branch_id != $request->branch_id) {
             return response()->json([
                 'success' => false,
-                'message' => 'Branch is required',
-            ], 422);
-        }
-
-        $costDate = Carbon::createFromFormat('d-m-Y', $request->cost_date)->toDateString();
-        $today    = Carbon::today()->toDateString();
-
-        // Enforce no backdate entries - only today's date is allowed
-        if ($costDate !== $today) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Cost can only be added for today\'s date. Backdate entries are not allowed.',
-            ], 422);
+                'message' => 'You can only add costs for your own branch.',
+            ], 403);
         }
 
         // Check if cost already exists for this date and branch
-        $existingCost = Cost::where('cost_date', $costDate)
-            ->where('branch_id', $branchId)
+        $existingCost = Cost::where('branch_id', $request->branch_id)
+            ->whereDate('cost_date', $costDate)
             ->first();
 
         if ($existingCost) {
             return response()->json([
                 'success' => false,
-                'message' => 'A cost record already exists for today. Please edit the existing record.',
+                'message' => 'Cost record already exists for this date and branch.',
             ], 422);
         }
 
-        try {
-            DB::beginTransaction();
+        DB::beginTransaction();
 
-            // Create cost record
+        try {
             $cost = Cost::create([
+                'branch_id'  => $request->branch_id,
                 'cost_date'  => $costDate,
-                'branch_id'  => $branchId,
                 'created_by' => $user->id,
             ]);
 
-            // Create cost entries
             foreach ($request->entries as $entry) {
                 CostEntry::create([
                     'cost_id'      => $cost->id,
                     'cost_type_id' => $entry['cost_type_id'],
                     'amount'       => $entry['amount'],
+                    'description'  => $entry['description'] ?? null,
                 ]);
             }
 
             DB::commit();
 
-            $cost->load([
-                'branch:id,branch_name,branch_prefix',
-                'createdBy:id,name',
-                'entries.costType:id,name',
-            ]);
-
-            $cost->total_amount = $cost->totalAmount();
-
             return response()->json([
                 'success' => true,
-                'message' => 'Cost added successfully',
-                'data'    => $cost,
-            ], 201);
+                'message' => 'Cost added successfully!',
+                'data'    => $cost->load('entries.costType'),
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -191,27 +121,12 @@ class CostController extends Controller
     }
 
     /**
-     * Display the specified cost.
+     * Show a single cost with entries
      */
-    public function show(Cost $cost): JsonResponse
+    public function show(int $id): JsonResponse
     {
-        $user = Auth::user();
-
-        // Check if user has access to this cost
-        if ($user->branch_id && $cost->branch_id !== $user->branch_id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized access',
-            ], 403);
-        }
-
-        $cost->load([
-            'branch:id,branch_name,branch_prefix',
-            'createdBy:id,name',
-            'entries.costType:id,name',
-        ]);
-
-        $cost->total_amount = $cost->totalAmount();
+        $cost = Cost::with(['branch:id,branch_name,branch_prefix', 'createdBy:id,name', 'entries.costType:id,name'])
+            ->findOrFail($id);
 
         return response()->json([
             'success' => true,
@@ -220,30 +135,30 @@ class CostController extends Controller
     }
 
     /**
-     * Update the specified cost entries.
+     * Update cost entries (amounts only)
      */
-    public function update(Request $request, Cost $cost): JsonResponse
+    public function update(Request $request, int $id): JsonResponse
     {
-        $user = Auth::user();
-
-        // Check if user has access to this cost
-        if ($user->branch_id && $cost->branch_id !== $user->branch_id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized access',
-            ], 403);
-        }
-
         $request->validate([
             'entries'          => 'required|array|min:1',
             'entries.*.id'     => 'required|exists:cost_entries,id',
             'entries.*.amount' => 'required|integer|min:1',
         ]);
 
-        try {
-            DB::beginTransaction();
+        $user = Auth::user();
 
-            // Update existing entries only
+        if (! $user->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only administrators can update cost records.',
+            ], 403);
+        }
+
+        $cost = Cost::findOrFail($id);
+
+        DB::beginTransaction();
+
+        try {
             foreach ($request->entries as $entryData) {
                 $entry = CostEntry::where('id', $entryData['id'])
                     ->where('cost_id', $cost->id)
@@ -256,18 +171,10 @@ class CostController extends Controller
 
             DB::commit();
 
-            $cost->load([
-                'branch:id,branch_name,branch_prefix',
-                'createdBy:id,name',
-                'entries.costType:id,name',
-            ]);
-
-            $cost->total_amount = $cost->totalAmount();
-
             return response()->json([
                 'success' => true,
-                'message' => 'Cost updated successfully',
-                'data'    => $cost,
+                'message' => 'Cost updated successfully!',
+                'data'    => $cost->fresh()->load('entries.costType'),
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -280,34 +187,133 @@ class CostController extends Controller
     }
 
     /**
-     * Remove the specified cost.
+     * Add a new entry to existing cost
      */
-    public function destroy(Cost $cost): JsonResponse
+    public function addEntry(Request $request, int $id): JsonResponse
     {
+        $request->validate([
+            'cost_type_id' => 'required|exists:cost_types,id',
+            'amount'       => 'required|integer|min:1',
+            'description'  => 'nullable|string|max:255',
+        ]);
+
         $user = Auth::user();
 
-        // Check if user has access to this cost
-        if ($user->branch_id && $cost->branch_id !== $user->branch_id) {
+        if (! $user->isAdmin()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Unauthorized access',
+                'message' => 'Only administrators can add entries.',
             ], 403);
         }
 
-        try {
-            DB::beginTransaction();
+        $cost     = Cost::findOrFail($id);
+        $costType = CostType::findOrFail($request->cost_type_id);
 
+        // Check for duplicate (except for "Others" type which can have multiple)
+        if (strtolower($costType->name) !== 'others') {
+            $existingEntry = CostEntry::where('cost_id', $cost->id)
+                ->where('cost_type_id', $request->cost_type_id)
+                ->exists();
+
+            if ($existingEntry) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This cost type already exists for this record.',
+                ], 422);
+            }
+        }
+
+        try {
+            $entry = CostEntry::create([
+                'cost_id'      => $cost->id,
+                'cost_type_id' => $request->cost_type_id,
+                'amount'       => $request->amount,
+                'description'  => $request->description ?? null,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Entry added successfully!',
+                'data'    => $entry->load('costType'),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to add entry: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete a cost entry
+     */
+    public function deleteEntry(int $id): JsonResponse
+    {
+        $user = Auth::user();
+
+        if (! $user->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only administrators can delete entries.',
+            ], 403);
+        }
+
+        $entry = CostEntry::findOrFail($id);
+        $cost  = $entry->cost;
+
+        // Check if this is the last entry
+        if ($cost->entries()->count() <= 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot delete the last entry. Delete the entire cost record instead.',
+            ], 422);
+        }
+
+        try {
+            $entry->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Entry deleted successfully!',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete entry: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete a cost record with all entries
+     */
+    public function destroy(int $id): JsonResponse
+    {
+        $user = Auth::user();
+
+        if (! $user->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only administrators can delete cost records.',
+            ], 403);
+        }
+
+        $cost = Cost::findOrFail($id);
+
+        DB::beginTransaction();
+
+        try {
             // Delete all entries first
             $cost->entries()->delete();
 
-            // Delete cost
+            // Delete the cost
             $cost->delete();
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Cost deleted successfully',
+                'message' => 'Cost record deleted successfully!',
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -317,74 +323,5 @@ class CostController extends Controller
                 'message' => 'Failed to delete cost: ' . $e->getMessage(),
             ], 500);
         }
-    }
-
-    /**
-     * Delete a specific cost entry.
-     */
-    public function destroyEntry(CostEntry $entry): JsonResponse
-    {
-        $user = Auth::user();
-        $cost = $entry->cost;
-
-        // Check if user has access to this cost
-        if ($user->branch_id && $cost->branch_id !== $user->branch_id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized access',
-            ], 403);
-        }
-
-        // Check if this is the last entry
-        $entryCount = $cost->entries()->count();
-
-        if ($entryCount <= 1) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Cannot delete the last entry. Delete the entire cost record instead.',
-            ], 422);
-        }
-
-        $entry->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Entry deleted successfully',
-        ]);
-    }
-
-    /**
-     * Get cost for a specific date.
-     */
-    public function getByDate(Request $request): JsonResponse
-    {
-        $request->validate([
-            'date'      => 'required|date_format:d-m-Y',
-            'branch_id' => 'nullable|exists:branches,id',
-        ]);
-
-        $user     = Auth::user();
-        $branchId = $user->branch_id ?: $request->branch_id;
-
-        $costDate = Carbon::createFromFormat('d-m-Y', $request->date)->toDateString();
-
-        $cost = Cost::forBranch($branchId)
-            ->where('cost_date', $costDate)
-            ->with([
-                'branch:id,branch_name,branch_prefix',
-                'createdBy:id,name',
-                'entries.costType:id,name',
-            ])
-            ->first();
-
-        if ($cost) {
-            $cost->total_amount = $cost->totalAmount();
-        }
-
-        return response()->json([
-            'success' => true,
-            'exists'  => $cost !== null,
-            'data'    => $cost,
-        ]);
     }
 }

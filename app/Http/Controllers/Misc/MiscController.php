@@ -10,7 +10,7 @@ class MiscController extends Controller
 {
     public function index()
     {
-        if (! auth()->user()->hasRole('admin')) {
+        if (! auth()->user()->isAdmin()) {
             return redirect()->back()->with('warning', 'Activity Not Allowed.');
         }
 

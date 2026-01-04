@@ -51,29 +51,36 @@
                     <div class="card-header">
                         <div class="card-title d-flex justify-content-between w-100">
                             <h3 class="cost-type-name">{{ $type->name }}</h3>
-                            <div class="d-flex align-items-center">
-                                <div class="form-check form-switch form-check-custom form-check-solid me-3">
-                                    <input class="form-check-input toggle-active" type="checkbox" data-bs-toggle="tooltip" title="Toggle Active/Inactive"
-                                        data-id="{{ $type->id }}" {{ $type->is_active ? 'checked' : '' }}>
+                            @if ($type->name === 'Others')
+                                <span class="badge badge-light-warning">Default</span>
+                            @else
+                                <div class="d-flex align-items-center">
+                                    <div class="form-check form-switch form-check-custom form-check-solid me-3">
+                                        <input class="form-check-input toggle-active" type="checkbox"
+                                            data-bs-toggle="tooltip" title="Toggle Active/Inactive"
+                                            data-id="{{ $type->id }}" {{ $type->is_active ? 'checked' : '' }}>
+                                    </div>
+                                    <button type="button" class="btn btn-icon btn-sm btn-light-primary btn-edit"
+                                        data-bs-toggle="tooltip" title="Edit Type" data-id="{{ $type->id }}"
+                                        data-name="{{ $type->name }}" data-description="{{ $type->description }}">
+                                        <i class="ki-outline ki-pencil fs-4"></i>
+                                    </button>
                                 </div>
-                                <button type="button" class="btn btn-icon btn-sm btn-light-primary btn-edit"
-                                    data-bs-toggle="tooltip" title="Edit Type" data-id="{{ $type->id }}"
-                                    data-name="{{ $type->name }}" data-description="{{ $type->description }}">
-                                    <i class="ki-outline ki-pencil fs-4"></i>
-                                </button>
-                            </div>
+                            @endif
                         </div>
                     </div>
                     <div class="card-body pt-1">
                         <h5 class="text-gray-500 cost-type-description">
                             <i class="ki-outline ki-price-tag fs-4 me-2"></i>
-                            <span class="fs-4">{{ $type->description ?? 'No description available' }}</span>
+                            <span class="fs-5">{{ $type->description ?? 'No description available' }}</span>
                         </h5>
                         <div class="fw-semibold text-gray-600 mt-10 fs-5">
-                            No. of Cost Entry: <span class="cost-entries-count fw-bold">{{ $type->cost_entries_count }}</span>
+                            No. of Cost Entry: <span
+                                class="cost-entries-count fw-bold">{{ $type->cost_entries_count }}</span>
                         </div>
                         <div class="fw-semibold text-gray-600 mt-2 fs-5">
-                            Total Cost Amount: <span class="cost-entries-count fw-bold">{{ $type->cost_entries_sum_amount ?? 0 }} ৳</span>
+                            Total Cost Amount: <span
+                                class="cost-entries-count fw-bold">{{ $type->cost_entries_sum_amount ?? 0 }} ৳</span>
                         </div>
                     </div>
                 </div>

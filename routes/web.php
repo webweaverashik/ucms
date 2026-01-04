@@ -1,40 +1,40 @@
 <?php
 
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PdfController;
-use App\Http\Controllers\BranchController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\SMS\SmsController;
-use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Cost\CostController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\Misc\MiscController;
-use App\Http\Controllers\User\UserController;
-use App\Http\Controllers\AutoInvoiceController;
-use App\Http\Controllers\Sheet\SheetController;
-use App\Http\Controllers\Auth\PasswordController;
-use App\Http\Controllers\Cost\CostTypeController;
 use App\Http\Controllers\Academic\BatchController;
-use App\Http\Controllers\SMS\SmsCampaignController;
-use App\Http\Controllers\SMS\SmsTemplateController;
-use App\Http\Controllers\Student\SiblingController;
-use App\Http\Controllers\Student\StudentController;
-use App\Http\Controllers\Teacher\TeacherController;
-use App\Http\Controllers\Academic\SubjectController;
-use App\Http\Controllers\Sheet\SheetTopicController;
-use App\Http\Controllers\Student\GuardianController;
-use App\Http\Controllers\Student\ReferenceController;
 use App\Http\Controllers\Academic\ClassNameController;
 use App\Http\Controllers\Academic\InstitutionController;
-use App\Http\Controllers\Settlement\SettlementController;
-use App\Http\Controllers\Sheet\SheetTopicTakenController;
+use App\Http\Controllers\Academic\SubjectController;
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\AutoInvoiceController;
+use App\Http\Controllers\BranchController;
+use App\Http\Controllers\Cost\CostController;
+use App\Http\Controllers\Cost\CostTypeController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Misc\MiscController;
 use App\Http\Controllers\Payment\PaymentInvoiceController;
-use App\Http\Controllers\Student\StudentPromoteController;
-use App\Http\Controllers\Student\StudentTransferController;
+use App\Http\Controllers\Payment\PaymentTransactionController;
+use App\Http\Controllers\PdfController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\Settlement\SettlementController;
+use App\Http\Controllers\Sheet\SheetController;
+use App\Http\Controllers\Sheet\SheetTopicController;
+use App\Http\Controllers\Sheet\SheetTopicTakenController;
+use App\Http\Controllers\SMS\SmsCampaignController;
+use App\Http\Controllers\SMS\SmsController;
+use App\Http\Controllers\SMS\SmsTemplateController;
+use App\Http\Controllers\Student\GuardianController;
+use App\Http\Controllers\Student\ReferenceController;
+use App\Http\Controllers\Student\SiblingController;
 use App\Http\Controllers\Student\StudentActivationController;
 use App\Http\Controllers\Student\StudentAttendanceController;
-use App\Http\Controllers\Payment\PaymentTransactionController;
+use App\Http\Controllers\Student\StudentController;
+use App\Http\Controllers\Student\StudentPromoteController;
+use App\Http\Controllers\Student\StudentTransferController;
+use App\Http\Controllers\Teacher\TeacherController;
+use App\Http\Controllers\User\UserController;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AuthController::class, 'showLogin'])->name('home');
 
@@ -162,15 +162,14 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::prefix('costs')
         ->name('costs.')
         ->group(function () {
-            Route::get('/', [CostController::class, 'index'])->name('index');
-            Route::get('/types', [CostController::class, 'getCostTypes'])->name('types');
-            Route::get('/check-today', [CostController::class, 'checkToday'])->name('check-today');
+            Route::get('types', [CostController::class, 'types'])->name('types');
+            Route::get('check-today', [CostController::class, 'checkToday'])->name('check-today');
             Route::post('/', [CostController::class, 'store'])->name('store');
-            Route::get('/by-date', [CostController::class, 'getByDate'])->name('by-date');
-            Route::get('/{cost}', [CostController::class, 'show'])->name('show');
-            Route::put('/{cost}', [CostController::class, 'update'])->name('update');
-            Route::delete('/{cost}', [CostController::class, 'destroy'])->name('destroy');
-            Route::delete('/entry/{entry}', [CostController::class, 'destroyEntry'])->name('entry.destroy');
+            Route::get('{id}', [CostController::class, 'show'])->name('show');
+            Route::put('{id}', [CostController::class, 'update'])->name('update');
+            Route::delete('{id}', [CostController::class, 'destroy'])->name('destroy');
+            Route::post('{id}/entries', [CostController::class, 'addEntry'])->name('add-entry');
+            Route::delete('entries/{id}', [CostController::class, 'deleteEntry'])->name('delete-entry');
         });
 
     // Finance Reports
