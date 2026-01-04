@@ -135,7 +135,7 @@
                                     <span
                                         class="d-flex align-items-center text-gray-500 me-0 me-sm-5 mb-2 justify-content-center justify-content-md-start">
                                         <i class="ki-outline ki-geolocation fs-4 me-1"></i>
-                                        {{ $user->branch->branch_name }}
+                                        {{ $user->branch->branch_name }} Branch
                                     </span>
                                 @endif
                                 <span
@@ -175,7 +175,7 @@
                                                 ৳{{ number_format($user->total_collected ?? 0, 2) }}
                                             </div>
                                         </div>
-                                        <div class="fw-semibold fs-7 fs-md-6 text-gray-500">Total Collected</div>
+                                        <div class="fw-semibold fs-7 fs-md-6 text-gray-500">Lifetime Collection</div>
                                     </div>
                                 </div>
                                 {{-- Total Settled --}}
@@ -187,7 +187,7 @@
                                                 ৳{{ number_format($user->total_settled ?? 0, 2) }}
                                             </div>
                                         </div>
-                                        <div class="fw-semibold fs-7 fs-md-6 text-gray-500">Total Settled</div>
+                                        <div class="fw-semibold fs-7 fs-md-6 text-gray-500">Lifetime Settled</div>
                                     </div>
                                 </div>
                                 {{-- Current Balance --}}
