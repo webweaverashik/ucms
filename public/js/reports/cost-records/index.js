@@ -20,8 +20,7 @@ var KTCostRecords = (function () {
       let selectedCostEntries = {};
       let otherCostEntries = [];
       let otherCostCounter = 0;
-      let currentBranchId = null;
-      let editingCostData = null;
+      let activeBranchId = null;
 
       const config = window.CostRecordsConfig || {};
       const csrfToken = config.csrfToken || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -46,8 +45,6 @@ var KTCostRecords = (function () {
                   elements.editCostForm = document.getElementById('edit_cost_form');
                   elements.updateCostBtn = document.getElementById('update_cost_btn');
                   elements.confirmDeleteBtn = document.getElementById('confirm_delete_cost_btn');
-                  elements.addEditEntryBtn = document.getElementById('add_edit_entry_btn');
-                  elements.addEditOtherBtn = document.getElementById('add_edit_other_btn');
             }
       };
 
@@ -270,13 +267,13 @@ var KTCostRecords = (function () {
             row.innerHTML = `
             <div class="d-flex gap-2 align-items-center mb-2">
                 <input type="text" class="form-control form-control-solid other-description flex-grow-1" 
-                       placeholder="Description (e.g., Office Supplies)" value="${escapeHtml(description)}"
-                       data-row-id="${otherCostCounter}">
+                       placeholder="Description (required)" value="${escapeHtml(description)}"
+                       data-row-id="${otherCostCounter}" required>
                 <div class="input-group input-group-solid" style="width: 160px;">
                     <span class="input-group-text">৳</span>
                     <input type="number" class="form-control form-control-solid other-amount" 
                            min="1" step="1" placeholder="0" value="${amount}"
-                           data-row-id="${otherCostCounter}">
+                           data-row-id="${otherCostCounter}" required>
                 </div>
                 <button type="button" class="btn btn-icon btn-sm btn-light-danger remove-other-cost" 
                         data-row-id="${otherCostCounter}">
@@ -293,12 +290,22 @@ var KTCostRecords = (function () {
 
             descInput.addEventListener('input', function () {
                   updateOtherCostEntry(this.dataset.rowId);
+                  validateOtherCostRow(this.dataset.rowId);
                   updateCostTotal();
+            });
+
+            descInput.addEventListener('blur', function () {
+                  validateOtherCostRow(this.dataset.rowId);
             });
 
             amountInput.addEventListener('input', function () {
                   updateOtherCostEntry(this.dataset.rowId);
+                  validateOtherCostRow(this.dataset.rowId);
                   updateCostTotal();
+            });
+
+            amountInput.addEventListener('blur', function () {
+                  validateOtherCostRow(this.dataset.rowId);
             });
 
             removeBtn.addEventListener('click', function () {
@@ -314,6 +321,46 @@ var KTCostRecords = (function () {
 
             elements.costTotalSection?.classList.remove('d-none');
             setTimeout(() => descInput?.focus(), 100);
+      };
+
+      const validateOtherCostRow = function (rowId) {
+            const row = document.getElementById(`other_cost_row_${rowId}`);
+            if (!row) return true;
+
+            const descInput = row.querySelector('.other-description');
+            const amountInput = row.querySelector('.other-amount');
+
+            const description = descInput.value.trim();
+            const amount = parseInt(amountInput.value) || 0;
+
+            let isValid = true;
+
+            // Reset validation styles
+            descInput.classList.remove('is-invalid');
+            amountInput.classList.remove('is-invalid');
+
+            // If either field has value, both must be filled
+            if (description && amount <= 0) {
+                  amountInput.classList.add('is-invalid');
+                  isValid = false;
+            }
+
+            if (!description && amount > 0) {
+                  descInput.classList.add('is-invalid');
+                  isValid = false;
+            }
+
+            return isValid;
+      };
+
+      const validateAllOtherCostRows = function () {
+            let allValid = true;
+            otherCostEntries.forEach(entry => {
+                  if (!validateOtherCostRow(entry.rowId)) {
+                        allValid = false;
+                  }
+            });
+            return allValid;
       };
 
       const updateOtherCostEntry = function (rowId) {
@@ -395,47 +442,53 @@ var KTCostRecords = (function () {
       // ============================================
       // COSTS DATATABLE
       // ============================================
-      const getDataTableColumns = function (showActions) {
+      const getDataTableColumns = function (showBranchColumn, showActions) {
             const columns = [
                   {
                         data: 'cost_date',
                         className: 'ps-4',
                         render: data => `<span class="fw-semibold text-gray-800">${formatDate(data)}</span>`
-                  },
-                  {
+                  }
+            ];
+
+            if (showBranchColumn) {
+                  columns.push({
                         data: 'branch',
                         render: data => data
                               ? `<span class="badge badge-light-primary">${escapeHtml(data.branch_name)} (${escapeHtml(data.branch_prefix)})</span>`
                               : '-'
-                  },
-                  {
-                        data: 'entries',
-                        render: function (data) {
-                              if (!data || data.length === 0) return '<span class="text-muted">No entries</span>';
-                              return data.map(entry => {
-                                    const typeName = entry.cost_type?.name || 'Unknown';
-                                    const description = entry.description ? ` - ${escapeHtml(entry.description)}` : '';
-                                    const displayName = typeName.toLowerCase() === 'others' && entry.description
-                                          ? `Others: ${escapeHtml(entry.description)}`
-                                          : escapeHtml(typeName);
-                                    return `
-                            <span class="entry-badge">
-                                <span class="type-name">${displayName}</span>
-                                <span class="type-amount">${formatCurrency(entry.amount)}</span>
-                            </span>`;
-                              }).join('');
-                        }
-                  },
-                  {
-                        data: 'total_amount',
-                        className: 'text-end',
-                        render: data => `<span class="fw-bold text-primary fs-5">${formatCurrency(data)}</span>`
-                  },
-                  {
-                        data: 'created_by',
-                        render: data => data ? `<span class="text-gray-600">${escapeHtml(data.name)}</span>` : '-'
+                  });
+            }
+
+            columns.push({
+                  data: 'entries',
+                  render: function (data) {
+                        if (!data || data.length === 0) return '<span class="text-muted">No entries</span>';
+                        return data.map(entry => {
+                              const typeName = entry.cost_type?.name || 'Unknown';
+                              const isOthers = typeName.toLowerCase() === 'others';
+                              const displayName = isOthers && entry.description
+                                    ? `Others: ${escapeHtml(entry.description)}`
+                                    : escapeHtml(typeName);
+                              return `
+                        <span class="entry-badge">
+                            <span class="type-name">${displayName}</span>
+                            <span class="type-amount">${formatCurrency(entry.amount)}</span>
+                        </span>`;
+                        }).join('');
                   }
-            ];
+            });
+
+            columns.push({
+                  data: 'total_amount',
+                  className: 'text-end',
+                  render: data => `<span class="fw-bold text-primary fs-5">${formatCurrency(data)}</span>`
+            });
+
+            columns.push({
+                  data: 'created_by',
+                  render: data => data ? `<span class="text-gray-600">${escapeHtml(data.name)}</span>` : '-'
+            });
 
             if (showActions) {
                   columns.push({
@@ -459,29 +512,87 @@ var KTCostRecords = (function () {
             return columns;
       };
 
-      const initCostsDataTable = function (tableId, branchId = null) {
-            const table = document.getElementById(tableId);
-            if (!table) return null;
+      const initCostsDataTable = function () {
+            if (config.hasBranchTabs) {
+                  // Initialize DataTable for each branch tab
+                  config.branches.forEach((branch, index) => {
+                        initBranchDataTable(branch.id, index === 0);
+                  });
 
-            const showActions = config.isAdmin;
+                  // Set first branch as active
+                  if (config.branches.length > 0) {
+                        activeBranchId = config.branches[0].id;
+                  }
 
-            let ajaxUrl = config.routes.costs;
-            if (branchId) {
-                  ajaxUrl += '?branch_id=' + branchId;
+                  // Handle tab change
+                  document.querySelectorAll('#branch_tabs a[data-bs-toggle="tab"]').forEach(tab => {
+                        tab.addEventListener('shown.bs.tab', function (e) {
+                              const branchId = this.dataset.branchId;
+                              activeBranchId = branchId;
+
+                              // Reload and adjust columns
+                              if (costsDataTables[branchId]) {
+                                    costsDataTables[branchId].ajax.reload(null, false);
+                                    costsDataTables[branchId].columns.adjust();
+                              }
+                        });
+                  });
+
+                  // Load counts for all branches
+                  loadBranchCounts();
+            } else {
+                  // Single DataTable for non-admin or single branch
+                  initSingleDataTable();
             }
+      };
 
-            const dt = $(table).DataTable({
+      const initBranchDataTable = function (branchId, isActive) {
+            const table = document.getElementById(`costs_datatable_${branchId}`);
+            if (!table) return;
+
+            costsDataTables[branchId] = $(table).DataTable({
                   processing: true,
                   serverSide: false,
                   ajax: {
-                        url: ajaxUrl,
+                        url: config.routes.costs,
+                        type: 'GET',
+                        data: { branch_id: branchId },
+                        headers: { 'X-CSRF-TOKEN': csrfToken },
+                        dataSrc: function (json) {
+                              // Update badge count
+                              updateBranchCount(branchId, json.data?.length || 0);
+                              return json.success ? json.data : [];
+                        }
+                  },
+                  columns: getDataTableColumns(false, true), // No branch column, show actions
+                  order: [[0, 'desc']],
+                  pageLength: 10,
+                  language: {
+                        emptyTable: "No cost records found for this branch"
+                  },
+                  drawCallback: () => KTMenu.init()
+            });
+      };
+
+      const initSingleDataTable = function () {
+            const table = document.getElementById('costs_datatable');
+            if (!table) return;
+
+            const showBranch = config.isAdmin;
+            const showActions = config.isAdmin;
+
+            costsDataTables['single'] = $(table).DataTable({
+                  processing: true,
+                  serverSide: false,
+                  ajax: {
+                        url: config.routes.costs,
                         type: 'GET',
                         headers: { 'X-CSRF-TOKEN': csrfToken },
                         dataSrc: function (json) {
                               return json.success ? json.data : [];
                         }
                   },
-                  columns: getDataTableColumns(showActions),
+                  columns: getDataTableColumns(showBranch, showActions),
                   order: [[0, 'desc']],
                   pageLength: 10,
                   language: {
@@ -489,31 +600,33 @@ var KTCostRecords = (function () {
                   },
                   drawCallback: () => KTMenu.init()
             });
-
-            return dt;
       };
 
-      const initAllDataTables = function () {
-            if (config.hasMultipleBranches) {
-                  // Initialize "All Branches" table
-                  costsDataTables['all'] = initCostsDataTable('costs_datatable_all', null);
-
-                  // Initialize per-branch tables
-                  config.branches.forEach(branch => {
-                        costsDataTables[branch.id] = initCostsDataTable(`costs_datatable_${branch.id}`, branch.id);
-                  });
-            } else {
-                  // Single table for non-admin or single branch
-                  costsDataTables['single'] = initCostsDataTable('costs_datatable', config.userBranchId);
+      const updateBranchCount = function (branchId, count) {
+            const badge = document.querySelector(`.branch-count[data-branch-id="${branchId}"]`);
+            if (badge) {
+                  badge.textContent = count;
             }
       };
 
-      const reloadCurrentDataTable = function () {
-            if (config.hasMultipleBranches) {
-                  // Reload all tables
+      const loadBranchCounts = function () {
+            // Counts are loaded automatically when each DataTable loads
+      };
+
+      const reloadCostsDataTable = function () {
+            if (config.hasBranchTabs) {
+                  // Reload all branch DataTables
                   Object.values(costsDataTables).forEach(dt => {
-                        if (dt) dt.ajax.reload(null, false);
+                        dt.ajax.reload(null, false);
                   });
+            } else if (costsDataTables['single']) {
+                  costsDataTables['single'].ajax.reload(null, false);
+            }
+      };
+
+      const reloadActiveBranchTable = function () {
+            if (config.hasBranchTabs && activeBranchId && costsDataTables[activeBranchId]) {
+                  costsDataTables[activeBranchId].ajax.reload(null, false);
             } else if (costsDataTables['single']) {
                   costsDataTables['single'].ajax.reload(null, false);
             }
@@ -570,22 +683,36 @@ var KTCostRecords = (function () {
                   return;
             }
 
-            // Prepare regular entries
-            const entries = Object.values(selectedCostEntries).filter(e => e.amount > 0).map(e => ({
-                  cost_type_id: e.cost_type_id,
-                  amount: e.amount
-            }));
-
-            // Prepare other entries - find "Others" cost type
+            // Find "Others" cost type
             const othersCostType = availableCostTypes.find(ct => ct.name.toLowerCase() === 'others');
-            const validOtherEntries = otherCostEntries.filter(e => e.description && e.amount > 0);
+
+            // Prepare regular entries
+            const entries = Object.values(selectedCostEntries)
+                  .filter(e => e.amount > 0)
+                  .map(e => ({
+                        cost_type_id: e.cost_type_id,
+                        amount: e.amount
+                  }));
+
+            // Validate other cost entries - if added, both description and amount are required
+            if (!validateAllOtherCostRows()) {
+                  toastr.error('Please fill in both description and amount for all Other Costs entries');
+                  return;
+            }
+
+            // Prepare valid other entries (both description and amount filled)
+            const validOtherEntries = otherCostEntries.filter(e => {
+                  const hasDescription = e.description && e.description.trim() !== '';
+                  const hasAmount = e.amount > 0;
+                  return hasDescription && hasAmount;
+            });
 
             if (othersCostType) {
                   validOtherEntries.forEach(e => {
                         entries.push({
                               cost_type_id: othersCostType.id,
                               amount: e.amount,
-                              description: e.description
+                              description: e.description.trim()
                         });
                   });
             } else if (validOtherEntries.length > 0) {
@@ -625,7 +752,7 @@ var KTCostRecords = (function () {
                         setButtonLoading(elements.saveCostBtn, false);
                         if (res.success) {
                               costModal?.hide();
-                              reloadCurrentDataTable();
+                              reloadCostsDataTable();
                               toastr.success(res.message || 'Cost added successfully!');
                         } else {
                               toastr.error(res.message || 'Failed to save cost');
@@ -639,7 +766,7 @@ var KTCostRecords = (function () {
       };
 
       // ============================================
-      // EDIT COST MODAL (Admin Only)
+      // EDIT COST MODAL (Admin Only - Amount Edit Only)
       // ============================================
       const openEditCostModal = function (id) {
             if (!config.isAdmin) {
@@ -660,7 +787,6 @@ var KTCostRecords = (function () {
                   .then(res => {
                         if (res.success && res.data) {
                               const cost = res.data;
-                              editingCostData = cost;
 
                               document.getElementById('edit_cost_id').value = cost.id;
                               document.getElementById('edit_cost_date').textContent = formatDate(cost.cost_date);
@@ -669,7 +795,6 @@ var KTCostRecords = (function () {
                                     : '-';
 
                               renderEditEntries(cost.entries);
-                              populateEditCostTypeSelect(cost.entries);
                               updateEditTotal();
 
                               editCostModal?.show();
@@ -704,39 +829,9 @@ var KTCostRecords = (function () {
                     <input type="number" class="form-control form-control-solid edit-entry-amount" 
                            data-entry-id="${entry.id}" value="${entry.amount}" min="1" step="1"
                            oninput="KTCostRecords.updateEditTotal()">
-                </div>
-                <button type="button" class="btn btn-icon btn-sm btn-light-danger" 
-                        onclick="KTCostRecords.deleteEditEntry(${entry.id})" title="Delete Entry">
-                    <i class="ki-outline ki-trash fs-6"></i>
-                </button>`;
+                </div>`;
                   entriesList.appendChild(row);
             });
-      };
-
-      const populateEditCostTypeSelect = function (existingEntries) {
-            const select = document.getElementById('edit_new_cost_type');
-            if (!select) return;
-
-            // Get IDs of existing non-"others" entries
-            const existingTypeIds = existingEntries
-                  .filter(e => e.cost_type?.name?.toLowerCase() !== 'others')
-                  .map(e => e.cost_type_id);
-
-            // Clear and repopulate
-            select.innerHTML = '<option value="">-- Select Cost Type --</option>';
-
-            availableCostTypes
-                  .filter(ct => ct.name.toLowerCase() !== 'others')
-                  .filter(ct => !existingTypeIds.includes(ct.id))
-                  .forEach(ct => {
-                        const option = document.createElement('option');
-                        option.value = ct.id;
-                        option.textContent = ct.name;
-                        select.appendChild(option);
-                  });
-
-            // Reinitialize Select2
-            $(select).trigger('change.select2');
       };
 
       const updateEditTotal = function () {
@@ -746,138 +841,6 @@ var KTCostRecords = (function () {
             });
             const editTotal = document.getElementById('edit_cost_total');
             if (editTotal) editTotal.textContent = formatCurrency(total);
-      };
-
-      const addEditEntry = function () {
-            const costTypeId = document.getElementById('edit_new_cost_type').value;
-            const amount = parseInt(document.getElementById('edit_new_amount').value) || 0;
-            const costId = document.getElementById('edit_cost_id').value;
-
-            if (!costTypeId) {
-                  toastr.error('Please select a cost type');
-                  return;
-            }
-            if (amount < 1) {
-                  toastr.error('Amount must be at least 1');
-                  return;
-            }
-
-            const url = config.routes.addEntry.replace(':id', costId);
-
-            fetch(url, {
-                  method: 'POST',
-                  headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
-                  },
-                  body: JSON.stringify({
-                        cost_type_id: costTypeId,
-                        amount: amount
-                  })
-            })
-                  .then(r => r.json())
-                  .then(res => {
-                        if (res.success) {
-                              // Refresh the modal
-                              openEditCostModal(costId);
-                              document.getElementById('edit_new_amount').value = '';
-                              toastr.success('Entry added successfully!');
-                        } else {
-                              toastr.error(res.message || 'Failed to add entry');
-                        }
-                  })
-                  .catch(err => {
-                        toastr.error('Failed to add entry');
-                        console.error('Add entry error:', err);
-                  });
-      };
-
-      const addEditOtherEntry = function () {
-            const description = document.getElementById('edit_other_description').value.trim();
-            const amount = parseInt(document.getElementById('edit_other_amount').value) || 0;
-            const costId = document.getElementById('edit_cost_id').value;
-
-            if (!description) {
-                  toastr.error('Please enter a description');
-                  return;
-            }
-            if (amount < 1) {
-                  toastr.error('Amount must be at least 1');
-                  return;
-            }
-
-            const othersCostType = availableCostTypes.find(ct => ct.name.toLowerCase() === 'others');
-            if (!othersCostType) {
-                  toastr.error('Others cost type not found');
-                  return;
-            }
-
-            const url = config.routes.addEntry.replace(':id', costId);
-
-            fetch(url, {
-                  method: 'POST',
-                  headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
-                  },
-                  body: JSON.stringify({
-                        cost_type_id: othersCostType.id,
-                        amount: amount,
-                        description: description
-                  })
-            })
-                  .then(r => r.json())
-                  .then(res => {
-                        if (res.success) {
-                              // Refresh the modal
-                              openEditCostModal(costId);
-                              document.getElementById('edit_other_description').value = '';
-                              document.getElementById('edit_other_amount').value = '';
-                              toastr.success('Other entry added successfully!');
-                        } else {
-                              toastr.error(res.message || 'Failed to add entry');
-                        }
-                  })
-                  .catch(err => {
-                        toastr.error('Failed to add entry');
-                        console.error('Add other entry error:', err);
-                  });
-      };
-
-      const deleteEditEntry = function (entryId) {
-            if (!confirm('Are you sure you want to delete this entry?')) return;
-
-            const url = config.routes.deleteEntry.replace(':id', entryId);
-
-            fetch(url, {
-                  method: 'DELETE',
-                  headers: {
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
-                  }
-            })
-                  .then(r => r.json())
-                  .then(res => {
-                        if (res.success) {
-                              const row = document.getElementById(`edit_entry_row_${entryId}`);
-                              if (row) row.remove();
-                              updateEditTotal();
-                              reloadCurrentDataTable();
-                              toastr.success('Entry deleted successfully!');
-
-                              // Refresh cost type select
-                              const costId = document.getElementById('edit_cost_id').value;
-                              openEditCostModal(costId);
-                        } else {
-                              toastr.error(res.message || 'Failed to delete entry');
-                        }
-                  })
-                  .catch(err => {
-                        toastr.error('Failed to delete entry');
-                        console.error('Delete entry error:', err);
-                  });
       };
 
       const updateCost = function () {
@@ -924,7 +887,7 @@ var KTCostRecords = (function () {
                         setButtonLoading(elements.updateCostBtn, false);
                         if (res.success) {
                               editCostModal?.hide();
-                              reloadCurrentDataTable();
+                              reloadCostsDataTable();
                               toastr.success(res.message || 'Cost updated successfully!');
                         } else {
                               toastr.error(res.message || 'Failed to update cost');
@@ -966,7 +929,7 @@ var KTCostRecords = (function () {
                         setButtonLoading(elements.confirmDeleteBtn, false);
                         if (res.success) {
                               deleteModal?.hide();
-                              reloadCurrentDataTable();
+                              reloadCostsDataTable();
                               toastr.success(res.message || 'Cost deleted successfully!');
                         } else {
                               toastr.error(res.message || 'Failed to delete cost');
@@ -986,7 +949,7 @@ var KTCostRecords = (function () {
             elements.addCostBtn?.addEventListener('click', openAddCostModal);
 
             elements.refreshCostsBtn?.addEventListener('click', () => {
-                  reloadCurrentDataTable();
+                  reloadCostsDataTable();
                   toastr.info('Cost records refreshed!');
             });
 
@@ -1018,25 +981,6 @@ var KTCostRecords = (function () {
                   });
 
                   elements.confirmDeleteBtn?.addEventListener('click', confirmDelete);
-
-                  elements.addEditEntryBtn?.addEventListener('click', addEditEntry);
-                  elements.addEditOtherBtn?.addEventListener('click', addEditOtherEntry);
-            }
-
-            // Tab change event - reload specific table when tab is shown
-            if (config.hasMultipleBranches) {
-                  document.querySelectorAll('#branch_tabs .nav-link').forEach(tab => {
-                        tab.addEventListener('shown.bs.tab', function (e) {
-                              const branchId = this.dataset.branchId;
-                              currentBranchId = branchId || null;
-
-                              // Adjust columns on tab switch
-                              const tableKey = branchId || 'all';
-                              if (costsDataTables[tableKey]) {
-                                    costsDataTables[tableKey].columns.adjust();
-                              }
-                        });
-                  });
             }
       };
 
@@ -1046,7 +990,7 @@ var KTCostRecords = (function () {
       const init = function () {
             initElements();
             initModals();
-            initAllDataTables();
+            initCostsDataTable();
             initEvents();
             loadCostTypes();
       };
@@ -1059,8 +1003,7 @@ var KTCostRecords = (function () {
             openEditCostModal: openEditCostModal,
             openDeleteModal: openDeleteModal,
             updateEditTotal: updateEditTotal,
-            deleteEditEntry: deleteEditEntry,
-            reloadCurrentDataTable: reloadCurrentDataTable
+            reloadCostsDataTable: reloadCostsDataTable
       };
 })();
 

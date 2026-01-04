@@ -4,6 +4,39 @@
  */
 
 /* ============================================
+   BRANCH TABS
+   ============================================ */
+#branch_tabs {
+      border-bottom: 2px solid var(--bs-gray-200);
+}
+
+#branch_tabs .nav-link {
+      padding: 0.75rem 1.25rem;
+      font-weight: 500;
+      color: var(--bs-gray-600);
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s ease;
+}
+
+#branch_tabs .nav-link:hover {
+      color: var(--bs-primary);
+      border-bottom-color: var(--bs-primary-light);
+}
+
+#branch_tabs .nav-link.active {
+      color: var(--bs-primary);
+      border-bottom-color: var(--bs-primary);
+      background: transparent;
+}
+
+#branch_tabs .nav-link .badge {
+      font-size: 10px;
+      padding: 0.25rem 0.5rem;
+}
+
+/* ============================================
    TAGIFY STYLES
    ============================================ */
 .tagify {
@@ -188,46 +221,15 @@
 }
 
 /* ============================================
-   BRANCH TABS
-   ============================================ */
-#branch_tabs {
-      border-bottom: 2px solid var(--bs-gray-200);
-}
-
-#branch_tabs .nav-link {
-      padding: 0.75rem 1.25rem;
-      font-weight: 500;
-      color: var(--bs-gray-600);
-      border: none;
-      border-bottom: 2px solid transparent;
-      margin-bottom: -2px;
-      transition: all 0.2s ease;
-}
-
-#branch_tabs .nav-link:hover {
-      color: var(--bs-primary);
-      border-color: var(--bs-gray-300);
-}
-
-#branch_tabs .nav-link.active {
-      color: var(--bs-primary);
-      border-color: var(--bs-primary);
-      background: transparent;
-}
-
-#branch_tabs .nav-link .badge {
-      font-size: 10px;
-      padding: 3px 6px;
-}
-
-/* ============================================
    DATATABLE ENHANCEMENTS
    ============================================ */
-.costs-datatable tbody tr:hover {
+.costs-datatable tbody tr:hover,
+#costs_datatable tbody tr:hover {
       background-color: var(--bs-gray-100);
 }
 
-.costs-datatable .entry-badge {
+.costs-datatable .entry-badge,
+#costs_datatable .entry-badge {
       margin: 2px;
 }
 
@@ -244,6 +246,20 @@
    MOBILE RESPONSIVE
    ============================================ */
 @media (max-width: 768px) {
+      #branch_tabs {
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+      }
+
+      #branch_tabs .nav-item {
+            flex-shrink: 0;
+      }
+
+      #branch_tabs .nav-link {
+            padding: 0.5rem 1rem;
+            font-size: 13px;
+      }
 
       #cost_modal .modal-body,
       #edit_cost_modal .modal-body {
@@ -275,21 +291,6 @@
 
       .entry-badge .type-name {
             max-width: 120px;
-      }
-
-      #branch_tabs {
-            overflow-x: auto;
-            white-space: nowrap;
-            flex-wrap: nowrap;
-      }
-
-      #branch_tabs .nav-item {
-            flex-shrink: 0;
-      }
-
-      #branch_tabs .nav-link {
-            padding: 0.5rem 0.75rem;
-            font-size: 13px;
       }
 
       .other-cost-row .d-flex {

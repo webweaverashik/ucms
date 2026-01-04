@@ -50,7 +50,7 @@ class ReportController extends Controller
         $request->validate([
             'date_range' => 'required|string',
             'branch_id'  => 'required|integer|exists:branches,id',
-            'class_id'   => 'required|integer|exists:class_names,id', // Added class_id validation
+            'class_id'   => 'required|integer|exists:class_names,id',
             'batch_id'   => 'required|integer|exists:batches,id',
         ]);
 
@@ -65,7 +65,7 @@ class ReportController extends Controller
                     'data'    => [],
                 ],
                 400,
-            ); // 400 Bad Request
+            );
         }
 
         $startDate = Carbon::parse(trim($dateRange[0]))->startOfDay();
@@ -90,10 +90,8 @@ class ReportController extends Controller
             },
         ])
             ->where('batch_id', $request->batch_id)
-        // IMPORTANT: use whereBetween with the correctly parsed start and end dates
             ->whereBetween('attendance_date', [$startDate, $endDate])
             ->where('branch_id', $request->branch_id)
-        // Added filter for class_id as per the HTML form
             ->where('class_id', $request->class_id)
             ->get();
 
@@ -103,6 +101,7 @@ class ReportController extends Controller
             'data'    => $attendances,
         ]);
     }
+
     /**
      * Finance report page (Revenue vs Cost)
      */
@@ -131,7 +130,7 @@ class ReportController extends Controller
     public function costRecordsIndex()
     {
         $user    = Auth::user();
-        $isAdmin = ! $user->branch_id;
+        $isAdmin = $user->isAdmin();
 
         $branches = Branch::when(! $isAdmin, function ($q) use ($user) {
             $q->where('id', $user->branch_id);
@@ -263,13 +262,33 @@ class ReportController extends Controller
             'branch_id'  => 'nullable|exists:branches,id',
         ]);
 
-        $user     = Auth::user();
-        $branchId = $user->branch_id ?: $request->branch_id;
+        $user = Auth::user();
 
-        $query = Cost::with(['branch:id,branch_name,branch_prefix', 'createdBy:id,name', 'entries.costType:id,name'])->forBranch($branchId);
+        // Determine branch filter
+        if ($user->isAdmin()) {
+            // Admin can filter by specific branch or see all
+            $branchId = $request->branch_id;
+        } else {
+            // Non-admin users can only see their own branch
+            $branchId = $user->branch_id;
+        }
+
+        $query = Cost::with([
+            'branch:id,branch_name,branch_prefix',
+            'createdBy:id,name',
+            'entries.costType:id,name',
+        ]);
+
+        // Apply branch filter
+        if ($branchId) {
+            $query->where('branch_id', $branchId);
+        }
 
         if ($request->start_date && $request->end_date) {
-            $query->betweenDates(Carbon::createFromFormat('d-m-Y', $request->start_date)->toDateString(), Carbon::createFromFormat('d-m-Y', $request->end_date)->toDateString());
+            $query->betweenDates(
+                Carbon::createFromFormat('d-m-Y', $request->start_date)->toDateString(),
+                Carbon::createFromFormat('d-m-Y', $request->end_date)->toDateString()
+            );
         }
 
         $costs = $query->orderBy('cost_date', 'desc')->get();
