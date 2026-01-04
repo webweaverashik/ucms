@@ -38,7 +38,11 @@ var KTBranches = function () {
                                           },
                                           stringLength: {
                                                 max: 20,
-                                                message: 'Branch name must be less than 20 characters'
+                                                message: 'Branch name must be within 20 characters'
+                                          },
+                                          regexp: {
+                                                regexp: /^[A-Za-z0-9-]+$/,
+                                                message: 'Branch name must be one word (letters, numbers, hyphen allowed)'
                                           }
                                     }
                               },

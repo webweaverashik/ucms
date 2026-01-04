@@ -26,22 +26,32 @@ class BranchController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'branch_name'   => 'required|string|max:255|unique:branches,branch_name',
-            'branch_prefix' => 'required|string|size:1|alpha|unique:branches,branch_prefix',
-            'address'       => 'nullable|string|max:500',
-            'phone_number'  => 'nullable|string|max:20',
-        ], [
-            'branch_prefix.size'  => 'The branch prefix must be exactly 1 letter.',
-            'branch_prefix.alpha' => 'The branch prefix must be a letter.',
-        ]);
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'branch_name'   => ['required', 'string', 'max:20', 'regex:/^[A-Za-z0-9-]+$/', 'unique:branches,branch_name'],
+                'branch_prefix' => ['required', 'string', 'size:1', 'alpha', 'unique:branches,branch_prefix'],
+                'address'       => 'nullable|string|max:500',
+                'phone_number'  => 'nullable|string|max:20',
+            ],
+            [
+                'branch_name.regex'    => 'Branch name must be one word and may contain only letters, numbers, and hyphen.',
+                'branch_prefix.size'   => 'The branch prefix must be exactly 1 letter.',
+                'branch_prefix.alpha'  => 'The branch prefix must be a letter.',
+                'branch_name.unique'   => 'This branch name already exists.',
+                'branch_prefix.unique' => 'This branch prefix is already in use.',
+            ],
+        );
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors'  => $validator->errors(),
-            ], 422);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors'  => $validator->errors(),
+                ],
+                422,
+            );
         }
 
         $branch = Branch::create([
@@ -63,22 +73,29 @@ class BranchController extends Controller
      */
     public function update(Request $request, Branch $branch)
     {
-        $validator = Validator::make($request->all(), [
-            'branch_name'   => 'required|string|max:255|unique:branches,branch_name,' . $branch->id,
-            'branch_prefix' => 'required|string|size:1|alpha|unique:branches,branch_prefix,' . $branch->id,
-            'address'       => 'required|string|max:500',
-            'phone_number'  => 'required|string|max:11',
-        ], [
-            'branch_prefix.size'  => 'The branch prefix must be exactly 1 letter.',
-            'branch_prefix.alpha' => 'The branch prefix must be a letter.',
-        ]);
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'branch_name'   => 'required|string|max:255|unique:branches,branch_name,' . $branch->id,
+                'branch_prefix' => 'required|string|size:1|alpha|unique:branches,branch_prefix,' . $branch->id,
+                'address'       => 'required|string|max:500',
+                'phone_number'  => 'required|string|max:11',
+            ],
+            [
+                'branch_prefix.size'  => 'The branch prefix must be exactly 1 letter.',
+                'branch_prefix.alpha' => 'The branch prefix must be a letter.',
+            ],
+        );
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors'  => $validator->errors(),
-            ], 422);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors'  => $validator->errors(),
+                ],
+                422,
+            );
         }
 
         $branch->update([
