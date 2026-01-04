@@ -20,7 +20,7 @@ class WalletService
 
     /**
      * Record a settlement (when admin receives money from user).
-     * Balance DECREASES.
+     * Balance DECREASES.a
      */
     public function recordSettlement(User $user, float $amount, ?string $description = null): UserWalletLog
     {

@@ -683,17 +683,6 @@
                             </a>
                         </div>
                         <!--end::Menu item-->
-                        <!--begin::Menu item-->
-                        <div class="menu-item px-5">
-                            <a href="#" class="menu-link px-5">
-                                <span class="menu-text">My Activity</span>
-                                <span class="menu-badge">
-                                    <span class="badge badge-light-danger badge-circle fw-bold fs-7">3</span>
-                                </span>
-                            </a>
-                        </div>
-                        <!--end::Menu item-->
-
                         <!--begin::Menu separator-->
                         <div class="separator my-2"></div>
                         <!--end::Menu separator-->
