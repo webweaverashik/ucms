@@ -92,16 +92,6 @@
         <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 align-items-center my-0">
             My Profile
         </h1>
-        <span class="h-20px border-gray-300 border-start mx-4"></span>
-        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
-            <li class="breadcrumb-item text-muted">
-                <a href="#" class="text-muted text-hover-primary">User Management</a>
-            </li>
-            <li class="breadcrumb-item">
-                <span class="bullet bg-gray-500 w-5px h-2px"></span>
-            </li>
-            <li class="breadcrumb-item text-muted">Profile</li>
-        </ul>
     </div>
 @endsection
 
@@ -114,13 +104,8 @@
                 {{-- Avatar Section --}}
                 <div class="me-0 me-sm-7 mb-4 text-center text-sm-start">
                     <div class="symbol symbol-100px symbol-lg-160px symbol-fixed position-relative d-inline-block">
-                        @if ($user->photo_url)
-                            <img src="{{ asset($user->photo_url) }}" alt="{{ $user->name }}" />
-                        @else
-                            <div class="symbol-label fs-1 bg-light-primary text-primary">
-                                {{ strtoupper(substr($user->name, 0, 1)) }}
-                            </div>
-                        @endif
+                        <img src="{{ $user->photo_url ? asset($user->photo_url) : asset('img/male-placeholder.png') }}"
+                            alt="{{ $user->name }}" class="w-100" />
                         <div
                             class="position-absolute translate-middle bottom-0 start-100 mb-6 bg-success rounded-circle border border-4 border-body h-20px w-20px">
                         </div>
