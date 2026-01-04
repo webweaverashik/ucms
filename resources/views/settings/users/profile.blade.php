@@ -75,13 +75,15 @@
     <div class="row g-7">
         <!-- ================= LEFT: PROFILE INFO ================= -->
         <div class="col-lg-8">
-            <form id="kt_create_user_form" class="form" novalidate data-update-url="{{ route('users.profile.update') }}">
-                @csrf
-
+            {{-- <form id="kt_create_user_form" class="form" novalidate data-update-url="{{ route('users.profile.update') }}">
+                @csrf --}}
+            <form>
                 <div class="card card-flush py-4 mb-7">
                     <div class="card-header">
                         <div class="card-title">
-                            <h3>Personal Information</h3>
+                            <h3>Personal Information
+                                <span ></span>
+                            </h3>
                         </div>
                     </div>
 
@@ -94,7 +96,7 @@
                             <div class="col-md-6 fv-row">
                                 <label class="form-label required">User Name</label>
                                 <input type="text" name="name" value="{{ auth()->user()->name }}"
-                                    class="form-control form-control-solid" required>
+                                    class="form-control form-control-solid" required disabled>
                                 <div class="invalid-feedback"></div>
                             </div>
 
@@ -102,7 +104,7 @@
                             <div class="col-md-6 fv-row">
                                 <label class="form-label required">Email</label>
                                 <input type="email" name="email" value="{{ auth()->user()->email }}"
-                                    class="form-control form-control-solid" required>
+                                    class="form-control form-control-solid" required disabled>
                                 <div class="invalid-feedback"></div>
                             </div>
 
@@ -110,7 +112,7 @@
                             <div class="col-md-6 fv-row">
                                 <label class="form-label required">Mobile</label>
                                 <input type="text" name="mobile_number" value="{{ auth()->user()->mobile_number }}"
-                                    class="form-control form-control-solid" required maxlength="11">
+                                    class="form-control form-control-solid" required maxlength="11" disabled>
                                 <div class="invalid-feedback"></div>
                             </div>
 
@@ -151,13 +153,13 @@
                     </div>
 
                     <div class="card-footer d-flex justify-content-end gap-3">
-                        <button type="submit" class="btn btn-primary w-150px">
+                        {{-- <button type="submit" class="btn btn-primary w-150px">
                             <span class="indicator-label">Update</span>
                             <span class="indicator-progress">
                                 Please wait...
                                 <span class="spinner-border spinner-border-sm ms-2"></span>
                             </span>
-                        </button>
+                        </button> --}}
                     </div>
                 </div>
             </form>
@@ -192,7 +194,8 @@
                         <label class="required fw-semibold fs-6 mb-2">Confirm Password</label>
                         <div class="input-group">
                             <input type="password" name="password_confirm" class="form-control mb-3 mb-lg-0"
-                                placeholder="Write the password again" required id="userConfirmPassword" autocomplete="off" />
+                                placeholder="Write the password again" required id="userConfirmPassword"
+                                autocomplete="off" />
                             <span class="input-group-text toggle-password" data-target="userConfirmPassword"
                                 style="cursor: pointer;">
                                 <i class="ki-outline ki-eye
@@ -210,7 +213,8 @@
                             </div>
                         </div>
                         <div class="text-muted fs-7 mt-2">
-                            At least 8 characters, one uppercase letter, one lowercase letter, one number and one special character
+                            At least 8 characters, one uppercase letter, one lowercase letter, one number and one special
+                            character
                             are required.
                         </div>
                     </div>
