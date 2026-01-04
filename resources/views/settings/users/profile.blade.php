@@ -75,94 +75,169 @@
     <div class="row g-7">
         <!-- ================= LEFT: PROFILE INFO ================= -->
         <div class="col-lg-8">
-            {{-- <form id="kt_create_user_form" class="form" novalidate data-update-url="{{ route('users.profile.update') }}">
-                @csrf --}}
-            <form>
+            @if (auth()->user()->isAdmin())
+                <form id="kt_create_user_form" class="form" novalidate
+                    data-update-url="{{ route('users.profile.update') }}">
+                    @csrf
+
+                    <div class="card card-flush py-4 mb-7">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <h3>Personal Information</h3>
+                            </div>
+                        </div>
+
+                        <div class="card-body pt-0">
+                            <div class="row g-6">
+
+                                <!-- Inside the personal info card-body -->
+
+                                <!-- Name -->
+                                <div class="col-md-6 fv-row">
+                                    <label class="form-label required">User Name</label>
+                                    <input type="text" name="name" value="{{ auth()->user()->name }}"
+                                        class="form-control form-control-solid" required>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+
+                                <!-- Email -->
+                                <div class="col-md-6 fv-row">
+                                    <label class="form-label required">Email</label>
+                                    <input type="email" name="email" value="{{ auth()->user()->email }}"
+                                        class="form-control form-control-solid" required>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+
+                                <!-- Mobile -->
+                                <div class="col-md-6 fv-row">
+                                    <label class="form-label required">Mobile</label>
+                                    <input type="text" name="mobile_number" value="{{ auth()->user()->mobile_number }}"
+                                        class="form-control form-control-solid" required maxlength="11">
+                                    <div class="invalid-feedback"></div>
+                                </div>
+
+                                <!-- ================= READ ONLY SECTION ================= -->
+                                <div class="col-12">
+                                    <div class="readonly-section" data-bs-toggle="tooltip" data-bs-placement="top"
+                                        title="These fields are read-only and cannot be changed.">
+                                        <div class="row g-6">
+                                            <div class="col-md-4">
+                                                <label class="form-label text-muted">Role</label>
+                                                <div class="readonly-value">
+                                                    {{ ucfirst(auth()->user()->getRoleNames()->first()) }}
+                                                </div>
+                                            </div>
+
+
+
+                                            <div class="col-md-4">
+                                                <label class="form-label text-muted">Branch</label>
+                                                <div class="readonly-value">
+                                                    {{ auth()->user()->branch ? auth()->user()->branch->branch_name : '-' }}
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <label class="form-label text-muted">Created At</label>
+                                                <div class="readonly-value">
+                                                    {{ auth()->user()->created_at->format('d-M-Y') }}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <!-- ================= END READ ONLY SECTION ================= -->
+
+                            </div>
+                        </div>
+
+                        <div class="card-footer d-flex justify-content-end gap-3">
+                            <button type="submit" class="btn btn-primary w-150px">
+                                <span class="indicator-label">Update</span>
+                                <span class="indicator-progress">
+                                    Please wait...
+                                    <span class="spinner-border spinner-border-sm ms-2"></span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            @else
                 <div class="card card-flush py-4 mb-7">
                     <div class="card-header">
                         <div class="card-title">
-                            <h3>Personal Information
-                                <span ></span>
-                            </h3>
+                            <h3>Personal Information</h3>
                         </div>
                     </div>
 
                     <div class="card-body pt-0">
                         <div class="row g-6">
-
-                            <!-- Inside the personal info card-body -->
-
-                            <!-- Name -->
-                            <div class="col-md-6 fv-row">
-                                <label class="form-label required">User Name</label>
-                                <input type="text" name="name" value="{{ auth()->user()->name }}"
-                                    class="form-control form-control-solid" required disabled>
-                                <div class="invalid-feedback"></div>
-                            </div>
-
-                            <!-- Email -->
-                            <div class="col-md-6 fv-row">
-                                <label class="form-label required">Email</label>
-                                <input type="email" name="email" value="{{ auth()->user()->email }}"
-                                    class="form-control form-control-solid" required disabled>
-                                <div class="invalid-feedback"></div>
-                            </div>
-
-                            <!-- Mobile -->
-                            <div class="col-md-6 fv-row">
-                                <label class="form-label required">Mobile</label>
-                                <input type="text" name="mobile_number" value="{{ auth()->user()->mobile_number }}"
-                                    class="form-control form-control-solid" required maxlength="11" disabled>
-                                <div class="invalid-feedback"></div>
-                            </div>
-
-                            <!-- ================= READ ONLY SECTION ================= -->
+                            <!-- ================= READ ONLY USER INFORMATION ================= -->
                             <div class="col-12">
                                 <div class="readonly-section" data-bs-toggle="tooltip" data-bs-placement="top"
                                     title="These fields are read-only and cannot be changed.">
+
                                     <div class="row g-6">
-                                        <div class="col-md-4">
+
+                                        <!-- User Name -->
+                                        <div class="col-md-6">
+                                            <label class="form-label text-muted">User Name</label>
+                                            <div class="readonly-value">
+                                                {{ auth()->user()->name }}
+                                            </div>
+                                        </div>
+
+                                        <!-- Email -->
+                                        <div class="col-md-6">
+                                            <label class="form-label text-muted">Email</label>
+                                            <div class="readonly-value">
+                                                {{ auth()->user()->email }}
+                                            </div>
+                                        </div>
+
+                                        <!-- Mobile -->
+                                        <div class="col-md-6">
+                                            <label class="form-label text-muted">Mobile</label>
+                                            <div class="readonly-value">
+                                                {{ auth()->user()->mobile_number ?? '-' }}
+                                            </div>
+                                        </div>
+
+                                        <!-- Role -->
+                                        <div class="col-md-6">
                                             <label class="form-label text-muted">Role</label>
                                             <div class="readonly-value">
-                                                {{ ucfirst(auth()->user()->getRoleNames()->first()) }}
+                                                <span class="badge badge-info">{{ ucfirst(auth()->user()->getRoleNames()->first()) }}</span>
                                             </div>
                                         </div>
 
-
-
-                                        <div class="col-md-4">
+                                        <!-- Branch -->
+                                        <div class="col-md-6">
                                             <label class="form-label text-muted">Branch</label>
                                             <div class="readonly-value">
-                                                {{ auth()->user()->branch ? auth()->user()->branch->branch_name : '-' }}
+                                                <span class="badge badge-light-success">{{ auth()->user()->branch?->branch_name ?? '-' }}</span>
+                                                
                                             </div>
                                         </div>
 
-                                        <div class="col-md-4">
+                                        <!-- Created At -->
+                                        <div class="col-md-6">
                                             <label class="form-label text-muted">Created At</label>
                                             <div class="readonly-value">
-                                                {{ auth()->user()->created_at->format('d-M-Y') }}
+                                                {{ auth()->user()->created_at?->format('d-M-Y') }}
                                             </div>
                                         </div>
-                                    </div>
 
+                                    </div>
                                 </div>
                             </div>
-                            <!-- ================= END READ ONLY SECTION ================= -->
+                            <!-- ================= END READ ONLY USER INFORMATION ================= -->
 
                         </div>
                     </div>
-
-                    <div class="card-footer d-flex justify-content-end gap-3">
-                        {{-- <button type="submit" class="btn btn-primary w-150px">
-                            <span class="indicator-label">Update</span>
-                            <span class="indicator-progress">
-                                Please wait...
-                                <span class="spinner-border spinner-border-sm ms-2"></span>
-                            </span>
-                        </button> --}}
-                    </div>
                 </div>
-            </form>
+            @endif
         </div>
 
         <!-- ================= RIGHT: PASSWORD RESET ================= -->
