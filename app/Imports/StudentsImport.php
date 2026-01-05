@@ -32,9 +32,6 @@ class StudentsImport implements ToCollection, WithHeadingRow
 
     public function collection(Collection $rows)
     {
-        // Log the first row to check if data is being read
-        // Log::info('First row data:', $rows->first()->toArray());
-
         $rowNumber = 2; // Start from 2 if row 1 is the heading
 
         foreach ($rows as $row) {
@@ -76,7 +73,7 @@ class StudentsImport implements ToCollection, WithHeadingRow
 
                 // Step 2: Guardians
                 foreach ([1, 2] as $index) {
-                    if ($row["guardian_{$index}_name"]) {
+                    if (! empty($row["guardian_{$index}_name"])) {
                         Guardian::create([
                             'student_id' => $student->id,
                             'name'       => $row["guardian_{$index}_name"],
@@ -89,7 +86,7 @@ class StudentsImport implements ToCollection, WithHeadingRow
 
                 // Step 3: Siblings
                 foreach ([1, 2] as $index) {
-                    if ($row["sibling_{$index}_name"]) {
+                    if (! empty($row["sibling_{$index}_name"])) {
                         Sibling::create([
                             'student_id' => $student->id,
                             'name'       => $row["sibling_{$index}_name"],
@@ -127,7 +124,7 @@ class StudentsImport implements ToCollection, WithHeadingRow
                 ];
 
                 foreach ($mobileNumbers as $key => $number) {
-                    if ($number) {
+                    if (! empty($number)) {
                         MobileNumber::create([
                             'student_id'    => $student->id,
                             'mobile_number' => $number,
@@ -136,8 +133,9 @@ class StudentsImport implements ToCollection, WithHeadingRow
                     }
                 }
 
-                // Step 7: Subject Enrollment
-                $class_numeral = ClassName::find($row['class_id'])->class_numeral;
+                // Step 7: Subject Enrollment (Compulsory subjects based on class and group)
+                $class_numeral      = ClassName::find($row['class_id'])->class_numeral;
+                $enrolledSubjectIds = collect(); // Track enrolled subjects to prevent duplicates
 
                 if ($class_numeral >= 9) {
                     // For classes 9 and above: General + specific academic_group
@@ -151,13 +149,32 @@ class StudentsImport implements ToCollection, WithHeadingRow
                     $subjects = Subject::where('class_id', $row['class_id'])->where('academic_group', $row['academic_group'])->pluck('id');
                 }
 
-                // Enroll subjects
+                // Enroll compulsory/general subjects
                 foreach ($subjects as $subjectId) {
                     SubjectTaken::create([
-                        'student_id' => $student->id,
-                        'subject_id' => $subjectId,
+                        'student_id'     => $student->id,
+                        'subject_id'     => $subjectId,
+                        'is_4th_subject' => false,
                     ]);
+                    $enrolledSubjectIds->push($subjectId);
                 }
+
+                // Step 8: Optional Subject Enrollment (main_optional_subject and 4th_subject)
+                $this->enrollOptionalSubject(
+                    $student->id,
+                    $row['main_optional_subject'] ?? null,
+                    false, // is_4th_subject = 0
+                    $enrolledSubjectIds,
+                    $rowNumber,
+                );
+
+                $this->enrollOptionalSubject(
+                    $student->id,
+                    $row['4th_subject'] ?? null,
+                    true, // is_4th_subject = 1
+                    $enrolledSubjectIds,
+                    $rowNumber,
+                );
 
                 DB::commit();
                 $this->results['inserted'][] = $rowNumber;
@@ -172,5 +189,58 @@ class StudentsImport implements ToCollection, WithHeadingRow
 
         // Clear the cache
         clearUCMSCaches();
+    }
+
+    /**
+     * Enroll an optional subject for a student with duplicate prevention.
+     *
+     * @param int $studentId
+     * @param mixed $subjectId
+     * @param bool $isFourthSubject
+     * @param \Illuminate\Support\Collection $enrolledSubjectIds
+     * @param int $rowNumber
+     * @return void
+     */
+    protected function enrollOptionalSubject(int $studentId, mixed $subjectId, bool $isFourthSubject, Collection &$enrolledSubjectIds, int $rowNumber): void
+    {
+        // Skip if subject ID is empty or null
+        if (empty($subjectId)) {
+            return;
+        }
+
+        $subjectId   = (int) $subjectId;
+        $subjectType = $isFourthSubject ? '4th_subject' : 'main_optional_subject';
+
+        // Check if subject exists in the database
+        if (! Subject::where('id', $subjectId)->exists()) {
+            Log::warning("Row {$rowNumber}: {$subjectType} with ID {$subjectId} does not exist, skipping.");
+            return;
+        }
+
+        // Check if subject is already enrolled (in current import batch)
+        if ($enrolledSubjectIds->contains($subjectId)) {
+            Log::info("Row {$rowNumber}: {$subjectType} with ID {$subjectId} already enrolled, skipping duplicate.");
+            return;
+        }
+
+        // Double-check database for existing enrollment (safety net)
+        $alreadyAssigned = SubjectTaken::where('student_id', $studentId)->where('subject_id', $subjectId)->exists();
+
+        if ($alreadyAssigned) {
+            Log::info("Row {$rowNumber}: {$subjectType} with ID {$subjectId} already exists in database, skipping.");
+            return;
+        }
+
+        // Create the subject enrollment
+        SubjectTaken::create([
+            'student_id'     => $studentId,
+            'subject_id'     => $subjectId,
+            'is_4th_subject' => $isFourthSubject,
+        ]);
+
+        // Track the enrolled subject
+        $enrolledSubjectIds->push($subjectId);
+
+        Log::info("Row {$rowNumber}: Successfully enrolled {$subjectType} with ID {$subjectId}.");
     }
 }

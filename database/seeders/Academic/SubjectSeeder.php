@@ -98,6 +98,10 @@ class SubjectSeeder extends Seeder
             // Commerce - Optional
             ['name' => 'Agriculture Studies', 'group' => 'Commerce', 'type' => 'optional'],
             ['name' => 'Home Science', 'group' => 'Commerce', 'type' => 'optional'],
+
+            // Arts - Compulsory
+
+            // Arts - Optional
         ];
     }
 
@@ -128,6 +132,11 @@ class SubjectSeeder extends Seeder
             ['name' => 'Production Management & Marketing', 'group' => 'Commerce', 'type' => 'optional'],
             ['name' => 'Economics', 'group' => 'Commerce', 'type' => 'optional'],
             ['name' => 'Statistics', 'group' => 'Commerce', 'type' => 'optional'],
+
+            // ======================
+            // Arts Group
+            // ======================
+
         ];
     }
 
