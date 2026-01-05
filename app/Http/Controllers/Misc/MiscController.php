@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Imports\StudentsImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
 class MiscController extends Controller
@@ -29,32 +30,44 @@ class MiscController extends Controller
         }
 
         $file = $request->file('excel_file');
-
-        // Get the real path of the uploaded file
-        $filePath = $file->getRealPath();
-
-        if (empty($filePath) || !file_exists($filePath)) {
-            // Fallback: Store temporarily and use that path
-            $filePath = $file->store('temp', 'local');
-
-            if (empty($filePath)) {
-                return back()->with('error', 'Failed to process uploaded file.');
-            }
-
-            $filePath = storage_path('app/' . $filePath);
-        }
-
-        $results = ['inserted' => [], 'skipped' => []];
+        $tempFilePath = null;
 
         try {
+            // Method 1: Try getRealPath() first
+            $filePath = $file->getRealPath();
+
+            // Method 2: If getRealPath() fails, manually save the file
+            if (empty($filePath) || $filePath === false || !file_exists($filePath)) {
+                // Create temp directory if it doesn't exist
+                $tempDir = storage_path('app/temp');
+                if (!is_dir($tempDir)) {
+                    mkdir($tempDir, 0755, true);
+                }
+
+                // Generate unique filename
+                $tempFileName = 'import_' . Str::uuid() . '.' . $file->getClientOriginalExtension();
+                $tempFilePath = $tempDir . '/' . $tempFileName;
+
+                // Move uploaded file to temp location
+                $file->move($tempDir, $tempFileName);
+
+                if (!file_exists($tempFilePath)) {
+                    return back()->with('error', 'Failed to process uploaded file.');
+                }
+
+                $filePath = $tempFilePath;
+            }
+
+            $results = ['inserted' => [], 'skipped' => []];
+
             Excel::import(new StudentsImport($results), $filePath);
 
             $insertedCount = count($results['inserted']);
             $skippedCount = count($results['skipped']);
 
-            // Clean up temp file if it was stored
-            if (file_exists($filePath) && str_contains($filePath, 'temp')) {
-                @unlink($filePath);
+            // Clean up temp file if created
+            if ($tempFilePath && file_exists($tempFilePath)) {
+                @unlink($tempFilePath);
             }
 
             return back()->with('success', "Import finished: {$insertedCount} inserted, {$skippedCount} skipped.");
@@ -66,8 +79,8 @@ class MiscController extends Controller
             ]);
 
             // Clean up temp file on error
-            if (isset($filePath) && file_exists($filePath) && str_contains($filePath, 'temp')) {
-                @unlink($filePath);
+            if ($tempFilePath && file_exists($tempFilePath)) {
+                @unlink($tempFilePath);
             }
 
             return back()->with('error', 'Import failed: ' . $e->getMessage());
