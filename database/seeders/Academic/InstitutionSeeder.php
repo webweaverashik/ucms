@@ -67,7 +67,7 @@ class InstitutionSeeder extends Seeder
             ['name' => 'Shaheed Suhrawardy College', 'type' => 'college'],
             ['name' => 'Shajanpur Railway Government School', 'type' => 'school'],
             ['name' => 'Shantipur High School', 'type' => 'school'],
-            ['name' => 'Siddheswari Girls\' College', 'type' => 'college'],
+            ['name' => 'Rampura Ekramunnesa College', 'type' => 'college'],
             ['name' => 'Sabujbag Government High School', 'type' => 'school'],
             ['name' => 'South Banasree Model High School and College', 'type' => 'college'],
             ['name' => 'South Point School and College', 'type' => 'college'],
@@ -80,7 +80,7 @@ class InstitutionSeeder extends Seeder
             ['name' => 'Willes Littel Flower School', 'type' => 'school'],
             ['name' => 'NO SCHOOL', 'type' => 'school'],
             ['name' => 'Railway Hafiziya Sunniya Alia Madrasha', 'type' => 'school'],
-            ['name' => 'NO COLLEGE', 'type' => 'school'],
+            ['name' => 'NO COLLEGE', 'type' => 'college'],
             ['name' => 'Shonaimuri Girls High School', 'type' => 'school'],
             ['name' => 'Khilgaon Model College', 'type' => 'college'],
             ['name' => 'Ali Ahmed High School', 'type' => 'school'],
@@ -101,6 +101,11 @@ class InstitutionSeeder extends Seeder
             ['name' => 'Chetona Model Academy', 'type' => 'school'],
             ['name' => 'Motijheel Ideal School', 'type' => 'school'],
             ['name' => 'Rajarbagh Police Lines School', 'type' => 'school'],
+            ['name' => 'Viqarunnisa Noon School', 'type' => 'school'],
+            ['name' => 'Kadamtola Purbobasabo School', 'type' => 'school'],
+            ['name' => 'Dhaka Ideal School', 'type' => 'school'],
+            ['name' => 'Tamirul Milat Kamil Madrasa', 'type' => 'college'],
+            ['name' => 'Wills Little Flower College', 'type' => 'college'],
         ];
 
         foreach ($institutions as $institution) {
