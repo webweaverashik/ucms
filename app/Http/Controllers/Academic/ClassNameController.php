@@ -17,6 +17,7 @@ class ClassNameController extends Controller
         }
 
         $classes = ClassName::withCount('activeStudents')
+            ->withCount('inactiveStudents')
             ->latest('updated_at')
             ->orderByDesc('id') // tie-breaker: id descending
             ->get()

@@ -185,6 +185,7 @@
                                 <th>Class Numeral</th>
                                 <th class="d-none">Class Numeral (filter)</th>
                                 <th>Total Active Students</th>
+                                <th>Inactive Students</th>
                                 <th>Status</th>
                                 <th class="d-none">Status (filter)</th>
                                 <th class="w-100px not-export">Actions</th>
@@ -207,6 +208,7 @@
                                     <td class="d-none">Active_{{ $classname->class_numeral }}</td>
 
                                     <td>{{ $classname->active_students_count }}</td>
+                                    <td>{{ $classname->inactive_students_count }}</td>
 
                                     <td>
                                         @if ($classname->is_active == true)

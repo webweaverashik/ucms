@@ -16,7 +16,7 @@ var KTActiveClassList = function () {
             "lengthChange": true,
             "autoWidth": false,  // Disable auto width
             'columnDefs': [
-                { orderable: false, targets: [2, 8] }
+                { orderable: false, targets: [2, 9] }
             ]
         });
 
