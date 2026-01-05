@@ -17,7 +17,6 @@ class ClassNameSeeder extends Seeder
             ['name' => 'Class 09', 'class_numeral' => '09'],
             ['name' => 'SSC (26-27)', 'class_numeral' => '10'],
             ['name' => 'SSC (25-26)', 'class_numeral' => '10'],
-            ['name' => 'Model Test (SSC 25-26)', 'class_numeral' => '10'],
             ['name' => 'HSC (26-27)', 'class_numeral' => '11'],
             ['name' => 'HSC (25-26)', 'class_numeral' => '12'],
         ];

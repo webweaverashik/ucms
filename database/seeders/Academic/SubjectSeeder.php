@@ -16,8 +16,8 @@ class SubjectSeeder extends Seeder
             'Class 07'               => $this->getMiddleSchoolSubjects(),
             'Class 08'               => $this->getMiddleSchoolSubjects(),
             'Class 09'               => $this->getSSCSubjects(),
+            'SSC (26-27)'            => $this->getSSCSubjects(),
             'SSC (25-26)'            => $this->getSSCSubjects(),
-            'Model Test (SSC 25-26)' => $this->getSSCSubjects(),
             'HSC (26-27)'            => $this->getHSCSubjects(),
             'HSC (25-26)'            => $this->getHSCSubjects(),
         ];
