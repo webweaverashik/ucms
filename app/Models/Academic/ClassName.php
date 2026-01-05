@@ -33,6 +33,19 @@ class ClassName extends Model
         return $query->where('is_active', false);
     }
 
+    public function scopeVisibleFor($query, User $user)
+    {
+        // Admin sees all branches
+        if ($user->isAdmin()) {
+            return $query;
+        }
+
+        // Manager / Accountant / Others → only own branch students
+        return $query->whereHas('students', function ($q) use ($user) {
+            $q->where('branch_id', $user->branch_id);
+        });
+    }
+
     /* ------------------
      | Helpers
      |------------------*/
@@ -66,17 +79,12 @@ class ClassName extends Model
     // Get all the active students associated with this class
     public function activeStudents()
     {
-        return $this->hasMany(Student::class, 'class_id', 'id')->whereHas('studentActivation', function ($query) {
-            $query->where('active_status', 'active');
-        });
+        return $this->hasMany(Student::class, 'class_id')->whereHas('studentActivation', fn($q) => $q->where('active_status', 'active'));
     }
-
     // Get all the inactive students associated with this class
     public function inactiveStudents()
     {
-        return $this->hasMany(Student::class, 'class_id', 'id')->whereHas('studentActivation', function ($query) {
-            $query->where('active_status', 'inactive');
-        });
+        return $this->hasMany(Student::class, 'class_id')->whereHas('studentActivation', fn($q) => $q->where('active_status', 'inactive'));
     }
 
     // Get who deleted the class

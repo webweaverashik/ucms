@@ -16,11 +16,33 @@ class ClassNameController extends Controller
             return back()->with('warning', 'No permission to view classes.');
         }
 
-        $classes = ClassName::withCount('activeStudents')
-            ->withCount('inactiveStudents')
-            ->withCount('students')
+        $user = auth()->user();
+
+        $classes = ClassName::query()
+            ->withCount([
+                // Total students
+                'students as students_count'                  => function ($q) use ($user) {
+                    if (! $user->isAdmin()) {
+                        $q->where('branch_id', $user->branch_id);
+                    }
+                },
+
+                // Active students
+                'activeStudents as active_students_count'     => function ($q) use ($user) {
+                    if (! $user->isAdmin()) {
+                        $q->where('branch_id', $user->branch_id);
+                    }
+                },
+
+                // Inactive students
+                'inactiveStudents as inactive_students_count' => function ($q) use ($user) {
+                    if (! $user->isAdmin()) {
+                        $q->where('branch_id', $user->branch_id);
+                    }
+                },
+            ])
             ->latest('updated_at')
-            ->orderByDesc('id') // tie-breaker: id descending
+            ->orderByDesc('id')
             ->get()
             ->groupBy('is_active');
 
@@ -73,7 +95,7 @@ class ClassNameController extends Controller
         $classname = ClassName::withoutGlobalScope('active')
             ->withCount(['activeStudents', 'inactiveStudents'])
             ->find($id);
-            
+
         if (! $classname) {
             return redirect()->route('classnames.index')->with('warning', 'Class not found.');
         }
