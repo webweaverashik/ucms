@@ -57,6 +57,12 @@ class ClassName extends Model
         return $this->hasOne(Sheet::class, 'class_id'); // explicitly set foreign key
     }
 
+    // Get all the students associated with this class
+    public function students()
+    {
+        return $this->hasMany(Student::class, 'class_id');
+    }
+
     // Get all the active students associated with this class
     public function activeStudents()
     {
