@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Imports;
 
 use App\Models\Academic\ClassName;
@@ -58,26 +57,26 @@ class StudentsImport implements ToCollection, WithHeadingRow
 
                 // Step 1: Insert into students
                 $student = Student::create([
-                    'branch_id' => $row['branch_id'],
+                    'branch_id'         => $row['branch_id'],
                     'student_unique_id' => $branch_prefix . '-' . $row['student_unique_id'],
-                    'name' => $row['name'],
-                    'date_of_birth' => $row['date_of_birth'],
-                    'gender' => $row['gender'],
-                    'class_id' => $row['class_id'],
-                    'academic_group' => $row['academic_group'],
-                    'batch_id' => $row['batch_id'],
-                    'institution_id' => $row['institution_id'],
-                    'home_address' => $row['home_address'] ?? null,
-                    'password' => Hash::make('12345678'), // Default password
-                    'remarks' => $row['remarks'],
+                    'name'              => $row['name'],
+                    'date_of_birth'     => $row['date_of_birth'],
+                    'gender'            => $row['gender'],
+                    'class_id'          => $row['class_id'],
+                    'academic_group'    => $row['academic_group'],
+                    'batch_id'          => $row['batch_id'],
+                    'institution_id'    => $row['institution_id'],
+                    'home_address'      => $row['home_address'] ?? null,
+                    'password'          => Hash::make('12345678'), // Default password
+                    'remarks'           => $row['remarks'],
                 ]);
 
                 // Step 2: Guardians
                 foreach ([1, 2] as $index) {
-                    if (!empty($row["guardian_{$index}_name"])) {
+                    if (! empty($row["guardian_{$index}_name"])) {
                         Guardian::create([
                             'student_id' => $student->id,
-                            'name' => $row["guardian_{$index}_name"],
+                            'name'       => $row["guardian_{$index}_name"],
                             'mobile_number' => $row["guardian_{$index}_mobile"],
                             'gender' => $row["guardian_{$index}_gender"],
                             'relationship' => $row["guardian_{$index}_relationship"],
@@ -87,10 +86,10 @@ class StudentsImport implements ToCollection, WithHeadingRow
 
                 // Step 3: Siblings
                 foreach ([1, 2] as $index) {
-                    if (!empty($row["sibling_{$index}_name"])) {
+                    if (! empty($row["sibling_{$index}_name"])) {
                         Sibling::create([
                             'student_id' => $student->id,
-                            'name' => $row["sibling_{$index}_name"],
+                            'name'       => $row["sibling_{$index}_name"],
                             'year' => $row["sibling_{$index}_year"],
                             'class' => $row["sibling_{$index}_class"],
                             'institution_name' => $row["sibling_{$index}_institution_name"] ?? null,
@@ -101,42 +100,42 @@ class StudentsImport implements ToCollection, WithHeadingRow
 
                 // Step 4: Payment
                 Payment::create([
-                    'student_id' => $student->id,
+                    'student_id'    => $student->id,
                     'payment_style' => $row['payment_style'],
-                    'due_date' => $row['due_date'],
-                    'tuition_fee' => $row['tuition_fee'],
+                    'due_date'      => $row['due_date'],
+                    'tuition_fee'   => $row['tuition_fee'],
                 ]);
 
                 // Step 5: Student Activation
                 $activation = StudentActivation::create([
-                    'student_id' => $student->id,
+                    'student_id'    => $student->id,
                     'active_status' => $row['activation_status'],
-                    'reason' => $row['inactive_reason'] ?? 'Admitted',
-                    'updated_by' => auth()->user()->id,
+                    'reason'        => $row['inactive_reason'] ?? 'Admitted',
+                    'updated_by'    => auth()->user()->id,
                 ]);
 
                 $student->update(['student_activation_id' => $activation->id]);
 
                 // Step 6: Mobile Numbers
                 $mobileNumbers = [
-                    'mobile_home' => $row['mobile_home'],
-                    'mobile_sms' => $row['mobile_sms'],
+                    'mobile_home'     => $row['mobile_home'],
+                    'mobile_sms'      => $row['mobile_sms'],
                     'mobile_whatsapp' => $row['mobile_whatsapp'],
                 ];
 
                 foreach ($mobileNumbers as $key => $number) {
-                    if (!empty($number)) {
+                    if (! empty($number)) {
                         MobileNumber::create([
-                            'student_id' => $student->id,
+                            'student_id'    => $student->id,
                             'mobile_number' => $number,
-                            'number_type' => str_replace('mobile_', '', $key),
+                            'number_type'   => str_replace('mobile_', '', $key),
                         ]);
                     }
                 }
 
                 // Step 7: Subject Enrollment (Compulsory subjects based on class and group)
-                $className = ClassName::find($row['class_id']);
-                $class_numeral = $className ? $className->class_numeral : 0;
+                $className          = ClassName::find($row['class_id']);
+                $class_numeral      = $className ? $className->class_numeral : 0;
                 $enrolledSubjectIds = collect(); // Track enrolled subjects to prevent duplicates
 
                 if ($class_numeral >= 9) {
@@ -155,8 +154,8 @@ class StudentsImport implements ToCollection, WithHeadingRow
                 // Enroll compulsory/general subjects
                 foreach ($subjects as $subjectId) {
                     SubjectTaken::create([
-                        'student_id' => $student->id,
-                        'subject_id' => $subjectId,
+                        'student_id'     => $student->id,
+                        'subject_id'     => $subjectId,
                         'is_4th_subject' => false,
                     ]);
                     $enrolledSubjectIds->push($subjectId);
@@ -203,11 +202,11 @@ class StudentsImport implements ToCollection, WithHeadingRow
             return;
         }
 
-        $subjectId = (int) $subjectId;
+        $subjectId   = (int) $subjectId;
         $subjectType = $isFourthSubject ? '4th_subject' : 'main_optional_subject';
 
         // Check if subject exists in the database
-        if (!Subject::where('id', $subjectId)->exists()) {
+        if (! Subject::where('id', $subjectId)->exists()) {
             Log::warning("Row {$rowNumber}: {$subjectType} with ID {$subjectId} does not exist, skipping.");
             return;
         }
@@ -228,8 +227,8 @@ class StudentsImport implements ToCollection, WithHeadingRow
 
         // Create the subject enrollment
         SubjectTaken::create([
-            'student_id' => $studentId,
-            'subject_id' => $subjectId,
+            'student_id'     => $studentId,
+            'subject_id'     => $subjectId,
             'is_4th_subject' => $isFourthSubject,
         ]);
 
