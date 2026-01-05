@@ -32,61 +32,101 @@ class StudentController extends Controller
      */
     public function index()
     {
-        $branchId = auth()->user()->branch_id;
+        $user     = auth()->user();
+        $branchId = $user->branch_id;
+        $isAdmin  = $user->hasRole('admin');
 
-        // Unique cache key per branch (useful when branch_id != 0)
-        $cacheKey = 'students_list_branch_' . $branchId;
+        // Get all branches for admin
+        $branches = Branch::all();
 
-        $students = Cache::remember($cacheKey, now()->addHours(1), function () use ($branchId) {
-            return Student::with([
-                'class:id,name,class_numeral',
-                'branch:id,branch_name,branch_prefix',
-                'batch:id,name',
-                'institution:id,name,eiin_number',
-                'studentActivation:id,active_status',
-                'guardians:id,name,relationship,student_id',
-                'mobileNumbers:id,mobile_number,number_type,student_id',
-                'payments:id,payment_style,due_date,tuition_fee,student_id',
-            ])
-                ->whereNotNull('student_activation_id')
-                ->when($branchId != 0, function ($query) use ($branchId) {
-                    $query->where('branch_id', $branchId);
-                })
-                ->whereHas('class', function ($query) {
-                    $query->where('is_active', true);
-                })
-                ->latest('updated_at')
-                ->get();
-        });
+        if ($isAdmin) {
+            // For admin: Get students grouped by branch
+            $studentsByBranch = [];
+
+            foreach ($branches as $branch) {
+                $cacheKey = 'students_list_branch_' . $branch->id;
+
+                $studentsByBranch[$branch->id] = Cache::remember($cacheKey, now()->addHours(1), function () use ($branch) {
+                    return Student::with([
+                        'class:id,name,class_numeral',
+                        'branch:id,branch_name,branch_prefix',
+                        'batch:id,name',
+                        'institution:id,name,eiin_number',
+                        'studentActivation:id,active_status',
+                        'guardians:id,name,relationship,student_id',
+                        'mobileNumbers:id,mobile_number,number_type,student_id',
+                        'payments:id,payment_style,due_date,tuition_fee,student_id',
+                    ])
+                        ->whereNotNull('student_activation_id')
+                        ->where('branch_id', $branch->id)
+                        ->whereHas('class', function ($query) {
+                            $query->where('is_active', true);
+                        })
+                        ->latest('updated_at')
+                        ->get();
+                });
+            }
+
+            $students    = collect(); // Empty collection for admin (uses tabs)
+            $allStudents = collect(); // No longer needed
+        } else {
+            // For non-admin: Get only their branch students
+            $cacheKey = 'students_list_branch_' . $branchId;
+
+            $students = Cache::remember($cacheKey, now()->addHours(1), function () use ($branchId) {
+                return Student::with([
+                    'class:id,name,class_numeral',
+                    'branch:id,branch_name,branch_prefix',
+                    'batch:id,name',
+                    'institution:id,name,eiin_number',
+                    'studentActivation:id,active_status',
+                    'guardians:id,name,relationship,student_id',
+                    'mobileNumbers:id,mobile_number,number_type,student_id',
+                    'payments:id,payment_style,due_date,tuition_fee,student_id',
+                ])
+                    ->whereNotNull('student_activation_id')
+                    ->when($branchId != 0, function ($query) use ($branchId) {
+                        $query->where('branch_id', $branchId);
+                    })
+                    ->whereHas('class', function ($query) {
+                        $query->where('is_active', true);
+                    })
+                    ->latest('updated_at')
+                    ->get();
+            });
+
+            $studentsByBranch = [];
+            $allStudents      = collect();
+        }
 
         $classnames = ClassName::active()->get();
 
         $batches = Batch::with('branch:id,branch_name')
-            ->when(auth()->user()->branch_id != 0, function ($query) {
-                $query->where('branch_id', auth()->user()->branch_id);
+            ->when($branchId != 0, function ($query) use ($branchId) {
+                $query->where('branch_id', $branchId);
             })
             ->select('id', 'name', 'branch_id')
             ->get();
 
         $institutions = Institution::all();
-        $branches     = Branch::all();
 
-        return view('students.index', compact('students', 'classnames', 'batches', 'institutions', 'branches'));
+        return view('students.index', compact(
+            'students',
+            'studentsByBranch',
+            'allStudents',
+            'classnames',
+            'batches',
+            'institutions',
+            'branches',
+            'isAdmin'
+        ));
     }
 
     public function pending()
     {
         $branchId = auth()->user()->branch_id;
 
-        $students = Student::with([
-            'class:id,name,class_numeral',
-            'branch:id,branch_name,branch_prefix',
-            'batch:id,name',
-            'institution:id,name,eiin_number',
-            'guardians:id,name,relationship,student_id',
-            'mobileNumbers:id,mobile_number,number_type,student_id',
-            'payments:id,payment_style,due_date,tuition_fee,student_id',
-        ])
+        $students = Student::with(['class:id,name,class_numeral', 'branch:id,branch_name,branch_prefix', 'batch:id,name', 'institution:id,name,eiin_number', 'guardians:id,name,relationship,student_id', 'mobileNumbers:id,mobile_number,number_type,student_id', 'payments:id,payment_style,due_date,tuition_fee,student_id'])
             ->whereNull('student_activation_id')
             ->when($branchId != 0, function ($query) use ($branchId) {
                 $query->where('branch_id', $branchId);
@@ -235,10 +275,13 @@ class StudentController extends Controller
         $subjectsCount = count($validated['subjects'] ?? []);
 
         if ($subjectsCount === 0) {
-            return response()->json([
-                'success' => false,
-                'errors'  => ['Please select at least one subject'],
-            ], 422);
+            return response()->json(
+                [
+                    'success' => false,
+                    'errors'  => ['Please select at least one subject'],
+                ],
+                422,
+            );
         }
 
         $class        = ClassName::findOrFail($validated['student_class']);
@@ -248,10 +291,13 @@ class StudentController extends Controller
         // Validate optional subjects (only checks Main ≠ 4th)
         $optionalValidation = $this->validateOptionalSubjects($validated, $classNumeral, $group);
         if ($optionalValidation !== true) {
-            return response()->json([
-                'success' => false,
-                'errors'  => [$optionalValidation],
-            ], 422);
+            return response()->json(
+                [
+                    'success' => false,
+                    'errors'  => [$optionalValidation],
+                ],
+                422,
+            );
         }
 
         return DB::transaction(function () use ($validated, $class, $classNumeral, $group) {
@@ -422,10 +468,7 @@ class StudentController extends Controller
         }
 
         // Check if this class/group has optional subjects
-        $hasOptionalSubjects = Subject::where('class_id', $validated['student_class'])
-            ->where('academic_group', $group)
-            ->where('subject_type', 'optional')
-            ->exists();
+        $hasOptionalSubjects = Subject::where('class_id', $validated['student_class'])->where('academic_group', $group)->where('subject_type', 'optional')->exists();
 
         if (! $hasOptionalSubjects) {
             return true;
@@ -549,9 +592,7 @@ class StudentController extends Controller
         if ($classNumeral >= 11 && $classNumeral <= 12) {
             // HSC academic year: July to June
             // July (7) onwards = next academic year
-            $year = $currentMonth >= 7
-                ? Carbon::now()->addYear()->format('y')
-                : $currentYear;
+            $year = $currentMonth >= 7 ? Carbon::now()->addYear()->format('y') : $currentYear;
         } else {
             // For class 1-10, use current calendar year
             $year = $currentYear;
@@ -607,9 +648,7 @@ class StudentController extends Controller
             ->orderBy('invoice_number', 'desc')
             ->first();
 
-        $nextSequence = $lastInvoice
-            ? (int) substr($lastInvoice->invoice_number, strrpos($lastInvoice->invoice_number, '_') + 1) + 1
-            : 1001;
+        $nextSequence = $lastInvoice ? (int) substr($lastInvoice->invoice_number, strrpos($lastInvoice->invoice_number, '_') + 1) + 1 : 1001;
 
         $invoiceNumber = "{$prefix}{$yearSuffix}{$month}_{$nextSequence}";
 
@@ -643,9 +682,7 @@ class StudentController extends Controller
             ->orderBy('invoice_number', 'desc')
             ->first();
 
-        $nextSequence = $lastInvoice
-            ? (int) substr($lastInvoice->invoice_number, strrpos($lastInvoice->invoice_number, '_') + 1) + 1
-            : 1001;
+        $nextSequence = $lastInvoice ? (int) substr($lastInvoice->invoice_number, strrpos($lastInvoice->invoice_number, '_') + 1) + 1 : 1001;
 
         $invoiceNumber = "{$prefix}{$yearSuffix}{$month}_{$nextSequence}";
 
@@ -716,7 +753,10 @@ class StudentController extends Controller
         // --------------------------------------------------------
 
         // Get all sheet payments of the student
-        $sheetPayments = $student->sheetPayments()->with(['sheet.class.subjects'])->get();
+        $sheetPayments = $student
+            ->sheetPayments()
+            ->with(['sheet.class.subjects'])
+            ->get();
 
         // Extract unique class names
         $sheet_class_names = $sheetPayments
@@ -730,13 +770,7 @@ class StudentController extends Controller
             });
 
         // Extract unique subject names from those classes
-        $sheet_subjectNames = $sheetPayments
-            ->pluck('sheet.class.subjects')
-            ->flatten()
-            ->unique('name')
-            ->pluck('name')
-            ->sort()
-            ->values();
+        $sheet_subjectNames = $sheetPayments->pluck('sheet.class.subjects')->flatten()->unique('name')->pluck('name')->sort()->values();
 
         $invoice_types = PaymentInvoiceType::select('id', 'type_name')->oldest('type_name')->get();
 
@@ -869,9 +903,7 @@ class StudentController extends Controller
             // Update student record
             $student->update([
                 'name'          => $validated['student_name'],
-                'date_of_birth' => ! empty($validated['birth_date'])
-                    ? Carbon::createFromFormat('d-m-Y', $validated['birth_date'])
-                    : null,
+                'date_of_birth' => ! empty($validated['birth_date']) ? Carbon::createFromFormat('d-m-Y', $validated['birth_date']) : null,
                 'gender'        => $validated['student_gender'],
                 'religion'      => $validated['student_religion'] ?? null,
                 'blood_group'   => $validated['student_blood_group'] ?? null,
@@ -956,9 +988,12 @@ class StudentController extends Controller
 
         // Check for duplicate main optional and 4th subject
         if ($fourthSubjectId) {
-            $mainSubjects = collect($subjects)->filter(function ($subject) {
-                return ! $this->isFourthSubjectValue($subject['is_4th']);
-            })->pluck('id')->toArray();
+            $mainSubjects = collect($subjects)
+                ->filter(function ($subject) {
+                    return ! $this->isFourthSubjectValue($subject['is_4th']);
+                })
+                ->pluck('id')
+                ->toArray();
 
             if (in_array($fourthSubjectId, $mainSubjects)) {
                 throw ValidationException::withMessages([
@@ -995,10 +1030,7 @@ class StudentController extends Controller
 
             if (! $allFieldsEmpty && $relation) {
                 // Check if the same relationship is already assigned to another guardian
-                $exists = $student->guardians()
-                    ->where('relationship', $relation)
-                    ->when($guardianId, fn($q) => $q->where('id', '!=', $guardianId))
-                    ->exists();
+                $exists = $student->guardians()->where('relationship', $relation)->when($guardianId, fn($q) => $q->where('id', '!=', $guardianId))->exists();
 
                 if ($exists) {
                     throw ValidationException::withMessages([
@@ -1081,21 +1113,12 @@ class StudentController extends Controller
      */
     private function updateMobileNumbers(Student $student, array $validated): void
     {
-        $student->mobileNumbers()->updateOrCreate(
-            ['number_type' => 'home'],
-            ['mobile_number' => $validated['student_phone_home']]
-        );
+        $student->mobileNumbers()->updateOrCreate(['number_type' => 'home'], ['mobile_number' => $validated['student_phone_home']]);
 
-        $student->mobileNumbers()->updateOrCreate(
-            ['number_type' => 'sms'],
-            ['mobile_number' => $validated['student_phone_sms']]
-        );
+        $student->mobileNumbers()->updateOrCreate(['number_type' => 'sms'], ['mobile_number' => $validated['student_phone_sms']]);
 
         if (! empty($validated['student_phone_whatsapp'])) {
-            $student->mobileNumbers()->updateOrCreate(
-                ['number_type' => 'whatsapp'],
-                ['mobile_number' => $validated['student_phone_whatsapp']]
-            );
+            $student->mobileNumbers()->updateOrCreate(['number_type' => 'whatsapp'], ['mobile_number' => $validated['student_phone_whatsapp']]);
         } else {
             // Remove WhatsApp number if cleared
             $student->mobileNumbers()->where('number_type', 'whatsapp')->delete();
@@ -1173,13 +1196,9 @@ class StudentController extends Controller
             $q->where('type_name', 'Tuition Fee');
         });
 
-        $lastInvoice = (clone $tuitionInvoices)
-            ->orderByRaw("CAST(SUBSTRING_INDEX(month_year, '_', -1) AS UNSIGNED) DESC, CAST(SUBSTRING_INDEX(month_year, '_', 1) AS UNSIGNED) DESC")
-            ->first();
+        $lastInvoice = (clone $tuitionInvoices)->orderByRaw("CAST(SUBSTRING_INDEX(month_year, '_', -1) AS UNSIGNED) DESC, CAST(SUBSTRING_INDEX(month_year, '_', 1) AS UNSIGNED) DESC")->first();
 
-        $oldestInvoice = (clone $tuitionInvoices)
-            ->orderByRaw("CAST(SUBSTRING_INDEX(month_year, '_', -1) AS UNSIGNED) ASC, CAST(SUBSTRING_INDEX(month_year, '_', 1) AS UNSIGNED) ASC")
-            ->first();
+        $oldestInvoice = (clone $tuitionInvoices)->orderByRaw("CAST(SUBSTRING_INDEX(month_year, '_', -1) AS UNSIGNED) ASC, CAST(SUBSTRING_INDEX(month_year, '_', 1) AS UNSIGNED) ASC")->first();
 
         return response()->json([
             'last_invoice_month'   => optional($lastInvoice)->month_year,
@@ -1199,50 +1218,99 @@ class StudentController extends Controller
     }
 
     /* Old Student - Alumni */
+/**
+ * Display alumni students (old students from inactive classes)
+ */
     public function alumniStudent()
     {
-        $branchId = auth()->user()->branch_id;
+        $user     = auth()->user();
+        $branchId = $user->branch_id;
+        $isAdmin  = $user->hasRole('admin');
 
-        // Unique cache key per branch (useful when branch_id != 0)
-        $cacheKey = 'alumni_students_list_branch_' . $branchId;
+        // Get all branches for admin
+        $branches = Branch::all();
 
-        $students = Cache::remember($cacheKey, now()->addHours(1), function () use ($branchId) {
-            return Student::with([
-                // remove the shorthand for class and use a closure to disable the global scope
-                'class' => function ($q) {
-                    $q->withoutGlobalScope('active')->select('id', 'name', 'class_numeral');
-                },
-                'branch:id,branch_name,branch_prefix',
-                'batch:id,name',
-                'institution:id,name,eiin_number',
-                'studentActivation:id,active_status',
-                'guardians:id,name,relationship,student_id',
-                'mobileNumbers:id,mobile_number,number_type,student_id',
-                'payments:id,payment_style,due_date,tuition_fee,student_id',
-            ])
-                ->whereNotNull('student_activation_id')
-                ->when($branchId != 0, function ($query) use ($branchId) {
-                    $query->where('branch_id', $branchId);
-                })
-                ->whereHas('class', function ($q) {
-                    $q->withoutGlobalScope('active')->where('is_active', false);
-                })
-                ->latest('updated_at')
-                ->get();
-        });
+        if ($isAdmin) {
+            // For admin: Get alumni students grouped by branch
+            $studentsByBranch = [];
+
+            foreach ($branches as $branch) {
+                $cacheKey = 'alumni_students_list_branch_' . $branch->id;
+
+                $studentsByBranch[$branch->id] = Cache::remember($cacheKey, now()->addHours(1), function () use ($branch) {
+                    return Student::with([
+                        'class' => function ($q) {
+                            $q->withoutGlobalScope('active')->select('id', 'name', 'class_numeral');
+                        },
+                        'branch:id,branch_name,branch_prefix',
+                        'batch:id,name',
+                        'institution:id,name,eiin_number',
+                        'studentActivation:id,active_status',
+                        'guardians:id,name,relationship,student_id',
+                        'mobileNumbers:id,mobile_number,number_type,student_id',
+                        'payments:id,payment_style,due_date,tuition_fee,student_id',
+                    ])
+                        ->whereNotNull('student_activation_id')
+                        ->where('branch_id', $branch->id)
+                        ->whereHas('class', function ($q) {
+                            $q->withoutGlobalScope('active')->where('is_active', false);
+                        })
+                        ->latest('updated_at')
+                        ->get();
+                });
+            }
+
+            $students = collect(); // Empty collection for admin (uses tabs)
+        } else {
+            // For non-admin: Get only their branch alumni students
+            $cacheKey = 'alumni_students_list_branch_' . $branchId;
+
+            $students = Cache::remember($cacheKey, now()->addHours(1), function () use ($branchId) {
+                return Student::with([
+                    'class' => function ($q) {
+                        $q->withoutGlobalScope('active')->select('id', 'name', 'class_numeral');
+                    },
+                    'branch:id,branch_name,branch_prefix',
+                    'batch:id,name',
+                    'institution:id,name,eiin_number',
+                    'studentActivation:id,active_status',
+                    'guardians:id,name,relationship,student_id',
+                    'mobileNumbers:id,mobile_number,number_type,student_id',
+                    'payments:id,payment_style,due_date,tuition_fee,student_id',
+                ])
+                    ->whereNotNull('student_activation_id')
+                    ->when($branchId != 0, function ($query) use ($branchId) {
+                        $query->where('branch_id', $branchId);
+                    })
+                    ->whereHas('class', function ($q) {
+                        $q->withoutGlobalScope('active')->where('is_active', false);
+                    })
+                    ->latest('updated_at')
+                    ->get();
+            });
+
+            $studentsByBranch = [];
+        }
 
         $classnames = ClassName::withoutGlobalScope('active')->where('is_active', false)->get();
 
         $batches = Batch::with('branch:id,branch_name')
-            ->when(auth()->user()->branch_id != 0, function ($query) {
-                $query->where('branch_id', auth()->user()->branch_id);
+            ->when($branchId != 0, function ($query) use ($branchId) {
+                $query->where('branch_id', $branchId);
             })
             ->select('id', 'name', 'branch_id')
             ->get();
 
         $institutions = Institution::all();
-        $branches     = Branch::all();
 
-        return view('students.alumni.index', compact('students', 'classnames', 'batches', 'institutions', 'branches'));
+        return view('students.alumni.index', compact(
+            'students',
+            'studentsByBranch',
+            'classnames',
+            'batches',
+            'institutions',
+            'branches',
+            'isAdmin'
+        ));
     }
 }

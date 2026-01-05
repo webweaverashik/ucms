@@ -2,37 +2,139 @@
 
 var KTStudentsList = function () {
     // Define shared variables
-    var table;
-    var datatable;
+    var datatables = {};
+    var activeDatatable = null;
+    var initializedTabs = {};
 
-    // Private functions
-    var initDatatable = function () {
-        // Init datatable --- more info on datatables: https://datatables.net/manual/
-        datatable = $(table).DataTable({
+    // Get DataTable config based on whether branch column is shown
+    var getDataTableConfig = function (showBranchColumn) {
+        var config = {
             "info": true,
             'order': [],
             "lengthMenu": [10, 25, 50, 100],
             "pageLength": 25,
             "lengthChange": true,
-            "autoWidth": false,  // Disable auto width
+            "autoWidth": false,
             'columnDefs': [
-                { orderable: false, targets: 9 }, // Disable ordering on column Guardian                
-                { orderable: false, targets: 15 }, // Disable ordering on column Actions                
+                { orderable: false, targets: 9 }, // Disable ordering on column Guardian
             ]
+        };
+
+        // Adjust action column index based on branch column visibility
+        if (showBranchColumn) {
+            config.columnDefs.push({ orderable: false, targets: 15 }); // Actions column with branch
+        } else {
+            config.columnDefs.push({ orderable: false, targets: 14 }); // Actions column without branch
+        }
+
+        return config;
+    };
+
+    // Initialize a single datatable
+    var initSingleDatatable = function (tableId, showBranchColumn) {
+        var table = document.getElementById(tableId);
+        if (!table) {
+            return null;
+        }
+
+        var config = getDataTableConfig(showBranchColumn);
+        var datatable = $(table).DataTable(config);
+
+        // Re-init functions on every table re-draw
+        datatable.on('draw', function () {
+            KTMenu.init();
         });
 
-        // Re-init functions on every table re-draw -- more info: https://datatables.net/reference/event/draw
-        datatable.on('draw', function () {
-            // initToggleToolbar();
-            // toggleToolbars();
+        return datatable;
+    };
+
+    // Initialize datatables for admin (multiple tabs)
+    var initAdminDatatables = function () {
+        // Initialize the first branch tab (it's active by default)
+        if (branchIds && branchIds.length > 0) {
+            var firstBranchId = branchIds[0];
+            var firstTableId = 'kt_students_table_branch_' + firstBranchId;
+            var firstBranchTable = document.getElementById(firstTableId);
+
+            if (firstBranchTable) {
+                datatables[firstBranchId] = initSingleDatatable(firstTableId, false);
+                activeDatatable = datatables[firstBranchId];
+                initializedTabs[firstBranchId] = true;
+            }
+        }
+
+        // Setup tab change event listener for lazy loading
+        var tabLinks = document.querySelectorAll('#branchTabs a[data-bs-toggle="tab"]');
+        tabLinks.forEach(function (tabLink) {
+            tabLink.addEventListener('shown.bs.tab', function (event) {
+                var branchId = event.target.getAttribute('data-branch-id');
+                var tableId = 'kt_students_table_branch_' + branchId;
+
+                // Initialize datatable for this tab if not already done
+                if (!initializedTabs[branchId]) {
+                    datatables[branchId] = initSingleDatatable(tableId, false);
+                    initializedTabs[branchId] = true;
+                }
+
+                // Set active datatable
+                activeDatatable = datatables[branchId];
+
+                // Adjust columns for responsive display
+                if (activeDatatable) {
+                    activeDatatable.columns.adjust().draw(false);
+                }
+
+                // Reinitialize export buttons for the active table
+                updateExportButtons();
+            });
         });
-    }
+    };
+
+    // Initialize datatable for non-admin (single table)
+    var initNonAdminDatatable = function () {
+        var table = document.getElementById('kt_students_table');
+        if (!table) {
+            return;
+        }
+
+        datatables['single'] = initSingleDatatable('kt_students_table', false);
+        activeDatatable = datatables['single'];
+    };
 
     // Hook export buttons
-    var exportButtons = () => {
+    var exportButtons = function () {
+        updateExportButtons();
+
+        // Hook dropdown export actions
+        const exportItems = document.querySelectorAll('#kt_table_report_dropdown_menu [data-row-export]');
+        exportItems.forEach(exportItem => {
+            exportItem.addEventListener('click', function (e) {
+                e.preventDefault();
+                const exportValue = this.getAttribute('data-row-export');
+                const target = document.querySelector('.buttons-' + exportValue);
+                if (target) {
+                    target.click();
+                } else {
+                    console.warn('Export button not found:', exportValue);
+                }
+            });
+        });
+    };
+
+    // Update export buttons for the active datatable
+    var updateExportButtons = function () {
+        if (!activeDatatable) return;
+
         const documentTitle = 'Student Lists Report';
 
-        var buttons = new $.fn.dataTable.Buttons(datatable, {
+        // Clear existing buttons
+        var hiddenContainer = document.getElementById('kt_hidden_export_buttons');
+        if (hiddenContainer) {
+            hiddenContainer.innerHTML = '';
+        }
+
+        // Create new buttons for the active datatable
+        new $.fn.dataTable.Buttons(activeDatatable, {
             buttons: [
                 {
                     extend: 'copyHtml5',
@@ -53,7 +155,8 @@ var KTStudentsList = function () {
                 {
                     extend: 'csvHtml5',
                     className: 'buttons-csv',
-                    title: documentTitle, exportOptions: {
+                    title: documentTitle,
+                    exportOptions: {
                         columns: ':visible:not(.not-export)'
                     }
                 },
@@ -69,48 +172,34 @@ var KTStudentsList = function () {
                         }
                     },
                     customize: function (doc) {
-                        // Set page margins [left, top, right, bottom]
-                        doc.pageMargins = [20, 20, 20, 40]; // reduce from default 40
-
-                        // Optional: Set font size globally
+                        doc.pageMargins = [20, 20, 20, 40];
                         doc.defaultStyle.fontSize = 10;
-
-                        // Optional: Set header or footer
-                        doc.footer = getPdfFooterWithPrintTime(); // your custom footer function
+                        if (typeof getPdfFooterWithPrintTime === 'function') {
+                            doc.footer = getPdfFooterWithPrintTime();
+                        }
                     }
                 }
-
             ]
-        }).container().appendTo('#kt_hidden_export_buttons'); // or a hidden container
+        }).container().appendTo('#kt_hidden_export_buttons');
+    };
 
-        // Hook dropdown export actions
-        const exportItems = document.querySelectorAll('#kt_table_report_dropdown_menu [data-row-export]');
-        exportItems.forEach(exportItem => {
-            exportItem.addEventListener('click', function (e) {
-                e.preventDefault();
-                const exportValue = this.getAttribute('data-row-export');
-                const target = document.querySelector('.buttons-' + exportValue);
-                if (target) {
-                    target.click();
-                } else {
-                    console.warn('Export button not found:', exportValue);
-                }
-            });
+    // Search Datatable
+    var handleSearch = function () {
+        const filterSearch = document.querySelector('[data-kt-subscription-table-filter="search"]');
+        if (!filterSearch) return;
+
+        filterSearch.addEventListener('keyup', function (e) {
+            if (activeDatatable) {
+                activeDatatable.search(e.target.value).draw();
+            }
         });
     };
 
-    // Search Datatable --- official docs reference: https://datatables.net/reference/api/search()
-    var handleSearch = function () {
-        const filterSearch = document.querySelector('[data-kt-subscription-table-filter="search"]');
-        filterSearch.addEventListener('keyup', function (e) {
-            datatable.search(e.target.value).draw();
-        });
-    }
-
     // Filter Datatable
     var handleFilter = function () {
-        // Select filter options
         const filterForm = document.querySelector('[data-kt-subscription-table-filter="form"]');
+        if (!filterForm) return;
+
         const filterButton = filterForm.querySelector('[data-kt-subscription-table-filter="filter"]');
         const resetButton = filterForm.querySelector('[data-kt-subscription-table-filter="reset"]');
         const selectOptions = filterForm.querySelectorAll('select');
@@ -119,34 +208,31 @@ var KTStudentsList = function () {
         filterButton.addEventListener('click', function () {
             var filterString = '';
 
-            // Get filter values
             selectOptions.forEach((item, index) => {
                 if (item.value && item.value !== '') {
                     if (index !== 0) {
                         filterString += ' ';
                     }
-
-                    // Build filter value options
                     filterString += item.value;
                 }
             });
 
-            // Filter datatable --- official docs reference: https://datatables.net/reference/api/search()
-            datatable.search(filterString).draw();
+            if (activeDatatable) {
+                activeDatatable.search(filterString).draw();
+            }
         });
 
         // Reset datatable
         resetButton.addEventListener('click', function () {
-            // Reset filter form
-            selectOptions.forEach((item, index) => {
-                // Reset Select2 dropdown --- official docs reference: https://select2.org/programmatic-control/add-select-clear-items
+            selectOptions.forEach((item) => {
                 $(item).val(null).trigger('change');
             });
 
-            // Filter datatable --- official docs reference: https://datatables.net/reference/api/search()
-            datatable.search('').draw();
+            if (activeDatatable) {
+                activeDatatable.search('').draw();
+            }
         });
-    }
+    };
 
     // Delete students
     const handleDeletion = function () {
@@ -157,8 +243,6 @@ var KTStudentsList = function () {
             e.preventDefault();
 
             let studentId = deleteBtn.getAttribute('data-student-id');
-            console.log('Student ID:', studentId);
-
             let url = routeDeleteStudent.replace(':id', studentId);
 
             Swal.fire({
@@ -186,7 +270,7 @@ var KTStudentsList = function () {
                                     text: "The student has been removed successfully.",
                                     icon: "success",
                                 }).then(() => {
-                                    location.reload(); // Reload to reflect changes
+                                    location.reload();
                                 });
                             } else {
                                 Swal.fire({
@@ -209,7 +293,6 @@ var KTStudentsList = function () {
         });
     };
 
-
     // Toggle activation modal AJAX
     const handleToggleActivationAJAX = function () {
         document.addEventListener('click', function (e) {
@@ -219,17 +302,13 @@ var KTStudentsList = function () {
             e.preventDefault();
 
             const studentId = toggleButton.getAttribute('data-student-id');
-            console.log('Student ID:', studentId);
-
             const studentName = toggleButton.getAttribute('data-student-name');
             const studentUniqueId = toggleButton.getAttribute('data-student-unique-id');
             const activeStatus = toggleButton.getAttribute('data-active-status');
 
-            // Set hidden input values
             document.getElementById('student_id').value = studentId;
             document.getElementById('activation_status').value = (activeStatus === 'active') ? 'inactive' : 'active';
 
-            // Update modal text
             const modalTitle = document.getElementById('toggle-activation-modal-title');
             const reasonLabel = document.getElementById('reason_label');
 
@@ -243,19 +322,17 @@ var KTStudentsList = function () {
         });
     };
 
-
     return {
         // Public functions  
         init: function () {
-            table = document.getElementById('kt_students_table');
-
-            if (!table) {
-                return;
+            // Check if admin or non-admin based on the presence of tabs
+            if (typeof isAdmin !== 'undefined' && isAdmin) {
+                initAdminDatatables();
+            } else {
+                initNonAdminDatatable();
             }
 
-            initDatatable();
             exportButtons();
-
             handleSearch();
             handleDeletion();
             handleFilter();
