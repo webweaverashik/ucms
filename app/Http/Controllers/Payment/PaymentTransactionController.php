@@ -7,11 +7,11 @@ use App\Models\Payment\PaymentInvoice;
 use App\Models\Payment\PaymentTransaction;
 use App\Models\Sheet\SheetPayment;
 use App\Models\Student\Student;
+use App\Services\WalletService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use App\Services\WalletService;
 
 class PaymentTransactionController extends Controller
 {
@@ -24,38 +24,78 @@ class PaymentTransactionController extends Controller
             return redirect()->back()->with('warning', 'No permission to view transactions.');
         }
 
-        $branchId = auth()->user()->branch_id;
+        $user     = auth()->user();
+        $branchId = $user->branch_id;
+        $isAdmin  = $user->hasRole('admin');
 
-        // Unique cache key per branch (useful when branch_id != 0)
-        $cacheKey = "transactions_branch_{$branchId}";
+        // Get all branches for admin
+        $branches = Branch::all();
 
-        $transactions = Cache::remember($cacheKey, now()->addHours(1), function () use ($branchId) {
-            return PaymentTransaction::with(['paymentInvoice:id,invoice_number,created_at', 'createdBy:id,name', 'student:id,name,student_unique_id,branch_id', 'student.branch:id,branch_name'])
-                ->whereHas('student', function ($query) use ($branchId) {
-                    if ($branchId != 0) {
-                        $query->where('branch_id', $branchId);
-                    }
-                })
-                ->latest('id')
-                ->get();
-        });
+        if ($isAdmin) {
+            // For admin: Get transactions grouped by branch
+            $transactionsByBranch = [];
 
-        // Simplified students query
-        $students = Student::when($branchId != 0, function ($query) use ($branchId) {
-            $query->where('branch_id', $branchId);
-        })
-            ->where(function ($query) {
+            foreach ($branches as $branch) {
+                $cacheKey = 'transactions_branch_' . $branch->id;
+
+                $transactionsByBranch[$branch->id] = Cache::remember($cacheKey, now()->addHours(1), function () use ($branch) {
+                    return PaymentTransaction::with(['paymentInvoice:id,invoice_number,created_at', 'createdBy:id,name', 'student:id,name,student_unique_id,branch_id', 'student.branch:id,branch_name'])
+                        ->whereHas('student', function ($query) use ($branch) {
+                            $query->where('branch_id', $branch->id);
+                        })
+                        ->latest('id')
+                        ->get();
+                });
+            }
+
+            $transactions = collect(); // Empty collection for admin (uses tabs)
+
+            // Get students for all branches for the modal
+            $students = Student::where(function ($query) {
                 $query->whereNull('student_activation_id')->orWhereHas('studentActivation', function ($q) {
                     $q->where('active_status', 'active');
                 });
             })
-            ->select('id', 'name', 'student_unique_id')
-            ->orderBy('student_unique_id')
-            ->get();
+                ->select('id', 'name', 'student_unique_id', 'branch_id')
+                ->orderBy('student_unique_id')
+                ->get();
 
-        $branches = Branch::all();
+            // Group students by branch for the modal
+            $studentsByBranch = $students->groupBy('branch_id');
+        } else {
+            // For non-admin: Get only their branch transactions
+            $cacheKey = 'transactions_branch_' . $branchId;
 
-        return view('transactions.index', compact('transactions', 'students', 'branches'));
+            $transactions = Cache::remember($cacheKey, now()->addHours(1), function () use ($branchId) {
+                return PaymentTransaction::with(['paymentInvoice:id,invoice_number,created_at', 'createdBy:id,name', 'student:id,name,student_unique_id,branch_id', 'student.branch:id,branch_name'])
+                    ->whereHas('student', function ($query) use ($branchId) {
+                        if ($branchId != 0) {
+                            $query->where('branch_id', $branchId);
+                        }
+                    })
+                    ->latest('id')
+                    ->get();
+            });
+
+            $transactionsByBranch = [];
+
+            // Simplified students query for non-admin
+            $students = Student::when($branchId != 0, function ($query) use ($branchId) {
+                $query->where('branch_id', $branchId);
+            })
+                ->where(function ($query) {
+                    $query->whereNull('student_activation_id')->orWhereHas('studentActivation', function ($q) {
+                        $q->where('active_status', 'active');
+                    });
+                })
+                ->select('id', 'name', 'student_unique_id', 'branch_id')
+                ->orderBy('student_unique_id')
+                ->get();
+
+            $studentsByBranch = [];
+        }
+
+        return view('transactions.index', compact('transactions', 'transactionsByBranch', 'students', 'studentsByBranch', 'branches', 'isAdmin'));
     }
 
     /**

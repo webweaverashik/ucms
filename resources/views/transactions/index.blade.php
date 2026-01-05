@@ -2,7 +2,6 @@
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
 @endpush
 
-
 @extends('layouts.app')
 
 @section('title', 'All Transactions')
@@ -41,11 +40,16 @@
     </div>
 @endsection
 
-
 @section('content')
     @php
         // Define badge colors for different branches
-        $badgeColors = ['badge-light-primary', 'badge-light-success', 'badge-light-warning'];
+        $badgeColors = [
+            'badge-light-primary',
+            'badge-light-success',
+            'badge-light-warning',
+            'badge-light-danger',
+            'badge-light-info',
+        ];
 
         // Map branches to badge colors dynamically
         $branchColors = [];
@@ -67,16 +71,15 @@
             <div class="card-title">
                 <!--begin::Search-->
                 <div class="d-flex align-items-center position-relative my-1">
-                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
-                        data-transaction-table-filter="search" class="form-control form-control-solid w-350px ps-12"
-                        placeholder="Search in transactions">
+                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
+                    <input type="text" data-transaction-table-filter="search"
+                        class="form-control form-control-solid w-350px ps-12" placeholder="Search in transactions">
                 </div>
                 <!--end::Search-->
 
                 <!--begin::Export hidden buttons-->
                 <div id="kt_hidden_export_buttons" class="d-none"></div>
                 <!--end::Export buttons-->
-
             </div>
             <!--begin::Card title-->
 
@@ -113,22 +116,6 @@
                             </div>
                             <!--end::Input group-->
 
-                            @if (auth()->user()->hasRole('admin'))
-                                <!--begin::Input group-->
-                                <div class="mb-10">
-                                    <label class="form-label fs-6 fw-semibold">Branch:</label>
-                                    <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                        data-placeholder="Select option" data-allow-clear="true" data-hide-search="true">
-                                        <option></option>
-                                        @foreach ($branches as $branch)
-                                            <option value="{{ ucfirst($branch->branch_name) }}">
-                                                {{ ucfirst($branch->branch_name) }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <!--end::Input group-->
-                            @endif
-
                             <!--begin::Actions-->
                             <div class="d-flex justify-content-end">
                                 <button type="reset" class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
@@ -159,7 +146,8 @@
                                     clipboard</a>
                             </div>
                             <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3" data-row-export="excel">Export as Excel</a>
+                                <a href="#" class="menu-link px-3" data-row-export="excel">Export as
+                                    Excel</a>
                             </div>
                             <div class="menu-item px-3">
                                 <a href="#" class="menu-link px-3" data-row-export="csv">Export as CSV</a>
@@ -180,8 +168,6 @@
                             <i class="ki-outline ki-plus fs-2"></i>New Transaction</a>
                         <!--end::Add subscription-->
                     @endcan
-
-                    <!--end::Filter-->
                 </div>
                 <!--end::Toolbar-->
             </div>
@@ -191,122 +177,68 @@
 
         <!--begin::Card body-->
         <div class="card-body py-4">
-            <!--begin::Table-->
-            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table"
-                id="kt_transactions_table">
-                <thead>
-                    <tr class="fw-bold fs-7 text-uppercase gs-0">
-                        <th class="w-25px">SL</th>
-                        <th class="w-150px">Invoice No.</th>
-                        <th>Voucher No.</th>
-                        <th>Amount (Tk)</th>
-                        <th class="d-none">Payment Type (Filter)</th>
-                        <th>Payment Type</th>
-                        <th class="w-350px">Student</th>
-                        <th class="@if (!auth()->user()->hasRole('admin')) d-none @endif">Branch</th>
-                        <th>Payment Date</th>
-                        <th>Received By</th>
-                        <th class="not-export">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="text-gray-600 fw-semibold">
-                    @foreach ($transactions as $transaction)
-                        <tr>
-                            <td>{{ $loop->index + 1 }}</td>
-                            <td>
-                                <a href="{{ route('invoices.show', $transaction->paymentInvoice->id) }}">
-                                    {{ $transaction->paymentInvoice->invoice_number }}
-                                </a>
-                            </td>
-
-                            <td>{{ $transaction->voucher_no }}</td>
-                            <td>{{ $transaction->amount_paid }}</td>
-                            <td class="d-none">
-                                @if ($transaction->payment_type === 'partial')
-                                    T_partial
-                                @elseif ($transaction->payment_type === 'full')
-                                    T_full_paid
-                                @elseif ($transaction->payment_type === 'discounted')
-                                    T_discounted
-                                @endif
-                            </td>
-
-                            <td>
-                                @if ($transaction->payment_type === 'partial')
-                                    <span class="badge badge-warning rounded-pill">Partial</span>
-                                @elseif ($transaction->payment_type === 'full')
-                                    <span class="badge badge-success rounded-pill">Full Paid</span>
-                                @elseif ($transaction->payment_type === 'discounted')
-                                    <span class="badge badge-info rounded-pill">Discounted</span>
-                                @endif
-                            </td>
-
-                            <td>
-                                <a href="{{ route('students.show', $transaction->student->id) }}">
-                                    {{ $transaction->student->name }}, {{ $transaction->student->student_unique_id }}
-                                </a>
-                            </td>
-
-                            <td class="@if (!auth()->user()->hasRole('admin')) d-none @endif">
-                                @php
-                                    $branchName = $transaction->student->branch->branch_name;
-                                    $badgeColor = $branchColors[$branchName] ?? 'badge-light-secondary'; // Default color
-                                @endphp
-                                <span class="badge {{ $badgeColor }}">{{ $branchName }}</span>
-                            </td>
-
-
-                            <td>
-                                {{ $transaction->created_at->format('h:i:s A, d-M-Y') }}
-                            </td>
-
-                            <td>
-                                {{ $transaction->createdBy->name ?? 'System' }}
-                            </td>
-
-                            <td>
-                                @if ($transaction->is_approved === false)
-                                    @if ($canApproveTxn)
-                                        <a href="#" title="Approve Transaction"
-                                            class="btn btn-icon text-hover-success w-30px h-30px approve-txn me-2"
-                                            data-txn-id={{ $transaction->id }}>
-                                            <i class="bi bi-check-circle fs-2"></i>
-                                        </a>
-                                    @endif
-
-                                    @if ($canDeleteTxn)
-                                        <a href="#" title="Delete Transaction"
-                                            class="btn btn-icon text-hover-danger w-30px h-30px delete-txn"
-                                            data-txn-id={{ $transaction->id }}>
-                                            <i class="bi bi-trash fs-2"></i>
-                                        </a>
-                                    @endif
-
-                                    {{-- Showing a placeholder text for other users --}}
-                                    @if (!$canApproveTxn)
-                                        <span class="badge rounded-pill text-bg-secondary">Pending Approval</span>
-                                    @endif
-                                @else
-                                    @if ($canDownloadPayslip)
-                                        <a href="#" data-bs-toggle="tooltip" title="Download Statement"
-                                            class="btn btn-icon text-hover-primary w-30px h-30px download-statement"
-                                            data-student-id="{{ $transaction->student_id }}"
-                                            data-year="{{ $transaction->paymentInvoice->created_at->format('Y') }}">
-                                            <i class="bi bi-download fs-2"></i>
-                                        </a>
-                                    @endif
-                                @endif
-                            </td>
-                        </tr>
+            @if ($isAdmin)
+                <!--begin::Tabs for Admin-->
+                <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-5 fs-6" id="transactionBranchTabs" role="tablist">
+                    @foreach ($branches as $index => $branch)
+                        @php
+                            $branchTxnCount = isset($transactionsByBranch[$branch->id])
+                                ? $transactionsByBranch[$branch->id]->count()
+                                : 0;
+                            $tabBadgeColor = $badgeColors[$index % count($badgeColors)];
+                        @endphp
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link fw-bold {{ $index === 0 ? 'active' : '' }}"
+                                id="tab-txn-branch-{{ $branch->id }}" data-bs-toggle="tab"
+                                href="#kt_tab_txn_branch_{{ $branch->id }}" role="tab"
+                                aria-controls="kt_tab_txn_branch_{{ $branch->id }}"
+                                aria-selected="{{ $index === 0 ? 'true' : 'false' }}"
+                                data-branch-id="{{ $branch->id }}">
+                                <i class="ki-outline ki-bank fs-4 me-1"></i>
+                                {{ ucfirst($branch->branch_name) }}
+                                <span class="badge {{ $tabBadgeColor }} ms-2">{{ $branchTxnCount }}</span>
+                            </a>
+                        </li>
                     @endforeach
-                </tbody>
-            </table>
-            <!--end::Table-->
+                </ul>
+                <!--end::Tabs for Admin-->
+
+                <!--begin::Tab Content-->
+                <div class="tab-content" id="transactionBranchTabsContent">
+                    @foreach ($branches as $index => $branch)
+                        <div class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}"
+                            id="kt_tab_txn_branch_{{ $branch->id }}" role="tabpanel"
+                            aria-labelledby="tab-txn-branch-{{ $branch->id }}">
+                            @include('transactions.partials.transactions-table', [
+                                'transactions' => $transactionsByBranch[$branch->id] ?? collect(),
+                                'tableId' => 'kt_transactions_table_branch_' . $branch->id,
+                                'branchColors' => $branchColors,
+                                'showBranchColumn' => false,
+                                'canApproveTxn' => $canApproveTxn,
+                                'canDeleteTxn' => $canDeleteTxn,
+                                'canDownloadPayslip' => $canDownloadPayslip,
+                            ])
+                        </div>
+                    @endforeach
+                </div>
+                <!--end::Tab Content-->
+            @else
+                <!--begin::Single Table for Non-Admin-->
+                @include('transactions.partials.transactions-table', [
+                    'transactions' => $transactions,
+                    'tableId' => 'kt_transactions_table',
+                    'branchColors' => $branchColors,
+                    'showBranchColumn' => false,
+                    'canApproveTxn' => $canApproveTxn,
+                    'canDeleteTxn' => $canDeleteTxn,
+                    'canDownloadPayslip' => $canDownloadPayslip,
+                ])
+                <!--end::Single Table for Non-Admin-->
+            @endif
         </div>
         <!--end::Card body-->
     </div>
     <!--end::Card-->
-
 
 
     <!--begin::Modal - Add Transaction-->
@@ -329,24 +261,50 @@
                     <!--end::Close-->
                 </div>
                 <!--end::Modal header-->
+
                 <!--begin::Modal body-->
                 <div class="modal-body px-5 my-7">
                     <!--begin::Form-->
                     <form id="kt_modal_add_transaction_form" class="form" action="{{ route('transactions.store') }}"
                         method="POST">
                         @csrf
+
                         <!--begin::Scroll-->
                         <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_add_transaction_scroll"
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_transaction_header"
                             data-kt-scroll-wrappers="#kt_modal_add_transaction_scroll" data-kt-scroll-offset="300px">
 
+                            @if ($isAdmin)
+                                <!--begin::Branch Select for Admin-->
+                                <div class="fv-row mb-7">
+                                    <label class="required fw-semibold fs-6 mb-2">Select Branch</label>
+                                    <div class="input-group input-group-solid flex-nowrap">
+                                        <span class="input-group-text">
+                                            <i class="ki-outline ki-bank fs-3"></i>
+                                        </span>
+                                        <div class="overflow-hidden flex-grow-1">
+                                            <select name="transaction_branch"
+                                                class="form-select form-select-solid rounded-start-0 border-start"
+                                                data-control="select2" data-dropdown-parent="#kt_modal_add_transaction"
+                                                data-placeholder="Select a branch" id="transaction_branch_select">
+                                                <option></option>
+                                                @foreach ($branches as $branch)
+                                                    <option value="{{ $branch->id }}">
+                                                        {{ ucfirst($branch->branch_name) }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--end::Branch Select for Admin-->
+                            @endif
+
                             <!--begin::Name Input group-->
                             <div class="fv-row mb-7">
                                 <!--begin::Label-->
                                 <label class="required fw-semibold fs-6 mb-2">Select Student</label>
                                 <!--end::Label-->
-
                                 <!--begin::Solid input group style-->
                                 <div class="input-group input-group-solid flex-nowrap">
                                     <span class="input-group-text">
@@ -358,11 +316,13 @@
                                             data-control="select2" data-dropdown-parent="#kt_modal_add_transaction"
                                             data-placeholder="Select a student" id="transaction_student_select">
                                             <option></option>
-                                            @foreach ($students as $student)
-                                                <option value="{{ $student->id }}">{{ $student->name }}
-                                                    ({{ $student->student_unique_id }})
-                                                </option>
-                                            @endforeach
+                                            @if (!$isAdmin)
+                                                @foreach ($students as $student)
+                                                    <option value="{{ $student->id }}">{{ $student->name }}
+                                                        ({{ $student->student_unique_id }})
+                                                    </option>
+                                                @endforeach
+                                            @endif
                                         </select>
                                     </div>
                                 </div>
@@ -375,7 +335,6 @@
                                 <!--begin::Label-->
                                 <label class="required fw-semibold fs-6 mb-2">Invoice Number</label>
                                 <!--end::Label-->
-
                                 <!--begin::Solid input group style-->
                                 <div class="input-group input-group-solid flex-nowrap">
                                     <span class="input-group-text">
@@ -419,7 +378,6 @@
                                         <!--end::Option-->
                                     </div>
                                     <!--end::Col-->
-
                                     <!--begin::Col-->
                                     <div class="col-lg-4">
                                         <!--begin::Option-->
@@ -439,7 +397,6 @@
                                         <!--end::Option-->
                                     </div>
                                     <!--end::Col-->
-
                                     <!--begin::Col-->
                                     <div class="col-lg-4">
                                         <!--begin::Option-->
@@ -479,7 +436,6 @@
                                     </div>
                                     <!--end::Name Input group-->
                                 </div>
-
                                 <div class="col-lg-6">
                                     <!--begin::Name Input group-->
                                     <div class="fv-row">
@@ -496,6 +452,7 @@
                                     <!--end::Name Input group-->
                                 </div>
                             </div>
+
                         </div>
                         <!--end::Scroll-->
 
@@ -522,7 +479,6 @@
     <!--end::Modal - Add Transaction-->
 @endsection
 
-
 @push('vendor-js')
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
 @endpush
@@ -533,6 +489,9 @@
         const routeApproveTxn = "{{ route('transactions.approve', ':id') }}";
         const routeDownloadStatement = "{{ route('student.statement.download') }}";
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+        const isAdmin = @json($isAdmin);
+        const branchIds = @json($branches->pluck('id')->toArray());
+        const studentsByBranch = @json($isAdmin ? $studentsByBranch : []);
     </script>
 
     <script src="{{ asset('js/transactions/index.js') }}"></script>

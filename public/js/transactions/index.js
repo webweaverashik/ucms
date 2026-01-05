@@ -2,48 +2,137 @@
 
 var KTAllTransactionsList = function () {
       // Define shared variables
-      var table;
-      var datatable;
+      var datatables = {};
+      var activeDatatable = null;
+      var initializedTabs = {};
 
-      // Private functions
-      var initDatatable = function () {
-            // Init datatable --- more info on datatables: https://datatables.net/manual/
-            datatable = $(table).DataTable({
+      // Get DataTable config based on whether branch column is shown
+      var getDataTableConfig = function (showBranchColumn) {
+            var config = {
                   "info": true,
                   'order': [],
                   "lengthMenu": [10, 25, 50, 100],
                   "pageLength": 10,
                   "lengthChange": true,
                   "autoWidth": false,
-                  'columnDefs': [
-                        { orderable: false, targets: 10 },
-                  ]
-            });
+                  'columnDefs': []
+            };
+
+            // Adjust action column index based on branch column visibility
+            if (showBranchColumn) {
+                  config.columnDefs.push({ orderable: false, targets: 10 }); // Actions column with branch
+            } else {
+                  config.columnDefs.push({ orderable: false, targets: 9 }); // Actions column without branch
+            }
+
+            return config;
+      };
+
+      // Initialize a single datatable
+      var initSingleDatatable = function (tableId, showBranchColumn) {
+            var table = document.getElementById(tableId);
+            if (!table) {
+                  return null;
+            }
+
+            var config = getDataTableConfig(showBranchColumn);
+            var datatable = $(table).DataTable(config);
 
             // Re-init functions on every table re-draw
             datatable.on('draw', function () {
-
+                  KTMenu.init();
             });
-      }
 
-      // Reload datatable via AJAX
-      var reloadDatatable = function () {
-            if (datatable) {
-                  // Reload the page to get fresh data since we're using server-side blade rendering
-                  location.reload();
-            }
-      }
-
-      // Get datatable instance
-      var getDatatable = function () {
             return datatable;
-      }
+      };
+
+      // Initialize datatables for admin (multiple tabs)
+      var initAdminDatatables = function () {
+            // Initialize the first branch tab (it's active by default)
+            if (branchIds && branchIds.length > 0) {
+                  var firstBranchId = branchIds[0];
+                  var firstTableId = 'kt_transactions_table_branch_' + firstBranchId;
+                  var firstBranchTable = document.getElementById(firstTableId);
+
+                  if (firstBranchTable) {
+                        datatables[firstBranchId] = initSingleDatatable(firstTableId, false);
+                        activeDatatable = datatables[firstBranchId];
+                        initializedTabs[firstBranchId] = true;
+                  }
+            }
+
+            // Setup tab change event listener for lazy loading
+            var tabLinks = document.querySelectorAll('#transactionBranchTabs a[data-bs-toggle="tab"]');
+            tabLinks.forEach(function (tabLink) {
+                  tabLink.addEventListener('shown.bs.tab', function (event) {
+                        var branchId = event.target.getAttribute('data-branch-id');
+                        var tableId = 'kt_transactions_table_branch_' + branchId;
+
+                        // Initialize datatable for this tab if not already done
+                        if (!initializedTabs[branchId]) {
+                              datatables[branchId] = initSingleDatatable(tableId, false);
+                              initializedTabs[branchId] = true;
+                        }
+
+                        // Set active datatable
+                        activeDatatable = datatables[branchId];
+
+                        // Adjust columns for responsive display
+                        if (activeDatatable) {
+                              activeDatatable.columns.adjust().draw(false);
+                        }
+
+                        // Reinitialize export buttons for the active table
+                        updateExportButtons();
+                  });
+            });
+      };
+
+      // Initialize datatable for non-admin (single table)
+      var initNonAdminDatatable = function () {
+            var table = document.getElementById('kt_transactions_table');
+            if (!table) {
+                  return;
+            }
+
+            datatables['single'] = initSingleDatatable('kt_transactions_table', false);
+            activeDatatable = datatables['single'];
+      };
 
       // Hook export buttons
-      var exportButtons = () => {
+      var exportButtons = function () {
+            updateExportButtons();
+
+            // Hook dropdown export actions
+            const exportItems = document.querySelectorAll('#kt_table_report_dropdown_menu [data-row-export]');
+            exportItems.forEach(exportItem => {
+                  exportItem.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const exportValue = this.getAttribute('data-row-export');
+                        const target = document.querySelector('.buttons-' + exportValue);
+                        if (target) {
+                              target.click();
+                        } else {
+                              console.warn('Export button not found:', exportValue);
+                        }
+                  });
+            });
+      };
+
+      // Update export buttons for the active datatable
+      var updateExportButtons = function () {
+            if (!activeDatatable) return;
+
             const documentTitle = 'Transactions Report';
 
-            var buttons = new $.fn.dataTable.Buttons(datatable, {
+            // Clear existing buttons
+            var hiddenContainer = document.getElementById('kt_hidden_export_buttons');
+            if (hiddenContainer) {
+                  hiddenContainer.innerHTML = '';
+            }
+
+            // Create new buttons for the active datatable
+            new $.fn.dataTable.Buttons(activeDatatable, {
                   buttons: [
                         {
                               extend: 'copyHtml5',
@@ -83,37 +172,26 @@ var KTAllTransactionsList = function () {
                               customize: function (doc) {
                                     doc.pageMargins = [20, 20, 20, 40];
                                     doc.defaultStyle.fontSize = 10;
-                                    doc.footer = getPdfFooterWithPrintTime();
+                                    if (typeof getPdfFooterWithPrintTime === 'function') {
+                                          doc.footer = getPdfFooterWithPrintTime();
+                                    }
                               }
                         }
                   ]
             }).container().appendTo('#kt_hidden_export_buttons');
-
-            // Hook dropdown export actions
-            const exportItems = document.querySelectorAll('#kt_table_report_dropdown_menu [data-row-export]');
-            exportItems.forEach(exportItem => {
-                  exportItem.addEventListener('click', function (e) {
-                        e.preventDefault();
-                        const exportValue = this.getAttribute('data-row-export');
-                        const target = document.querySelector('.buttons-' + exportValue);
-                        if (target) {
-                              target.click();
-                        } else {
-                              console.warn('Export button not found:', exportValue);
-                        }
-                  });
-            });
       };
 
       // Search Datatable
       var handleSearch = function () {
             const filterSearch = document.querySelector('[data-transaction-table-filter="search"]');
-            if (filterSearch) {
-                  filterSearch.addEventListener('keyup', function (e) {
-                        datatable.search(e.target.value).draw();
-                  });
-            }
-      }
+            if (!filterSearch) return;
+
+            filterSearch.addEventListener('keyup', function (e) {
+                  if (activeDatatable) {
+                        activeDatatable.search(e.target.value).draw();
+                  }
+            });
+      };
 
       // Filter Datatable
       var handleFilter = function () {
@@ -124,6 +202,7 @@ var KTAllTransactionsList = function () {
             const resetButton = filterForm.querySelector('[data-transaction-table-filter="reset"]');
             const selectOptions = filterForm.querySelectorAll('select');
 
+            // Filter datatable on submit
             if (filterButton) {
                   filterButton.addEventListener('click', function () {
                         var filterString = '';
@@ -137,19 +216,25 @@ var KTAllTransactionsList = function () {
                               }
                         });
 
-                        datatable.search(filterString).draw();
+                        if (activeDatatable) {
+                              activeDatatable.search(filterString).draw();
+                        }
                   });
             }
 
+            // Reset datatable
             if (resetButton) {
                   resetButton.addEventListener('click', function () {
-                        selectOptions.forEach((item, index) => {
+                        selectOptions.forEach((item) => {
                               $(item).val(null).trigger('change');
                         });
-                        datatable.search('').draw();
+
+                        if (activeDatatable) {
+                              activeDatatable.search('').draw();
+                        }
                   });
             }
-      }
+      };
 
       // Delete Transaction
       const handleDeletion = function () {
@@ -160,8 +245,6 @@ var KTAllTransactionsList = function () {
                   e.preventDefault();
 
                   let txnId = deleteBtn.getAttribute('data-txn-id');
-                  console.log('TXN ID:', txnId);
-
                   let url = routeDeleteTxn.replace(':id', txnId);
 
                   Swal.fire({
@@ -179,7 +262,7 @@ var KTAllTransactionsList = function () {
                                     method: "DELETE",
                                     headers: {
                                           "Content-Type": "application/json",
-                                          "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                                          "X-CSRF-TOKEN": csrfToken,
                                     },
                               })
                                     .then(response => response.json())
@@ -208,58 +291,58 @@ var KTAllTransactionsList = function () {
 
       // Transaction approval AJAX
       const handleApproval = function () {
-            document.querySelectorAll('.approve-txn').forEach(item => {
-                  item.addEventListener('click', function (e) {
-                        e.preventDefault();
+            document.addEventListener('click', function (e) {
+                  const approveBtn = e.target.closest('.approve-txn');
+                  if (!approveBtn) return;
 
-                        let txnId = this.getAttribute('data-txn-id');
-                        console.log("TXN ID: ", txnId);
+                  e.preventDefault();
 
-                        Swal.fire({
-                              title: 'Are you sure?',
-                              text: "Do you want to approve this transaction?",
-                              icon: 'warning',
-                              showCancelButton: true,
-                              confirmButtonColor: '#3085d6',
-                              cancelButtonColor: '#d33',
-                              confirmButtonText: 'Yes, approve!'
-                        }).then((result) => {
-                              if (result.isConfirmed) {
-                                    fetch(`/transactions/${txnId}/approve`, {
-                                          method: "POST",
-                                          headers: {
-                                                "Content-Type": "application/json",
-                                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                                          }
-                                    })
-                                          .then(response => response.json())
-                                          .then(data => {
-                                                if (data.success) {
-                                                      Swal.fire({
-                                                            title: "Approved!",
-                                                            text: "Transaction approved successfully.",
-                                                            icon: "success",
-                                                      }).then(() => {
-                                                            location.reload();
-                                                      });
-                                                } else {
-                                                      Swal.fire({
-                                                            title: "Error!",
-                                                            text: data.message,
-                                                            icon: "warning",
-                                                      });
-                                                }
-                                          })
-                                          .catch(error => {
-                                                console.error("Fetch Error:", error);
+                  let txnId = approveBtn.getAttribute('data-txn-id');
+
+                  Swal.fire({
+                        title: 'Are you sure?',
+                        text: "Do you want to approve this transaction?",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, approve!'
+                  }).then((result) => {
+                        if (result.isConfirmed) {
+                              fetch(`/transactions/${txnId}/approve`, {
+                                    method: "POST",
+                                    headers: {
+                                          "Content-Type": "application/json",
+                                          "X-CSRF-TOKEN": csrfToken,
+                                    }
+                              })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                          if (data.success) {
+                                                Swal.fire({
+                                                      title: "Approved!",
+                                                      text: "Transaction approved successfully.",
+                                                      icon: "success",
+                                                }).then(() => {
+                                                      location.reload();
+                                                });
+                                          } else {
                                                 Swal.fire({
                                                       title: "Error!",
-                                                      text: "Something went wrong. Please try again.",
-                                                      icon: "error",
+                                                      text: data.message,
+                                                      icon: "warning",
                                                 });
+                                          }
+                                    })
+                                    .catch(error => {
+                                          console.error("Fetch Error:", error);
+                                          Swal.fire({
+                                                title: "Error!",
+                                                text: "Something went wrong. Please try again.",
+                                                icon: "error",
                                           });
-                              }
-                        });
+                                    });
+                        }
                   });
             });
       };
@@ -303,7 +386,6 @@ var KTAllTransactionsList = function () {
                   })
                         .then(response => {
                               if (!response.ok) {
-                                    // Try to parse error message from response
                                     return response.text().then(text => {
                                           throw new Error(text || 'Server error occurred');
                                     });
@@ -313,16 +395,12 @@ var KTAllTransactionsList = function () {
                         .then(html => {
                               // Create a new window with the HTML content
                               const printWindow = window.open("", "_blank", "width=900,height=700,scrollbars=yes,resizable=yes");
-
                               if (printWindow) {
                                     printWindow.document.open();
                                     printWindow.document.write(html);
                                     printWindow.document.close();
-
-                                    // Focus on the new window
                                     printWindow.focus();
                               } else {
-                                    // Popup blocked
                                     Swal.fire({
                                           title: 'Popup Blocked!',
                                           text: 'Please allow popups for this website to view the statement.',
@@ -337,7 +415,6 @@ var KTAllTransactionsList = function () {
                         .catch(error => {
                               console.error("Statement Download Error:", error);
 
-                              // Check if the error message indicates no transactions
                               const errorMessage = error.message.toLowerCase();
                               if (errorMessage.includes('no transactions')) {
                                     Swal.fire({
@@ -362,13 +439,13 @@ var KTAllTransactionsList = function () {
 
       return {
             init: function () {
-                  table = document.getElementById('kt_transactions_table');
-
-                  if (!table) {
-                        return;
+                  // Check if admin or non-admin based on the presence of tabs
+                  if (typeof isAdmin !== 'undefined' && isAdmin) {
+                        initAdminDatatables();
+                  } else {
+                        initNonAdminDatatable();
                   }
 
-                  initDatatable();
                   exportButtons();
                   handleSearch();
                   handleFilter();
@@ -376,8 +453,9 @@ var KTAllTransactionsList = function () {
                   handleApproval();
                   handleStatementDownload();
             },
-            reload: reloadDatatable,
-            getDatatable: getDatatable
+            getActiveDatatable: function () {
+                  return activeDatatable;
+            }
       }
 }();
 
@@ -395,6 +473,7 @@ var KTAddTransaction = function () {
 
       const form = element.querySelector('#kt_modal_add_transaction_form');
       const modal = bootstrap.Modal.getOrCreateInstance(element);
+      const branchSelect = document.getElementById('transaction_branch_select');
       const studentSelect = document.getElementById('transaction_student_select');
       const invoiceSelect = document.getElementById('student_due_invoice_select');
       const amountInput = document.getElementById('transaction_amount_input');
@@ -411,7 +490,6 @@ var KTAddTransaction = function () {
 
             const [monthStr, year] = raw.split('_');
             const month = parseInt(monthStr, 10);
-
             const monthNames = [
                   'January', 'February', 'March', 'April', 'May', 'June',
                   'July', 'August', 'September', 'October', 'November', 'December'
@@ -424,10 +502,41 @@ var KTAddTransaction = function () {
             return raw;
       }
 
+      // Handle branch select (for admin)
+      var handleBranchSelect = function () {
+            if (!branchSelect) return;
+
+            $(branchSelect).on('change', function () {
+                  const branchId = $(this).val();
+                  const $studentSelect = $(studentSelect);
+
+                  // Clear student select
+                  $studentSelect.empty().append('<option value="">Select a student</option>');
+
+                  // Clear invoice select
+                  $(invoiceSelect).empty().append('<option value="">Select Due Invoice</option>');
+
+                  // Reset amount input
+                  $(amountInput).val('').prop('disabled', true);
+
+                  if (!branchId) return;
+
+                  // Populate students for selected branch
+                  if (typeof studentsByBranch !== 'undefined' && studentsByBranch[branchId]) {
+                        studentsByBranch[branchId].forEach(student => {
+                              $studentSelect.append(
+                                    `<option value="${student.id}">${student.name} (${student.student_unique_id})</option>`
+                              );
+                        });
+                  }
+            });
+      }
+
       // Fetch invoices on student select
       var handleStudentSelect = function () {
             $(studentSelect).on('change', function () {
                   const studentId = $(this).val();
+
                   if (!studentId) return;
 
                   $.ajax({
@@ -435,6 +544,7 @@ var KTAddTransaction = function () {
                         method: 'GET',
                         success: function (response) {
                               invoices = response;
+
                               const $invoiceSelect = $(invoiceSelect);
                               $invoiceSelect.empty().append(`<option value="">Select Due Invoice</option>`);
 
@@ -444,7 +554,6 @@ var KTAddTransaction = function () {
                                     response.forEach(invoice => {
                                           const total = Number(invoice.total_amount).toLocaleString('en-BD');
                                           const due = Number(invoice.amount_due).toLocaleString('en-BD');
-
                                           const label = invoice.month_year
                                                 ? formatMonthYear(invoice.month_year)
                                                 : (invoice.invoice_type || 'Unknown');
@@ -461,6 +570,7 @@ var KTAddTransaction = function () {
                                     .val('')
                                     .prop('disabled', true)
                                     .removeClass('is-invalid');
+
                               $('#transaction_amount_error').remove();
                               $('input[name="transaction_type"]').prop('disabled', false);
                         },
@@ -479,6 +589,7 @@ var KTAddTransaction = function () {
 
                   if (invoice) {
                         const $amountInput = $(amountInput);
+
                         $amountInput
                               .val(invoice.amount_due)
                               .prop('disabled', false)
@@ -552,7 +663,6 @@ var KTAddTransaction = function () {
                         !isPartiallyPaidInvoice &&
                         amount >= maxAmount
                   ) {
-                        // For fresh invoices, partial/discounted must be less than max
                         isValid = false;
                         errorMessage = `For ${paymentType} payment, amount must be less than the due amount of ৳${maxAmount}`;
                   } else if (
@@ -560,7 +670,6 @@ var KTAddTransaction = function () {
                         isPartiallyPaidInvoice &&
                         amount > maxAmount
                   ) {
-                        // For partially paid invoices, allow equal to or less than remaining amount
                         isValid = false;
                         errorMessage = `Amount must be less than or equal to the due amount of ৳${maxAmount}`;
                   } else if (paymentType === 'full' && amount != maxAmount) {
@@ -617,7 +726,6 @@ var KTAddTransaction = function () {
 
                   // Get submit button and show loading state
                   const submitBtn = form.querySelector('[data-kt-add-transaction-modal-action="submit"]');
-                  const originalBtnText = submitBtn.innerHTML;
                   submitBtn.setAttribute('data-kt-indicator', 'on');
                   submitBtn.disabled = true;
 
@@ -642,19 +750,14 @@ var KTAddTransaction = function () {
                         })
                         .then(data => {
                               if (data.success) {
-                                    // Show success message
                                     toastr.success(data.message || 'Transaction recorded successfully.');
 
-                                    // Store transaction data for download
                                     const transactionData = data.transaction;
 
-                                    // Reset form and close modal
                                     resetForm();
                                     modal.hide();
 
-                                    // Check if transaction is approved (non-discounted)
                                     if (transactionData && transactionData.is_approved) {
-                                          // Show confirmation to download statement
                                           Swal.fire({
                                                 title: 'Transaction Successful!',
                                                 text: 'Do you want to download the payment statement?',
@@ -666,15 +769,12 @@ var KTAddTransaction = function () {
                                                 cancelButtonText: 'No, just reload'
                                           }).then((result) => {
                                                 if (result.isConfirmed) {
-                                                      // Download statement then reload
                                                       downloadStatementAndReload(transactionData.student_id, transactionData.year);
                                                 } else {
-                                                      // Just reload the page
                                                       location.reload();
                                                 }
                                           });
                                     } else {
-                                          // For discounted transactions (pending approval), just reload
                                           Swal.fire({
                                                 title: 'Transaction Recorded!',
                                                 text: 'This transaction requires approval before the statement can be downloaded.',
@@ -686,7 +786,6 @@ var KTAddTransaction = function () {
                                     }
                               } else {
                                     toastr.error(data.message || 'Failed to record transaction.');
-                                    // Reset button state
                                     submitBtn.removeAttribute('data-kt-indicator');
                                     submitBtn.disabled = false;
                               }
@@ -695,16 +794,15 @@ var KTAddTransaction = function () {
                               console.error('Transaction Error:', error);
 
                               let errorMessage = 'An error occurred. Please try again.';
+
                               if (error.message) {
                                     errorMessage = error.message;
                               } else if (error.errors) {
-                                    // Laravel validation errors
                                     errorMessage = Object.values(error.errors).flat().join('\n');
                               }
 
                               toastr.error(errorMessage);
 
-                              // Reset button state
                               submitBtn.removeAttribute('data-kt-indicator');
                               submitBtn.disabled = false;
                         });
@@ -733,9 +831,7 @@ var KTAddTransaction = function () {
                         return response.text();
                   })
                   .then(html => {
-                        // Open statement in new window
                         const printWindow = window.open('', '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes');
-
                         if (printWindow) {
                               printWindow.document.open();
                               printWindow.document.write(html);
@@ -749,7 +845,6 @@ var KTAddTransaction = function () {
                               });
                         }
 
-                        // Reload the page after opening statement
                         location.reload();
                   })
                   .catch(error => {
@@ -762,6 +857,10 @@ var KTAddTransaction = function () {
       // Reset form and close modal
       var resetForm = function () {
             if (form) form.reset();
+
+            if (branchSelect && $(branchSelect).data('select2')) {
+                  $(branchSelect).val(null).trigger('change');
+            }
 
             if (studentSelect && $(studentSelect).data('select2')) {
                   $(studentSelect).val(null).trigger('change');
@@ -786,7 +885,6 @@ var KTAddTransaction = function () {
 
       // Handle modal close actions
       var handleCloseModal = function () {
-            // Cancel button handler
             const cancelButton = element.querySelector('[data-kt-add-transaction-modal-action="cancel"]');
             if (cancelButton) {
                   cancelButton.addEventListener('click', function (e) {
@@ -796,7 +894,6 @@ var KTAddTransaction = function () {
                   });
             }
 
-            // Close button handler
             const closeButton = element.querySelector('[data-kt-add-transaction-modal-action="close"]');
             if (closeButton) {
                   closeButton.addEventListener('click', function (e) {
@@ -809,6 +906,7 @@ var KTAddTransaction = function () {
 
       return {
             init: function () {
+                  handleBranchSelect();
                   handleStudentSelect();
                   handleInvoiceSelect();
                   handlePaymentTypeChange();
