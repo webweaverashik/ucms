@@ -236,7 +236,7 @@
                                             </a>
                                         @endif
 
-                                        @if ($canDeleteClass && $classname->students_count === 0)
+                                        @if ($canDeleteClass && $classname->students_count == 0)
                                             <a href="#" title="Delete Class"
                                                 data-active-class-id="{{ $classname->id }}"
                                                 class="btn btn-icon text-hover-danger w-30px h-30px class-delete-button">
