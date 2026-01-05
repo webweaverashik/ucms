@@ -10,20 +10,16 @@ class SubjectSeeder extends Seeder
     public function run(): void
     {
         $subjectsByClassName = [
-            'Class IV'        => $this->getJuniorSubjects(),
-            'Class V'         => $this->getJuniorSubjects(),
-            'Class VI'        => $this->getMiddleSchoolSubjects(),
-            'Class VII'       => $this->getMiddleSchoolSubjects(),
-            'Class VIII'      => $this->getMiddleSchoolSubjects(),
-            'Class IX'        => $this->getSSCSubjects(),
-            'SSC (25-26)'     => $this->getSSCSubjects(),
-            'SSC (24-25)'     => $this->getSSCSubjects(),
-            'HSC (26-27) Sci' => $this->getHSCScienceSubjects(),
-            'HSC (26-27) Com' => $this->getHSCCommerceSubjects(),
-            'HSC (25-26) Sci' => $this->getHSCScienceSubjects(),
-            'HSC (25-26) Com' => $this->getHSCCommerceSubjects(),
-            'HSC (24-25) Sci' => $this->getHSCScienceSubjects(),
-            'HSC (24-25) Com' => $this->getHSCCommerceSubjects(),
+            'Class 04'               => $this->getJuniorSubjects(),
+            'Class 05'               => $this->getJuniorSubjects(),
+            'Class 06'               => $this->getMiddleSchoolSubjects(),
+            'Class 07'               => $this->getMiddleSchoolSubjects(),
+            'Class 08'               => $this->getMiddleSchoolSubjects(),
+            'Class 09'               => $this->getSSCSubjects(),
+            'SSC (25-26)'            => $this->getSSCSubjects(),
+            'Model Test (SSC 25-26)' => $this->getSSCSubjects(),
+            'HSC (26-27)'            => $this->getHSCSubjects(),
+            'HSC (25-26)'            => $this->getHSCSubjects(),
         ];
 
         foreach ($subjectsByClassName as $className => $subjects) {
@@ -105,31 +101,34 @@ class SubjectSeeder extends Seeder
         ];
     }
 
-    private function getHSCScienceSubjects(): array
+    private function getHSCSubjects(): array
     {
         return [
+            // ======================
+            // General (Common)
+            // ======================
             ['name' => 'Bangla', 'group' => 'General', 'type' => 'compulsory'],
             ['name' => 'English', 'group' => 'General', 'type' => 'compulsory'],
             ['name' => 'ICT', 'group' => 'General', 'type' => 'compulsory'],
+
+            // ======================
+            // Science Group
+            // ======================
             ['name' => 'Physics', 'group' => 'Science', 'type' => 'compulsory'],
             ['name' => 'Chemistry', 'group' => 'Science', 'type' => 'compulsory'],
             ['name' => 'Biology', 'group' => 'Science', 'type' => 'optional'],
             ['name' => 'Higher Math', 'group' => 'Science', 'type' => 'optional'],
-        ];
-    }
 
-    private function getHSCCommerceSubjects(): array
-    {
-        return [
-            ['name' => 'Bangla', 'group' => 'General', 'type' => 'compulsory'],
-            ['name' => 'English', 'group' => 'General', 'type' => 'compulsory'],
-            ['name' => 'ICT', 'group' => 'General', 'type' => 'compulsory'],
+            // ======================
+            // Commerce Group
+            // ======================
             ['name' => 'Accounting', 'group' => 'Commerce', 'type' => 'compulsory'],
-            ['name' => 'Business Management', 'group' => 'Commerce', 'type' => 'compulsory'],
-            ['name' => 'Finance & Banking', 'group' => 'Commerce', 'type' => 'optional'],
-            ['name' => 'Production Marketing', 'group' => 'Commerce', 'type' => 'optional'],
+            ['name' => 'Business Organisation & Management', 'group' => 'Commerce', 'type' => 'compulsory'],
+            ['name' => 'Finance, Banking & Insurance', 'group' => 'Commerce', 'type' => 'optional'],
+            ['name' => 'Production Management & Marketing', 'group' => 'Commerce', 'type' => 'optional'],
             ['name' => 'Economics', 'group' => 'Commerce', 'type' => 'optional'],
             ['name' => 'Statistics', 'group' => 'Commerce', 'type' => 'optional'],
         ];
     }
+
 }
