@@ -184,7 +184,7 @@
             <form class="card-body py-20 w-100 px-9" novalidate="novalidate" enctype="multipart/form-data"
                 id="kt_create_student_form">
                 <!--begin::Step 1-->
-                <div data-kt-stepper-element="content" class="current">
+                <div data-kt-stepper-element="content">
                     <!--begin::Wrapper-->
                     <div class="w-100">
                         <!--begin::Heading-->
@@ -816,7 +816,7 @@
                 <!--end::Step 3-->
 
                 <!--begin::Step 4-->
-                <div data-kt-stepper-element="content">
+                <div data-kt-stepper-element="content" class="current">
                     <!--begin::Wrapper-->
                     <div class="w-100">
                         <!--begin::Heading-->
@@ -899,7 +899,13 @@
                                 <!--begin::Input group-->
                                 <div class="mb-7 fv-row">
                                     <!--begin::Label-->
-                                    <label class="required fw-semibold fs-6 mb-2">Admission Fee</label>
+                                    <label class="required fw-semibold fs-6 mb-2">Admission Fee
+                                        <span class="ms-1" data-bs-toggle="tooltip"
+                                            title="Set any amount for admission fee. Set 0 for no admission fee.">
+                                            <i class="ki-outline ki-information-5 text-gray-500 fs-6">
+                                            </i>
+                                        </span>
+                                    </label>
                                     <!--end::Label-->
                                     <!--begin::Input-->
                                     <input type="number" class="form-control form-control-solid"
@@ -914,7 +920,13 @@
                                 <!--begin::Input group-->
                                 <div class="mb-7 fv-row">
                                     <!--begin::Label-->
-                                    <label class="required fw-semibold fs-6 mb-2">Tuition Fee</label>
+                                    <label class="required fw-semibold fs-6 mb-2">Tuition Fee
+                                        <span class="ms-1" data-bs-toggle="tooltip"
+                                            title="Set any amount. Set 0 for FREE students.">
+                                            <i class="ki-outline ki-information-5 text-gray-500 fs-6">
+                                            </i>
+                                        </span>
+                                    </label>
                                     <!--end::Label-->
                                     <!--begin::Input-->
                                     <input type="number" class="form-control form-control-solid"
