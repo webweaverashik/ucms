@@ -109,6 +109,7 @@ class InstitutionSeeder extends Seeder
             ['name' => 'Future Commerce College', 'type' => 'college'],
             ['name' => 'Notre Dame College', 'type' => 'college'],
             ['name' => 'Habibullah Bahar university College', 'type' => 'college'],
+            ['name' => 'Nazmul hauqe Kamil Madrasha', 'type' => 'college'],
         ];
 
         foreach ($institutions as $institution) {
