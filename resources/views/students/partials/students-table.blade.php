@@ -9,6 +9,7 @@
             <th class="d-none">Active/Inactive (filter)</th>
             <th class="d-none">Class (filter)</th>
             <th>Class</th>
+            <th>Group</th>
             <th class="d-none">Batch (Filter)</th>
             <th>Batch</th>
             <th class="w-300px">Institution</th>
@@ -52,6 +53,16 @@
                 </td>
                 <td class="d-none">{{ $student->class_id }}_{{ $student->class->class_numeral }}_ucms</td>
                 <td>{{ $student->class->name }}</td>
+                <td class="d-none">{{ $student->branch_id }}_{{ $student->academic_group }}</td>
+                <td>
+                    @if ($student->academic_group == 'Science')
+                        <span class="badge badge-pill badge-info">{{ $student->academic_group }}</span>
+                    @elseif ($student->academic_group == 'Commerce')
+                        <span class="badge badge-pill badge-success">{{ $student->academic_group }}</span>
+                    @else
+                        <span class="text-muted">-</span>
+                    @endif
+                </td>
                 <td class="d-none">
                     {{ $student->batch_id }}_{{ $student->batch->name }}_{{ $student->branch->branch_name }}
                 </td>

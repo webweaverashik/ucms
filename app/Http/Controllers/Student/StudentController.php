@@ -47,16 +47,7 @@ class StudentController extends Controller
                 $cacheKey = 'students_list_branch_' . $branch->id;
 
                 $studentsByBranch[$branch->id] = Cache::remember($cacheKey, now()->addHours(1), function () use ($branch) {
-                    return Student::with([
-                        'class:id,name,class_numeral',
-                        'branch:id,branch_name,branch_prefix',
-                        'batch:id,name',
-                        'institution:id,name,eiin_number',
-                        'studentActivation:id,active_status',
-                        'guardians:id,name,relationship,student_id',
-                        'mobileNumbers:id,mobile_number,number_type,student_id',
-                        'payments:id,payment_style,due_date,tuition_fee,student_id',
-                    ])
+                    return Student::with(['class:id,name,class_numeral', 'branch:id,branch_name,branch_prefix', 'batch:id,name', 'institution:id,name,eiin_number', 'studentActivation:id,active_status', 'guardians:id,name,relationship,student_id', 'mobileNumbers:id,mobile_number,number_type,student_id', 'payments:id,payment_style,due_date,tuition_fee,student_id'])
                         ->whereNotNull('student_activation_id')
                         ->where('branch_id', $branch->id)
                         ->whereHas('class', function ($query) {
@@ -74,16 +65,7 @@ class StudentController extends Controller
             $cacheKey = 'students_list_branch_' . $branchId;
 
             $students = Cache::remember($cacheKey, now()->addHours(1), function () use ($branchId) {
-                return Student::with([
-                    'class:id,name,class_numeral',
-                    'branch:id,branch_name,branch_prefix',
-                    'batch:id,name',
-                    'institution:id,name,eiin_number',
-                    'studentActivation:id,active_status',
-                    'guardians:id,name,relationship,student_id',
-                    'mobileNumbers:id,mobile_number,number_type,student_id',
-                    'payments:id,payment_style,due_date,tuition_fee,student_id',
-                ])
+                return Student::with(['class:id,name,class_numeral', 'branch:id,branch_name,branch_prefix', 'batch:id,name', 'institution:id,name,eiin_number', 'studentActivation:id,active_status', 'guardians:id,name,relationship,student_id', 'mobileNumbers:id,mobile_number,number_type,student_id', 'payments:id,payment_style,due_date,tuition_fee,student_id'])
                     ->whereNotNull('student_activation_id')
                     ->when($branchId != 0, function ($query) use ($branchId) {
                         $query->where('branch_id', $branchId);
@@ -110,16 +92,7 @@ class StudentController extends Controller
 
         $institutions = Institution::all();
 
-        return view('students.index', compact(
-            'students',
-            'studentsByBranch',
-            'allStudents',
-            'classnames',
-            'batches',
-            'institutions',
-            'branches',
-            'isAdmin'
-        ));
+        return view('students.index', compact('students', 'studentsByBranch', 'allStudents', 'classnames', 'batches', 'institutions', 'branches', 'isAdmin'));
     }
 
     public function pending()
@@ -1128,7 +1101,7 @@ class StudentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Student $student)
+    /*public function destroy(Student $student)
     {
         $deletedBy = auth()->user()->id;
 
@@ -1147,6 +1120,70 @@ class StudentController extends Controller
         $student->delete();
 
         // Clear the cache
+        clearUCMSCaches();
+
+        return response()->json(['success' => true]);
+    }*/
+
+    public function destroy(Student $student)
+    {
+        $deletedBy = auth()->id();
+
+        DB::transaction(function () use ($student, $deletedBy) {
+
+            /**
+             * ==================================================
+             * CASE 1: Pending student → PERMANENT DELETE
+             * ==================================================
+             */
+            if (is_null($student->student_activation_id)) {
+
+                // Force delete payment transactions
+                $student->paymentInvoices()
+                    ->withTrashed()
+                    ->each(function ($invoice) {
+                        $invoice->paymentTransactions()
+                            ->withTrashed()
+                            ->forceDelete();
+                    });
+
+                // Force delete invoices
+                $student->paymentInvoices()->withTrashed()->forceDelete();
+
+                // Force delete sheet payments
+                $student->sheetPayments()->withTrashed()->forceDelete();
+
+                // ✅ REMOVE payment info (NO SoftDeletes)
+                $student->payments()->delete();
+
+                // Force delete guardians & siblings
+                $student->guardians()->withTrashed()->forceDelete();
+                $student->siblings()->withTrashed()->forceDelete();
+
+                // Optional cleanup (recommended)
+                $student->subjectsTaken()->delete();
+                $student->sheetsTopicTaken()->delete();
+                $student->attendances()->delete();
+
+                // Finally force delete student
+                $student->forceDelete();
+
+                return;
+            }
+
+            /**
+             * ==================================================
+             * CASE 2: Active student → SOFT DELETE
+             * ==================================================
+             */
+
+            // Audit
+            $student->update(['deleted_by' => $deletedBy]);
+
+            // Soft delete only the student
+            $student->delete();
+        });
+
         clearUCMSCaches();
 
         return response()->json(['success' => true]);
@@ -1218,9 +1255,9 @@ class StudentController extends Controller
     }
 
     /* Old Student - Alumni */
-/**
- * Display alumni students (old students from inactive classes)
- */
+    /**
+     * Display alumni students (old students from inactive classes)
+     */
     public function alumniStudent()
     {
         $user     = auth()->user();
@@ -1303,14 +1340,6 @@ class StudentController extends Controller
 
         $institutions = Institution::all();
 
-        return view('students.alumni.index', compact(
-            'students',
-            'studentsByBranch',
-            'classnames',
-            'batches',
-            'institutions',
-            'branches',
-            'isAdmin'
-        ));
+        return view('students.alumni.index', compact('students', 'studentsByBranch', 'classnames', 'batches', 'institutions', 'branches', 'isAdmin'));
     }
 }
