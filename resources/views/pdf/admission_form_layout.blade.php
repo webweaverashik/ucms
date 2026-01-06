@@ -213,7 +213,7 @@
                 <label class="w-[125px] shrink-0 whitespace-nowrap font-normal">Class</label>
                 <span class="shrink-0 mr-1">:</span>
                 <div class="shrink-0 border-b border-dotted border-black dotted-underline w-[75px] mx-2">
-                    {{ $student->class->class_numeral }}
+                    {{ $student->class->name }}
                 </div>
 
                 <label class="shrink-0 font-normal mr-2 whitespace-nowrap">Blood Group :</label>
