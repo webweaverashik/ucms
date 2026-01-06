@@ -108,13 +108,15 @@
             <!--end::Nav item-->
 
             <!--begin::Nav item-->
-            {{-- <li class="nav-item">
-                <a class="nav-link text-active-primary py-5 me-6" id="settings_bulk_admission_link"
-                    href="{{ route('bulk.admission.index') }}">
-                    <i class="ki-outline ki-file-up fs-4 me-2"></i>
-                    Bulk Admission
-                </a>
-            </li> --}}
+            @if (app()->environment('local'))
+                <li class="nav-item">
+                    <a class="nav-link text-active-primary py-5 me-6" id="settings_bulk_admission_link"
+                        href="{{ route('bulk.admission.index') }}">
+                        <i class="ki-outline ki-file-up fs-4 me-2"></i>
+                        Bulk Admission
+                    </a>
+                </li>
+            @endif
             <!--end::Nav item-->
 
             <!--begin::Nav item-->
