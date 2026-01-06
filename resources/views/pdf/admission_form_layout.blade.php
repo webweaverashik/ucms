@@ -212,7 +212,7 @@
             <div class="mb-2 flex items-start print:flex-nowrap">
                 <label class="w-[125px] shrink-0 whitespace-nowrap font-normal">Class</label>
                 <span class="shrink-0 mr-1">:</span>
-                <div class="shrink-0 border-b border-dotted border-black dotted-underline w-[75px] mx-2">
+                <div class="shrink-0 border-b border-dotted border-black dotted-underline w-[100px] mx-2">
                     {{ $student->class->name }}
                 </div>
 
