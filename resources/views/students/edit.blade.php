@@ -974,10 +974,20 @@
                                 <div class="mb-7 fv-row">
                                     <!--begin::Label-->
                                     <label class="required fw-semibold fs-6 mb-2">Tuition Fee (Tk)
-                                        <span>
-                                            <i class="ki-outline ki-information fs-4" data-bs-toggle="tooltip"
-                                                data-bs-placement="top" title="Admin and Manager can change this."></i>
-                                        </span>
+                                        @if (auth()->user()->isAccountant())
+                                            <span>
+                                                <i class="ki-outline ki-information fs-4" data-bs-toggle="tooltip"
+                                                    data-bs-placement="top"
+                                                    title="Admin and Manager can change this."></i>
+                                            </span>
+                                        @else
+                                            <span>
+                                                <i class="ki-outline ki-information-5 text-gray-500 fs-4"
+                                                    data-bs-toggle="tooltip" data-bs-placement="top"
+                                                    title="Set any amount. Set 0 for FREE students.">
+                                                </i>
+                                            </span>
+                                        @endif
                                     </label>
                                     <!--end::Label-->
                                     <!--begin::Input group-->
@@ -1110,7 +1120,8 @@
                                 </div>
                                 <!--end::Wrapper-->
                             </div>
-                            <a href="{{ route('students.show', $student->id) }}" class="btn btn-primary mt-5">Go to Student Profile</a>
+                            <a href="{{ route('students.show', $student->id) }}" class="btn btn-primary mt-5">Go to
+                                Student Profile</a>
                             <!--end::Notice-->
                             <!--end::Alert-->
                         </div>
