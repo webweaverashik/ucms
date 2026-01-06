@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PaymentInvoiceType extends Model
 {
-    protected $fillable = ['type_name', 'description'];
+    protected $fillable = ['type_name'];
 
     public function paymentInvoices()
     {

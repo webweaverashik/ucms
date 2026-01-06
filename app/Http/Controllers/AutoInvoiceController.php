@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Payment\PaymentInvoice;
+use App\Models\Payment\PaymentInvoiceType;
 use App\Models\Student\Student;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -24,6 +25,9 @@ class AutoInvoiceController extends Controller
                 $q->withoutGlobalScope('active')->where('is_active', true);
             })
             ->get();
+
+        // Tuition Fee type
+        $invoice_type = PaymentInvoiceType::where('type_name', 'Tuition Fee')->select('id')->first();
 
         $generatedInvoices = 0;
 
@@ -59,12 +63,13 @@ class AutoInvoiceController extends Controller
 
             // Create the new invoice
             PaymentInvoice::create([
-                'invoice_number' => $invoicePrefix . $sequence,
-                'student_id'     => $student->id,
-                'total_amount'   => $student->payments->tuition_fee,
-                'amount_due'     => $student->payments->tuition_fee,
-                'month_year'     => $monthYear,
-                'created_by'     => Auth::id(),
+                'invoice_number'  => $invoicePrefix . $sequence,
+                'student_id'      => $student->id,
+                'total_amount'    => $student->payments->tuition_fee,
+                'amount_due'      => $student->payments->tuition_fee,
+                'month_year'      => $monthYear,
+                'invoice_type_id' => $invoice_type->id,
+                'created_by'      => Auth::id(),
             ]);
 
             $sequence++;
