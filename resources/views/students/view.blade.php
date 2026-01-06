@@ -118,11 +118,11 @@
 
                             @can('students.delete')
                                 <!--begin::Menu item-->
-                                <div class="menu-item px-3">
+                                {{-- <div class="menu-item px-3">
                                     <a href="#" class="menu-link text-hover-danger px-3 delete-student"
                                         data-student-id="{{ $student->id }}"><i class="bi bi-trash fs-3 me-2"></i>
                                         Delete</a>
-                                </div>
+                                </div> --}}
                                 <!--end::Menu item-->
                             @endcan
                         </div>
@@ -504,11 +504,11 @@
 
                         @can('students.delete')
                             <!--begin::Menu item-->
-                            <div class="menu-item px-5">
+                            {{-- <div class="menu-item px-5">
                                 <a href="#" class="menu-link text-hover-danger px-5 delete-student"
                                     data-student-id="{{ $student->id }}"><i class="bi bi-trash fs-3 me-2"></i>
                                     Delete Student</a>
-                            </div>
+                            </div> --}}
                             <!--end::Menu item-->
                         @endcan
                     </div>
