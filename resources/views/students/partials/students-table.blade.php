@@ -138,11 +138,11 @@
                         @endif
 
                         @if ($canDelete)
-                            <div class="menu-item px-3">
+                            {{-- <div class="menu-item px-3">
                                 <a href="#" class="menu-link px-3 text-hover-danger delete-student"
                                     data-student-id="{{ $student->id }}"><i class="bi bi-trash fs-3 me-2"></i>
                                     Delete</a>
-                            </div>
+                            </div> --}}
                         @endif
                     </div>
                     <!--end::Menu-->
