@@ -562,5 +562,5 @@
             isAdmin: {{ auth()->user()->isAdmin() ? 'true' : 'false' }}
         };
     </script>
-    <script src="{{ asset('js/users/profile.js') }}"></script>
+    <script src="{{ asset('js/settings/users/profile.js') }}"></script>
 @endpush

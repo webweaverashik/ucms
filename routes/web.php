@@ -1,41 +1,41 @@
 <?php
 
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PdfController;
-use App\Http\Controllers\BranchController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\SMS\SmsController;
-use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Cost\CostController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\Misc\MiscController;
-use App\Http\Controllers\User\UserController;
-use App\Http\Controllers\AutoInvoiceController;
-use App\Http\Controllers\Sheet\SheetController;
-use App\Http\Controllers\User\ProfileController;
-use App\Http\Controllers\Auth\PasswordController;
-use App\Http\Controllers\Cost\CostTypeController;
 use App\Http\Controllers\Academic\BatchController;
-use App\Http\Controllers\SMS\SmsCampaignController;
-use App\Http\Controllers\SMS\SmsTemplateController;
-use App\Http\Controllers\Student\SiblingController;
-use App\Http\Controllers\Student\StudentController;
-use App\Http\Controllers\Teacher\TeacherController;
-use App\Http\Controllers\Academic\SubjectController;
-use App\Http\Controllers\Sheet\SheetTopicController;
-use App\Http\Controllers\Student\GuardianController;
-use App\Http\Controllers\Student\ReferenceController;
 use App\Http\Controllers\Academic\ClassNameController;
 use App\Http\Controllers\Academic\InstitutionController;
-use App\Http\Controllers\Settlement\SettlementController;
-use App\Http\Controllers\Sheet\SheetTopicTakenController;
+use App\Http\Controllers\Academic\SubjectController;
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\AutoInvoiceController;
+use App\Http\Controllers\BranchController;
+use App\Http\Controllers\Cost\CostController;
+use App\Http\Controllers\Cost\CostTypeController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Misc\MiscController;
 use App\Http\Controllers\Payment\PaymentInvoiceController;
-use App\Http\Controllers\Student\StudentPromoteController;
-use App\Http\Controllers\Student\StudentTransferController;
+use App\Http\Controllers\Payment\PaymentTransactionController;
+use App\Http\Controllers\PdfController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\Settlement\SettlementController;
+use App\Http\Controllers\Sheet\SheetController;
+use App\Http\Controllers\Sheet\SheetTopicController;
+use App\Http\Controllers\Sheet\SheetTopicTakenController;
+use App\Http\Controllers\SMS\SmsCampaignController;
+use App\Http\Controllers\SMS\SmsController;
+use App\Http\Controllers\SMS\SmsTemplateController;
+use App\Http\Controllers\Student\GuardianController;
+use App\Http\Controllers\Student\ReferenceController;
+use App\Http\Controllers\Student\SiblingController;
 use App\Http\Controllers\Student\StudentActivationController;
 use App\Http\Controllers\Student\StudentAttendanceController;
-use App\Http\Controllers\Payment\PaymentTransactionController;
+use App\Http\Controllers\Student\StudentController;
+use App\Http\Controllers\Student\StudentPromoteController;
+use App\Http\Controllers\Student\StudentTransferController;
+use App\Http\Controllers\Teacher\TeacherController;
+use App\Http\Controllers\User\ProfileController;
+use App\Http\Controllers\User\UserController;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AuthController::class, 'showLogin'])->name('home');
 
@@ -101,7 +101,11 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     // Invoices
     Route::get('students/{student}/due-invoices', [PaymentInvoiceController::class, 'getDueInvoices'])->name('students.due.invoices');
     Route::get('invoices/{invoice}/view-ajax', [PaymentInvoiceController::class, 'viewAjax'])->name('invoices.view.ajax');
-    Route::get('autoinvoice', [AutoInvoiceController::class, 'generate'])->name('auto.invoice');
+
+    // Auto-invoice
+    Route::get('autoinvoice', [AutoInvoiceController::class, 'index'])->name('auto.invoice.index');
+    Route::get('autoinvoice/current', [AutoInvoiceController::class, 'generateCurrent'])->name('auto.invoice.current');
+    Route::get('autoinvoice/due', [AutoInvoiceController::class, 'generateDue'])->name('auto.invoice.due');
 
     // Transactions
     Route::get('transactions/{id}/download-payslip', [PdfController::class, 'downloadPaySlip'])->name('transactions.download');
@@ -218,6 +222,9 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     // ----- SMS Routes End -----
 
     // ----- Settings Start -----
+    Route::get('settings', function () {
+        return redirect()->route('users.index');
+    });
     Route::get('settings/branches', [BranchController::class, 'index'])->name('branches.index');
     Route::post('settings/branches', [BranchController::class, 'store'])->name('branches.store');
     Route::put('settings/branches/{branch}', [BranchController::class, 'update'])->name('branches.update');

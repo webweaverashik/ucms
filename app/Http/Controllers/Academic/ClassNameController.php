@@ -130,6 +130,8 @@ class ClassNameController extends Controller
             'is_active'   => $validated['activation_status'] == 'active' ? true : false,
         ]);
 
+        clearServerCache();
+
         // Return JSON response
         return response()->json(['success' => true]);
     }

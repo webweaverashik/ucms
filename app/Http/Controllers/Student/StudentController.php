@@ -1184,7 +1184,7 @@ class StudentController extends Controller
             $student->delete();
         });
 
-        clearUCMSCaches();
+        clearServerCache();
 
         return response()->json(['success' => true]);
     }
@@ -1277,7 +1277,7 @@ class StudentController extends Controller
                 $studentsByBranch[$branch->id] = Cache::remember($cacheKey, now()->addHours(1), function () use ($branch) {
                     return Student::with([
                         'class' => function ($q) {
-                            $q->withoutGlobalScope('active')->select('id', 'name', 'class_numeral');
+                            $q->inactive()->select('id', 'name', 'class_numeral');
                         },
                         'branch:id,branch_name,branch_prefix',
                         'batch:id,name',
@@ -1290,7 +1290,7 @@ class StudentController extends Controller
                         ->whereNotNull('student_activation_id')
                         ->where('branch_id', $branch->id)
                         ->whereHas('class', function ($q) {
-                            $q->withoutGlobalScope('active')->where('is_active', false);
+                            $q->inactive();
                         })
                         ->latest('updated_at')
                         ->get();

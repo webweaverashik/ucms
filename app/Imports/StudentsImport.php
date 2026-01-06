@@ -182,7 +182,7 @@ class StudentsImport implements ToCollection, WithHeadingRow
         }
 
         // Clear the cache
-        clearUCMSCaches();
+        clearServerCache();
     }
 
     /**

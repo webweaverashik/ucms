@@ -119,8 +119,8 @@
 
             <!--begin::Nav item-->
             <li class="nav-item">
-                <a class="nav-link text-active-primary py-5" id="auto_invoice_button"
-                    href="{{ route('auto.invoice') }}">
+                <a class="nav-link text-active-primary py-5" id="settings_auto_invoice_link"
+                    href="{{ route('auto.invoice.index') }}">
                     <i class="ki-outline ki-update-file fs-4 me-2"></i>
                     Auto Invoice
                 </a>

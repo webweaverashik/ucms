@@ -721,7 +721,7 @@
         const routeToggleActive = "{{ route('users.toggleActive', ':id') }}";
     </script>
 
-    <script src="{{ asset('js/users/index.js') }}"></script>
+    <script src="{{ asset('js/settings/users/index.js') }}"></script>
 
     <script>
         document.getElementById("settings_link").classList.add("active");

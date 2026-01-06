@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('payments_info', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('student_id');
+            $table->foreignId('student_id')->constrained('students');
             $table->enum('payment_style', ['current', 'due']);
             $table->integer('due_date')->default(7);
             $table->integer('tuition_fee');
