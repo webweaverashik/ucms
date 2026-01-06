@@ -16,7 +16,7 @@ var KTStudentsList = function () {
             "lengthChange": true,
             "autoWidth": false,
             'columnDefs': [
-                { orderable: false, targets: 9 }, // Disable ordering on column Guardian
+                { orderable: false, targets: 10 }, // Disable ordering on column Guardian
             ]
         };
 

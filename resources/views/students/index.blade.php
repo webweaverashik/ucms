@@ -176,6 +176,19 @@
                                 <!--end::Input group-->
 
                                 <!--begin::Input group-->
+                                <div class="col-6 mb-5">
+                                    <label class="form-label fs-6 fw-semibold">Academic Group:</label>
+                                    <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
+                                        data-placeholder="Select option" data-allow-clear="true"
+                                        data-kt-subscription-table-filter="product" data-hide-search="true">
+                                        <option></option>
+                                        <option value="ucms_Science">Science</option>
+                                        <option value="ucms_Commerce">Commerce</option>
+                                    </select>
+                                </div>
+                                <!--end::Input group-->
+
+                                <!--begin::Input group-->
                                 <div class="@if ($isAdmin) col-12 @else col-6 @endif mb-5">
                                     <label class="form-label fs-6 fw-semibold">Class</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"

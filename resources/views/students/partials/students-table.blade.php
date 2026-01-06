@@ -9,6 +9,7 @@
             <th class="d-none">Active/Inactive (filter)</th>
             <th class="d-none">Class (filter)</th>
             <th>Class</th>
+            <th class="d-none">Group (filter)</th>
             <th>Group</th>
             <th class="d-none">Batch (Filter)</th>
             <th>Batch</th>
@@ -53,7 +54,7 @@
                 </td>
                 <td class="d-none">{{ $student->class_id }}_{{ $student->class->class_numeral }}_ucms</td>
                 <td>{{ $student->class->name }}</td>
-                <td class="d-none">{{ $student->branch_id }}_{{ $student->academic_group }}</td>
+                <td class="d-none">ucms_{{ $student->academic_group }}</td>
                 <td>
                     @if ($student->academic_group == 'Science')
                         <span class="badge badge-pill badge-info">{{ $student->academic_group }}</span>
