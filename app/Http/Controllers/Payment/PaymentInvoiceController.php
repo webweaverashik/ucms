@@ -1,16 +1,16 @@
 <?php
 namespace App\Http\Controllers\Payment;
 
+use App\Http\Controllers\Controller;
+use App\Models\Payment\PaymentInvoice;
+use App\Models\Payment\PaymentInvoiceType;
+use App\Models\Sheet\SheetPayment;
+use App\Models\Student\Student;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use App\Models\Student\Student;
-use App\Models\Sheet\SheetPayment;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use App\Models\Payment\PaymentInvoice;
 use Illuminate\Support\Facades\Validator;
-use App\Models\Payment\PaymentInvoiceType;
 
 class PaymentInvoiceController extends Controller
 {
@@ -29,6 +29,8 @@ class PaymentInvoiceController extends Controller
         $data = Cache::remember($cacheKey, now()->addHours(1), function () use ($branchId) {
             // Common student constraint
             $studentQuery = function ($query) use ($branchId) {
+                $query->withoutTrashed(); // 👈 KEY LINE
+
                 if ($branchId != 0) {
                     $query->where('branch_id', $branchId);
                 }
