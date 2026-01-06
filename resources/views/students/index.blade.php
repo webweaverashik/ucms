@@ -189,7 +189,7 @@
                                 <!--end::Input group-->
 
                                 <!--begin::Input group-->
-                                <div class="@if ($isAdmin) col-12 @else col-6 @endif mb-5">
+                                <div class="col-12 mb-5">
                                     <label class="form-label fs-6 fw-semibold">Class</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                         data-placeholder="Select option" data-allow-clear="true"
@@ -321,7 +321,6 @@
                                 'students' => $studentsByBranch[$branch->id] ?? collect(),
                                 'tableId' => 'kt_students_table_branch_' . $branch->id,
                                 'branchColors' => $branchColors,
-                                'showBranchColumn' => false,
                                 'canDeactivate' => $canDeactivate,
                                 'canDownloadForm' => $canDownloadForm,
                                 'canEdit' => $canEdit,
@@ -337,7 +336,6 @@
                     'students' => $students,
                     'tableId' => 'kt_students_table',
                     'branchColors' => $branchColors,
-                    'showBranchColumn' => false,
                     'canDeactivate' => $canDeactivate,
                     'canDownloadForm' => $canDownloadForm,
                     'canEdit' => $canEdit,

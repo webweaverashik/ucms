@@ -3,7 +3,7 @@
     id="{{ $tableId }}">
     <thead>
         <tr class="fw-bold fs-7 text-uppercase gs-0">
-            <th class="w-25px">SL</th>
+            <th class="w-25px">#</th>
             <th class="min-w-200px">Student</th>
             <th class="d-none">Gender (filter)</th>
             <th class="d-none">Active/Inactive (filter)</th>
@@ -19,9 +19,6 @@
             <th>Fee (Tk)</th>
             <th>Payment<br>Type</th>
             <th class="d-none">Branch (filter)</th>
-            @if ($showBranchColumn)
-                <th>Branch</th>
-            @endif
             <th class="min-w-70px not-export">Actions</th>
         </tr>
     </thead>
@@ -91,19 +88,6 @@
                     @endif
                 </td>
                 <td class="d-none">{{ $student->branch_id }}_{{ $student->branch->branch_name }}</td>
-                @if ($showBranchColumn)
-                    <td>
-                        @if ($student->branch)
-                            @php
-                                $branchName = $student->branch->branch_name;
-                                $badgeColor = $branchColors[$branchName] ?? 'badge-light-secondary';
-                            @endphp
-                            <span class="badge {{ $badgeColor }} rounded-pill">{{ $branchName }}</span>
-                        @else
-                            <span class="badge badge-light-secondary rounded-pill">N/A</span>
-                        @endif
-                    </td>
-                @endif
 
                 <td>
                     <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-kt-menu-trigger="click"

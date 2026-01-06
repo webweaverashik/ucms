@@ -17,8 +17,8 @@ var KTPendingStudentsList = function () {
             "lengthChange": true,
             "autoWidth": false, // Disable auto width
             'columnDefs': [
-                { orderable: false, targets: 8 }, // Disable ordering on column Guardian
-                { orderable: false, targets: 15 }, // Disable ordering on column Actions
+                { orderable: false, targets: 10 }, // Disable ordering on column Guardian
+                { orderable: false, targets: 17 }, // Disable ordering on column Actions
             ]
         });
 

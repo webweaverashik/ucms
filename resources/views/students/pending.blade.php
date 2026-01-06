@@ -168,7 +168,20 @@
                                 <!--end::Input group-->
 
                                 <!--begin::Input group-->
-                                <div class="@if (auth()->user()->hasRole('admin')) col-6 @else col-12 @endif mb-5">
+                                <div class="col-6 mb-5">
+                                    <label class="form-label fs-6 fw-semibold">Academic Group:</label>
+                                    <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
+                                        data-placeholder="Select option" data-allow-clear="true"
+                                        data-kt-subscription-table-filter="product" data-hide-search="true">
+                                        <option></option>
+                                        <option value="ucms_Science">Science</option>
+                                        <option value="ucms_Commerce">Commerce</option>
+                                    </select>
+                                </div>
+                                <!--end::Input group-->
+
+                                <!--begin::Input group-->
+                                <div class="col-12 mb-5">
                                     <label class="form-label fs-6 fw-semibold">Class</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                         data-placeholder="Select option" data-allow-clear="true"
@@ -268,11 +281,13 @@
             <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_students_table">
                 <thead>
                     <tr class="fw-bold fs-7 text-uppercase gs-0">
-                        <th class="w-25px">SL</th>
+                        <th class="w-25px">#</th>
                         <th class="min-w-200px">Student</th>
                         <th class="d-none">Gender (filter)</th>
                         <th class="d-none">Class (filter)</th>
                         <th>Class</th>
+                        <th class="d-none">Group (filter)</th>
+                        <th>Group</th>
                         <th class="d-none">Batch (Filter)</th>
                         <th>Batch</th>
                         <th class="w-300px">Institution</th>
@@ -317,6 +332,16 @@
                             <td class="d-none">student_{{ $student->gender }}</td>
                             <td class="d-none">{{ $student->class_id }}_{{ $student->class->class_numeral }}_ucms</td>
                             <td>{{ $student->class->name }}</td>
+                            <td class="d-none">ucms_{{ $student->academic_group }}</td>
+                            <td>
+                                @if ($student->academic_group == 'Science')
+                                    <span class="badge badge-pill badge-info">{{ $student->academic_group }}</span>
+                                @elseif ($student->academic_group == 'Commerce')
+                                    <span class="badge badge-pill badge-success">{{ $student->academic_group }}</span>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
                             <td class="d-none">
                                 {{ $student->batch_id }}_{{ $student->batch->name }}_{{ $student->branch->branch_name }}
                             </td>
