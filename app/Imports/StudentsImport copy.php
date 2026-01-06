@@ -53,12 +53,12 @@ class StudentsImport implements ToCollection, WithHeadingRow
 
             DB::beginTransaction();
             try {
-                // $branch_prefix = Branch::find($row['branch_id'])->branch_prefix;
+                $branch_prefix = Branch::find($row['branch_id'])->branch_prefix;
 
                 // Step 1: Insert into students
                 $student = Student::create([
                     'branch_id'         => $row['branch_id'],
-                    'student_unique_id' => $row['student_unique_id'],
+                    'student_unique_id' => $branch_prefix . '-' . $row['student_unique_id'],
                     'name'              => $row['name'],
                     'date_of_birth'     => $row['date_of_birth'],
                     'gender'            => $row['gender'],
