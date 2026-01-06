@@ -46,7 +46,7 @@ class GenerateMonthlyInvoices extends Command
             $lastMonth     = Carbon::now()->subMonth()->format('m');
             $lastMonthYear = Carbon::now()->subMonth()->format('Y');
 
-            $this->info("Billing Period:");
+            $this->info('Billing Period:');
             $this->info("  - Current Month: {$currentMonth}/{$currentYear} (for 'current' payment style)");
             $this->info("  - Last Month: {$lastMonth}/{$lastMonthYear} (for 'due' payment style)");
             $this->newLine();
@@ -61,20 +61,10 @@ class GenerateMonthlyInvoices extends Command
             }
 
             // Generate Current Invoices
-            $currentResult = $this->generateCurrentInvoices(
-                $invoiceType->id,
-                $currentMonth,
-                $currentYear,
-                $branchId
-            );
+            $currentResult = $this->generateCurrentInvoices($invoiceType->id, $currentMonth, $currentYear, $branchId);
 
             // Generate Due Invoices
-            $dueResult = $this->generateDueInvoices(
-                $invoiceType->id,
-                $lastMonth,
-                $lastMonthYear,
-                $branchId
-            );
+            $dueResult = $this->generateDueInvoices($invoiceType->id, $lastMonth, $lastMonthYear, $branchId);
 
             DB::commit();
 
@@ -90,17 +80,17 @@ class GenerateMonthlyInvoices extends Command
             $totalGenerated = $currentResult['generated'] + $dueResult['generated'];
             $totalSkipped   = $currentResult['skipped'] + $dueResult['skipped'];
 
-            $this->info("Current Invoices:");
+            $this->info('Current Invoices:');
             $this->info("  ✓ Generated: {$currentResult['generated']}");
             $this->info("  ⊘ Skipped:   {$currentResult['skipped']} (existing: {$currentResult['skipped_existing']}, free: {$currentResult['skipped_free']})");
             $this->newLine();
 
-            $this->info("Due Invoices:");
+            $this->info('Due Invoices:');
             $this->info("  ✓ Generated: {$dueResult['generated']}");
             $this->info("  ⊘ Skipped:   {$dueResult['skipped']} (existing: {$dueResult['skipped_existing']}, free: {$dueResult['skipped_free']})");
             $this->newLine();
 
-            $this->info("Total:");
+            $this->info('Total:');
             $this->info("  ✓ Generated: {$totalGenerated}");
             $this->info("  ⊘ Skipped:   {$totalSkipped}");
             $this->info('===========================================');
@@ -109,7 +99,7 @@ class GenerateMonthlyInvoices extends Command
                 $this->warn('No active students found for invoice generation.');
             }
 
-            $this->info("[" . now() . "] Invoice generation completed successfully.");
+            $this->info('[' . now() . '] Invoice generation completed successfully.');
 
             return self::SUCCESS;
         } catch (\Exception $e) {
@@ -123,12 +113,8 @@ class GenerateMonthlyInvoices extends Command
     /**
      * Generate invoices for students with 'current' payment style.
      */
-    protected function generateCurrentInvoices(
-        int $invoiceTypeId,
-        string $currentMonth,
-        string $currentYear,
-        ?string $branchId = null
-    ): array {
+    protected function generateCurrentInvoices(int $invoiceTypeId, string $currentMonth, string $currentYear, ?string $branchId = null): array
+    {
         $monthYear = "{$currentMonth}_{$currentYear}";
 
         $this->info("Processing 'current' payment style students for month: {$monthYear}");
@@ -145,24 +131,14 @@ class GenerateMonthlyInvoices extends Command
 
         $students = $query->get();
 
-        return $this->processStudents(
-            $students,
-            $invoiceTypeId,
-            $monthYear,
-            $currentMonth,
-            $currentYear
-        );
+        return $this->processStudents($students, $invoiceTypeId, $monthYear, $currentMonth, $currentYear);
     }
 
     /**
      * Generate invoices for students with 'due' payment style.
      */
-    protected function generateDueInvoices(
-        int $invoiceTypeId,
-        string $lastMonth,
-        string $lastMonthYear,
-        ?string $branchId = null
-    ): array {
+    protected function generateDueInvoices(int $invoiceTypeId, string $lastMonth, string $lastMonthYear, ?string $branchId = null): array
+    {
         $monthYear = "{$lastMonth}_{$lastMonthYear}";
 
         $this->info("Processing 'due' payment style students for month: {$monthYear}");
@@ -179,25 +155,14 @@ class GenerateMonthlyInvoices extends Command
 
         $students = $query->get();
 
-        return $this->processStudents(
-            $students,
-            $invoiceTypeId,
-            $monthYear,
-            $lastMonth,
-            $lastMonthYear
-        );
+        return $this->processStudents($students, $invoiceTypeId, $monthYear, $lastMonth, $lastMonthYear);
     }
 
     /**
      * Process students and generate invoices grouped by branch for logging.
      */
-    protected function processStudents(
-        $students,
-        int $invoiceTypeId,
-        string $monthYear,
-        string $billingMonth,
-        string $billingYear
-    ): array {
+    protected function processStudents($students, int $invoiceTypeId, string $monthYear, string $billingMonth, string $billingYear): array
+    {
         $generatedInvoices = 0;
         $skippedReasons    = [
             'existing_invoice' => 0,
