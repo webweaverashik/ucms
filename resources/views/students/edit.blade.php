@@ -975,16 +975,14 @@
                                     <!--begin::Label-->
                                     <label class="required fw-semibold fs-6 mb-2">Tuition Fee (Tk)
                                         @if (auth()->user()->isAccountant())
-                                            <span>
-                                                <i class="ki-outline ki-information fs-4" data-bs-toggle="tooltip"
-                                                    data-bs-placement="top"
-                                                    title="Admin and Manager can change this."></i>
+                                            <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                                title="Admin and Manager can change this.">
+                                                <i class="ki-outline ki-information fs-4"></i>
                                             </span>
                                         @else
-                                            <span>
-                                                <i class="ki-outline ki-information-5 text-gray-500 fs-4"
-                                                    data-bs-toggle="tooltip" data-bs-placement="top"
-                                                    title="Set any amount. Set 0 for FREE students.">
+                                            <span data-bs-toggle="tooltip" data-bs-placement="top"
+                                                title="Set any amount. Set 0 for FREE students.">
+                                                <i class="ki-outline ki-information text-gray-500 fs-4">
                                                 </i>
                                             </span>
                                         @endif

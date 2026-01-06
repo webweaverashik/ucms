@@ -184,7 +184,7 @@
             <form class="card-body py-20 w-100 px-9" novalidate="novalidate" enctype="multipart/form-data"
                 id="kt_create_student_form">
                 <!--begin::Step 1-->
-                <div data-kt-stepper-element="content"  class="current">
+                <div data-kt-stepper-element="content" class="current">
                     <!--begin::Wrapper-->
                     <div class="w-100">
                         <!--begin::Heading-->
