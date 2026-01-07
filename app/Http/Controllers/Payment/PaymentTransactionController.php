@@ -215,7 +215,7 @@ class PaymentTransactionController extends Controller
             $walletService->recordCollection(user: auth()->user(), amount: $transaction->amount_paid, payment: $transaction, description: "Collection from Student #{$transaction->student->student_unique_id} for Invoice #{$invoice->invoice_number} (Voucher #{$transaction->voucher_no})");
         });
 
-        clearUCMSCaches();
+        clearServerCache();
 
         // Return JSON for AJAX requests
         if ($request->ajax() || $request->wantsJson()) {
