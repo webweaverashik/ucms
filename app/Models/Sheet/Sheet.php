@@ -19,7 +19,11 @@ class Sheet extends Model
 
     public function sheetPayments()
     {
-        return $this->hasMany(SheetPayment::class)->whereHas('invoice.invoiceType', fn($q) => $q->where('type_name', 'Sheet Fee'));
+        return $this->hasMany(SheetPayment::class)->whereHas('invoice', function ($q) {
+            $q->where('status', '!=', 'due')->whereHas('invoiceType', function ($type) {
+                $type->where('type_name', 'Sheet Fee');
+            });
+        });
     }
 
     public function sheetPaymentsCount()

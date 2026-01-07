@@ -85,7 +85,7 @@ class StudentActivationController extends Controller
             // Update Student's Activation ID
             $student->update(['student_activation_id' => $activation->id]);
 
-            Cache::forget('students_list_branch_' . auth()->user()->branch_id);
+            clearServerCache();
 
             return redirect()->back()->with('success', 'Student status updated successfully.');
         });

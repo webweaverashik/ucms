@@ -2,7 +2,6 @@
 namespace App\Http\Controllers\Sheet;
 
 use App\Http\Controllers\Controller;
-use App\Models\Academic\ClassName;
 use App\Models\Academic\Subject;
 use App\Models\Sheet\Sheet;
 use App\Models\Sheet\SheetPayment;
@@ -29,15 +28,33 @@ class SheetController extends Controller
                 });
             },
         ])
+            ->with(['sheetPayments.invoice.paymentTransactions'])
             ->withWhereHas('class', function ($query) {
                 $query->active();
             })
             ->latest('id')
             ->get();
 
-        $classes = ClassName::all();
+        // Calculate total revenue from all sheet payments
+        $totalRevenue = $sheets->sum(function ($sheet) {
+            return $sheet->sheetPayments->sum(function ($payment) {
+                return $payment->invoice?->paymentTransactions->sum('amount_paid') ?? 0;
+            });
+        });
 
-        return view('sheets.index', compact('sheets', 'classes'));
+        // Prepare JSON data for JavaScript
+        $sheetsJson = $sheets->map(function ($sheet) {
+            return [
+                'id'           => $sheet->id,
+                'className'    => $sheet->class->name,
+                'classNumeral' => $sheet->class->class_numeral,
+                'price'        => $sheet->price,
+                'salesCount'   => $sheet->sheetPayments_count,
+                'createdAt'    => $sheet->created_at?->format('Y-m-d') ?? now()->format('Y-m-d'),
+            ];
+        });
+
+        return view('sheets.index', compact('sheets', 'sheetsJson', 'totalRevenue'));
     }
 
     /**
@@ -50,31 +67,11 @@ class SheetController extends Controller
 
     /**
      * Store a newly created resource in storage.
+     * Note: Sheets are created automatically when a class is created.
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'sheet_class_id' => 'required|integer|exists:class_names,id',
-            'sheet_price'    => 'required|numeric|min:100',
-        ]);
-
-        // Check for duplicate class_id
-        if (Sheet::where('class_id', $validated['sheet_class_id'])->exists()) {
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => 'A sheet for this class already exists.',
-                ],
-                409,
-            ); // 409 Conflict
-        }
-
-        Sheet::create([
-            'class_id' => $validated['sheet_class_id'],
-            'price'    => $validated['sheet_price'],
-        ]);
-
-        return response()->json(['success' => true]);
+        return redirect()->route('sheets.index')->with('warning', 'Sheets are created automatically with classes.');
     }
 
     /**
@@ -95,8 +92,7 @@ class SheetController extends Controller
 
         // Calculate statistics
         $subjects = $sheet->class->subjects;
-
-        $stats = [
+        $stats    = [
             'totalNotes'        => $subjects->sum(fn($s) => $s->sheetTopics->count()),
             'activeNotes'       => $subjects->sum(fn($s) => $s->sheetTopics->where('status', 'active')->count()),
             'inactiveNotes'     => $subjects->sum(fn($s) => $s->sheetTopics->where('status', 'inactive')->count()),
@@ -122,18 +118,28 @@ class SheetController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        if (! auth()->user()->can('sheets.edit')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No permission to edit sheets.',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'sheet_price_edit' => 'required|numeric|min:100',
         ]);
 
         $sheet = Sheet::findOrFail($id);
-
         $sheet->update([
             'price' => $validated['sheet_price_edit'],
         ]);
 
         // Return JSON response
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Sheet group updated successfully.',
+            'data'    => $sheet,
+        ]);
     }
 
     /**
@@ -142,6 +148,47 @@ class SheetController extends Controller
     public function destroy(string $id)
     {
         return redirect()->back()->with('warning', 'URL Not Allowed');
+    }
+
+    /**
+     * Get sheets data as JSON for AJAX requests.
+     */
+    public function getData()
+    {
+        if (! auth()->user()->can('sheets.view')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No permission to view sheets.',
+            ], 403);
+        }
+
+        $sheets = Sheet::withCount([
+            'sheetPayments as sheetPayments_count' => function ($query) {
+                $query->whereHas('invoice.invoiceType', function ($q) {
+                    $q->where('type_name', 'Sheet Fee');
+                });
+            },
+        ])
+            ->withWhereHas('class', function ($query) {
+                $query->active();
+            })
+            ->latest('id')
+            ->get()
+            ->map(function ($sheet) {
+                return [
+                    'id'           => $sheet->id,
+                    'className'    => $sheet->class->name,
+                    'classNumeral' => $sheet->class->class_numeral,
+                    'price'        => $sheet->price,
+                    'salesCount'   => $sheet->sheetPayments_count,
+                    'createdAt'    => $sheet->created_at?->format('Y-m-d') ?? now()->format('Y-m-d'),
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data'    => $sheets,
+        ]);
     }
 
     public function sheetPayments()
@@ -163,7 +210,7 @@ class SheetController extends Controller
             ->latest()
             ->get();
 
-        $sheet_groups = Sheet::whereHas('class', fn ($q) => $q->active())->get();
+        $sheet_groups = Sheet::whereHas('class', fn($q) => $q->active())->get();
 
         return view('sheets.sheet_payments', compact('payments', 'sheet_groups'));
     }

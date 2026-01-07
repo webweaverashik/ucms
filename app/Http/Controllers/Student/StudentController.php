@@ -685,7 +685,7 @@ class StudentController extends Controller
                 // 'attendances' added to eager loading
                 'attendances',
                 'class' => function ($q) {
-                    $q->withoutGlobalScope('active')->select('id', 'name', 'class_numeral', 'is_active');
+                    $q->select('id', 'name', 'class_numeral', 'is_active');
                 },
             ])
             ->find($id);
@@ -1097,30 +1097,6 @@ class StudentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    /*public function destroy(Student $student)
-    {
-        $deletedBy = auth()->user()->id;
-
-        // Update 'deleted_by' for guardians before deleting
-        $student->guardians()->update(['deleted_by' => $deletedBy]);
-
-        // Update 'deleted_by' for siblings before deleting
-        $student->siblings()->update(['deleted_by' => $deletedBy]);
-
-        // Update 'deleted_by' for student before deleting
-        $student->update(['deleted_by' => $deletedBy]);
-
-        // Now delete all records
-        $student->guardians()->delete();
-        $student->siblings()->delete();
-        $student->delete();
-
-        // Clear the cache
-        clearUCMSCaches();
-
-        return response()->json(['success' => true]);
-    }*/
-
     public function destroy(Student $student)
     {
         $deletedBy = auth()->id();
