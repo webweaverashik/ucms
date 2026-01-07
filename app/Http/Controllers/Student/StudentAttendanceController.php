@@ -49,16 +49,16 @@ class StudentAttendanceController extends Controller
                 ->get()
                 ->map(function ($batch) {
                     return [
-                        'id' => $batch->id,
-                        'name' => $batch->name,
-                        'day_off' => $batch->day_off,
+                        'id'          => $batch->id,
+                        'name'        => $batch->name,
+                        'day_off'     => $batch->day_off,
                         'branch_name' => $batch->branch->branch_name ?? '',
                     ];
                 });
 
             return response()->json([
                 'batches' => $batches,
-                'count' => $batches->count(),
+                'count'   => $batches->count(),
             ]);
         } catch (\Exception $e) {
             return response()->json(
@@ -74,29 +74,27 @@ class StudentAttendanceController extends Controller
     public function getStudents(Request $request)
     {
         $request->validate([
-            'branch_id' => 'required',
-            'class_id' => 'required',
-            'batch_id' => 'required',
+            'branch_id'       => 'required',
+            'class_id'        => 'required',
+            'batch_id'        => 'required',
             'attendance_date' => 'required',
         ]);
 
         $dateCarbon = Carbon::createFromFormat('d-m-Y', $request->attendance_date);
-        $dbDate = $dateCarbon->format('Y-m-d');
-        $dayName = $dateCarbon->format('l');
+        $dbDate     = $dateCarbon->format('Y-m-d');
+        $dayName    = $dateCarbon->format('l');
 
-        $batch = Batch::find($request->batch_id);
+        $batch    = Batch::find($request->batch_id);
         $isOffDay = false;
 
         if ($batch && strcasecmp($batch->day_off, $dayName) === 0) {
             $isOffDay = true;
         }
 
-        $students = Student::where('branch_id', $request->branch_id)
+        $students = Student::active()
+            ->where('branch_id', $request->branch_id)
             ->where('class_id', $request->class_id)
             ->where('batch_id', $request->batch_id)
-            ->whereHas('studentActivation', function ($q2) {
-                $q2->where('active_status', 'active');
-            })
             ->select('id', 'name', 'student_unique_id')
             ->with([
                 'attendances' => function ($query) use ($dbDate) {
@@ -108,18 +106,18 @@ class StudentAttendanceController extends Controller
         $data = $students->map(function ($student) {
             $attendance = $student->attendances->first();
             return [
-                'id' => $student->id,
-                'name' => $student->name,
+                'id'                => $student->id,
+                'name'              => $student->name,
                 'student_unique_id' => $student->student_unique_id,
-                'status' => $attendance ? $attendance->status : null,
-                'remarks' => $attendance ? $attendance->remarks : '',
+                'status'            => $attendance ? $attendance->status : null,
+                'remarks'           => $attendance ? $attendance->remarks : '',
             ];
         });
 
         return response()->json([
-            'students' => $data,
-            'count' => $data->count(),
-            'is_off_day' => $isOffDay,
+            'students'     => $data,
+            'count'        => $data->count(),
+            'is_off_day'   => $isOffDay,
             'off_day_name' => $dayName,
         ]);
     }
@@ -127,13 +125,13 @@ class StudentAttendanceController extends Controller
     public function storeBulk(Request $request)
     {
         $request->validate([
-            'attendance_date' => 'required',
-            'branch_id' => 'required',
-            'class_id' => 'required',
-            'batch_id' => 'required',
-            'attendances' => 'required|array',
+            'attendance_date'          => 'required',
+            'branch_id'                => 'required',
+            'class_id'                 => 'required',
+            'batch_id'                 => 'required',
+            'attendances'              => 'required|array',
             'attendances.*.student_id' => 'required',
-            'attendances.*.status' => 'required|in:present,late,absent',
+            'attendances.*.status'     => 'required|in:present,late,absent',
         ]);
 
         $date = Carbon::createFromFormat('d-m-Y', $request->attendance_date)->format('Y-m-d');
@@ -143,15 +141,15 @@ class StudentAttendanceController extends Controller
             foreach ($request->attendances as $att) {
                 StudentAttendance::updateOrCreate(
                     [
-                        'student_id' => $att['student_id'],
+                        'student_id'      => $att['student_id'],
                         'attendance_date' => $date,
                     ],
                     [
-                        'branch_id' => $request->branch_id,
-                        'class_id' => $request->class_id,
-                        'batch_id' => $request->batch_id,
-                        'status' => $att['status'],
-                        'remarks' => $att['remarks'] ?? null,
+                        'branch_id'  => $request->branch_id,
+                        'class_id'   => $request->class_id,
+                        'batch_id'   => $request->batch_id,
+                        'status'     => $att['status'],
+                        'remarks'    => $att['remarks'] ?? null,
                         'created_by' => auth()->id(),
                     ],
                 );

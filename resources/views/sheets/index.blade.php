@@ -64,14 +64,14 @@
                 <!--begin::Card toolbar-->
                 <div class="card-toolbar">
                     <!--begin::Toolbar-->
-                    <div class="d-flex justify-content-end" data-kt-subscription-table-toolbar="base">
+                    <div class="d-flex justify-content-end" data-kt-sheet-table-filter="base">
                         @can('sheets.create')
-                            <!--begin::Add New Guardian-->
-                            <a href="#" class="btn btn-primary" data-bs-toggle="modal"
+                            <!--begin::Add New Sheet-->
+                            {{-- <a href="#" class="btn btn-primary" data-bs-toggle="modal"
                                 data-bs-target="#kt_modal_add_sheet">
                                 <i class="ki-outline ki-plus fs-2"></i>Sheet Group
-                            </a>
-                            <!--end::Add New Guardian-->
+                            </a> --}}
+                            <!--end::Add New Sheet-->
                         @endcan
                     </div>
                     <!--end::Toolbar-->

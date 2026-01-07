@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Branch;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class BranchController extends Controller
@@ -54,17 +55,31 @@ class BranchController extends Controller
             );
         }
 
-        $branch = Branch::create([
-            'branch_name'   => $request->branch_name,
-            'branch_prefix' => strtoupper($request->branch_prefix),
-            'address'       => $request->address,
-            'phone_number'  => $request->phone_number,
-        ]);
+        DB::transaction(function () use ($request, &$branch) {
+            $branch = Branch::create([
+                'branch_name'   => $request->branch_name,
+                'branch_prefix' => strtoupper($request->branch_prefix),
+                'address'       => $request->address,
+                'phone_number'  => $request->phone_number,
+            ]);
+
+            // Auto-create 4 default batches
+            $batches = [
+                ['name' => 'Usha', 'day_off' => 'Friday'],
+                ['name' => 'Orun', 'day_off' => 'Saturday'],
+                ['name' => 'Proloy', 'day_off' => 'Monday'],
+                ['name' => 'Dhumketu', 'day_off' => 'Tuesday'],
+            ];
+
+            foreach ($batches as $batch) {
+                $branch->batches()->create($batch);
+            }
+        });
 
         return response()->json([
             'success' => true,
-            'message' => 'Branch created successfully!',
-            'data'    => $branch->load('activeStudents'),
+            'message' => 'Branch created successfully with default batches!',
+            'data'    => $branch->load(['activeStudents', 'batches']),
         ]);
     }
 

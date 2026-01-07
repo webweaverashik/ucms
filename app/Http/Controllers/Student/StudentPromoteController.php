@@ -14,9 +14,7 @@ class StudentPromoteController extends Controller
             return redirect()->back()->with('warning', 'No permission to promote students.');
         }
 
-        $students = Student::whereHas('studentActivation', function ($query) {
-            $query->where('active_status', 'active');
-        })
+        $students = Student::active()
             ->select('id', 'name', 'student_unique_id', 'branch_id', 'class_id', 'batch_id')
             ->get();
 

@@ -28,8 +28,6 @@ class Batch extends Model
     // Get all the active students associated with this batch
     public function activeStudents()
     {
-        return $this->hasMany(Student::class, 'batch_id', 'id')->whereHas('studentActivation', function ($query) {
-            $query->where('active_status', 'active');
-        });
+        return $this->hasMany(Student::class, 'batch_id', 'id')->active();
     }
 }

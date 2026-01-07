@@ -70,13 +70,13 @@ class SmsCampaignController extends Controller
 
         $mobileNumbers = collect();
 
-        // ✅ If "students" selected
+        /* -----------------------------
+        | Students
+        |-----------------------------*/
         if (in_array('students', $selectedRecipients)) {
-            $studentNumbers = Student::where('branch_id', $validated['branch_id'])
+            $studentNumbers = Student::active()
+                ->where('branch_id', $validated['branch_id'])
                 ->where('class_id', $validated['class_id'])
-                ->whereHas('studentActivation', function ($q2) {
-                    $q2->where('active_status', 'active');
-                })
                 ->whereHas('mobileNumbers', function ($q) {
                     $q->where('number_type', 'sms');
                 })
@@ -86,39 +86,37 @@ class SmsCampaignController extends Controller
                     },
                 ])
                 ->get()
-                ->pluck('mobileNumbers.*.mobile_number') // nested array of numbers
+                ->pluck('mobileNumbers.*.mobile_number')
                 ->flatten();
 
             $mobileNumbers = $mobileNumbers->merge($studentNumbers);
         }
 
-        // ✅ If "guardians" selected
+        /* -----------------------------
+        | Guardians
+        |-----------------------------*/
         if (in_array('guardians', $selectedRecipients)) {
             $guardianNumbers = Guardian::whereHas('student', function ($q) use ($validated) {
-                $q->where('branch_id', $validated['branch_id'])
-                    ->where('class_id', $validated['class_id'])
-                    ->whereHas('studentActivation', function ($q2) {
-                        $q2->where('active_status', 'active');
-                    });
+                $q->active()->where('branch_id', $validated['branch_id'])->where('class_id', $validated['class_id']);
             })->pluck('mobile_number');
 
             $mobileNumbers = $mobileNumbers->merge($guardianNumbers);
         }
 
-        // ✅ Remove duplicates & reindex
+        /* -----------------------------
+        | Cleanup & Save
+        |-----------------------------*/
         $mobileNumbers = $mobileNumbers->filter()->unique()->values();
 
-        // ✅ Save campaign
         $campaign = SmsCampaign::create([
             'campaign_title' => $validated['campaign_title'],
             'branch_id'      => $validated['branch_id'],
             'message_type'   => $validated['message_type'],
             'message_body'   => $validated['message_body'],
-            'recipients'     => $mobileNumbers->toJson(), // Store JSON array of numbers
+            'recipients'     => $mobileNumbers->toJson(),
             'created_by'     => auth()->id(),
         ]);
 
-        // Clear the cache
         clearUCMSCaches();
 
         return response()->json([

@@ -20,13 +20,13 @@ class PaymentTransactionController extends Controller
      */
     public function index()
     {
-        if (! auth()->user()->can('transactions.view')) {
+        if (!auth()->user()->can('transactions.view')) {
             return redirect()->back()->with('warning', 'No permission to view transactions.');
         }
 
-        $user     = auth()->user();
+        $user = auth()->user();
         $branchId = $user->branch_id;
-        $isAdmin  = $user->hasRole('admin');
+        $isAdmin = $user->hasRole('admin');
 
         // Get all branches for admin
         $branches = Branch::all();
@@ -51,14 +51,7 @@ class PaymentTransactionController extends Controller
             $transactions = collect(); // Empty collection for admin (uses tabs)
 
             // Get students for all branches for the modal
-            $students = Student::where(function ($query) {
-                $query->whereNull('student_activation_id')->orWhereHas('studentActivation', function ($q) {
-                    $q->where('active_status', 'active');
-                });
-            })
-                ->select('id', 'name', 'student_unique_id', 'branch_id')
-                ->orderBy('student_unique_id')
-                ->get();
+            $students = Student::active()->select('id', 'name', 'student_unique_id', 'branch_id')->orderBy('student_unique_id')->get();
 
             // Group students by branch for the modal
             $studentsByBranch = $students->groupBy('branch_id');
@@ -80,13 +73,9 @@ class PaymentTransactionController extends Controller
             $transactionsByBranch = [];
 
             // Simplified students query for non-admin
-            $students = Student::when($branchId != 0, function ($query) use ($branchId) {
-                $query->where('branch_id', $branchId);
-            })
-                ->where(function ($query) {
-                    $query->whereNull('student_activation_id')->orWhereHas('studentActivation', function ($q) {
-                        $q->where('active_status', 'active');
-                    });
+            $students = Student::active()
+                ->when($branchId != 0, function ($query) use ($branchId) {
+                    $query->where('branch_id', $branchId);
                 })
                 ->select('id', 'name', 'student_unique_id', 'branch_id')
                 ->orderBy('student_unique_id')
@@ -114,8 +103,8 @@ class PaymentTransactionController extends Controller
         $validated = $request->validate([
             'transaction_student' => 'required|exists:students,id',
             'transaction_invoice' => 'required|exists:payment_invoices,id',
-            'transaction_type'    => 'required|in:full,partial,discounted',
-            'transaction_amount'  => 'required|numeric|min:1',
+            'transaction_type' => 'required|in:full,partial,discounted',
+            'transaction_amount' => 'required|numeric|min:1',
             'transaction_remarks' => 'nullable|string|max:1000',
         ]);
 
@@ -128,9 +117,9 @@ class PaymentTransactionController extends Controller
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            $maxAmount   = $invoice->amount_due;
+            $maxAmount = $invoice->amount_due;
             $paymentType = $validated['transaction_type'];
-            $amount      = $validated['transaction_amount'];
+            $amount = $validated['transaction_amount'];
 
             /* ---------------- Amount validation ---------------- */
             if ($invoice->status === 'partially_paid') {
@@ -158,23 +147,23 @@ class PaymentTransactionController extends Controller
 
             /* ---------------- Create transaction ---------------- */
             $transaction = PaymentTransaction::create([
-                'student_id'         => $invoice->student_id,
-                'student_classname'  => $invoice->student->class->name . ' (' . $invoice->student->class->class_numeral . ')',
+                'student_id' => $invoice->student_id,
+                'student_classname' => $invoice->student->class->name . ' (' . $invoice->student->class->class_numeral . ')',
                 'payment_invoice_id' => $invoice->id,
-                'amount_paid'        => $amount,
-                'remaining_amount'   => $newAmountDue,
-                'payment_type'       => $paymentType,
-                'voucher_no'         => $voucherNo,
-                'created_by'         => auth()->id(),
-                'remarks'            => $validated['transaction_remarks'],
-                'is_approved'        => $paymentType !== 'discounted',
+                'amount_paid' => $amount,
+                'remaining_amount' => $newAmountDue,
+                'payment_type' => $paymentType,
+                'voucher_no' => $voucherNo,
+                'created_by' => auth()->id(),
+                'remarks' => $validated['transaction_remarks'],
+                'is_approved' => $paymentType !== 'discounted',
             ]);
 
             /* ---------------- Update invoice ---------------- */
             if ($paymentType !== 'discounted') {
                 $invoice->update([
                     'amount_due' => max($newAmountDue, 0),
-                    'status'     => $newAmountDue <= 0 ? 'paid' : 'partially_paid',
+                    'status' => $newAmountDue <= 0 ? 'paid' : 'partially_paid',
                 ]);
             }
 
@@ -186,9 +175,9 @@ class PaymentTransactionController extends Controller
             if ($invoice->invoiceType?->type_name === 'Sheet Fee') {
                 $sheet = $invoice->student->class?->sheet;
 
-                if ($sheet && ! SheetPayment::where('invoice_id', $invoice->id)->exists()) {
+                if ($sheet && !SheetPayment::where('invoice_id', $invoice->id)->exists()) {
                     SheetPayment::create([
-                        'sheet_id'   => $sheet->id,
+                        'sheet_id' => $sheet->id,
                         'invoice_id' => $invoice->id,
                         'student_id' => $invoice->student_id,
                     ]);
@@ -200,23 +189,23 @@ class PaymentTransactionController extends Controller
 
             if ($mobile) {
                 send_auto_sms('student_payment_success', $mobile, [
-                    'student_name'     => $transaction->student->name,
-                    'invoice_no'       => $invoice->invoice_number,
-                    'voucher_no'       => $transaction->voucher_no,
-                    'paid_amount'      => $transaction->amount_paid,
+                    'student_name' => $transaction->student->name,
+                    'invoice_no' => $invoice->invoice_number,
+                    'voucher_no' => $transaction->voucher_no,
+                    'paid_amount' => $transaction->amount_paid,
                     'remaining_amount' => $transaction->remaining_amount,
-                    'payment_time'     => $transaction->created_at->format('d M Y, h:i A'),
+                    'payment_time' => $transaction->created_at->format('d M Y, h:i A'),
                 ]);
             }
 
             // Store transaction data for response
             $transactionData = [
-                'id'          => $transaction->id,
-                'student_id'  => $transaction->student_id,
-                'invoice_id'  => $transaction->payment_invoice_id,
-                'voucher_no'  => $transaction->voucher_no,
+                'id' => $transaction->id,
+                'student_id' => $transaction->student_id,
+                'invoice_id' => $transaction->payment_invoice_id,
+                'voucher_no' => $transaction->voucher_no,
                 'amount_paid' => $transaction->amount_paid,
-                'year'        => $invoice->created_at->format('Y'),
+                'year' => $invoice->created_at->format('Y'),
                 'is_approved' => $transaction->is_approved,
             ];
 
@@ -231,8 +220,8 @@ class PaymentTransactionController extends Controller
         // Return JSON for AJAX requests
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
-                'success'     => true,
-                'message'     => 'Transaction recorded successfully.',
+                'success' => true,
+                'message' => 'Transaction recorded successfully.',
                 'transaction' => $transactionData,
             ]);
         }

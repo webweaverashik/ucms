@@ -352,6 +352,9 @@ class SheetController extends Controller
                     $q->where('type_name', 'Sheet Fee');
                 });
             })
+            ->whereHas('student', function ($query) {
+                $query->active();
+            })
             ->with(['student:id,name,student_unique_id,class_id,academic_group,branch_id', 'student.class:id,name,class_numeral'])
             ->when($branchId != 0, function ($query) use ($branchId) {
                 $query->whereHas('student', function ($q) use ($branchId) {

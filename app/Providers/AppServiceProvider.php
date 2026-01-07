@@ -28,6 +28,7 @@ class AppServiceProvider extends ServiceProvider
             'teacher' => Teacher::class,
         ]);
 
+        // Disabling Destructive Commands e.g. migration, seeding, reset
         DB::prohibitDestructiveCommands(app()->isProduction());
     }
 }

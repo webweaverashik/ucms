@@ -29,133 +29,150 @@ class Student extends Model
         'date_of_birth' => 'date',
     ];
 
+    /* --------------------------------
+     | Query Scopes (Canonical Rules)
+     |--------------------------------*/
+
     /**
-     * Scope for pending students
+     * Active students
+     * A student is active ONLY if there exists
+     * an activation record with active_status = active
+     */
+    public function scopeActive($query)
+    {
+        return $query->whereHas('studentActivation', function ($q) {
+            $q->where('active_status', 'active');
+        });
+    }
+
+    /**
+     * Pending / inactive students
+     * Students who do NOT have an active activation
      */
     public function scopePending($query)
     {
-        return $query->whereNull('student_activation_id');
+        return $query->whereDoesntHave('studentActivation', function ($q) {
+            $q->where('active_status', 'active');
+        });
     }
 
+    /* ------------------
+     | Relationships
+     |------------------*/
 
-    // Get the branch of the student:
+    // Branch
     public function branch()
     {
         return $this->belongsTo(Branch::class, 'branch_id');
     }
 
-    // Get the current academic class of this student
+    // Academic Class
     public function class ()
     {
         return $this->belongsTo(ClassName::class, 'class_id');
     }
 
-    // Get the current batch of this student
+    // Batch
     public function batch()
     {
         return $this->belongsTo(Batch::class, 'batch_id');
     }
 
-    // Get the institution associated with this student
+    // Institution
     public function institution()
     {
         return $this->belongsTo(Institution::class, 'institution_id');
     }
 
-    // Get the latest activation status of this student:
+    // Current activation status (single source of truth)
     public function studentActivation()
     {
         return $this->belongsTo(StudentActivation::class, 'student_activation_id');
     }
 
-    // Get all activation history of a student:
+    // Activation history
     public function activations()
     {
         return $this->hasMany(StudentActivation::class, 'student_id');
     }
 
-    // Get all guardians of a student:
+    // Guardians
     public function guardians()
     {
         return $this->hasMany(Guardian::class, 'student_id');
     }
 
-    // Get the student's reference:
+    // Reference
     public function reference()
     {
         return $this->belongsTo(Reference::class, 'reference_id');
     }
 
-    // Get all the student's mobile numbers:
+    // Mobile numbers
     public function mobileNumbers()
     {
-        return $this->hasMany(MobileNumber::class);
+        return $this->hasMany(MobileNumber::class, 'student_id');
     }
 
-    // Get all the student's siblings:
+    // Siblings
     public function siblings()
     {
-        return $this->hasMany(Sibling::class);
+        return $this->hasMany(Sibling::class, 'student_id');
     }
 
-    // Get all subjects taken by the student:
+    // Subjects taken
     public function subjectsTaken()
     {
-        return $this->hasMany(SubjectTaken::class);
+        return $this->hasMany(SubjectTaken::class, 'student_id');
     }
 
-    // Add the payment relationship
+    // Current payment profile
     public function payments()
     {
-        return $this->hasOne(Payment::class);
+        return $this->hasOne(Payment::class, 'student_id');
     }
 
-    // Add the payment invoices relationship
+    // Payment invoices
     public function paymentInvoices()
     {
-        return $this->hasMany(PaymentInvoice::class);
+        return $this->hasMany(PaymentInvoice::class, 'student_id');
     }
 
-    // Add the payment transactions relationship
+    // Payment transactions
     public function paymentTransactions()
     {
-        return $this->hasMany(PaymentTransaction::class);
+        return $this->hasMany(PaymentTransaction::class, 'student_id');
     }
 
-    // Get all the sheets taken by the student
+    // Sheet topics taken
     public function sheetsTopicTaken()
     {
-        return $this->hasMany(SheetTopicTaken::class);
+        return $this->hasMany(SheetTopicTaken::class, 'student_id');
     }
 
-    /*
-        Get all the sheet payments for this invoice
-    */
+    // Sheet payments (only Sheet Fee invoices)
     public function sheetPayments()
     {
-        return $this->hasMany(SheetPayment::class)
-            ->whereHas('invoice.invoiceType', function ($query) {
-                $query->where('type_name', 'Sheet Fee');
-            });
+        return $this->hasMany(SheetPayment::class, 'student_id')->whereHas('invoice.invoiceType', function ($query) {
+            $query->where('type_name', 'Sheet Fee');
+        });
     }
 
-    /* Deleted by user */
+    // Deleted by (admin/manager)
     public function deletedBy()
     {
         return $this->belongsTo(User::class, 'deleted_by');
     }
 
-    // Get the login activities for the student
+    // Login activities
     public function loginActivities()
     {
-        return $this->hasMany(LoginActivity::class, 'user_id')
-            ->where('user_type', 'student');
+        return $this->hasMany(LoginActivity::class, 'user_id')->where('user_type', 'student');
     }
 
-    // Get all the attendances of the student
+    // Attendance records
     public function attendances()
     {
-        return $this->hasMany(StudentAttendance::class);
+        return $this->hasMany(StudentAttendance::class, 'student_id');
     }
-
 }

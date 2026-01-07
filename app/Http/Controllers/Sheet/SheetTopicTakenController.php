@@ -45,13 +45,9 @@ class SheetTopicTakenController extends Controller
         $branchId = auth()->user()->branch_id;
 
         // Simplified students query
-        $students = Student::when($branchId != 0, function ($query) use ($branchId) {
-            $query->where('branch_id', $branchId);
-        })
-            ->where(function ($query) {
-                $query->whereNotNull('student_activation_id')->orWhereHas('studentActivation', function ($q) {
-                    $q->where('active_status', 'active');
-                });
+        $students = Student::active()
+            ->when($branchId != 0, function ($query) use ($branchId) {
+                $query->where('branch_id', $branchId);
             })
             ->orderBy('student_unique_id')
             ->select('id', 'name', 'student_unique_id')
@@ -116,7 +112,9 @@ class SheetTopicTakenController extends Controller
         // Get all active sheet groups
         $sheetGroups = Sheet::whereHas('class', function ($query) {
             $query->where('is_active', true);
-        })->with('class')->get();
+        })
+            ->with('class')
+            ->get();
 
         return view('notes.bulk-distribution', compact('sheetGroups'));
     }
@@ -152,29 +150,28 @@ class SheetTopicTakenController extends Controller
         }
 
         // Get already distributed students for this topic
-        $existingDistributions = SheetTopicTaken::where('sheet_topic_id', $topicId)
-            ->whereIn('student_id', $studentIds)
-            ->pluck('student_id')
-            ->toArray();
+        $existingDistributions = SheetTopicTaken::where('sheet_topic_id', $topicId)->whereIn('student_id', $studentIds)->pluck('student_id')->toArray();
 
         // Filter out students who already have this topic
         $newStudentIds = array_diff($studentIds, $existingDistributions);
 
         if (empty($newStudentIds)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'All selected students already have this topic distributed.',
-            ], 400);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'All selected students already have this topic distributed.',
+                ],
+                400,
+            );
         }
 
         // Verify all students have paid for this sheet
         $paidStudentIds = SheetPayment::where('sheet_id', $sheetId)
             ->whereIn('student_id', $newStudentIds)
             ->whereHas('invoice', function ($query) {
-                $query->whereIn('status', ['paid', 'partially_paid'])
-                    ->whereHas('invoiceType', function ($q) {
-                        $q->where('type_name', 'Sheet Fee');
-                    });
+                $query->whereIn('status', ['paid', 'partially_paid'])->whereHas('invoiceType', function ($q) {
+                    $q->where('type_name', 'Sheet Fee');
+                });
             })
             ->pluck('student_id')
             ->toArray();
@@ -183,10 +180,13 @@ class SheetTopicTakenController extends Controller
         $validStudentIds = array_intersect($newStudentIds, $paidStudentIds);
 
         if (empty($validStudentIds)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No valid students found. Students must have paid for this sheet.',
-            ], 400);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'No valid students found. Students must have paid for this sheet.',
+                ],
+                400,
+            );
         }
 
         // Create distribution records
@@ -206,18 +206,20 @@ class SheetTopicTakenController extends Controller
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to distribute: ' . $e->getMessage(),
-            ], 500);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Failed to distribute: ' . $e->getMessage(),
+                ],
+                500,
+            );
         }
 
         $skippedCount = count($studentIds) - $distributedCount;
 
         return response()->json([
             'success' => true,
-            'message' => "Successfully distributed to {$distributedCount} student(s)." .
-            ($skippedCount > 0 ? " {$skippedCount} student(s) were skipped." : ''),
+            'message' => "Successfully distributed to {$distributedCount} student(s)." . ($skippedCount > 0 ? " {$skippedCount} student(s) were skipped." : ''),
             'distributed_count' => $distributedCount,
             'skipped_count'     => $skippedCount,
         ]);

@@ -1162,8 +1162,8 @@ class StudentController extends Controller
 
                 // Optional cleanup (recommended)
                 $student->subjectsTaken()->delete();
-                $student->sheetsTopicTaken()->delete();
-                $student->attendances()->delete();
+                // $student->sheetsTopicTaken()->delete();
+                // $student->attendances()->delete();
 
                 // Finally force delete student
                 $student->forceDelete();

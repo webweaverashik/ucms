@@ -1,9 +1,10 @@
 <?php
 namespace App\Http\Controllers\Academic;
 
-use App\Http\Controllers\Controller;
-use App\Models\Academic\ClassName;
 use Illuminate\Http\Request;
+use App\Models\Academic\ClassName;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 
 class ClassNameController extends Controller
 {
@@ -74,11 +75,19 @@ class ClassNameController extends Controller
             'description_add'   => 'nullable|string|max:1000',
         ]);
 
-        $classname = ClassName::create([
-            'name'          => $validated['class_name_add'],
-            'class_numeral' => $validated['class_numeral_add'],
-            'description'   => $validated['description_add'] ?? null,
-        ]);
+        DB::transaction(function () use ($validated, &$classname) {
+
+            $classname = ClassName::create([
+                'name'          => $validated['class_name_add'],
+                'class_numeral' => $validated['class_numeral_add'],
+                'description'   => $validated['description_add'] ?? null,
+            ]);
+
+            // Auto-create related sheet group
+            $classname->sheet()->create([
+                'price' => 2000, // default price, can be updated later
+            ]);
+        });
 
         return response()->json(['success' => true]);
     }
