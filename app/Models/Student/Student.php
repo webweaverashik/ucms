@@ -48,13 +48,11 @@ class Student extends Model
 
     /**
      * Pending / inactive students
-     * Students who do NOT have an active activation
+     * Students who do NOT have ANY active activation in history
      */
     public function scopePending($query)
     {
-        return $query->whereDoesntHave('studentActivation', function ($q) {
-            $q->where('active_status', 'active');
-        });
+        return $query->whereNull('student_activation_id');
     }
 
     /* ------------------
