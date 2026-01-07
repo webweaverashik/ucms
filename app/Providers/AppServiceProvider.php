@@ -3,10 +3,11 @@ namespace App\Providers;
 
 use App\Models\Student\Student;
 use App\Models\Teacher\Teacher;
-use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Support\Facades\App;
+use App\Observers\StudentObserver;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Database\Eloquent\Relations\Relation;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,5 +31,8 @@ class AppServiceProvider extends ServiceProvider
 
         // Disabling Destructive Commands e.g. migration, seeding, reset
         DB::prohibitDestructiveCommands(app()->isProduction());
+
+        // Student Observer to log class changes
+        Student::observe(StudentObserver::class);
     }
 }

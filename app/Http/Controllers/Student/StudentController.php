@@ -928,7 +928,7 @@ class StudentController extends Controller
             }
 
             // Clear the cache
-            clearUCMSCaches();
+            clearServerCache();
 
             return response()->json([
                 'success' => true,

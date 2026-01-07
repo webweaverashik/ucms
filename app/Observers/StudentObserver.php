@@ -1,63 +1,34 @@
 <?php
-
 namespace App\Observers;
 
 use App\Models\Student\Student;
+use App\Models\Student\StudentClassChangeHistory;
 
 class StudentObserver
 {
     /**
-     * Handle the Student "created" event.
+     * Handle the Student "updating" event.
      */
-    public function created(Student $student): void
+    public function updating(Student $student): void
     {
-        $this->clearCache($student->branch_id);
-    }
-
-    /**
-     * Handle the Student "updated" event.
-     */
-    public function updated(Student $student): void
-    {
-        $this->clearCache($student->branch_id);
-
-        // If branch changed, clear both old and new branch cache
-        if ($student->wasChanged('branch_id')) {
-            $this->clearCache($student->getOriginal('branch_id'));
+        // Only log when class_id is actually changed
+        if (! $student->isDirty('class_id')) {
+            return;
         }
-    }
 
-    /**
-     * Handle the Student "deleted" event.
-     */
-    public function deleted(Student $student): void
-    {
-        $this->clearCache($student->branch_id);
-    }
+        $fromClassId = $student->getOriginal('class_id');
+        $toClassId   = $student->class_id;
 
-    /**
-     * Handle the Student "restored" event.
-     */
-    public function restored(Student $student): void
-    {
-        $this->clearCache($student->branch_id);
-    }
-
-    /**
-     * Handle the Student "force deleted" event.
-     */
-    public function forceDeleted(Student $student): void
-    {
-        $this->clearCache($student->branch_id);
-    }
-
-    /**
-     * Clear dashboard cache for student changes
-     */
-    protected function clearCache(?int $branchId): void
-    {
-        if (function_exists('clearDashboardStudentCache')) {
-            clearDashboardStudentCache($branchId);
+        // Safety check
+        if (! $fromClassId || $fromClassId == $toClassId) {
+            return;
         }
+
+        StudentClassChangeHistory::create([
+            'student_id'    => $student->id,
+            'from_class_id' => $fromClassId,
+            'to_class_id'   => $toClassId,
+            'created_by'    => auth()->id(),
+        ]);
     }
 }

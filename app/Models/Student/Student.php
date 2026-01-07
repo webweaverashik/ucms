@@ -4,6 +4,7 @@ namespace App\Models\Student;
 use App\Models\Academic\Batch;
 use App\Models\Academic\ClassName;
 use App\Models\Academic\Institution;
+use App\Models\Academic\SecondaryClass;
 use App\Models\Academic\SubjectTaken;
 use App\Models\Branch;
 use App\Models\Payment\Payment;
@@ -70,6 +71,20 @@ class Student extends Model
     public function class ()
     {
         return $this->belongsTo(ClassName::class, 'class_id');
+    }
+
+    // Current secondary classes
+    public function secondaryClasses()
+    {
+        return $this->belongsToMany(SecondaryClass::class, 'student_secondary_classes')
+            ->withPivot(['status', 'enrolled_at'])
+            ->withTimestamps();
+    }
+
+    // Student class change history
+    public function classChangeHistories()
+    {
+        return $this->hasMany(StudentClassChangeHistory::class, 'student_id')->latest();
     }
 
     // Batch

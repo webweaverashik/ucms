@@ -58,6 +58,12 @@ class ClassName extends Model
      | Relationships
      |------------------*/
 
+    // Secondary classes under this regular class
+    public function secondaryClasses()
+    {
+        return $this->hasMany(SecondaryClass::class, 'class_id');
+    }
+
     // Get all subjects associated with this class
     public function subjects()
     {
