@@ -9,6 +9,8 @@
             <th class="d-none">Active/Inactive (filter)</th>
             <th class="d-none">Class (filter)</th>
             <th>Class</th>
+            <th class="d-none">Group (filter)</th>
+            <th>Group</th>
             <th class="d-none">Batch (Filter)</th>
             <th>Batch</th>
             <th class="w-300px">Institution</th>
@@ -17,9 +19,6 @@
             <th>Fee (Tk)</th>
             <th>Payment<br>Type</th>
             <th class="d-none">Branch (filter)</th>
-            @if ($showBranchColumn)
-                <th>Branch</th>
-            @endif
             <th class="min-w-70px not-export">Actions</th>
         </tr>
     </thead>
@@ -52,6 +51,16 @@
                 </td>
                 <td class="d-none">{{ $student->class_id }}_{{ $student->class->class_numeral }}_ucms</td>
                 <td>{{ $student->class->name }}</td>
+                <td class="d-none">ucms_{{ $student->academic_group }}</td>
+                <td>
+                    @if ($student->academic_group == 'Science')
+                        <span class="badge badge-pill badge-info">{{ $student->academic_group }}</span>
+                    @elseif ($student->academic_group == 'Commerce')
+                        <span class="badge badge-pill badge-success">{{ $student->academic_group }}</span>
+                    @else
+                        <span class="text-muted">-</span>
+                    @endif
+                </td>
                 <td class="d-none">
                     {{ $student->batch_id }}_{{ $student->batch->name }}_{{ $student->branch->branch_name }}
                 </td>
@@ -79,20 +88,6 @@
                     @endif
                 </td>
                 <td class="d-none">{{ $student->branch_id }}_{{ $student->branch->branch_name }}</td>
-                @if ($showBranchColumn)
-                    <td>
-                        @if ($student->branch)
-                            @php
-                                $branchName = $student->branch->branch_name;
-                                $badgeColor = $branchColors[$branchName] ?? 'badge-light-secondary';
-                            @endphp
-                            <span class="badge {{ $badgeColor }} rounded-pill">{{ $branchName }}</span>
-                        @else
-                            <span class="badge badge-light-secondary rounded-pill">N/A</span>
-                        @endif
-                    </td>
-                @endif
-
                 <td>
                     <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-kt-menu-trigger="click"
                         data-kt-menu-placement="bottom-end">Actions

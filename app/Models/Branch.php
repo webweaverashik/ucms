@@ -29,7 +29,9 @@ class Branch extends Model
 
     public function activeStudents()
     {
-        return $this->hasMany(Student::class, 'branch_id', 'id')->active();
+        return $this->hasMany(Student::class, 'branch_id', 'id')
+            ->active()                                   // Student::scopeActive()
+            ->whereHas('class', fn($q) => $q->active()); // ClassName::scopeActive()
     }
 
     // Get all the teachers in the branch

@@ -7,7 +7,7 @@ var KTAlumniStudentsList = function () {
     var initializedTabs = {};
 
     // Get DataTable config based on whether branch column is shown
-    var getDataTableConfig = function (showBranchColumn) {
+    var getDataTableConfig = function () {
         var config = {
             "info": true,
             'order': [],
@@ -16,28 +16,21 @@ var KTAlumniStudentsList = function () {
             "lengthChange": true,
             "autoWidth": false,
             'columnDefs': [
-                { orderable: false, targets: 9 }, // Disable ordering on column Guardian
+                { orderable: false, targets: 11 }, // Disable ordering on column Guardian
+                { orderable: false, targets: 16 }, // Disable ordering on column Actions
             ]
         };
-
-        // Adjust action column index based on branch column visibility
-        if (showBranchColumn) {
-            config.columnDefs.push({ orderable: false, targets: 15 }); // Actions column with branch
-        } else {
-            config.columnDefs.push({ orderable: false, targets: 14 }); // Actions column without branch
-        }
-
         return config;
     };
 
     // Initialize a single datatable
-    var initSingleDatatable = function (tableId, showBranchColumn) {
+    var initSingleDatatable = function (tableId) {
         var table = document.getElementById(tableId);
         if (!table) {
             return null;
         }
 
-        var config = getDataTableConfig(showBranchColumn);
+        var config = getDataTableConfig();
         var datatable = $(table).DataTable(config);
 
         // Re-init functions on every table re-draw
