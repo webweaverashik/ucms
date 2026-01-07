@@ -173,7 +173,7 @@ class StudentController extends Controller
             'student_religion'        => 'nullable|string|in:Islam,Hinduism,Christianity,Buddhism,Others',
             'student_blood_group'     => 'nullable|string',
             'student_class'           => 'required|integer|exists:class_names,id',
-            'student_academic_group'  => 'nullable|string|in:General,Science,Commerce,Arts',
+            'student_academic_group'  => 'string|in:General,Science,Commerce,Arts',
             'student_branch'          => 'required|integer|exists:branches,id',
             'student_batch'           => 'required|integer|exists:batches,id',
             'student_institution'     => 'required|integer|exists:institutions,id',
@@ -374,7 +374,7 @@ class StudentController extends Controller
                 'tuition_fee'   => $validated['student_tuition_fee'],
             ]);
 
-            if ($validated['payment_style'] == 'current') {
+            if ($validated['payment_style'] == 'current' && $validated['student_tuition_fee'] > 0) {
                 $this->createPaymentInvoice($student, $validated['student_tuition_fee']);
             }
 
@@ -385,9 +385,7 @@ class StudentController extends Controller
 
             // Create Sheet Fee Invoice
             $sheet = Sheet::where('class_id', $validated['student_class'])->first();
-            if ($sheet && $sheet->price > 0) {
-                $this->createInvoice($student, $sheet->price, 'Sheet Fee');
-            }
+            $this->createInvoice($student, $sheet->price, 'Sheet Fee');
 
             // Mobile numbers
             MobileNumber::create([
@@ -411,7 +409,7 @@ class StudentController extends Controller
             }
 
             // Clear relevant caches
-            clearUCMSCaches();
+            clearServerCache();
 
             return response()->json([
                 'success' => true,

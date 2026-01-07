@@ -29,7 +29,7 @@ class PaymentInvoiceController extends Controller
              * ONLY active students, branch-aware
              */
             $studentQuery = function ($query) use ($branchId) {
-                $query->active();
+                // $query->active();
 
                 if ($branchId != 0) {
                     $query->where('branch_id', $branchId);

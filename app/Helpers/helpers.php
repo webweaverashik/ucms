@@ -26,11 +26,6 @@ if (! function_exists('clearUCMSCaches')) {
         Cache::forget('guardians_list_branch_' . $branchId);
         Cache::forget('invoices_index_branch_' . $branchId);
         Cache::forget('transactions_branch_' . $branchId);
-
-        // Add dashboard cache clearing
-        if (function_exists('clearDashboardCacheForBranch')) {
-            clearDashboardCacheForBranch($branchId);
-        }
     }
 }
 
