@@ -18,7 +18,7 @@ class StudentPromoteController extends Controller
             ->select('id', 'name', 'student_unique_id', 'branch_id', 'class_id', 'batch_id')
             ->get();
 
-        $classes = ClassName::where('is_active', true)->get();
+        $classes = ClassName::active()->get();
 
         return view('students.promote', compact('students', 'classes'));
     }

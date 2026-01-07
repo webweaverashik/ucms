@@ -28,11 +28,7 @@ class SheetTopicTakenController extends Controller
             ->get();
 
         // Get all active sheet groups for filter dropdown
-        $sheetGroups = Sheet::whereHas('class', function ($query) {
-            $query->where('is_active', true);
-        })
-            ->with('class')
-            ->get();
+        $sheetGroups = Sheet::whereHas('class', fn($q) => $q->active())->with('class')->get();
 
         return view('notes.index', compact('notes_taken', 'sheetGroups'));
     }
@@ -110,11 +106,7 @@ class SheetTopicTakenController extends Controller
         }
 
         // Get all active sheet groups
-        $sheetGroups = Sheet::whereHas('class', function ($query) {
-            $query->where('is_active', true);
-        })
-            ->with('class')
-            ->get();
+        $sheetGroups = Sheet::whereHas('class', fn($q) => $q->active())->with('class')->get();
 
         return view('notes.bulk-distribution', compact('sheetGroups'));
     }

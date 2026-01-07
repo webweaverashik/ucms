@@ -62,7 +62,7 @@
                         <div class="d-flex align-items-center">
                             <i class="ki-outline ki-category fs-2 text-success me-2"></i>
                             <div class="fs-4 fw-bold" data-kt-countup="true"
-                                data-kt-countup-value="{{ \App\Models\Cost\CostType::where('is_active', true)->count() }}">
+                                data-kt-countup-value="{{ \App\Models\Cost\CostType::active()->count() }}">
                                 0</div>
                         </div>
                         <div class="fw-semibold fs-6 text-gray-500">Cost Types</div>

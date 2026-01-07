@@ -51,7 +51,7 @@ class StudentController extends Controller
                         ->whereNotNull('student_activation_id')
                         ->where('branch_id', $branch->id)
                         ->whereHas('class', function ($query) {
-                            $query->where('is_active', true);
+                            $query->active();
                         })
                         ->latest('updated_at')
                         ->get();
@@ -71,7 +71,7 @@ class StudentController extends Controller
                         $query->where('branch_id', $branchId);
                     })
                     ->whereHas('class', function ($query) {
-                        $query->where('is_active', true);
+                        $query->active();
                     })
                     ->latest('updated_at')
                     ->get();
@@ -107,7 +107,7 @@ class StudentController extends Controller
             ->latest()
             ->get();
 
-        $classnames = ClassName::where('is_active', true)->get();
+        $classnames = ClassName::active()->get();
 
         $batches = Batch::with('branch:id,branch_name')
             ->when(auth()->user()->branch_id != 0, function ($query) {
@@ -789,13 +789,11 @@ class StudentController extends Controller
         // If student has a class, prefer loading same-status list; else load active by default
         $studentClassIsActive = optional($student->class)->is_active;
 
-        if ($studentClassIsActive === true) {
-            $classnames = ClassName::withoutGlobalScopes()->where('is_active', true)->get();
-        } elseif ($studentClassIsActive === false) {
-            $classnames = ClassName::withoutGlobalScopes()->where('is_active', false)->get();
+        if ($studentClassIsActive === false) {
+            $classnames = ClassName::inactive()->get();
         } else {
-            // student has no class assigned, return active classes by default
-            $classnames = ClassName::withoutGlobalScopes()->where('is_active', true)->get();
+            // true OR null → active by default
+            $classnames = ClassName::active()->get();
         }
 
         $batches      = Batch::where('branch_id', $student->branch_id)->get();

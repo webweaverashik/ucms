@@ -183,7 +183,8 @@ class ReportController extends Controller
         // Get classes data
         $classesData = ClassName::orderBy('id')
             ->where(function ($query) use ($classIdsWithRevenue) {
-                $query->where('is_active', true)->orWhereIn('id', $classIdsWithRevenue);
+                $query->active()
+                    ->orWhereIn('id', $classIdsWithRevenue);
             })
             ->select('id', 'name', 'is_active')
             ->get();
