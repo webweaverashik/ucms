@@ -117,11 +117,11 @@
                             </td>
                             <td>
                                 @if ($log->type === 'collection')
-                                    <span class="badge badge-light-success">Collection</span>
+                                    <span class="badge badge-success">Collection</span>
                                 @elseif($log->type === 'settlement')
-                                    <span class="badge badge-light-info">Settlement</span>
+                                    <span class="badge badge-info">Settlement</span>
                                 @else
-                                    <span class="badge badge-light-warning">Adjustment</span>
+                                    <span class="badge badge-warning">Adjustment</span>
                                 @endif
                             </td>
                             <td>
@@ -136,16 +136,16 @@
                             </td>
                             <td class="text-end" data-order="{{ $log->amount }}">
                                 @if ($log->amount >= 0)
-                                    <span class="text-success fw-bold">+৳{{ number_format($log->amount, 2) }}</span>
+                                    <span class="text-success fw-bold">+৳{{ number_format($log->amount, 0) }}</span>
                                 @else
-                                    <span class="text-danger fw-bold">৳{{ number_format($log->amount, 2) }}</span>
+                                    <span class="text-danger fw-bold">৳{{ number_format($log->amount, 0) }}</span>
                                 @endif
                             </td>
                             <td class="text-end">
-                                <span class="text-gray-600">৳{{ number_format($log->old_balance, 2) }}</span>
+                                <span class="text-gray-600">৳{{ number_format($log->old_balance, 0) }}</span>
                             </td>
                             <td class="text-end">
-                                <span class="text-gray-800 fw-bold">৳{{ number_format($log->new_balance, 2) }}</span>
+                                <span class="text-gray-800 fw-bold">৳{{ number_format($log->new_balance, 0) }}</span>
                             </td>
                             <td>
                                 <span class="text-gray-700">{{ $log->creator->name ?? 'System' }}</span>

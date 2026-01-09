@@ -93,7 +93,7 @@
                                     <div class="d-flex align-items-center">
                                         <i class="ki-outline ki-arrow-up fs-3 text-success me-2"></i>
                                         <div class="fs-2 fw-bold text-success">
-                                            ৳{{ number_format($summary['total_collected'], 2) }}
+                                            ৳{{ number_format($summary['total_collected'], 0) }}
                                         </div>
                                     </div>
                                     <div class="fw-semibold fs-6 text-gray-500">Total Collected</div>
@@ -103,7 +103,7 @@
                                     <div class="d-flex align-items-center">
                                         <i class="ki-outline ki-arrow-down fs-3 text-info me-2"></i>
                                         <div class="fs-2 fw-bold text-info">
-                                            ৳{{ number_format($summary['total_settled'], 2) }}
+                                            ৳{{ number_format($summary['total_settled'], 0) }}
                                         </div>
                                     </div>
                                     <div class="fw-semibold fs-6 text-gray-500">Total Settled</div>
@@ -114,7 +114,7 @@
                                         <i class="ki-outline ki-wallet fs-3 text-warning me-2"></i>
                                         <div class="fs-2 fw-bold text-warning"
                                             data-wallet-balance="{{ $summary['current_balance'] }}">
-                                            ৳{{ number_format($summary['current_balance'], 2) }}
+                                            ৳{{ number_format($summary['current_balance'], 0) }}
                                         </div>
                                     </div>
                                     <div class="fw-semibold fs-6 text-gray-500">Current Balance</div>
@@ -142,7 +142,7 @@
                 <div class="card-header pt-5">
                     <div class="card-title d-flex flex-column">
                         <span
-                            class="fs-2hx fw-bold text-success me-2 lh-1 ls-n2">৳{{ number_format($summary['today_collected'], 2) }}</span>
+                            class="fs-2hx fw-bold text-success me-2 lh-1 ls-n2">৳{{ number_format($summary['today_collected'], 0) }}</span>
                         <span class="text-gray-500 pt-1 fw-semibold fs-6">Today's Collection</span>
                     </div>
                 </div>
@@ -153,7 +153,7 @@
                 <div class="card-header pt-5">
                     <div class="card-title d-flex flex-column">
                         <span
-                            class="fs-2hx fw-bold text-info me-2 lh-1 ls-n2">৳{{ number_format($summary['today_settled'], 2) }}</span>
+                            class="fs-2hx fw-bold text-info me-2 lh-1 ls-n2">৳{{ number_format($summary['today_settled'], 0) }}</span>
                         <span class="text-gray-500 pt-1 fw-semibold fs-6">Today's Settlement</span>
                     </div>
                 </div>
@@ -225,11 +225,11 @@
                             </td>
                             <td>
                                 @if ($log->type === 'collection')
-                                    <span class="badge badge-light-success">Collection</span>
+                                    <span class="badge badge-success">Collection</span>
                                 @elseif($log->type === 'settlement')
-                                    <span class="badge badge-light-info">Settlement</span>
+                                    <span class="badge badge-info">Settlement</span>
                                 @else
-                                    <span class="badge badge-light-warning">Adjustment</span>
+                                    <span class="badge badge-warning">Adjustment</span>
                                 @endif
                             </td>
                             <td>
@@ -244,16 +244,16 @@
                             </td>
                             <td>
                                 @if ($log->amount >= 0)
-                                    <span class="text-success fw-bold">+৳{{ number_format($log->amount, 2) }}</span>
+                                    <span class="text-success fw-bold">+৳{{ number_format($log->amount, 0) }}</span>
                                 @else
-                                    <span class="text-danger fw-bold">৳{{ number_format($log->amount, 2) }}</span>
+                                    <span class="text-danger fw-bold">৳{{ number_format($log->amount, 0) }}</span>
                                 @endif
                             </td>
                             <td>
-                                <span class="text-gray-600">৳{{ number_format($log->old_balance, 2) }}</span>
+                                <span class="text-gray-600">৳{{ number_format($log->old_balance, 0) }}</span>
                             </td>
                             <td>
-                                <span class="text-gray-800 fw-bold">৳{{ number_format($log->new_balance, 2) }}</span>
+                                <span class="text-gray-800 fw-bold">৳{{ number_format($log->new_balance, 0) }}</span>
                             </td>
                             <td>
                                 <span class="text-gray-700">{{ $log->creator->name ?? 'System' }}</span>
