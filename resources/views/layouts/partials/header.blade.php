@@ -5,7 +5,7 @@
     <div class="app-container  container-fluid d-flex align-items-stretch justify-content-between "
         id="kt_app_header_container">
         <!--begin::Sidebar mobile toggle-->
-        <div class="d-flex align-items-center d-lg-none ms-n3 me-1 me-md-2" title="Show sidebar menu">
+        <div class="d-flex align-items-center d-lg-none ms-n3 me-1 me-md-2">
             <div class="btn btn-icon btn-active-color-primary w-35px h-35px" id="kt_app_sidebar_mobile_toggle">
                 <i class="ki-outline ki-abstract-14 fs-2 fs-md-1"></i>
             </div>
@@ -702,12 +702,12 @@
                 </div>
                 <!--end::User menu-->
                 <!--begin::Header menu toggle-->
-                <div class="app-navbar-item d-lg-none ms-2 me-n2" title="Show header menu">
+                {{-- <div class="app-navbar-item d-lg-none ms-2 me-n2" title="Show header menu">
                     <div class="btn btn-flex btn-icon btn-active-color-primary w-30px h-30px"
                         id="kt_app_header_menu_toggle">
                         <i class="ki-outline ki-element-4 fs-1"></i>
                     </div>
-                </div>
+                </div> --}}
                 <!--end::Header menu toggle-->
                 <!--begin::Aside toggle-->
                 <!--end::Header menu toggle-->

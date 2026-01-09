@@ -67,7 +67,7 @@
                 <div class="card-header pt-5">
                     <div class="card-title d-flex flex-column">
                         <span
-                            class="fs-2hx fw-bold text-danger me-2 lh-1 ls-n2">৳{{ number_format($totalPending, 2) }}</span>
+                            class="fs-2hx fw-bold text-danger me-2 lh-1 ls-n2">৳{{ number_format($totalPending, 0) }}</span>
                         <span class="text-gray-500 pt-1 fw-semibold fs-6">Total Pending</span>
                     </div>
                 </div>
@@ -131,12 +131,12 @@
                     {{-- Search --}}
                     <div class="d-flex align-items-center position-relative">
                         <i class="ki-outline ki-magnifier fs-3 position-absolute ms-4"></i>
-                        <input type="text" data-kt-filter="search" class="form-control form-control-solid w-300px ps-12"
+                        <input type="text" data-kt-filter="search" class="form-control form-control-solid w-175px w-md-300px ps-12"
                             placeholder="Search user..." />
                     </div>
 
                     {{-- Balance Filter --}}
-                    <select class="form-select form-select-solid w-200px" data-kt-filter="balance" data-control="select2"
+                    <select class="form-select form-select-solid w-120px w-md-200px" data-kt-filter="balance" data-control="select2"
                         data-placeholder="All Balances" data-allow-clear="true" data-hide-search="true">
                         <option></option>
                         <option value="with_balance">With Balance</option>
@@ -203,19 +203,19 @@
                                         </td>
                                         <td class="text-end">
                                             <span
-                                                class="text-success fw-bold">৳{{ number_format($user->total_collected, 2) }}</span>
+                                                class="text-success fw-bold">৳ {{ number_format($user->total_collected, 0) }}</span>
                                         </td>
                                         <td class="text-end">
                                             <span
-                                                class="text-info fw-bold">৳{{ number_format($user->total_settled, 2) }}</span>
+                                                class="text-info fw-bold">৳ {{ number_format($user->total_settled, 0) }}</span>
                                         </td>
                                         <td class="text-end"
                                             data-filter="{{ $user->current_balance > 0 ? 'with_balance' : 'zero_balance' }}">
                                             @if ($user->current_balance > 0)
                                                 <span
-                                                    class="text-danger fw-bolder fs-5">৳{{ number_format($user->current_balance, 2) }}</span>
+                                                    class="text-danger fw-bolder fs-5">৳ {{ number_format($user->current_balance, 0) }}</span>
                                             @else
-                                                <span class="text-muted">৳0.00</span>
+                                                <span class="text-muted">৳ 0</span>
                                             @endif
                                         </td>
                                         <td class="text-end">

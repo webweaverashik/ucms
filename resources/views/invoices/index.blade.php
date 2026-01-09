@@ -91,7 +91,7 @@
                         <div class="d-flex align-items-center position-relative my-1">
                             <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
                             <input type="text" data-kt-due-invoice-table-filter="search"
-                                class="form-control form-control-solid w-350px ps-12" placeholder="Search in due invoices">
+                                class="form-control form-control-solid w-md-350px ps-12" placeholder="Search in due invoices">
                         </div>
                         <!--end::Search-->
                         <!--begin::Export hidden buttons-->
@@ -392,7 +392,7 @@
                         <div class="d-flex align-items-center position-relative my-1">
                             <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
                             <input type="text" data-kt-paid-invoice-table-filter="search"
-                                class="form-control form-control-solid w-350px ps-12"
+                                class="form-control form-control-solid w-md-350px ps-12"
                                 placeholder="Search in paid invoices">
                         </div>
                         <!--end::Search-->

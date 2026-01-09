@@ -73,7 +73,7 @@
                 <div class="d-flex align-items-center position-relative my-1">
                     <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
                     <input type="text" data-transaction-table-filter="search"
-                        class="form-control form-control-solid w-350px ps-12" placeholder="Search in transactions">
+                        class="form-control form-control-solid w-md-350px ps-12" placeholder="Search in transactions">
                 </div>
                 <!--end::Search-->
 
