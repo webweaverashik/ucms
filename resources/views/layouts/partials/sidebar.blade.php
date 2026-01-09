@@ -152,17 +152,24 @@
                                 @endcan
 
                                 @can('students.approve')
-                                    <!--begin:Menu item-->
                                     <div class="menu-item">
-                                        <!--begin:Menu link--><a class="menu-link" id="pending_approval_link"
-                                            href="{{ route('students.pending') }}"><span class="menu-bullet"><span
-                                                    class="bullet bullet-dot"></span></span><span class="menu-title">Pending
-                                                Approval</span><span class="menu-badge"><span
-                                                    class="badge badge-info">{{ \App\Models\Student\Student::pending()->count() }}</span></span></a>
-                                        <!--end:Menu link-->
+                                        <a class="menu-link" id="pending_approval_link"
+                                            href="{{ route('students.pending') }}">
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot"></span>
+                                            </span>
+
+                                            <span class="menu-title">Pending Approval</span>
+
+                                            <span class="menu-badge">
+                                                <span class="badge badge-info">
+                                                    {{ \App\Models\Student\Student::pending()->forUserBranch()->count() }}
+                                                </span>
+                                            </span>
+                                        </a>
                                     </div>
-                                    <!--end:Menu item-->
                                 @endcan
+
 
                                 @can('students.promote')
                                     <!--begin:Menu item-->

@@ -1,22 +1,23 @@
 <?php
 namespace App\Models\Student;
 
-use App\Models\Academic\Batch;
-use App\Models\Academic\ClassName;
-use App\Models\Academic\Institution;
-use App\Models\Academic\SecondaryClass;
-use App\Models\Academic\SubjectTaken;
-use App\Models\Branch;
-use App\Models\Payment\Payment;
-use App\Models\Payment\PaymentInvoice;
-use App\Models\Payment\PaymentTransaction;
-use App\Models\Sheet\SheetPayment;
-use App\Models\Sheet\SheetTopicTaken;
-use App\Models\Student\StudentAttendance;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Branch;
+use App\Models\Academic\Batch;
+use App\Models\Payment\Payment;
+use App\Models\Academic\ClassName;
+use App\Models\Sheet\SheetPayment;
+use App\Models\Academic\Institution;
+use App\Models\Academic\SubjectTaken;
+use App\Models\Sheet\SheetTopicTaken;
+use App\Models\Payment\PaymentInvoice;
+use App\Models\Academic\SecondaryClass;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Student\StudentAttendance;
+use Illuminate\Database\Eloquent\Builder;
+use App\Models\Payment\PaymentTransaction;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Student extends Model
 {
@@ -53,6 +54,33 @@ class Student extends Model
     public function scopePending($query)
     {
         return $query->whereNull('student_activation_id');
+    }
+
+    /**
+     * Scope: Restrict students by authenticated user's branch
+     *
+     * Rule:
+     * - If the authenticated user is an Admin → NO branch restriction applied
+     * - If the authenticated user is NOT an Admin → only students
+     *   belonging to the user's branch will be returned
+     *
+     * Usage:
+     * Student::pending()->forUserBranch()->count();
+     * Student::active()->forUserBranch()->get();
+     */
+    public function scopeForUserBranch(Builder $query)
+    {
+        // Get the currently authenticated user
+        $user = auth()->user();
+
+        // Safety check: ensure user exists and is NOT an admin
+        if ($user && ! $user->isAdmin()) {
+            // Restrict query to the user's branch only
+            $query->where('branch_id', $user->branch_id);
+        }
+
+        // Always return the query for chaining
+        return $query;
     }
 
     /* ------------------
