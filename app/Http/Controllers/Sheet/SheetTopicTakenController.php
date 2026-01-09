@@ -38,16 +38,7 @@ class SheetTopicTakenController extends Controller
      */
     public function create()
     {
-        $branchId = auth()->user()->branch_id;
-
-        // Simplified students query
-        $students = Student::active()
-            ->when($branchId != 0, function ($query) use ($branchId) {
-                $query->where('branch_id', $branchId);
-            })
-            ->orderBy('student_unique_id')
-            ->select('id', 'name', 'student_unique_id')
-            ->get();
+        $students = Student::active()->forUserBranch()->hasSheetPayment()->with('sheetPayments.invoice.invoiceType')->orderBy('student_unique_id')->select('id', 'name', 'student_unique_id', 'branch_id')->get();
 
         return view('notes.single-distribution', compact('students'));
     }

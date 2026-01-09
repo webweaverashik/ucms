@@ -1,23 +1,23 @@
 <?php
 namespace App\Models\Student;
 
-use App\Models\User;
-use App\Models\Branch;
 use App\Models\Academic\Batch;
-use App\Models\Payment\Payment;
 use App\Models\Academic\ClassName;
-use App\Models\Sheet\SheetPayment;
 use App\Models\Academic\Institution;
-use App\Models\Academic\SubjectTaken;
-use App\Models\Sheet\SheetTopicTaken;
-use App\Models\Payment\PaymentInvoice;
 use App\Models\Academic\SecondaryClass;
-use Illuminate\Database\Eloquent\Model;
-use App\Models\Student\StudentAttendance;
-use Illuminate\Database\Eloquent\Builder;
+use App\Models\Academic\SubjectTaken;
+use App\Models\Branch;
+use App\Models\Payment\Payment;
+use App\Models\Payment\PaymentInvoice;
 use App\Models\Payment\PaymentTransaction;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Sheet\SheetPayment;
+use App\Models\Sheet\SheetTopicTaken;
+use App\Models\Student\StudentAttendance;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Student extends Model
 {
@@ -81,6 +81,18 @@ class Student extends Model
 
         // Always return the query for chaining
         return $query;
+    }
+
+    /**
+     * Scope: Students who have at least one Sheet Payment
+     *
+     * Rule:
+     * - Includes both active and pending students
+     * - Student must have at least one SheetPayment record
+     */
+    public function scopeHasSheetPayment(Builder $query)
+    {
+        return $query->whereHas('sheetPayments');
     }
 
     /* ------------------
