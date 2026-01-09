@@ -151,7 +151,7 @@
                                     <!--end:Menu item-->
                                 @endcan
 
-                                @can('students.approve')
+                                @can('students.view')
                                     <div class="menu-item">
                                         <a class="menu-link" id="pending_approval_link"
                                             href="{{ route('students.pending') }}">

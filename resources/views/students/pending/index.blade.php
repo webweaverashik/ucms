@@ -2,11 +2,9 @@
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
 @endpush
 
-
 @extends('layouts.app')
 
 @section('title', 'Pending Approval')
-
 
 @section('header-title')
     <div data-kt-swapper="true" data-kt-swapper-mode="{default: 'prepend', lg: 'prepend'}"
@@ -25,7 +23,8 @@
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
                 <a href="#" class="text-muted text-hover-primary">
-                    Student Info </a>
+                    Student Info
+                </a>
             </li>
             <!--end::Item-->
             <!--begin::Item-->
@@ -35,24 +34,35 @@
             <!--end::Item-->
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                Pending Students </li>
+                Pending Students
+            </li>
             <!--end::Item-->
         </ul>
         <!--end::Breadcrumb-->
     </div>
 @endsection
 
-
 @section('content')
     @php
         // Define badge colors for different branches
-        $badgeColors = ['badge-light-primary', 'badge-light-success', 'badge-light-warning'];
-
+        $badgeColors = [
+            'badge-light-primary',
+            'badge-light-success',
+            'badge-light-warning',
+            'badge-light-danger',
+            'badge-light-info',
+        ];
         // Map branches to badge colors dynamically
         $branchColors = [];
         foreach ($branches as $index => $branch) {
             $branchColors[$branch->branch_name] = $badgeColors[$index % count($badgeColors)];
         }
+
+        // Preloading permissions checking
+        $canApprove = auth()->user()->can('students.approve');
+        $canEdit = auth()->user()->can('students.edit');
+        $canDelete = auth()->user()->can('students.delete');
+        $canCreate = auth()->user()->can('students.create');
     @endphp
 
     <!--begin::Card-->
@@ -63,12 +73,11 @@
             <div class="card-title">
                 <!--begin::Search-->
                 <div class="d-flex align-items-center position-relative my-1">
-                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
-                        data-kt-subscription-table-filter="search" class="form-control form-control-solid w-350px ps-12"
-                        placeholder="Search Students">
+                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
+                    <input type="text" data-kt-subscription-table-filter="search"
+                        class="form-control form-control-solid w-350px ps-12" placeholder="Search Students">
                 </div>
                 <!--end::Search-->
-
                 <!--begin::Export hidden buttons-->
                 <div id="kt_hidden_export_buttons" class="d-none"></div>
                 <!--end::Export buttons-->
@@ -96,21 +105,6 @@
                         <!--begin::Content-->
                         <div class="px-7 py-5" data-kt-subscription-table-filter="form">
                             <div class="row">
-                                @if (auth()->user()->hasRole('admin'))
-                                    <div class="col-6 mb-5">
-                                        <label class="form-label fs-6 fw-semibold">Branch:</label>
-                                        <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                            data-placeholder="Select option" data-allow-clear="true"
-                                            data-kt-subscription-table-filter="product" data-hide-search="true">
-                                            <option></option>
-                                            @foreach ($branches as $branch)
-                                                <option value="{{ $branch->id }}_{{ $branch->branch_name }}">
-                                                    {{ ucfirst($branch->branch_name) }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                @endif
-
                                 <div class="col-6 mb-5">
                                     <label class="form-label fs-6 fw-semibold">Student Gender:</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
@@ -121,7 +115,6 @@
                                         <option value="student_female">Female</option>
                                     </select>
                                 </div>
-
                                 <div class="col-6 mb-5">
                                     <label class="form-label fs-6 fw-semibold">Payment Type:</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
@@ -132,7 +125,6 @@
                                         <option value="current">Current</option>
                                     </select>
                                 </div>
-
                                 <!--begin::Input group-->
                                 <div class="col-6 mb-5">
                                     <label class="form-label fs-6 fw-semibold">Due Date:</label>
@@ -147,7 +139,6 @@
                                     </select>
                                 </div>
                                 <!--end::Input group-->
-
                                 <!--begin::Input group-->
                                 <div class="col-6 mb-5">
                                     <label class="form-label fs-6 fw-semibold">Batches:</label>
@@ -158,7 +149,8 @@
                                         @foreach ($batches as $batch)
                                             <option
                                                 value="{{ $batch->id }}_{{ $batch->name }}_{{ $batch->branch->branch_name }}">
-                                                {{ $batch->name }} @if (auth()->user()->hasRole('admin'))
+                                                {{ $batch->name }}
+                                                @if ($isAdmin)
                                                     ({{ $batch->branch->branch_name }})
                                                 @endif
                                             </option>
@@ -166,7 +158,6 @@
                                     </select>
                                 </div>
                                 <!--end::Input group-->
-
                                 <!--begin::Input group-->
                                 <div class="col-6 mb-5">
                                     <label class="form-label fs-6 fw-semibold">Academic Group:</label>
@@ -179,9 +170,8 @@
                                     </select>
                                 </div>
                                 <!--end::Input group-->
-
                                 <!--begin::Input group-->
-                                <div class="col-12 mb-5">
+                                <div class="col-6 mb-5">
                                     <label class="form-label fs-6 fw-semibold">Class</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                         data-placeholder="Select option" data-allow-clear="true"
@@ -195,7 +185,6 @@
                                     </select>
                                 </div>
                                 <!--end::Input group-->
-
                                 <!--begin::Input group-->
                                 <div class="col-12 mb-5">
                                     <label class="form-label fs-6 fw-semibold">Institutions</label>
@@ -212,10 +201,7 @@
                                     </select>
                                 </div>
                                 <!--end::Input group-->
-
                             </div>
-
-
                             <!--begin::Actions-->
                             <div class="d-flex justify-content-end">
                                 <button type="reset"
@@ -236,19 +222,16 @@
                             data-kt-menu-placement="bottom-end">
                             <i class="ki-outline ki-exit-up fs-2"></i>Export
                         </button>
-
                         <!--begin::Menu-->
                         <div id="kt_table_report_dropdown_menu"
                             class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
                             data-kt-menu="true">
                             <!--begin::Menu item-->
                             <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3" data-row-export="copy">Copy to
-                                    clipboard</a>
+                                <a href="#" class="menu-link px-3" data-row-export="copy">Copy to clipboard</a>
                             </div>
                             <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3" data-row-export="excel">Export as
-                                    Excel</a>
+                                <a href="#" class="menu-link px-3" data-row-export="excel">Export as Excel</a>
                             </div>
                             <div class="menu-item px-3">
                                 <a href="#" class="menu-link px-3" data-row-export="csv">Export as CSV</a>
@@ -262,12 +245,12 @@
                     </div>
                     <!--end::Export dropdown-->
 
-                    @can('students.create')
+                    @if ($canCreate)
                         <!--begin::Add Student-->
                         <a href="{{ route('students.create') }}" class="btn btn-primary">
                             <i class="ki-outline ki-plus fs-2"></i>New Admission</a>
                         <!--end::Add Student-->
-                    @endcan
+                    @endif
                 </div>
                 <!--end::Toolbar-->
             </div>
@@ -277,184 +260,84 @@
 
         <!--begin::Card body-->
         <div class="card-body py-4">
-            <!--begin::Table-->
-            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_students_table">
-                <thead>
-                    <tr class="fw-bold fs-7 text-uppercase gs-0">
-                        <th class="w-25px">#</th>
-                        <th class="min-w-200px">Student</th>
-                        <th class="d-none">Gender (filter)</th>
-                        <th class="d-none">Class (filter)</th>
-                        <th>Class</th>
-                        <th class="d-none">Group (filter)</th>
-                        <th>Group</th>
-                        <th class="d-none">Batch (Filter)</th>
-                        <th>Batch</th>
-                        <th class="w-300px">Institution</th>
-                        <th>Guardians</th>
-                        <th>Mobile<br>(Home)</th>
-                        <th>Fee (Tk)</th>
-                        <th>Payment<br>Type</th>
-                        <th>Admission<br>Date</th>
-                        <th class="d-none">Branch (filter)</th>
-                        <th class="@if (!auth()->user()->hasRole('admin')) d-none @endif">Branch</th>
-                        <th class="min-w-70px not-export">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="text-gray-600 fw-semibold">
-                    @foreach ($students as $student)
-                        <tr>
-                            <td class="pe-2">{{ $loop->index + 1 }}</td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <!--begin:: Avatar -->
-                                    <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
-                                        <a href="{{ route('students.show', $student->id) }}">
-                                            <div class="symbol-label">
-                                                <img src="{{ $student->photo_url ? asset($student->photo_url) : asset($student->gender == 'male' ? 'img/boy.png' : 'img/girl.png') }}"
-                                                    alt="{{ $student->name }}" class="w-100" />
-
-                                            </div>
-                                        </a>
-                                    </div>
-                                    <!--end::Avatar-->
-
-                                    <!--begin::user details-->
-                                    <div class="d-flex flex-column text-start">
-                                        <a href="{{ route('students.show', $student->id) }}"
-                                            class="text-gray-800 text-hover-primary mb-1">{{ $student->name }}
-                                        </a>
-                                        <span class="fw-bold fs-base">{{ $student->student_unique_id }}</span>
-                                    </div>
-                                    <!--begin::user details-->
-                                </div>
-                            </td>
-                            <td class="d-none">student_{{ $student->gender }}</td>
-                            <td class="d-none">{{ $student->class_id }}_{{ $student->class->class_numeral }}_ucms</td>
-                            <td>{{ $student->class->name }}</td>
-                            <td class="d-none">ucms_{{ $student->academic_group }}</td>
-                            <td>
-                                @if ($student->academic_group == 'Science')
-                                    <span class="badge badge-pill badge-info">{{ $student->academic_group }}</span>
-                                @elseif ($student->academic_group == 'Commerce')
-                                    <span class="badge badge-pill badge-success">{{ $student->academic_group }}</span>
-                                @else
-                                    <span class="text-muted">-</span>
-                                @endif
-                            </td>
-                            <td class="d-none">
-                                {{ $student->batch_id }}_{{ $student->batch->name }}_{{ $student->branch->branch_name }}
-                            </td>
-                            <td>{{ $student->batch->name }}</td>
-                            <td>{{ $student->institution->name }}
-                                (EIIN: {{ $student->institution->eiin_number }})</td>
-                            <td>
-                                @foreach ($student->guardians as $guardian)
-                                    <a href="#"><span
-                                            class="badge badge-light-primary text-hover-success fs-7">{{ $guardian->name }},
-                                            {{ ucfirst($guardian->relationship) }}</span></a><br>
-                                @endforeach
-                            </td>
-                            <td>
-                                {!! $student->mobileNumbers->where('number_type', 'home')->pluck('mobile_number')->implode('<br>') ?: '-' !!}
-                            </td>
-                            <td>
-                                @if ($student->payments)
-                                    {{ $student->payments->tuition_fee }}
-                                @endif
-                            </td>
-                            <td>
-                                @if ($student->payments)
-                                    {{ ucfirst($student->payments->payment_style) }}-1/{{ $student->payments->due_date }}
-                                @endif
-                            </td>
-                            <td>{{ $student->created_at->format('d-M-Y') }}</td>
-                            <td class="d-none">{{ $student->branch_id }}_{{ $student->branch->branch_name }}</td>
-                            <td class="@if (!auth()->user()->hasRole('admin')) d-none @endif">
-                                @if ($student->branch)
-                                    @php
-                                        $branchName = $student->branch->branch_name;
-                                        $badgeColor = $branchColors[$branchName] ?? 'badge-light-secondary';
-                                    @endphp
-                                    <span class="badge {{ $badgeColor }}">{{ $branchName }}</span>
-                                @else
-                                    <span class="badge badge-light-secondary">N/A</span>
-                                @endif
-                            </td>
-                            <td>
-                                @canany(['students.approve', 'students.delete', 'students.edit'])
-                                    <a href="#" class="btn btn-light btn-active-light-primary btn-sm"
-                                        data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions
-                                        <i class="ki-outline ki-down fs-5 m-0"></i></a>
-                                    <!--begin::Menu-->
-                                    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-150px py-4"
-                                        data-kt-menu="true">
-
-                                        @hasanyrole('admin|manager')
-                                            <!--begin::Menu item-->
-                                            <div class="menu-item px-3">
-                                                <a href="#" class="menu-link px-3 text-hover-success approve-student"
-                                                    data-student-id="{{ $student->id }}"><i
-                                                        class="bi bi-person-check fs-3 me-2"></i> Approve</a>
-                                            </div>
-                                            <!--end::Menu item-->
-                                        @endhasanyrole
-
-                                        @can('students.edit')
-                                            <!--begin::Menu item-->
-                                            <div class="menu-item px-3">
-                                                <a href="{{ route('students.edit', $student->id) }}"
-                                                    class="menu-link text-hover-primary px-3"><i class="las la-pen fs-3 me-2"></i>
-                                                    Edit</a>
-                                            </div>
-                                            <!--end::Menu item-->
-                                        @endcan
-
-                                        @can('students.delete')
-                                            <!--begin::Menu item-->
-                                            <div class="menu-item px-3">
-                                                <a href="#" class="menu-link text-hover-danger px-3 delete-student"
-                                                    data-student-id="{{ $student->id }}"><i class="bi bi-trash fs-3 me-2"></i>
-                                                    Delete</a>
-                                            </div>
-                                            <!--end::Menu item-->
-                                        @endcan
-                                    </div>
-                                    <!--end::Menu-->
-                                @endcanany
-                            </td>
-                        </tr>
+            @if ($isAdmin)
+                <!--begin::Tabs for Admin-->
+                <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-5 fs-6" id="pendingBranchTabs" role="tablist">
+                    @foreach ($branches as $index => $branch)
+                        @php
+                            $branchStudentCount = isset($studentsByBranch[$branch->id])
+                                ? $studentsByBranch[$branch->id]->count()
+                                : 0;
+                            $tabBadgeColor = $badgeColors[$index % count($badgeColors)];
+                        @endphp
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link fw-bold {{ $index === 0 ? 'active' : '' }}"
+                                id="tab-pending-branch-{{ $branch->id }}" data-bs-toggle="tab"
+                                href="#kt_tab_pending_branch_{{ $branch->id }}" role="tab"
+                                aria-controls="kt_tab_pending_branch_{{ $branch->id }}"
+                                aria-selected="{{ $index === 0 ? 'true' : 'false' }}"
+                                data-branch-id="{{ $branch->id }}">
+                                <i class="ki-outline ki-bank fs-4 me-1"></i>
+                                {{ ucfirst($branch->branch_name) }}
+                                <span class="badge {{ $tabBadgeColor }} ms-2">{{ $branchStudentCount }}</span>
+                            </a>
+                        </li>
                     @endforeach
-                </tbody>
-            </table>
-            <!--end::Table-->
+                </ul>
+                <!--end::Tabs for Admin-->
+
+                <!--begin::Tab Content-->
+                <div class="tab-content" id="pendingBranchTabsContent">
+                    @foreach ($branches as $index => $branch)
+                        <div class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}"
+                            id="kt_tab_pending_branch_{{ $branch->id }}" role="tabpanel"
+                            aria-labelledby="tab-pending-branch-{{ $branch->id }}">
+
+                            @include('students.pending.partials.pending-table', [
+                                'students' => $studentsByBranch[$branch->id] ?? collect(),
+                                'tableId' => 'kt_pending_students_table_branch_' . $branch->id,
+                                'branchColors' => $branchColors,
+                                'canApprove' => $canApprove,
+                                'canEdit' => $canEdit,
+                                'canDelete' => $canDelete,
+                                'isAdmin' => $isAdmin,
+                            ])
+                        </div>
+                    @endforeach
+                </div>
+                <!--end::Tab Content-->
+            @else
+                <!--begin::Single Table for Non-Admin-->
+                @include('students.pending.partials.pending-table', [
+                    'students' => $students,
+                    'tableId' => 'kt_pending_students_table',
+                    'branchColors' => $branchColors,
+                    'canApprove' => $canApprove,
+                    'canEdit' => $canEdit,
+                    'canDelete' => $canDelete,
+                    'isAdmin' => $isAdmin,
+                ])
+                <!--end::Single Table for Non-Admin-->
+            @endif
         </div>
         <!--end::Card body-->
     </div>
     <!--end::Card-->
+
 @endsection
-
-
 
 @push('vendor-js')
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
 @endpush
 
-
 @push('page-js')
-    <script src="{{ asset('assets/js/custom/apps/customers/view/add-payment.js') }}"></script>
-    <script src="{{ asset('assets/js/custom/apps/customers/view/adjust-balance.js') }}"></script>
-    <script src="{{ asset('assets/js/custom/apps/customers/view/invoices.js') }}"></script>
-    <script src="{{ asset('assets/js/custom/apps/customers/view/payment-method.js') }}"></script>
-    <script src="{{ asset('assets/js/custom/apps/customers/view/payment-table.js') }}"></script>
-    <script src="{{ asset('assets/js/custom/apps/customers/view/statement.js') }}"></script>
-
     <script>
         const routeDeleteStudent = "{{ route('students.destroy', ':id') }}";
+        const routeApproveStudent = "{{ url('students') }}/:id/approve";
+        const isAdmin = @json($isAdmin);
+        const branchIds = @json($branches->pluck('id')->toArray());
     </script>
-
     <script src="{{ asset('js/students/pending.js') }}"></script>
-
     <script>
         document.getElementById("admission_menu").classList.add("here", "show");
         document.getElementById("pending_approval_link").classList.add("active");

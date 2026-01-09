@@ -213,7 +213,6 @@ class RolePermissionSeeder extends Seeder
             'students.view',
             'students.create',
             'students.edit',
-            'students.approve',
             'students.form.download',
 
             // 🗓️ attendance
