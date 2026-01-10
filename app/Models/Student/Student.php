@@ -23,7 +23,7 @@ class Student extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['student_unique_id', 'branch_id', 'name', 'date_of_birth', 'gender', 'class_id', 'academic_group', 'batch_id', 'institution_id', 'religion', 'blood_group', 'home_address', 'email', 'password', 'reference_id', 'student_activation_id', 'photo_url', 'remarks', 'deleted_by'];
+    protected $fillable = ['student_unique_id', 'branch_id', 'name', 'date_of_birth', 'gender', 'class_id', 'academic_group', 'batch_id', 'institution_id', 'religion', 'blood_group', 'home_address', 'email', 'password', 'reference_id', 'student_activation_id', 'photo_url', 'remarks', 'created_by', 'deleted_by'];
 
     protected $hidden = ['password'];
 
@@ -209,6 +209,12 @@ class Student extends Model
         return $this->hasMany(SheetPayment::class, 'student_id')->whereHas('invoice.invoiceType', function ($query) {
             $query->where('type_name', 'Sheet Fee');
         });
+    }
+
+    // Created by
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     // Deleted by (admin/manager)

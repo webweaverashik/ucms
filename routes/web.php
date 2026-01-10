@@ -3,6 +3,7 @@
 use App\Http\Controllers\Academic\BatchController;
 use App\Http\Controllers\Academic\ClassNameController;
 use App\Http\Controllers\Academic\InstitutionController;
+use App\Http\Controllers\Academic\SecondaryClassController;
 use App\Http\Controllers\Academic\SubjectController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\PasswordController;
@@ -155,10 +156,32 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
 
     // -------------Bulk Distribution Ends-------------
 
-    // Class Names
-    Route::get('classnames/ajax-data/{class}', [ClassNameController::class, 'getClassName'])->name('classnames.ajax');
-    Route::get('classnames/branch-counts/{class}', [ClassNameController::class, 'getBranchCounts'])->name('classnames.branch-counts');
+    /*
+    |--------------------------------------------------------------------------
+    | Class Names Routes
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('classnames')->name('classnames.')->group(function () {
+        Route::get('ajax-data/{class}', [ClassNameController::class, 'getClassName'])->name('ajax');
+        Route::get('branch-counts/{class}', [ClassNameController::class, 'getBranchCounts'])->name('branch-counts');
+    });
+    Route::resource('classnames', ClassNameController::class);
 
+    /*
+    |--------------------------------------------------------------------------
+    | Secondary Classes Routes
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('secondary-classes')->name('secondary-classes.')->group(function () {
+        Route::get('by-class/{classId}', [SecondaryClassController::class, 'getByClass'])->name('by-class');
+    });
+    Route::resource('secondary-classes', SecondaryClassController::class);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Report Routes
+    |--------------------------------------------------------------------------
+    */
     // Reports
     Route::get('reports', [ReportController::class, 'attendanceReport'])->name('reports.index');
 
@@ -271,7 +294,6 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
         'siblings'          => SiblingController::class,
         'teachers'          => TeacherController::class,
         'institutions'      => InstitutionController::class,
-        'classnames'        => ClassNameController::class,
         'batches'           => BatchController::class,
         'subjects'          => SubjectController::class,
         'invoices'          => PaymentInvoiceController::class,

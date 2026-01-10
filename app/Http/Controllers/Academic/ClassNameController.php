@@ -150,6 +150,7 @@ class ClassNameController extends Controller
 
     /**
      * Display the specified resource.
+     * Optimized to reduce N+1 query issues
      */
     public function show(string $id)
     {
@@ -161,26 +162,51 @@ class ClassNameController extends Controller
         $isAdmin  = $user->isAdmin();
         $branchId = $user->branch_id;
 
-        $classname = ClassName::withoutGlobalScope('active')
+        // Get branches for admin tabs
+        $branches = $isAdmin
+            ? Branch::select('id', 'branch_name', 'branch_prefix')->orderBy('branch_name')->get()
+            : collect();
+
+        // Optimized query with eager loading to prevent N+1
+        $classname = ClassName::query()
             ->withCount([
-                'activeStudents'   => function ($q) use ($isAdmin, $branchId) {
-                    if (! $isAdmin) {
-                        $q->where('branch_id', $branchId);
-                    }
+                'activeStudents'   => fn($q)   => $q->when(! $isAdmin, fn($q) => $q->where('branch_id', $branchId)),
+                'inactiveStudents' => fn($q) => $q->when(! $isAdmin, fn($q) => $q->where('branch_id', $branchId)),
+            ])
+            ->with([
+                // Eager load students with all nested relationships
+                'students'         => function ($q) use ($isAdmin, $branchId) {
+                    $q->when(! $isAdmin, fn($q) => $q->where('branch_id', $branchId))
+                        ->select(['id', 'student_unique_id', 'name', 'academic_group', 'branch_id', 'batch_id', 'class_id', 'student_activation_id', 'created_by', 'created_at'])
+                        ->with([
+                            'branch:id,branch_name',
+                            'createdBy:id,name',
+                            'studentActivation:id,active_status',
+                            'batch:id,name',
+                        ]);
                 },
-                'inactiveStudents' => function ($q) use ($isAdmin, $branchId) {
-                    if (! $isAdmin) {
-                        $q->where('branch_id', $branchId);
-                    }
+                // Eager load secondary classes with student count
+                'secondaryClasses' => function ($q) {
+                    $q->withCount('students');
+                },
+                // Eager load subjects with student count
+                'subjects'         => function ($q) {
+                    $q->withCount('students');
                 },
             ])
-            ->find($id);
+            ->findOrFail($id);
 
         if (! $classname) {
             return redirect()->route('classnames.index')->with('warning', 'Class not found.');
         }
 
-        return view('classnames.view', compact('classname'));
+        // Group students by branch for admin (done in PHP to avoid additional queries)
+        $studentsByBranch = [];
+        if ($isAdmin) {
+            $studentsByBranch = $classname->students->groupBy('branch_id');
+        }
+
+        return view('classnames.view', compact('classname', 'branches', 'isAdmin', 'studentsByBranch'));
     }
 
     /**
@@ -320,9 +346,9 @@ class ClassNameController extends Controller
             ], 403);
         }
 
-        $branches     = Branch::select('id', 'branch_name', 'branch_prefix')->orderBy('branch_name')->get();
-        $branchCounts = [];
+        $branches = Branch::select('id', 'branch_name', 'branch_prefix')->orderBy('branch_name')->get();
 
+        $branchCounts = [];
         foreach ($branches as $branch) {
             $branchCounts[$branch->id] = [
                 'name'     => $branch->branch_name,

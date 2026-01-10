@@ -5,7 +5,7 @@ use App\Models\Sheet\Sheet;
 use App\Models\Student\Student;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Factories\HasFactory; // <--- alias
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -13,7 +13,7 @@ class ClassName extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'class_numeral', 'description', 'is_active', 'deleted_by'];
+    protected $fillable = ['name', 'class_numeral', 'year_prefix', 'description', 'is_active', 'deleted_by'];
 
     protected $casts = [
         'is_active' => 'boolean',

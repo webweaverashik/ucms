@@ -317,6 +317,7 @@ class StudentController extends Controller
                 'password' => Hash::make('password'),
                 'reference_id' => null,
                 'remarks' => $validated['student_remarks'] ?? null,
+                'created_by' => auth()->user()->id,
             ]);
 
             if (!$student) {

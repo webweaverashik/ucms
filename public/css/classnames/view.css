@@ -183,12 +183,6 @@
 }
 
 /* ===== Universal Icon Color Inheritance ===== */
-/* 
- * This ensures icons inherit their parent's color.
- * Works for all styled components in this file.
- */
-
-/* Method 1: Target all icons within styled components */
 .student-count-badge i,
 .group-badge i,
 .stats-mini-card i,
@@ -198,8 +192,6 @@
 .badge i {
       color: inherit;
 }
-
-
 
 /* ===== Action Button Styles ===== */
 .subject-actions .btn-icon {
@@ -356,10 +348,186 @@
       letter-spacing: 0.5px;
 }
 
+/* ============================================================================
+   Secondary Class Card Styles
+   ============================================================================ */
+.secondary-class-card {
+      background: var(--bs-body-bg);
+      border: 1px solid var(--bs-gray-200);
+      border-radius: 0.75rem;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      height: 100%;
+}
+
+.secondary-class-card:hover {
+      border-color: var(--bs-primary);
+      box-shadow: 0 0.5rem 1.5rem rgba(var(--bs-primary-rgb), 0.12);
+      transform: translateY(-3px);
+}
+
+.secondary-class-card.inactive {
+      opacity: 0.7;
+      border-color: var(--bs-danger);
+      background: linear-gradient(135deg, var(--bs-body-bg) 0%, rgba(var(--bs-danger-rgb), 0.02) 100%);
+}
+
+.secondary-class-card.inactive:hover {
+      opacity: 0.9;
+}
+
+.secondary-class-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem;
+      background: linear-gradient(135deg, var(--bs-gray-100) 0%, var(--bs-gray-50, #fafafa) 100%);
+      border-bottom: 1px solid var(--bs-gray-200);
+}
+
+.secondary-class-icon {
+      width: 48px;
+      height: 48px;
+      min-width: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.625rem;
+      background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 100%);
+      transition: transform 0.3s ease;
+}
+
+.secondary-class-icon i {
+      color: #fff;
+      font-size: 1.5rem;
+}
+
+.secondary-class-card:hover .secondary-class-icon {
+      transform: scale(1.05);
+}
+
+.secondary-class-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--bs-gray-800);
+      margin: 0;
+}
+
+.secondary-class-body {
+      padding: 1.25rem;
+}
+
+.secondary-class-stat {
+      display: flex;
+      flex-direction: column;
+}
+
+.secondary-class-stat .stat-label {
+      font-size: 0.75rem;
+      color: var(--bs-gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.25rem;
+}
+
+.secondary-class-stat .stat-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+}
+
+.secondary-class-actions .form-check-input {
+      width: 2.5rem;
+      height: 1.25rem;
+}
+
+/* Responsive adjustments for secondary class cards */
+@media (max-width: 767.98px) {
+      .secondary-class-card {
+            margin-bottom: 0;
+      }
+
+      .secondary-class-header {
+            padding: 1rem;
+      }
+
+      .secondary-class-body {
+            padding: 1rem;
+      }
+
+      .secondary-class-icon {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+      }
+
+      .secondary-class-icon i {
+            font-size: 1.25rem;
+      }
+
+      .secondary-class-title {
+            font-size: 1rem;
+      }
+
+      .secondary-class-stat .stat-value {
+            font-size: 1.1rem;
+      }
+}
+
+/* ============================================================================
+   Branch Tabs Styles
+   ============================================================================ */
+#branchTabs .nav-link {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1.25rem;
+      font-weight: 500;
+      color: var(--bs-gray-600);
+      border: none;
+      transition: all 0.2s ease;
+}
+
+#branchTabs .nav-link:hover {
+      color: var(--bs-primary);
+      background: rgba(var(--bs-primary-rgb), 0.05);
+}
+
+#branchTabs .nav-link.active {
+      color: var(--bs-primary);
+      border-bottom: 2px solid var(--bs-primary);
+}
+
+#branchTabs .nav-link .badge {
+      font-size: 0.7rem;
+      padding: 0.25rem 0.5rem;
+}
+
+/* Responsive branch tabs */
+@media (max-width: 991.98px) {
+      #branchTabs {
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+      }
+
+      #branchTabs::-webkit-scrollbar {
+            display: none;
+      }
+
+      #branchTabs .nav-item {
+            flex-shrink: 0;
+      }
+
+      #branchTabs .nav-link {
+            padding: 0.5rem 1rem;
+            white-space: nowrap;
+      }
+}
+
 /* ========================================================================== 
    Dark Mode Support 
    ========================================================================== */
-
 [data-bs-theme="dark"] .academic-group-section {
       background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.1) 0%, rgba(var(--bs-info-rgb), 0.1) 100%);
       border-color: var(--bs-gray-700);
@@ -479,4 +647,47 @@
 
 [data-bs-theme="dark"] .border-top {
       border-color: var(--bs-gray-700) !important;
+}
+
+/* Dark Mode - Secondary Class Cards */
+[data-bs-theme="dark"] .secondary-class-card {
+      background: var(--bs-gray-900);
+      border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .secondary-class-card:hover {
+      border-color: var(--bs-primary);
+      box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.4);
+}
+
+[data-bs-theme="dark"] .secondary-class-card.inactive {
+      background: linear-gradient(135deg, var(--bs-gray-900) 0%, rgba(var(--bs-danger-rgb), 0.05) 100%);
+      border-color: var(--bs-danger);
+}
+
+[data-bs-theme="dark"] .secondary-class-header {
+      background: linear-gradient(135deg, var(--bs-gray-800) 0%, var(--bs-gray-850, #1a1a2e) 100%);
+      border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .secondary-class-title {
+      color: var(--bs-gray-200);
+}
+
+[data-bs-theme="dark"] .secondary-class-stat .stat-label {
+      color: var(--bs-gray-500);
+}
+
+/* Dark Mode - Branch Tabs */
+[data-bs-theme="dark"] #branchTabs .nav-link {
+      color: var(--bs-gray-400);
+}
+
+[data-bs-theme="dark"] #branchTabs .nav-link:hover {
+      color: var(--bs-primary);
+      background: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+[data-bs-theme="dark"] #branchTabs .nav-link.active {
+      color: var(--bs-primary);
 }
