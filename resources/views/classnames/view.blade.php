@@ -46,6 +46,23 @@
         $manageSubjects = auth()->user()->can('subjects.manage');
         $groupedSubjects = $classname->subjects->groupBy('academic_group');
         $totalSubjects = $classname->subjects->count();
+
+        // Define badge colors for different branches
+        $badgeColors = [
+            'badge-light-primary',
+            'badge-light-success',
+            'badge-light-warning',
+            'badge-light-danger',
+            'badge-light-info',
+        ];
+
+        // Map branches to badge colors dynamically
+        $branchColors = [];
+        if (isset($branches)) {
+            foreach ($branches as $index => $branch) {
+                $branchColors[$branch->id] = $badgeColors[$index % count($badgeColors)];
+            }
+        }
     @endphp
 
     <!--begin::Layout-->
@@ -150,7 +167,7 @@
                             </div>
                             <div class="col-6">
                                 <div class="stats-mini-card">
-                                    <div class="stats-value text-primary">{{ $totalSubjects }}</div>
+                                    <div class="stats-value text-info">{{ $totalSubjects }}</div>
                                     <div class="stats-label">Total Subjects</div>
                                 </div>
                             </div>
@@ -519,7 +536,7 @@
                                                 <i class="ki-outline ki-home fs-4 me-2"></i>
                                                 {{ $branch->branch_name }}
                                                 <span
-                                                    class="badge badge-light-primary ms-2">{{ $studentsByBranch->get($branch->id, collect())->count() }}</span>
+                                                    class="badge {{ $branchColors[$branch->id] ?? 'badge-light-primary' }} ms-2">{{ $studentsByBranch->get($branch->id, collect())->count() }}</span>
                                             </button>
                                         </li>
                                     @endforeach
