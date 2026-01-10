@@ -1,675 +1,390 @@
-@push('page-css')
-    <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
-@endpush
-
-
 @extends('layouts.app')
 
-@section('title', 'All Class')
+@section('title', 'All Classes')
 
 @section('header-title')
     <div data-kt-swapper="true" data-kt-swapper-mode="{default: 'prepend', lg: 'prepend'}"
         data-kt-swapper-parent="{default: '#kt_app_content_container', lg: '#kt_app_header_wrapper'}"
         class="page-title d-flex align-items-center flex-wrap me-3 mb-5 mb-lg-0">
-        <!--begin::Title-->
         <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 align-items-center my-0">
-            All Class
+            All Classes
         </h1>
-        <!--end::Title-->
-        <!--begin::Separator-->
         <span class="h-20px border-gray-300 border-start mx-4"></span>
-        <!--end::Separator-->
-        <!--begin::Breadcrumb-->
-        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 ">
-            <!--begin::Item-->
+        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
             <li class="breadcrumb-item text-muted">
-                <a href="#" class="text-muted text-hover-primary">
-                    Academic </a>
+                <a href="{{ route('dashboard') }}" class="text-muted text-hover-primary">Academic</a>
             </li>
-            <!--end::Item-->
-            <!--begin::Item-->
             <li class="breadcrumb-item">
                 <span class="bullet bg-gray-500 w-5px h-2px"></span>
             </li>
-            <!--end::Item-->
-            <!--begin::Item-->
-            <li class="breadcrumb-item text-muted">
-                Class </li>
-            <!--end::Item-->
+            <li class="breadcrumb-item text-muted">Class</li>
         </ul>
-        <!--end::Breadcrumb-->
     </div>
 @endsection
 
+@push('page-css')
+    <style>
+        /* Batch Tab Styles */
+        .batch-tabs {
+            display: flex;
+            gap: 2px;
+            border-bottom: 1px solid var(--bs-gray-200);
+            margin-bottom: 1rem;
+            overflow-x: auto;
+        }
+
+        .batch-tab {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--bs-gray-600);
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .batch-tab:hover {
+            color: var(--bs-gray-800);
+            background: var(--bs-gray-100);
+        }
+
+        .batch-tab.active {
+            color: var(--bs-white);
+            background: linear-gradient(135deg, var(--bs-primary) 0%, #1d4ed8 100%);
+            border-radius: 0.375rem 0.375rem 0 0;
+            border-bottom-color: var(--bs-primary);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            text-align: center;
+        }
+
+        .stat-item {
+            padding: 0.75rem 0.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .stat-item.active {
+            background: var(--bs-success-light);
+        }
+
+        .stat-item.inactive {
+            background: var(--bs-danger-light);
+        }
+
+        .stat-item.total {
+            background: var(--bs-gray-100);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--bs-gray-500);
+        }
+
+        /* Card Description
+        .card-description {
+            min-height: 40px;
+            color: var(--bs-gray-600);
+            font-size: 1rem;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        } */
+
+        /* Alumni Banner Gradient */
+        .alumni-banner {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
+            border: 1px dashed var(--bs-primary);
+        }
+
+        /* Active Filters Bar */
+        .active-filters-bar {
+            display: none;
+            align-items: center;
+            margin-top: 1.25rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--bs-gray-200);
+        }
+
+        .active-filters-bar.show {
+            display: flex;
+        }
+
+        /* Empty State */
+        .empty-state-icon {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bs-gray-100);
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+        }
+    </style>
+@endpush
 
 @section('content')
     @php
-        // Preloading permissions checking
         $canEditClass = auth()->user()->can('classes.edit');
         $canDeleteClass = auth()->user()->can('classes.delete');
     @endphp
 
-    <!--begin:::Tabs-->
-    <ul class="nav nav-custom nav-tabs nav-line-tabs nav-line-tabs-2x border-0 fs-4 fw-semibold mb-8">
-        <!--begin:::Tab item-->
+    <!--begin::Stats Overview-->
+    <div class="row g-5 g-xl-8 mb-8">
+        <!--begin::Col - Total Classes-->
+        <div class="col-6 col-lg-3">
+            <div class="card card-flush h-100 hover-elevate-up shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="symbol symbol-50px me-4">
+                        <div class="symbol-label bg-light-primary">
+                            <i class="ki-outline ki-abstract-26 fs-2x text-primary"></i>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-column">
+                        <span class="text-gray-500 fs-7 fw-semibold">Total Classes</span>
+                        <span class="fs-2x fw-bold text-gray-900">{{ $stats['total_classes'] }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--end::Col-->
+
+        <!--begin::Col - Active Classes-->
+        <div class="col-6 col-lg-3">
+            <div class="card card-flush h-100 hover-elevate-up shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="symbol symbol-50px me-4">
+                        <div class="symbol-label bg-light-success">
+                            <i class="ki-outline ki-verify fs-2x text-success"></i>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-column">
+                        <span class="text-gray-500 fs-7 fw-semibold">Active Classes</span>
+                        <span class="fs-2x fw-bold text-gray-900">{{ $stats['active_classes'] }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--end::Col-->
+
+        <!--begin::Col - Regular Students-->
+        <div class="col-6 col-lg-3">
+            <div class="card card-flush h-100 hover-elevate-up shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="symbol symbol-50px me-4">
+                        <div class="symbol-label bg-light-info">
+                            <i class="ki-outline ki-people fs-2x text-info"></i>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-column">
+                        <span class="text-gray-500 fs-7 fw-semibold">Regular Students</span>
+                        <span class="fs-2x fw-bold text-gray-900">{{ number_format($stats['regular_students']) }}</span>
+                        <span class="text-gray-400 fs-8">From active classes only</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--end::Col-->
+
+        <!--begin::Col - Active Students-->
+        <div class="col-6 col-lg-3">
+            <div class="card card-flush h-100 hover-elevate-up shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="symbol symbol-50px me-4">
+                        <div class="symbol-label bg-light-warning">
+                            <i class="ki-outline ki-user-tick fs-2x text-warning"></i>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-column">
+                        <span class="text-gray-500 fs-7 fw-semibold">Active Students</span>
+                        <span class="fs-2x fw-bold text-gray-900">{{ number_format($stats['active_students']) }}</span>
+                        <span class="text-gray-400 fs-8">From active classes only</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--end::Col-->
+    </div>
+    <!--end::Stats Overview-->
+
+    <!--begin::Alumni Overview Banner-->
+    @if ($stats['inactive_classes'] > 0)
+        <div class="card card-flush alumni-banner mb-8">
+            <div class="card-body py-4">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="symbol symbol-45px">
+                            <div class="symbol-label bg-primary">
+                                <i class="ki-outline ki-teacher fs-2 text-white"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-primary fw-bold mb-0">Alumni Overview</h4>
+                            <span class="text-primary fs-7 opacity-75">Students from inactive classes</span>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-6">
+                        <div class="text-center">
+                            <div class="fs-2x fw-bold text-primary">{{ number_format($stats['alumni_students']) }}</div>
+                            <div class="text-primary fs-8 fw-semibold opacity-75">Total Alumni</div>
+                        </div>
+                        <div class="vr bg-primary opacity-25" style="width: 1px; height: 40px;"></div>
+                        <div class="text-center">
+                            <div class="fs-2x fw-bold text-primary">{{ $stats['inactive_classes'] }}</div>
+                            <div class="text-primary fs-8 fw-semibold opacity-75">Inactive Classes</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+    <!--end::Alumni Overview Banner-->
+
+    <!--begin::Toolbar Card-->
+    <div class="card card-flush shadow-sm mb-6">
+        <div class="card-body py-5">
+            <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-4">
+                <!--begin::Search-->
+                <div class="position-relative w-100 w-lg-350px">
+                    <i
+                        class="ki-outline ki-magnifier fs-3 position-absolute top-50 translate-middle-y ms-4 text-gray-500"></i>
+                    <input type="text" id="class-search-input" class="form-control form-control-solid ps-12"
+                        placeholder="Search by class name...">
+                </div>
+                <!--end::Search-->
+
+                <!--begin::Right Controls-->
+                <div class="d-flex align-items-center gap-3 flex-wrap flex-lg-nowrap">
+                    <!--begin::Numeral Filter-->
+                    <div class="w-100 w-lg-175px">
+                        <select id="numeral-filter" class="form-select form-select-solid" data-control="select2"
+                            data-placeholder="All Numerals" data-allow-clear="true" data-hide-search="true">
+                            <option></option>
+                            @foreach (range(4, 12) as $i)
+                                <option value="{{ sprintf('%02d', $i) }}">Class {{ sprintf('%02d', $i) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <!--end::Numeral Filter-->
+
+                    @can('classes.create')
+                        <!--begin::Add Button-->
+                        <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_class">
+                            <i class="ki-outline ki-plus fs-4 me-1"></i> Add Class
+                        </a>
+                        <!--end::Add Button-->
+                    @endcan
+                </div>
+                <!--end::Right Controls-->
+            </div>
+
+            <!--begin::Active Filters-->
+            <div id="active-filters" class="active-filters-bar">
+                <span class="text-gray-500 fs-7 me-2">Showing:</span>
+                <span id="results-count" class="badge badge-light-primary fs-7 fw-semibold"></span>
+                <button id="clear-filters" class="btn btn-sm btn-link text-danger ms-auto p-0">
+                    <i class="ki-outline ki-cross fs-5 me-1"></i>Clear filters
+                </button>
+            </div>
+            <!--end::Active Filters-->
+        </div>
+    </div>
+    <!--end::Toolbar Card-->
+
+    <!--begin::Tabs Navigation-->
+    <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x border-0 fs-5 fw-semibold mb-8">
         <li class="nav-item">
-            <a class="nav-link text-active-primary pb-4 active" data-bs-toggle="tab" href="#kt_active_classnames_tab"><i
-                    class="ki-outline ki-home fs-3 me-2"></i>Active Class
+            <a class="nav-link text-active-primary pb-4 active" data-bs-toggle="tab" href="#kt_active_classnames_tab">
+                <i class="ki-outline ki-verify fs-4 me-2"></i>Active Classes
+                <span class="badge badge-light-primary ms-2" id="active-tab-count">{{ $active_classes->count() }}</span>
             </a>
         </li>
-        <!--end:::Tab item-->
-
-        <!--begin:::Tab item-->
         <li class="nav-item">
-            <a class="nav-link text-active-primary pb-4" data-bs-toggle="tab" href="#kt_inactive_classnames_tab"><i
-                    class="ki-outline ki-book-open fs-3 me-2"></i>Inactive Class
+            <a class="nav-link text-active-primary pb-4" data-bs-toggle="tab" href="#kt_inactive_classnames_tab">
+                <i class="ki-outline ki-minus-circle fs-4 me-2"></i>Inactive Classes (Alumni)
+                <span class="badge badge-light-danger ms-2"
+                    id="inactive-tab-count">{{ $inactive_classes->count() }}</span>
             </a>
         </li>
-        <!--end:::Tab item-->
-
-        @can('classes.create')
-            <!--begin:::Tab item-->
-            <li class="nav-item ms-auto">
-                <!--begin::Action menu-->
-                <a href="#" class="btn btn-primary ps-7" data-bs-toggle="modal" data-bs-target="#kt_modal_add_class"><i
-                        class="ki-outline ki-plus fs-2 me-0"></i> Add Class</a>
-                <!--end::Menu-->
-            </li>
-            <!--end:::Tab item-->
-        @endcan
     </ul>
-    <!--end:::Tabs-->
+    <!--end::Tabs Navigation-->
 
-    <!--begin:::Tab content-->
-    <div class="tab-content" id="myTabContent">
-        <!--begin:::Tab pane-->
+    <!--begin::Tab Content-->
+    <div class="tab-content" id="classTabContent">
+        <!--begin::Active Classes Tab-->
         <div class="tab-pane fade show active" id="kt_active_classnames_tab" role="tabpanel">
-            <!--begin::Card-->
-            <div class="card">
-                <!--begin::Card header-->
-                <div class="card-header border-0 pt-6">
-                    <!--begin::Card title-->
-                    <div class="card-title">
-                        <!--begin::Search-->
-                        <div class="d-flex align-items-center position-relative my-1">
-                            <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
-                                data-kt-active-class-table-filter="search"
-                                class="form-control form-control-solid w-md-350px ps-12" placeholder="Search in active class">
-                        </div>
-                        <!--end::Search-->
+            <div id="active_classes_container" class="row g-6 g-xl-9">
+                @forelse ($active_classes as $classname)
+                    @include('classnames.partials.class-card', [
+                        'classname' => $classname,
+                        'isActive' => true,
+                    ])
+                @empty
+                    <div class="col-12 empty-state-original">
+                        @include('classnames.partials.empty-state', ['type' => 'active'])
                     </div>
-                    <!--begin::Card title-->
-
-                    <!--begin::Card toolbar-->
-                    <div class="card-toolbar">
-                        <!--begin::Toolbar-->
-                        <div class="d-flex justify-content-end" data-kt-active-class-table-toolbar="base">
-                            <!--begin::Filter-->
-                            <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
-                                data-kt-menu-placement="bottom-end">
-                                <i class="ki-outline ki-filter fs-2"></i>Filter</button>
-                            <!--begin::Menu 1-->
-                            <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
-                                <!--begin::Header-->
-                                <div class="px-7 py-5">
-                                    <div class="fs-5 text-gray-900 fw-bold">Filter Options</div>
-                                </div>
-                                <!--end::Header-->
-                                <!--begin::Separator-->
-                                <div class="separator border-gray-200"></div>
-                                <!--end::Separator-->
-                                <!--begin::Content-->
-                                <div class="px-7 py-5" data-kt-active-class-table-filter="form">
-                                    <!--begin::Input group-->
-                                    <div class="mb-10">
-                                        <label class="form-label fs-6 fw-semibold">Class Numeral:</label>
-                                        <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                            data-placeholder="Select option" data-allow-clear="true"
-                                            data-kt-active-class-table-filter="product" data-hide-search="true">
-                                            <option></option>
-                                            @foreach (range(4, 12) as $i)
-                                                <option value="Active_{{ sprintf('%02d', $i) }}">{{ sprintf('%02d', $i) }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <!--end::Input group-->
-
-                                    <!--begin::Input group-->
-                                    <div class="mb-10">
-                                        <label class="form-label fs-6 fw-semibold">Activation Status:</label>
-                                        <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                            data-placeholder="Select option" data-allow-clear="true"
-                                            data-kt-active-class-table-filter="status" data-hide-search="true">
-                                            <option></option>
-                                            <option value="Active_class">Active</option>
-                                            <option value="Inactive_class">Inactive</option>
-                                        </select>
-                                    </div>
-                                    <!--end::Input group-->
-
-                                    <!--begin::Actions-->
-                                    <div class="d-flex justify-content-end">
-                                        <button type="reset"
-                                            class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
-                                            data-kt-menu-dismiss="true"
-                                            data-kt-active-class-table-filter="reset">Reset</button>
-                                        <button type="submit" class="btn btn-primary fw-semibold px-6"
-                                            data-kt-menu-dismiss="true"
-                                            data-kt-active-class-table-filter="filter">Apply</button>
-                                    </div>
-                                    <!--end::Actions-->
-                                </div>
-                                <!--end::Content-->
-                            </div>
-                            <!--end::Menu 1-->
-                            <!--end::Filter-->
-                        </div>
-                        <!--end::Toolbar-->
-
-                    </div>
-                    <!--end::Card toolbar-->
-                </div>
-                <!--end::Card header-->
-
-                <!--begin::Card body-->
-                <div class="card-body py-4">
-                    <!--begin::Table-->
-                    <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table"
-                        id="kt_active_classes_table">
-                        <thead>
-                            <tr class="fw-bold fs-7 text-uppercase gs-0">
-                                <th class="w-25px">SL</th>
-                                <th class="">Class Name</th>
-                                <th class="w-400px">Description</th>
-                                <th>Class Numeral</th>
-                                <th class="d-none">Class Numeral (filter)</th>
-                                <th>Total Active Students</th>
-                                <th>Inactive Students</th>
-                                <th>Status</th>
-                                <th class="d-none">Status (filter)</th>
-                                <th class="w-100px not-export">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-gray-600 fw-semibold">
-                            @foreach ($active_classes as $classname)
-                                <tr>
-                                    <td>{{ $loop->index + 1 }}</td>
-                                    <td>
-                                        <a href="{{ route('classnames.show', $classname->id) }}">
-                                            {{ $classname->name }} <i
-                                                class="text-muted">({{ $classname->class_numeral }})</i>
-                                        </a>
-                                    </td>
-                                    <td>{{ $classname->description ?? 'This is a sample description. Update the class description to change this.' }}
-                                    </td>
-
-                                    <td>{{ $classname->class_numeral }}</td>
-                                    <td class="d-none">Active_{{ $classname->class_numeral }}</td>
-
-                                    <td>{{ $classname->active_students_count }}</td>
-                                    <td>{{ $classname->inactive_students_count }}</td>
-
-                                    <td>
-                                        @if ($classname->is_active == true)
-                                            <span class="badge badge-success rounded-pill">Active</span>
-                                        @else
-                                            <span class="badge badge-danger rounded-pill">Inactive</span>
-                                        @endif
-                                    </td>
-
-                                    <td class="d-none">
-                                        @if ($classname->is_active == true)
-                                            Active_class
-                                        @else
-                                            Inactive_class
-                                        @endif
-                                    </td>
-
-                                    <td>
-                                        @if ($canEditClass)
-                                            <a href="#" title="Edit Class" data-bs-toggle="modal"
-                                                data-bs-target="#kt_modal_edit_class"
-                                                data-class-id="{{ $classname->id }}"
-                                                class="btn btn-icon text-hover-primary w-30px h-30px">
-                                                <i class="ki-outline ki-pencil fs-2"></i>
-                                            </a>
-                                        @endif
-
-                                        @if ($canDeleteClass && $classname->students_count == 0)
-                                            <a href="#" title="Delete Class"
-                                                data-active-class-id="{{ $classname->id }}"
-                                                class="btn btn-icon text-hover-danger w-30px h-30px class-delete-button">
-                                                <i class="ki-outline ki-trash fs-2"></i>
-                                            </a>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                    <!--end::Table-->
-                </div>
-                <!--end::Card body-->
+                @endforelse
             </div>
-            <!--end::Card-->
         </div>
-        <!--end:::Tab pane-->
+        <!--end::Active Classes Tab-->
 
-        <!--begin:::Tab pane-->
-        <div class="tab-pane fade show" id="kt_inactive_classnames_tab" role="tabpanel">
-            <!--begin::Card-->
-            <div class="card">
-                <!--begin::Card header-->
-                <div class="card-header border-0 pt-6">
-                    <!--begin::Card title-->
-                    <div class="card-title">
-                        <!--begin::Search-->
-                        <div class="d-flex align-items-center position-relative my-1">
-                            <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
-                                data-kt-inactive-class-table-filter="search"
-                                class="form-control form-control-solid w-350px ps-12"
-                                placeholder="Search in inactive class">
-                        </div>
-                        <!--end::Search-->
+        <!--begin::Inactive Classes Tab-->
+        <div class="tab-pane fade" id="kt_inactive_classnames_tab" role="tabpanel">
+            <div id="inactive_classes_container" class="row g-6 g-xl-9">
+                @forelse ($inactive_classes as $classname)
+                    @include('classnames.partials.class-card', [
+                        'classname' => $classname,
+                        'isActive' => false,
+                    ])
+                @empty
+                    <div class="col-12 empty-state-original">
+                        @include('classnames.partials.empty-state', ['type' => 'inactive'])
                     </div>
-                    <!--begin::Card title-->
-
-                    <!--begin::Card toolbar-->
-                    <div class="card-toolbar">
-                        <!--begin::Toolbar-->
-                        <div class="d-flex justify-content-end" data-kt-inactive-class-table-toolbar="base">
-                            <!--begin::Filter-->
-                            <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
-                                data-kt-menu-placement="bottom-end">
-                                <i class="ki-outline ki-filter fs-2"></i>Filter</button>
-                            <!--begin::Menu 1-->
-                            <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
-                                <!--begin::Header-->
-                                <div class="px-7 py-5">
-                                    <div class="fs-5 text-gray-900 fw-bold">Filter Options</div>
-                                </div>
-                                <!--end::Header-->
-                                <!--begin::Separator-->
-                                <div class="separator border-gray-200"></div>
-                                <!--end::Separator-->
-                                <!--begin::Content-->
-                                <div class="px-7 py-5" data-kt-inactive-class-table-filter="form">
-                                    <!--begin::Input group-->
-                                    <div class="mb-10">
-                                        <label class="form-label fs-6 fw-semibold">Class Numeral:</label>
-                                        <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                            data-placeholder="Select option" data-allow-clear="true"
-                                            data-kt-inactive-class-table-filter="product" data-hide-search="true">
-                                            <option></option>
-                                            @foreach (range(4, 12) as $i)
-                                                <option value="Inactive_{{ sprintf('%02d', $i) }}">
-                                                    {{ sprintf('%02d', $i) }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <!--end::Input group-->
-
-                                    <!--begin::Input group-->
-                                    <div class="mb-10">
-                                        <label class="form-label fs-6 fw-semibold">Activation Status:</label>
-                                        <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                            data-placeholder="Select option" data-allow-clear="true"
-                                            data-kt-inactive-class-table-filter="status" data-hide-search="true">
-                                            <option></option>
-                                            <option value="Active_class">Active</option>
-                                            <option value="Inactive_class">Inactive</option>
-                                        </select>
-                                    </div>
-                                    <!--end::Input group-->
-
-                                    <!--begin::Actions-->
-                                    <div class="d-flex justify-content-end">
-                                        <button type="reset"
-                                            class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
-                                            data-kt-menu-dismiss="true"
-                                            data-kt-inactive-class-table-filter="reset">Reset</button>
-                                        <button type="submit" class="btn btn-primary fw-semibold px-6"
-                                            data-kt-menu-dismiss="true"
-                                            data-kt-inactive-class-table-filter="filter">Apply</button>
-                                    </div>
-                                    <!--end::Actions-->
-                                </div>
-                                <!--end::Content-->
-                            </div>
-                            <!--end::Menu 1-->
-                            <!--end::Filter-->
-                        </div>
-                        <!--end::Toolbar-->
-
-                    </div>
-                    <!--end::Card toolbar-->
-                </div>
-                <!--end::Card header-->
-
-                <!--begin::Card body-->
-                <div class="card-body py-4">
-                    <!--begin::Table-->
-                    <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table"
-                        id="kt_inactive_classes_table">
-                        <thead>
-                            <tr class="fw-bold fs-7 text-uppercase gs-0">
-                                <th class="w-25px">SL</th>
-                                <th class="">Class Name</th>
-                                <th class="w-400px">Description</th>
-                                <th>Class Numeral</th>
-                                <th class="d-none">Class Numeral (filter)</th>
-                                <th>Total Active Students</th>
-                                <th>Status</th>
-                                <th class="d-none">Status (filter)</th>
-                                <th class="w-100px not-export">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-gray-600 fw-semibold">
-                            @foreach ($inactive_classes as $classname)
-                                <tr>
-                                    <td>{{ $loop->index + 1 }}</td>
-                                    <td>
-                                        <a href="{{ route('classnames.show', $classname->id) }}">
-                                            {{ $classname->name }} <i
-                                                class="text-muted">({{ $classname->class_numeral }})</i>
-                                        </a>
-                                    </td>
-                                    <td>{{ $classname->description ?? 'This is a sample description. Update the class description to change this.' }}
-                                    </td>
-
-                                    <td>{{ $classname->class_numeral }}</td>
-                                    <td class="d-none">Inactive_{{ $classname->class_numeral }}</td>
-
-                                    <td>{{ $classname->active_students_count }}</td>
-
-                                    <td>
-                                        @if ($classname->is_active == true)
-                                            <span class="badge badge-success rounded-pill">Active</span>
-                                        @else
-                                            <span class="badge badge-danger rounded-pill">Inactive</span>
-                                        @endif
-                                    </td>
-
-                                    <td class="d-none">
-                                        @if ($classname->is_active == true)
-                                            Active_class
-                                        @else
-                                            Inactive_class
-                                        @endif
-                                    </td>
-
-                                    <td>
-                                        @if ($canEditClass)
-                                            <a href="#" title="Edit Class" data-bs-toggle="modal"
-                                                data-bs-target="#kt_modal_edit_class"
-                                                data-class-id="{{ $classname->id }}"
-                                                class="btn btn-icon text-hover-primary w-30px h-30px">
-                                                <i class="ki-outline ki-pencil fs-2"></i>
-                                            </a>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                    <!--end::Table-->
-                </div>
-                <!--end::Card body-->
+                @endforelse
             </div>
-            <!--end::Card-->
         </div>
-        <!--end:::Tab pane-->
+        <!--end::Inactive Classes Tab-->
     </div>
-    <!--end:::Tab content-->
+    <!--end::Tab Content-->
 
+    <!--begin::Modal - Add Class-->
+    @include('classnames.partials.modal-add')
+    <!--end::Modal - Add Class-->
 
-
-    <!--begin::Modal - Add class-->
-    <div class="modal fade" id="kt_modal_add_class" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
-        data-bs-keyboard="false">
-        <!--begin::Modal dialog-->
-        <div class="modal-dialog modal-dialog-centered mw-650px">
-            <!--begin::Modal content-->
-            <div class="modal-content">
-                <!--begin::Modal header-->
-                <div class="modal-header" id="kt_modal_add_class_header">
-                    <!--begin::Modal title-->
-                    <h2 class="fw-bold">Add New Class</h2>
-                    <!--end::Modal title-->
-                    <!--begin::Close-->
-                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-add-class-modal-action="close">
-                        <i class="ki-outline ki-cross fs-1">
-                        </i>
-                    </div>
-                    <!--end::Close-->
-                </div>
-                <!--end::Modal header-->
-                <!--begin::Modal body-->
-                <div class="modal-body px-5 my-7">
-                    <!--begin::Form-->
-                    <form id="kt_modal_add_class_form" class="form" action="#" novalidate="novalidate">
-                        <!--begin::Scroll-->
-                        <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_add_class_scroll"
-                            data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
-                            data-kt-scroll-dependencies="#kt_modal_add_class_header"
-                            data-kt-scroll-wrappers="#kt_modal_add_class_scroll" data-kt-scroll-offset="300px">
-
-                            <!--begin::Name Input group-->
-                            <div class="fv-row mb-7">
-                                <label class="required fw-semibold fs-6 mb-2">Class Name</label>
-                                <input type="text" name="class_name_add"
-                                    class="form-control form-control-solid mb-3 mb-lg-0"
-                                    placeholder="Write name of the class" required />
-                            </div>
-                            <!--end::Name Input group-->
-
-                            <!--begin::Name Input group-->
-                            <div class="fv-row mb-7">
-                                <label class="fw-semibold fs-6 mb-2 required">Class Numeral</label>
-                                <select name="class_numeral_add" class="form-select form-select-solid"
-                                    data-control="select2" data-hide-search="true"
-                                    data-dropdown-parent="#kt_modal_add_class" data-placeholder="Select numeral" required>
-                                    <option></option>
-                                    @for ($i = 12; $i >= 4; $i--)
-                                        <option value="{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}">
-                                            {{ str_pad($i, 2, '0', STR_PAD_LEFT) }}
-                                        </option>
-                                    @endfor
-                                </select>
-                            </div>
-                            <!--end::Name Input group-->
-
-                            <!--begin::Name Input group-->
-                            <div class="fv-row mb-7">
-                                <label class="fw-semibold fs-6 mb-2">Description <span
-                                        class="text-muted">(Optional)</span></label>
-                                <input type="text" name="description_add"
-                                    class="form-control form-control-solid mb-3 mb-lg-0"
-                                    placeholder="Write something about the class" />
-                            </div>
-                            <!--end::Name Input group-->
-                        </div>
-                        <!--end::Scroll-->
-
-                        <!--begin::Actions-->
-                        <div class="text-center pt-10">
-                            <button type="reset" class="btn btn-light me-3"
-                                data-kt-add-class-modal-action="cancel">Discard</button>
-                            <button type="submit" class="btn btn-primary" data-kt-add-class-modal-action="submit">
-                                <span class="indicator-label">Submit</span>
-                                <span class="indicator-progress">Please wait...
-                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
-                            </button>
-                        </div>
-                        <!--end::Actions-->
-                    </form>
-                    <!--end::Form-->
-                </div>
-                <!--end::Modal body-->
-            </div>
-            <!--end::Modal content-->
-        </div>
-        <!--end::Modal dialog-->
-    </div>
-    <!--end::Modal - Add class-->
-
-
-    <!--begin::Modal - Edit class-->
-    <div class="modal fade" id="kt_modal_edit_class" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
-        data-bs-keyboard="false">
-        <!--begin::Modal dialog-->
-        <div class="modal-dialog modal-dialog-centered mw-650px">
-            <!--begin::Modal content-->
-            <div class="modal-content">
-                <!--begin::Modal header-->
-                <div class="modal-header" id="kt_modal_edit_class_header">
-                    <!--begin::Modal title-->
-                    <h2 class="fw-bold" id="kt_modal_edit_class_title">Edit Class</h2>
-                    <!--end::Modal title-->
-                    <!--begin::Close-->
-                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-edit-class-modal-action="close">
-                        <i class="ki-outline ki-cross fs-1">
-                        </i>
-                    </div>
-                    <!--end::Close-->
-                </div>
-                <!--end::Modal header-->
-                <!--begin::Modal body-->
-                <div class="modal-body px-5 my-7">
-                    <!--begin::Form-->
-                    <form id="kt_modal_edit_class_form" class="form" action="#" novalidate="novalidate">
-                        <!--begin::Scroll-->
-                        <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_edit_class_scroll"
-                            data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
-                            data-kt-scroll-dependencies="#kt_modal_edit_class_header"
-                            data-kt-scroll-wrappers="#kt_modal_edit_class_scroll" data-kt-scroll-offset="300px">
-
-                            <!--begin::Class Name Input-->
-                            <div class="fv-row mb-7">
-                                <label class="required fw-semibold fs-6 mb-2">Class Name</label>
-                                <input type="text" name="class_name_edit"
-                                    class="form-control form-control-solid mb-3 mb-lg-0"
-                                    placeholder="Write name of the class" required />
-                            </div>
-                            <!--end::Class Name Input-->
-
-                            <!--begin::Class Numeral Input-->
-                            <div class="fv-row mb-7">
-                                <label class="fw-semibold fs-6 mb-2">Class Numeral <span class="text-muted">(Cannot
-                                        change)</span></label>
-                                <select name="class_numeral_edit" class="form-select form-select-solid"
-                                    data-control="select2" data-hide-search="true"
-                                    data-dropdown-parent="#kt_modal_edit_class" data-placeholder="Select numeral"
-                                    disabled>
-                                    <option></option>
-                                    @for ($i = 12; $i >= 4; $i--)
-                                        <option value="{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}">
-                                            {{ str_pad($i, 2, '0', STR_PAD_LEFT) }}
-                                        </option>
-                                    @endfor
-                                </select>
-                            </div>
-                            <!--end::Class Numeral Input-->
-
-                            <!--begin::Description Input group-->
-                            <div class="fv-row mb-7">
-                                <label class="fw-semibold fs-6 mb-2">Description <span
-                                        class="text-muted">(Optional)</span></label>
-                                <input type="text" name="description_edit"
-                                    class="form-control form-control-solid mb-3 mb-lg-0"
-                                    placeholder="Write something about the class" />
-                            </div>
-                            <!--end::Description Input group-->
-
-                            <!--begin::Status Input-->
-                            <div class="fv-row mb-7">
-                                <label class="fw-semibold fs-6 mb-2 required">Activation Status</label>
-                                <!--begin::Solid input group style-->
-                                <div class="row">
-                                    <!--begin::New Month Year-->
-                                    <div class="col-lg-6">
-                                        <!--begin::Option-->
-                                        <input type="radio" class="btn-check" name="activation_status"
-                                            value="active" id="active_radio" />
-                                        <label
-                                            class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
-                                            for="active_radio">
-                                            <i class="ki-outline ki-abstract fs-2x me-5"></i>
-                                            <!--begin::Info-->
-                                            <span class="d-block fw-semibold text-start">
-                                                <span class="text-gray-900 fw-bold d-block fs-6">Active</span>
-                                            </span>
-                                            <!--end::Info-->
-                                        </label>
-                                        <!--end::Option-->
-                                    </div>
-                                    <!--end::New Month Year-->
-
-                                    <!--begin::Old Month Year-->
-                                    <div class="col-lg-6">
-                                        <!--begin::Option-->
-                                        <input type="radio" class="btn-check" name="activation_status"
-                                            value="inactive" id="inactive_radio" />
-                                        <label
-                                            class="btn btn-outline btn-outline-dashed btn-active-light-danger p-3 d-flex align-items-center"
-                                            for="inactive_radio">
-                                            <i class="ki-outline ki-abstract-20 fs-2x me-5"></i>
-                                            <!--begin::Info-->
-                                            <span class="d-block fw-semibold text-start">
-                                                <span class="text-gray-900 fw-bold d-block fs-6">Inactive</span>
-                                            </span>
-                                            <!--end::Info-->
-                                        </label>
-                                        <!--end::Option-->
-                                    </div>
-                                    <!--end::Old Month Year-->
-                                </div>
-                                <!--end::Solid input group style-->
-                            </div>
-                            <!--end::Status Input-->
-                        </div>
-                        <!--end::Scroll-->
-
-                        <!--begin::Actions-->
-                        <div class="text-center pt-10">
-                            <button type="reset" class="btn btn-light me-3"
-                                data-kt-edit-class-modal-action="cancel">Discard</button>
-                            <button type="submit" class="btn btn-primary" data-kt-edit-class-modal-action="submit">
-                                <span class="indicator-label">Update</span>
-                                <span class="indicator-progress">Please wait...
-                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
-                            </button>
-                        </div>
-                        <!--end::Actions-->
-                    </form>
-                    <!--end::Form-->
-                </div>
-                <!--end::Modal body-->
-            </div>
-            <!--end::Modal content-->
-        </div>
-        <!--end::Modal dialog-->
-    </div>
-    <!--end::Modal - Edit class-->
-
+    <!--begin::Modal - Edit Class-->
+    @include('classnames.partials.modal-edit')
+    <!--end::Modal - Edit Class-->
 @endsection
-
-
-@push('vendor-js')
-    <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
-@endpush
 
 @push('page-js')
     <script>
-        const routeDeleteActiveClass = "{{ route('classnames.destroy', ':id') }}";
+        // Route definitions
+        const routeStoreClass = "{{ route('classnames.store') }}";
+        const routeDeleteClass = "{{ route('classnames.destroy', ':id') }}";
+        const routeToggleStatus = "{{ route('classnames.update', ':id') }}";
+        const routeGetClassData = "{{ route('classnames.ajax', ':class') }}";
     </script>
-
     <script src="{{ asset('js/classnames/index.js') }}"></script>
-
     <script>
-        document.getElementById("academic_menu").classList.add("here", "show");
-        document.getElementById("class_link").classList.add("active");
+        // Sidebar active state
+        document.getElementById("academic_menu")?.classList.add("here", "show");
+        document.getElementById("class_link")?.classList.add("active");
     </script>
 @endpush

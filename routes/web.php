@@ -157,6 +157,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
 
     // Class Names
     Route::get('classnames/ajax-data/{class}', [ClassNameController::class, 'getClassName'])->name('classnames.ajax');
+    Route::get('classnames/branch-counts/{class}', [ClassNameController::class, 'getBranchCounts'])->name('classnames.branch-counts');
 
     // Reports
     Route::get('reports', [ReportController::class, 'attendanceReport'])->name('reports.index');
@@ -306,4 +307,3 @@ Route::get('/send-test-email', function () {
 
     return 'Test email sent successfully!';
 });
-

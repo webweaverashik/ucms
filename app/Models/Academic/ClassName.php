@@ -79,7 +79,7 @@ class ClassName extends Model
     // Get all the students associated with this class
     public function students()
     {
-        return $this->hasMany(Student::class, 'class_id');
+        return $this->hasMany(Student::class, 'class_id')->whereNotNull('student_activation_id');
     }
 
     // Get all the active students associated with this class
