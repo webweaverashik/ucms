@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Academic;
 
 use App\Http\Controllers\Controller;
@@ -111,7 +112,7 @@ class SecondaryClassController extends Controller
         $branchId = $user->branch_id;
 
         // Verify the secondary class belongs to this class
-        if ($secondaryClass->class_id !== $classname->id) {
+        if ((int) $secondaryClass->class_id !== (int) $classname->id) {
             return redirect()->route('classnames.show', $classname->id)
                 ->with('warning', 'Special class does not belong to this class.');
         }
@@ -193,7 +194,7 @@ class SecondaryClassController extends Controller
         $activeStudents   = $enrollments->filter(fn($e) => $e->student?->studentActivation?->active_status === 'active')->count();
         $inactiveStudents = $totalStudents - $activeStudents;
 
-        $totalRevenue           = $enrollments->sum('amount');
+        $totalRevenue = $enrollments->sum('amount');
         $expectedMonthlyRevenue = $secondaryClass->payment_type === 'monthly'
             ? $activeStudents * $secondaryClass->fee_amount
             : 0;
@@ -202,7 +203,7 @@ class SecondaryClassController extends Controller
         $branchStats = [];
         if ($isAdmin && $branches->count() > 0) {
             foreach ($branches as $branch) {
-                $branchEnrollments        = $enrollments->filter(fn($e) => $e->student?->branch_id === $branch->id);
+                $branchEnrollments = $enrollments->filter(fn($e) => $e->student?->branch_id === $branch->id);
                 $branchStats[$branch->id] = [
                     'name'     => $branch->branch_name,
                     'prefix'   => $branch->branch_prefix,
@@ -315,7 +316,7 @@ class SecondaryClassController extends Controller
      */
     public function getAvailableStudents(ClassName $classname, SecondaryClass $secondaryClass, Request $request)
     {
-        $user      = auth()->user();
+        $user = auth()->user();
         $isManager = false;
         try {
             $isManager = $user->isManager();
@@ -342,8 +343,10 @@ class SecondaryClassController extends Controller
         // Get available students from the same class
         $studentsQuery = Student::where('class_id', $classname->id)
             ->whereNotIn('id', $enrolledStudentIds)
-            ->whereHas('studentActivation', function ($q) {
-                $q->where('active_status', 'active');
+            ->where(function ($q) {
+                $q->active()->orWhere(function($sub) {
+                    $sub->pending();
+                });
             })
             ->with(['branch:id,branch_name', 'batch:id,name', 'studentActivation:id,active_status']);
 
@@ -392,7 +395,7 @@ class SecondaryClassController extends Controller
      */
     public function enrollStudent(Request $request, ClassName $classname, SecondaryClass $secondaryClass)
     {
-        $user      = auth()->user();
+        $user = auth()->user();
         $isManager = false;
         try {
             $isManager = $user->isManager();
@@ -471,16 +474,16 @@ class SecondaryClassController extends Controller
         $yearSuffix = now()->format('y');
         $month      = now()->format('m');
         // Ensure branch is loaded
-        if (! $student->relationLoaded('branch')) {
+        if (!$student->relationLoaded('branch')) {
             $student->load('branch');
         }
-        $prefix = $student->branch->branch_prefix;
-
+        $prefix     = $student->branch->branch_prefix;
+        
         $lastInvoice = PaymentInvoice::where('invoice_number', 'like', "{$prefix}{$yearSuffix}{$month}_%")
             ->orderBy('invoice_number', 'desc')
             ->first();
 
-        $nextSequence  = $lastInvoice ? (int) substr($lastInvoice->invoice_number, strrpos($lastInvoice->invoice_number, '_') + 1) + 1 : 1001;
+        $nextSequence = $lastInvoice ? (int) substr($lastInvoice->invoice_number, strrpos($lastInvoice->invoice_number, '_') + 1) + 1 : 1001;
         $invoiceNumber = "{$prefix}{$yearSuffix}{$month}_{$nextSequence}";
 
         $invoiceType = PaymentInvoiceType::where('type_name', $typeName)->first();
@@ -506,7 +509,7 @@ class SecondaryClassController extends Controller
      */
     public function updateStudentEnrollment(Request $request, ClassName $classname, SecondaryClass $secondaryClass, Student $student)
     {
-        $user      = auth()->user();
+        $user = auth()->user();
         $isManager = false;
         try {
             $isManager = $user->isManager();
@@ -549,7 +552,7 @@ class SecondaryClassController extends Controller
      */
     public function checkUnpaidInvoices(ClassName $classname, SecondaryClass $secondaryClass, Student $student)
     {
-        $user      = auth()->user();
+        $user = auth()->user();
         $isManager = false;
         try {
             $isManager = $user->isManager();
@@ -604,7 +607,7 @@ class SecondaryClassController extends Controller
      */
     public function withdrawStudent(Request $request, ClassName $classname, SecondaryClass $secondaryClass, Student $student)
     {
-        $user      = auth()->user();
+        $user = auth()->user();
         $isManager = false;
         try {
             $isManager = $user->isManager();
