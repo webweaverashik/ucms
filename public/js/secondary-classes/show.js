@@ -18,7 +18,28 @@ var initDataTable = function () {
             { orderable: false, targets: isAdminUser ? [0, 8] : [0] }
         ],
         language: {
-            emptyTable: "No students enrolled in this special class"
+            emptyTable: function() {
+                let html = `
+                    <div class="d-flex flex-column align-items-center justify-content-center py-10">
+                        <div class="empty-state-icon mb-4">
+                            <i class="ki-outline ki-people fs-3tx text-gray-300"></i>
+                        </div>
+                        <h4 class="text-gray-800 fw-bold mb-3">No Students Enrolled</h4>
+                        <p class="text-muted fs-6 mb-6">
+                            Start enrolling students to this special class.
+                        </p>`;
+                
+                if (isAdminUser && typeof secondaryClassIsActive !== 'undefined' && secondaryClassIsActive) {
+                    html += `
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                            data-bs-target="#kt_modal_enroll_student">
+                            <i class="ki-outline ki-plus fs-3 me-1"></i>Enroll First Student
+                        </button>`;
+                }
+                
+                html += `</div>`;
+                return html;
+            }
         },
         drawCallback: function() {
             initTooltips();

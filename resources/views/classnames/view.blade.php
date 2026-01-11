@@ -647,9 +647,8 @@
                                                         <i class="ki-outline ki-abstract-26"></i>
                                                     </div>
                                                     <div class="ms-3">
-                                                        {{-- UPDATED: Added hyperlink to secondary class detail page --}}
-                                                        <a href="{{ route('classnames.secondary-classes.show', [$classname->id, $secondaryClass->id]) }}"
-                                                            class="secondary-class-title mb-0 text-hover-primary">
+                                                        <a href="{{ route('classnames.secondary-classes.show', [$classname->id, $secondaryClass->id]) }}" 
+                                                           class="secondary-class-title mb-0 text-gray-900 text-hover-primary fw-bold fs-5 text-decoration-none">
                                                             {{ $secondaryClass->name }}
                                                         </a>
                                                         <span class="text-muted fs-7 d-block">
@@ -677,33 +676,27 @@
                                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                                     <div class="secondary-class-stat">
                                                         <span class="stat-label">Fee Amount</span>
-                                                        <span
-                                                            class="stat-value text-primary">৳{{ number_format($secondaryClass->fee_amount, 0) }}</span>
+                                                        <span class="stat-value text-primary">৳{{ number_format($secondaryClass->fee_amount, 0) }}</span>
                                                     </div>
                                                     <div class="secondary-class-stat text-end">
                                                         <span class="stat-label">Students</span>
-                                                        {{-- UPDATED: Made students count clickable --}}
-                                                        <a href="{{ route('classnames.secondary-classes.show', [$classname->id, $secondaryClass->id]) }}"
-                                                            class="stat-value text-info text-hover-primary">
+                                                        <a href="{{ route('classnames.secondary-classes.show', [$classname->id, $secondaryClass->id]) }}" 
+                                                           class="stat-value text-info text-hover-primary text-decoration-none">
                                                             {{ $secondaryClass->students_count }}
                                                         </a>
                                                     </div>
                                                 </div>
 
                                                 <div class="d-flex align-items-center justify-content-between">
-                                                    <span
-                                                        class="badge @if ($secondaryClass->is_active) badge-light-success @else badge-light-danger @endif">
-                                                        <i
-                                                            class="ki-outline @if ($secondaryClass->is_active) ki-check-circle @else ki-cross-circle @endif fs-6 me-1"></i>
+                                                    <span class="badge @if ($secondaryClass->is_active) badge-light-success @else badge-light-danger @endif">
+                                                        <i class="ki-outline @if ($secondaryClass->is_active) ki-check-circle @else ki-cross-circle @endif fs-6 me-1"></i>
                                                         {{ $secondaryClass->is_active ? 'Active' : 'Inactive' }}
                                                     </span>
 
                                                     <div class="d-flex align-items-center gap-2">
-                                                        {{-- UPDATED: Added view button --}}
                                                         <a href="{{ route('classnames.secondary-classes.show', [$classname->id, $secondaryClass->id]) }}"
-                                                            class="btn btn-sm btn-light-info" data-bs-toggle="tooltip"
-                                                            title="View Details">
-                                                            <i class="ki-outline ki-eye fs-5 me-0"></i>
+                                                           class="btn btn-sm btn-light-info btn-icon" data-bs-toggle="tooltip" title="View Details">
+                                                            <i class="ki-outline ki-eye fs-5"></i>
                                                         </a>
 
                                                         @if (auth()->user()->isAdmin())

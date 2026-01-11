@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Academic;
 
 use App\Http\Controllers\Controller;
@@ -155,7 +154,15 @@ class SecondaryClassController extends Controller
             });
         }
 
+        $isManager = false;
+        try {
+            $isManager = $user->isManager();
+        } catch (\Throwable $e) {
+            // Method might not exist on user model
+        }
+
         return view('secondary-classes.show', compact(
+            'isManager',
             'classname',
             'secondaryClass',
             'enrolledStudents',
@@ -186,7 +193,7 @@ class SecondaryClassController extends Controller
         $activeStudents   = $enrollments->filter(fn($e) => $e->student?->studentActivation?->active_status === 'active')->count();
         $inactiveStudents = $totalStudents - $activeStudents;
 
-        $totalRevenue = $enrollments->sum('amount');
+        $totalRevenue           = $enrollments->sum('amount');
         $expectedMonthlyRevenue = $secondaryClass->payment_type === 'monthly'
             ? $activeStudents * $secondaryClass->fee_amount
             : 0;
@@ -195,7 +202,7 @@ class SecondaryClassController extends Controller
         $branchStats = [];
         if ($isAdmin && $branches->count() > 0) {
             foreach ($branches as $branch) {
-                $branchEnrollments = $enrollments->filter(fn($e) => $e->student?->branch_id === $branch->id);
+                $branchEnrollments        = $enrollments->filter(fn($e) => $e->student?->branch_id === $branch->id);
                 $branchStats[$branch->id] = [
                     'name'     => $branch->branch_name,
                     'prefix'   => $branch->branch_prefix,
@@ -308,7 +315,15 @@ class SecondaryClassController extends Controller
      */
     public function getAvailableStudents(ClassName $classname, SecondaryClass $secondaryClass, Request $request)
     {
-        if (! auth()->user()->can('classes.view')) {
+        $user      = auth()->user();
+        $isManager = false;
+        try {
+            $isManager = $user->isManager();
+        } catch (\Throwable $e) {}
+
+        $canManage = $user->isAdmin() || $isManager;
+
+        if (! $canManage && ! $user->can('classes.view')) {
             return response()->json([
                 'success' => false,
                 'message' => 'No permission.',
@@ -377,10 +392,16 @@ class SecondaryClassController extends Controller
      */
     public function enrollStudent(Request $request, ClassName $classname, SecondaryClass $secondaryClass)
     {
-        if (! auth()->user()->isAdmin()) {
+        $user      = auth()->user();
+        $isManager = false;
+        try {
+            $isManager = $user->isManager();
+        } catch (\Throwable $e) {}
+
+        if (! ($user->isAdmin() || $isManager)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Only admin can enroll students.',
+                'message' => 'Permission denied.',
             ], 403);
         }
 
@@ -450,16 +471,16 @@ class SecondaryClassController extends Controller
         $yearSuffix = now()->format('y');
         $month      = now()->format('m');
         // Ensure branch is loaded
-        if (!$student->relationLoaded('branch')) {
+        if (! $student->relationLoaded('branch')) {
             $student->load('branch');
         }
-        $prefix     = $student->branch->branch_prefix;
-        
+        $prefix = $student->branch->branch_prefix;
+
         $lastInvoice = PaymentInvoice::where('invoice_number', 'like', "{$prefix}{$yearSuffix}{$month}_%")
             ->orderBy('invoice_number', 'desc')
             ->first();
 
-        $nextSequence = $lastInvoice ? (int) substr($lastInvoice->invoice_number, strrpos($lastInvoice->invoice_number, '_') + 1) + 1 : 1001;
+        $nextSequence  = $lastInvoice ? (int) substr($lastInvoice->invoice_number, strrpos($lastInvoice->invoice_number, '_') + 1) + 1 : 1001;
         $invoiceNumber = "{$prefix}{$yearSuffix}{$month}_{$nextSequence}";
 
         $invoiceType = PaymentInvoiceType::where('type_name', $typeName)->first();
@@ -485,10 +506,16 @@ class SecondaryClassController extends Controller
      */
     public function updateStudentEnrollment(Request $request, ClassName $classname, SecondaryClass $secondaryClass, Student $student)
     {
-        if (! auth()->user()->isAdmin()) {
+        $user      = auth()->user();
+        $isManager = false;
+        try {
+            $isManager = $user->isManager();
+        } catch (\Throwable $e) {}
+
+        if (! ($user->isAdmin() || $isManager)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Only admin can update enrollments.',
+                'message' => 'Permission denied.',
             ], 403);
         }
 
@@ -522,10 +549,16 @@ class SecondaryClassController extends Controller
      */
     public function checkUnpaidInvoices(ClassName $classname, SecondaryClass $secondaryClass, Student $student)
     {
-        if (! auth()->user()->isAdmin()) {
+        $user      = auth()->user();
+        $isManager = false;
+        try {
+            $isManager = $user->isManager();
+        } catch (\Throwable $e) {}
+
+        if (! ($user->isAdmin() || $isManager)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Only admin can check invoices.',
+                'message' => 'Permission denied.',
             ], 403);
         }
 
@@ -571,10 +604,16 @@ class SecondaryClassController extends Controller
      */
     public function withdrawStudent(Request $request, ClassName $classname, SecondaryClass $secondaryClass, Student $student)
     {
-        if (! auth()->user()->isAdmin()) {
+        $user      = auth()->user();
+        $isManager = false;
+        try {
+            $isManager = $user->isManager();
+        } catch (\Throwable $e) {}
+
+        if (! ($user->isAdmin() || $isManager)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Only admin can withdraw students.',
+                'message' => 'Permission denied.',
             ], 403);
         }
 

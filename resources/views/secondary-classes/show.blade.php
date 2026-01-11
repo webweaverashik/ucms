@@ -70,7 +70,7 @@
                     <div class="card-title">
                         <h3 class="text-gray-600">Special Class Info</h3>
                     </div>
-                    @if ($isAdmin && $secondaryClass->is_active)
+                    @if (($isAdmin || $isManager) && $secondaryClass->is_active)
                         <div class="card-toolbar">
                             <a href="#" class="btn btn-sm btn-light btn-icon" data-kt-menu-trigger="click"
                                 data-kt-menu-placement="bottom-end">
@@ -295,7 +295,7 @@
                             </div>
                             <!--end::Filter-->
 
-                            @if ($isAdmin && $secondaryClass->is_active)
+                            @if (($isAdmin || $isManager) && $secondaryClass->is_active)
                                 <!--begin::Add Student-->
                                 <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                                     data-bs-target="#kt_modal_enroll_student">
@@ -342,7 +342,7 @@
                                 <th class="w-120px">Amount</th>
                                 <th class="w-120px">Enrolled At</th>
                                 <th class="w-100px">Status</th>
-                                @if ($isAdmin)
+                                @if ($isAdmin || $isManager)
                                     <th class="w-100px text-end">Actions</th>
                                 @endif
                             </tr>
@@ -390,7 +390,7 @@
                                                 <span class="badge badge-light-danger">Inactive</span>
                                             @endif
                                         </td>
-                                        @if ($isAdmin)
+                                        @if ($isAdmin || $isManager)
                                             <td class="text-end">
                                                 <div class="btn-group">
                                                     <button type="button" class="btn btn-sm btn-icon btn-light-primary edit-enrollment"
@@ -412,23 +412,6 @@
                                     </tr>
                                 @endif
                             @empty
-                                <tr>
-                                    <td colspan="{{ $isAdmin ? 9 : 8 }}" class="text-center py-10">
-                                        <div class="empty-state-icon mb-4">
-                                            <i class="ki-outline ki-people fs-3tx text-gray-300"></i>
-                                        </div>
-                                        <h4 class="text-gray-800 fw-bold mb-3">No Students Enrolled</h4>
-                                        <p class="text-muted fs-6 mb-6">
-                                            Start enrolling students to this special class.
-                                        </p>
-                                        @if ($isAdmin && $secondaryClass->is_active)
-                                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                                data-bs-target="#kt_modal_enroll_student">
-                                                <i class="ki-outline ki-plus fs-3 me-1"></i>Enroll First Student
-                                            </button>
-                                        @endif
-                                    </td>
-                                </tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -442,7 +425,7 @@
     </div>
     <!--end::Layout-->
 
-    @if ($isAdmin)
+    @if ($isAdmin || $isManager)
         <!--begin::Modal - Enroll Student-->
         <div class="modal fade" id="kt_modal_enroll_student" tabindex="-1" aria-hidden="true"
             data-bs-backdrop="static" data-bs-keyboard="false">
@@ -694,8 +677,9 @@
         const routeCheckUnpaid = "{{ route('classnames.secondary-classes.check-unpaid', [$classname->id, $secondaryClass->id, ':studentId']) }}";
         const routeAvailableStudents = "{{ route('classnames.secondary-classes.available-students', [$classname->id, $secondaryClass->id]) }}";
         const routeUpdateSecondaryClass = "{{ route('secondary-classes.update', $secondaryClass->id) }}";
-        const isAdminUser = {{ $isAdmin ? 'true' : 'false' }};
+        const isAdminUser = {{ ($isAdmin || $isManager) ? 'true' : 'false' }};
         const defaultFeeAmount = {{ $secondaryClass->fee_amount }};
+        const secondaryClassIsActive = {{ $secondaryClass->is_active ? 'true' : 'false' }};
     </script>
     <script src="{{ asset('js/secondary-classes/show.js') }}"></script>
     <script>
