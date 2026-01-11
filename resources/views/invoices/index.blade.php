@@ -91,7 +91,8 @@
                         <div class="d-flex align-items-center position-relative my-1">
                             <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
                             <input type="text" data-kt-due-invoice-table-filter="search"
-                                class="form-control form-control-solid w-md-350px ps-12" placeholder="Search in due invoices">
+                                class="form-control form-control-solid w-md-350px ps-12"
+                                placeholder="Search in due invoices">
                         </div>
                         <!--end::Search-->
                         <!--begin::Export hidden buttons-->
@@ -273,10 +274,10 @@
                                     <td>{{ $invoice->invoiceType?->type_name }}</td>
                                     <td class="d-none">D_{{ $invoice->month_year }}</td>
                                     <td>
-                                        @if (
-                                            $invoice->invoiceType?->type_name === 'Tuition Fee' &&
-                                                preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year ?? '', $matches))
+                                        @if (!empty($invoice->month_year) && preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year, $matches))
                                             {{ \Carbon\Carbon::create($matches[2], $matches[1], 1)->format('F Y') }}
+                                        @elseif (empty($invoice->month_year) && $invoice->invoiceType?->type_name == 'Special Class Fee')
+                                            <span class="badge badge-primary rounded-pill">One Time</span></span>
                                         @else
                                             -
                                         @endif
@@ -348,7 +349,8 @@
                                     </td>
                                     <td>
                                         {{-- @if ($status != 'partially_paid') --}}
-                                        @if (optional($invoice->student->studentActivation)->active_status == 'active' && $invoice->status == 'due')
+                                        {{-- @if (optional($invoice->student->studentActivation)->active_status == 'active' && $invoice->status == 'due') --}}
+                                        @if ($invoice->status === 'due')
                                             @if ($canEditInvoice)
                                                 <a href="#" title="Edit invoice"
                                                     data-invoice-id="{{ $invoice->id }}" data-bs-toggle="modal"
@@ -562,14 +564,13 @@
                                     <td>{{ $invoice->total_amount }}</td>
                                     <td class="d-none">P_{{ $invoice->month_year }}</td>
                                     <td>
-                                        @if (
-                                            $invoice->invoiceType?->type_name === 'Tuition Fee' &&
-                                                preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year ?? '', $matches))
+                                        @if (!empty($invoice->month_year) && preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year, $matches))
                                             {{ \Carbon\Carbon::create($matches[2], $matches[1], 1)->format('F Y') }}
                                         @else
                                             -
                                         @endif
                                     </td>
+
                                     <td class="d-none">
                                         @if ($invoice->invoiceType?->type_name == 'Tuition Fee')
                                             1/{{ $invoice->student->payments->due_date }}

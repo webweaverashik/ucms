@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models\Student;
 
 use App\Models\Academic\SecondaryClass;
@@ -9,9 +10,7 @@ class StudentSecondaryClassHistory extends Model
 {
     protected $fillable = ['student_id', 'secondary_class_id', 'action', 'created_by'];
 
-    /* ------------------
-     | Relationships
-     |------------------*/
+    /* ------------------ | Relationships | ------------------ */
 
     public function student()
     {

@@ -434,11 +434,59 @@ var KTAddClassName = (function () {
 
     var form = element.querySelector("#kt_modal_add_class_form");
     var modal = new bootstrap.Modal(element);
+    var validator = null;
+
+    // Check if year prefix should be visible for given numeral
+    const isYearPrefixRequired = function (numeral) {
+        return ["10", "11", "12"].includes(numeral);
+    };
+
+    // Toggle year prefix visibility and grid columns
+    const toggleYearPrefixVisibility = function (numeral) {
+        var numeralCol = document.getElementById("class_numeral_add_col");
+        var yearPrefixCol = document.getElementById("year_prefix_add_col");
+        var yearPrefixHelp = document.getElementById("year_prefix_add_help");
+        var yearPrefixSelect = document.getElementById("year_prefix_add_select");
+
+        if (!numeralCol || !yearPrefixCol || !yearPrefixSelect) return;
+
+        if (isYearPrefixRequired(numeral)) {
+            // Show year prefix: numeral col-8, year prefix col-4
+            numeralCol.classList.remove("col-12");
+            numeralCol.classList.add("col-8");
+            yearPrefixCol.classList.remove("d-none");
+            if (yearPrefixHelp) yearPrefixHelp.classList.remove("d-none");
+        } else {
+            // Hide year prefix: numeral col-12
+            numeralCol.classList.remove("col-8");
+            numeralCol.classList.add("col-12");
+            yearPrefixCol.classList.add("d-none");
+            if (yearPrefixHelp) yearPrefixHelp.classList.add("d-none");
+            $(yearPrefixSelect).val(null).trigger("change"); // Clear value when hidden
+        }
+
+        // Revalidate if validator exists
+        if (validator) {
+            validator.revalidateField("year_prefix_add");
+        }
+    };
 
     const resetForm = function () {
         if (form) {
             form.reset();
             $(form).find("select").val(null).trigger("change");
+
+            // Reset grid columns
+            var numeralCol = document.getElementById("class_numeral_add_col");
+            var yearPrefixCol = document.getElementById("year_prefix_add_col");
+            var yearPrefixHelp = document.getElementById("year_prefix_add_help");
+
+            if (numeralCol) {
+                numeralCol.classList.remove("col-8");
+                numeralCol.classList.add("col-12");
+            }
+            if (yearPrefixCol) yearPrefixCol.classList.add("d-none");
+            if (yearPrefixHelp) yearPrefixHelp.classList.add("d-none");
 
             // Clear validation states
             form.querySelectorAll(".is-invalid").forEach(function (el) {
@@ -472,10 +520,21 @@ var KTAddClassName = (function () {
         }
     };
 
+    // Handle class numeral change to show/hide year prefix
+    const initNumeralChangeHandler = function () {
+        var numeralSelect = document.getElementById("class_numeral_add_select");
+        if (!numeralSelect) return;
+
+        $(numeralSelect).on("change", function () {
+            var selectedValue = $(this).val();
+            toggleYearPrefixVisibility(selectedValue);
+        });
+    };
+
     const initValidation = function () {
         if (!form) return;
 
-        var validator = FormValidation.formValidation(form, {
+        validator = FormValidation.formValidation(form, {
             fields: {
                 class_name_add: {
                     validators: {
@@ -492,6 +551,23 @@ var KTAddClassName = (function () {
                     validators: {
                         notEmpty: {
                             message: "Class numeral is required",
+                        },
+                    },
+                },
+                year_prefix_add: {
+                    validators: {
+                        callback: {
+                            message: "Year prefix is required for Class 10, 11, and 12",
+                            callback: function (input) {
+                                var numeralSelect = document.getElementById("class_numeral_add_select");
+                                var numeral = numeralSelect ? $(numeralSelect).val() : "";
+
+                                // If numeral is 10, 11, or 12, year_prefix is required
+                                if (isYearPrefixRequired(numeral)) {
+                                    return input.value.trim() !== "";
+                                }
+                                return true;
+                            },
                         },
                     },
                 },
@@ -566,6 +642,7 @@ var KTAddClassName = (function () {
     return {
         init: function () {
             initAddClass();
+            initNumeralChangeHandler();
             initValidation();
         },
     };
@@ -581,10 +658,58 @@ var KTEditClassName = (function () {
     var form = element.querySelector("#kt_modal_edit_class_form");
     var modal = new bootstrap.Modal(element);
     var classId = null;
+    var originalNumeral = null;
+    var validator = null;
+
+    // Check if year prefix should be visible for given numeral
+    const isYearPrefixRequired = function (numeral) {
+        return ["10", "11", "12"].includes(numeral);
+    };
+
+    // Toggle year prefix visibility and grid columns
+    const toggleYearPrefixVisibility = function (numeral, yearPrefixValue) {
+        var numeralCol = document.getElementById("class_numeral_edit_col");
+        var yearPrefixCol = document.getElementById("year_prefix_edit_col");
+        var yearPrefixHelp = document.getElementById("year_prefix_edit_help");
+        var yearPrefixSelect = document.getElementById("year_prefix_edit_select");
+
+        if (!numeralCol || !yearPrefixCol || !yearPrefixSelect) return;
+
+        if (isYearPrefixRequired(numeral)) {
+            // Show year prefix: numeral col-8, year prefix col-4
+            numeralCol.classList.remove("col-12");
+            numeralCol.classList.add("col-8");
+            yearPrefixCol.classList.remove("d-none");
+            if (yearPrefixHelp) yearPrefixHelp.classList.remove("d-none");
+            if (yearPrefixValue) {
+                $(yearPrefixSelect).val(yearPrefixValue).trigger("change");
+            }
+        } else {
+            // Hide year prefix: numeral col-12
+            numeralCol.classList.remove("col-8");
+            numeralCol.classList.add("col-12");
+            yearPrefixCol.classList.add("d-none");
+            if (yearPrefixHelp) yearPrefixHelp.classList.add("d-none");
+            $(yearPrefixSelect).val(null).trigger("change");
+        }
+    };
 
     const resetForm = function () {
         if (form) {
             form.reset();
+            $(form).find("select").val(null).trigger("change");
+
+            // Reset grid columns
+            var numeralCol = document.getElementById("class_numeral_edit_col");
+            var yearPrefixCol = document.getElementById("year_prefix_edit_col");
+            var yearPrefixHelp = document.getElementById("year_prefix_edit_help");
+
+            if (numeralCol) {
+                numeralCol.classList.remove("col-8");
+                numeralCol.classList.add("col-12");
+            }
+            if (yearPrefixCol) yearPrefixCol.classList.add("d-none");
+            if (yearPrefixHelp) yearPrefixHelp.classList.add("d-none");
 
             // Clear validation states
             form.querySelectorAll(".is-invalid").forEach(function (el) {
@@ -593,7 +718,66 @@ var KTEditClassName = (function () {
             form.querySelectorAll(".invalid-feedback").forEach(function (el) {
                 el.remove();
             });
+
+            // Reset numeral select to disabled state
+            var numeralSelect = form.querySelector("select[name='class_numeral_edit']");
+            if (numeralSelect) {
+                $(numeralSelect).prop("disabled", true).trigger("change");
+            }
+
+            // Reset notices
+            var editNotice = document.getElementById("numeral_edit_notice");
+            var lockedNotice = document.getElementById("numeral_locked_notice");
+            if (editNotice) editNotice.classList.add("d-none");
+            if (lockedNotice) lockedNotice.classList.add("d-none");
         }
+    };
+
+    // Configure numeral select based on current value
+    const configureNumeralSelect = function (currentNumeral) {
+        var numeralSelect = form.querySelector("select[name='class_numeral_edit']");
+        var editNotice = document.getElementById("numeral_edit_notice");
+        var lockedNotice = document.getElementById("numeral_locked_notice");
+
+        if (!numeralSelect) return;
+
+        originalNumeral = currentNumeral;
+
+        // If current numeral is 11, allow changing to 12 only
+        if (currentNumeral === "11") {
+            // Enable select but limit options
+            $(numeralSelect).prop("disabled", false);
+
+            // Hide all options except 11 and 12
+            $(numeralSelect).find("option").each(function () {
+                var val = $(this).val();
+                if (val && val !== "11" && val !== "12") {
+                    $(this).prop("disabled", true);
+                } else {
+                    $(this).prop("disabled", false);
+                }
+            });
+
+            // Show edit notice, hide locked notice
+            if (editNotice) editNotice.classList.remove("d-none");
+            if (lockedNotice) lockedNotice.classList.add("d-none");
+        } else {
+            // Disable select for all other numerals
+            $(numeralSelect).prop("disabled", true);
+
+            // Show locked notice only for class 10 and 12 (not for 04-09)
+            if (currentNumeral === "10" || currentNumeral === "12") {
+                if (editNotice) editNotice.classList.add("d-none");
+                if (lockedNotice) lockedNotice.classList.remove("d-none");
+            } else {
+                // For classes 04-09, hide both notices
+                if (editNotice) editNotice.classList.add("d-none");
+                if (lockedNotice) lockedNotice.classList.add("d-none");
+            }
+        }
+
+        // Set current value
+        $(numeralSelect).val(currentNumeral).trigger("change");
     };
 
     // Fetch and populate modal
@@ -625,11 +809,11 @@ var KTEditClassName = (function () {
                     var descInput = form.querySelector("textarea[name='description_edit']");
                     if (descInput) descInput.value = classData.class_description || "";
 
-                    // Set numeral select
-                    var numeralSelect = form.querySelector("select[name='class_numeral_edit']");
-                    if (numeralSelect) {
-                        $(numeralSelect).val(classData.class_numeral).trigger("change");
-                    }
+                    // Configure numeral select (special handling for class 11)
+                    configureNumeralSelect(classData.class_numeral);
+
+                    // Toggle year prefix visibility and set value
+                    toggleYearPrefixVisibility(classData.class_numeral, classData.year_prefix);
 
                     // Update modal title
                     var modalTitle = document.getElementById("kt_modal_edit_class_title");
@@ -677,7 +861,7 @@ var KTEditClassName = (function () {
     const initValidation = function () {
         if (!form) return;
 
-        var validator = FormValidation.formValidation(form, {
+        validator = FormValidation.formValidation(form, {
             fields: {
                 class_name_edit: {
                     validators: {
@@ -687,6 +871,23 @@ var KTEditClassName = (function () {
                         stringLength: {
                             max: 255,
                             message: "Class name must be less than 255 characters",
+                        },
+                    },
+                },
+                year_prefix_edit: {
+                    validators: {
+                        callback: {
+                            message: "Year prefix is required for Class 10, 11, and 12",
+                            callback: function (input) {
+                                var numeralSelect = document.getElementById("class_numeral_edit_select");
+                                var numeral = numeralSelect ? $(numeralSelect).val() : "";
+
+                                // If numeral is 10, 11, or 12, year_prefix is required
+                                if (isYearPrefixRequired(numeral)) {
+                                    return input.value.trim() !== "";
+                                }
+                                return true;
+                            },
                         },
                     },
                 },
@@ -715,6 +916,16 @@ var KTEditClassName = (function () {
                         var formData = new FormData(form);
                         formData.append("_token", document.querySelector('meta[name="csrf-token"]').content);
                         formData.append("_method", "PUT");
+
+                        // Get numeral value (might be disabled, so get it directly)
+                        var numeralSelect = document.getElementById("class_numeral_edit_select");
+                        if (numeralSelect) {
+                            var numeralValue = $(numeralSelect).val();
+                            // Only include if it changed from 11 to 12
+                            if (originalNumeral === "11" && numeralValue === "12") {
+                                formData.append("class_numeral_edit", numeralValue);
+                            }
+                        }
 
                         var updateUrl = routeToggleStatus.replace(":id", classId);
 

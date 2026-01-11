@@ -73,6 +73,8 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('students/{id}/sheet-fee', [StudentController::class, 'getSheetFee']);
     Route::get('students/promote', [StudentPromoteController::class, 'index'])->name('students.promote');
     Route::post('student/statement/download', [PdfController::class, 'downloadStatement'])->name('student.statement.download');
+    Route::get('students/class/{id}/secondary-classes', [StudentController::class, 'getSecondaryClasses']);
+    
 
     /* --- Student Transfer Starts --- */
     Route::get('students/transfer', [StudentTransferController::class, 'index'])->name('students.transfer');

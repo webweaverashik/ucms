@@ -4,6 +4,8 @@
     $statusColorClass = $isActive ? 'primary' : 'danger';
     $statusBadgeClass = $isActive ? 'badge-light-success' : 'badge-light-danger';
     $statusText = $isActive ? 'Active' : 'Inactive';
+    $hasYearPrefix = !empty($classname->year_prefix);
+    $displayYearPrefix = $hasYearPrefix ? $classname->year_prefix : date('y');
 @endphp
 
 <div class="col-md-6 col-xl-4 class-item" data-name="{{ strtolower($classname->name) }}"
@@ -15,7 +17,7 @@
         <div class="card-header border-0 pt-6 pb-0">
             <div class="d-flex align-items-center flex-grow-1">
                 <!--begin::Symbol-->
-                <div class="symbol symbol-50px symbol-circle me-4">
+                <div class="symbol symbol-50px symbol-circle me-4" data-bs-toggle="tooltip" title="Class Numeral">
                     <span
                         class="symbol-label bg-light-{{ $statusColorClass }} text-{{ $statusColorClass }} fs-2 fw-bold">
                         {{ $classname->class_numeral }}
@@ -25,10 +27,18 @@
 
                 <!--begin::Title-->
                 <div class="d-flex flex-column flex-grow-1">
-                    <a href="{{ route('classnames.show', $classname->id) }}"
-                        class="fs-4 fw-bold text-gray-900 text-hover-primary mb-1 text-truncate">
-                        {{ $classname->name }}
-                    </a>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <a href="{{ route('classnames.show', $classname->id) }}"
+                            class="fs-4 fw-bold text-gray-900 text-hover-primary text-truncate">
+                            {{ $classname->name }}
+                        </a>
+                        @if ($hasYearPrefix)
+                            <span class="badge badge-primary badge-sm fs-8" data-bs-toggle="tooltip"
+                                data-bs-placement="top" title="Year Prefix for Student ID">
+                                {{ $classname->year_prefix }}
+                            </span>
+                        @endif
+                    </div>
                     <span class="badge {{ $statusBadgeClass }} fw-semibold w-auto align-self-start">
                         {{ $statusText }}
                     </span>
@@ -99,6 +109,16 @@
                 {{ $classname->description ? $classname->description : 'No description set' }}
             </p>
             <!--end::Description-->
+
+            <!--begin::Student ID Format Info-->
+            <div class="d-flex align-items-center gap-2 mb-4 p-3 rounded bg-light-primary">
+                <i class="ki-outline ki-information-2 fs-4 text-primary"></i>
+                <div class="d-flex flex-column">
+                    <span class="text-gray-700 fs-7 fw-semibold">Student ID Format</span>
+                    <code class="text-primary fs-7 bg-light">{{ $displayYearPrefix }}{{ $classname->class_numeral }}XX</code>
+                </div>
+            </div>
+            <!--end::Student ID Format Info-->
 
             @if ($is_admin && $branches->count() > 0)
                 <!--begin::Branch Tabs (Admin Only)-->

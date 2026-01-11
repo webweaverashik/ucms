@@ -120,18 +120,42 @@ class ClassNameController extends Controller
             ], 403);
         }
 
-        $validated = $request->validate([
+        $classNumeral = $request->input('class_numeral_add');
+        $requiresYearPrefix = in_array($classNumeral, ['10', '11', '12']);
+
+        // Calculate valid year prefix range (25 to current year's last 2 digits)
+        $currentYearPrefix = (int) date('y');
+        $validYearPrefixes = array_map(fn($i) => str_pad($i, 2, '0', STR_PAD_LEFT), range(25, $currentYearPrefix));
+
+        $validationRules = [
             'class_name_add'    => 'required|string|max:255',
             'class_numeral_add' => [
                 'required',
                 'regex:/^(0[4-9]|1[0-2])$/',
             ],
             'description_add'   => 'nullable|string|max:1000',
+        ];
+
+        // Year prefix is required only for classes 10, 11, 12
+        if ($requiresYearPrefix) {
+            $validationRules['year_prefix_add'] = [
+                'required',
+                'string',
+                'in:' . implode(',', $validYearPrefixes),
+            ];
+        } else {
+            $validationRules['year_prefix_add'] = 'nullable';
+        }
+
+        $validated = $request->validate($validationRules, [
+            'year_prefix_add.in'       => 'Please select a valid year prefix.',
+            'year_prefix_add.required' => 'Year prefix is required for Class 10, 11, and 12.',
         ]);
 
-        DB::transaction(function () use ($validated, &$classname) {
+        DB::transaction(function () use ($validated, $requiresYearPrefix, &$classname) {
             $classname = ClassName::create([
                 'name'          => $validated['class_name_add'],
+                'year_prefix'   => $requiresYearPrefix ? $validated['year_prefix_add'] : null,
                 'class_numeral' => $validated['class_numeral_add'],
                 'description'   => $validated['description_add'] ?? null,
             ]);
@@ -254,15 +278,60 @@ class ClassNameController extends Controller
         }
 
         // Full update from edit modal
-        $validated = $request->validate([
+        // Determine the effective numeral (could be changing from 11 to 12)
+        $effectiveNumeral = $class->class_numeral;
+        if ($class->class_numeral === '11' && $request->has('class_numeral_edit') && $request->input('class_numeral_edit') === '12') {
+            $effectiveNumeral = '12';
+        }
+
+        $requiresYearPrefix = in_array($effectiveNumeral, ['10', '11', '12']);
+
+        // Calculate valid year prefix range (25 to current year's last 2 digits)
+        $currentYearPrefix = (int) date('y');
+        $validYearPrefixes = array_map(fn($i) => str_pad($i, 2, '0', STR_PAD_LEFT), range(25, $currentYearPrefix));
+
+        $validationRules = [
             'class_name_edit'  => 'required|string|max:255',
             'description_edit' => 'nullable|string|max:1000',
+        ];
+
+        // Year prefix is required only for classes 10, 11, 12
+        if ($requiresYearPrefix) {
+            $validationRules['year_prefix_edit'] = [
+                'required',
+                'string',
+                'in:' . implode(',', $validYearPrefixes),
+            ];
+        } else {
+            $validationRules['year_prefix_edit'] = 'nullable';
+        }
+
+        // Only validate class_numeral_edit if current numeral is 11 and new value is provided
+        if ($class->class_numeral === '11' && $request->has('class_numeral_edit')) {
+            $validationRules['class_numeral_edit'] = [
+                'required',
+                'in:11,12',
+            ];
+        }
+
+        $validated = $request->validate($validationRules, [
+            'year_prefix_edit.in'       => 'Please select a valid year prefix.',
+            'year_prefix_edit.required' => 'Year prefix is required for Class 10, 11, and 12.',
+            'class_numeral_edit.in'     => 'Class numeral can only be changed from 11 to 12.',
         ]);
 
-        $class->update([
+        $updateData = [
             'name'        => $validated['class_name_edit'],
-            'description' => $validated['description_edit'],
-        ]);
+            'year_prefix' => $requiresYearPrefix ? $validated['year_prefix_edit'] : null,
+            'description' => $validated['description_edit'] ?? null,
+        ];
+
+        // Only update class_numeral if it's changing from 11 to 12
+        if ($class->class_numeral === '11' && isset($validated['class_numeral_edit']) && $validated['class_numeral_edit'] === '12') {
+            $updateData['class_numeral'] = '12';
+        }
+
+        $class->update($updateData);
 
         if (function_exists('clearServerCache')) {
             clearServerCache();
@@ -321,6 +390,7 @@ class ClassNameController extends Controller
                 'class_id'          => $class->id,
                 'class_name'        => $class->name,
                 'is_active'         => $class->is_active,
+                'year_prefix'       => $class->year_prefix,
                 'class_numeral'     => $class->class_numeral,
                 'class_description' => $class->description,
             ],

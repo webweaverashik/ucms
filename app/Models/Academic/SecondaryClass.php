@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models\Academic;
 
 use App\Models\Student\Student;
@@ -16,12 +17,10 @@ class SecondaryClass extends Model
         'is_active' => 'boolean',
     ];
 
-    /* ------------------
-     | Relationships
-     |------------------*/
+    /* ------------------ | Relationships | ------------------ */
 
     // Parent regular class
-    public function class ()
+    public function class()
     {
         return $this->belongsTo(ClassName::class, 'class_id');
     }

@@ -19,7 +19,7 @@ class PaymentInvoiceTypeSeeder extends Seeder
             'Diary Fee',
             'Exam Fee',
             'Model Test Fee',
-            'Others Fee',
+            'Special Class Fee',
         ];
 
         foreach ($types as $type) {

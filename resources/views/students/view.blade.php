@@ -176,6 +176,12 @@
                             <table class="table fs-6 fw-semibold gs-0 gy-2 gx-2">
                                 <!--begin::Row-->
                                 <tr class="">
+                                    <td class="text-gray-500">Branch:</td>
+                                    <td class="text-gray-800">{{ $student->branch->branch_name }}</td>
+                                </tr>
+
+                                <!--begin::Row-->
+                                <tr class="">
                                     <td class="text-gray-500">Class:</td>
                                     <td class="text-gray-800">{{ $student->class->name }}
                                         ({{ $student->class->class_numeral }})</td>
@@ -1048,10 +1054,13 @@
                                                 </td>
                                                 <td>{{ $invoice->invoiceType->type_name }}</td>
                                                 <td>
-                                                    @if (preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year, $matches))
+                                                    @if (!empty($invoice->month_year) && preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year, $matches))
                                                         {{ \Carbon\Carbon::create($matches[2], $matches[1], 1)->format('F Y') }}
+                                                    @elseif (empty($invoice->month_year) && $invoice->invoiceType?->type_name == 'Special Class Fee')
+                                                        <span class="badge badge-primary rounded-pill">One
+                                                            Time</span></span>
                                                     @else
-                                                        N/A
+                                                        -
                                                     @endif
                                                 </td>
                                                 <td>{{ $invoice->total_amount }}</td>
