@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
@@ -18,7 +17,7 @@ use App\Models\Student\MobileNumber;
 use App\Models\Student\Reference;
 use App\Models\Student\Sibling;
 use App\Models\Student\Student;
-use App\Models\Student\StudentSecondaryClassHistory;
+use App\Models\Student\StudentSecondaryClass;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -35,9 +34,9 @@ class StudentController extends Controller
      */
     public function index()
     {
-        $user = auth()->user();
+        $user     = auth()->user();
         $branchId = $user->branch_id;
-        $isAdmin = $user->hasRole('admin');
+        $isAdmin  = $user->hasRole('admin');
 
         // Get all branches for admin
         $branches = Branch::all();
@@ -46,18 +45,9 @@ class StudentController extends Controller
             // For admin: Get students grouped by branch
             $studentsByBranch = [];
             foreach ($branches as $branch) {
-                $cacheKey = 'students_list_branch_' . $branch->id;
+                $cacheKey                      = 'students_list_branch_' . $branch->id;
                 $studentsByBranch[$branch->id] = Cache::remember($cacheKey, now()->addHours(1), function () use ($branch) {
-                    return Student::with([
-                        'class:id,name,class_numeral',
-                        'branch:id,branch_name,branch_prefix',
-                        'batch:id,name',
-                        'institution:id,name,eiin_number',
-                        'studentActivation:id,active_status',
-                        'guardians:id,name,relationship,student_id',
-                        'mobileNumbers:id,mobile_number,number_type,student_id',
-                        'payments:id,payment_style,due_date,tuition_fee,student_id'
-                    ])
+                    return Student::with(['class:id,name,class_numeral', 'branch:id,branch_name,branch_prefix', 'batch:id,name', 'institution:id,name,eiin_number', 'studentActivation:id,active_status', 'guardians:id,name,relationship,student_id', 'mobileNumbers:id,mobile_number,number_type,student_id', 'payments:id,payment_style,due_date,tuition_fee,student_id'])
                         ->whereNotNull('student_activation_id')
                         ->where('branch_id', $branch->id)
                         ->whereHas('class', function ($query) {
@@ -67,22 +57,13 @@ class StudentController extends Controller
                         ->get();
                 });
             }
-            $students = collect(); // Empty collection for admin (uses tabs)
+            $students    = collect(); // Empty collection for admin (uses tabs)
             $allStudents = collect(); // No longer needed
         } else {
             // For non-admin: Get only their branch students
             $cacheKey = 'students_list_branch_' . $branchId;
             $students = Cache::remember($cacheKey, now()->addHours(1), function () use ($branchId) {
-                return Student::with([
-                    'class:id,name,class_numeral',
-                    'branch:id,branch_name,branch_prefix',
-                    'batch:id,name',
-                    'institution:id,name,eiin_number',
-                    'studentActivation:id,active_status',
-                    'guardians:id,name,relationship,student_id',
-                    'mobileNumbers:id,mobile_number,number_type,student_id',
-                    'payments:id,payment_style,due_date,tuition_fee,student_id'
-                ])
+                return Student::with(['class:id,name,class_numeral', 'branch:id,branch_name,branch_prefix', 'batch:id,name', 'institution:id,name,eiin_number', 'studentActivation:id,active_status', 'guardians:id,name,relationship,student_id', 'mobileNumbers:id,mobile_number,number_type,student_id', 'payments:id,payment_style,due_date,tuition_fee,student_id'])
                     ->whereNotNull('student_activation_id')
                     ->when($branchId != 0, function ($query) use ($branchId) {
                         $query->where('branch_id', $branchId);
@@ -94,11 +75,11 @@ class StudentController extends Controller
                     ->get();
             });
             $studentsByBranch = [];
-            $allStudents = collect();
+            $allStudents      = collect();
         }
 
         $classnames = ClassName::active()->get();
-        $batches = Batch::with('branch:id,branch_name')
+        $batches    = Batch::with('branch:id,branch_name')
             ->when($branchId != 0, function ($query) use ($branchId) {
                 $query->where('branch_id', $branchId);
             })
@@ -114,43 +95,34 @@ class StudentController extends Controller
      */
     public function pending()
     {
-        $user = auth()->user();
+        $user     = auth()->user();
         $branchId = $user->branch_id;
-        $isAdmin = $user->isAdmin();
+        $isAdmin  = $user->isAdmin();
 
         // Base query for pending students
-        $baseQuery = Student::with([
-            'class:id,name,class_numeral',
-            'branch:id,branch_name,branch_prefix',
-            'batch:id,name,branch_id',
-            'batch.branch:id,branch_name',
-            'institution:id,name,eiin_number',
-            'guardians:id,name,relationship,student_id',
-            'mobileNumbers:id,mobile_number,number_type,student_id',
-            'payments:id,payment_style,due_date,tuition_fee,student_id'
-        ])
+        $baseQuery = Student::with(['class:id,name,class_numeral', 'branch:id,branch_name,branch_prefix', 'batch:id,name,branch_id', 'batch.branch:id,branch_name', 'institution:id,name,eiin_number', 'guardians:id,name,relationship,student_id', 'mobileNumbers:id,mobile_number,number_type,student_id', 'payments:id,payment_style,due_date,tuition_fee,student_id'])
             ->whereNull('student_activation_id')
             ->latest();
 
         // For admin, group students by branch
         if ($isAdmin) {
-            $students = $baseQuery->get();
+            $students         = $baseQuery->get();
             $studentsByBranch = $students->groupBy('branch_id');
         } else {
             // For non-admin, filter by their branch
-            $students = $baseQuery->where('branch_id', $branchId)->get();
+            $students         = $baseQuery->where('branch_id', $branchId)->get();
             $studentsByBranch = collect();
         }
 
         $classnames = ClassName::active()->get();
-        $batches = Batch::with('branch:id,branch_name')
-            ->when(!$isAdmin, function ($query) use ($branchId) {
+        $batches    = Batch::with('branch:id,branch_name')
+            ->when(! $isAdmin, function ($query) use ($branchId) {
                 $query->where('branch_id', $branchId);
             })
             ->select('id', 'name', 'branch_id')
             ->get();
         $institutions = Institution::all();
-        $branches = Branch::all();
+        $branches     = Branch::all();
 
         return view('students.pending.index', compact('students', 'studentsByBranch', 'classnames', 'batches', 'institutions', 'branches', 'isAdmin'));
     }
@@ -160,15 +132,19 @@ class StudentController extends Controller
      */
     public function create()
     {
-        $classnames = ClassName::active()->latest('class_numeral')->get();
+        $classnames   = ClassName::active()->latest('class_numeral')->get();
         $institutions = Institution::select('id', 'name', 'eiin_number')->get();
-        $batches = Batch::when(auth()->user()->branch_id != 0, function ($query) {
+        $batches      = Batch::when(auth()->user()->branch_id != 0, function ($query) {
             $query->where('branch_id', auth()->user()->branch_id);
-        })->select('id', 'name', 'branch_id')->get();
+        })
+            ->select('id', 'name', 'branch_id')
+            ->get();
 
         $branches = Branch::when(auth()->user()->branch_id != 0, function ($query) {
             $query->where('id', auth()->user()->branch_id);
-        })->select('id', 'branch_name', 'branch_prefix')->get();
+        })
+            ->select('id', 'branch_name', 'branch_prefix')
+            ->get();
 
         // Fetch Secondary Classes
         $secondaryClasses = SecondaryClass::where('is_active', true)->get();
@@ -186,93 +162,97 @@ class StudentController extends Controller
         // This handles cases where hidden is_4th field is sent without checkbox id
         // ========================================
         if ($request->has('subjects')) {
-            $subjects = $request->input('subjects', []);
+            $subjects         = $request->input('subjects', []);
             $filteredSubjects = array_filter($subjects, function ($subject) {
-                return !empty($subject['id']);
+                return ! empty($subject['id']);
             });
             // Re-index array to avoid gaps in keys
             $request->merge(['subjects' => array_values($filteredSubjects)]);
         }
 
         $validated = $request->validate([
-            'student_name' => 'required|string|max:255',
-            'student_home_address' => 'nullable|string|max:500',
-            'student_email' => 'nullable|email|max:255|unique:students,email',
-            'birth_date' => 'nullable|string',
-            'student_gender' => 'required|in:male,female',
-            'student_religion' => 'nullable|string|in:Islam,Hinduism,Christianity,Buddhism,Others',
-            'student_blood_group' => 'nullable|string',
-            'student_class' => 'required|integer|exists:class_names,id',
-            'student_academic_group' => 'string|in:General,Science,Commerce,Arts',
-            'student_branch' => 'required|integer|exists:branches,id',
-            'student_batch' => 'required|integer|exists:batches,id',
-            'student_institution' => 'required|integer|exists:institutions,id',
-            'student_remarks' => 'nullable|string|max:1000',
-            'avatar' => 'nullable|image|mimes:jpg,jpeg,png|max:100',
+            'student_name'            => 'required|string|max:255',
+            'student_home_address'    => 'nullable|string|max:500',
+            'student_email'           => 'nullable|email|max:255|unique:students,email',
+            'birth_date'              => 'nullable|string',
+            'student_gender'          => 'required|in:male,female',
+            'student_religion'        => 'nullable|string|in:Islam,Hinduism,Christianity,Buddhism,Others',
+            'student_blood_group'     => 'nullable|string',
+            'student_class'           => 'required|integer|exists:class_names,id',
+            'student_academic_group'  => 'string|in:General,Science,Commerce,Arts',
+            'student_branch'          => 'required|integer|exists:branches,id',
+            'student_batch'           => 'required|integer|exists:batches,id',
+            'student_institution'     => 'required|integer|exists:institutions,id',
+            'student_remarks'         => 'nullable|string|max:1000',
+            'avatar'                  => 'nullable|image|mimes:jpg,jpeg,png|max:100',
 
             // UPDATED: Made subjects nullable to handle flexible selection
-            'subjects' => 'nullable|array',
-            'subjects.*.id' => 'required|integer|exists:subjects,id',
-            'subjects.*.is_4th' => 'required|in:0,1',
+            'subjects'                => 'nullable|array',
+            'subjects.*.id'           => 'required|integer|exists:subjects,id',
+            'subjects.*.is_4th'       => 'required|in:0,1',
 
             // Keep these for backward compatibility (optional now)
-            'optional_main_subject' => 'nullable|integer|exists:subjects,id',
-            'optional_4th_subject' => 'nullable|integer|exists:subjects,id',
+            'optional_main_subject'   => 'nullable|integer|exists:subjects,id',
+            'optional_4th_subject'    => 'nullable|integer|exists:subjects,id',
 
-            'student_phone_home' => ['required', 'regex:/^01[3-9]\d{8}$/'],
-            'student_phone_sms' => ['required', 'regex:/^01[3-9]\d{8}$/'],
-            'student_phone_whatsapp' => ['nullable', 'regex:/^01[3-9]\d{8}$/'],
+            'student_phone_home'      => ['required', 'regex:/^01[3-9]\d{8}$/'],
+            'student_phone_sms'       => ['required', 'regex:/^01[3-9]\d{8}$/'],
+            'student_phone_whatsapp'  => ['nullable', 'regex:/^01[3-9]\d{8}$/'],
 
-            'student_tuition_fee' => 'required|numeric|min:0',
-            'student_admission_fee' => 'required|numeric|min:0',
-            'payment_style' => 'required|in:current,due',
-            'payment_due_date' => 'required|integer|in:7,10,15,30',
+            'student_tuition_fee'     => 'required|numeric|min:0',
+            'student_admission_fee'   => 'required|numeric|min:0',
+            'payment_style'           => 'required|in:current,due',
+            'payment_due_date'        => 'required|integer|in:7,10,15,30',
 
-            'guardian_1_name' => 'required|string|max:255',
-            'guardian_1_mobile' => 'required|string|max:11',
-            'guardian_1_gender' => 'required|in:male,female',
+            'guardian_1_name'         => 'required|string|max:255',
+            'guardian_1_mobile'       => 'required|string|max:11',
+            'guardian_1_gender'       => 'required|in:male,female',
             'guardian_1_relationship' => 'required|string|in:father,mother,brother,sister,uncle,aunt',
 
-            'guardian_2_name' => 'nullable|string|max:255',
-            'guardian_2_mobile' => 'nullable|string|max:11',
-            'guardian_2_gender' => 'nullable|in:male,female',
+            'guardian_2_name'         => 'nullable|string|max:255',
+            'guardian_2_mobile'       => 'nullable|string|max:11',
+            'guardian_2_gender'       => 'nullable|in:male,female',
             'guardian_2_relationship' => 'nullable|string|in:father,mother,brother,sister,uncle,aunt',
 
-            'sibling_1_name' => 'nullable|string|max:255',
-            'sibling_1_year' => 'nullable|string',
-            'sibling_1_class' => 'nullable|string',
-            'sibling_1_institution' => 'nullable|string',
-            'sibling_1_relationship' => 'nullable|string|in:brother,sister',
+            'sibling_1_name'          => 'nullable|string|max:255',
+            'sibling_1_year'          => 'nullable|string',
+            'sibling_1_class'         => 'nullable|string',
+            'sibling_1_institution'   => 'nullable|string',
+            'sibling_1_relationship'  => 'nullable|string|in:brother,sister',
 
-            'sibling_2_name' => 'nullable|string|max:255',
-            'sibling_2_year' => 'nullable|string',
-            'sibling_2_class' => 'nullable|string',
-            'sibling_2_institution' => 'nullable|string',
-            'sibling_2_relationship' => 'nullable|string|in:brother,sister',
+            'sibling_2_name'          => 'nullable|string|max:255',
+            'sibling_2_year'          => 'nullable|string',
+            'sibling_2_class'         => 'nullable|string',
+            'sibling_2_institution'   => 'nullable|string',
+            'sibling_2_relationship'  => 'nullable|string|in:brother,sister',
 
-            'referer_type' => 'nullable|string|in:student,teacher',
-            'referred_by' => ['nullable', 'integer', function ($attribute, $value, $fail) use ($request) {
-                if (!$request->referer_type || !$value) {
-                    return;
-                }
-                if ($request->referer_type === 'student') {
-                    $exists = DB::table('students')->where('id', $value)->exists();
-                } elseif ($request->referer_type === 'teacher') {
-                    $exists = DB::table('teachers')->where('id', $value)->exists();
-                } else {
-                    $exists = false;
-                }
-                if (!$exists) {
-                    $fail('The referred person must be a valid ' . $request->referer_type . '.');
-                }
-            },],
+            'referer_type'            => 'nullable|string|in:student,teacher',
+            'referred_by'             => [
+                'nullable',
+                'integer',
+                function ($attribute, $value, $fail) use ($request) {
+                    if (! $request->referer_type || ! $value) {
+                        return;
+                    }
+                    if ($request->referer_type === 'student') {
+                        $exists = DB::table('students')->where('id', $value)->exists();
+                    } elseif ($request->referer_type === 'teacher') {
+                        $exists = DB::table('teachers')->where('id', $value)->exists();
+                    } else {
+                        $exists = false;
+                    }
+                    if (! $exists) {
+                        $fail('The referred person must be a valid ' . $request->referer_type . '.');
+                    }
+                },
+            ],
 
             // Secondary Classes Validation
-            'secondary_classes' => 'nullable|array',
-            'secondary_classes.*' => 'exists:secondary_classes,id',
-            'secondary_class_fees' => 'nullable|array',
-            'secondary_class_fees.*' => 'nullable|numeric|min:0',
-            'only_secondary_class' => 'nullable',
+            'secondary_classes'       => 'nullable|array',
+            'secondary_classes.*'     => 'exists:secondary_classes,id',
+            'secondary_class_fees'    => 'nullable|array',
+            'secondary_class_fees.*'  => 'nullable|numeric|min:0',
+            'only_secondary_class'    => 'nullable',
         ]);
 
         // ========================================
@@ -281,24 +261,30 @@ class StudentController extends Controller
         $subjectsCount = count($validated['subjects'] ?? []);
         $onlySecondary = $request->has('only_secondary_class') && $request->only_secondary_class;
 
-        if ($subjectsCount === 0 && !$onlySecondary) {
-            return response()->json([
-                'success' => false,
-                'errors' => ['Please select at least one subject'],
-            ], 422);
+        if ($subjectsCount === 0 && ! $onlySecondary) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'errors'  => ['Please select at least one subject'],
+                ],
+                422,
+            );
         }
 
-        $class = ClassName::findOrFail($validated['student_class']);
+        $class        = ClassName::findOrFail($validated['student_class']);
         $classNumeral = $class->class_numeral;
-        $group = $validated['student_academic_group'] ?? 'General';
+        $group        = $validated['student_academic_group'] ?? 'General';
 
         // Validate optional subjects (only checks Main ≠ 4th)
         $optionalValidation = $this->validateOptionalSubjects($validated, $classNumeral, $group);
         if ($optionalValidation !== true) {
-            return response()->json([
-                'success' => false,
-                'errors' => [$optionalValidation],
-            ], 422);
+            return response()->json(
+                [
+                    'success' => false,
+                    'errors'  => [$optionalValidation],
+                ],
+                422,
+            );
         }
 
         return DB::transaction(function () use ($validated, $class, $classNumeral, $group) {
@@ -308,7 +294,7 @@ class StudentController extends Controller
             $studentUniqueId = $this->generateStudentUniqueId($branch, $class);
 
             $dateOfBirth = null;
-            if (!empty($validated['birth_date'])) {
+            if (! empty($validated['birth_date'])) {
                 try {
                     $dateOfBirth = Carbon::createFromFormat('d-m-Y', $validated['birth_date']);
                 } catch (\Exception $e) {
@@ -318,35 +304,35 @@ class StudentController extends Controller
 
             $student = Student::create([
                 'student_unique_id' => $studentUniqueId,
-                'branch_id' => $branch->id,
-                'name' => $validated['student_name'],
-                'date_of_birth' => $dateOfBirth,
-                'gender' => $validated['student_gender'],
-                'class_id' => $validated['student_class'],
-                'academic_group' => $group,
-                'batch_id' => $validated['student_batch'],
-                'institution_id' => $validated['student_institution'],
-                'religion' => $validated['student_religion'] ?? null,
-                'blood_group' => $validated['student_blood_group'] ?? null,
-                'home_address' => $validated['student_home_address'] ?? null,
-                'email' => $validated['student_email'] ?? null,
-                'password' => Hash::make('password'),
-                'reference_id' => null,
-                'remarks' => $validated['student_remarks'] ?? null,
-                'created_by' => auth()->user()->id,
+                'branch_id'         => $branch->id,
+                'name'              => $validated['student_name'],
+                'date_of_birth'     => $dateOfBirth,
+                'gender'            => $validated['student_gender'],
+                'class_id'          => $validated['student_class'],
+                'academic_group'    => $group,
+                'batch_id'          => $validated['student_batch'],
+                'institution_id'    => $validated['student_institution'],
+                'religion'          => $validated['student_religion'] ?? null,
+                'blood_group'       => $validated['student_blood_group'] ?? null,
+                'home_address'      => $validated['student_home_address'] ?? null,
+                'email'             => $validated['student_email'] ?? null,
+                'password'          => Hash::make('password'),
+                'reference_id'      => null,
+                'remarks'           => $validated['student_remarks'] ?? null,
+                'created_by'        => auth()->user()->id,
             ]);
 
-            if (!$student) {
+            if (! $student) {
                 return response()->json(['error' => 'Student creation failed!'], 500);
             }
 
             // Handle avatar upload
             if (isset($validated['avatar']) && $validated['avatar']) {
-                $file = $validated['avatar'];
+                $file      = $validated['avatar'];
                 $extension = $file->getClientOriginalExtension();
-                $filename = $studentUniqueId . '_photo.' . $extension;
+                $filename  = $studentUniqueId . '_photo.' . $extension;
                 $photoPath = public_path('uploads/students/');
-                if (!file_exists($photoPath)) {
+                if (! file_exists($photoPath)) {
                     mkdir($photoPath, 0777, true);
                 }
                 $file->move($photoPath, $filename);
@@ -360,10 +346,10 @@ class StudentController extends Controller
 
             // Guardians
             for ($i = 1; $i <= 2; $i++) {
-                if (!empty($validated["guardian_{$i}_name"])) {
+                if (! empty($validated["guardian_{$i}_name"])) {
                     Guardian::create([
                         'student_id' => $student->id,
-                        'name' => $validated["guardian_{$i}_name"],
+                        'name'       => $validated["guardian_{$i}_name"],
                         'mobile_number' => $validated["guardian_{$i}_mobile"],
                         'gender' => $validated["guardian_{$i}_gender"],
                         'relationship' => $validated["guardian_{$i}_relationship"],
@@ -374,10 +360,10 @@ class StudentController extends Controller
 
             // Siblings
             for ($i = 1; $i <= 2; $i++) {
-                if (!empty($validated["sibling_{$i}_name"])) {
+                if (! empty($validated["sibling_{$i}_name"])) {
                     Sibling::create([
                         'student_id' => $student->id,
-                        'name' => $validated["sibling_{$i}_name"],
+                        'name'       => $validated["sibling_{$i}_name"],
                         'year' => $validated["sibling_{$i}_year"],
                         'class' => $validated["sibling_{$i}_class"],
                         'institution_name' => $validated["sibling_{$i}_institution"],
@@ -387,9 +373,9 @@ class StudentController extends Controller
             }
 
             // Reference
-            if (!empty($validated['referer_type']) && !empty($validated['referred_by'])) {
+            if (! empty($validated['referer_type']) && ! empty($validated['referred_by'])) {
                 $reference = Reference::create([
-                    'referer_id' => $validated['referred_by'],
+                    'referer_id'   => $validated['referred_by'],
                     'referer_type' => $validated['referer_type'],
                 ]);
                 $student->update(['reference_id' => $reference->id]);
@@ -397,10 +383,10 @@ class StudentController extends Controller
 
             // Payment
             Payment::create([
-                'student_id' => $student->id,
+                'student_id'    => $student->id,
                 'payment_style' => $validated['payment_style'],
-                'due_date' => $validated['payment_due_date'],
-                'tuition_fee' => $validated['student_tuition_fee'],
+                'due_date'      => $validated['payment_due_date'],
+                'tuition_fee'   => $validated['student_tuition_fee'],
             ]);
 
             if ($validated['payment_style'] == 'current' && $validated['student_tuition_fee'] > 0) {
@@ -420,61 +406,69 @@ class StudentController extends Controller
                 }
             }
 
+            // ---------------------------------------
             // Handle Secondary Classes Enrollment
-            if (!empty($validated['secondary_classes'])) {
+            // ---------------------------------------
+            if (! empty($validated['secondary_classes'])) {
                 foreach ($validated['secondary_classes'] as $secondaryClassId) {
                     $secondaryClass = SecondaryClass::find($secondaryClassId);
-                    if ($secondaryClass) {
-                        // Attach to student with pivot data
-                        $student->secondaryClasses()->attach($secondaryClassId, [
-                            'status' => 'active',
-                            'enrolled_at' => now(),
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
 
-                        // Log to History
-                        StudentSecondaryClassHistory::create([
-                            'student_id' => $student->id,
-                            'secondary_class_id' => $secondaryClassId,
-                            'action' => 'enrolled',
-                            'created_by' => auth()->id(),
-                        ]);
+                    if (! $secondaryClass) {
+                        continue;
+                    }
 
-                        // Create Invoice for Secondary Class
-                        // Use the fee from input if available, otherwise fallback to class default
-                        $feeAmount = $validated['secondary_class_fees'][$secondaryClassId] ?? $secondaryClass->fee_amount;
-                        
-                        if ($feeAmount > 0) {
-                            $monthYear = null;
-                            if ($secondaryClass->payment_type === 'monthly') {
-                                $monthYear = now()->format('m_Y');
-                            }
-                            // Using 'Special Class Fee' based on the seeder's 'Special Class Fee'
-                            $this->createInvoice($student, $feeAmount, 'Special Class Fee', $monthYear);
+                    /**
+                     * Determine fee:
+                     * 1. Form-provided fee
+                     * 2. SecondaryClass default fee
+                     */
+                    $feeAmount = $validated['secondary_class_fees'][$secondaryClassId] ?? $secondaryClass->fee_amount;
+
+                    /**
+                     * Create ACTIVE enrollment
+                     * Observer will automatically log:
+                     * → action = enrolled
+                     */
+                    StudentSecondaryClass::create([
+                        'student_id'         => $student->id,
+                        'secondary_class_id' => $secondaryClassId,
+                        'amount'             => $feeAmount,
+                        'enrolled_at'        => now(),
+                    ]);
+
+                    /**
+                     * Create invoice (controller responsibility)
+                     */
+                    if ($feeAmount > 0) {
+                        $monthYear = null;
+
+                        if ($secondaryClass->payment_type === 'monthly') {
+                            $monthYear = now()->format('m_Y');
                         }
+
+                        $this->createInvoice($student, $feeAmount, 'Special Class Fee', $monthYear, 'secondary_class', $secondaryClassId);
                     }
                 }
             }
 
             // Mobile numbers
             MobileNumber::create([
-                'student_id' => $student->id,
+                'student_id'    => $student->id,
                 'mobile_number' => $validated['student_phone_home'],
-                'number_type' => 'home',
+                'number_type'   => 'home',
             ]);
 
             MobileNumber::create([
-                'student_id' => $student->id,
+                'student_id'    => $student->id,
                 'mobile_number' => $validated['student_phone_sms'],
-                'number_type' => 'sms',
+                'number_type'   => 'sms',
             ]);
 
-            if (!empty($validated['student_phone_whatsapp'])) {
+            if (! empty($validated['student_phone_whatsapp'])) {
                 MobileNumber::create([
-                    'student_id' => $student->id,
+                    'student_id'    => $student->id,
                     'mobile_number' => $validated['student_phone_whatsapp'],
-                    'number_type' => 'whatsapp',
+                    'number_type'   => 'whatsapp',
                 ]);
             }
 
@@ -491,17 +485,17 @@ class StudentController extends Controller
 
     /**
      * Validate optional subjects based on class numeral and group
-     * 
+     *
      * NEW FLEXIBLE VALIDATION:
      * - Optional subjects are truly optional (not required)
      * - Only validates that Main ≠ 4th when BOTH are selected
-     * 
+     *
      * @param array $validated
      * @param int $classNumeral
      * @param string $group
      * @return bool|string
      */
-    private function validateOptionalSubjects(array $validated, int $classNumeral, string $group): bool|string
+    private function validateOptionalSubjects(array $validated, int $classNumeral, string $group): bool | string
     {
         // Only validate for classes 9-12
         if ($classNumeral < 9 || $classNumeral > 12) {
@@ -509,19 +503,16 @@ class StudentController extends Controller
         }
 
         // Check if this class/group has optional subjects
-        $hasOptionalSubjects = Subject::where('class_id', $validated['student_class'])
-            ->where('academic_group', $group)
-            ->where('subject_type', 'optional')
-            ->exists();
+        $hasOptionalSubjects = Subject::where('class_id', $validated['student_class'])->where('academic_group', $group)->where('subject_type', 'optional')->exists();
 
-        if (!$hasOptionalSubjects) {
+        if (! $hasOptionalSubjects) {
             return true;
         }
 
         // FIXED: Check for duplicate main and 4th subjects from the subjects array
-        $subjects = $validated['subjects'] ?? [];
+        $subjects         = $validated['subjects'] ?? [];
         $fourthSubjectIds = [];
-        $mainSubjectIds = [];
+        $mainSubjectIds   = [];
 
         foreach ($subjects as $subject) {
             $is4th = $this->isFourthSubjectValue($subject['is_4th'] ?? '0');
@@ -545,7 +536,7 @@ class StudentController extends Controller
     /**
      * Store student subjects - FIXED VERSION
      * Now properly reads the is_4th flag from each subject in the array
-     * 
+     *
      * @param Student $student
      * @param array $validated
      */
@@ -562,7 +553,7 @@ class StudentController extends Controller
 
         foreach ($subjects as $subjectData) {
             $subjectId = $subjectData['id'];
-            $is4th = $this->isFourthSubjectValue($subjectData['is_4th'] ?? '0');
+            $is4th     = $this->isFourthSubjectValue($subjectData['is_4th'] ?? '0');
 
             if ($is4th) {
                 $fourthSubjectCount++;
@@ -576,7 +567,7 @@ class StudentController extends Controller
             }
 
             $student->subjectsTaken()->create([
-                'subject_id' => $subjectId,
+                'subject_id'     => $subjectId,
                 'is_4th_subject' => $is4th,
             ]);
         }
@@ -585,7 +576,7 @@ class StudentController extends Controller
     /**
      * Helper to determine if a value represents a 4th subject
      * Handles various input formats: '1', '0', 1, 0, true, false, 'true', 'false'
-     * 
+     *
      * @param mixed $value
      * @return bool
      */
@@ -595,7 +586,7 @@ class StudentController extends Controller
             return $value;
         }
         if (is_numeric($value)) {
-            return (int)$value === 1;
+            return (int) $value === 1;
         }
         if (is_string($value)) {
             return $value === '1' || strtolower($value) === 'true';
@@ -605,9 +596,9 @@ class StudentController extends Controller
 
     /**
      * Generate a unique student ID
-     * 
+     *
      * Format: <branch_prefix>-<year><class_numeral><sequential_number>
-     * 
+     *
      * Rules:
      * 1. For class 11-12 (HSC): Academic year runs July-June
      *    - Admitted Jan-June: Use current year (e.g., 26 for 2026)
@@ -615,7 +606,7 @@ class StudentController extends Controller
      * 2. For class 1-10: Use current calendar year
      * 3. Sequential number is shared across ALL classes with same class_numeral in same branch
      *    (e.g., 'HSC Sci' and 'HSC Com' both with class_numeral=11 share the sequence)
-     * 
+     *
      * @param Branch $branch
      * @param ClassName $class
      * @return string
@@ -623,7 +614,7 @@ class StudentController extends Controller
     private function generateStudentUniqueId(Branch $branch, ClassName $class): string
     {
         $classNumeral = $class->class_numeral;
-        $currentYear = Carbon::now()->format('y');
+        $currentYear  = Carbon::now()->format('y');
 
         // ========================================
         // Updated Logic:
@@ -652,7 +643,7 @@ class StudentController extends Controller
         $nextSequence = 1;
         if ($maxStudent) {
             $lastTwoDigits = substr($maxStudent->student_unique_id, -2);
-            $nextSequence = (int)$lastTwoDigits + 1;
+            $nextSequence  = (int) $lastTwoDigits + 1;
         }
 
         // Cap at 99 (maximum 2-digit sequence)
@@ -677,7 +668,7 @@ class StudentController extends Controller
 
     /**
      * Create a payment invoice for a student
-     * 
+     *
      * @param Student $student
      * @param float $amount
      * @param string $typeName - e.g., 'Admission Fee', 'Sheet Fee', 'Special Class Fee'
@@ -687,29 +678,29 @@ class StudentController extends Controller
     private function createInvoice(Student $student, float $amount, string $typeName, ?string $monthYear = null): void
     {
         $yearSuffix = now()->format('y');
-        $month = now()->format('m');
-        $prefix = $student->branch->branch_prefix;
+        $month      = now()->format('m');
+        $prefix     = $student->branch->branch_prefix;
 
         $lastInvoice = PaymentInvoice::where('invoice_number', 'like', "{$prefix}{$yearSuffix}{$month}_%")
             ->orderBy('invoice_number', 'desc')
             ->first();
 
-        $nextSequence = $lastInvoice ? (int)substr($lastInvoice->invoice_number, strrpos($lastInvoice->invoice_number, '_') + 1) + 1 : 1001;
+        $nextSequence  = $lastInvoice ? (int) substr($lastInvoice->invoice_number, strrpos($lastInvoice->invoice_number, '_') + 1) + 1 : 1001;
         $invoiceNumber = "{$prefix}{$yearSuffix}{$month}_{$nextSequence}";
 
         $invoiceType = PaymentInvoiceType::where('type_name', $typeName)->first();
 
-        if (!$invoiceType) {
+        if (! $invoiceType) {
             \Log::warning("Invoice type '{$typeName}' not found for student {$student->id}");
             return;
         }
 
         PaymentInvoice::create([
-            'invoice_number' => $invoiceNumber,
-            'student_id' => $student->id,
-            'total_amount' => $amount,
-            'amount_due' => $amount,
-            'month_year' => $monthYear,
+            'invoice_number'  => $invoiceNumber,
+            'student_id'      => $student->id,
+            'total_amount'    => $amount,
+            'amount_due'      => $amount,
+            'month_year'      => $monthYear,
             'invoice_type_id' => $invoiceType->id,
         ]);
     }
@@ -719,17 +710,124 @@ class StudentController extends Controller
      */
     public function show(string $id)
     {
-        // Try to find the student including trashed ones
-        $student = Student::withTrashed()->with([
-            // 'attendances' added to eager loading
+        // Try to find the student including trashed ones with optimized eager loading
+        $student = Student::with([
+            // Attendances for calendar
             'attendances',
-            'class' => function ($q) {
+
+            // Class with all needed fields
+            'class'                   => function ($q) {
                 $q->select('id', 'name', 'class_numeral', 'is_active');
-            }
+            },
+
+            // Branch info
+            'branch:id,branch_name,branch_prefix',
+
+            // Batch info
+            'batch:id,name',
+
+            // Institution info
+            'institution:id,name,eiin_number',
+
+            // Activation status
+            'studentActivation:id,active_status,created_at',
+
+            // All activations for activity tab
+            'activations.updatedBy:id,name',
+
+            // Guardians
+            'guardians:id,name,mobile_number,gender,relationship,student_id',
+
+            // Siblings
+            'siblings:id,name,year,class,institution_name,relationship,student_id',
+
+            // Mobile numbers
+            'mobileNumbers:id,mobile_number,number_type,student_id',
+
+            // Payments
+            'payments:id,payment_style,due_date,tuition_fee,student_id',
+
+            // Payment invoices with invoice type
+            'paymentInvoices'         => function ($q) {
+                $q->with(['invoiceType:id,type_name', 'student.payments:id,payment_style,due_date,student_id']);
+            },
+
+            // Payment transactions with invoice
+            'paymentTransactions'     => function ($q) {
+                $q->with(['paymentInvoice:id,invoice_number,created_at']);
+            },
+
+            // Subjects taken with subject details
+            'subjectsTaken'           => function ($q) {
+                $q->with(['subject:id,name,academic_group,subject_type']);
+            },
+
+            // Sheets topic taken for sheets tab
+            'sheetsTopicTaken'        => function ($q) {
+                $q->with([
+                    'sheetTopic:id,topic_name,subject_id',
+                    'sheetTopic.subject:id,name',
+                    'class' => function ($q) {
+                        $q->withoutGlobalScopes()->select('id', 'name', 'class_numeral');
+                    },
+                    'class.sheet:id,class_id',
+                    'distributedBy:id,name',
+                ]);
+            },
+
+            // Sheet payments for sidebar info
+            'sheetPayments'           => function ($q) {
+                $q->with(['sheet' => function ($sq) {
+                    $sq->with([
+                        'class' => function ($cq) {
+                            $cq->withoutGlobalScopes()->select('id', 'name', 'class_numeral');
+                        },
+                        'class.subjects:id,name,class_id',
+                    ]);
+                }]);
+            },
+
+            // Reference with referer
+            'reference'               => function ($q) {
+                $q->with(['referer']);
+            },
+
+            // Secondary classes (special classes) enrollment
+            // Returns StudentSecondaryClass models with nested secondaryClass->class
+            'secondaryClasses'        => function ($q) {
+                $q->with([
+                    'secondaryClass' => function ($sq) {
+                        $sq->with(['class:id,name,class_numeral']);
+                    },
+                ]);
+            },
+
+            // Class change history for activity tab
+            'classChangeHistories'    => function ($q) {
+                $q->with([
+                    'fromClass' => function ($cq) {
+                        $cq->withTrashed()->select('id', 'name', 'class_numeral');
+                    },
+                    'toClass'   => function ($cq) {
+                        $cq->withTrashed()->select('id', 'name', 'class_numeral');
+                    },
+                    'createdBy:id,name',
+                ]);
+            },
+
+            // Secondary class history for activity tab
+            'secondaryClassHistories' => function ($q) {
+                $q->with([
+                    'secondaryClass' => function ($sq) {
+                        $sq->with(['class:id,name,class_numeral']);
+                    },
+                    'createdBy:id,name',
+                ]);
+            },
         ])->find($id);
 
         // If not found or trashed, redirect with warning
-        if (!$student || $student->trashed()) {
+        if (! $student) {
             return redirect()->route('students.index')->with('warning', 'Student not found or deleted.');
         }
 
@@ -738,10 +836,10 @@ class StudentController extends Controller
             return redirect()->route('students.index')->with('error', 'Student not found in this branch.');
         }
 
-        // --- NEW CODE: Prepare Attendance Events for Calendar ---
+        // --- Prepare Attendance Events for Calendar ---
         $attendance_events = $student->attendances->map(function ($attendance) {
-            // Define Metronic Theme Colors
-            $color = '#50cd89'; // Green (Present)
+                                 // Define Metronic Theme Colors
+            $color  = '#50cd89'; // Green (Present)
             $status = strtolower($attendance->status);
 
             if ($status === 'absent') {
@@ -753,30 +851,34 @@ class StudentController extends Controller
             }
 
             return [
-                'title' => ucfirst($attendance->status),
-                'start' => $attendance->attendance_date->format('Y-m-d'),
+                'title'       => ucfirst($attendance->status),
+                'start'       => $attendance->attendance_date->format('Y-m-d'),
                 'description' => $attendance->remarks ?? '',
-                'color' => $color, // e.g. #50cd89
+                'color'       => $color,
             ];
         });
-        // --------------------------------------------------------
 
-        // Get all sheet payments of the student
-        $sheetPayments = $student->sheetPayments()->with(['sheet.class.subjects'])->get();
+        // --- Extract sheet class names and subjects (already eager loaded) ---
+        $sheetPayments = $student->sheetPayments;
 
         // Extract unique class names
-        $sheet_class_names = $sheetPayments->pluck('sheet.class')->unique('id')->map(function ($class) {
-            return [
-                'name' => $class->name,
-                'class_numeral' => $class->class_numeral,
-            ];
-        });
+        $sheet_class_names = $sheetPayments->pluck('sheet.class')->filter()
+            ->unique('id')
+            ->map(function ($class) {
+                return [
+                    'name'          => $class->name,
+                    'class_numeral' => $class->class_numeral,
+                ];
+            });
 
         // Extract unique subject names from those classes
-        $sheet_subjectNames = $sheetPayments->pluck('sheet.class.subjects')->flatten()->unique('name')->pluck('name')->sort()->values();
+        $sheet_subjectNames = $sheetPayments->pluck('sheet.class.subjects')->flatten()->filter()
+            ->unique('name')->pluck('name')->sort()->values();
 
+        // Get invoice types for edit modal
         $invoice_types = PaymentInvoiceType::select('id', 'type_name')->oldest('type_name')->get();
 
+        // Check if class is active to determine which view to render
         if ($student->class->isActive() === false) {
             return view('students.alumni.view', compact('student', 'sheet_class_names', 'sheet_subjectNames'));
         } else {
@@ -795,9 +897,11 @@ class StudentController extends Controller
             'class' => function ($q) {
                 $q->withoutGlobalScopes()->select('id', 'name', 'class_numeral', 'is_active');
             },
-        ])->withTrashed()->find($id);
+        ])
+            ->withTrashed()
+            ->find($id);
 
-        if (!$student || $student->trashed()) {
+        if (! $student || $student->trashed()) {
             return redirect()->route('students.index')->with('warning', 'Student not found or deleted.');
         }
 
@@ -824,7 +928,7 @@ class StudentController extends Controller
             $classnames = ClassName::active()->get();
         }
 
-        $batches = Batch::where('branch_id', $student->branch_id)->get();
+        $batches      = Batch::where('branch_id', $student->branch_id)->get();
         $institutions = Institution::all();
 
         return view('students.edit', compact('student', 'students', 'classnames', 'batches', 'institutions'));
@@ -840,84 +944,84 @@ class StudentController extends Controller
         // Validate request data
         $validated = $request->validate([
             // Student Table Fields
-            'student_name' => 'required|string|max:255',
-            'student_home_address' => 'nullable|string|max:500',
-            'student_email' => 'nullable|email|max:255|unique:students,email,' . $student->id,
-            'birth_date' => 'nullable|date_format:d-m-Y',
-            'student_gender' => 'required|in:male,female',
-            'student_religion' => 'nullable|string|in:Islam,Hinduism,Christianity,Buddhism,Others',
-            'student_blood_group' => 'nullable|string',
-            'student_class' => $isAccountant ? 'nullable' : 'required|integer|exists:class_names,id',
-            'student_academic_group' => 'nullable|string|in:General,Science,Commerce,Arts',
-            'student_batch' => $isAccountant ? 'nullable' : 'required|integer|exists:batches,id',
-            'student_institution' => $isAccountant ? 'nullable' : 'required|integer|exists:institutions,id',
-            'student_remarks' => 'nullable|string|max:1000',
-            'avatar' => 'nullable|image|mimes:jpg,jpeg,png|max:100',
+            'student_name'            => 'required|string|max:255',
+            'student_home_address'    => 'nullable|string|max:500',
+            'student_email'           => 'nullable|email|max:255|unique:students,email,' . $student->id,
+            'birth_date'              => 'nullable|date_format:d-m-Y',
+            'student_gender'          => 'required|in:male,female',
+            'student_religion'        => 'nullable|string|in:Islam,Hinduism,Christianity,Buddhism,Others',
+            'student_blood_group'     => 'nullable|string',
+            'student_class'           => $isAccountant ? 'nullable' : 'required|integer|exists:class_names,id',
+            'student_academic_group'  => 'nullable|string|in:General,Science,Commerce,Arts',
+            'student_batch'           => $isAccountant ? 'nullable' : 'required|integer|exists:batches,id',
+            'student_institution'     => $isAccountant ? 'nullable' : 'required|integer|exists:institutions,id',
+            'student_remarks'         => 'nullable|string|max:1000',
+            'avatar'                  => 'nullable|image|mimes:jpg,jpeg,png|max:100',
 
             // Subjects - New format: array of {id, is_4th}
-            'subjects' => 'required|array|min:1',
-            'subjects.*.id' => 'required|integer|exists:subjects,id',
-            'subjects.*.is_4th' => 'required|in:0,1,true,false',
+            'subjects'                => 'required|array|min:1',
+            'subjects.*.id'           => 'required|integer|exists:subjects,id',
+            'subjects.*.is_4th'       => 'required|in:0,1,true,false',
 
             // MobileNumbers Table Fields
-            'student_phone_home' => ['required', 'regex:/^01[3-9]\d{8}$/'],
-            'student_phone_sms' => ['required', 'regex:/^01[3-9]\d{8}$/'],
-            'student_phone_whatsapp' => ['nullable', 'regex:/^01[3-9]\d{8}$/'],
+            'student_phone_home'      => ['required', 'regex:/^01[3-9]\d{8}$/'],
+            'student_phone_sms'       => ['required', 'regex:/^01[3-9]\d{8}$/'],
+            'student_phone_whatsapp'  => ['nullable', 'regex:/^01[3-9]\d{8}$/'],
 
             // Payment Table Fields
-            'student_tuition_fee' => $isAccountant ? 'nullable' : 'required|numeric|min:0',
-            'payment_style' => $isAccountant ? 'nullable' : 'required|in:current,due',
-            'payment_due_date' => $isAccountant ? 'nullable' : 'required|integer|in:7,10,15,30',
+            'student_tuition_fee'     => $isAccountant ? 'nullable' : 'required|numeric|min:0',
+            'payment_style'           => $isAccountant ? 'nullable' : 'required|in:current,due',
+            'payment_due_date'        => $isAccountant ? 'nullable' : 'required|integer|in:7,10,15,30',
 
             // Guardians Table Fields
-            'guardian_1_id' => 'nullable|integer|exists:guardians,id',
-            'guardian_1_name' => 'required|string|max:255',
-            'guardian_1_mobile' => 'required|string|max:11',
-            'guardian_1_gender' => 'required|in:male,female',
+            'guardian_1_id'           => 'nullable|integer|exists:guardians,id',
+            'guardian_1_name'         => 'required|string|max:255',
+            'guardian_1_mobile'       => 'required|string|max:11',
+            'guardian_1_gender'       => 'required|in:male,female',
             'guardian_1_relationship' => 'required|string|in:father,mother,brother,sister,uncle,aunt',
 
-            'guardian_2_id' => 'nullable|integer|exists:guardians,id',
-            'guardian_2_name' => 'nullable|string|max:255',
-            'guardian_2_mobile' => 'nullable|string|max:11',
-            'guardian_2_gender' => 'nullable|in:male,female',
+            'guardian_2_id'           => 'nullable|integer|exists:guardians,id',
+            'guardian_2_name'         => 'nullable|string|max:255',
+            'guardian_2_mobile'       => 'nullable|string|max:11',
+            'guardian_2_gender'       => 'nullable|in:male,female',
             'guardian_2_relationship' => 'nullable|string|in:father,mother,brother,sister,uncle,aunt',
 
             // Siblings Table Fields
-            'sibling_1_id' => 'nullable|integer|exists:siblings,id',
-            'sibling_1_name' => 'nullable|string|max:255',
-            'sibling_1_year' => 'nullable|string',
-            'sibling_1_class' => 'nullable|string',
-            'sibling_1_institution' => 'nullable|string',
-            'sibling_1_relationship' => 'nullable|string|in:brother,sister',
+            'sibling_1_id'            => 'nullable|integer|exists:siblings,id',
+            'sibling_1_name'          => 'nullable|string|max:255',
+            'sibling_1_year'          => 'nullable|string',
+            'sibling_1_class'         => 'nullable|string',
+            'sibling_1_institution'   => 'nullable|string',
+            'sibling_1_relationship'  => 'nullable|string|in:brother,sister',
 
-            'sibling_2_id' => 'nullable|integer|exists:siblings,id',
-            'sibling_2_name' => 'nullable|string|max:255',
-            'sibling_2_year' => 'nullable|string',
-            'sibling_2_class' => 'nullable|string',
-            'sibling_2_institution' => 'nullable|string',
-            'sibling_2_relationship' => 'nullable|string|in:brother,sister',
+            'sibling_2_id'            => 'nullable|integer|exists:siblings,id',
+            'sibling_2_name'          => 'nullable|string|max:255',
+            'sibling_2_year'          => 'nullable|string',
+            'sibling_2_class'         => 'nullable|string',
+            'sibling_2_institution'   => 'nullable|string',
+            'sibling_2_relationship'  => 'nullable|string|in:brother,sister',
         ]);
 
         return DB::transaction(function () use ($validated, $student, $isAccountant) {
             // Update student record
             $student->update([
-                'name' => $validated['student_name'],
-                'date_of_birth' => !empty($validated['birth_date']) ? Carbon::createFromFormat('d-m-Y', $validated['birth_date']) : null,
-                'gender' => $validated['student_gender'],
-                'religion' => $validated['student_religion'] ?? null,
-                'blood_group' => $validated['student_blood_group'] ?? null,
-                'home_address' => $validated['student_home_address'] ?? null,
-                'email' => $validated['student_email'] ?? null,
-                'remarks' => $validated['student_remarks'] ?? null,
+                'name'          => $validated['student_name'],
+                'date_of_birth' => ! empty($validated['birth_date']) ? Carbon::createFromFormat('d-m-Y', $validated['birth_date']) : null,
+                'gender'        => $validated['student_gender'],
+                'religion'      => $validated['student_religion'] ?? null,
+                'blood_group'   => $validated['student_blood_group'] ?? null,
+                'home_address'  => $validated['student_home_address'] ?? null,
+                'email'         => $validated['student_email'] ?? null,
+                'remarks'       => $validated['student_remarks'] ?? null,
             ]);
 
             // Handle avatar update
             if (isset($validated['avatar'])) {
-                $file = $validated['avatar'];
+                $file      = $validated['avatar'];
                 $extension = $file->getClientOriginalExtension();
-                $filename = $student->student_unique_id . '_photo.' . $extension;
+                $filename  = $student->student_unique_id . '_photo.' . $extension;
                 $photoPath = public_path('uploads/students/');
-                if (!file_exists($photoPath)) {
+                if (! file_exists($photoPath)) {
                     mkdir($photoPath, 0777, true);
                 }
                 $file->move($photoPath, $filename);
@@ -937,19 +1041,19 @@ class StudentController extends Controller
             $this->updateMobileNumbers($student, $validated);
 
             // Accountant cannot update step 3 and step 4
-            if (!$isAccountant) {
+            if (! $isAccountant) {
                 $student->update([
-                    'class_id' => $validated['student_class'],
+                    'class_id'       => $validated['student_class'],
                     'academic_group' => $validated['student_academic_group'] ?? 'General',
-                    'batch_id' => $validated['student_batch'],
+                    'batch_id'       => $validated['student_batch'],
                     'institution_id' => $validated['student_institution'],
                 ]);
 
                 // Update payment details
                 $student->payments()->update([
                     'payment_style' => $validated['payment_style'],
-                    'due_date' => $validated['payment_due_date'],
-                    'tuition_fee' => $validated['student_tuition_fee'],
+                    'due_date'      => $validated['payment_due_date'],
+                    'tuition_fee'   => $validated['student_tuition_fee'],
                 ]);
             }
 
@@ -985,9 +1089,12 @@ class StudentController extends Controller
 
         // Check for duplicate main optional and 4th subject
         if ($fourthSubjectId) {
-            $mainSubjects = collect($subjects)->filter(function ($subject) {
-                return !$this->isFourthSubjectValue($subject['is_4th']);
-            })->pluck('id')->toArray();
+            $mainSubjects = collect($subjects)
+                ->filter(function ($subject) {
+                    return ! $this->isFourthSubjectValue($subject['is_4th']);
+                })
+                ->pluck('id')
+                ->toArray();
 
             if (in_array($fourthSubjectId, $mainSubjects)) {
                 throw ValidationException::withMessages([
@@ -1002,7 +1109,7 @@ class StudentController extends Controller
         // Create new subject records for each subject
         foreach ($subjects as $subject) {
             $student->subjectsTaken()->create([
-                'subject_id' => $subject['id'],
+                'subject_id'     => $subject['id'],
                 'is_4th_subject' => $this->isFourthSubjectValue($subject['is_4th']),
             ]);
         }
@@ -1015,19 +1122,16 @@ class StudentController extends Controller
     {
         foreach ([1, 2] as $i) {
             $guardianId = $validated["guardian_{$i}_id"] ?? null;
-            $name = $validated["guardian_{$i}_name"] ?? null;
-            $mobile = $validated["guardian_{$i}_mobile"] ?? null;
-            $gender = $validated["guardian_{$i}_gender"] ?? null;
-            $relation = $validated["guardian_{$i}_relationship"] ?? null;
+            $name       = $validated["guardian_{$i}_name"] ?? null;
+            $mobile     = $validated["guardian_{$i}_mobile"] ?? null;
+            $gender     = $validated["guardian_{$i}_gender"] ?? null;
+            $relation   = $validated["guardian_{$i}_relationship"] ?? null;
 
-            $allFieldsEmpty = !$name && !$mobile && !$gender && !$relation;
+            $allFieldsEmpty = ! $name && ! $mobile && ! $gender && ! $relation;
 
-            if (!$allFieldsEmpty && $relation) {
+            if (! $allFieldsEmpty && $relation) {
                 // Check if the same relationship is already assigned to another guardian
-                $exists = $student->guardians()
-                    ->where('relationship', $relation)
-                    ->when($guardianId, fn($q) => $q->where('id', '!=', $guardianId))
-                    ->exists();
+                $exists = $student->guardians()->where('relationship', $relation)->when($guardianId, fn($q) => $q->where('id', '!=', $guardianId))->exists();
 
                 if ($exists) {
                     throw ValidationException::withMessages([
@@ -1036,27 +1140,27 @@ class StudentController extends Controller
                 }
             }
 
-            if ($guardianId && !$allFieldsEmpty) {
+            if ($guardianId && ! $allFieldsEmpty) {
                 // Update existing guardian
                 $guardian = Guardian::find($guardianId);
                 if ($guardian) {
                     $guardian->update([
-                        'name' => $name,
+                        'name'          => $name,
                         'mobile_number' => $mobile,
-                        'gender' => $gender,
-                        'relationship' => $relation,
+                        'gender'        => $gender,
+                        'relationship'  => $relation,
                     ]);
                 }
             } elseif ($guardianId && $allFieldsEmpty) {
                 // Delete if ID exists but all fields are empty
                 Guardian::find($guardianId)?->delete();
-            } elseif (!$guardianId && !$allFieldsEmpty) {
+            } elseif (! $guardianId && ! $allFieldsEmpty) {
                 // Create new guardian if no ID but fields are filled
                 $student->guardians()->create([
-                    'name' => $name,
+                    'name'          => $name,
                     'mobile_number' => $mobile,
-                    'gender' => $gender,
-                    'relationship' => $relation,
+                    'gender'        => $gender,
+                    'relationship'  => $relation,
                 ]);
             }
         }
@@ -1068,38 +1172,38 @@ class StudentController extends Controller
     private function updateSiblings(Student $student, array $validated): void
     {
         foreach ([1, 2] as $i) {
-            $siblingId = $validated["sibling_{$i}_id"] ?? null;
-            $name = $validated["sibling_{$i}_name"] ?? null;
-            $year = $validated["sibling_{$i}_year"] ?? null;
-            $class = $validated["sibling_{$i}_class"] ?? null;
+            $siblingId   = $validated["sibling_{$i}_id"] ?? null;
+            $name        = $validated["sibling_{$i}_name"] ?? null;
+            $year        = $validated["sibling_{$i}_year"] ?? null;
+            $class       = $validated["sibling_{$i}_class"] ?? null;
             $institution = $validated["sibling_{$i}_institution"] ?? null;
-            $relation = $validated["sibling_{$i}_relationship"] ?? null;
+            $relation    = $validated["sibling_{$i}_relationship"] ?? null;
 
-            $allFieldsEmpty = !$name && !$year && !$class && !$institution && !$relation;
+            $allFieldsEmpty = ! $name && ! $year && ! $class && ! $institution && ! $relation;
 
-            if ($siblingId && !$allFieldsEmpty) {
+            if ($siblingId && ! $allFieldsEmpty) {
                 // Update existing sibling
                 $sibling = Sibling::find($siblingId);
                 if ($sibling) {
                     $sibling->update([
-                        'name' => $name,
-                        'year' => $year,
-                        'class' => $class,
+                        'name'             => $name,
+                        'year'             => $year,
+                        'class'            => $class,
                         'institution_name' => $institution,
-                        'relationship' => $relation,
+                        'relationship'     => $relation,
                     ]);
                 }
             } elseif ($siblingId && $allFieldsEmpty) {
                 // Delete sibling if ID exists but all fields are blank
                 Sibling::find($siblingId)?->delete();
-            } elseif (!$siblingId && !$allFieldsEmpty) {
+            } elseif (! $siblingId && ! $allFieldsEmpty) {
                 // Create new sibling if no ID but fields are filled
                 $student->siblings()->create([
-                    'name' => $name,
-                    'year' => $year,
-                    'class' => $class,
+                    'name'             => $name,
+                    'year'             => $year,
+                    'class'            => $class,
                     'institution_name' => $institution,
-                    'relationship' => $relation,
+                    'relationship'     => $relation,
                 ]);
             }
         }
@@ -1110,21 +1214,12 @@ class StudentController extends Controller
      */
     private function updateMobileNumbers(Student $student, array $validated): void
     {
-        $student->mobileNumbers()->updateOrCreate(
-            ['number_type' => 'home'],
-            ['mobile_number' => $validated['student_phone_home']]
-        );
+        $student->mobileNumbers()->updateOrCreate(['number_type' => 'home'], ['mobile_number' => $validated['student_phone_home']]);
 
-        $student->mobileNumbers()->updateOrCreate(
-            ['number_type' => 'sms'],
-            ['mobile_number' => $validated['student_phone_sms']]
-        );
+        $student->mobileNumbers()->updateOrCreate(['number_type' => 'sms'], ['mobile_number' => $validated['student_phone_sms']]);
 
-        if (!empty($validated['student_phone_whatsapp'])) {
-            $student->mobileNumbers()->updateOrCreate(
-                ['number_type' => 'whatsapp'],
-                ['mobile_number' => $validated['student_phone_whatsapp']]
-            );
+        if (! empty($validated['student_phone_whatsapp'])) {
+            $student->mobileNumbers()->updateOrCreate(['number_type' => 'whatsapp'], ['mobile_number' => $validated['student_phone_whatsapp']]);
         } else {
             // Remove WhatsApp number if cleared
             $student->mobileNumbers()->where('number_type', 'whatsapp')->delete();
@@ -1139,7 +1234,6 @@ class StudentController extends Controller
         $deletedBy = auth()->id();
 
         DB::transaction(function () use ($student, $deletedBy) {
-
             /**
              * ==================================================
              * CASE 1: Pending student → PERMANENT DELETE
@@ -1147,9 +1241,12 @@ class StudentController extends Controller
              */
             if (is_null($student->student_activation_id)) {
                 // Force delete payment transactions
-                $student->paymentInvoices()->withTrashed()->each(function ($invoice) {
-                    $invoice->paymentTransactions()->withTrashed()->forceDelete();
-                });
+                $student
+                    ->paymentInvoices()
+                    ->withTrashed()
+                    ->each(function ($invoice) {
+                        $invoice->paymentTransactions()->withTrashed()->forceDelete();
+                    });
 
                 // Force delete invoices
                 $student->paymentInvoices()->withTrashed()->forceDelete();
@@ -1194,24 +1291,28 @@ class StudentController extends Controller
         $refererType = $request->get('referer_type');
 
         if ($refererType == 'teacher') {
-            // Fetch teacher data (no unique_id)
+                                                    // Fetch teacher data (no unique_id)
             $teachers = \App\Models\Teacher::all(); // Adjust according to your data model
-            return response()->json($teachers->map(function ($teacher) {
-                return [
-                    'id' => $teacher->id,
-                    'name' => $teacher->name,
-                ];
-            }),);
+            return response()->json(
+                $teachers->map(function ($teacher) {
+                    return [
+                        'id'   => $teacher->id,
+                        'name' => $teacher->name,
+                    ];
+                }),
+            );
         } elseif ($refererType == 'student') {
-            // Fetch student data
+                                        // Fetch student data
             $students = Student::all(); // Adjust according to your data model
-            return response()->json($students->map(function ($student) {
-                return [
-                    'id' => $student->id,
-                    'name' => $student->name,
-                    'student_unique_id' => $student->student_unique_id, // Keep the unique_id for students
-                ];
-            }),);
+            return response()->json(
+                $students->map(function ($student) {
+                    return [
+                        'id'                => $student->id,
+                        'name'              => $student->name,
+                        'student_unique_id' => $student->student_unique_id, // Keep the unique_id for students
+                    ];
+                }),
+            );
         }
 
         return response()->json([]);
@@ -1229,26 +1330,22 @@ class StudentController extends Controller
             $q->where('type_name', 'Tuition Fee');
         });
 
-        $lastInvoice = (clone $tuitionInvoices)
-            ->orderByRaw("CAST(SUBSTRING_INDEX(month_year, '_', -1) AS UNSIGNED) DESC, CAST(SUBSTRING_INDEX(month_year, '_', 1) AS UNSIGNED) DESC")
-            ->first();
+        $lastInvoice = (clone $tuitionInvoices)->orderByRaw("CAST(SUBSTRING_INDEX(month_year, '_', -1) AS UNSIGNED) DESC, CAST(SUBSTRING_INDEX(month_year, '_', 1) AS UNSIGNED) DESC")->first();
 
-        $oldestInvoice = (clone $tuitionInvoices)
-            ->orderByRaw("CAST(SUBSTRING_INDEX(month_year, '_', -1) AS UNSIGNED) ASC, CAST(SUBSTRING_INDEX(month_year, '_', 1) AS UNSIGNED) ASC")
-            ->first();
+        $oldestInvoice = (clone $tuitionInvoices)->orderByRaw("CAST(SUBSTRING_INDEX(month_year, '_', -1) AS UNSIGNED) ASC, CAST(SUBSTRING_INDEX(month_year, '_', 1) AS UNSIGNED) ASC")->first();
 
         return response()->json([
-            'last_invoice_month' => optional($lastInvoice)->month_year,
+            'last_invoice_month'   => optional($lastInvoice)->month_year,
             'oldest_invoice_month' => optional($oldestInvoice)->month_year,
-            'tuition_fee' => optional($student->payments)->tuition_fee, // Changed from payment to payments
-            'payment_style' => optional($student->payments)->payment_style, // Changed from payment to payments
+            'tuition_fee'          => optional($student->payments)->tuition_fee,   // Changed from payment to payments
+            'payment_style'        => optional($student->payments)->payment_style, // Changed from payment to payments
         ]);
     }
 
     /* Get the sheet fee for a student */
     public function getSheetFee($id)
     {
-        $student = Student::with('class.sheet')->findOrFail($id);
+        $student  = Student::with('class.sheet')->findOrFail($id);
         $sheetFee = optional($student->class->sheet)->price;
         return response()->json(['sheet_fee' => $sheetFee]);
     }
@@ -1258,17 +1355,13 @@ class StudentController extends Controller
      */
     public function getSecondaryClasses($id)
     {
-        $secondaryClasses = SecondaryClass::where('class_id', $id)
-            ->where('is_active', true)
-            ->select('id', 'name', 'fee_amount', 'payment_type')
-            ->get();
-            
+        $secondaryClasses = SecondaryClass::where('class_id', $id)->where('is_active', true)->select('id', 'name', 'fee_amount', 'payment_type')->get();
+
         return response()->json([
             'success' => true,
-            'data' => $secondaryClasses
+            'data'    => $secondaryClasses,
         ]);
     }
-
 
     /* Old Student - Alumni */
 
@@ -1277,9 +1370,9 @@ class StudentController extends Controller
      */
     public function alumniStudent()
     {
-        $user = auth()->user();
+        $user     = auth()->user();
         $branchId = $user->branch_id;
-        $isAdmin = $user->hasRole('admin');
+        $isAdmin  = $user->hasRole('admin');
 
         // Get all branches for admin
         $branches = Branch::all();
@@ -1288,7 +1381,7 @@ class StudentController extends Controller
             // For admin: Get alumni students grouped by branch
             $studentsByBranch = [];
             foreach ($branches as $branch) {
-                $cacheKey = 'alumni_students_list_branch_' . $branch->id;
+                $cacheKey                      = 'alumni_students_list_branch_' . $branch->id;
                 $studentsByBranch[$branch->id] = Cache::remember($cacheKey, now()->addHours(1), function () use ($branch) {
                     return Student::with([
                         'class' => function ($q) {
@@ -1342,7 +1435,7 @@ class StudentController extends Controller
         }
 
         $classnames = ClassName::withoutGlobalScope('active')->where('is_active', false)->get();
-        $batches = Batch::with('branch:id,branch_name')
+        $batches    = Batch::with('branch:id,branch_name')
             ->when($branchId != 0, function ($query) use ($branchId) {
                 $query->where('branch_id', $branchId);
             })

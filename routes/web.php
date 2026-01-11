@@ -74,7 +74,6 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('students/promote', [StudentPromoteController::class, 'index'])->name('students.promote');
     Route::post('student/statement/download', [PdfController::class, 'downloadStatement'])->name('student.statement.download');
     Route::get('students/class/{id}/secondary-classes', [StudentController::class, 'getSecondaryClasses']);
-    
 
     /* --- Student Transfer Starts --- */
     Route::get('students/transfer', [StudentTransferController::class, 'index'])->name('students.transfer');
@@ -163,10 +162,12 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     | Class Names Routes
     |--------------------------------------------------------------------------
     */
-    Route::prefix('classnames')->name('classnames.')->group(function () {
-        Route::get('ajax-data/{class}', [ClassNameController::class, 'getClassName'])->name('ajax');
-        Route::get('branch-counts/{class}', [ClassNameController::class, 'getBranchCounts'])->name('branch-counts');
-    });
+    Route::prefix('classnames')
+        ->name('classnames.')
+        ->group(function () {
+            Route::get('ajax-data/{class}', [ClassNameController::class, 'getClassName'])->name('ajax');
+            Route::get('branch-counts/{class}', [ClassNameController::class, 'getBranchCounts'])->name('branch-counts');
+        });
     Route::resource('classnames', ClassNameController::class);
 
     /*
@@ -174,10 +175,25 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     | Secondary Classes Routes
     |--------------------------------------------------------------------------
     */
+    Route::prefix('classnames/{classname}')->name('classnames.')->group(function () {
+        Route::prefix('secondary-classes')->name('secondary-classes.')->group(function () {
+            Route::get('{secondaryClass}', [SecondaryClassController::class, 'showWithClass'])->name('show');
+            Route::post('{secondaryClass}/enroll', [SecondaryClassController::class, 'enrollStudent'])->name('enroll');
+            Route::put('{secondaryClass}/students/{student}', [SecondaryClassController::class, 'updateStudentEnrollment'])->name('update-student');
+            Route::delete('{secondaryClass}/students/{student}', [SecondaryClassController::class, 'withdrawStudent'])->name('withdraw');
+            Route::get('{secondaryClass}/check-unpaid/{student}', [SecondaryClassController::class, 'checkUnpaidInvoices'])->name('check-unpaid');
+            Route::get('{secondaryClass}/available-students', [SecondaryClassController::class, 'getAvailableStudents'])->name('available-students');
+        });
+    });
+
+    // Keep these existing routes
     Route::prefix('secondary-classes')->name('secondary-classes.')->group(function () {
         Route::get('by-class/{classId}', [SecondaryClassController::class, 'getByClass'])->name('by-class');
     });
-    Route::resource('secondary-classes', SecondaryClassController::class);
+    Route::resource('secondary-classes', SecondaryClassController::class)->except(['show']);
+
+    // Update classnames route to include secondary class view
+    Route::get('classnames/{classname}/secondary-classes/{secondaryClass}', [SecondaryClassController::class, 'showWithClass'])->name('classnames.secondary-classes.show');
 
     /*
     |--------------------------------------------------------------------------

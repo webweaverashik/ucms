@@ -106,23 +106,27 @@ class Student extends Model
     }
 
     // Academic Class
-    public function class ()
+    public function class()
     {
         return $this->belongsTo(ClassName::class, 'class_id');
-    }
-
-    // Current secondary classes
-    public function secondaryClasses()
-    {
-        return $this->belongsToMany(SecondaryClass::class, 'student_secondary_classes')
-            ->withPivot(['status', 'enrolled_at'])
-            ->withTimestamps();
     }
 
     // Student class change history
     public function classChangeHistories()
     {
         return $this->hasMany(StudentClassChangeHistory::class, 'student_id')->latest();
+    }
+
+    // Current secondary classes
+    public function secondaryClasses()
+    {
+        return $this->hasMany(StudentSecondaryClass::class, 'student_id');
+    }
+
+    // Secondary class history
+    public function secondaryClassHistories()
+    {
+        return $this->hasMany(StudentSecondaryClassHistory::class, 'student_id')->latest();
     }
 
     // Batch

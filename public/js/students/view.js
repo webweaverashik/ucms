@@ -8,7 +8,7 @@ var KTStudentsActions = function () {
                 e.preventDefault();
 
                 let studentId = this.getAttribute('data-student-id');
-                let url = routeDeleteStudent.replace(':id', studentId);  // Replace ':id' with actual student ID
+                let url = routeDeleteStudent.replace(':id', studentId); // Replace ':id' with actual student ID
 
                 Swal.fire({
                     title: "Are you sure to delete this student?",
@@ -76,7 +76,6 @@ var KTStudentsActions = function () {
                 document.getElementById('student_id').value = studentId;
                 document.getElementById('activation_status').value = (activeStatus === 'active') ? 'inactive' : 'active';
 
-
                 // Update modal title and label
                 const modalTitle = document.getElementById('toggle-activation-modal-title');
                 const reasonLabel = document.getElementById('reason_label');
@@ -93,7 +92,7 @@ var KTStudentsActions = function () {
     }
 
     return {
-        // Public functions  
+        // Public functions
         init: function () {
             handleDeletion();
             handleToggleActivationAJAX();
@@ -115,18 +114,16 @@ var KTStudentsInvoicesView = function () {
             "lengthMenu": [10, 25, 50, 100],
             "pageLength": 10,
             "lengthChange": true,
-            "autoWidth": false,  // Disable auto width
+            "autoWidth": false, // Disable auto width
             'columnDefs': [
-                { orderable: false, targets: 7 }, // Disable ordering on column Guardian                
+                { orderable: false, targets: 7 }, // Disable ordering on column Guardian
             ]
         });
 
         // Re-init functions on every table re-draw -- more info: https://datatables.net/reference/event/draw
         datatable.on('draw', function () {
-
         });
     }
-
 
     var handleDeletion = function () {
         document.addEventListener('click', function (e) {
@@ -134,11 +131,10 @@ var KTStudentsInvoicesView = function () {
             if (!target) return;
 
             e.preventDefault();
-
             const invoiceId = target.getAttribute('data-invoice-id');
-            console.log('Invoice to be deleted: ', invoiceId);
+            console.log('Invoice to be deleted:', invoiceId);
 
-            const url = routeDeleteInvoice.replace(':id', invoiceId);  // Replace ':id' with actual invoice ID
+            const url = routeDeleteInvoice.replace(':id', invoiceId); // Replace ':id' with actual invoice ID
 
             Swal.fire({
                 title: "Are you sure to delete this invoice?",
@@ -188,9 +184,8 @@ var KTStudentsInvoicesView = function () {
         });
     };
 
-
     return {
-        // Public functions  
+        // Public functions
         init: function () {
             table = document.getElementById('kt_student_view_invoices_table');
 
@@ -509,15 +504,14 @@ var KTStudentsTransactionsView = function () {
             "lengthMenu": [10, 25, 50, 100],
             "pageLength": 10,
             "lengthChange": true,
-            "autoWidth": false,  // Disable auto width
+            "autoWidth": false, // Disable auto width
             'columnDefs': [
-                { orderable: false, targets: 7 }, // Disable ordering on column Guardian                
+                { orderable: false, targets: 7 }, // Disable ordering on column Guardian
             ]
         });
 
         // Re-init functions on every table re-draw -- more info: https://datatables.net/reference/event/draw
         datatable.on('draw', function () {
-
         });
     }
 
@@ -528,10 +522,8 @@ var KTStudentsTransactionsView = function () {
             if (!deleteBtn) return;
 
             e.preventDefault();
-
             let txnId = deleteBtn.getAttribute('data-txn-id');
             console.log('TXN ID:', txnId);
-
             let url = routeDeleteTxn.replace(':id', txnId);
 
             Swal.fire({
@@ -583,7 +575,7 @@ var KTStudentsTransactionsView = function () {
                 e.preventDefault();
 
                 let txnId = this.getAttribute('data-txn-id');
-                console.log("TXN ID: ", txnId);
+                console.log("TXN ID:", txnId);
 
                 Swal.fire({
                     title: 'Are you sure?',
@@ -688,7 +680,6 @@ var KTStudentsTransactionsView = function () {
                         printWindow.document.open();
                         printWindow.document.write(html);
                         printWindow.document.close();
-
                         // Focus on the new window
                         printWindow.focus();
                     } else {
@@ -731,7 +722,7 @@ var KTStudentsTransactionsView = function () {
     };
 
     return {
-        // Public functions  
+        // Public functions
         init: function () {
             table = document.getElementById('kt_student_view_transactions_table');
 
@@ -761,15 +752,14 @@ var KTStudentsSheetsView = function () {
             "lengthMenu": [10, 25, 50, 100],
             "pageLength": 10,
             "lengthChange": true,
-            "autoWidth": false,  // Disable auto width
+            "autoWidth": false, // Disable auto width
             'columnDefs': [
-                { orderable: false, targets: 4 }, // Disable ordering on column Guardian                
+                { orderable: false, targets: 4 }, // Disable ordering on column Guardian
             ]
         });
 
         // Re-init functions on every table re-draw -- more info: https://datatables.net/reference/event/draw
         datatable.on('draw', function () {
-
         });
     }
 
@@ -780,7 +770,6 @@ var KTStudentsSheetsView = function () {
             datatable.search(e.target.value).draw();
         });
     }
-
 
     // Filter Datatable
     var handleFilter = function () {
@@ -824,7 +813,7 @@ var KTStudentsSheetsView = function () {
     }
 
     return {
-        // Public functions  
+        // Public functions
         init: function () {
             table = document.getElementById('kt_student_view_sheets_table');
 
@@ -841,41 +830,71 @@ var KTStudentsSheetsView = function () {
 
 var KTStudentsActivity = function () {
     // Define shared variables
-    var table;
-    var datatable;
+    var activationTable;
+    var classChangeTable;
+    var secondaryClassTable;
 
     // Private functions
-    var initDatatable = function () {
+    var initActivationDatatable = function () {
+        var table = document.getElementById('kt_students_acitivation_table');
+        if (!table) return;
+
         // Init datatable --- more info on datatables: https://datatables.net/manual/
-        datatable = $(table).DataTable({
+        $(table).DataTable({
             "info": true,
             'order': [],
             "lengthMenu": [10, 25, 50, 100],
             "pageLength": 10,
             "lengthChange": true,
-            "autoWidth": false,  // Disable auto width
+            "autoWidth": false,
             'columnDefs': [
-                { orderable: false, targets: 2 }, // Disable ordering on column Guardian                
+                { orderable: false, targets: 2 },
             ]
-        });
-
-        // Re-init functions on every table re-draw -- more info: https://datatables.net/reference/event/draw
-        datatable.on('draw', function () {
-
         });
     }
 
+    var initClassChangeHistoryDatatable = function () {
+        var table = document.getElementById('kt_students_class_change_history_table');
+        if (!table) return;
+
+        // Init datatable
+        $(table).DataTable({
+            "info": true,
+            'order': [],
+            "lengthMenu": [10, 25, 50, 100],
+            "pageLength": 10,
+            "lengthChange": true,
+            "autoWidth": false,
+            'columnDefs': [
+                { orderable: false, targets: [1, 2] },
+            ]
+        });
+    }
+
+    var initSecondaryClassHistoryDatatable = function () {
+        var table = document.getElementById('kt_students_secondary_class_history_table');
+        if (!table) return;
+
+        // Init datatable
+        $(table).DataTable({
+            "info": true,
+            'order': [],
+            "lengthMenu": [10, 25, 50, 100],
+            "pageLength": 10,
+            "lengthChange": true,
+            "autoWidth": false,
+            'columnDefs': [
+                { orderable: false, targets: [1, 2] },
+            ]
+        });
+    }
 
     return {
-        // Public functions  
+        // Public functions
         init: function () {
-            table = document.getElementById('kt_students_acitivation_table');
-
-            if (!table) {
-                return;
-            }
-
-            initDatatable();
+            initActivationDatatable();
+            initClassChangeHistoryDatatable();
+            initSecondaryClassHistoryDatatable();
         }
     }
 }();
@@ -888,7 +907,6 @@ var KTStudentViewAttendance = function () {
     // --- 1. Calendar Logic ---
     var initCalendar = function () {
         calendarEl = document.getElementById('kt_attendance_calendar');
-
         if (!calendarEl) {
             return;
         }
@@ -902,17 +920,15 @@ var KTStudentViewAttendance = function () {
                 center: 'title',
                 right: 'dayGridMonth,listMonth'
             },
-
             // --- Custom View Settings ---
             views: {
                 listMonth: {
                     buttonText: 'List',
-                    displayEventTime: false,   // Hides "All day" text
-                    listDayFormat: false,      // Hides default Date Header rows (optional, keeps list clean)
-                    listDaySideFormat: false   // Hides side headers
+                    displayEventTime: false, // Hides "All day" text
+                    listDayFormat: false,    // Hides default DateHeader rows (optional, keeps list clean)
+                    listDaySideFormat: false // Hides side headers
                 }
             },
-
             initialView: 'dayGridMonth',
             height: 'auto',
             contentHeight: 650,
@@ -922,7 +938,6 @@ var KTStudentViewAttendance = function () {
             editable: false,
             dayMaxEvents: true,
             events: eventsData,
-
             // Tooltip Logic (Works for both Grid and List views)
             eventDidMount: function (info) {
                 var remarks = info.event.extendedProps.description;
@@ -935,7 +950,6 @@ var KTStudentViewAttendance = function () {
                     });
                 }
             },
-
             // --- CUSTOM CONTENT RENDERING ---
             eventContent: function (arg) {
                 // A. Logic for LIST View (Show Date + Status)
@@ -962,7 +976,7 @@ var KTStudentViewAttendance = function () {
 
                 // B. Logic for GRID View (Standard Month View)
                 return {
-                    html: '<div class="fc-content" style="color:white; padding:1px 2px;">' + arg.event.title + '</div>'
+                    html: '<div class="fc-content" style="color: white; padding: 1px 2px;">' + arg.event.title + '</div>'
                 };
             }
         });
@@ -1024,7 +1038,13 @@ var KTStudentViewAttendance = function () {
                 plugins: {
                     legend: {
                         position: 'bottom',
-                        labels: { usePointStyle: true, padding: 20, font: { size: 13 } }
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: {
+                                size: 13
+                            }
+                        }
                     },
                     tooltip: {
                         callbacks: {
@@ -1034,7 +1054,7 @@ var KTStudentViewAttendance = function () {
                             }
                         }
                     },
-                    // --- DATALABELS CONFIGURATION (Percentage on Chart) ---
+                    // --- DATA LABELS CONFIGURATION (Percentage on Chart) ---
                     datalabels: {
                         color: '#ffffff', // White text
                         font: {
@@ -1063,6 +1083,7 @@ var KTStudentViewAttendance = function () {
     // --- 3. Handle Tab Logic ---
     var handleTabSwitch = function () {
         var tabLink = document.querySelector('a[href="#kt_student_view_attendance_tab"]');
+
         if (!tabLink) {
             tabLink = document.querySelector('button[data-bs-target="#kt_student_view_attendance_tab"]');
         }
@@ -1084,7 +1105,6 @@ var KTStudentViewAttendance = function () {
         }
     };
 }();
-
 
 // On document ready
 KTUtil.onDOMContentLoaded(function () {

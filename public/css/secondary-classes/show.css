@@ -1,0 +1,243 @@
+/* Secondary Class Show Page Styles */
+
+/* Fee Info Card */
+.fee-info-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    border: 1px solid #e9ecef;
+}
+
+/* Stats Mini Cards */
+.stats-mini-card {
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    text-align: center;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.stats-mini-card:hover {
+    background: #fff;
+    border-color: #e9ecef;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.05);
+}
+
+.stats-mini-card .stats-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.stats-mini-card .stats-label {
+    font-size: 0.75rem;
+    color: #7e8299;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+.stats-mini-card.bg-light-success {
+    background: rgba(80, 205, 137, 0.1);
+}
+
+/* Branch Stats List */
+.branch-stats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.branch-stat-item {
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 0.875rem 1rem;
+    transition: all 0.2s ease;
+}
+
+.branch-stat-item:hover {
+    background: #fff;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05);
+}
+
+/* Empty State */
+.empty-state-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.empty-state-icon i {
+    font-size: 2.5rem;
+    color: #b5b5c3;
+}
+
+/* Amount Display */
+.amount-display {
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', 'Droid Sans Mono', monospace;
+}
+
+/* Table Enhancements */
+#kt_enrolled_students_table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+#kt_enrolled_students_table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Modal Enhancements */
+.modal .notice {
+    transition: all 0.3s ease;
+}
+
+.modal .notice.d-none {
+    display: none !important;
+}
+
+/* Button Group in Table */
+.btn-group .btn-sm {
+    padding: 0.35rem 0.5rem;
+}
+
+.btn-group .btn-icon {
+    width: 30px;
+    height: 30px;
+}
+
+/* Select2 Customization for Enrollment Modal */
+.select2-container--bootstrap5 .select2-selection--single {
+    min-height: 42px;
+    padding: 0.5rem 1rem;
+}
+
+.select2-container--bootstrap5 .select2-selection--single .select2-selection__rendered {
+    padding: 0;
+    line-height: 1.5;
+}
+
+.select2-container--bootstrap5 .select2-results__option {
+    padding: 0.75rem 1rem;
+}
+
+/* Input Group Enhancement */
+.input-group .input-group-text {
+    background-color: #f5f8fa;
+    border-color: #f5f8fa;
+    color: #7e8299;
+    font-weight: 500;
+}
+
+/* Badge Pills */
+.badge-pill {
+    border-radius: 50rem;
+    padding: 0.35em 0.65em;
+}
+
+/* Nav Tabs Enhancement */
+.nav-tabs .nav-link {
+    transition: all 0.2s ease;
+}
+
+.nav-tabs .nav-link .badge {
+    transition: all 0.2s ease;
+}
+
+.nav-tabs .nav-link:hover .badge {
+    transform: scale(1.05);
+}
+
+/* Card Toolbar Dropdown */
+.card-toolbar .menu-item .menu-link {
+    display: flex;
+    align-items: center;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 991.98px) {
+    .stats-mini-card .stats-value {
+        font-size: 1.25rem;
+    }
+    
+    .fee-info-card {
+        padding: 1rem;
+    }
+    
+    .branch-stat-item {
+        padding: 0.75rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .card-header .card-title .form-control {
+        width: 100% !important;
+    }
+    
+    .card-toolbar {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .btn-group .btn-sm {
+        padding: 0.25rem 0.4rem;
+    }
+}
+
+/* Animation for Warning Notices */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.notice:not(.d-none) {
+    animation: fadeInDown 0.3s ease;
+}
+
+/* Form Check Custom Styling */
+.form-check-danger .form-check-input:checked {
+    background-color: #f1416c;
+    border-color: #f1416c;
+}
+
+.form-check-danger .form-check-label {
+    cursor: pointer;
+}
+
+/* Tooltip Styling */
+.tooltip-inner {
+    max-width: 250px;
+}
+
+/* DataTable Responsive */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter {
+    margin-bottom: 1rem;
+}
+
+.dataTables_wrapper .dataTables_paginate {
+    margin-top: 1rem;
+}
+
+/* Loading State for Buttons */
+.btn[data-kt-indicator="on"] .indicator-label {
+    display: none;
+}
+
+.btn[data-kt-indicator="on"] .indicator-progress {
+    display: inline-block;
+}
+
+.btn .indicator-progress {
+    display: none;
+}

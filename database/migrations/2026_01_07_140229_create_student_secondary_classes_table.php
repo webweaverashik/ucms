@@ -14,19 +14,22 @@ return new class extends Migration
     {
         Schema::create('student_secondary_classes', function (Blueprint $table) {
             $table->id();
-
             $table->foreignId('student_id');
-
             $table->foreignId('secondary_class_id');
-
+            $table->integer('amount');
             $table->date('enrolled_at')->default(now());
-            $table->enum('status', ['active', 'inactive'])->default('active');
-
             $table->timestamps();
 
-            // Prevent duplicate enrollment
-            $table->unique(['student_id', 'secondary_class_id']);
-            $table->index(['secondary_class_id', 'status']);
+            // Prevent duplicate active enrollment
+            $table->unique(
+                ['student_id', 'secondary_class_id'],
+                'uq_student_secondary_class'
+            );
+
+            $table->index(
+                ['secondary_class_id'],
+                'idx_secondary_class'
+            );
         });
     }
 

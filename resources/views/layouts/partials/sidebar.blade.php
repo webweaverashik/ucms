@@ -217,18 +217,6 @@
 
                             <!--begin:Menu sub-->
                             <div class="menu-sub menu-sub-accordion">
-                                @can('institutions.view')
-                                    <!--begin:Menu item-->
-                                    <div class="menu-item">
-                                        <!--begin:Menu link--><a class="menu-link" id="institutions_link"
-                                            href="{{ route('institutions.index') }}"><span class="menu-bullet"><span
-                                                    class="bullet bullet-dot"></span></span><span
-                                                class="menu-title">Institutions</span></a>
-                                        <!--end:Menu link-->
-                                    </div>
-                                    <!--end:Menu item-->
-                                @endcan
-
                                 @can('classes.view')
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
@@ -241,6 +229,7 @@
                                     <!--end:Menu item-->
                                 @endcan
 
+
                                 @can('batches.view')
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
@@ -249,6 +238,18 @@
                                                 class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
                                                 class="menu-title">Batches</span>
                                         </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                    <!--end:Menu item-->
+                                @endcan
+
+                                @can('institutions.view')
+                                    <!--begin:Menu item-->
+                                    <div class="menu-item">
+                                        <!--begin:Menu link--><a class="menu-link" id="institutions_link"
+                                            href="{{ route('institutions.index') }}"><span class="menu-bullet"><span
+                                                    class="bullet bullet-dot"></span></span><span
+                                                class="menu-title">Institutions</span></a>
                                         <!--end:Menu link-->
                                     </div>
                                     <!--end:Menu item-->

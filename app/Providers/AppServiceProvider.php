@@ -2,12 +2,14 @@
 namespace App\Providers;
 
 use App\Models\Student\Student;
+use App\Models\Student\StudentSecondaryClass;
 use App\Models\Teacher\Teacher;
 use App\Observers\StudentObserver;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\ServiceProvider;
+use App\Observers\StudentSecondaryClassObserver;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -34,5 +36,6 @@ class AppServiceProvider extends ServiceProvider
 
         // Student Observer to log class changes
         Student::observe(StudentObserver::class);
+        StudentSecondaryClass::observe(StudentSecondaryClassObserver::class);
     }
 }

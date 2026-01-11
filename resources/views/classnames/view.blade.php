@@ -246,7 +246,8 @@
                 <!--begin:::Tab item-->
                 <li class="nav-item">
                     <a class="nav-link text-active-primary pb-4" data-bs-toggle="tab"
-                        href="#kt_secondary_classnames_tab"><i class="ki-outline ki-teacher fs-3 me-2"></i>Special Class</a>
+                        href="#kt_secondary_classnames_tab"><i class="ki-outline ki-teacher fs-3 me-2"></i>Special
+                        Class</a>
                 </li>
                 <!--end:::Tab item-->
 
@@ -646,10 +647,14 @@
                                                         <i class="ki-outline ki-abstract-26"></i>
                                                     </div>
                                                     <div class="ms-3">
-                                                        <h5 class="secondary-class-title mb-0">{{ $secondaryClass->name }}
-                                                        </h5>
-                                                        <span
-                                                            class="text-muted fs-7">{{ ucwords(str_replace('_', ' ', $secondaryClass->payment_type)) }}</span>
+                                                        {{-- UPDATED: Added hyperlink to secondary class detail page --}}
+                                                        <a href="{{ route('classnames.secondary-classes.show', [$classname->id, $secondaryClass->id]) }}"
+                                                            class="secondary-class-title mb-0 text-hover-primary">
+                                                            {{ $secondaryClass->name }}
+                                                        </a>
+                                                        <span class="text-muted fs-7 d-block">
+                                                            {{ ucwords(str_replace('_', ' ', $secondaryClass->payment_type)) }}
+                                                        </span>
                                                     </div>
                                                 </div>
                                                 @if (auth()->user()->isAdmin())
@@ -677,8 +682,11 @@
                                                     </div>
                                                     <div class="secondary-class-stat text-end">
                                                         <span class="stat-label">Students</span>
-                                                        <span
-                                                            class="stat-value text-info">{{ $secondaryClass->students_count }}</span>
+                                                        {{-- UPDATED: Made students count clickable --}}
+                                                        <a href="{{ route('classnames.secondary-classes.show', [$classname->id, $secondaryClass->id]) }}"
+                                                            class="stat-value text-info text-hover-primary">
+                                                            {{ $secondaryClass->students_count }}
+                                                        </a>
                                                     </div>
                                                 </div>
 
@@ -690,28 +698,37 @@
                                                         {{ $secondaryClass->is_active ? 'Active' : 'Inactive' }}
                                                     </span>
 
-                                                    @if (auth()->user()->isAdmin())
-                                                        <div class="btn-group">
-                                                            <button type="button"
-                                                                class="btn btn-sm btn-light-primary edit-secondary-class @if (!$secondaryClass->is_active) disabled @endif"
-                                                                data-secondary-class-id="{{ $secondaryClass->id }}"
-                                                                data-is-active="{{ $secondaryClass->is_active ? '1' : '0' }}"
-                                                                data-bs-toggle="tooltip"
-                                                                title="{{ $secondaryClass->is_active ? 'Edit' : 'Activate first to edit' }}">
-                                                                <i class="ki-outline ki-pencil fs-5"></i>
-                                                            </button>
-                                                            @if ($secondaryClass->students_count == 0)
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        {{-- UPDATED: Added view button --}}
+                                                        <a href="{{ route('classnames.secondary-classes.show', [$classname->id, $secondaryClass->id]) }}"
+                                                            class="btn btn-sm btn-light-info" data-bs-toggle="tooltip"
+                                                            title="View Details">
+                                                            <i class="ki-outline ki-eye fs-5 me-0"></i>
+                                                        </a>
+
+                                                        @if (auth()->user()->isAdmin())
+                                                            <div class="btn-group">
                                                                 <button type="button"
-                                                                    class="btn btn-sm btn-light-danger delete-secondary-class @if (!$secondaryClass->is_active) disabled @endif"
+                                                                    class="btn btn-sm btn-light-primary edit-secondary-class @if (!$secondaryClass->is_active) disabled @endif"
                                                                     data-secondary-class-id="{{ $secondaryClass->id }}"
                                                                     data-is-active="{{ $secondaryClass->is_active ? '1' : '0' }}"
                                                                     data-bs-toggle="tooltip"
-                                                                    title="{{ $secondaryClass->is_active ? 'Delete' : 'Activate first to delete' }}">
-                                                                    <i class="ki-outline ki-trash fs-5"></i>
+                                                                    title="{{ $secondaryClass->is_active ? 'Edit' : 'Activate first to edit' }}">
+                                                                    <i class="ki-outline ki-pencil fs-5"></i>
                                                                 </button>
-                                                            @endif
-                                                        </div>
-                                                    @endif
+                                                                @if ($secondaryClass->students_count == 0)
+                                                                    <button type="button"
+                                                                        class="btn btn-sm btn-light-danger delete-secondary-class @if (!$secondaryClass->is_active) disabled @endif"
+                                                                        data-secondary-class-id="{{ $secondaryClass->id }}"
+                                                                        data-is-active="{{ $secondaryClass->is_active ? '1' : '0' }}"
+                                                                        data-bs-toggle="tooltip"
+                                                                        title="{{ $secondaryClass->is_active ? 'Delete' : 'Activate first to delete' }}">
+                                                                        <i class="ki-outline ki-trash fs-5"></i>
+                                                                    </button>
+                                                                @endif
+                                                            </div>
+                                                        @endif
+                                                    </div>
                                                 </div>
                                             </div>
                                             <!--end::Card Body-->
