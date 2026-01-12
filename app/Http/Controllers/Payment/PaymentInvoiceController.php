@@ -75,7 +75,7 @@ class PaymentInvoiceController extends Controller
             /* -----------------------------
              | Invoice Types
              |-----------------------------*/
-            $invoice_types = PaymentInvoiceType::select('id', 'type_name')->oldest('type_name')->get();
+            $invoice_types = PaymentInvoiceType::select('id', 'type_name')->where('type_name', '!=', 'Special Class Fee')->orderBy('type_name')->get();
 
             return compact('unpaid_invoices', 'paid_invoices', 'dueMonths', 'paidMonths', 'students', 'invoice_types');
         });

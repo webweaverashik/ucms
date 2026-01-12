@@ -253,6 +253,7 @@
                                 <th>Due Date</th>
                                 <th class="d-none">Status (filter)</th>
                                 <th>Status</th>
+                                <th>Created At</th>
                                 <th class="w-100px not-export">Actions</th>
                             </tr>
                         </thead>
@@ -347,6 +348,13 @@
                                             @endif
                                         @endif
                                     </td>
+                                    <td>
+                                        {{ $invoice->created_at->format('d-m-Y') }}<br>
+                                        <small class="text-muted">
+                                            {{ $invoice->created_at->format('h:i:s A') }}
+                                        </small>
+                                    </td>
+
                                     <td>
                                         {{-- @if ($status != 'partially_paid') --}}
                                         {{-- @if (optional($invoice->student->studentActivation)->active_status == 'active' && $invoice->status == 'due') --}}
@@ -542,7 +550,7 @@
                                 <th class="d-none">Due Date (filter)</th>
                                 <th>Due Date</th>
                                 <th>Status</th>
-                                <th>Payment Date</th>
+                                <th>Created At</th>
                             </tr>
                         </thead>
                         <tbody class="text-gray-600 fw-semibold">
@@ -590,11 +598,10 @@
                                             class="badge badge-success rounded-pill">{{ ucfirst($invoice->status) }}</span>
                                     </td>
                                     <td>
-                                        {{ $invoice->updated_at->format('d-M-Y') }}
-                                        <span class="ms-1" data-bs-toggle="tooltip"
-                                            title="{{ $invoice->updated_at->format('d-M-Y h:i:s A') }}">
-                                            <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
-                                        </span>
+                                        {{ $invoice->created_at->format('d-m-Y') }}<br>
+                                        <small class="text-muted">
+                                            {{ $invoice->created_at->format('h:i:s A') }}
+                                        </small>
                                     </td>
                                 </tr>
                             @endforeach

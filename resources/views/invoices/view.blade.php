@@ -96,20 +96,20 @@
                             </td>
                         </tr>
                         <!--end::Row-->
-                        @if ($invoice->invoiceType->type_name == 'tuition_fee')
-                            <!--begin::Row-->
-                            <tr class="">
-                                <td class="text-gray-500">Billing Month:</td>
-                                <td class="text-gray-800">
-                                    @if (preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year, $matches))
-                                        {{ \Carbon\Carbon::create($matches[2], $matches[1], 1)->format('F Y') }}
-                                    @else
-                                        N/A
-                                    @endif
-                                </td>
-                            </tr>
-                            <!--end::Row-->
-                        @endif
+                        <!--begin::Row-->
+                        <tr class="">
+                            <td class="text-gray-500">Billing Month:</td>
+                            <td class="text-gray-800">
+                                @if (!empty($invoice->month_year) && preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year, $matches))
+                                    {{ \Carbon\Carbon::create($matches[2], $matches[1], 1)->format('F Y') }}
+                                @elseif (empty($invoice->month_year) && $invoice->invoiceType?->type_name == 'Special Class Fee')
+                                    <span class="badge badge-primary rounded-pill">One Time</span></span>
+                                @else
+                                    -
+                                @endif
+                            </td>
+                        </tr>
+                        <!--end::Row-->
                         <!--begin::Row-->
                         <tr class="">
                             <td class="text-gray-500">Total Payable:</td>
