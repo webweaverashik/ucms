@@ -17,4 +17,6 @@ class IsLoggedIn
 
         return $next($request);
     }
+
+    
 }
