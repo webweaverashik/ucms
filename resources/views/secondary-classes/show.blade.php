@@ -492,7 +492,7 @@
                                     <!--begin::Branch Filter-->
                                     <div class="fv-row mb-5">
                                         <label class="fw-semibold fs-6 mb-2">Filter by Branch</label>
-                                        <select id="enroll_branch_filter" class="form-select form-select-solid">
+                                        <select id="enroll_branch_filter" class="form-select form-select-solid" data-kt-select2="true">
                                             <option value="">All Branches</option>
                                             @foreach ($branches as $branch)
                                                 <option value="{{ $branch->id }}">{{ $branch->branch_name }}</option>
