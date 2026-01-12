@@ -350,7 +350,7 @@
                     @endif
 
                     <!--begin::Table-->
-                    <table class="table table-hover align-middle table-row-dashed fs-6 fw-semibold gy-4"
+                    <table class="table table-hover align-middle table-row-dashed fs-6 fw-semibold gy-4 ucms-table"
                         id="kt_enrolled_students_table">
                         <thead>
                             <tr class="fw-bold fs-7 text-uppercase gs-0">
@@ -365,9 +365,7 @@
                                 @endif
                                 <th class="w-120px">Enrolled At</th>
                                 <th class="w-100px">Status</th>
-                                @if ($isAdmin || $isManager)
-                                    <th class="w-120px text-end">Actions</th>
-                                @endif
+                                <th class="w-120px text-end">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="text-gray-600 fw-semibold">
@@ -422,7 +420,7 @@
                                                 <span class="badge badge-light-danger">Inactive</span>
                                             @endif
                                         </td>
-                                        <td class="text-end">
+                                        <td>
                                             @if (($isAdmin || $isManager) && $secondaryClass->is_active === true)
                                                 <div class="btn-group">
                                                     <!--begin::Toggle Activation-->
@@ -455,6 +453,8 @@
                                                         <i class="ki-outline ki-trash fs-5"></i>
                                                     </button>
                                                 </div>
+                                            @else
+                                                <span class="text-muted">-</span>
                                             @endif
                                         </td>
                                     </tr>
@@ -492,7 +492,8 @@
                                     <!--begin::Branch Filter-->
                                     <div class="fv-row mb-5">
                                         <label class="fw-semibold fs-6 mb-2">Filter by Branch</label>
-                                        <select id="enroll_branch_filter" class="form-select form-select-solid" data-kt-select2="true">
+                                        <select id="enroll_branch_filter" class="form-select form-select-solid"
+                                            data-kt-select2="true">
                                             <option value="">All Branches</option>
                                             @foreach ($branches as $branch)
                                                 <option value="{{ $branch->id }}">{{ $branch->branch_name }}</option>
@@ -529,14 +530,17 @@
 
                                 <!--begin::Selected Student Info-->
                                 <div id="selected_student_info" class="d-none mb-7">
-                                    <div class="notice d-flex bg-light-primary rounded border-primary border border-dashed p-4">
+                                    <div
+                                        class="notice d-flex bg-light-primary rounded border-primary border border-dashed p-4">
                                         <i class="ki-outline ki-information-5 fs-2tx text-primary me-4"></i>
                                         <div class="d-flex flex-stack flex-grow-1">
                                             <div class="fw-semibold">
                                                 <div class="fs-6 text-gray-700">
                                                     <strong id="selected_student_name"></strong><br>
-                                                    <span class="text-muted">Branch: <span id="selected_student_branch"></span></span><br>
-                                                    <span class="text-muted">Batch: <span id="selected_student_batch"></span></span>
+                                                    <span class="text-muted">Branch: <span
+                                                            id="selected_student_branch"></span></span><br>
+                                                    <span class="text-muted">Batch: <span
+                                                            id="selected_student_batch"></span></span>
                                                 </div>
                                             </div>
                                         </div>
@@ -666,7 +670,8 @@
                                         <div class="fw-semibold">
                                             <h4 class="text-danger fw-bold">Unpaid Invoices Found!</h4>
                                             <div class="fs-6 text-gray-700" id="unpaid_invoices_message">
-                                                This student has unpaid Special Class Fee invoices. Please clear all dues before withdrawal.
+                                                This student has unpaid Special Class Fee invoices. Please clear all dues
+                                                before withdrawal.
                                             </div>
                                         </div>
                                     </div>
