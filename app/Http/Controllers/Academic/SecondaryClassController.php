@@ -343,11 +343,11 @@ class SecondaryClassController extends Controller
         // Get available students from the same class
         $studentsQuery = Student::where('class_id', $classname->id)
             ->whereNotIn('id', $enrolledStudentIds)
-            ->where(function ($q) {
-                $q->active()->orWhere(function($sub) {
-                    $sub->pending();
-                });
-            })
+            // ->where(function ($q) {
+            //     $q->active()->orWhere(function($sub) {
+            //         $sub->pending();
+            //     });
+            // })
             ->with(['branch:id,branch_name', 'batch:id,name', 'studentActivation:id,active_status']);
 
         // Filter by branch for non-admin
