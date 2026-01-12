@@ -203,6 +203,12 @@ class SecondaryClassController extends Controller
             ->orderBy('name')
             ->get()
             ->map(function ($student) {
+                // Determine status: pending if student_activation_id is null
+                $status = 'pending';
+                if ($student->student_activation_id !== null) {
+                    $status = $student->studentActivation?->active_status === 'active' ? 'active' : 'inactive';
+                }
+
                 return [
                     'id'                => $student->id,
                     'student_unique_id' => $student->student_unique_id,
@@ -211,7 +217,8 @@ class SecondaryClassController extends Controller
                     'branch_id'         => $student->branch_id,
                     'branch_name'       => $student->branch->branch_name ?? '-',
                     'batch_name'        => $student->batch->name ?? '-',
-                    'is_active'         => $student->studentActivation?->active_status === 'active',
+                    'status'            => $status,
+                    'is_pending'        => $student->student_activation_id === null,
                 ];
             });
     }
@@ -632,6 +639,28 @@ class SecondaryClassController extends Controller
                 ],
                 404,
             );
+        }
+
+        // If trying to deactivate, check for unpaid invoices
+        if ($enrollment->is_active) {
+            $unpaidPayments = SecondaryClassPayment::where('student_id', $student->id)
+                ->where('secondary_class_id', $secondaryClass->id)
+                ->whereHas('invoice', function ($q) {
+                    $q->where('status', '!=', 'paid');
+                })
+                ->count();
+
+            if ($unpaidPayments > 0) {
+                return response()->json(
+                    [
+                        'success'      => false,
+                        'has_unpaid'   => true,
+                        'unpaid_count' => $unpaidPayments,
+                        'message'      => "Cannot deactivate. Student has {$unpaidPayments} unpaid Special Class Fee invoice(s). Please clear all dues first.",
+                    ],
+                    422,
+                );
+            }
         }
 
         $enrollment->update([

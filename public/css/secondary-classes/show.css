@@ -129,6 +129,36 @@
     border-color: #50cd89 !important;
 }
 
+/* Toggle Activation Modal */
+#kt_modal_toggle_activation .modal-header h2.text-warning {
+    color: #ffc700 !important;
+}
+
+#kt_modal_toggle_activation .modal-header h2.text-success {
+    color: #50cd89 !important;
+}
+
+#kt_modal_toggle_activation .btn-warning {
+    background-color: #ffc700;
+    border-color: #ffc700;
+    color: #000;
+}
+
+#kt_modal_toggle_activation .btn-warning:hover {
+    background-color: #f0b800;
+    border-color: #f0b800;
+}
+
+#kt_modal_toggle_activation .btn-success {
+    background-color: #50cd89;
+    border-color: #50cd89;
+}
+
+#kt_modal_toggle_activation .btn-success:hover {
+    background-color: #47b97c;
+    border-color: #47b97c;
+}
+
 /* Select2 Customization for Enrollment Modal */
 .select2-container--bootstrap5 .select2-selection--single {
     min-height: 42px;
@@ -147,6 +177,29 @@
 .select2-container--bootstrap5 .select2-results__option--disabled {
     opacity: 0.5;
     background-color: #f5f5f5 !important;
+}
+
+/* Status badges in Select2 dropdown */
+.select2-results__option .badge-light-warning {
+    color: #ffc700;
+    background-color: #fff8dd;
+}
+
+.select2-results__option .badge-light-success {
+    color: #50cd89;
+    background-color: #e8fff3;
+}
+
+.select2-results__option .badge-light-danger {
+    color: #f1416c;
+    background-color: #fff5f8;
+}
+
+/* Selected student info status badge */
+#selected_student_status .badge {
+    font-size: 0.75rem;
+    padding: 0.25em 0.5em;
+    vertical-align: middle;
 }
 
 /* Input Group Enhancement */
@@ -192,11 +245,11 @@
     .stats-mini-card .stats-value {
         font-size: 1.25rem;
     }
-    
+
     .fee-info-card {
         padding: 1rem;
     }
-    
+
     .branch-stat-item {
         padding: 0.75rem;
     }
@@ -206,12 +259,12 @@
     .card-header .card-title .form-control {
         width: 100% !important;
     }
-    
+
     .card-toolbar {
         flex-wrap: wrap;
         gap: 0.5rem;
     }
-    
+
     .btn-group .btn-sm {
         padding: 0.25rem 0.4rem;
     }
@@ -228,6 +281,7 @@
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);

@@ -420,7 +420,7 @@
                                                 <span class="badge badge-light-danger">Inactive</span>
                                             @endif
                                         </td>
-                                        <td>
+                                        <td class="text-end">
                                             @if (($isAdmin || $isManager) && $secondaryClass->is_active === true)
                                                 <div class="btn-group">
                                                     <!--begin::Toggle Activation-->
@@ -492,8 +492,7 @@
                                     <!--begin::Branch Filter-->
                                     <div class="fv-row mb-5">
                                         <label class="fw-semibold fs-6 mb-2">Filter by Branch</label>
-                                        <select id="enroll_branch_filter" class="form-select form-select-solid"
-                                            data-kt-select2="true">
+                                        <select id="enroll_branch_filter" class="form-select form-select-solid">
                                             <option value="">All Branches</option>
                                             @foreach ($branches as $branch)
                                                 <option value="{{ $branch->id }}">{{ $branch->branch_name }}</option>
@@ -516,7 +515,8 @@
                                                 data-student-id="{{ $student['student_unique_id'] }}"
                                                 data-branch-name="{{ $student['branch_name'] }}"
                                                 data-batch-name="{{ $student['batch_name'] }}"
-                                                data-is-active="{{ $student['is_active'] ? '1' : '0' }}">
+                                                data-status="{{ $student['status'] }}"
+                                                data-is-pending="{{ $student['is_pending'] ? '1' : '0' }}">
                                                 {{ $student['name'] }} ({{ $student['student_unique_id'] }})
                                             </option>
                                         @endforeach
@@ -536,7 +536,8 @@
                                         <div class="d-flex flex-stack flex-grow-1">
                                             <div class="fw-semibold">
                                                 <div class="fs-6 text-gray-700">
-                                                    <strong id="selected_student_name"></strong><br>
+                                                    <strong id="selected_student_name"></strong>
+                                                    <span id="selected_student_status"></span><br>
                                                     <span class="text-muted">Branch: <span
                                                             id="selected_student_branch"></span></span><br>
                                                     <span class="text-muted">Batch: <span
@@ -668,7 +669,7 @@
                                     <i class="ki-outline ki-shield-cross fs-2tx text-danger me-4"></i>
                                     <div class="d-flex flex-stack flex-grow-1">
                                         <div class="fw-semibold">
-                                            <h4 class="text-danger fw-bold">Unpaid Invoices Found!</h4>
+                                            <h4 class="text-danger fw-bold">Cannot Withdraw - Unpaid Invoices!</h4>
                                             <div class="fs-6 text-gray-700" id="unpaid_invoices_message">
                                                 This student has unpaid Special Class Fee invoices. Please clear all dues
                                                 before withdrawal.
@@ -756,6 +757,88 @@
             </div>
         </div>
         <!--end::Modal - Edit Secondary Class-->
+
+        <!--begin::Modal - Toggle Enrollment Activation-->
+        <div class="modal fade" id="kt_modal_toggle_activation" tabindex="-1" aria-hidden="true"
+            data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered mw-500px">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="fw-bold" id="toggle_activation_modal_title">Deactivate Enrollment</h2>
+                        <div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
+                            <i class="ki-outline ki-cross fs-1"></i>
+                        </div>
+                    </div>
+                    <div class="modal-body px-5 my-5">
+                        <form id="kt_modal_toggle_activation_form" class="form" novalidate="novalidate">
+                            <input type="hidden" name="student_id" id="toggle_student_id" />
+                            <input type="hidden" name="is_active" id="toggle_is_active" />
+                            <div class="d-flex flex-column scroll-y px-5 px-lg-10">
+                                <!--begin::Deactivate Warning-->
+                                <div class="notice d-flex bg-light-warning rounded border-warning border border-dashed p-6 mb-7"
+                                    id="toggle_deactivate_warning">
+                                    <i class="ki-outline ki-information-5 fs-2tx text-warning me-4"></i>
+                                    <div class="d-flex flex-stack flex-grow-1">
+                                        <div class="fw-semibold">
+                                            <h4 class="text-gray-900 fw-bold">Confirm Deactivation</h4>
+                                            <div class="fs-6 text-gray-700">
+                                                You are about to deactivate the enrollment for <strong
+                                                    id="toggle_student_name_display"></strong>.
+                                                The student will no longer be considered active in this special class.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--end::Deactivate Warning-->
+
+                                <!--begin::Activate Info-->
+                                <div class="notice d-flex bg-light-success rounded border-success border border-dashed p-6 mb-7 d-none"
+                                    id="toggle_activate_info">
+                                    <i class="ki-outline ki-check-circle fs-2tx text-success me-4"></i>
+                                    <div class="d-flex flex-stack flex-grow-1">
+                                        <div class="fw-semibold">
+                                            <h4 class="text-gray-900 fw-bold">Confirm Activation</h4>
+                                            <div class="fs-6 text-gray-700">
+                                                You are about to activate the enrollment for <strong
+                                                    id="toggle_student_name_display_activate"></strong>.
+                                                The student will be marked as active in this special class.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--end::Activate Info-->
+
+                                <!--begin::Unpaid Invoices Warning (hidden by default)-->
+                                <div class="notice d-flex bg-light-danger rounded border-danger border border-dashed p-6 mb-7 d-none"
+                                    id="toggle_unpaid_warning">
+                                    <i class="ki-outline ki-shield-cross fs-2tx text-danger me-4"></i>
+                                    <div class="d-flex flex-stack flex-grow-1">
+                                        <div class="fw-semibold">
+                                            <h4 class="text-danger fw-bold">Cannot Deactivate - Unpaid Invoices!</h4>
+                                            <div class="fs-6 text-gray-700" id="toggle_unpaid_message">
+                                                This student has unpaid Special Class Fee invoices. Please clear all dues
+                                                before deactivation.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--end::Unpaid Invoices Warning-->
+                            </div>
+                            <div class="text-center pt-10">
+                                <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-warning" id="kt_modal_toggle_activation_submit">
+                                    <span class="indicator-label" id="toggle_submit_label">Deactivate</span>
+                                    <span class="indicator-progress">Please wait...
+                                        <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--end::Modal - Toggle Enrollment Activation-->
     @endif
 @endsection
 

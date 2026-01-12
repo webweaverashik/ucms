@@ -6,7 +6,7 @@ var dataTable;
 // Initialize DataTable
 var initDataTable = function () {
     const table = document.getElementById('kt_enrolled_students_table');
-    
+
     if (!table) return;
 
     // Determine column count based on payment type
@@ -22,7 +22,7 @@ var initDataTable = function () {
             { orderable: false, targets: isAdminUser ? [0, actionColumnIndex] : [0] }
         ],
         language: {
-            emptyTable: function() {
+            emptyTable: function () {
                 let html = `
                     <div class="d-flex flex-column align-items-center justify-content-center py-10">
                         <div class="empty-state-icon mb-4">
@@ -32,7 +32,7 @@ var initDataTable = function () {
                         <p class="text-muted fs-6 mb-6">
                             Start enrolling students to this special class.
                         </p>`;
-                
+
                 if (isAdminUser && typeof secondaryClassIsActive !== 'undefined' && secondaryClassIsActive) {
                     html += `
                         <button type="button" class="btn btn-primary" data-bs-toggle="modal"
@@ -40,12 +40,12 @@ var initDataTable = function () {
                             <i class="ki-outline ki-plus fs-3 me-1"></i>Enroll First Student
                         </button>`;
                 }
-                
+
                 html += `</div>`;
                 return html;
             }
         },
-        drawCallback: function() {
+        drawCallback: function () {
             initTooltips();
         }
     });
@@ -123,14 +123,14 @@ var applyFilters = function () {
 // Filter by branch (for tab clicks)
 var filterByBranch = function (branchId) {
     $.fn.dataTable.ext.search = [];
-    
+
     if (branchId !== 'all') {
         $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
             const row = dataTable.row(dataIndex).node();
             return row.getAttribute('data-branch-id') === branchId;
         });
     }
-    
+
     dataTable.draw();
 };
 
@@ -138,6 +138,9 @@ var filterByBranch = function (branchId) {
 var initStudentSelect = function () {
     const select = document.getElementById('enroll_student_select');
     if (!select) return;
+
+    // Store original options for filtering
+    storeOriginalOptions();
 
     // Initialize Select2 with preloaded options
     $(select).select2({
@@ -154,10 +157,23 @@ var initStudentSelect = function () {
         const studentName = selectedOption.text();
         const branchName = selectedOption.data('branch-name');
         const batchName = selectedOption.data('batch-name');
+        const status = selectedOption.data('status');
 
         $('#selected_student_name').text(studentName);
         $('#selected_student_branch').text(branchName || '-');
         $('#selected_student_batch').text(batchName || '-');
+
+        // Show status badge
+        let statusBadge = '';
+        if (status === 'pending') {
+            statusBadge = '<span class="badge badge-light-warning ms-2">Pending</span>';
+        } else if (status === 'active') {
+            statusBadge = '<span class="badge badge-light-success ms-2">Active</span>';
+        } else {
+            statusBadge = '<span class="badge badge-light-danger ms-2">Inactive</span>';
+        }
+        $('#selected_student_status').html(statusBadge);
+
         $('#selected_student_info').removeClass('d-none');
     });
 
@@ -170,51 +186,85 @@ var initStudentSelect = function () {
     if (branchFilter) {
         $(branchFilter).on('change', function () {
             const selectedBranch = $(this).val();
-            filterStudentOptions(selectedBranch);
+            filterStudentOptionsByBranch(selectedBranch);
         });
     }
 };
 
-// Filter student options by branch
-var filterStudentOptions = function (branchId) {
+// Store original options for branch filtering
+var originalStudentOptions = [];
+
+var storeOriginalOptions = function () {
     const select = document.getElementById('enroll_student_select');
-    const options = $(select).find('option');
-    
-    options.each(function () {
-        const optionBranchId = $(this).data('branch-id');
-        if (!branchId || optionBranchId == branchId || $(this).val() === '') {
-            $(this).prop('disabled', false);
-        } else {
-            $(this).prop('disabled', true);
+    if (!select || originalStudentOptions.length > 0) return;
+
+    $(select).find('option').each(function () {
+        if ($(this).val() !== '') {
+            originalStudentOptions.push({
+                value: $(this).val(),
+                text: $(this).text(),
+                branchId: $(this).data('branch-id'),
+                studentId: $(this).data('student-id'),
+                branchName: $(this).data('branch-name'),
+                batchName: $(this).data('batch-name'),
+                status: $(this).data('status'),
+                isPending: $(this).data('is-pending')
+            });
+        }
+    });
+};
+
+// Filter student options by branch - show only matching branch students
+var filterStudentOptionsByBranch = function (branchId) {
+    const select = document.getElementById('enroll_student_select');
+
+    // Clear current selection
+    $(select).val('').trigger('change');
+    $('#selected_student_info').addClass('d-none');
+
+    // Remove all options except the placeholder
+    $(select).find('option:not(:first)').remove();
+
+    // Add back only matching options
+    originalStudentOptions.forEach(function (opt) {
+        if (!branchId || opt.branchId == branchId) {
+            const option = new Option(opt.text, opt.value, false, false);
+            $(option).attr('data-branch-id', opt.branchId);
+            $(option).attr('data-student-id', opt.studentId);
+            $(option).attr('data-branch-name', opt.branchName);
+            $(option).attr('data-batch-name', opt.batchName);
+            $(option).attr('data-status', opt.status);
+            $(option).attr('data-is-pending', opt.isPending);
+            $(select).append(option);
         }
     });
 
-    // Clear current selection if it doesn't match filter
-    const currentSelection = $(select).val();
-    if (currentSelection) {
-        const selectedOption = $(select).find('option[value="' + currentSelection + '"]');
-        if (selectedOption.data('branch-id') != branchId && branchId) {
-            $(select).val('').trigger('change');
-            $('#selected_student_info').addClass('d-none');
-        }
-    }
-
     // Refresh Select2
-    $(select).select2('destroy');
-    initStudentSelect();
+    $(select).trigger('change');
 };
 
 // Format student option in dropdown
 var formatStudentOption = function (data) {
     if (!data.element) return data.text;
-    
+
     const element = $(data.element);
-    const isActive = element.data('is-active') === 1;
+    const status = element.data('status') || 'inactive';
     const branchName = element.data('branch-name') || '-';
     const batchName = element.data('batch-name') || '-';
     const studentId = element.data('student-id') || '';
-    const statusClass = isActive ? 'badge-light-success' : 'badge-light-danger';
-    const statusText = isActive ? 'Active' : 'Inactive';
+
+    // Determine status badge based on status value
+    let statusClass, statusText;
+    if (status === 'pending') {
+        statusClass = 'badge-light-warning';
+        statusText = 'Pending';
+    } else if (status === 'active') {
+        statusClass = 'badge-light-success';
+        statusText = 'Active';
+    } else {
+        statusClass = 'badge-light-danger';
+        statusText = 'Inactive';
+    }
 
     return $(`
         <div class="d-flex align-items-center">
@@ -303,14 +353,31 @@ var handleEnrollStudent = function () {
         $('#enroll_student_select').val('').trigger('change');
         $('#selected_student_info').addClass('d-none');
         document.getElementById('enroll_amount').value = defaultFeeAmount;
+
+        // Reset branch filter and restore all student options
         if (document.getElementById('enroll_branch_filter')) {
-            $('#enroll_branch_filter').val('').trigger('change');
+            $('#enroll_branch_filter').val('');
+            // Restore all options
+            filterStudentOptionsByBranch('');
         }
     });
 };
 
 // Handle toggle enrollment activation
 var handleToggleActivation = function () {
+    const form = document.getElementById('kt_modal_toggle_activation_form');
+    if (!form) return;
+
+    const modal = new bootstrap.Modal(document.getElementById('kt_modal_toggle_activation'));
+    const submitButton = document.getElementById('kt_modal_toggle_activation_submit');
+    const modalTitle = document.getElementById('toggle_activation_modal_title');
+    const submitLabel = document.getElementById('toggle_submit_label');
+    const deactivateWarning = document.getElementById('toggle_deactivate_warning');
+    const activateInfo = document.getElementById('toggle_activate_info');
+    const unpaidWarning = document.getElementById('toggle_unpaid_warning');
+    const unpaidMessage = document.getElementById('toggle_unpaid_message');
+
+    // Open toggle modal - Event Delegation
     document.querySelector('#kt_enrolled_students_table').addEventListener('click', function (e) {
         const button = e.target.closest('.toggle-enrollment-activation');
         if (button) {
@@ -318,60 +385,142 @@ var handleToggleActivation = function () {
             const studentId = button.getAttribute('data-student-id');
             const studentName = button.getAttribute('data-student-name');
             const isActive = button.getAttribute('data-is-active') === '1';
-            const actionText = isActive ? 'deactivate' : 'activate';
 
-            Swal.fire({
-                title: `${isActive ? 'Deactivate' : 'Activate'} Enrollment?`,
-                text: `Are you sure you want to ${actionText} the enrollment for ${studentName}?`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: `Yes, ${actionText}`,
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: isActive ? '#f1416c' : '#50cd89'
-            }).then(function (result) {
-                if (result.isConfirmed) {
-                    button.disabled = true;
-                    button.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            // Set form values
+            document.getElementById('toggle_student_id').value = studentId;
+            document.getElementById('toggle_is_active').value = isActive ? '1' : '0';
+            document.getElementById('toggle_student_name_display').textContent = studentName;
+            document.getElementById('toggle_student_name_display_activate').textContent = studentName;
 
-                    $.ajax({
-                        url: routeToggleActivation.replace(':studentId', studentId),
-                        type: 'POST',
-                        data: {
-                            _token: $('meta[name="csrf-token"]').attr('content')
-                        },
-                        success: function (response) {
-                            if (response.success) {
-                                Swal.fire({
-                                    text: response.message,
-                                    icon: 'success',
-                                    confirmButtonText: 'Ok'
-                                }).then(function () {
-                                    location.reload();
-                                });
-                            } else {
-                                Swal.fire({
-                                    text: response.message || 'An error occurred.',
-                                    icon: 'error',
-                                    confirmButtonText: 'Ok'
-                                });
-                                button.disabled = false;
-                                button.innerHTML = `<i class="ki-outline ${isActive ? 'ki-cross-circle' : 'ki-check-circle'} fs-5"></i>`;
-                            }
-                        },
-                        error: function (xhr) {
-                            const message = xhr.responseJSON?.message || 'An error occurred.';
-                            Swal.fire({
-                                text: message,
-                                icon: 'error',
-                                confirmButtonText: 'Ok'
-                            });
-                            button.disabled = false;
-                            button.innerHTML = `<i class="ki-outline ${isActive ? 'ki-cross-circle' : 'ki-check-circle'} fs-5"></i>`;
+            // Reset state
+            unpaidWarning.classList.add('d-none');
+            submitButton.disabled = false;
+
+            if (isActive) {
+                // Deactivating
+                modalTitle.textContent = 'Deactivate Enrollment';
+                modalTitle.classList.remove('text-success');
+                modalTitle.classList.add('text-warning');
+                submitLabel.textContent = 'Deactivate';
+                submitButton.classList.remove('btn-success');
+                submitButton.classList.add('btn-warning');
+                deactivateWarning.classList.remove('d-none');
+                activateInfo.classList.add('d-none');
+
+                // Check for unpaid invoices
+                button.disabled = true;
+                button.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                $.ajax({
+                    url: routeCheckUnpaid.replace(':studentId', studentId),
+                    type: 'GET',
+                    success: function (response) {
+                        button.disabled = false;
+                        button.innerHTML = '<i class="ki-outline ki-cross-circle fs-5"></i>';
+
+                        if (response.success && response.has_unpaid) {
+                            // Show unpaid warning
+                            deactivateWarning.classList.add('d-none');
+                            unpaidWarning.classList.remove('d-none');
+                            unpaidMessage.innerHTML = `This student has <strong>${response.unpaid_count}</strong> unpaid Special Class Fee invoice(s) totaling <strong>৳${response.unpaid_amount.toLocaleString()}</strong>. Please clear all dues before deactivation.`;
+                            submitButton.disabled = true;
                         }
+
+                        modal.show();
+                    },
+                    error: function () {
+                        button.disabled = false;
+                        button.innerHTML = '<i class="ki-outline ki-cross-circle fs-5"></i>';
+                        Swal.fire({
+                            text: 'Failed to check unpaid invoices.',
+                            icon: 'error',
+                            confirmButtonText: 'Ok'
+                        });
+                    }
+                });
+            } else {
+                // Activating
+                modalTitle.textContent = 'Activate Enrollment';
+                modalTitle.classList.remove('text-warning');
+                modalTitle.classList.add('text-success');
+                submitLabel.textContent = 'Activate';
+                submitButton.classList.remove('btn-warning');
+                submitButton.classList.add('btn-success');
+                deactivateWarning.classList.add('d-none');
+                activateInfo.classList.remove('d-none');
+
+                modal.show();
+            }
+        }
+    });
+
+    // Submit form
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const studentId = document.getElementById('toggle_student_id').value;
+        const isCurrentlyActive = document.getElementById('toggle_is_active').value === '1';
+
+        submitButton.setAttribute('data-kt-indicator', 'on');
+        submitButton.disabled = true;
+
+        $.ajax({
+            url: routeToggleActivation.replace(':studentId', studentId),
+            type: 'POST',
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function (response) {
+                if (response.success) {
+                    Swal.fire({
+                        text: response.message,
+                        icon: 'success',
+                        confirmButtonText: 'Ok'
+                    }).then(function () {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        text: response.message || 'An error occurred.',
+                        icon: 'error',
+                        confirmButtonText: 'Ok'
                     });
                 }
-            });
-        }
+            },
+            error: function (xhr) {
+                const response = xhr.responseJSON;
+                if (response && response.has_unpaid) {
+                    // Show unpaid warning in modal
+                    deactivateWarning.classList.add('d-none');
+                    unpaidWarning.classList.remove('d-none');
+                    unpaidMessage.innerHTML = response.message;
+                    submitButton.disabled = true;
+                } else {
+                    const message = response?.message || 'An error occurred.';
+                    Swal.fire({
+                        text: message,
+                        icon: 'error',
+                        confirmButtonText: 'Ok'
+                    });
+                }
+            },
+            complete: function () {
+                submitButton.removeAttribute('data-kt-indicator');
+                if (!unpaidWarning.classList.contains('d-none')) {
+                    submitButton.disabled = true;
+                } else {
+                    submitButton.disabled = false;
+                }
+            }
+        });
+    });
+
+    // Reset form when modal is hidden
+    $('#kt_modal_toggle_activation').on('hidden.bs.modal', function () {
+        unpaidWarning.classList.add('d-none');
+        deactivateWarning.classList.remove('d-none');
+        activateInfo.classList.add('d-none');
+        submitButton.disabled = false;
     });
 };
 
@@ -470,7 +619,7 @@ var handleWithdrawStudent = function () {
 
             document.getElementById('withdraw_student_id').value = studentId;
             document.getElementById('withdraw_student_name_display').textContent = studentName;
-            
+
             // Reset state
             unpaidWarning.classList.add('d-none');
             submitButton.disabled = false;
@@ -651,7 +800,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initStudentSelect();
     initFilterSelects();
     initTooltips();
-    
+
     if (isAdminUser) {
         handleEnrollStudent();
         handleToggleActivation();
