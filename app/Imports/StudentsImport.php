@@ -4,7 +4,6 @@ namespace App\Imports;
 use App\Models\Academic\ClassName;
 use App\Models\Academic\Subject;
 use App\Models\Academic\SubjectTaken;
-use App\Models\Branch;
 use App\Models\Payment\Payment;
 use App\Models\Student\Guardian;
 use App\Models\Student\MobileNumber;
@@ -69,6 +68,7 @@ class StudentsImport implements ToCollection, WithHeadingRow
                     'home_address'      => $row['home_address'] ?? null,
                     'password'          => Hash::make('12345678'), // Default password
                     'remarks'           => $row['remarks'],
+                    'created_by'        => auth()->user()->id,
                 ]);
 
                 // Step 2: Guardians
