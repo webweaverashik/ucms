@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Academic;
 
 use App\Http\Controllers\Controller;
@@ -22,16 +21,16 @@ class SecondaryClassController extends Controller
     public function index()
     {
         if (! auth()->user()->isAdmin()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Only admin can view special classes.',
-            ], 403);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Only admin can view special classes.',
+                ],
+                403,
+            );
         }
 
-        $secondaryClasses = SecondaryClass::with('class:id,name')
-            ->withCount('students')
-            ->latest()
-            ->get();
+        $secondaryClasses = SecondaryClass::with('class:id,name')->withCount('students')->latest()->get();
 
         return response()->json([
             'success' => true,
@@ -45,10 +44,13 @@ class SecondaryClassController extends Controller
     public function store(Request $request)
     {
         if (! auth()->user()->isAdmin()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Only admin can create special classes.',
-            ], 403);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Only admin can create special classes.',
+                ],
+                403,
+            );
         }
 
         $validated = $request->validate([
@@ -79,10 +81,13 @@ class SecondaryClassController extends Controller
     public function show(SecondaryClass $secondaryClass)
     {
         if (! auth()->user()->isAdmin()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Only admin can view special class details.',
-            ], 403);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Only admin can view special class details.',
+                ],
+                403,
+            );
         }
 
         return response()->json([
@@ -114,27 +119,18 @@ class SecondaryClassController extends Controller
 
         // Verify the secondary class belongs to this class
         if ((int) $secondaryClass->class_id !== (int) $classname->id) {
-            return redirect()->route('classnames.show', $classname->id)
-                ->with('warning', 'Special class does not belong to this class.');
+            return redirect()->route('classnames.show', $classname->id)->with('warning', 'Special class does not belong to this class.');
         }
 
         // Get branches for admin
-        $branches = $isAdmin
-            ? Branch::select('id', 'branch_name', 'branch_prefix')->orderBy('branch_name')->get()
-            : collect();
+        $branches = $isAdmin ? Branch::select('id', 'branch_name', 'branch_prefix')->orderBy('branch_name')->get() : collect();
 
         // Get enrolled students with relationships including payment data
-        $enrolledStudentsQuery = StudentSecondaryClass::where('secondary_class_id', $secondaryClass->id)
-            ->with([
-                'student' => function ($q) {
-                    $q->select(['id', 'student_unique_id', 'name', 'academic_group', 'branch_id', 'batch_id', 'class_id', 'student_activation_id'])
-                        ->with([
-                            'branch:id,branch_name,branch_prefix',
-                            'batch:id,name',
-                            'studentActivation:id,active_status',
-                        ]);
-                },
-            ]);
+        $enrolledStudentsQuery = StudentSecondaryClass::where('secondary_class_id', $secondaryClass->id)->with([
+            'student' => function ($q) {
+                $q->select(['id', 'student_unique_id', 'name', 'academic_group', 'branch_id', 'batch_id', 'class_id', 'student_activation_id'])->with(['branch:id,branch_name,branch_prefix', 'batch:id,name', 'studentActivation:id,active_status']);
+            },
+        ]);
 
         // Filter by branch for non-admin
         if (! $isAdmin) {
@@ -181,17 +177,7 @@ class SecondaryClassController extends Controller
         // Preload available students for enrollment
         $availableStudents = $this->getAvailableStudentsData($classname, $secondaryClass, $isAdmin, $branchId);
 
-        return view('secondary-classes.show', compact(
-            'isManager',
-            'classname',
-            'secondaryClass',
-            'enrolledStudents',
-            'stats',
-            'branches',
-            'isAdmin',
-            'studentsByBranch',
-            'availableStudents'
-        ));
+        return view('secondary-classes.show', compact('isManager', 'classname', 'secondaryClass', 'enrolledStudents', 'stats', 'branches', 'isAdmin', 'studentsByBranch', 'availableStudents'));
     }
 
     /**
@@ -200,9 +186,7 @@ class SecondaryClassController extends Controller
     private function getAvailableStudentsData(ClassName $classname, SecondaryClass $secondaryClass, bool $isAdmin, ?int $branchId)
     {
         // Get already enrolled student IDs
-        $enrolledStudentIds = StudentSecondaryClass::where('secondary_class_id', $secondaryClass->id)
-            ->pluck('student_id')
-            ->toArray();
+        $enrolledStudentIds = StudentSecondaryClass::where('secondary_class_id', $secondaryClass->id)->pluck('student_id')->toArray();
 
         // Get available students from the same class
         $studentsQuery = Student::where('class_id', $classname->id)
@@ -214,7 +198,8 @@ class SecondaryClassController extends Controller
             $studentsQuery->where('branch_id', $branchId);
         }
 
-        return $studentsQuery->select(['id', 'student_unique_id', 'name', 'academic_group', 'branch_id', 'batch_id', 'student_activation_id'])
+        return $studentsQuery
+            ->select(['id', 'student_unique_id', 'name', 'academic_group', 'branch_id', 'batch_id', 'student_activation_id'])
             ->orderBy('name')
             ->get()
             ->map(function ($student) {
@@ -237,8 +222,7 @@ class SecondaryClassController extends Controller
      */
     private function calculateStats(SecondaryClass $secondaryClass, bool $isAdmin, ?int $branchId, $branches): array
     {
-        $enrollmentsQuery = StudentSecondaryClass::where('secondary_class_id', $secondaryClass->id)
-            ->with(['student.branch']);
+        $enrollmentsQuery = StudentSecondaryClass::where('secondary_class_id', $secondaryClass->id)->with(['student.branch']);
 
         if (! $isAdmin) {
             $enrollmentsQuery->whereHas('student', function ($q) use ($branchId) {
@@ -248,7 +232,7 @@ class SecondaryClassController extends Controller
 
         $enrollments = $enrollmentsQuery->get();
 
-        $totalStudents    = $enrollments->count();
+        $totalStudents = $enrollments->count();
         // Use StudentSecondaryClass->is_active instead of student activation status
         $activeStudents   = $enrollments->where('is_active', true)->count();
         $inactiveStudents = $enrollments->where('is_active', false)->count();
@@ -267,16 +251,14 @@ class SecondaryClassController extends Controller
             $totalRevenue += $paid;
         }
 
-        $expectedMonthlyRevenue = $secondaryClass->payment_type === 'monthly'
-            ? $activeStudents * $secondaryClass->fee_amount
-            : 0;
+        $expectedMonthlyRevenue = $secondaryClass->payment_type === 'monthly' ? $activeStudents * $secondaryClass->fee_amount : 0;
 
         // Branch-wise stats for admin
         $branchStats = [];
         if ($isAdmin && $branches->count() > 0) {
             foreach ($branches as $branch) {
                 $branchEnrollments = $enrollments->filter(fn($e) => $e->student?->branch_id === $branch->id);
-                
+
                 // Calculate branch revenue
                 $branchRevenue = 0;
                 foreach ($branchEnrollments as $enrollment) {
@@ -319,10 +301,13 @@ class SecondaryClassController extends Controller
     public function update(Request $request, SecondaryClass $secondaryClass)
     {
         if (! auth()->user()->isAdmin()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Only admin can update special classes.',
-            ], 403);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Only admin can update special classes.',
+                ],
+                403,
+            );
         }
 
         // Toggle activation only
@@ -360,10 +345,13 @@ class SecondaryClassController extends Controller
     public function destroy(SecondaryClass $secondaryClass)
     {
         if (! auth()->user()->isAdmin()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Only admin can delete special classes.',
-            ], 403);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Only admin can delete special classes.',
+                ],
+                403,
+            );
         }
 
         if ($secondaryClass->students()->count() > 0) {
@@ -387,10 +375,7 @@ class SecondaryClassController extends Controller
      */
     public function getByClass($classId)
     {
-        $secondaryClasses = SecondaryClass::where('class_id', $classId)
-            ->withCount('students')
-            ->orderBy('name')
-            ->get();
+        $secondaryClasses = SecondaryClass::where('class_id', $classId)->withCount('students')->orderBy('name')->get();
 
         return response()->json([
             'success' => true,
@@ -403,19 +388,23 @@ class SecondaryClassController extends Controller
      */
     public function getAvailableStudents(ClassName $classname, SecondaryClass $secondaryClass, Request $request)
     {
-        $user = auth()->user();
+        $user      = auth()->user();
         $isManager = false;
         try {
             $isManager = $user->isManager();
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
 
         $canManage = $user->isAdmin() || $isManager;
 
         if (! $canManage && ! $user->can('classes.view')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No permission.',
-            ], 403);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'No permission.',
+                ],
+                403,
+            );
         }
 
         $isAdmin  = $user->isAdmin();
@@ -434,17 +423,21 @@ class SecondaryClassController extends Controller
      */
     public function enrollStudent(Request $request, ClassName $classname, SecondaryClass $secondaryClass)
     {
-        $user = auth()->user();
+        $user      = auth()->user();
         $isManager = false;
         try {
             $isManager = $user->isManager();
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
 
         if (! ($user->isAdmin() || $isManager)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Permission denied.',
-            ], 403);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Permission denied.',
+                ],
+                403,
+            );
         }
 
         $validated = $request->validate([
@@ -455,22 +448,26 @@ class SecondaryClassController extends Controller
         // Check if student belongs to this class
         $student = Student::findOrFail($validated['student_id']);
         if ((int) $student->class_id !== (int) $classname->id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Student does not belong to this class.',
-            ], 422);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Student does not belong to this class.',
+                ],
+                422,
+            );
         }
 
         // Check if already enrolled
-        $existingEnrollment = StudentSecondaryClass::where('student_id', $validated['student_id'])
-            ->where('secondary_class_id', $secondaryClass->id)
-            ->first();
+        $existingEnrollment = StudentSecondaryClass::where('student_id', $validated['student_id'])->where('secondary_class_id', $secondaryClass->id)->first();
 
         if ($existingEnrollment) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Student is already enrolled in this special class.',
-            ], 422);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Student is already enrolled in this special class.',
+                ],
+                422,
+            );
         }
 
         DB::transaction(function () use ($validated, $secondaryClass, $student) {
@@ -491,7 +488,7 @@ class SecondaryClassController extends Controller
                     $monthYear = now()->format('m_Y');
                 }
                 $invoice = $this->createInvoice($student, $feeAmount, 'Special Class Fee', $monthYear);
-                
+
                 // Create SecondaryClassPayment entry
                 if ($invoice) {
                     SecondaryClassPayment::create([
@@ -501,6 +498,8 @@ class SecondaryClassController extends Controller
                     ]);
                 }
             }
+
+            clearServerCache();
         });
 
         return response()->json([
@@ -523,16 +522,16 @@ class SecondaryClassController extends Controller
         $yearSuffix = now()->format('y');
         $month      = now()->format('m');
         // Ensure branch is loaded
-        if (!$student->relationLoaded('branch')) {
+        if (! $student->relationLoaded('branch')) {
             $student->load('branch');
         }
-        $prefix     = $student->branch->branch_prefix;
-        
+        $prefix = $student->branch->branch_prefix;
+
         $lastInvoice = PaymentInvoice::where('invoice_number', 'like', "{$prefix}{$yearSuffix}{$month}_%")
             ->orderBy('invoice_number', 'desc')
             ->first();
 
-        $nextSequence = $lastInvoice ? (int) substr($lastInvoice->invoice_number, strrpos($lastInvoice->invoice_number, '_') + 1) + 1 : 1001;
+        $nextSequence  = $lastInvoice ? (int) substr($lastInvoice->invoice_number, strrpos($lastInvoice->invoice_number, '_') + 1) + 1 : 1001;
         $invoiceNumber = "{$prefix}{$yearSuffix}{$month}_{$nextSequence}";
 
         $invoiceType = PaymentInvoiceType::where('type_name', $typeName)->first();
@@ -558,32 +557,37 @@ class SecondaryClassController extends Controller
      */
     public function updateStudentEnrollment(Request $request, ClassName $classname, SecondaryClass $secondaryClass, Student $student)
     {
-        $user = auth()->user();
+        $user      = auth()->user();
         $isManager = false;
         try {
             $isManager = $user->isManager();
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
 
         if (! ($user->isAdmin() || $isManager)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Permission denied.',
-            ], 403);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Permission denied.',
+                ],
+                403,
+            );
         }
 
         $validated = $request->validate([
             'amount' => 'required|numeric|min:0',
         ]);
 
-        $enrollment = StudentSecondaryClass::where('student_id', $student->id)
-            ->where('secondary_class_id', $secondaryClass->id)
-            ->first();
+        $enrollment = StudentSecondaryClass::where('student_id', $student->id)->where('secondary_class_id', $secondaryClass->id)->first();
 
         if (! $enrollment) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Enrollment not found.',
-            ], 404);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Enrollment not found.',
+                ],
+                404,
+            );
         }
 
         $enrollment->update([
@@ -601,28 +605,33 @@ class SecondaryClassController extends Controller
      */
     public function toggleStudentActivation(Request $request, ClassName $classname, SecondaryClass $secondaryClass, Student $student)
     {
-        $user = auth()->user();
+        $user      = auth()->user();
         $isManager = false;
         try {
             $isManager = $user->isManager();
-        } catch (\Throwable $e) {}
-
-        if (! ($user->isAdmin() || $isManager)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Permission denied.',
-            ], 403);
+        } catch (\Throwable $e) {
         }
 
-        $enrollment = StudentSecondaryClass::where('student_id', $student->id)
-            ->where('secondary_class_id', $secondaryClass->id)
-            ->first();
+        if (! ($user->isAdmin() || $isManager)) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Permission denied.',
+                ],
+                403,
+            );
+        }
+
+        $enrollment = StudentSecondaryClass::where('student_id', $student->id)->where('secondary_class_id', $secondaryClass->id)->first();
 
         if (! $enrollment) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Enrollment not found.',
-            ], 404);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Enrollment not found.',
+                ],
+                404,
+            );
         }
 
         $enrollment->update([
@@ -632,8 +641,8 @@ class SecondaryClassController extends Controller
         $statusText = $enrollment->is_active ? 'activated' : 'deactivated';
 
         return response()->json([
-            'success'   => true,
-            'message'   => "Student enrollment {$statusText} successfully.",
+            'success' => true,
+            'message' => "Student enrollment {$statusText} successfully.",
             'is_active' => $enrollment->is_active,
         ]);
     }
@@ -644,17 +653,21 @@ class SecondaryClassController extends Controller
      */
     public function checkUnpaidInvoices(ClassName $classname, SecondaryClass $secondaryClass, Student $student)
     {
-        $user = auth()->user();
+        $user      = auth()->user();
         $isManager = false;
         try {
             $isManager = $user->isManager();
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
 
         if (! ($user->isAdmin() || $isManager)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Permission denied.',
-            ], 403);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Permission denied.',
+                ],
+                403,
+            );
         }
 
         // Check for unpaid invoices via SecondaryClassPayment
@@ -692,17 +705,21 @@ class SecondaryClassController extends Controller
      */
     public function withdrawStudent(Request $request, ClassName $classname, SecondaryClass $secondaryClass, Student $student)
     {
-        $user = auth()->user();
+        $user      = auth()->user();
         $isManager = false;
         try {
             $isManager = $user->isManager();
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+        }
 
         if (! ($user->isAdmin() || $isManager)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Permission denied.',
-            ], 403);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Permission denied.',
+                ],
+                403,
+            );
         }
 
         // Check for unpaid invoices via SecondaryClassPayment
@@ -714,23 +731,27 @@ class SecondaryClassController extends Controller
             ->count();
 
         if ($unpaidPayments > 0) {
-            return response()->json([
-                'success'      => false,
-                'has_unpaid'   => true,
-                'unpaid_count' => $unpaidPayments,
-                'message'      => "Student has {$unpaidPayments} unpaid Special Class Fee invoice(s). Please clear all dues before withdrawal.",
-            ], 422);
+            return response()->json(
+                [
+                    'success'      => false,
+                    'has_unpaid'   => true,
+                    'unpaid_count' => $unpaidPayments,
+                    'message'      => "Student has {$unpaidPayments} unpaid Special Class Fee invoice(s). Please clear all dues before withdrawal.",
+                ],
+                422,
+            );
         }
 
-        $enrollment = StudentSecondaryClass::where('student_id', $student->id)
-            ->where('secondary_class_id', $secondaryClass->id)
-            ->first();
+        $enrollment = StudentSecondaryClass::where('student_id', $student->id)->where('secondary_class_id', $secondaryClass->id)->first();
 
         if (! $enrollment) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Enrollment not found.',
-            ], 404);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Enrollment not found.',
+                ],
+                404,
+            );
         }
 
         DB::transaction(function () use ($enrollment) {
