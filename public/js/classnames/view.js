@@ -504,7 +504,7 @@ var KTRegularStudentsList = function () {
                   "lengthChange": true,
                   "autoWidth": false,
                   'columnDefs': [
-                        { orderable: false, targets: 0 },
+                        { orderable: false, targets: 8 },
                   ]
             });
 
