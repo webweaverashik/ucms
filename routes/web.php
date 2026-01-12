@@ -189,6 +189,9 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
             Route::delete('{secondaryClass}/students/{student}', [SecondaryClassController::class, 'withdrawStudent'])->name('withdraw');
             Route::get('{secondaryClass}/check-unpaid/{student}', [SecondaryClassController::class, 'checkUnpaidInvoices'])->name('check-unpaid');
             Route::get('{secondaryClass}/available-students', [SecondaryClassController::class, 'getAvailableStudents'])->name('available-students');
+
+            // NEW: Toggle student activation route
+            Route::post('{secondaryClass}/students/{student}/toggle-activation', [SecondaryClassController::class, 'toggleStudentActivation'])->name('toggle-activation');
         });
     });
 

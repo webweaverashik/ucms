@@ -9,13 +9,17 @@ var initDataTable = function () {
     
     if (!table) return;
 
+    // Determine column count based on payment type
+    const hasMonthlyColumn = paymentType === 'monthly';
+    const actionColumnIndex = hasMonthlyColumn ? 9 : 8;
+
     dataTable = $(table).DataTable({
         info: false,
         order: [],
         pageLength: 25,
         lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
         columnDefs: [
-            { orderable: false, targets: isAdminUser ? [0, 8] : [0] }
+            { orderable: false, targets: isAdminUser ? [0, actionColumnIndex] : [0] }
         ],
         language: {
             emptyTable: function() {
@@ -71,6 +75,9 @@ var initDataTable = function () {
                 $('#filter_branch').val('').trigger('change');
             }
             dataTable.search('').columns().search('').draw();
+            // Remove custom filter
+            $.fn.dataTable.ext.search = [];
+            dataTable.draw();
         });
     }
 
@@ -95,11 +102,13 @@ var applyFilters = function () {
     const status = document.getElementById('filter_status')?.value || '';
     const branch = document.getElementById('filter_branch')?.value || '';
 
+    // Clear previous filters
+    $.fn.dataTable.ext.search = [];
+
     // Custom filtering
-    $.fn.dataTable.ext.search.pop(); // Remove previous filter
     $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
         const row = dataTable.row(dataIndex).node();
-        const rowStatus = row.getAttribute('data-status');
+        const rowStatus = row.getAttribute('data-enrollment-status');
         const rowBranch = row.getAttribute('data-branch-id');
 
         let statusMatch = !status || rowStatus === status;
@@ -113,7 +122,7 @@ var applyFilters = function () {
 
 // Filter by branch (for tab clicks)
 var filterByBranch = function (branchId) {
-    $.fn.dataTable.ext.search.pop();
+    $.fn.dataTable.ext.search = [];
     
     if (branchId !== 'all') {
         $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
@@ -125,60 +134,93 @@ var filterByBranch = function (branchId) {
     dataTable.draw();
 };
 
-// Initialize Select2 for student enrollment
+// Initialize Select2 for student enrollment with preloaded data
 var initStudentSelect = function () {
     const select = document.getElementById('enroll_student_select');
     if (!select) return;
 
+    // Initialize Select2 with preloaded options
     $(select).select2({
         dropdownParent: $('#kt_modal_enroll_student'),
-        ajax: {
-            url: routeAvailableStudents,
-            dataType: 'json',
-            delay: 300,
-            data: function (params) {
-                return {
-                    search: params.term,
-                    branch_id: ''
-                };
-            },
-            processResults: function (response) {
-                if (!response.success) return { results: [] };
-                
-                return {
-                    results: response.data.map(function (student) {
-                        return {
-                            id: student.id,
-                            text: student.name + ' (' + student.student_unique_id + ')',
-                            student: student
-                        };
-                    })
-                };
-            },
-            cache: true
-        },
-        minimumInputLength: 1,
-        placeholder: 'Type to search students...',
+        placeholder: 'Select a student...',
         allowClear: true,
-        templateResult: formatStudentResult,
+        templateResult: formatStudentOption,
         templateSelection: formatStudentSelection
     });
+
+    // Handle student selection
+    $(select).on('select2:select', function (e) {
+        const selectedOption = $(this).find(':selected');
+        const studentName = selectedOption.text();
+        const branchName = selectedOption.data('branch-name');
+        const batchName = selectedOption.data('batch-name');
+
+        $('#selected_student_name').text(studentName);
+        $('#selected_student_branch').text(branchName || '-');
+        $('#selected_student_batch').text(batchName || '-');
+        $('#selected_student_info').removeClass('d-none');
+    });
+
+    $(select).on('select2:clear', function () {
+        $('#selected_student_info').addClass('d-none');
+    });
+
+    // Branch filter for enrollment modal
+    const branchFilter = document.getElementById('enroll_branch_filter');
+    if (branchFilter) {
+        $(branchFilter).on('change', function () {
+            const selectedBranch = $(this).val();
+            filterStudentOptions(selectedBranch);
+        });
+    }
 };
 
-// Format student result in dropdown
-var formatStudentResult = function (data) {
-    if (data.loading) return data.text;
-    if (!data.student) return data.text;
+// Filter student options by branch
+var filterStudentOptions = function (branchId) {
+    const select = document.getElementById('enroll_student_select');
+    const options = $(select).find('option');
+    
+    options.each(function () {
+        const optionBranchId = $(this).data('branch-id');
+        if (!branchId || optionBranchId == branchId || $(this).val() === '') {
+            $(this).prop('disabled', false);
+        } else {
+            $(this).prop('disabled', true);
+        }
+    });
 
-    const student = data.student;
-    const statusClass = student.is_active ? 'badge-light-success' : 'badge-light-danger';
-    const statusText = student.is_active ? 'Active' : 'Inactive';
+    // Clear current selection if it doesn't match filter
+    const currentSelection = $(select).val();
+    if (currentSelection) {
+        const selectedOption = $(select).find('option[value="' + currentSelection + '"]');
+        if (selectedOption.data('branch-id') != branchId && branchId) {
+            $(select).val('').trigger('change');
+            $('#selected_student_info').addClass('d-none');
+        }
+    }
+
+    // Refresh Select2
+    $(select).select2('destroy');
+    initStudentSelect();
+};
+
+// Format student option in dropdown
+var formatStudentOption = function (data) {
+    if (!data.element) return data.text;
+    
+    const element = $(data.element);
+    const isActive = element.data('is-active') === 1;
+    const branchName = element.data('branch-name') || '-';
+    const batchName = element.data('batch-name') || '-';
+    const studentId = element.data('student-id') || '';
+    const statusClass = isActive ? 'badge-light-success' : 'badge-light-danger';
+    const statusText = isActive ? 'Active' : 'Inactive';
 
     return $(`
         <div class="d-flex align-items-center">
             <div class="d-flex flex-column">
-                <span class="fw-bold">${student.name}</span>
-                <span class="text-muted fs-7">${student.student_unique_id} | ${student.branch_name} | ${student.batch_name || '-'}</span>
+                <span class="fw-bold">${data.text}</span>
+                <span class="text-muted fs-7">${branchName} | ${batchName}</span>
             </div>
             <span class="badge ${statusClass} ms-auto">${statusText}</span>
         </div>
@@ -187,8 +229,7 @@ var formatStudentResult = function (data) {
 
 // Format student selection
 var formatStudentSelection = function (data) {
-    if (!data.student) return data.text;
-    return data.student.name + ' (' + data.student.student_unique_id + ')';
+    return data.text;
 };
 
 // Handle enroll student form submission
@@ -259,8 +300,78 @@ var handleEnrollStudent = function () {
     // Reset form when modal is hidden
     $('#kt_modal_enroll_student').on('hidden.bs.modal', function () {
         form.reset();
-        $('#enroll_student_select').val(null).trigger('change');
+        $('#enroll_student_select').val('').trigger('change');
+        $('#selected_student_info').addClass('d-none');
         document.getElementById('enroll_amount').value = defaultFeeAmount;
+        if (document.getElementById('enroll_branch_filter')) {
+            $('#enroll_branch_filter').val('').trigger('change');
+        }
+    });
+};
+
+// Handle toggle enrollment activation
+var handleToggleActivation = function () {
+    document.querySelector('#kt_enrolled_students_table').addEventListener('click', function (e) {
+        const button = e.target.closest('.toggle-enrollment-activation');
+        if (button) {
+            e.preventDefault();
+            const studentId = button.getAttribute('data-student-id');
+            const studentName = button.getAttribute('data-student-name');
+            const isActive = button.getAttribute('data-is-active') === '1';
+            const actionText = isActive ? 'deactivate' : 'activate';
+
+            Swal.fire({
+                title: `${isActive ? 'Deactivate' : 'Activate'} Enrollment?`,
+                text: `Are you sure you want to ${actionText} the enrollment for ${studentName}?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: `Yes, ${actionText}`,
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: isActive ? '#f1416c' : '#50cd89'
+            }).then(function (result) {
+                if (result.isConfirmed) {
+                    button.disabled = true;
+                    button.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                    $.ajax({
+                        url: routeToggleActivation.replace(':studentId', studentId),
+                        type: 'POST',
+                        data: {
+                            _token: $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    text: response.message,
+                                    icon: 'success',
+                                    confirmButtonText: 'Ok'
+                                }).then(function () {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    text: response.message || 'An error occurred.',
+                                    icon: 'error',
+                                    confirmButtonText: 'Ok'
+                                });
+                                button.disabled = false;
+                                button.innerHTML = `<i class="ki-outline ${isActive ? 'ki-cross-circle' : 'ki-check-circle'} fs-5"></i>`;
+                            }
+                        },
+                        error: function (xhr) {
+                            const message = xhr.responseJSON?.message || 'An error occurred.';
+                            Swal.fire({
+                                text: message,
+                                icon: 'error',
+                                confirmButtonText: 'Ok'
+                            });
+                            button.disabled = false;
+                            button.innerHTML = `<i class="ki-outline ${isActive ? 'ki-cross-circle' : 'ki-check-circle'} fs-5"></i>`;
+                        }
+                    });
+                }
+            });
+        }
     });
 };
 
@@ -339,7 +450,7 @@ var handleEditEnrollment = function () {
     });
 };
 
-// Handle withdraw student
+// Handle withdraw student (no force withdraw)
 var handleWithdrawStudent = function () {
     const form = document.getElementById('kt_modal_withdraw_student_form');
     if (!form) return;
@@ -348,8 +459,6 @@ var handleWithdrawStudent = function () {
     const submitButton = document.getElementById('kt_modal_withdraw_student_submit');
     const unpaidWarning = document.getElementById('unpaid_invoices_warning');
     const unpaidMessage = document.getElementById('unpaid_invoices_message');
-    const forceWithdrawCheckbox = document.getElementById('confirm_force_withdraw');
-    const forceWithdrawInput = document.getElementById('force_withdraw');
 
     // Open withdraw modal - Event Delegation
     document.querySelector('#kt_enrolled_students_table').addEventListener('click', function (e) {
@@ -362,10 +471,8 @@ var handleWithdrawStudent = function () {
             document.getElementById('withdraw_student_id').value = studentId;
             document.getElementById('withdraw_student_name_display').textContent = studentName;
             
-            // Reset unpaid warning state
+            // Reset state
             unpaidWarning.classList.add('d-none');
-            forceWithdrawCheckbox.checked = false;
-            forceWithdrawInput.value = 'false';
             submitButton.disabled = false;
 
             // Check for unpaid invoices
@@ -375,7 +482,7 @@ var handleWithdrawStudent = function () {
                 success: function (response) {
                     if (response.success && response.has_unpaid) {
                         unpaidWarning.classList.remove('d-none');
-                        unpaidMessage.innerHTML = `This student has <strong>${response.unpaid_count}</strong> unpaid Special Class Fee invoice(s) totaling <strong>৳${response.unpaid_amount.toLocaleString()}</strong>.`;
+                        unpaidMessage.innerHTML = `This student has <strong>${response.unpaid_count}</strong> unpaid Special Class Fee invoice(s) totaling <strong>৳${response.unpaid_amount.toLocaleString()}</strong>. Please clear all dues before withdrawal.`;
                         submitButton.disabled = true;
                     }
                 }
@@ -385,20 +492,21 @@ var handleWithdrawStudent = function () {
         }
     });
 
-    // Handle force withdraw checkbox
-    if (forceWithdrawCheckbox) {
-        forceWithdrawCheckbox.addEventListener('change', function () {
-            forceWithdrawInput.value = this.checked ? 'true' : 'false';
-            submitButton.disabled = !this.checked;
-        });
-    }
-
     // Submit form
     form.addEventListener('submit', function (e) {
         e.preventDefault();
 
         const studentId = document.getElementById('withdraw_student_id').value;
-        const forceWithdraw = document.getElementById('force_withdraw').value;
+
+        // Don't allow submission if there are unpaid invoices
+        if (!unpaidWarning.classList.contains('d-none')) {
+            Swal.fire({
+                text: 'Please clear all unpaid invoices before withdrawal.',
+                icon: 'warning',
+                confirmButtonText: 'Ok'
+            });
+            return;
+        }
 
         submitButton.setAttribute('data-kt-indicator', 'on');
         submitButton.disabled = true;
@@ -407,7 +515,6 @@ var handleWithdrawStudent = function () {
             url: routeWithdrawStudent.replace(':studentId', studentId),
             type: 'DELETE',
             data: {
-                force_withdraw: forceWithdraw,
                 _token: $('meta[name="csrf-token"]').attr('content')
             },
             success: function (response) {
@@ -444,7 +551,7 @@ var handleWithdrawStudent = function () {
             },
             complete: function () {
                 submitButton.removeAttribute('data-kt-indicator');
-                if (!unpaidWarning.classList.contains('d-none') && !forceWithdrawCheckbox.checked) {
+                if (!unpaidWarning.classList.contains('d-none')) {
                     submitButton.disabled = true;
                 } else {
                     submitButton.disabled = false;
@@ -456,8 +563,7 @@ var handleWithdrawStudent = function () {
     // Reset form when modal is hidden
     $('#kt_modal_withdraw_student').on('hidden.bs.modal', function () {
         unpaidWarning.classList.add('d-none');
-        forceWithdrawCheckbox.checked = false;
-        forceWithdrawInput.value = 'false';
+        submitButton.disabled = false;
     });
 };
 
@@ -523,6 +629,11 @@ var handleEditSecondaryClass = function () {
 var initTooltips = function () {
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(function (tooltipTriggerEl) {
+        // Dispose existing tooltip first
+        var existingTooltip = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
+        if (existingTooltip) {
+            existingTooltip.dispose();
+        }
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 };
@@ -543,6 +654,7 @@ document.addEventListener('DOMContentLoaded', function () {
     
     if (isAdminUser) {
         handleEnrollStudent();
+        handleToggleActivation();
         handleEditEnrollment();
         handleWithdrawStudent();
         handleEditSecondaryClass();

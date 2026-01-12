@@ -153,20 +153,20 @@
                             <div class="col-6">
                                 <div class="stats-mini-card">
                                     <div class="stats-value text-success">{{ $stats['active_students'] }}</div>
-                                    <div class="stats-label">Active Students</div>
+                                    <div class="stats-label">Active Enrollments</div>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="stats-mini-card">
                                     <div class="stats-value text-danger">{{ $stats['inactive_students'] }}</div>
-                                    <div class="stats-label">Inactive Students</div>
+                                    <div class="stats-label">Inactive Enrollments</div>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="stats-mini-card">
                                     <div class="stats-value text-info">৳{{ number_format($stats['total_revenue'], 0) }}
                                     </div>
-                                    <div class="stats-label">Total Revenue</div>
+                                    <div class="stats-label">Total Paid</div>
                                 </div>
                             </div>
                             @if ($secondaryClass->payment_type === 'monthly')
@@ -204,6 +204,8 @@
                                             <span><i
                                                     class="ki-outline ki-cross-circle text-danger fs-7 me-1"></i>{{ $branchStat['inactive'] }}
                                                 inactive</span>
+                                            <span><i
+                                                    class="ki-outline ki-wallet text-info fs-7 me-1"></i>৳{{ number_format($branchStat['revenue'], 0) }}</span>
                                         </div>
                                     </div>
                                 @endforeach
@@ -275,7 +277,7 @@
                                 <div class="separator border-gray-200"></div>
                                 <div class="px-7 py-5" data-enrolled-students-table-filter="form">
                                     <div class="mb-10">
-                                        <label class="form-label fs-6 fw-semibold">Status:</label>
+                                        <label class="form-label fs-6 fw-semibold">Enrollment Status:</label>
                                         <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                             data-placeholder="Select status" data-allow-clear="true"
                                             data-hide-search="true" id="filter_status">
@@ -357,11 +359,14 @@
                                 <th>Group</th>
                                 <th>Batch</th>
                                 <th class="w-150px">Branch</th>
-                                <th class="w-120px">Amount</th>
+                                <th class="w-120px">Fee</th>
+                                @if ($secondaryClass->payment_type === 'monthly')
+                                    <th class="w-120px">Total Paid</th>
+                                @endif
                                 <th class="w-120px">Enrolled At</th>
                                 <th class="w-100px">Status</th>
                                 @if ($isAdmin || $isManager)
-                                    <th class="w-100px text-end">Actions</th>
+                                    <th class="w-120px text-end">Actions</th>
                                 @endif
                             </tr>
                         </thead>
@@ -371,14 +376,14 @@
                                 @if ($student)
                                     <tr data-branch-id="{{ $student->branch_id }}" data-student-id="{{ $student->id }}"
                                         data-enrollment-id="{{ $enrollment->id }}"
-                                        data-status="{{ $student->studentActivation?->active_status ?? 'inactive' }}">
+                                        data-enrollment-status="{{ $enrollment->is_active ? 'active' : 'inactive' }}">
                                         <td class="pe-2">{{ $loop->index + 1 }}</td>
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <div class="d-flex flex-column text-start">
                                                     <a href="{{ route('students.show', $student->id) }}"
-                                                        class="@if ($student->studentActivation?->active_status !== 'active') text-danger @else text-gray-800 text-hover-primary @endif mb-1"
-                                                        @if ($student->studentActivation?->active_status !== 'active') title="Inactive Student" data-bs-toggle="tooltip" @endif>
+                                                        class="@if (!$enrollment->is_active) text-danger @else text-gray-800 text-hover-primary @endif mb-1"
+                                                        @if (!$enrollment->is_active) title="Inactive Enrollment" data-bs-toggle="tooltip" @endif>
                                                         {{ $student->name }}
                                                     </a>
                                                     <span class="fw-bold fs-base">{{ $student->student_unique_id }}</span>
@@ -402,10 +407,16 @@
                                             <span
                                                 class="amount-display fw-bold text-primary">৳{{ number_format($enrollment->amount, 0) }}</span>
                                         </td>
+                                        @if ($secondaryClass->payment_type === 'monthly')
+                                            <td>
+                                                <span
+                                                    class="amount-display fw-bold text-success">৳{{ number_format($enrollment->total_paid ?? 0, 0) }}</span>
+                                            </td>
+                                        @endif
                                         <td>{{ $enrollment->enrolled_at ? $enrollment->enrolled_at->format('d-M-Y') : '-' }}
                                         </td>
                                         <td>
-                                            @if ($student->studentActivation?->active_status === 'active')
+                                            @if ($enrollment->is_active)
                                                 <span class="badge badge-light-success">Active</span>
                                             @else
                                                 <span class="badge badge-light-danger">Inactive</span>
@@ -414,6 +425,18 @@
                                         <td class="text-end">
                                             @if (($isAdmin || $isManager) && $secondaryClass->is_active === true)
                                                 <div class="btn-group">
+                                                    <!--begin::Toggle Activation-->
+                                                    <button type="button"
+                                                        class="btn btn-sm btn-icon toggle-enrollment-activation @if ($enrollment->is_active) btn-light-warning @else btn-light-success @endif"
+                                                        data-student-id="{{ $student->id }}"
+                                                        data-student-name="{{ $student->name }}"
+                                                        data-is-active="{{ $enrollment->is_active ? '1' : '0' }}"
+                                                        data-bs-toggle="tooltip"
+                                                        title="{{ $enrollment->is_active ? 'Deactivate Enrollment' : 'Activate Enrollment' }}">
+                                                        <i
+                                                            class="ki-outline {{ $enrollment->is_active ? 'ki-cross-circle' : 'ki-check-circle' }} fs-5"></i>
+                                                    </button>
+                                                    <!--end::Toggle Activation-->
                                                     @if ($secondaryClass->payment_type === 'monthly')
                                                         <button type="button"
                                                             class="btn btn-sm btn-icon btn-light-primary edit-enrollment"
@@ -429,7 +452,7 @@
                                                         data-student-id="{{ $student->id }}"
                                                         data-student-name="{{ $student->name }}" data-bs-toggle="tooltip"
                                                         title="Withdraw Student">
-                                                        <i class="ki-outline ki-cross-circle fs-5"></i>
+                                                        <i class="ki-outline ki-trash fs-5"></i>
                                                     </button>
                                                 </div>
                                             @endif
@@ -465,21 +488,61 @@
                     <div class="modal-body px-5 my-5">
                         <form id="kt_modal_enroll_student_form" class="form" novalidate="novalidate">
                             <div class="d-flex flex-column scroll-y px-5 px-lg-10">
-                                <!--begin::Student Search-->
+                                @if ($isAdmin)
+                                    <!--begin::Branch Filter-->
+                                    <div class="fv-row mb-5">
+                                        <label class="fw-semibold fs-6 mb-2">Filter by Branch</label>
+                                        <select id="enroll_branch_filter" class="form-select form-select-solid" data-kt-select2="true">
+                                            <option value="">All Branches</option>
+                                            @foreach ($branches as $branch)
+                                                <option value="{{ $branch->id }}">{{ $branch->branch_name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <!--end::Branch Filter-->
+                                @endif
+
+                                <!--begin::Student Select-->
                                 <div class="fv-row mb-7">
-                                    <label class="required fw-semibold fs-6 mb-2">Search Student</label>
+                                    <label class="required fw-semibold fs-6 mb-2">Select Student</label>
                                     <select name="student_id" id="enroll_student_select"
-                                        class="form-select form-select-solid"
-                                        data-placeholder="Type to search students..."
+                                        class="form-select form-select-solid" data-placeholder="Select a student..."
                                         data-dropdown-parent="#kt_modal_enroll_student">
-                                        <option></option>
+                                        <option value="">Select a student...</option>
+                                        @foreach ($availableStudents as $student)
+                                            <option value="{{ $student['id'] }}"
+                                                data-branch-id="{{ $student['branch_id'] }}"
+                                                data-student-id="{{ $student['student_unique_id'] }}"
+                                                data-branch-name="{{ $student['branch_name'] }}"
+                                                data-batch-name="{{ $student['batch_name'] }}"
+                                                data-is-active="{{ $student['is_active'] ? '1' : '0' }}">
+                                                {{ $student['name'] }} ({{ $student['student_unique_id'] }})
+                                            </option>
+                                        @endforeach
                                     </select>
                                     <div class="text-muted fs-7 mt-2">
                                         Only students from class <strong>{{ $classname->name }}</strong> who are not
                                         already enrolled will appear.
                                     </div>
                                 </div>
-                                <!--end::Student Search-->
+                                <!--end::Student Select-->
+
+                                <!--begin::Selected Student Info-->
+                                <div id="selected_student_info" class="d-none mb-7">
+                                    <div class="notice d-flex bg-light-primary rounded border-primary border border-dashed p-4">
+                                        <i class="ki-outline ki-information-5 fs-2tx text-primary me-4"></i>
+                                        <div class="d-flex flex-stack flex-grow-1">
+                                            <div class="fw-semibold">
+                                                <div class="fs-6 text-gray-700">
+                                                    <strong id="selected_student_name"></strong><br>
+                                                    <span class="text-muted">Branch: <span id="selected_student_branch"></span></span><br>
+                                                    <span class="text-muted">Batch: <span id="selected_student_batch"></span></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--end::Selected Student Info-->
 
                                 <!--begin::Amount-->
                                 <div class="fv-row mb-7">
@@ -577,7 +640,6 @@
                     <div class="modal-body px-5 my-5">
                         <form id="kt_modal_withdraw_student_form" class="form" novalidate="novalidate">
                             <input type="hidden" name="student_id" id="withdraw_student_id" />
-                            <input type="hidden" name="force_withdraw" id="force_withdraw" value="false" />
                             <div class="d-flex flex-column scroll-y px-5 px-lg-10">
                                 <!--begin::Warning-->
                                 <div
@@ -604,14 +666,7 @@
                                         <div class="fw-semibold">
                                             <h4 class="text-danger fw-bold">Unpaid Invoices Found!</h4>
                                             <div class="fs-6 text-gray-700" id="unpaid_invoices_message">
-                                                This student has unpaid Special Class Fee invoices.
-                                            </div>
-                                            <div class="form-check form-check-custom form-check-danger mt-3">
-                                                <input class="form-check-input" type="checkbox"
-                                                    id="confirm_force_withdraw" />
-                                                <label class="form-check-label text-danger" for="confirm_force_withdraw">
-                                                    I understand and want to proceed with withdrawal anyway
-                                                </label>
+                                                This student has unpaid Special Class Fee invoices. Please clear all dues before withdrawal.
                                             </div>
                                         </div>
                                     </div>
@@ -714,12 +769,13 @@
             "{{ route('classnames.secondary-classes.withdraw', [$classname->id, $secondaryClass->id, ':studentId']) }}";
         const routeCheckUnpaid =
             "{{ route('classnames.secondary-classes.check-unpaid', [$classname->id, $secondaryClass->id, ':studentId']) }}";
-        const routeAvailableStudents =
-            "{{ route('classnames.secondary-classes.available-students', [$classname->id, $secondaryClass->id]) }}";
+        const routeToggleActivation =
+            "{{ route('classnames.secondary-classes.toggle-activation', [$classname->id, $secondaryClass->id, ':studentId']) }}";
         const routeUpdateSecondaryClass = "{{ route('secondary-classes.update', $secondaryClass->id) }}";
         const isAdminUser = {{ $isAdmin || $isManager ? 'true' : 'false' }};
         const defaultFeeAmount = {{ $secondaryClass->fee_amount }};
         const secondaryClassIsActive = {{ $secondaryClass->is_active ? 'true' : 'false' }};
+        const paymentType = "{{ $secondaryClass->payment_type }}";
     </script>
     <script src="{{ asset('js/secondary-classes/show.js') }}"></script>
     <script>

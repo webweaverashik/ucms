@@ -1,23 +1,23 @@
 <?php
 namespace App\Models\Student;
 
-use App\Models\Academic\Batch;
-use App\Models\Academic\ClassName;
-use App\Models\Academic\Institution;
-use App\Models\Academic\SecondaryClass;
-use App\Models\Academic\SubjectTaken;
-use App\Models\Branch;
-use App\Models\Payment\Payment;
-use App\Models\Payment\PaymentInvoice;
-use App\Models\Payment\PaymentTransaction;
-use App\Models\Sheet\SheetPayment;
-use App\Models\Sheet\SheetTopicTaken;
-use App\Models\Student\StudentAttendance;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Branch;
+use App\Models\Academic\Batch;
+use App\Models\Payment\Payment;
+use App\Models\Academic\ClassName;
+use App\Models\Sheet\SheetPayment;
+use App\Models\Academic\Institution;
+use App\Models\Academic\SubjectTaken;
+use App\Models\Sheet\SheetTopicTaken;
+use App\Models\Payment\PaymentInvoice;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Student\StudentAttendance;
+use Illuminate\Database\Eloquent\Builder;
+use App\Models\Payment\PaymentTransaction;
+use App\Models\Payment\SecondaryClassPayment;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Student extends Model
 {
@@ -106,7 +106,7 @@ class Student extends Model
     }
 
     // Academic Class
-    public function class()
+    public function class ()
     {
         return $this->belongsTo(ClassName::class, 'class_id');
     }
@@ -121,6 +121,10 @@ class Student extends Model
     public function secondaryClasses()
     {
         return $this->hasMany(StudentSecondaryClass::class, 'student_id');
+    }
+    public function secondaryClassPayments()
+    {
+        return $this->hasMany(SecondaryClassPayment::class, 'student_id');
     }
 
     // Secondary class history

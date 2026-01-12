@@ -1,10 +1,10 @@
 <?php
-
 namespace App\Models\Academic;
 
-use App\Models\Student\Student;
 use App\Models\User;
+use App\Models\Student\Student;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Payment\SecondaryClassPayment;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SecondaryClass extends Model
@@ -20,9 +20,14 @@ class SecondaryClass extends Model
     /* ------------------ | Relationships | ------------------ */
 
     // Parent regular class
-    public function class()
+    public function class ()
     {
         return $this->belongsTo(ClassName::class, 'class_id');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(SecondaryClassPayment::class, 'secondary_class_id');
     }
 
     // Students currently enrolled (pivot table)

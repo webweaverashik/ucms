@@ -8,6 +8,7 @@ use App\Models\Academic\SecondaryClass;
 use App\Models\Branch;
 use App\Models\Payment\PaymentInvoice;
 use App\Models\Payment\PaymentInvoiceType;
+use App\Models\Payment\SecondaryClassPayment;
 use App\Models\Student\Student;
 use App\Models\Student\StudentSecondaryClass;
 use Illuminate\Http\Request;
@@ -122,7 +123,7 @@ class SecondaryClassController extends Controller
             ? Branch::select('id', 'branch_name', 'branch_prefix')->orderBy('branch_name')->get()
             : collect();
 
-        // Get enrolled students with relationships
+        // Get enrolled students with relationships including payment data
         $enrolledStudentsQuery = StudentSecondaryClass::where('secondary_class_id', $secondaryClass->id)
             ->with([
                 'student' => function ($q) {
@@ -144,6 +145,21 @@ class SecondaryClassController extends Controller
 
         $enrolledStudents = $enrolledStudentsQuery->get();
 
+        // Calculate total paid for each enrollment (for monthly payment type)
+        if ($secondaryClass->payment_type === 'monthly') {
+            foreach ($enrolledStudents as $enrollment) {
+                $totalPaid = SecondaryClassPayment::where('student_id', $enrollment->student_id)
+                    ->where('secondary_class_id', $secondaryClass->id)
+                    ->whereHas('invoice')
+                    ->with(['invoice.paymentTransactions'])
+                    ->get()
+                    ->sum(function ($payment) {
+                        return $payment->invoice?->paymentTransactions->sum('amount_paid') ?? 0;
+                    });
+                $enrollment->total_paid = $totalPaid;
+            }
+        }
+
         // Calculate stats
         $stats = $this->calculateStats($secondaryClass, $isAdmin, $branchId, $branches);
 
@@ -162,6 +178,9 @@ class SecondaryClassController extends Controller
             // Method might not exist on user model
         }
 
+        // Preload available students for enrollment
+        $availableStudents = $this->getAvailableStudentsData($classname, $secondaryClass, $isAdmin, $branchId);
+
         return view('secondary-classes.show', compact(
             'isManager',
             'classname',
@@ -170,31 +189,84 @@ class SecondaryClassController extends Controller
             'stats',
             'branches',
             'isAdmin',
-            'studentsByBranch'
+            'studentsByBranch',
+            'availableStudents'
         ));
     }
 
     /**
+     * Get available students data for preloading
+     */
+    private function getAvailableStudentsData(ClassName $classname, SecondaryClass $secondaryClass, bool $isAdmin, ?int $branchId)
+    {
+        // Get already enrolled student IDs
+        $enrolledStudentIds = StudentSecondaryClass::where('secondary_class_id', $secondaryClass->id)
+            ->pluck('student_id')
+            ->toArray();
+
+        // Get available students from the same class
+        $studentsQuery = Student::where('class_id', $classname->id)
+            ->whereNotIn('id', $enrolledStudentIds)
+            ->with(['branch:id,branch_name', 'batch:id,name', 'studentActivation:id,active_status']);
+
+        // Filter by branch for non-admin
+        if (! $isAdmin) {
+            $studentsQuery->where('branch_id', $branchId);
+        }
+
+        return $studentsQuery->select(['id', 'student_unique_id', 'name', 'academic_group', 'branch_id', 'batch_id', 'student_activation_id'])
+            ->orderBy('name')
+            ->get()
+            ->map(function ($student) {
+                return [
+                    'id'                => $student->id,
+                    'student_unique_id' => $student->student_unique_id,
+                    'name'              => $student->name,
+                    'academic_group'    => $student->academic_group,
+                    'branch_id'         => $student->branch_id,
+                    'branch_name'       => $student->branch->branch_name ?? '-',
+                    'batch_name'        => $student->batch->name ?? '-',
+                    'is_active'         => $student->studentActivation?->active_status === 'active',
+                ];
+            });
+    }
+
+    /**
      * Calculate stats for secondary class
+     * Active/inactive based on StudentSecondaryClass->is_active
      */
     private function calculateStats(SecondaryClass $secondaryClass, bool $isAdmin, ?int $branchId, $branches): array
     {
-        $enrollments = StudentSecondaryClass::where('secondary_class_id', $secondaryClass->id)
-            ->with(['student.studentActivation', 'student.branch']);
+        $enrollmentsQuery = StudentSecondaryClass::where('secondary_class_id', $secondaryClass->id)
+            ->with(['student.branch']);
 
         if (! $isAdmin) {
-            $enrollments->whereHas('student', function ($q) use ($branchId) {
+            $enrollmentsQuery->whereHas('student', function ($q) use ($branchId) {
                 $q->where('branch_id', $branchId);
             });
         }
 
-        $enrollments = $enrollments->get();
+        $enrollments = $enrollmentsQuery->get();
 
         $totalStudents    = $enrollments->count();
-        $activeStudents   = $enrollments->filter(fn($e) => $e->student?->studentActivation?->active_status === 'active')->count();
-        $inactiveStudents = $totalStudents - $activeStudents;
+        // Use StudentSecondaryClass->is_active instead of student activation status
+        $activeStudents   = $enrollments->where('is_active', true)->count();
+        $inactiveStudents = $enrollments->where('is_active', false)->count();
 
-        $totalRevenue = $enrollments->sum('amount');
+        // Calculate total revenue from actual payments
+        $totalRevenue = 0;
+        foreach ($enrollments as $enrollment) {
+            $paid = SecondaryClassPayment::where('student_id', $enrollment->student_id)
+                ->where('secondary_class_id', $secondaryClass->id)
+                ->whereHas('invoice')
+                ->with(['invoice.paymentTransactions'])
+                ->get()
+                ->sum(function ($payment) {
+                    return $payment->invoice?->paymentTransactions->sum('amount_paid') ?? 0;
+                });
+            $totalRevenue += $paid;
+        }
+
         $expectedMonthlyRevenue = $secondaryClass->payment_type === 'monthly'
             ? $activeStudents * $secondaryClass->fee_amount
             : 0;
@@ -204,13 +276,28 @@ class SecondaryClassController extends Controller
         if ($isAdmin && $branches->count() > 0) {
             foreach ($branches as $branch) {
                 $branchEnrollments = $enrollments->filter(fn($e) => $e->student?->branch_id === $branch->id);
+                
+                // Calculate branch revenue
+                $branchRevenue = 0;
+                foreach ($branchEnrollments as $enrollment) {
+                    $paid = SecondaryClassPayment::where('student_id', $enrollment->student_id)
+                        ->where('secondary_class_id', $secondaryClass->id)
+                        ->whereHas('invoice')
+                        ->with(['invoice.paymentTransactions'])
+                        ->get()
+                        ->sum(function ($payment) {
+                            return $payment->invoice?->paymentTransactions->sum('amount_paid') ?? 0;
+                        });
+                    $branchRevenue += $paid;
+                }
+
                 $branchStats[$branch->id] = [
                     'name'     => $branch->branch_name,
                     'prefix'   => $branch->branch_prefix,
                     'total'    => $branchEnrollments->count(),
-                    'active'   => $branchEnrollments->filter(fn($e) => $e->student?->studentActivation?->active_status === 'active')->count(),
-                    'inactive' => $branchEnrollments->filter(fn($e) => $e->student?->studentActivation?->active_status !== 'active')->count(),
-                    'revenue'  => $branchEnrollments->sum('amount'),
+                    'active'   => $branchEnrollments->where('is_active', true)->count(),
+                    'inactive' => $branchEnrollments->where('is_active', false)->count(),
+                    'revenue'  => $branchRevenue,
                 ];
             }
         }
@@ -331,62 +418,14 @@ class SecondaryClassController extends Controller
             ], 403);
         }
 
-        $user     = auth()->user();
         $isAdmin  = $user->isAdmin();
         $branchId = $user->branch_id;
 
-        // Get already enrolled student IDs
-        $enrolledStudentIds = StudentSecondaryClass::where('secondary_class_id', $secondaryClass->id)
-            ->pluck('student_id')
-            ->toArray();
-
-        // Get available students from the same class
-        $studentsQuery = Student::where('class_id', $classname->id)
-            ->whereNotIn('id', $enrolledStudentIds)
-            // ->where(function ($q) {
-            //     $q->active()->orWhere(function($sub) {
-            //         $sub->pending();
-            //     });
-            // })
-            ->with(['branch:id,branch_name', 'batch:id,name', 'studentActivation:id,active_status']);
-
-        // Filter by branch for non-admin
-        if (! $isAdmin) {
-            $studentsQuery->where('branch_id', $branchId);
-        }
-
-        // Search filter
-        if ($request->has('search') && ! empty($request->search)) {
-            $search = $request->search;
-            $studentsQuery->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('student_unique_id', 'like', "%{$search}%");
-            });
-        }
-
-        // Branch filter for admin
-        if ($isAdmin && $request->has('branch_id') && ! empty($request->branch_id)) {
-            $studentsQuery->where('branch_id', $request->branch_id);
-        }
-
-        $students = $studentsQuery->select(['id', 'student_unique_id', 'name', 'academic_group', 'branch_id', 'batch_id', 'student_activation_id'])
-            ->orderBy('name')
-            ->limit(50)
-            ->get();
+        $students = $this->getAvailableStudentsData($classname, $secondaryClass, $isAdmin, $branchId);
 
         return response()->json([
             'success' => true,
-            'data'    => $students->map(function ($student) {
-                return [
-                    'id'                => $student->id,
-                    'student_unique_id' => $student->student_unique_id,
-                    'name'              => $student->name,
-                    'academic_group'    => $student->academic_group,
-                    'branch_name'       => $student->branch->branch_name ?? '-',
-                    'batch_name'        => $student->batch->name ?? '-',
-                    'is_active'         => $student->studentActivation?->active_status === 'active',
-                ];
-            }),
+            'data'    => $students,
         ]);
     }
 
@@ -441,16 +480,26 @@ class SecondaryClassController extends Controller
                 'secondary_class_id' => $secondaryClass->id,
                 'amount'             => $validated['amount'],
                 'enrolled_at'        => now(),
+                'is_active'          => true,
             ]);
 
-            // Create Invoice
+            // Create Invoice and SecondaryClassPayment
             $feeAmount = (int) $validated['amount'];
             if ($feeAmount > 0) {
                 $monthYear = null;
                 if ($secondaryClass->payment_type === 'monthly') {
                     $monthYear = now()->format('m_Y');
                 }
-                $this->createInvoice($student, $feeAmount, 'Special Class Fee', $monthYear);
+                $invoice = $this->createInvoice($student, $feeAmount, 'Special Class Fee', $monthYear);
+                
+                // Create SecondaryClassPayment entry
+                if ($invoice) {
+                    SecondaryClassPayment::create([
+                        'student_id'         => $student->id,
+                        'secondary_class_id' => $secondaryClass->id,
+                        'invoice_id'         => $invoice->id,
+                    ]);
+                }
             }
         });
 
@@ -467,9 +516,9 @@ class SecondaryClassController extends Controller
      * @param int $amount
      * @param string $typeName - e.g., 'Admission Fee', 'Sheet Fee', 'Special Class Fee'
      * @param string|null $monthYear
-     * @return void
+     * @return PaymentInvoice|null
      */
-    private function createInvoice(Student $student, int $amount, string $typeName, ?string $monthYear = null): void
+    private function createInvoice(Student $student, int $amount, string $typeName, ?string $monthYear = null): ?PaymentInvoice
     {
         $yearSuffix = now()->format('y');
         $month      = now()->format('m');
@@ -490,10 +539,10 @@ class SecondaryClassController extends Controller
 
         if (! $invoiceType) {
             \Log::warning("Invoice type '{$typeName}' not found for student {$student->id}");
-            return;
+            return null;
         }
 
-        PaymentInvoice::create([
+        return PaymentInvoice::create([
             'invoice_number'  => $invoiceNumber,
             'student_id'      => $student->id,
             'total_amount'    => $amount,
@@ -548,7 +597,50 @@ class SecondaryClassController extends Controller
     }
 
     /**
+     * Toggle student enrollment activation status
+     */
+    public function toggleStudentActivation(Request $request, ClassName $classname, SecondaryClass $secondaryClass, Student $student)
+    {
+        $user = auth()->user();
+        $isManager = false;
+        try {
+            $isManager = $user->isManager();
+        } catch (\Throwable $e) {}
+
+        if (! ($user->isAdmin() || $isManager)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Permission denied.',
+            ], 403);
+        }
+
+        $enrollment = StudentSecondaryClass::where('student_id', $student->id)
+            ->where('secondary_class_id', $secondaryClass->id)
+            ->first();
+
+        if (! $enrollment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Enrollment not found.',
+            ], 404);
+        }
+
+        $enrollment->update([
+            'is_active' => ! $enrollment->is_active,
+        ]);
+
+        $statusText = $enrollment->is_active ? 'activated' : 'deactivated';
+
+        return response()->json([
+            'success'   => true,
+            'message'   => "Student enrollment {$statusText} successfully.",
+            'is_active' => $enrollment->is_active,
+        ]);
+    }
+
+    /**
      * Check for unpaid special class fee invoices
+     * Uses SecondaryClassPayment->invoice->status
      */
     public function checkUnpaidInvoices(ClassName $classname, SecondaryClass $secondaryClass, Student $student)
     {
@@ -565,24 +657,16 @@ class SecondaryClassController extends Controller
             ], 403);
         }
 
-        // Get the Special Class Fee invoice type
-        $specialClassFeeType = PaymentInvoiceType::where('type_name', 'Special Class Fee')->first();
-
-        if (! $specialClassFeeType) {
-            return response()->json([
-                'success'         => true,
-                'has_unpaid'      => false,
-                'unpaid_count'    => 0,
-                'unpaid_amount'   => 0,
-                'unpaid_invoices' => [],
-            ]);
-        }
-
-        // Check for unpaid invoices
-        $unpaidInvoices = PaymentInvoice::where('student_id', $student->id)
-            ->where('invoice_type_id', $specialClassFeeType->id)
-            ->whereIn('status', ['due', 'partially_paid'])
+        // Check for unpaid invoices via SecondaryClassPayment
+        $unpaidPayments = SecondaryClassPayment::where('student_id', $student->id)
+            ->where('secondary_class_id', $secondaryClass->id)
+            ->whereHas('invoice', function ($q) {
+                $q->where('status', '!=', 'paid');
+            })
+            ->with('invoice')
             ->get();
+
+        $unpaidInvoices = $unpaidPayments->map(fn($p) => $p->invoice)->filter();
 
         return response()->json([
             'success'         => true,
@@ -604,6 +688,7 @@ class SecondaryClassController extends Controller
 
     /**
      * Withdraw (drop) a student from secondary class
+     * No force withdraw - must clear dues first
      */
     public function withdrawStudent(Request $request, ClassName $classname, SecondaryClass $secondaryClass, Student $student)
     {
@@ -620,26 +705,21 @@ class SecondaryClassController extends Controller
             ], 403);
         }
 
-        // Check for unpaid invoices first
-        $specialClassFeeType = PaymentInvoiceType::where('type_name', 'Special Class Fee')->first();
+        // Check for unpaid invoices via SecondaryClassPayment
+        $unpaidPayments = SecondaryClassPayment::where('student_id', $student->id)
+            ->where('secondary_class_id', $secondaryClass->id)
+            ->whereHas('invoice', function ($q) {
+                $q->where('status', '!=', 'paid');
+            })
+            ->count();
 
-        if ($specialClassFeeType) {
-            $unpaidInvoices = PaymentInvoice::where('student_id', $student->id)
-                ->where('invoice_type_id', $specialClassFeeType->id)
-                ->whereIn('status', ['due', 'partially_paid'])
-                ->count();
-
-            // Check if force withdraw is requested
-            $forceWithdraw = $request->input('force_withdraw', false);
-
-            if ($unpaidInvoices > 0 && ! $forceWithdraw) {
-                return response()->json([
-                    'success'      => false,
-                    'has_unpaid'   => true,
-                    'unpaid_count' => $unpaidInvoices,
-                    'message'      => "Student has {$unpaidInvoices} unpaid Special Class Fee invoice(s). Please clear the dues first or confirm force withdrawal.",
-                ], 422);
-            }
+        if ($unpaidPayments > 0) {
+            return response()->json([
+                'success'      => false,
+                'has_unpaid'   => true,
+                'unpaid_count' => $unpaidPayments,
+                'message'      => "Student has {$unpaidPayments} unpaid Special Class Fee invoice(s). Please clear all dues before withdrawal.",
+            ], 422);
         }
 
         $enrollment = StudentSecondaryClass::where('student_id', $student->id)
