@@ -415,7 +415,7 @@ class SecondaryClassController extends Controller
 
         // Check if student belongs to this class
         $student = Student::findOrFail($validated['student_id']);
-        if ($student->class_id !== $classname->id) {
+        if ((int) $student->class_id !== (int) $classname->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Student does not belong to this class.',
