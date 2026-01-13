@@ -503,6 +503,18 @@
                                                 </select>
                                             </div>
                                             <!--end::Input group-->
+
+                                            <div class="mb-10">
+                                                <label class="form-label fs-6 fw-semibold">Student Status:</label>
+                                                <select class="form-select form-select-solid fw-bold"
+                                                    data-kt-select2="true" data-placeholder="Select option"
+                                                    data-allow-clear="true" data-kt-subscription-table-filter="status"
+                                                    data-hide-search="true">
+                                                    <option></option>
+                                                    <option value="active">Active</option>
+                                                    <option value="suspended">Inactive</option>
+                                                </select>
+                                            </div>
                                             <!--begin::Actions-->
                                             <div class="d-flex justify-content-end">
                                                 <button type="reset"
@@ -557,6 +569,8 @@
                                         <th class="w-30px">#</th>
                                         <th>Student Name</th>
                                         <th>Group</th>
+                                        <th class="d-none">Group (Filter)</th>
+                                        <th class="d-none">Status (Filter)</th>
                                         <th>Batch</th>
                                         <th class="w-200px">Branch</th>
                                         <th class="w-150px">Admitted By</th>
@@ -591,6 +605,14 @@
                                                         class="badge badge-pill badge-success">{{ $student->academic_group }}</span>
                                                 @else
                                                     <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
+                                            <td class="d-none">ucms_{{ $student->academic_group }}</td>
+                                            <td class="d-none">
+                                                @if ($student->studentActivation->active_status == 'active')
+                                                    active
+                                                @else
+                                                    suspended
                                                 @endif
                                             </td>
                                             <td>{{ $student->batch->name ?? '-' }}</td>
@@ -647,8 +669,8 @@
                                                         <i class="ki-outline ki-abstract-26"></i>
                                                     </div>
                                                     <div class="ms-3">
-                                                        <a href="{{ route('classnames.secondary-classes.show', [$classname->id, $secondaryClass->id]) }}" 
-                                                           class="secondary-class-title mb-0 text-gray-900 text-hover-primary fw-bold fs-5 text-decoration-none">
+                                                        <a href="{{ route('classnames.secondary-classes.show', [$classname->id, $secondaryClass->id]) }}"
+                                                            class="secondary-class-title mb-0 text-gray-900 text-hover-primary fw-bold fs-5 text-decoration-none">
                                                             {{ $secondaryClass->name }}
                                                         </a>
                                                         <span class="text-muted fs-7 d-block">
@@ -676,26 +698,30 @@
                                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                                     <div class="secondary-class-stat">
                                                         <span class="stat-label">Fee Amount</span>
-                                                        <span class="stat-value text-primary">৳{{ number_format($secondaryClass->fee_amount, 0) }}</span>
+                                                        <span
+                                                            class="stat-value text-primary">৳{{ number_format($secondaryClass->fee_amount, 0) }}</span>
                                                     </div>
                                                     <div class="secondary-class-stat text-end">
                                                         <span class="stat-label">Students</span>
-                                                        <a href="{{ route('classnames.secondary-classes.show', [$classname->id, $secondaryClass->id]) }}" 
-                                                           class="stat-value text-info text-hover-primary text-decoration-none">
+                                                        <a href="{{ route('classnames.secondary-classes.show', [$classname->id, $secondaryClass->id]) }}"
+                                                            class="stat-value text-info text-hover-primary text-decoration-none">
                                                             {{ $secondaryClass->students_count }}
                                                         </a>
                                                     </div>
                                                 </div>
 
                                                 <div class="d-flex align-items-center justify-content-between">
-                                                    <span class="badge @if ($secondaryClass->is_active) badge-light-success @else badge-light-danger @endif">
-                                                        <i class="ki-outline @if ($secondaryClass->is_active) ki-check-circle @else ki-cross-circle @endif fs-6 me-1"></i>
+                                                    <span
+                                                        class="badge @if ($secondaryClass->is_active) badge-light-success @else badge-light-danger @endif">
+                                                        <i
+                                                            class="ki-outline @if ($secondaryClass->is_active) ki-check-circle @else ki-cross-circle @endif fs-6 me-1"></i>
                                                         {{ $secondaryClass->is_active ? 'Active' : 'Inactive' }}
                                                     </span>
 
                                                     <div class="d-flex align-items-center gap-2">
                                                         <a href="{{ route('classnames.secondary-classes.show', [$classname->id, $secondaryClass->id]) }}"
-                                                           class="btn btn-sm btn-light-info btn-icon" data-bs-toggle="tooltip" title="View Details">
+                                                            class="btn btn-sm btn-light-info btn-icon"
+                                                            data-bs-toggle="tooltip" title="View Details">
                                                             <i class="ki-outline ki-eye fs-5"></i>
                                                         </a>
 
