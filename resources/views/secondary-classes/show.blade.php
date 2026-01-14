@@ -431,13 +431,13 @@
                                                             <i class="ki-outline ki-pencil fs-5"></i>
                                                         </button>
                                                     @endif
-                                                    <button type="button"
+                                                    {{-- <button type="button"
                                                         class="btn btn-sm btn-icon btn-light-danger withdraw-student"
                                                         data-student-id="{{ $student->id }}"
                                                         data-student-name="{{ $student->name }}" data-bs-toggle="tooltip"
                                                         title="Withdraw Student">
                                                         <i class="ki-outline ki-trash fs-5"></i>
-                                                    </button>
+                                                    </button> --}}
                                                 </div>
                                             @else
                                                 <span class="text-muted">-</span>
