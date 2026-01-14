@@ -111,7 +111,7 @@
                             </div>
                             <div class="d-flex flex-column">
                                 <span class="fs-6 text-gray-600 me-2">
-                                    Parent Class: <strong>{{ $classname->name }}</strong>
+                                    Parent Class: <a href="{{ route('classnames.show', $classname->id) }}" class="fw-bold text-gray-600 text-hover-primary">{{ $classname->name }}</a>
                                 </span>
                             </div>
                         </div>
