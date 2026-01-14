@@ -152,14 +152,19 @@ class SecondaryClassController extends Controller
                     ->sum(function ($payment) {
                         return $payment->invoice?->paymentTransactions->sum('amount_paid') ?? 0;
                     });
+
                 $enrollment->total_paid = $totalPaid;
             }
         }
 
+        // Separate active and inactive enrolled students
+        $activeEnrolledStudents   = $enrolledStudents->where('is_active', true)->values();
+        $inactiveEnrolledStudents = $enrolledStudents->where('is_active', false)->values();
+
         // Calculate stats
         $stats = $this->calculateStats($secondaryClass, $isAdmin, $branchId, $branches);
 
-        // Group students by branch for admin
+        // Group students by branch for admin (for both active and inactive)
         $studentsByBranch = [];
         if ($isAdmin) {
             $studentsByBranch = $enrolledStudents->groupBy(function ($enrollment) {
@@ -177,7 +182,19 @@ class SecondaryClassController extends Controller
         // Preload available students for enrollment
         $availableStudents = $this->getAvailableStudentsData($classname, $secondaryClass, $isAdmin, $branchId);
 
-        return view('secondary-classes.show', compact('isManager', 'classname', 'secondaryClass', 'enrolledStudents', 'stats', 'branches', 'isAdmin', 'studentsByBranch', 'availableStudents'));
+        return view('secondary-classes.show', compact(
+            'isManager',
+            'classname',
+            'secondaryClass',
+            'enrolledStudents',
+            'activeEnrolledStudents',
+            'inactiveEnrolledStudents',
+            'stats',
+            'branches',
+            'isAdmin',
+            'studentsByBranch',
+            'availableStudents'
+        ));
     }
 
     /**
@@ -240,6 +257,7 @@ class SecondaryClassController extends Controller
         $enrollments = $enrollmentsQuery->get();
 
         $totalStudents = $enrollments->count();
+
         // Use StudentSecondaryClass->is_active instead of student activation status
         $activeStudents   = $enrollments->where('is_active', true)->count();
         $inactiveStudents = $enrollments->where('is_active', false)->count();
@@ -258,7 +276,9 @@ class SecondaryClassController extends Controller
             $totalRevenue += $paid;
         }
 
-        $expectedMonthlyRevenue = $secondaryClass->payment_type === 'monthly' ? $activeStudents * $secondaryClass->fee_amount : 0;
+        $expectedMonthlyRevenue = $secondaryClass->payment_type === 'monthly'
+            ? $activeStudents * $secondaryClass->fee_amount
+            : 0;
 
         // Branch-wise stats for admin
         $branchStats = [];
@@ -494,6 +514,7 @@ class SecondaryClassController extends Controller
                 if ($secondaryClass->payment_type === 'monthly') {
                     $monthYear = now()->format('m_Y');
                 }
+
                 $invoice = $this->createInvoice($student, $feeAmount, 'Special Class Fee', $monthYear);
 
                 // Create SecondaryClassPayment entry
@@ -518,33 +539,39 @@ class SecondaryClassController extends Controller
     /**
      * Create a payment invoice for a student
      *
-     * @param Student $student
-     * @param int $amount
-     * @param string $typeName - e.g., 'Admission Fee', 'Sheet Fee', 'Special Class Fee'
-     * @param string|null $monthYear
+     * @param  Student  $student
+     * @param  int  $amount
+     * @param  string  $typeName - e.g., 'Admission Fee', 'Sheet Fee', 'Special Class Fee'
+     * @param  string|null  $monthYear
      * @return PaymentInvoice|null
      */
     private function createInvoice(Student $student, int $amount, string $typeName, ?string $monthYear = null): ?PaymentInvoice
     {
         $yearSuffix = now()->format('y');
         $month      = now()->format('m');
+
         // Ensure branch is loaded
         if (! $student->relationLoaded('branch')) {
             $student->load('branch');
         }
+
         $prefix = $student->branch->branch_prefix;
 
         $lastInvoice = PaymentInvoice::where('invoice_number', 'like', "{$prefix}{$yearSuffix}{$month}_%")
             ->orderBy('invoice_number', 'desc')
             ->first();
 
-        $nextSequence  = $lastInvoice ? (int) substr($lastInvoice->invoice_number, strrpos($lastInvoice->invoice_number, '_') + 1) + 1 : 1001;
+        $nextSequence = $lastInvoice
+            ? (int) substr($lastInvoice->invoice_number, strrpos($lastInvoice->invoice_number, '_') + 1) + 1
+            : 1001;
+
         $invoiceNumber = "{$prefix}{$yearSuffix}{$month}_{$nextSequence}";
 
         $invoiceType = PaymentInvoiceType::where('type_name', $typeName)->first();
 
         if (! $invoiceType) {
             \Log::warning("Invoice type '{$typeName}' not found for student {$student->id}");
+
             return null;
         }
 

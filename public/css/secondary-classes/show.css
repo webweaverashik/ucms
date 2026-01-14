@@ -83,11 +83,11 @@
 }
 
 /* Table Enhancements */
-#kt_enrolled_students_table tbody tr {
+.student-table tbody tr {
     transition: background-color 0.15s ease;
 }
 
-#kt_enrolled_students_table tbody tr:hover {
+.student-table tbody tr:hover {
     background-color: rgba(0, 0, 0, 0.02);
 }
 
@@ -100,53 +100,83 @@
     display: none !important;
 }
 
-/* Button Group in Table */
-.btn-group .btn-sm {
-    padding: 0.35rem 0.5rem;
-}
-
-.btn-group .btn-icon {
-    width: 30px;
-    height: 30px;
-}
-
-/* Toggle Activation Button States */
+/* Activation/Deactivation Buttons - Improved UI */
 .toggle-enrollment-activation {
     transition: all 0.2s ease;
+    min-width: 110px;
+    font-weight: 500;
 }
 
 .toggle-enrollment-activation:hover {
-    transform: scale(1.05);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.toggle-enrollment-activation.btn-light-warning:hover {
-    background-color: #fff4de !important;
-    border-color: #ffc700 !important;
+/* Deactivate Button */
+.toggle-enrollment-activation.deactivate-btn {
+    background-color: #fff5f8;
+    border: 1px solid #f1416c;
+    color: #f1416c;
 }
 
-.toggle-enrollment-activation.btn-light-success:hover {
-    background-color: #e8fff3 !important;
-    border-color: #50cd89 !important;
+.toggle-enrollment-activation.deactivate-btn:hover {
+    background-color: #f1416c;
+    color: #fff;
+}
+
+.toggle-enrollment-activation.deactivate-btn:hover i {
+    color: #fff;
+}
+
+/* Activate Button */
+.toggle-enrollment-activation.activate-btn {
+    background-color: #e8fff3;
+    border: 1px solid #50cd89;
+    color: #50cd89;
+}
+
+.toggle-enrollment-activation.activate-btn:hover {
+    background-color: #50cd89;
+    color: #fff;
+}
+
+.toggle-enrollment-activation.activate-btn:hover i {
+    color: #fff;
+}
+
+/* Edit Enrollment Button */
+.edit-enrollment {
+    transition: all 0.2s ease;
+}
+
+.edit-enrollment:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Main Status Tabs - Use default Metronic styling */
+#studentStatusTabs .nav-link {
+    transition: all 0.2s ease;
 }
 
 /* Toggle Activation Modal */
-#kt_modal_toggle_activation .modal-header h2.text-warning {
-    color: #ffc700 !important;
+#kt_modal_toggle_activation .modal-header h2.text-danger {
+    color: #f1416c !important;
 }
 
 #kt_modal_toggle_activation .modal-header h2.text-success {
     color: #50cd89 !important;
 }
 
-#kt_modal_toggle_activation .btn-warning {
-    background-color: #ffc700;
-    border-color: #ffc700;
-    color: #000;
+/* Modal Submit Buttons */
+#kt_modal_toggle_activation .btn-danger {
+    background-color: #f1416c;
+    border-color: #f1416c;
 }
 
-#kt_modal_toggle_activation .btn-warning:hover {
-    background-color: #f0b800;
-    border-color: #f0b800;
+#kt_modal_toggle_activation .btn-danger:hover {
+    background-color: #d9214e;
+    border-color: #d9214e;
 }
 
 #kt_modal_toggle_activation .btn-success {
@@ -240,6 +270,11 @@
     animation: fadeInDown 0.3s ease;
 }
 
+/* Action Buttons Container */
+.student-table td .d-flex.gap-2 {
+    justify-content: flex-end;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 991.98px) {
     .stats-mini-card .stats-value {
@@ -253,6 +288,26 @@
     .branch-stat-item {
         padding: 0.75rem;
     }
+
+    .toggle-enrollment-activation {
+        min-width: auto;
+        padding: 0.35rem 0.5rem;
+    }
+
+    .toggle-enrollment-activation span {
+        display: none !important;
+    }
+}
+
+@media (max-width: 767.98px) {
+    #studentStatusTabs .nav-link {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    #studentStatusTabs .nav-link i {
+        font-size: 1rem !important;
+    }
 }
 
 @media (max-width: 575.98px) {
@@ -265,13 +320,18 @@
         gap: 0.5rem;
     }
 
-    .btn-group .btn-sm {
-        padding: 0.25rem 0.4rem;
+    .toggle-enrollment-activation {
+        min-width: 36px;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    .btn-group .btn-icon {
-        width: 28px;
-        height: 28px;
+    .toggle-enrollment-activation i {
+        margin: 0 !important;
     }
 }
 
@@ -353,6 +413,11 @@
     background-color: #f1faff;
 }
 
+.badge-light-dark {
+    color: #181c32;
+    background-color: #eff2f5;
+}
+
 /* Action Buttons Hover Effects */
 .btn-light-primary:hover {
     background-color: #e8f4ff !important;
@@ -380,3 +445,26 @@ tr[data-enrollment-status="inactive"]:hover {
 #enroll_branch_filter {
     margin-bottom: 0;
 }
+
+/* Branch tabs within student tables */
+.student-table-card .nav-tabs {
+    border-bottom: 1px solid #eff2f5;
+}
+
+.student-table-card .nav-tabs .nav-link {
+    border: none;
+    padding: 0.75rem 1.25rem;
+    color: #7e8299;
+    font-weight: 500;
+}
+
+.student-table-card .nav-tabs .nav-link:hover {
+    color: #009ef7;
+}
+
+.student-table-card .nav-tabs .nav-link.active {
+    color: #009ef7;
+    border-bottom: 2px solid #009ef7;
+    background: transparent;
+}
+

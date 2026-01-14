@@ -111,7 +111,8 @@
                             </div>
                             <div class="d-flex flex-column">
                                 <span class="fs-6 text-gray-600 me-2">
-                                    Parent Class: <a href="{{ route('classnames.show', $classname->id) }}" class="fw-bold text-gray-600 text-hover-primary">{{ $classname->name }}</a>
+                                    Parent Class: <a href="{{ route('classnames.show', $classname->id) }}"
+                                        class="fw-bold text-gray-600 text-hover-primary">{{ $classname->name }}</a>
                                 </span>
                             </div>
                         </div>
@@ -252,208 +253,75 @@
 
         <!--begin::Content-->
         <div class="flex-lg-row-fluid ms-lg-10">
-            <!--begin::Card-->
-            <div class="card mb-6 mb-xl-9">
-                <!--begin::Header-->
-                <div class="card-header">
-                    <div class="card-title">
-                        <div class="d-flex align-items-center position-relative my-1">
-                            <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
-                            <input type="text" data-enrolled-students-table-filter="search"
-                                class="form-control form-control-solid w-350px ps-12" placeholder="Search students...">
-                        </div>
-                    </div>
-                    <div class="card-toolbar">
-                        <div class="d-flex justify-content-end gap-3">
-                            <!--begin::Filter-->
-                            <button type="button" class="btn btn-light-primary" data-kt-menu-trigger="click"
-                                data-kt-menu-placement="bottom-end">
-                                <i class="ki-outline ki-filter fs-2"></i>Filter
-                            </button>
-                            <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
-                                <div class="px-7 py-5">
-                                    <div class="fs-5 text-gray-900 fw-bold">Filter Options</div>
-                                </div>
-                                <div class="separator border-gray-200"></div>
-                                <div class="px-7 py-5" data-enrolled-students-table-filter="form">
-                                    <div class="mb-10">
-                                        <label class="form-label fs-6 fw-semibold">Enrollment Status:</label>
-                                        <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                            data-placeholder="Select status" data-allow-clear="true"
-                                            data-hide-search="true" id="filter_status">
-                                            <option></option>
-                                            <option value="active">Active</option>
-                                            <option value="inactive">Inactive</option>
-                                        </select>
-                                    </div>
-                                    <div class="d-flex justify-content-end">
-                                        <button type="reset"
-                                            class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
-                                            data-kt-menu-dismiss="true"
-                                            data-enrolled-students-table-filter="reset">Reset</button>
-                                        <button type="submit" class="btn btn-primary fw-semibold px-6"
-                                            data-kt-menu-dismiss="true"
-                                            data-enrolled-students-table-filter="filter">Apply</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <!--end::Filter-->
+            <!--begin:::Tabs-->
+            <ul class="nav nav-custom nav-tabs nav-line-tabs nav-line-tabs-2x border-0 fs-4 fw-semibold mb-8"
+                id="studentStatusTabs" role="tablist">
+                <!--begin:::Tab item - Active Students-->
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link text-active-primary pb-4 active" data-bs-toggle="tab"
+                        href="#kt_active_students_tab" role="tab" aria-selected="true">
+                        <i class="ki-outline ki-people fs-3 me-2"></i>
+                        Active Students
+                    </a>
+                </li>
+                <!--end:::Tab item-->
+                <!--begin:::Tab item - Inactive Students-->
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link text-active-primary pb-4" data-bs-toggle="tab" href="#kt_inactive_students_tab"
+                        role="tab" aria-selected="false">
+                        <i class="ki-outline ki-people fs-3 me-2"></i>
+                        Inactive Students
+                    </a>
+                </li>
+                <!--end:::Tab item-->
+                @if (($isAdmin || $isManager) && $secondaryClass->is_active)
+                    <li class="nav-item ms-auto">
+                        <!--begin::Add Student-->
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                            data-bs-target="#kt_modal_enroll_student">
+                            <i class="ki-outline ki-plus fs-2"></i>Enroll Student
+                        </button>
+                        <!--end::Add Student-->
+                    </li>
+                @endif
+            </ul>
+            <!--end:::Tabs-->
 
-                            @if (($isAdmin || $isManager) && $secondaryClass->is_active)
-                                <!--begin::Add Student-->
-                                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#kt_modal_enroll_student">
-                                    <i class="ki-outline ki-plus fs-2"></i>Enroll Student
-                                </button>
-                                <!--end::Add Student-->
-                            @endif
-                        </div>
-                    </div>
+            <!--begin:::Tab content-->
+            <div class="tab-content" id="studentStatusTabContent">
+                <!--begin:::Active Students Tab pane-->
+                <div class="tab-pane fade show active" id="kt_active_students_tab" role="tabpanel">
+                    @include('secondary-classes.partials.student-table', [
+                        'students' => $activeEnrolledStudents,
+                        'secondaryClass' => $secondaryClass,
+                        'classname' => $classname,
+                        'branches' => $branches,
+                        'branchColors' => $branchColors,
+                        'isAdmin' => $isAdmin,
+                        'isManager' => $isManager,
+                        'tableId' => 'kt_active_students_table',
+                        'statusType' => 'active',
+                    ])
                 </div>
-                <!--end::Header-->
+                <!--end:::Active Students Tab pane-->
 
-                <!--begin::Card body-->
-                <div class="card-body pb-5">
-                    @if ($isAdmin && $branches->count() > 0)
-                        <!--begin::Branch Tabs for Admin-->
-                        <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-5 fs-6" id="branchTabs" role="tablist">
-                            @foreach ($branches as $branch)
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link {{ $loop->first ? 'active' : '' }}"
-                                        id="branch-{{ $branch->id }}-tab" data-bs-toggle="tab"
-                                        data-bs-target="#branch_{{ $branch->id }}_content" type="button"
-                                        role="tab" data-branch-filter="{{ $branch->id }}">
-                                        <i class="ki-outline ki-home fs-4 me-2"></i>{{ $branch->branch_name }}
-                                        <span
-                                            class="badge {{ $branchColors[$branch->id] ?? 'badge-light-primary' }} ms-2">
-                                            {{ $studentsByBranch->get($branch->id, collect())->count() }}
-                                        </span>
-                                    </button>
-                                </li>
-                            @endforeach
-                        </ul>
-                        <!--end::Branch Tabs-->
-                    @endif
-
-                    <!--begin::Table-->
-                    <table class="table table-hover align-middle table-row-dashed fs-6 fw-semibold gy-4 ucms-table"
-                        id="kt_enrolled_students_table">
-                        <thead>
-                            <tr class="fw-bold fs-7 text-uppercase gs-0">
-                                <th class="w-30px">#</th>
-                                <th>Student</th>
-                                <th>Group</th>
-                                <th>Batch</th>
-                                <th class="w-150px">Branch</th>
-                                <th class="w-120px">Fee</th>
-                                @if ($secondaryClass->payment_type === 'monthly')
-                                    <th class="w-120px">Total Paid</th>
-                                @endif
-                                <th class="w-120px">Enrolled At</th>
-                                <th class="w-100px">Status</th>
-                                <th class="w-120px text-end">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-gray-600 fw-semibold">
-                            @forelse ($enrolledStudents as $enrollment)
-                                @php $student = $enrollment->student; @endphp
-                                @if ($student)
-                                    <tr data-branch-id="{{ $student->branch_id }}" data-student-id="{{ $student->id }}"
-                                        data-enrollment-id="{{ $enrollment->id }}"
-                                        data-enrollment-status="{{ $enrollment->is_active ? 'active' : 'inactive' }}">
-                                        <td class="pe-2">{{ $loop->index + 1 }}</td>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="d-flex flex-column text-start">
-                                                    <a href="{{ route('students.show', $student->id) }}"
-                                                        class="@if (!$enrollment->is_active) text-danger @else text-gray-800 text-hover-primary @endif mb-1"
-                                                        @if (!$enrollment->is_active) title="Inactive Enrollment" data-bs-toggle="tooltip" @endif>
-                                                        {{ $student->name }}
-                                                    </a>
-                                                    <span class="fw-bold fs-base">{{ $student->student_unique_id }}</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            @if ($student->academic_group == 'Science')
-                                                <span
-                                                    class="badge badge-pill badge-info">{{ $student->academic_group }}</span>
-                                            @elseif ($student->academic_group == 'Commerce')
-                                                <span
-                                                    class="badge badge-pill badge-success">{{ $student->academic_group }}</span>
-                                            @else
-                                                <span class="text-muted">-</span>
-                                            @endif
-                                        </td>
-                                        <td>{{ $student->batch->name ?? '-' }}</td>
-                                        <td>{{ $student->branch->branch_name ?? '-' }}</td>
-                                        <td>
-                                            <span
-                                                class="amount-display fw-bold text-primary">৳{{ number_format($enrollment->amount, 0) }}</span>
-                                        </td>
-                                        @if ($secondaryClass->payment_type === 'monthly')
-                                            <td>
-                                                <span
-                                                    class="amount-display fw-bold text-success">৳{{ number_format($enrollment->total_paid ?? 0, 0) }}</span>
-                                            </td>
-                                        @endif
-                                        <td>{{ $enrollment->enrolled_at ? $enrollment->enrolled_at->format('d-M-Y') : '-' }}
-                                        </td>
-                                        <td>
-                                            @if ($enrollment->is_active)
-                                                <span class="badge badge-light-success">Active</span>
-                                            @else
-                                                <span class="badge badge-light-danger">Inactive</span>
-                                            @endif
-                                        </td>
-                                        <td class="text-end">
-                                            @if (($isAdmin || $isManager) && $secondaryClass->is_active === true)
-                                                <div class="btn-group">
-                                                    <!--begin::Toggle Activation-->
-                                                    <button type="button"
-                                                        class="btn btn-sm btn-icon toggle-enrollment-activation @if ($enrollment->is_active) btn-light-warning @else btn-light-success @endif"
-                                                        data-student-id="{{ $student->id }}"
-                                                        data-student-name="{{ $student->name }}"
-                                                        data-is-active="{{ $enrollment->is_active ? '1' : '0' }}"
-                                                        data-bs-toggle="tooltip"
-                                                        title="{{ $enrollment->is_active ? 'Deactivate Enrollment' : 'Activate Enrollment' }}">
-                                                        <i
-                                                            class="ki-outline {{ $enrollment->is_active ? 'ki-cross-circle' : 'ki-check-circle' }} fs-5"></i>
-                                                    </button>
-                                                    <!--end::Toggle Activation-->
-                                                    @if ($secondaryClass->payment_type === 'monthly')
-                                                        <button type="button"
-                                                            class="btn btn-sm btn-icon btn-light-primary edit-enrollment"
-                                                            data-student-id="{{ $student->id }}"
-                                                            data-student-name="{{ $student->name }}"
-                                                            data-amount="{{ $enrollment->amount }}"
-                                                            data-bs-toggle="tooltip" title="Edit Amount">
-                                                            <i class="ki-outline ki-pencil fs-5"></i>
-                                                        </button>
-                                                    @endif
-                                                    {{-- <button type="button"
-                                                        class="btn btn-sm btn-icon btn-light-danger withdraw-student"
-                                                        data-student-id="{{ $student->id }}"
-                                                        data-student-name="{{ $student->name }}" data-bs-toggle="tooltip"
-                                                        title="Withdraw Student">
-                                                        <i class="ki-outline ki-trash fs-5"></i>
-                                                    </button> --}}
-                                                </div>
-                                            @else
-                                                <span class="text-muted">-</span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endif
-                            @empty
-                            @endforelse
-                        </tbody>
-                    </table>
-                    <!--end::Table-->
+                <!--begin:::Inactive Students Tab pane-->
+                <div class="tab-pane fade" id="kt_inactive_students_tab" role="tabpanel">
+                    @include('secondary-classes.partials.student-table', [
+                        'students' => $inactiveEnrolledStudents,
+                        'secondaryClass' => $secondaryClass,
+                        'classname' => $classname,
+                        'branches' => $branches,
+                        'branchColors' => $branchColors,
+                        'isAdmin' => $isAdmin,
+                        'isManager' => $isManager,
+                        'tableId' => 'kt_inactive_students_table',
+                        'statusType' => 'inactive',
+                    ])
                 </div>
-                <!--end::Card body-->
+                <!--end:::Inactive Students Tab pane-->
             </div>
-            <!--end::Card-->
+            <!--end:::Tab content-->
         </div>
         <!--end::Content-->
     </div>
@@ -478,7 +346,8 @@
                                     <!--begin::Branch Filter-->
                                     <div class="fv-row mb-5">
                                         <label class="fw-semibold fs-6 mb-2">Filter by Branch</label>
-                                        <select id="enroll_branch_filter" class="form-select form-select-solid" data-kt-select2="true">
+                                        <select id="enroll_branch_filter" class="form-select form-select-solid"
+                                            data-kt-select2="true">
                                             <option value="">All Branches</option>
                                             @foreach ($branches as $branch)
                                                 <option value="{{ $branch->id }}">{{ $branch->branch_name }}</option>
@@ -617,70 +486,6 @@
         </div>
         <!--end::Modal - Edit Enrollment-->
 
-        <!--begin::Modal - Withdraw Student-->
-        <div class="modal fade" id="kt_modal_withdraw_student" tabindex="-1" aria-hidden="true"
-            data-bs-backdrop="static" data-bs-keyboard="false">
-            <div class="modal-dialog modal-dialog-centered mw-500px">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2 class="fw-bold text-danger">Withdraw Student</h2>
-                        <div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
-                            <i class="ki-outline ki-cross fs-1"></i>
-                        </div>
-                    </div>
-                    <div class="modal-body px-5 my-5">
-                        <form id="kt_modal_withdraw_student_form" class="form" novalidate="novalidate">
-                            <input type="hidden" name="student_id" id="withdraw_student_id" />
-                            <div class="d-flex flex-column scroll-y px-5 px-lg-10">
-                                <!--begin::Warning-->
-                                <div
-                                    class="notice d-flex bg-light-warning rounded border-warning border border-dashed p-6 mb-7">
-                                    <i class="ki-outline ki-information-5 fs-2tx text-warning me-4"></i>
-                                    <div class="d-flex flex-stack flex-grow-1">
-                                        <div class="fw-semibold">
-                                            <h4 class="text-gray-900 fw-bold">Attention Required</h4>
-                                            <div class="fs-6 text-gray-700">
-                                                You are about to withdraw <strong
-                                                    id="withdraw_student_name_display"></strong> from this special class.
-                                                This action cannot be undone.
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!--end::Warning-->
-
-                                <!--begin::Unpaid Invoices Warning (hidden by default)-->
-                                <div class="notice d-flex bg-light-danger rounded border-danger border border-dashed p-6 mb-7 d-none"
-                                    id="unpaid_invoices_warning">
-                                    <i class="ki-outline ki-shield-cross fs-2tx text-danger me-4"></i>
-                                    <div class="d-flex flex-stack flex-grow-1">
-                                        <div class="fw-semibold">
-                                            <h4 class="text-danger fw-bold">Cannot Withdraw - Unpaid Invoices!</h4>
-                                            <div class="fs-6 text-gray-700" id="unpaid_invoices_message">
-                                                This student has unpaid Special Class Fee invoices. Please clear all dues
-                                                before withdrawal.
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!--end::Unpaid Invoices Warning-->
-                            </div>
-                            <div class="text-center pt-10">
-                                <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" class="btn btn-danger" id="kt_modal_withdraw_student_submit">
-                                    <span class="indicator-label">Withdraw Student</span>
-                                    <span class="indicator-progress">Please wait...
-                                        <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
-                                    </span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!--end::Modal - Withdraw Student-->
-
         <!--begin::Modal - Edit Secondary Class-->
         <div class="modal fade" id="kt_modal_edit_secondary_class" tabindex="-1" aria-hidden="true"
             data-bs-backdrop="static" data-bs-keyboard="false">
@@ -749,7 +554,7 @@
             data-bs-backdrop="static" data-bs-keyboard="false">
             <div class="modal-dialog modal-dialog-centered mw-500px">
                 <div class="modal-content">
-                    <div class="modal-header">
+                    <div class="modal-header" id="toggle_modal_header">
                         <h2 class="fw-bold" id="toggle_activation_modal_title">Deactivate Enrollment</h2>
                         <div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
                             <i class="ki-outline ki-cross fs-1"></i>
@@ -759,11 +564,12 @@
                         <form id="kt_modal_toggle_activation_form" class="form" novalidate="novalidate">
                             <input type="hidden" name="student_id" id="toggle_student_id" />
                             <input type="hidden" name="is_active" id="toggle_is_active" />
+
                             <div class="d-flex flex-column scroll-y px-5 px-lg-10">
                                 <!--begin::Deactivate Warning-->
-                                <div class="notice d-flex bg-light-warning rounded border-warning border border-dashed p-6 mb-7"
+                                <div class="notice d-flex bg-light-danger rounded border-danger border border-dashed p-6 mb-7"
                                     id="toggle_deactivate_warning">
-                                    <i class="ki-outline ki-information-5 fs-2tx text-warning me-4"></i>
+                                    <i class="ki-outline ki-cross-circle fs-2tx text-danger me-4"></i>
                                     <div class="d-flex flex-stack flex-grow-1">
                                         <div class="fw-semibold">
                                             <h4 class="text-gray-900 fw-bold">Confirm Deactivation</h4>
@@ -795,24 +601,25 @@
                                 <!--end::Activate Info-->
 
                                 <!--begin::Unpaid Invoices Warning (hidden by default)-->
-                                <div class="notice d-flex bg-light-danger rounded border-danger border border-dashed p-6 mb-7 d-none"
+                                <div class="notice d-flex bg-light-warning rounded border-warning border border-dashed p-6 mb-7 d-none"
                                     id="toggle_unpaid_warning">
-                                    <i class="ki-outline ki-shield-cross fs-2tx text-danger me-4"></i>
+                                    <i class="ki-outline ki-shield-cross fs-2tx text-warning me-4"></i>
                                     <div class="d-flex flex-stack flex-grow-1">
                                         <div class="fw-semibold">
-                                            <h4 class="text-danger fw-bold">Cannot Deactivate - Unpaid Invoices!</h4>
+                                            <h4 class="text-warning fw-bold">Cannot Deactivate - Unpaid Invoices!</h4>
                                             <div class="fs-6 text-gray-700" id="toggle_unpaid_message">
-                                                This student has unpaid Special Class Fee invoices. Please clear all dues
-                                                before deactivation.
+                                                This student has unpaid Special Class Fee invoices. Please clear all
+                                                dues before deactivation.
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <!--end::Unpaid Invoices Warning-->
                             </div>
+
                             <div class="text-center pt-10">
                                 <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
-                                <button type="submit" class="btn btn-warning" id="kt_modal_toggle_activation_submit">
+                                <button type="submit" class="btn btn-danger" id="kt_modal_toggle_activation_submit">
                                     <span class="indicator-label" id="toggle_submit_label">Deactivate</span>
                                     <span class="indicator-progress">Please wait...
                                         <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
@@ -839,8 +646,6 @@
             "{{ route('classnames.secondary-classes.enroll', [$classname->id, $secondaryClass->id]) }}";
         const routeUpdateStudent =
             "{{ route('classnames.secondary-classes.update-student', [$classname->id, $secondaryClass->id, ':studentId']) }}";
-        const routeWithdrawStudent =
-            "{{ route('classnames.secondary-classes.withdraw', [$classname->id, $secondaryClass->id, ':studentId']) }}";
         const routeCheckUnpaid =
             "{{ route('classnames.secondary-classes.check-unpaid', [$classname->id, $secondaryClass->id, ':studentId']) }}";
         const routeToggleActivation =

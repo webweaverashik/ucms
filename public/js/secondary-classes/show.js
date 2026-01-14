@@ -1,137 +1,139 @@
 "use strict";
 
-// DataTable instance
-var dataTable;
+// DataTable instances for both tables
+var dataTables = {};
 
-// Initialize DataTable
-var initDataTable = function () {
-    const table = document.getElementById('kt_enrolled_students_table');
+// Initialize DataTables for both active and inactive student tables
+var initDataTables = function () {
+    const tableIds = ['kt_active_students_table', 'kt_inactive_students_table'];
 
-    if (!table) return;
+    tableIds.forEach(function (tableId) {
+        const table = document.getElementById(tableId);
+        if (!table) return;
 
-    // Determine column count based on payment type
-    const hasMonthlyColumn = paymentType === 'monthly';
-    const actionColumnIndex = hasMonthlyColumn ? 9 : 8;
+        // Determine column count based on payment type
+        const hasMonthlyColumn = paymentType === 'monthly';
+        const actionColumnIndex = hasMonthlyColumn ? 8 : 7;
 
-    dataTable = $(table).DataTable({
-        info: false,
-        order: [],
-        pageLength: 25,
-        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-        columnDefs: [
-            { orderable: false, targets: isAdminUser ? [0, actionColumnIndex] : [0] }
-        ],
-        language: {
-            emptyTable: function () {
-                let html = `
-                    <div class="d-flex flex-column align-items-center justify-content-center py-10">
-                        <div class="empty-state-icon mb-4">
-                            <i class="ki-outline ki-people fs-3tx text-gray-300"></i>
-                        </div>
-                        <h4 class="text-gray-800 fw-bold mb-3">No Students Enrolled</h4>
-                        <p class="text-muted fs-6 mb-6">
-                            Start enrolling students to this special class.
-                        </p>`;
+        const isActiveTable = tableId === 'kt_active_students_table';
+        const emptyMessage = isActiveTable
+            ? 'No active students in this special class.'
+            : 'No inactive students in this special class.';
 
-                if (isAdminUser && typeof secondaryClassIsActive !== 'undefined' && secondaryClassIsActive) {
-                    html += `
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                            data-bs-target="#kt_modal_enroll_student">
-                            <i class="ki-outline ki-plus fs-3 me-1"></i>Enroll First Student
-                        </button>`;
+        dataTables[tableId] = $(table).DataTable({
+            info: false,
+            order: [],
+            pageLength: 25,
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            columnDefs: [
+                { orderable: false, targets: isAdminUser ? [0, actionColumnIndex] : [0] }
+            ],
+            language: {
+                emptyTable: function () {
+                    let html = `
+                        <div class="d-flex flex-column align-items-center justify-content-center py-10">
+                            <div class="empty-state-icon mb-4">
+                                <i class="ki-outline ki-people fs-3tx text-gray-300"></i>
+                            </div>
+                            <h4 class="text-gray-800 fw-bold mb-3">${emptyMessage}</h4>`;
+
+                    if (isActiveTable && isAdminUser && typeof secondaryClassIsActive !== 'undefined' && secondaryClassIsActive) {
+                        html += `
+                            <p class="text-muted fs-6 mb-6">Start enrolling students to this special class.</p>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_enroll_student">
+                                <i class="ki-outline ki-plus fs-3 me-1"></i>Enroll First Student
+                            </button>`;
+                    } else if (!isActiveTable) {
+                        html += `<p class="text-muted fs-6 mb-0">All enrolled students are currently active.</p>`;
+                    }
+
+                    html += `</div>`;
+                    return html;
                 }
-
-                html += `</div>`;
-                return html;
+            },
+            drawCallback: function () {
+                initTooltips();
             }
-        },
-        drawCallback: function () {
-            initTooltips();
+        });
+
+        // Search functionality for each table
+        const searchInput = document.querySelector(`[data-table-filter="search"][data-table-id="${tableId}"]`);
+        if (searchInput) {
+            searchInput.addEventListener('input', function (e) {
+                dataTables[tableId].search(e.target.value).draw();
+            });
         }
     });
 
-    // Search functionality
-    const searchInput = document.querySelector('[data-enrolled-students-table-filter="search"]');
-    if (searchInput) {
-        searchInput.addEventListener('input', function (e) {
-            dataTable.search(e.target.value).draw();
-        });
-    }
-
-    // Filter functionality
-    const filterButton = document.querySelector('[data-enrolled-students-table-filter="filter"]');
-    if (filterButton) {
-        filterButton.addEventListener('click', function () {
-            applyFilters();
-        });
-    }
-
-    // Reset filter
-    const resetButton = document.querySelector('[data-enrolled-students-table-filter="reset"]');
-    if (resetButton) {
-        resetButton.addEventListener('click', function () {
-            $('#filter_status').val('').trigger('change');
-            if (document.getElementById('filter_branch')) {
-                $('#filter_branch').val('').trigger('change');
-            }
-            dataTable.search('').columns().search('').draw();
-            // Remove custom filter
-            $.fn.dataTable.ext.search = [];
-            dataTable.draw();
-        });
-    }
-
-    // Branch tab filtering
+    // Branch tab filtering for each table
     document.querySelectorAll('[data-branch-filter]').forEach(function (tab) {
         tab.addEventListener('click', function () {
             const branchId = this.getAttribute('data-branch-filter');
-            filterByBranch(branchId);
+            const tableId = this.getAttribute('data-table-id');
+            if (tableId && dataTables[tableId]) {
+                filterByBranch(tableId, branchId);
+            }
         });
     });
 
-    // Apply initial filter if there's an active tab
-    const activeTab = document.querySelector('.nav-link.active[data-branch-filter]');
-    if (activeTab) {
-        const branchId = activeTab.getAttribute('data-branch-filter');
-        filterByBranch(branchId);
-    }
+    // Apply initial filter for first branch tab (no "All Branches" now)
+    tableIds.forEach(function (tableId) {
+        const firstBranchTab = document.querySelector(`#branchTabs_${tableId} .nav-link.active[data-branch-filter]`);
+        if (firstBranchTab) {
+            const branchId = firstBranchTab.getAttribute('data-branch-filter');
+            filterByBranch(tableId, branchId);
+        }
+    });
 };
 
-// Apply filters
-var applyFilters = function () {
-    const status = document.getElementById('filter_status')?.value || '';
-    const branch = document.getElementById('filter_branch')?.value || '';
+// Store current filters for each table
+var tableFilters = {
+    'kt_active_students_table': { branch: null, group: null },
+    'kt_inactive_students_table': { branch: null, group: null }
+};
 
-    // Clear previous filters
-    $.fn.dataTable.ext.search = [];
+// Apply combined filters (branch + group) for specific table
+var applyTableFilters = function (tableId) {
+    if (!dataTables[tableId]) return;
 
-    // Custom filtering
-    $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-        const row = dataTable.row(dataIndex).node();
-        const rowStatus = row.getAttribute('data-enrollment-status');
-        const rowBranch = row.getAttribute('data-branch-id');
-
-        let statusMatch = !status || rowStatus === status;
-        let branchMatch = !branch || rowBranch === branch;
-
-        return statusMatch && branchMatch;
+    // Clear previous custom filters for this table
+    $.fn.dataTable.ext.search = $.fn.dataTable.ext.search.filter(function (fn) {
+        return fn.tableId !== tableId;
     });
 
-    dataTable.draw();
+    var filterFn = function (settings, data, dataIndex) {
+        if (settings.nTable.id !== tableId) return true;
+
+        const row = dataTables[tableId].row(dataIndex).node();
+        const filters = tableFilters[tableId];
+
+        // Branch filter
+        let branchMatch = true;
+        if (filters.branch && filters.branch !== 'all') {
+            branchMatch = row.getAttribute('data-branch-id') === filters.branch;
+        }
+
+        // Group filter
+        let groupMatch = true;
+        if (filters.group) {
+            const rowGroup = row.getAttribute('data-academic-group') || '';
+            groupMatch = rowGroup === filters.group;
+        }
+
+        return branchMatch && groupMatch;
+    };
+    filterFn.tableId = tableId;
+    $.fn.dataTable.ext.search.push(filterFn);
+
+    dataTables[tableId].draw();
 };
 
-// Filter by branch (for tab clicks)
-var filterByBranch = function (branchId) {
-    $.fn.dataTable.ext.search = [];
+// Filter by branch for specific table
+var filterByBranch = function (tableId, branchId) {
+    if (!dataTables[tableId]) return;
 
-    if (branchId !== 'all') {
-        $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-            const row = dataTable.row(dataIndex).node();
-            return row.getAttribute('data-branch-id') === branchId;
-        });
-    }
-
-    dataTable.draw();
+    tableFilters[tableId].branch = branchId;
+    applyTableFilters(tableId);
 };
 
 // Initialize Select2 for student enrollment with preloaded data
@@ -173,7 +175,6 @@ var initStudentSelect = function () {
             statusBadge = '<span class="badge badge-light-danger ms-2">Inactive</span>';
         }
         $('#selected_student_status').html(statusBadge);
-
         $('#selected_student_info').removeClass('d-none');
     });
 
@@ -193,7 +194,6 @@ var initStudentSelect = function () {
 
 // Store original options for branch filtering
 var originalStudentOptions = [];
-
 var storeOriginalOptions = function () {
     const select = document.getElementById('enroll_student_select');
     if (!select || originalStudentOptions.length > 0) return;
@@ -251,7 +251,6 @@ var formatStudentOption = function (data) {
     const status = element.data('status') || 'inactive';
     const branchName = element.data('branch-name') || '-';
     const batchName = element.data('batch-name') || '-';
-    const studentId = element.data('student-id') || '';
 
     // Determine status badge based on status value
     let statusClass, statusText;
@@ -370,6 +369,7 @@ var handleToggleActivation = function () {
 
     const modal = new bootstrap.Modal(document.getElementById('kt_modal_toggle_activation'));
     const submitButton = document.getElementById('kt_modal_toggle_activation_submit');
+    const modalHeader = document.getElementById('toggle_modal_header');
     const modalTitle = document.getElementById('toggle_activation_modal_title');
     const submitLabel = document.getElementById('toggle_submit_label');
     const deactivateWarning = document.getElementById('toggle_deactivate_warning');
@@ -377,81 +377,83 @@ var handleToggleActivation = function () {
     const unpaidWarning = document.getElementById('toggle_unpaid_warning');
     const unpaidMessage = document.getElementById('toggle_unpaid_message');
 
-    // Open toggle modal - Event Delegation
-    document.querySelector('#kt_enrolled_students_table').addEventListener('click', function (e) {
-        const button = e.target.closest('.toggle-enrollment-activation');
-        if (button) {
-            e.preventDefault();
-            const studentId = button.getAttribute('data-student-id');
-            const studentName = button.getAttribute('data-student-name');
-            const isActive = button.getAttribute('data-is-active') === '1';
+    // Open toggle modal - Event Delegation for both tables
+    document.querySelectorAll('.student-table').forEach(function (table) {
+        table.addEventListener('click', function (e) {
+            const button = e.target.closest('.toggle-enrollment-activation');
+            if (button) {
+                e.preventDefault();
 
-            // Set form values
-            document.getElementById('toggle_student_id').value = studentId;
-            document.getElementById('toggle_is_active').value = isActive ? '1' : '0';
-            document.getElementById('toggle_student_name_display').textContent = studentName;
-            document.getElementById('toggle_student_name_display_activate').textContent = studentName;
+                const studentId = button.getAttribute('data-student-id');
+                const studentName = button.getAttribute('data-student-name');
+                const isActive = button.getAttribute('data-is-active') === '1';
 
-            // Reset state
-            unpaidWarning.classList.add('d-none');
-            submitButton.disabled = false;
+                // Set form values
+                document.getElementById('toggle_student_id').value = studentId;
+                document.getElementById('toggle_is_active').value = isActive ? '1' : '0';
+                document.getElementById('toggle_student_name_display').textContent = studentName;
+                document.getElementById('toggle_student_name_display_activate').textContent = studentName;
 
-            if (isActive) {
-                // Deactivating
-                modalTitle.textContent = 'Deactivate Enrollment';
-                modalTitle.classList.remove('text-success');
-                modalTitle.classList.add('text-warning');
-                submitLabel.textContent = 'Deactivate';
-                submitButton.classList.remove('btn-success');
-                submitButton.classList.add('btn-warning');
-                deactivateWarning.classList.remove('d-none');
-                activateInfo.classList.add('d-none');
+                // Reset state
+                unpaidWarning.classList.add('d-none');
+                submitButton.disabled = false;
 
-                // Check for unpaid invoices
-                button.disabled = true;
-                button.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                if (isActive) {
+                    // Deactivating - show danger styling
+                    modalTitle.textContent = 'Deactivate Enrollment';
+                    modalTitle.classList.remove('text-success');
+                    modalTitle.classList.add('text-danger');
+                    submitLabel.textContent = 'Deactivate';
+                    submitButton.classList.remove('btn-success');
+                    submitButton.classList.add('btn-danger');
+                    deactivateWarning.classList.remove('d-none');
+                    activateInfo.classList.add('d-none');
 
-                $.ajax({
-                    url: routeCheckUnpaid.replace(':studentId', studentId),
-                    type: 'GET',
-                    success: function (response) {
-                        button.disabled = false;
-                        button.innerHTML = '<i class="ki-outline ki-cross-circle fs-5"></i>';
+                    // Check for unpaid invoices
+                    button.disabled = true;
+                    const originalContent = button.innerHTML;
+                    button.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
-                        if (response.success && response.has_unpaid) {
-                            // Show unpaid warning
-                            deactivateWarning.classList.add('d-none');
-                            unpaidWarning.classList.remove('d-none');
-                            unpaidMessage.innerHTML = `This student has <strong>${response.unpaid_count}</strong> unpaid Special Class Fee invoice(s) totaling <strong>৳${response.unpaid_amount.toLocaleString()}</strong>. Please clear all dues before deactivation.`;
-                            submitButton.disabled = true;
+                    $.ajax({
+                        url: routeCheckUnpaid.replace(':studentId', studentId),
+                        type: 'GET',
+                        success: function (response) {
+                            button.disabled = false;
+                            button.innerHTML = originalContent;
+
+                            if (response.success && response.has_unpaid) {
+                                // Show unpaid warning
+                                deactivateWarning.classList.add('d-none');
+                                unpaidWarning.classList.remove('d-none');
+                                unpaidMessage.innerHTML = `This student has <strong>${response.unpaid_count}</strong> unpaid Special Class Fee invoice(s) totaling <strong>৳${response.unpaid_amount.toLocaleString()}</strong>. Please clear all dues before deactivation.`;
+                                submitButton.disabled = true;
+                            }
+                            modal.show();
+                        },
+                        error: function () {
+                            button.disabled = false;
+                            button.innerHTML = originalContent;
+                            Swal.fire({
+                                text: 'Failed to check unpaid invoices.',
+                                icon: 'error',
+                                confirmButtonText: 'Ok'
+                            });
                         }
-
-                        modal.show();
-                    },
-                    error: function () {
-                        button.disabled = false;
-                        button.innerHTML = '<i class="ki-outline ki-cross-circle fs-5"></i>';
-                        Swal.fire({
-                            text: 'Failed to check unpaid invoices.',
-                            icon: 'error',
-                            confirmButtonText: 'Ok'
-                        });
-                    }
-                });
-            } else {
-                // Activating
-                modalTitle.textContent = 'Activate Enrollment';
-                modalTitle.classList.remove('text-warning');
-                modalTitle.classList.add('text-success');
-                submitLabel.textContent = 'Activate';
-                submitButton.classList.remove('btn-warning');
-                submitButton.classList.add('btn-success');
-                deactivateWarning.classList.add('d-none');
-                activateInfo.classList.remove('d-none');
-
-                modal.show();
+                    });
+                } else {
+                    // Activating - show success styling
+                    modalTitle.textContent = 'Activate Enrollment';
+                    modalTitle.classList.remove('text-danger');
+                    modalTitle.classList.add('text-success');
+                    submitLabel.textContent = 'Activate';
+                    submitButton.classList.remove('btn-danger');
+                    submitButton.classList.add('btn-success');
+                    deactivateWarning.classList.add('d-none');
+                    activateInfo.classList.remove('d-none');
+                    modal.show();
+                }
             }
-        }
+        });
     });
 
     // Submit form
@@ -459,7 +461,6 @@ var handleToggleActivation = function () {
         e.preventDefault();
 
         const studentId = document.getElementById('toggle_student_id').value;
-        const isCurrentlyActive = document.getElementById('toggle_is_active').value === '1';
 
         submitButton.setAttribute('data-kt-indicator', 'on');
         submitButton.disabled = true;
@@ -532,21 +533,24 @@ var handleEditEnrollment = function () {
     const modal = new bootstrap.Modal(document.getElementById('kt_modal_edit_enrollment'));
     const submitButton = document.getElementById('kt_modal_edit_enrollment_submit');
 
-    // Open edit modal - Event Delegation
-    document.querySelector('#kt_enrolled_students_table').addEventListener('click', function (e) {
-        const button = e.target.closest('.edit-enrollment');
-        if (button) {
-            e.preventDefault();
-            const studentId = button.getAttribute('data-student-id');
-            const studentName = button.getAttribute('data-student-name');
-            const amount = button.getAttribute('data-amount');
+    // Open edit modal - Event Delegation for both tables
+    document.querySelectorAll('.student-table').forEach(function (table) {
+        table.addEventListener('click', function (e) {
+            const button = e.target.closest('.edit-enrollment');
+            if (button) {
+                e.preventDefault();
 
-            document.getElementById('edit_student_id').value = studentId;
-            document.getElementById('edit_student_name_display').textContent = studentName;
-            document.getElementById('edit_amount').value = amount;
+                const studentId = button.getAttribute('data-student-id');
+                const studentName = button.getAttribute('data-student-name');
+                const amount = button.getAttribute('data-amount');
 
-            modal.show();
-        }
+                document.getElementById('edit_student_id').value = studentId;
+                document.getElementById('edit_student_name_display').textContent = studentName;
+                document.getElementById('edit_amount').value = amount;
+
+                modal.show();
+            }
+        });
     });
 
     // Submit form
@@ -596,123 +600,6 @@ var handleEditEnrollment = function () {
                 submitButton.disabled = false;
             }
         });
-    });
-};
-
-// Handle withdraw student (no force withdraw)
-var handleWithdrawStudent = function () {
-    const form = document.getElementById('kt_modal_withdraw_student_form');
-    if (!form) return;
-
-    const modal = new bootstrap.Modal(document.getElementById('kt_modal_withdraw_student'));
-    const submitButton = document.getElementById('kt_modal_withdraw_student_submit');
-    const unpaidWarning = document.getElementById('unpaid_invoices_warning');
-    const unpaidMessage = document.getElementById('unpaid_invoices_message');
-
-    // Open withdraw modal - Event Delegation
-    document.querySelector('#kt_enrolled_students_table').addEventListener('click', function (e) {
-        const button = e.target.closest('.withdraw-student');
-        if (button) {
-            e.preventDefault();
-            const studentId = button.getAttribute('data-student-id');
-            const studentName = button.getAttribute('data-student-name');
-
-            document.getElementById('withdraw_student_id').value = studentId;
-            document.getElementById('withdraw_student_name_display').textContent = studentName;
-
-            // Reset state
-            unpaidWarning.classList.add('d-none');
-            submitButton.disabled = false;
-
-            // Check for unpaid invoices
-            $.ajax({
-                url: routeCheckUnpaid.replace(':studentId', studentId),
-                type: 'GET',
-                success: function (response) {
-                    if (response.success && response.has_unpaid) {
-                        unpaidWarning.classList.remove('d-none');
-                        unpaidMessage.innerHTML = `This student has <strong>${response.unpaid_count}</strong> unpaid Special Class Fee invoice(s) totaling <strong>৳${response.unpaid_amount.toLocaleString()}</strong>. Please clear all dues before withdrawal.`;
-                        submitButton.disabled = true;
-                    }
-                }
-            });
-
-            modal.show();
-        }
-    });
-
-    // Submit form
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
-
-        const studentId = document.getElementById('withdraw_student_id').value;
-
-        // Don't allow submission if there are unpaid invoices
-        if (!unpaidWarning.classList.contains('d-none')) {
-            Swal.fire({
-                text: 'Please clear all unpaid invoices before withdrawal.',
-                icon: 'warning',
-                confirmButtonText: 'Ok'
-            });
-            return;
-        }
-
-        submitButton.setAttribute('data-kt-indicator', 'on');
-        submitButton.disabled = true;
-
-        $.ajax({
-            url: routeWithdrawStudent.replace(':studentId', studentId),
-            type: 'DELETE',
-            data: {
-                _token: $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function (response) {
-                if (response.success) {
-                    Swal.fire({
-                        text: response.message,
-                        icon: 'success',
-                        confirmButtonText: 'Ok'
-                    }).then(function () {
-                        location.reload();
-                    });
-                } else {
-                    Swal.fire({
-                        text: response.message || 'An error occurred.',
-                        icon: 'error',
-                        confirmButtonText: 'Ok'
-                    });
-                }
-            },
-            error: function (xhr) {
-                const response = xhr.responseJSON;
-                if (response && response.has_unpaid) {
-                    unpaidWarning.classList.remove('d-none');
-                    unpaidMessage.innerHTML = response.message;
-                    submitButton.disabled = true;
-                } else {
-                    const message = response?.message || 'An error occurred.';
-                    Swal.fire({
-                        text: message,
-                        icon: 'error',
-                        confirmButtonText: 'Ok'
-                    });
-                }
-            },
-            complete: function () {
-                submitButton.removeAttribute('data-kt-indicator');
-                if (!unpaidWarning.classList.contains('d-none')) {
-                    submitButton.disabled = true;
-                } else {
-                    submitButton.disabled = false;
-                }
-            }
-        });
-    });
-
-    // Reset form when modal is hidden
-    $('#kt_modal_withdraw_student').on('hidden.bs.modal', function () {
-        unpaidWarning.classList.add('d-none');
-        submitButton.disabled = false;
     });
 };
 
@@ -794,18 +681,68 @@ var initFilterSelects = function () {
     });
 };
 
+// Initialize group filter handlers
+var initGroupFilters = function () {
+    // Apply filter button click
+    document.querySelectorAll('[data-table-filter="apply"]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const tableId = this.getAttribute('data-table-id');
+            const filterContainer = this.closest('.menu-sub-dropdown');
+            const groupSelect = filterContainer.querySelector('.filter-group-select');
+
+            if (groupSelect && tableId) {
+                const selectedGroup = $(groupSelect).val();
+                tableFilters[tableId].group = selectedGroup || null;
+                applyTableFilters(tableId);
+            }
+        });
+    });
+
+    // Reset filter button click
+    document.querySelectorAll('[data-table-filter="reset"]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const tableId = this.getAttribute('data-table-id');
+            const filterContainer = this.closest('.menu-sub-dropdown');
+            const groupSelect = filterContainer.querySelector('.filter-group-select');
+
+            if (groupSelect) {
+                $(groupSelect).val('').trigger('change');
+            }
+
+            if (tableId) {
+                tableFilters[tableId].group = null;
+                applyTableFilters(tableId);
+            }
+        });
+    });
+};
+
+// Reinitialize DataTable when tab is shown
+var initTabEvents = function () {
+    const tabEl = document.querySelectorAll('#studentStatusTabs .nav-link');
+    tabEl.forEach(function (tab) {
+        tab.addEventListener('shown.bs.tab', function (event) {
+            // Adjust column widths when tab becomes visible
+            Object.keys(dataTables).forEach(function (tableId) {
+                dataTables[tableId].columns.adjust();
+            });
+        });
+    });
+};
+
 // DOM Ready
 document.addEventListener('DOMContentLoaded', function () {
-    initDataTable();
+    initDataTables();
     initStudentSelect();
     initFilterSelects();
+    initGroupFilters();
     initTooltips();
+    initTabEvents();
 
     if (isAdminUser) {
         handleEnrollStudent();
         handleToggleActivation();
         handleEditEnrollment();
-        handleWithdrawStudent();
         handleEditSecondaryClass();
     }
 });
