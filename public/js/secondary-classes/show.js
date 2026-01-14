@@ -23,10 +23,10 @@ var initDataTables = function () {
         dataTables[tableId] = $(table).DataTable({
             info: false,
             order: [],
-            pageLength: 25,
+            pageLength: 10,
             lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
             columnDefs: [
-                { orderable: false, targets: isAdminUser ? [0, actionColumnIndex] : [0] }
+                // { orderable: false, targets: isAdminUser ? [0, actionColumnIndex] : [0] }
             ],
             language: {
                 emptyTable: function () {

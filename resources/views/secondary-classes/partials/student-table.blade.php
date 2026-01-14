@@ -102,13 +102,13 @@
                     <th>Student</th>
                     <th>Group</th>
                     <th>Batch</th>
-                    <th class="w-150px">Branch</th>
+                    {{-- <th class="w-150px">Branch</th> --}}
                     <th class="w-120px">Fee</th>
                     @if ($secondaryClass->payment_type === 'monthly')
                         <th class="w-120px">Total Paid</th>
                     @endif
                     <th class="w-120px">Enrolled At</th>
-                    <th class="w-120px text-end">Actions</th>
+                    <th class="w-120px">Actions</th>
                 </tr>
             </thead>
             <tbody class="text-gray-600 fw-semibold">
@@ -144,7 +144,7 @@
                                 @endif
                             </td>
                             <td>{{ $student->batch->name ?? '-' }}</td>
-                            <td>{{ $student->branch->branch_name ?? '-' }}</td>
+                            {{-- <td>{{ $student->branch->branch_name ?? '-' }}</td> --}}
                             <td>
                                 <span
                                     class="amount-display fw-bold text-primary">৳{{ number_format($enrollment->amount, 0) }}</span>
@@ -156,9 +156,9 @@
                                 </td>
                             @endif
                             <td>{{ $enrollment->enrolled_at ? $enrollment->enrolled_at->format('d-M-Y') : '-' }}</td>
-                            <td class="text-end">
+                            <td>
                                 @if (($isAdmin || $isManager) && $secondaryClass->is_active === true)
-                                    <div class="d-flex justify-content-end gap-2">
+                                    <div class="d-flex justify-content-center gap-2">
                                         @if ($secondaryClass->payment_type === 'monthly')
                                             <!--begin::Edit Amount-->
                                             <button type="button"
