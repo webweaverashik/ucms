@@ -82,7 +82,7 @@
                     @endforeach
                 </td> --}}
                 <td>
-                    {!! $student->mobileNumbers->where('number_type', 'home')->pluck('mobile_number')->implode('<br>') ?: '-' !!}
+                    {{ $student->mobileNumbers->where('number_type', 'home')->pluck('mobile_number')->implode('<br>') ?: '-' }}
                 </td>
                 <td>
                     @if ($student->payments)

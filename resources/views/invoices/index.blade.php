@@ -241,17 +241,18 @@
                         <thead>
                             <tr class="fw-bold fs-7 text-uppercase gs-0">
                                 <th class="w-25px">SL</th>
-                                <th class="w-150px">Invoice No.</th>
+                                <th class="w-100px">Invoice No.</th>
                                 <th class="w-300px">Student</th>
-                                <th class="d-none">Invoice Type (filter)</th>
+                                <th>Mobile</th>
+                                <th class="filter-only">Invoice Type (filter)</th>
                                 <th>Invoice Type</th>
-                                <th class="d-none">Billing Month (filter)</th>
+                                <th class="filter-only">Billing Month (filter)</th>
                                 <th>Billing Month</th>
                                 <th>Total Amount (Tk)</th>
                                 <th>Remaining (Tk)</th>
-                                <th class="d-none">Due Date (filter)</th>
+                                <th class="filter-only">Due Date (filter)</th>
                                 <th>Due Date</th>
-                                <th class="d-none">Status (filter)</th>
+                                <th class="filter-only">Status (filter)</th>
                                 <th>Status</th>
                                 <th>Created At</th>
                                 <th class="w-100px not-export">Actions</th>
@@ -271,9 +272,12 @@
                                             {{ $invoice->student->name }}, {{ $invoice->student->student_unique_id }}
                                         </a>
                                     </td>
-                                    <td class="d-none">ucms_{{ $invoice->invoiceType?->type_name }}</td>
+                                    <td>
+                                        {{ $invoice->student->mobileNumbers->where('number_type', 'home')->pluck('mobile_number')->implode('<br>') }}
+                                    </td>
+                                    <td class="filter-only">ucms_{{ $invoice->invoiceType?->type_name }}</td>
                                     <td>{{ $invoice->invoiceType?->type_name }}</td>
-                                    <td class="d-none">D_{{ $invoice->month_year }}</td>
+                                    <td class="filter-only">D_{{ $invoice->month_year }}</td>
                                     <td>
                                         @if (!empty($invoice->month_year) && preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year, $matches))
                                             {{ \Carbon\Carbon::create($matches[2], $matches[1], 1)->format('F Y') }}
@@ -285,7 +289,7 @@
                                     </td>
                                     <td>{{ $invoice->total_amount }}</td>
                                     <td>{{ $invoice->amount_due }}</td>
-                                    <td class="d-none">
+                                    <td class="filter-only">
                                         @if ($invoice->invoiceType?->type_name == 'Tuition Fee')
                                             1/{{ $invoice->student->payments->due_date }}
                                         @else
@@ -324,7 +328,7 @@
                                             }
                                         }
                                     @endphp
-                                    <td class="d-none">
+                                    <td class="filter-only">
                                         @if ($status === 'due')
                                             I_due
                                         @elseif ($status === 'partially_paid')

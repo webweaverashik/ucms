@@ -17,7 +17,9 @@ var KTDueInvoicesList = function () {
                   "lengthChange": true,
                   "autoWidth": false,
                   'columnDefs': [
-                        { orderable: false, targets: 13 },
+                        { targets: [3], visible: false, searchable: true },          // Mobile
+                        { targets: [4, 6, 10, 12], visible: false, searchable: true }, // Filter-only cols
+                        { orderable: false, targets: 15 }                             // Actions
                   ]
             });
 
@@ -36,7 +38,7 @@ var KTDueInvoicesList = function () {
                               className: 'buttons-copy',
                               title: documentTitle,
                               exportOptions: {
-                                    columns: ':visible:not(.not-export)'
+                                    columns: ':not(.not-export):not(.filter-only)'
                               }
                         },
                         {
@@ -44,7 +46,7 @@ var KTDueInvoicesList = function () {
                               className: 'buttons-excel',
                               title: documentTitle,
                               exportOptions: {
-                                    columns: ':visible:not(.not-export)'
+                                    columns: ':not(.not-export):not(.filter-only)'
                               }
                         },
                         {
@@ -52,7 +54,7 @@ var KTDueInvoicesList = function () {
                               className: 'buttons-csv',
                               title: documentTitle,
                               exportOptions: {
-                                    columns: ':visible:not(.not-export)'
+                                    columns: ':not(.not-export):not(.filter-only)'
                               }
                         },
                         {
@@ -60,7 +62,7 @@ var KTDueInvoicesList = function () {
                               className: 'buttons-pdf',
                               title: documentTitle,
                               exportOptions: {
-                                    columns: ':visible:not(.not-export)',
+                                    columns: ':not(.not-export):not(.filter-only)',
                                     modifier: {
                                           page: 'all',
                                           search: 'applied'

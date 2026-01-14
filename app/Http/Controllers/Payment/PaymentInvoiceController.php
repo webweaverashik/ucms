@@ -39,7 +39,7 @@ class PaymentInvoiceController extends Controller
             /* -----------------------------
              | Unpaid / Partially Paid
              |-----------------------------*/
-            $unpaid_invoices = PaymentInvoice::with(['student:id,name,student_unique_id,branch_id', 'student.studentActivation:id,active_status', 'student.payments:id,student_id,payment_style,due_date,tuition_fee', 'invoiceType:id,type_name'])
+            $unpaid_invoices = PaymentInvoice::with(['student:id,name,student_unique_id,branch_id', 'student.studentActivation:id,active_status', 'student.payments:id,student_id,payment_style,due_date,tuition_fee', 'student.mobileNumbers:id,student_id,mobile_number,number_type', 'invoiceType:id,type_name'])
                 ->withCount('paymentTransactions')
                 ->where('status', '!=', 'paid')
                 ->whereHas('student', $studentQuery)
