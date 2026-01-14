@@ -964,8 +964,8 @@
                                                             <div class="d-flex flex-column">
                                                                 <a class="text-gray-800 fw-bold text-hover-primary"
                                                                     href="{{ route('classnames.secondary-classes.show', [
-                                                                        'classname' => $enrollment->secondaryClass->class_id,
-                                                                        'secondaryClass' => $enrollment->secondary_class_id,
+                                                                        $enrollment->secondaryClass->class,
+                                                                        $enrollment->secondaryClass,
                                                                     ]) }}">
                                                                     {{ $enrollment->secondaryClass->name ?? 'Unknown Class' }}
                                                                 </a>
