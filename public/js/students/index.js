@@ -11,13 +11,12 @@ var KTStudentsList = function () {
         var config = {
             "info": true,
             'order': [],
+            "pageLength": 10,
             "lengthMenu": [10, 25, 50, 100],
-            "pageLength": 25,
             "lengthChange": true,
             "autoWidth": false,
             'columnDefs': [
-                { orderable: false, targets: 11 }, // Disable ordering on column Guardian
-                { orderable: false, targets: 16 }, // Disable ordering on column Actions
+                { orderable: false, targets: 15 }, // Disable ordering on column Actions
             ]
         };
 

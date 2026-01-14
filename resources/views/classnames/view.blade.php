@@ -597,12 +597,18 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                @if ($student->academic_group == 'Science')
+                                                @php
+                                                    $badge =
+                                                        [
+                                                            'Science' => 'info',
+                                                            'Commerce' => 'primary',
+                                                            'Arts' => 'warning',
+                                                        ][$student->academic_group] ?? null;
+                                                @endphp
+
+                                                @if ($badge)
                                                     <span
-                                                        class="badge badge-pill badge-info">{{ $student->academic_group }}</span>
-                                                @elseif ($student->academic_group == 'Commerce')
-                                                    <span
-                                                        class="badge badge-pill badge-success">{{ $student->academic_group }}</span>
+                                                        class="badge badge-pill badge-{{ $badge }}">{{ $student->academic_group }}</span>
                                                 @else
                                                     <span class="text-muted">-</span>
                                                 @endif

@@ -191,7 +191,23 @@
                                 @if ($student->academic_group != 'General')
                                     <tr>
                                         <td class="text-gray-500">Group:</td>
-                                        <td>{{ $student->academic_group }}</td>
+                                        <td>
+                                            @php
+                                                $badge =
+                                                    [
+                                                        'Science' => 'info',
+                                                        'Commerce' => 'primary',
+                                                        'Arts' => 'warning',
+                                                    ][$student->academic_group] ?? null;
+                                            @endphp
+
+                                            @if ($badge)
+                                                <span
+                                                    class="badge badge-pill badge-{{ $badge }}">{{ $student->academic_group }}</span>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
                                     </tr>
                                 @endif
                                 <!--end::Row-->

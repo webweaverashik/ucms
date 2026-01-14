@@ -213,8 +213,8 @@
                                         <option></option>
                                         @foreach ($institutions as $institution)
                                             <option
-                                                value="{{ $institution->name }} (EIIN: {{ $institution->eiin_number }})">
-                                                {{ $institution->name }} ({{ $institution->eiin_number }})
+                                                value="{{ $institution->name }}">
+                                                {{ $institution->name }}
                                             </option>
                                         @endforeach
                                     </select>

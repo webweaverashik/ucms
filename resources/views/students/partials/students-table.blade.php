@@ -14,9 +14,9 @@
             <th class="d-none">Batch (Filter)</th>
             <th>Batch</th>
             <th class="w-300px">Institution</th>
-            <th>Guardians</th>
+            {{-- <th>Guardians</th> --}}
             <th>Mobile<br>(Home)</th>
-            <th>Fee (Tk)</th>
+            <th class="w-100px">Tuition Fee (Tk)</th>
             <th>Payment<br>Type</th>
             <th class="d-none">Branch (filter)</th>
             <th class="min-w-70px not-export">Actions</th>
@@ -53,10 +53,17 @@
                 <td>{{ $student->class->name }}</td>
                 <td class="d-none">ucms_{{ $student->academic_group }}</td>
                 <td>
-                    @if ($student->academic_group == 'Science')
-                        <span class="badge badge-pill badge-info">{{ $student->academic_group }}</span>
-                    @elseif ($student->academic_group == 'Commerce')
-                        <span class="badge badge-pill badge-success">{{ $student->academic_group }}</span>
+                    @php
+                        $badge =
+                            [
+                                'Science' => 'info',
+                                'Commerce' => 'primary',
+                                'Arts' => 'warning',
+                            ][$student->academic_group] ?? null;
+                    @endphp
+
+                    @if ($badge)
+                        <span class="badge badge-pill badge-{{ $badge }}">{{ $student->academic_group }}</span>
                     @else
                         <span class="text-muted">-</span>
                     @endif
@@ -65,15 +72,15 @@
                     {{ $student->batch_id }}_{{ $student->batch->name }}_{{ $student->branch->branch_name }}
                 </td>
                 <td>{{ $student->batch->name }}</td>
-                <td>{{ $student->institution->name }} (EIIN: {{ $student->institution->eiin_number }})
+                <td>{{ $student->institution->name }}
                 </td>
-                <td>
+                {{-- <td>
                     @foreach ($student->guardians as $guardian)
                         <a href="#"><span
                                 class="badge badge-light-primary rounded-pill text-hover-success fs-7">{{ $guardian->name }},
                                 {{ ucfirst($guardian->relationship) }}</span></a><br>
                     @endforeach
-                </td>
+                </td> --}}
                 <td>
                     {!! $student->mobileNumbers->where('number_type', 'home')->pluck('mobile_number')->implode('<br>') ?: '-' !!}
                 </td>
@@ -128,8 +135,8 @@
                         @if ($canEdit)
                             <div class="menu-item px-3">
                                 <a href="{{ route('students.edit', $student->id) }}"
-                                    class="menu-link text-hover-primary px-3"><i class="las la-pen fs-3 me-2"></i>
-                                    Edit</a>
+                                    class="menu-link text-hover-primary px-3"><i class="ki-outline ki-pencil fs-3 me-2"></i>
+                                    Edit Student</a>
                             </div>
                         @endif
 
