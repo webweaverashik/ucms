@@ -683,6 +683,7 @@ class StudentController extends Controller
 
         $lastInvoice = PaymentInvoice::where('invoice_number', 'like', "{$prefix}{$yearSuffix}{$month}_%")
             ->orderBy('invoice_number', 'desc')
+            ->withTrashed()
             ->first();
 
         $nextSequence  = $lastInvoice ? (int) substr($lastInvoice->invoice_number, strrpos($lastInvoice->invoice_number, '_') + 1) + 1 : 1001;
