@@ -13,6 +13,7 @@ use App\Http\Controllers\Cost\CostController;
 use App\Http\Controllers\Cost\CostTypeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Misc\MiscController;
+use App\Http\Controllers\Payment\PaymentInvoiceCommentController;
 use App\Http\Controllers\Payment\PaymentInvoiceController;
 use App\Http\Controllers\Payment\PaymentTransactionController;
 use App\Http\Controllers\PdfController;
@@ -104,6 +105,14 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('students/{student}/due-invoices', [PaymentInvoiceController::class, 'getDueInvoices'])->name('students.due.invoices');
     Route::get('invoices/{invoice}/view-ajax', [PaymentInvoiceController::class, 'viewAjax'])->name('invoices.view.ajax');
 
+    /*
+    |--------------------------------------------------------------------------
+    | Invoice Comments Routes
+    |--------------------------------------------------------------------------
+    */
+    Route::post('invoice-comments', [PaymentInvoiceCommentController::class, 'store'])->name('invoice.comments.store');
+    Route::get('invoices/{invoice}/comments', [PaymentInvoiceCommentController::class, 'getComments'])->name('invoice.comments.index');
+
     // Auto-invoice
     Route::get('autoinvoice', [AutoInvoiceController::class, 'index'])->name('auto.invoice.index');
     Route::get('autoinvoice/current', [AutoInvoiceController::class, 'generateCurrent'])->name('auto.invoice.current');
@@ -175,30 +184,36 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     | Secondary Classes Routes
     |--------------------------------------------------------------------------
     */
-    Route::prefix('classnames')->name('classnames.')->group(function () {
-        // Existing routes
-        Route::get('ajax-data/{class}', [ClassNameController::class, 'getClassName'])->name('ajax');
-        Route::get('branch-counts/{class}', [ClassNameController::class, 'getBranchCounts'])->name('branch-counts');
+    Route::prefix('classnames')
+        ->name('classnames.')
+        ->group(function () {
+            // Existing routes
+            Route::get('ajax-data/{class}', [ClassNameController::class, 'getClassName'])->name('ajax');
+            Route::get('branch-counts/{class}', [ClassNameController::class, 'getBranchCounts'])->name('branch-counts');
 
-        // NEW: Secondary Classes Nested Routes
-        // This enables the link: classnames/{id}/secondary-classes/{id}
-        Route::prefix('{classname}/secondary-classes')->name('secondary-classes.')->group(function () {
-            Route::get('{secondaryClass}', [SecondaryClassController::class, 'showWithClass'])->name('show');
-            Route::post('{secondaryClass}/enroll', [SecondaryClassController::class, 'enrollStudent'])->name('enroll');
-            Route::put('{secondaryClass}/students/{student}', [SecondaryClassController::class, 'updateStudentEnrollment'])->name('update-student');
-            Route::delete('{secondaryClass}/students/{student}', [SecondaryClassController::class, 'withdrawStudent'])->name('withdraw');
-            Route::get('{secondaryClass}/check-unpaid/{student}', [SecondaryClassController::class, 'checkUnpaidInvoices'])->name('check-unpaid');
-            Route::get('{secondaryClass}/available-students', [SecondaryClassController::class, 'getAvailableStudents'])->name('available-students');
+            // NEW: Secondary Classes Nested Routes
+            // This enables the link: classnames/{id}/secondary-classes/{id}
+            Route::prefix('{classname}/secondary-classes')
+                ->name('secondary-classes.')
+                ->group(function () {
+                    Route::get('{secondaryClass}', [SecondaryClassController::class, 'showWithClass'])->name('show');
+                    Route::post('{secondaryClass}/enroll', [SecondaryClassController::class, 'enrollStudent'])->name('enroll');
+                    Route::put('{secondaryClass}/students/{student}', [SecondaryClassController::class, 'updateStudentEnrollment'])->name('update-student');
+                    Route::delete('{secondaryClass}/students/{student}', [SecondaryClassController::class, 'withdrawStudent'])->name('withdraw');
+                    Route::get('{secondaryClass}/check-unpaid/{student}', [SecondaryClassController::class, 'checkUnpaidInvoices'])->name('check-unpaid');
+                    Route::get('{secondaryClass}/available-students', [SecondaryClassController::class, 'getAvailableStudents'])->name('available-students');
 
-            // NEW: Toggle student activation route
-            Route::post('{secondaryClass}/students/{student}/toggle-activation', [SecondaryClassController::class, 'toggleStudentActivation'])->name('toggle-activation');
+                    // NEW: Toggle student activation route
+                    Route::post('{secondaryClass}/students/{student}/toggle-activation', [SecondaryClassController::class, 'toggleStudentActivation'])->name('toggle-activation');
+                });
         });
-    });
 
     // Keep these existing routes
-    Route::prefix('secondary-classes')->name('secondary-classes.')->group(function () {
-        Route::get('by-class/{classId}', [SecondaryClassController::class, 'getByClass'])->name('by-class');
-    });
+    Route::prefix('secondary-classes')
+        ->name('secondary-classes.')
+        ->group(function () {
+            Route::get('by-class/{classId}', [SecondaryClassController::class, 'getByClass'])->name('by-class');
+        });
     Route::resource('secondary-classes', SecondaryClassController::class);
 
     /*

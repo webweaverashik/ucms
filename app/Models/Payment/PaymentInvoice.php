@@ -1,12 +1,13 @@
 <?php
 namespace App\Models\Payment;
 
-use App\Models\Sheet\SheetPayment;
-use App\Models\Student\Student;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Student\Student;
+use App\Models\Sheet\SheetPayment;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PaymentInvoice extends Model
 {

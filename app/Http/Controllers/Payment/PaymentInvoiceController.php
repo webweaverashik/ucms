@@ -391,18 +391,21 @@ class PaymentInvoiceController extends Controller
      */
     public function viewAjax(PaymentInvoice $invoice)
     {
-        $invoice->load('invoiceType:id,type_name');
+        // Load relationships - student relationship already has withTrashed() in model
+        $invoice->load(['invoiceType:id,type_name', 'student']);
 
         return response()->json([
             'success' => true,
             'data'    => [
                 'id'                => $invoice->id,
                 'student_id'        => $invoice->student_id,
+                'student_name'      => $invoice->student?->name ?? 'Unknown',
+                'student_unique_id' => $invoice->student?->student_unique_id ?? '',
                 'invoice_number'    => $invoice->invoice_number,
                 'total_amount'      => $invoice->total_amount,
                 'month_year'        => $invoice->month_year,
                 'invoice_type_id'   => $invoice->invoice_type_id,
-                'invoice_type_name' => $invoice->invoiceType?->type_name,
+                'invoice_type_name' => $invoice->invoiceType?->type_name ?? '',
             ],
         ]);
     }

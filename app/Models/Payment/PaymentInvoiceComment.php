@@ -26,6 +26,6 @@ class PaymentInvoiceComment extends Model
      */
     public function commentedBy(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'commented_by');
+        return $this->belongsTo(User::class, 'commented_by')->withTrashed();
     }
 }
