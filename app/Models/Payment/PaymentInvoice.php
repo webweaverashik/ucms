@@ -71,4 +71,11 @@ class PaymentInvoice extends Model
         return $this->invoiceType?->type_name === 'Special Class Fee';
     }
 
+    /**
+     * Invoice comments
+     */
+    public function comments(): HasMany
+    {
+        return $this->hasMany(PaymentInvoiceComment::class);
+    }
 }
