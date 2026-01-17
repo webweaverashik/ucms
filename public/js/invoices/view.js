@@ -30,7 +30,6 @@ var KTInvoiceWithTransactionsList = function () {
             document.querySelectorAll('.delete-invoice').forEach(item => {
                   item.addEventListener('click', function (e) {
                         e.preventDefault();
-
                         let invoiceId = this.getAttribute('data-invoice-id');
                         let url = routeDeleteInvoice.replace(':id', invoiceId); // Replace ':id' with actual invoice ID
 
@@ -92,7 +91,6 @@ var KTInvoiceWithTransactionsList = function () {
                   e.preventDefault();
                   let txnId = deleteBtn.getAttribute('data-txn-id');
                   console.log('TXN ID:', txnId);
-
                   let url = routeDeleteTxn.replace(':id', txnId);
 
                   Swal.fire({
@@ -142,7 +140,6 @@ var KTInvoiceWithTransactionsList = function () {
             document.querySelectorAll('.approve-txn').forEach(item => {
                   item.addEventListener('click', function (e) {
                         e.preventDefault();
-
                         let txnId = this.getAttribute('data-txn-id');
                         console.log("TXN ID: ", txnId);
 
@@ -244,12 +241,10 @@ var KTInvoiceWithTransactionsList = function () {
                         .then(html => {
                               // Create a new window with the HTML content
                               const printWindow = window.open("", "_blank", "width=900,height=700,scrollbars=yes,resizable=yes");
-
                               if (printWindow) {
                                     printWindow.document.open();
                                     printWindow.document.write(html);
                                     printWindow.document.close();
-
                                     // Focus on the new window
                                     printWindow.focus();
                               } else {
@@ -424,23 +419,20 @@ var KTEditInvoiceModal = function () {
             var hiddenInput = document.getElementById('edit_invoice_id');
             if (hiddenInput) hiddenInput.value = '';
 
-            // Reset input fields
+            // Reset display fields
+            var studentDisplay = document.getElementById('edit_student_display');
+            if (studentDisplay) studentDisplay.innerHTML = '<span class="text-muted">-</span>';
+
+            var typeDisplay = document.getElementById('edit_invoice_type_display');
+            if (typeDisplay) typeDisplay.innerHTML = '<span class="text-muted">-</span>';
+
+            var monthYearDisplay = document.getElementById('edit_month_year_display');
+            if (monthYearDisplay) monthYearDisplay.innerHTML = '<span class="text-muted">-</span>';
+
+            // Reset amount input
             var amountInput = document.getElementById('invoice_amount_edit');
             if (amountInput) {
                   amountInput.value = '';
-                  amountInput.removeAttribute('data-max-tuition-fee');
-            }
-
-            var typeInput = document.getElementById('invoice_type_edit');
-            if (typeInput) typeInput.value = '';
-
-            var monthInput = document.getElementById('invoice_month_year_edit');
-            if (monthInput) monthInput.value = '';
-
-            // Reset Select2 for student
-            var studentSelect = $('select[name="invoice_student_edit"]');
-            if (studentSelect.length) {
-                  studentSelect.val('').trigger('change');
             }
 
             // Show month year wrapper by default
@@ -468,6 +460,8 @@ var KTEditInvoiceModal = function () {
             invoiceId = button.getAttribute('data-invoice-id');
             var invoiceNumber = button.getAttribute('data-invoice-number');
             var studentId = button.getAttribute('data-student-id');
+            var studentName = button.getAttribute('data-student-name');
+            var studentUniqueId = button.getAttribute('data-student-unique-id');
             var invoiceTypeId = button.getAttribute('data-invoice-type-id');
             var invoiceTypeName = button.getAttribute('data-invoice-type-name');
             var monthYear = button.getAttribute('data-month-year');
@@ -480,7 +474,8 @@ var KTEditInvoiceModal = function () {
             console.log('Edit Invoice:', {
                   id: invoiceId,
                   invoiceNumber: invoiceNumber,
-                  studentId: studentId,
+                  studentName: studentName,
+                  studentUniqueId: studentUniqueId,
                   invoiceTypeName: invoiceTypeName,
                   monthYear: monthYear,
                   totalAmount: totalAmount,
@@ -501,23 +496,24 @@ var KTEditInvoiceModal = function () {
                   titleEl.textContent = 'Update Invoice ' + invoiceNumber;
             }
 
-            // Set student Select2
-            var studentSelect = $('select[name="invoice_student_edit"]');
-            if (studentSelect.length && studentId) {
-                  studentSelect.val(studentId).trigger('change');
+            // Set student display
+            var studentDisplay = document.getElementById('edit_student_display');
+            if (studentDisplay) {
+                  var displayText = studentName || 'Unknown';
+                  if (studentUniqueId) {
+                        displayText += ' (' + studentUniqueId + ')';
+                  }
+                  studentDisplay.innerHTML = '<span class="fw-semibold">' + displayText + '</span>';
             }
 
-            // Set invoice type (text input)
-            var typeInput = document.getElementById('invoice_type_edit');
-            if (typeInput) {
-                  typeInput.value = invoiceTypeName || '';
+            // Set invoice type display
+            var typeDisplay = document.getElementById('edit_invoice_type_display');
+            if (typeDisplay) {
+                  typeDisplay.innerHTML = '<span class="fw-semibold">' + (invoiceTypeName || '-') + '</span>';
             }
 
             // Show/hide month_year wrapper based on invoice type
             var monthYearWrapper = document.getElementById('month_year_edit_wrapper');
-            var monthInput = document.getElementById('invoice_month_year_edit');
-
-            // Convert invoice type name to snake_case for comparison
             var typeNameLower = invoiceTypeName ? invoiceTypeName.toLowerCase().replace(/ /g, '_') : '';
 
             if (monthYearWrapper) {
@@ -525,9 +521,10 @@ var KTEditInvoiceModal = function () {
                         monthYearWrapper.style.display = 'none';
                   } else {
                         monthYearWrapper.style.display = '';
-                        // Set month year (formatted)
-                        if (monthInput) {
-                              monthInput.value = formatMonthYear(monthYear);
+                        // Set month year display
+                        var monthYearDisplay = document.getElementById('edit_month_year_display');
+                        if (monthYearDisplay) {
+                              monthYearDisplay.innerHTML = '<span class="fw-semibold">' + formatMonthYear(monthYear) + '</span>';
                         }
                   }
             }
@@ -536,7 +533,6 @@ var KTEditInvoiceModal = function () {
             var amountInput = document.getElementById('invoice_amount_edit');
             if (amountInput) {
                   amountInput.value = totalAmount || '';
-                  amountInput.setAttribute('data-max-tuition-fee', maxTuitionFee);
             }
 
             // Set hint text
@@ -693,10 +689,8 @@ var KTEditInvoiceModal = function () {
                   editButtons.forEach(function (button) {
                         button.addEventListener('click', function (e) {
                               e.preventDefault();
-
                               // Reset form before loading new data
                               resetForm();
-
                               // Populate modal with data from button attributes
                               populateModal(this);
                         });
@@ -774,12 +768,15 @@ var KTTransactionForm = function () {
                         fullPaymentOption.disabled = true;
                         fullPaymentOption.checked = false;
                   }
+
                   if (partialPaymentOption) {
                         partialPaymentOption.checked = true;
                   }
+
                   if (discountedPaymentOption) {
                         discountedPaymentOption.disabled = false;
                   }
+
                   amountInput.value = ''; // Clear value for partial payment
             } else {
                   // Enable all options for unpaid invoices
@@ -787,18 +784,22 @@ var KTTransactionForm = function () {
                         fullPaymentOption.disabled = false;
                         fullPaymentOption.checked = true;
                   }
+
                   if (partialPaymentOption) {
                         partialPaymentOption.disabled = false;
                   }
+
                   if (discountedPaymentOption) {
                         discountedPaymentOption.disabled = false;
                   }
+
                   amountInput.value = invoice.amount_due;
             }
       };
 
       var handlePaymentTypeChange = function () {
             var paymentTypeInputs = document.querySelectorAll('input[name="transaction_type"]');
+
             paymentTypeInputs.forEach(function (input) {
                   input.addEventListener('change', function () {
                         var paymentType = this.value;
@@ -1058,6 +1059,7 @@ var KTTransactionForm = function () {
                                     }
                               } else {
                                     toastr.error(data.message || 'Failed to record transaction.');
+
                                     // Reset button state
                                     submitBtn.innerHTML = originalBtnText;
                                     submitBtn.disabled = false;
@@ -1114,9 +1116,265 @@ var KTTransactionForm = function () {
       };
 }();
 
+// Class definition - Add Comment Modal
+var KTAddCommentModal = function () {
+      // Shared variables
+      var element;
+      var form;
+      var modal;
+      var submitButton;
+      var invoiceId = null;
+      var invoiceNumber = null;
+
+      // Helper function to get CSRF token
+      var getCsrfToken = function () {
+            return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+      };
+
+      // Escape HTML to prevent XSS
+      var escapeHtml = function (text) {
+            var div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+      };
+
+      // Add comment to the comments container
+      var addCommentToContainer = function (comment) {
+            var commentsContainer = document.getElementById('comments_container');
+            var noCommentsPlaceholder = document.getElementById('no_comments_placeholder');
+
+            // Hide the "no comments" placeholder
+            if (noCommentsPlaceholder) {
+                  noCommentsPlaceholder.style.display = 'none';
+            }
+
+            // Create comment HTML
+            var commentHtml = `
+            <div class="d-flex mb-5 comment-card p-3 rounded" data-comment-id="${comment.id}">
+                <div class="symbol symbol-40px me-4">
+                    <span class="symbol-label bg-light-primary text-primary fw-bold">
+                        ${comment.commented_by.charAt(0).toUpperCase()}
+                    </span>
+                </div>
+                <div class="d-flex flex-column flex-grow-1">
+                    <div class="d-flex align-items-center mb-1">
+                        <span class="text-gray-800 fw-bold fs-6 me-3">${escapeHtml(comment.commented_by)}</span>
+                        <span class="text-muted fs-7">${comment.created_at}</span>
+                    </div>
+                    <p class="text-gray-600 fs-6 mb-0">${escapeHtml(comment.comment)}</p>
+                </div>
+            </div>
+            <div class="separator separator-dashed mb-5"></div>
+        `;
+
+            // Insert at the beginning of the container
+            commentsContainer.insertAdjacentHTML('afterbegin', commentHtml);
+
+            // Update the comment count badge
+            var badge = document.getElementById('comments_count_badge');
+            if (badge) {
+                  var currentCount = parseInt(badge.textContent) || 0;
+                  badge.textContent = currentCount + 1;
+            }
+      };
+
+      // Handle add comment button click
+      var handleAddCommentClick = function () {
+            document.addEventListener('click', function (e) {
+                  var button = e.target.closest('.add-comment-btn');
+                  if (!button) return;
+
+                  invoiceId = button.getAttribute('data-invoice-id');
+                  invoiceNumber = button.getAttribute('data-invoice-number');
+
+                  if (!invoiceId) return;
+
+                  // Set the invoice ID in the hidden field
+                  document.getElementById('comment_invoice_id').value = invoiceId;
+
+                  // Update modal title
+                  var titleEl = document.getElementById('kt_modal_add_comment_title');
+                  if (titleEl) {
+                        titleEl.textContent = 'Add Comment - Invoice ' + (invoiceNumber || invoiceId);
+                  }
+
+                  // Clear the comment textarea
+                  var textarea = document.getElementById('comment_textarea');
+                  if (textarea) {
+                        textarea.value = '';
+                  }
+            });
+      };
+
+      // Handle modal close/cancel
+      var handleModalClose = function () {
+            var cancelButton = element.querySelector('[data-kt-add-comment-modal-action="cancel"]');
+            var closeButton = element.querySelector('[data-kt-add-comment-modal-action="close"]');
+
+            if (cancelButton) {
+                  cancelButton.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        resetForm();
+                        modal.hide();
+                  });
+            }
+
+            if (closeButton) {
+                  closeButton.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        resetForm();
+                        modal.hide();
+                  });
+            }
+
+            // Reset form when modal is hidden
+            element.addEventListener('hidden.bs.modal', function () {
+                  resetForm();
+            });
+      };
+
+      // Reset form
+      var resetForm = function () {
+            if (form) {
+                  form.reset();
+            }
+            var textarea = document.getElementById('comment_textarea');
+            if (textarea) {
+                  textarea.classList.remove('is-invalid');
+            }
+      };
+
+      // Validate comment
+      var validateComment = function (comment) {
+            var textarea = document.getElementById('comment_textarea');
+
+            if (!comment || comment.trim().length < 3) {
+                  textarea.classList.add('is-invalid');
+                  return false;
+            }
+
+            if (comment.length > 1000) {
+                  textarea.classList.add('is-invalid');
+                  return false;
+            }
+
+            textarea.classList.remove('is-invalid');
+            return true;
+      };
+
+      // Handle form submission via AJAX
+      var handleFormSubmit = function () {
+            submitButton.addEventListener('click', function (e) {
+                  e.preventDefault();
+
+                  var textarea = document.getElementById('comment_textarea');
+                  var commentValue = textarea ? textarea.value : '';
+
+                  // Validate comment
+                  if (!validateComment(commentValue)) {
+                        toastr.warning('Please enter a valid comment (3-1000 characters).');
+                        return;
+                  }
+
+                  // Show loading indicator
+                  submitButton.setAttribute('data-kt-indicator', 'on');
+                  submitButton.disabled = true;
+
+                  // Prepare form data
+                  var formData = new FormData(form);
+                  formData.append('_token', getCsrfToken());
+
+                  // Submit via AJAX
+                  fetch(routeStoreComment, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                              'Accept': 'application/json',
+                              'X-Requested-With': 'XMLHttpRequest'
+                        }
+                  })
+                        .then(function (response) {
+                              return response.json().then(function (data) {
+                                    if (!response.ok) {
+                                          // Handle validation errors
+                                          if (response.status === 422 && data.errors) {
+                                                var errorMessages = [];
+                                                Object.keys(data.errors).forEach(function (key) {
+                                                      errorMessages.push(data.errors[key][0]);
+                                                });
+                                                throw new Error(errorMessages.join('<br>'));
+                                          }
+                                          throw new Error(data.message || 'Something went wrong');
+                                    }
+                                    return data;
+                              });
+                        })
+                        .then(function (data) {
+                              // Hide loading indicator
+                              submitButton.removeAttribute('data-kt-indicator');
+                              submitButton.disabled = false;
+
+                              if (data.success) {
+                                    // Add comment to the container
+                                    addCommentToContainer(data.comment);
+
+                                    // Reset form
+                                    resetForm();
+
+                                    // Close modal
+                                    modal.hide();
+
+                                    // Show success message
+                                    toastr.success(data.message || 'Comment added successfully!');
+                              } else {
+                                    throw new Error(data.message || 'Failed to add comment');
+                              }
+                        })
+                        .catch(function (error) {
+                              // Hide loading indicator
+                              submitButton.removeAttribute('data-kt-indicator');
+                              submitButton.disabled = false;
+
+                              // Show error message
+                              Swal.fire({
+                                    html: error.message || 'Something went wrong. Please try again.',
+                                    icon: 'error',
+                                    buttonsStyling: false,
+                                    confirmButtonText: 'Ok, got it!',
+                                    customClass: {
+                                          confirmButton: 'btn btn-primary'
+                                    }
+                              });
+                        });
+            });
+      };
+
+      return {
+            init: function () {
+                  element = document.getElementById('kt_modal_add_comment');
+                  if (!element) {
+                        return;
+                  }
+
+                  form = element.querySelector('#kt_modal_add_comment_form');
+                  submitButton = document.getElementById('kt_modal_add_comment_submit');
+                  modal = bootstrap.Modal.getOrCreateInstance(element);
+
+                  if (!form || !submitButton) {
+                        return;
+                  }
+
+                  handleAddCommentClick();
+                  handleModalClose();
+                  handleFormSubmit();
+            }
+      };
+}();
+
 // On document ready
 KTUtil.onDOMContentLoaded(function () {
       KTInvoiceWithTransactionsList.init();
       KTEditInvoiceModal.init();
       KTTransactionForm.init();
+      KTAddCommentModal.init();
 });

@@ -1,11 +1,17 @@
 @push('page-css')
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <style>
+        .comment-card {
+            transition: all 0.2s ease;
+        }
+
+        .comment-card:hover {
+            background-color: #f9f9f9;
+        }
+    </style>
 @endpush
-
 @extends('layouts.app')
-
 @section('title', 'View Invoice')
-
 @section('header-title')
     <div data-kt-swapper="true" data-kt-swapper-mode="{default: 'prepend', lg: 'prepend'}"
         data-kt-swapper-parent="{default: '#kt_app_content_container', lg: '#kt_app_header_wrapper'}"
@@ -41,7 +47,6 @@
         <!--end::Breadcrumb-->
     </div>
 @endsection
-
 @section('content')
     <!--begin::Navbar-->
     <div
@@ -237,7 +242,7 @@
                                         <i class="ki-solid ki-dots-horizontal fs-2x"></i>
                                     </button>
                                     <!--begin::Three Dots-->
-                                    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-semibold w-150px py-3"
+                                    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-semibold w-200px py-3"
                                         data-kt-menu="true">
                                         @can('invoices.edit')
                                             <div class="menu-item px-3">
@@ -245,12 +250,21 @@
                                                     data-invoice-id="{{ $invoice->id }}"
                                                     data-invoice-number="{{ $invoice->invoice_number }}"
                                                     data-student-id="{{ $invoice->student_id }}"
+                                                    data-student-name="{{ $invoice->student->name }}"
+                                                    data-student-unique-id="{{ $invoice->student->student_unique_id }}"
                                                     data-invoice-type-id="{{ $invoice->invoice_type_id }}"
                                                     data-invoice-type-name="{{ $invoice->invoiceType->type_name }}"
                                                     data-month-year="{{ $invoice->month_year }}"
                                                     data-total-amount="{{ $invoice->total_amount }}"
                                                     data-tuition-fee="{{ $invoice->student->payments->tuition_fee ?? 0 }}"><i
-                                                        class="las la-pen fs-2 me-2"></i> Edit</a>
+                                                        class="ki-outline ki-pencil fs-2 me-2"></i> Edit Invoice</a>
+                                            </div>
+                                            <div class="menu-item px-3">
+                                                <a href="#" class="menu-link px-3 text-hover-primary add-comment-btn"
+                                                    data-invoice-id="{{ $invoice->id }}"
+                                                    data-invoice-number="{{ $invoice->invoice_number }}" data-bs-toggle="modal"
+                                                    data-bs-target="#kt_modal_add_comment"><i
+                                                        class="ki-outline ki-messages fs-2 me-2"></i> Add Comment</a>
                                             </div>
                                         @endcan
                                         @if (optional($invoice->student->studentActivation)->active_status == 'active' && $invoice->status == 'due')
@@ -389,6 +403,66 @@
     </div>
     <!--end::Card-->
 
+    <!--begin::Comments Card-->
+    <div class="card mt-6 mt-xl-9">
+        <!--begin::Header-->
+        <div class="card-header">
+            <!--begin::Title-->
+            <div class="card-title">
+                <h2>Comments</h2>
+                <span class="badge badge-circle badge-primary ms-2"
+                    id="comments_count_badge">{{ $invoice->comments->count() }}</span>
+            </div>
+            <!--end::Title-->
+            <!--begin::Toolbar-->
+            <div class="card-toolbar">
+                @can('invoices.edit')
+                    <a href="#" class="btn btn-primary add-comment-btn" data-invoice-id="{{ $invoice->id }}"
+                        data-invoice-number="{{ $invoice->invoice_number }}" data-bs-toggle="modal"
+                        data-bs-target="#kt_modal_add_comment">
+                        <i class="ki-outline ki-plus fs-4"></i> Add Comment
+                    </a>
+                @endcan
+            </div>
+            <!--end::Toolbar-->
+        </div>
+        <!--end::Header-->
+        <!--begin::Card body-->
+        <div class="card-body" id="comments_container">
+            @forelse ($invoice->comments->sortByDesc('created_at') as $comment)
+                <div class="d-flex mb-5 comment-card p-3 rounded" data-comment-id="{{ $comment->id }}">
+                    <!--begin::Avatar-->
+                    <div class="symbol symbol-40px me-4">
+                        <span class="symbol-label bg-light-primary text-primary fw-bold">
+                            {{ strtoupper(substr($comment->commentedBy->name ?? 'U', 0, 1)) }}
+                        </span>
+                    </div>
+                    <!--end::Avatar-->
+                    <!--begin::Content-->
+                    <div class="d-flex flex-column flex-grow-1">
+                        <div class="d-flex align-items-center mb-1">
+                            <span
+                                class="text-gray-800 fw-bold fs-6 me-3">{{ $comment->commentedBy->name ?? 'Unknown' }}</span>
+                            <span class="text-muted fs-7">{{ $comment->created_at->format('d M Y, h:i A') }}</span>
+                        </div>
+                        <p class="text-gray-600 fs-6 mb-0">{{ $comment->comment }}</p>
+                    </div>
+                    <!--end::Content-->
+                </div>
+                @if (!$loop->last)
+                    <div class="separator separator-dashed mb-5"></div>
+                @endif
+            @empty
+                <div class="text-center py-10" id="no_comments_placeholder">
+                    <i class="ki-outline ki-message-notif fs-3x text-muted mb-3"></i>
+                    <p class="text-muted fs-6 mb-0">No comments yet</p>
+                </div>
+            @endforelse
+        </div>
+        <!--end::Card body-->
+    </div>
+    <!--end::Comments Card-->
+
     <!--begin::Modal - Add Transaction-->
     <div class="modal fade" id="kt_modal_add_transaction" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
         data-bs-keyboard="false">
@@ -419,18 +493,15 @@
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_transaction_header"
                             data-kt-scroll-wrappers="#kt_modal_add_transaction_scroll" data-kt-scroll-offset="300px">
-
                             {{-- hidden inputs --}}
                             <input type="hidden" name="transaction_student" value="{{ $invoice->student_id }}">
                             <input type="hidden" name="transaction_invoice" value="{{ $invoice->id }}">
                             <div id="invoice_status_indicator" data-status="{{ $invoice->status }}"
                                 style="display:none;"></div>
-
                             <!--begin::Type Input group-->
                             <div class="fv-row mb-7">
                                 <!--begin::Label-->
-                                <label class="d-flex align-items-center form-label mb-3 required">Payment
-                                    Type</label>
+                                <label class="d-flex align-items-center form-label mb-3 required">Payment Type</label>
                                 <!--end::Label-->
                                 <!--begin::Row-->
                                 <div class="row">
@@ -445,8 +516,7 @@
                                             <i class="ki-outline ki-dollar fs-2x me-5"></i>
                                             <!--begin::Info-->
                                             <span class="d-block fw-semibold text-start">
-                                                <span class="text-gray-900 fw-bold d-block fs-6">Full
-                                                    Payment</span>
+                                                <span class="text-gray-900 fw-bold d-block fs-6">Full Payment</span>
                                             </span>
                                             <!--end::Info-->
                                         </label>
@@ -494,7 +564,6 @@
                                 <!--end::Row-->
                             </div>
                             <!--end::Type Input group-->
-
                             <!--begin::Name Input group-->
                             <div class="fv-row mb-7">
                                 <!--begin::Label-->
@@ -507,7 +576,6 @@
                                     data-total-amount="{{ $invoice->total_amount }}" required />
                             </div>
                             <!--end::Name Input group-->
-
                             <!--begin::Name Input group-->
                             <div class="fv-row">
                                 <!--begin::Label-->
@@ -572,74 +640,44 @@
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_transaction_header"
                             data-kt-scroll-wrappers="#kt_modal_edit_invoice_scroll" data-kt-scroll-offset="300px">
-                            <!--begin::Name Input group-->
+                            <!--begin::Student Display-->
                             <div class="fv-row mb-7">
                                 <!--begin::Label-->
                                 <label class="fw-semibold fs-6 mb-2">Corresponding Student</label>
                                 <!--end::Label-->
-                                <!--begin::Solid input group style-->
-                                <div class="input-group input-group-solid flex-nowrap">
-                                    <span class="input-group-text">
-                                        <i class="las la-graduation-cap fs-3"></i>
-                                    </span>
-                                    <div class="overflow-hidden flex-grow-1">
-                                        <select name="invoice_student_edit" id="invoice_student_edit"
-                                            class="form-select form-select-solid rounded-start-0 border-start"
-                                            data-control="select2" data-dropdown-parent="#kt_modal_edit_invoice"
-                                            data-placeholder="Select a student" disabled>
-                                            <option></option>
-                                            @foreach ($students as $student)
-                                                <option value="{{ $student->id }}">{{ $student->name }}
-                                                    ({{ $student->student_unique_id }})
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
+                                <!--begin::Display field-->
+                                <div class="form-control form-control-solid bg-light-secondary" id="edit_student_display">
+                                    <span class="text-muted">-</span>
                                 </div>
-                                <!--end::Solid input group style-->
+                                <!--end::Display field-->
                             </div>
-                            <!--end::Name Input group-->
-
-                            <!--begin::Invoice Type Input group-->
+                            <!--end::Student Display-->
+                            <!--begin::Invoice Type Display-->
                             <div class="fv-row mb-7">
                                 <!--begin::Label-->
                                 <label class="fw-semibold fs-6 mb-2">Invoice Type</label>
                                 <!--end::Label-->
-                                <!--begin::Solid input group style-->
-                                <div class="input-group input-group-solid flex-nowrap">
-                                    <span class="input-group-text">
-                                        <i class="ki-outline ki-save-2 fs-3"></i>
-                                    </span>
-                                    <div class="overflow-hidden flex-grow-1">
-                                        <input type="text" id="invoice_type_edit"
-                                            class="form-control form-control-solid rounded-start-0 border-start" readonly
-                                            disabled />
-                                    </div>
+                                <!--begin::Display field-->
+                                <div class="form-control form-control-solid bg-light-secondary"
+                                    id="edit_invoice_type_display">
+                                    <span class="text-muted">-</span>
                                 </div>
-                                <!--end::Solid input group style-->
+                                <!--end::Display field-->
                             </div>
-                            <!--end::Invoice Type Input group-->
-
-                            <!--begin::Month_Year Input group-->
+                            <!--end::Invoice Type Display-->
+                            <!--begin::Month_Year Display-->
                             <div class="fv-row mb-7" id="month_year_edit_wrapper">
                                 <!--begin::Label-->
                                 <label class="fw-semibold fs-6 mb-2">Month Year</label>
                                 <!--end::Label-->
-                                <!--begin::Solid input group style-->
-                                <div class="input-group input-group-solid flex-nowrap">
-                                    <span class="input-group-text">
-                                        <i class="ki-outline ki-calendar fs-3"></i>
-                                    </span>
-                                    <div class="overflow-hidden flex-grow-1">
-                                        <input type="text" id="invoice_month_year_edit"
-                                            class="form-control form-control-solid rounded-start-0 border-start" readonly
-                                            disabled />
-                                    </div>
+                                <!--begin::Display field-->
+                                <div class="form-control form-control-solid bg-light-secondary"
+                                    id="edit_month_year_display">
+                                    <span class="text-muted">-</span>
                                 </div>
-                                <!--end::Solid input group style-->
+                                <!--end::Display field-->
                             </div>
-                            <!--end::Month_Year Input group-->
-
+                            <!--end::Month_Year Display-->
                             <!--begin::Amount Input group-->
                             <div class="fv-row mb-7">
                                 <!--begin::Label-->
@@ -685,12 +723,79 @@
         <!--end::Modal dialog-->
     </div>
     <!--end::Modal - Edit Invoice-->
-@endsection
 
+    <!--begin::Modal - Add Comment-->
+    <div class="modal fade" id="kt_modal_add_comment" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+        data-bs-keyboard="false">
+        <!--begin::Modal dialog-->
+        <div class="modal-dialog modal-dialog-centered mw-650px">
+            <!--begin::Modal content-->
+            <div class="modal-content">
+                <!--begin::Modal header-->
+                <div class="modal-header">
+                    <!--begin::Modal title-->
+                    <h2 class="fw-bold" id="kt_modal_add_comment_title">Add Comment</h2>
+                    <!--end::Modal title-->
+                    <!--begin::Close-->
+                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-add-comment-modal-action="close">
+                        <i class="ki-outline ki-cross fs-1"></i>
+                    </div>
+                    <!--end::Close-->
+                </div>
+                <!--end::Modal header-->
+                <!--begin::Modal body-->
+                <div class="modal-body px-5 my-7">
+                    <!--begin::Form-->
+                    <form id="kt_modal_add_comment_form" class="form" novalidate="novalidate">
+                        <!--begin::Hidden invoice ID-->
+                        <input type="hidden" name="payment_invoice_id" id="comment_invoice_id"
+                            value="{{ $invoice->id }}" />
+                        <!--end::Hidden invoice ID-->
+                        <!--begin::Scroll-->
+                        <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_add_comment_scroll"
+                            data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
+                            data-kt-scroll-dependencies="#kt_modal_add_comment_header"
+                            data-kt-scroll-wrappers="#kt_modal_add_comment_scroll" data-kt-scroll-offset="300px">
+
+                            <!--begin::Comment Input group-->
+                            <div class="fv-row mb-7">
+                                <!--begin::Label-->
+                                <label class="required fw-semibold fs-6 mb-2">Comment</label>
+                                <!--end::Label-->
+                                <!--begin::Textarea-->
+                                <textarea name="comment" id="comment_textarea" class="form-control form-control-solid" rows="4"
+                                    placeholder="Enter your comment here..." required></textarea>
+                                <!--end::Textarea-->
+                                <div class="form-text text-muted">Minimum 3 characters, maximum 1000 characters.</div>
+                            </div>
+                            <!--end::Comment Input group-->
+                        </div>
+                        <!--end::Scroll-->
+                        <!--begin::Actions-->
+                        <div class="text-center pt-10">
+                            <button type="reset" class="btn btn-light me-3"
+                                data-kt-add-comment-modal-action="cancel">Discard</button>
+                            <button type="button" class="btn btn-primary" id="kt_modal_add_comment_submit">
+                                <span class="indicator-label">Add Comment</span>
+                                <span class="indicator-progress">Please wait...
+                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                            </button>
+                        </div>
+                        <!--end::Actions-->
+                    </form>
+                    <!--end::Form-->
+                </div>
+                <!--end::Modal body-->
+            </div>
+            <!--end::Modal content-->
+        </div>
+        <!--end::Modal dialog-->
+    </div>
+    <!--end::Modal - Add Comment-->
+@endsection
 @push('vendor-js')
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
 @endpush
-
 @push('page-js')
     <script>
         const routeDeleteInvoice = "{{ route('invoices.destroy', ':id') }}";
@@ -698,6 +803,7 @@
         const routeApproveTxn = "{{ route('transactions.approve', ':id') }}";
         const routeUpdateInvoice = "{{ route('invoices.update', ':id') }}";
         const routeDownloadStatement = "{{ route('student.statement.download') }}";
+        const routeStoreComment = "{{ route('invoice.comments.store') }}";
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
     </script>
     <script src="{{ asset('js/invoices/view.js') }}"></script>
