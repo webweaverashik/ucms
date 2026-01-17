@@ -416,13 +416,15 @@
             <!--end::Title-->
             <!--begin::Toolbar-->
             <div class="card-toolbar">
-                @can('invoices.edit')
-                    <a href="#" class="btn btn-primary add-comment-btn" data-invoice-id="{{ $invoice->id }}"
-                        data-invoice-number="{{ $invoice->invoice_number }}" data-bs-toggle="modal"
-                        data-bs-target="#kt_modal_add_comment">
-                        <i class="ki-outline ki-plus fs-4"></i> Add Comment
-                    </a>
-                @endcan
+                @if ($invoice->status != 'paid')
+                    @can('invoices.edit')
+                        <a href="#" class="btn btn-primary add-comment-btn" data-invoice-id="{{ $invoice->id }}"
+                            data-invoice-number="{{ $invoice->invoice_number }}" data-bs-toggle="modal"
+                            data-bs-target="#kt_modal_add_comment">
+                            <i class="ki-outline ki-plus fs-4"></i> Add Comment
+                        </a>
+                    @endcan
+                @endif
             </div>
             <!--end::Toolbar-->
         </div>
