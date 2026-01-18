@@ -65,6 +65,7 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::put('profile/update', [ProfileController::class, 'updateProfile'])->name('users.profile.update');
 
     // Students
+    Route::get('students/data', [StudentController::class, 'getStudentsData'])->name('students.data');
     Route::get('students/pending', [StudentController::class, 'pending'])->name('students.pending');
     Route::get('students/alumni', [StudentController::class, 'alumniStudent'])->name('students.alumni.index');
     Route::post('students/{id}/approve', [StudentActivationController::class, 'approve'])->name('students.activate');

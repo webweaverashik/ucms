@@ -2,11 +2,9 @@
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
 @endpush
 
-
 @extends('layouts.app')
 
 @section('title', 'All Students')
-
 
 @section('header-title')
     <div data-kt-swapper="true" data-kt-swapper-mode="{default: 'prepend', lg: 'prepend'}"
@@ -17,15 +15,18 @@
             All running students in this branch
         </h1>
         <!--end::Title-->
+
         <!--begin::Separator-->
         <span class="h-20px border-gray-300 border-start mx-4"></span>
         <!--end::Separator-->
+
         <!--begin::Breadcrumb-->
         <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 ">
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
                 <a href="#" class="text-muted text-hover-primary">
-                    Student Info </a>
+                    Student Info
+                </a>
             </li>
             <!--end::Item-->
             <!--begin::Item-->
@@ -35,13 +36,13 @@
             <!--end::Item-->
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                All Students </li>
+                All Students
+            </li>
             <!--end::Item-->
         </ul>
         <!--end::Breadcrumb-->
     </div>
 @endsection
-
 
 @section('content')
     @php
@@ -80,10 +81,6 @@
                         class="form-control form-control-solid w-350px ps-12" placeholder="Search Students">
                 </div>
                 <!--end::Search-->
-
-                <!--begin::Export hidden buttons-->
-                <div id="kt_hidden_export_buttons" class="d-none"></div>
-                <!--end::Export buttons-->
             </div>
             <!--begin::Card title-->
 
@@ -111,126 +108,118 @@
                                 <div class="col-6 mb-5">
                                     <label class="form-label fs-6 fw-semibold">Student Gender:</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                        data-placeholder="Select option" data-allow-clear="true"
-                                        data-kt-subscription-table-filter="status" data-hide-search="true">
+                                        data-placeholder="Select option" data-allow-clear="true" data-filter-field="gender"
+                                        data-hide-search="true">
                                         <option></option>
-                                        <option value="student_male">Male</option>
-                                        <option value="student_female">Female</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
                                     </select>
                                 </div>
-
                                 <div class="col-6 mb-5">
                                     <label class="form-label fs-6 fw-semibold">Student Status:</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                        data-placeholder="Select option" data-allow-clear="true"
-                                        data-kt-subscription-table-filter="status" data-hide-search="true">
+                                        data-placeholder="Select option" data-allow-clear="true" data-filter-field="status"
+                                        data-hide-search="true">
                                         <option></option>
                                         <option value="active">Active</option>
-                                        <option value="suspended">Inactive</option>
+                                        <option value="inactive">Inactive</option>
                                     </select>
                                 </div>
-
                                 <div class="col-6 mb-5">
                                     <label class="form-label fs-6 fw-semibold">Payment Type:</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                         data-placeholder="Select option" data-allow-clear="true"
-                                        data-kt-subscription-table-filter="billing" data-hide-search="true">
+                                        data-filter-field="payment_type" data-hide-search="true">
                                         <option></option>
                                         <option value="due">Due</option>
                                         <option value="current">Current</option>
                                     </select>
                                 </div>
-
                                 <!--begin::Input group-->
                                 <div class="col-6 mb-5">
                                     <label class="form-label fs-6 fw-semibold">Due Date:</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                         data-placeholder="Select option" data-allow-clear="true"
-                                        data-kt-subscription-table-filter="product" data-hide-search="true">
+                                        data-filter-field="due_date" data-hide-search="true">
                                         <option></option>
-                                        <option value="1/7">1-7</option>
-                                        <option value="1/10">1-10</option>
-                                        <option value="1/15">1-15</option>
-                                        <option value="1/30">1-30</option>
+                                        <option value="7">1-7</option>
+                                        <option value="10">1-10</option>
+                                        <option value="15">1-15</option>
+                                        <option value="30">1-30</option>
                                     </select>
                                 </div>
                                 <!--end::Input group-->
-
                                 <!--begin::Input group-->
                                 <div class="col-6 mb-5">
                                     <label class="form-label fs-6 fw-semibold">Batches:</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                         data-placeholder="Select option" data-allow-clear="true"
-                                        data-kt-subscription-table-filter="product" data-hide-search="true">
+                                        data-filter-field="batch_id" data-hide-search="true">
                                         <option></option>
                                         @foreach ($batches as $batch)
-                                            <option
-                                                value="{{ $batch->id }}_{{ $batch->name }}_{{ $batch->branch->branch_name }}">
-                                                {{ $batch->name }} @if ($isAdmin)
-                                                    ({{ $batch->branch->branch_name }})
+                                            <option value="{{ $batch->id }}">
+                                                {{ $batch->name }}
+                                                @if ($isAdmin)
+                                                    ({{ $batch->branch_name }})
                                                 @endif
                                             </option>
                                         @endforeach
                                     </select>
                                 </div>
                                 <!--end::Input group-->
-
                                 <!--begin::Input group-->
                                 <div class="col-6 mb-5">
                                     <label class="form-label fs-6 fw-semibold">Academic Group:</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                         data-placeholder="Select option" data-allow-clear="true"
-                                        data-kt-subscription-table-filter="product" data-hide-search="true">
+                                        data-filter-field="academic_group" data-hide-search="true">
                                         <option></option>
-                                        <option value="ucms_Science">Science</option>
-                                        <option value="ucms_Commerce">Commerce</option>
+                                        <option value="Science">Science</option>
+                                        <option value="Commerce">Commerce</option>
+                                        <option value="Arts">Arts</option>
                                     </select>
                                 </div>
                                 <!--end::Input group-->
-
                                 <!--begin::Input group-->
                                 <div class="col-12 mb-5">
                                     <label class="form-label fs-6 fw-semibold">Class</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                         data-placeholder="Select option" data-allow-clear="true"
-                                        data-kt-subscription-table-filter="status">
+                                        data-filter-field="class_id">
                                         <option></option>
                                         @foreach ($classnames as $classname)
-                                            <option value="{{ $classname->id }}_{{ $classname->class_numeral }}_ucms">
+                                            <option value="{{ $classname->id }}">
                                                 {{ $classname->name }}
                                             </option>
                                         @endforeach
                                     </select>
                                 </div>
                                 <!--end::Input group-->
-
                                 <!--begin::Input group-->
                                 <div class="col-12 mb-5">
                                     <label class="form-label fs-6 fw-semibold">Institutions</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                         data-placeholder="Select option" data-allow-clear="true"
-                                        data-kt-subscription-table-filter="status">
+                                        data-filter-field="institution">
                                         <option></option>
                                         @foreach ($institutions as $institution)
-                                            <option
-                                                value="{{ $institution->name }}">
+                                            <option value="{{ $institution->name }}">
                                                 {{ $institution->name }}
                                             </option>
                                         @endforeach
                                     </select>
                                 </div>
                                 <!--end::Input group-->
-
                             </div>
-
-
                             <!--begin::Actions-->
                             <div class="d-flex justify-content-end">
                                 <button type="reset"
                                     class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
-                                    data-kt-menu-dismiss="true" data-kt-subscription-table-filter="reset">Reset</button>
+                                    data-kt-menu-dismiss="true"
+                                    data-kt-subscription-table-filter="reset">Reset</button>
                                 <button type="submit" class="btn btn-primary fw-semibold px-6"
-                                    data-kt-menu-dismiss="true" data-kt-subscription-table-filter="filter">Apply</button>
+                                    data-kt-menu-dismiss="true"
+                                    data-kt-subscription-table-filter="filter">Apply</button>
                             </div>
                             <!--end::Actions-->
                         </div>
@@ -244,19 +233,16 @@
                             data-kt-menu-placement="bottom-end">
                             <i class="ki-outline ki-exit-up fs-2"></i>Export
                         </button>
-
                         <!--begin::Menu-->
                         <div id="kt_table_report_dropdown_menu"
                             class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
                             data-kt-menu="true">
                             <!--begin::Menu item-->
                             <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3" data-row-export="copy">Copy to
-                                    clipboard</a>
+                                <a href="#" class="menu-link px-3" data-row-export="copy">Copy to clipboard</a>
                             </div>
                             <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3" data-row-export="excel">Export as
-                                    Excel</a>
+                                <a href="#" class="menu-link px-3" data-row-export="excel">Export as Excel</a>
                             </div>
                             <div class="menu-item px-3">
                                 <a href="#" class="menu-link px-3" data-row-export="csv">Export as CSV</a>
@@ -290,9 +276,6 @@
                 <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-5 fs-6" id="branchTabs" role="tablist">
                     @foreach ($branches as $index => $branch)
                         @php
-                            $branchStudentCount = isset($studentsByBranch[$branch->id])
-                                ? $studentsByBranch[$branch->id]->count()
-                                : 0;
                             $tabBadgeColor = $badgeColors[$index % count($badgeColors)];
                         @endphp
                         <li class="nav-item" role="presentation">
@@ -304,7 +287,11 @@
                                 data-branch-id="{{ $branch->id }}">
                                 <i class="ki-outline ki-bank fs-4 me-1"></i>
                                 {{ ucfirst($branch->branch_name) }}
-                                <span class="badge {{ $tabBadgeColor }} ms-2">{{ $branchStudentCount }}</span>
+                                <span class="badge {{ $tabBadgeColor }} ms-2 branch-count-badge"
+                                    data-branch-id="{{ $branch->id }}">
+                                    <span class="spinner-border spinner-border-sm" role="status"
+                                        style="width: 10px; height: 10px;"></span>
+                                </span>
                             </a>
                         </li>
                     @endforeach
@@ -318,13 +305,8 @@
                             id="kt_tab_branch_{{ $branch->id }}" role="tabpanel"
                             aria-labelledby="tab-branch-{{ $branch->id }}">
                             @include('students.partials.students-table', [
-                                'students' => $studentsByBranch[$branch->id] ?? collect(),
                                 'tableId' => 'kt_students_table_branch_' . $branch->id,
-                                'branchColors' => $branchColors,
-                                'canDeactivate' => $canDeactivate,
-                                'canDownloadForm' => $canDownloadForm,
-                                'canEdit' => $canEdit,
-                                'canDelete' => $canDelete,
+                                'branchId' => $branch->id,
                             ])
                         </div>
                     @endforeach
@@ -333,13 +315,8 @@
             @else
                 <!--begin::Single Table for Non-Admin-->
                 @include('students.partials.students-table', [
-                    'students' => $students,
                     'tableId' => 'kt_students_table',
-                    'branchColors' => $branchColors,
-                    'canDeactivate' => $canDeactivate,
-                    'canDownloadForm' => $canDownloadForm,
-                    'canEdit' => $canEdit,
-                    'canDelete' => $canDelete,
+                    'branchId' => null,
                 ])
                 <!--end::Single Table for Non-Admin-->
             @endif
@@ -347,7 +324,6 @@
         <!--end::Card body-->
     </div>
     <!--end::Card-->
-
 
     <!--begin::Modal - Toggle Activation Student-->
     <div class="modal fade" id="kt_toggle_activation_student_modal" tabindex="-1" aria-hidden="true"
@@ -363,60 +339,57 @@
                     <!--end::Modal title-->
                     <!--begin::Close-->
                     <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
-                        <i class="ki-outline ki-cross fs-1">
-                        </i>
+                        <i class="ki-outline ki-cross fs-1"></i>
                     </div>
                     <!--end::Close-->
                 </div>
                 <!--end::Modal header-->
-
                 <!--begin::Modal body-->
                 <div class="modal-body py-lg-5">
                     <!--begin::Content-->
                     <div class="flex-row-fluid p-lg-5">
-                        <div>
-                            <form action="{{ route('students.toggleActive') }}" class="form d-flex flex-column"
-                                method="POST">
-                                @csrf
-                                <!--begin::Left column-->
-                                <div class="d-flex flex-column">
-
-                                    <input type="hidden" name="student_id" id="student_id" />
-                                    <input type="hidden" name="active_status" id="activation_status" />
-
-                                    <div class="row">
-                                        <div class="col-lg-12">
-                                            <!--begin::Input group-->
-                                            <div class="d-flex flex-column mb-5 fv-row">
-                                                <!--begin::Label-->
-                                                <label class="fs-5 fw-semibold mb-2 required"
-                                                    id="reason_label">Activation/Deactivation Reason</label>
-                                                <!--end::Label-->
-
-                                                <!--begin::Input-->
-                                                <textarea class="form-control" rows="3" name="reason" placeholder="Write the reason for this update"
-                                                    required></textarea>
-                                                <!--end::Input-->
-                                            </div>
-                                            <!--end::Input group-->
+                        <form action="{{ route('students.toggleActive') }}" class="form d-flex flex-column"
+                            method="POST" id="kt_toggle_activation_form">
+                            @csrf
+                            <!--begin::Left column-->
+                            <div class="d-flex flex-column">
+                                <input type="hidden" name="student_id" id="student_id" />
+                                <input type="hidden" name="active_status" id="activation_status" />
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <!--begin::Input group-->
+                                        <div class="d-flex flex-column mb-5 fv-row">
+                                            <!--begin::Label-->
+                                            <label class="fs-5 fw-semibold mb-2 required"
+                                                id="reason_label">Activation/Deactivation Reason</label>
+                                            <!--end::Label-->
+                                            <!--begin::Input-->
+                                            <textarea class="form-control" rows="3" name="reason" id="activation_reason"
+                                                placeholder="Write the reason for this update" required minlength="3"></textarea>
+                                            <!--end::Input-->
+                                            <div class="fv-plugins-message-container invalid-feedback"
+                                                id="reason_error"></div>
                                         </div>
-                                    </div>
-
-                                    <div class="d-flex justify-content-end">
-                                        <!--begin::Button-->
-                                        <button type="reset" class="btn btn-secondary me-5"
-                                            data-bs-dismiss="modal">Cancel</button>
-                                        <!--end::Button-->
-                                        <!--begin::Button-->
-                                        <button type="submit" class="btn btn-primary">
-                                            Submit
-                                        </button>
-                                        <!--end::Button-->
+                                        <!--end::Input group-->
                                     </div>
                                 </div>
-                                <!--end::Left column-->
-                            </form>
-                        </div>
+                                <div class="d-flex justify-content-end">
+                                    <!--begin::Button-->
+                                    <button type="button" class="btn btn-secondary me-5"
+                                        data-bs-dismiss="modal">Cancel</button>
+                                    <!--end::Button-->
+                                    <!--begin::Button-->
+                                    <button type="submit" class="btn btn-primary" id="kt_toggle_activation_submit">
+                                        <span class="indicator-label">Submit</span>
+                                        <span class="indicator-progress">Please wait...
+                                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                        </span>
+                                    </button>
+                                    <!--end::Button-->
+                                </div>
+                            </div>
+                            <!--end::Left column-->
+                        </form>
                     </div>
                     <!--end::Content-->
                 </div>
@@ -429,23 +402,27 @@
     <!--end::Modal - Toggle Activation Student-->
 @endsection
 
-
-
 @push('vendor-js')
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
+    <!-- SheetJS for Excel export -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <!-- jsPDF for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
 @endpush
-
 
 @push('page-js')
     <script>
         const routeDeleteStudent = "{{ route('students.destroy', ':id') }}";
-        const routeToggleActive = "{{ route('students.toggleActive', ':id') }}";
+        const routeToggleActive = "{{ route('students.toggleActive') }}";
+        const routeStudentsData = "{{ route('students.data') }}";
+        const routeStudentShow = "{{ route('students.show', ':id') }}";
+        const routeStudentEdit = "{{ route('students.edit', ':id') }}";
+        const routeStudentDownload = "{{ route('students.download', ':id') }}";
         const isAdmin = @json($isAdmin);
         const branchIds = @json($branches->pluck('id')->toArray());
     </script>
-
     <script src="{{ asset('js/students/index.js') }}"></script>
-
     <script>
         document.getElementById("student_info_menu").classList.add("here", "show");
         document.getElementById("all_students_link").classList.add("active");
