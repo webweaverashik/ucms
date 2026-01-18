@@ -67,8 +67,11 @@
                         <div class="d-flex flex-column">
                             <!--begin::Farm Name-->
                             <div class="d-flex align-items-center mb-1">
-                                <span class="text-gray-800 fs-2 fw-bold me-3">{{ $invoice->student->name }},
-                                    {{ $invoice->student->student_unique_id }}</span>
+                                <a href="{{ route('students.show', $invoice->student_id) }}" target="_blank"
+                                    class="text-gray-800 text-hover-primary fs-2 fw-bold me-3">
+                                    {{ $invoice->student->name }},
+                                    {{ $invoice->student->student_unique_id }}
+                                </a>
                             </div>
                             <!--end::Farm Name-->
                             <div class="d-flex flex-wrap fw-semibold mb-2 fs-5 text-gray-500">
