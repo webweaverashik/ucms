@@ -72,7 +72,9 @@
                             </div>
                             <!--end::Farm Name-->
                             <div class="d-flex flex-wrap fw-semibold mb-2 fs-5 text-gray-500">
-                                Class: &nbsp;<span class="text-gray-800 ms-17">{{ $invoice->student->class->name }}</span>
+                                Class: &nbsp;<span class="text-gray-800 ms-17">
+                                    <a href="{{ route('classnames.show', $invoice->student->class_id) }}" target="_blank"
+                                        class="text-gray-800 text-hover-primary">{{ $invoice->student->class->name }}</a>
                             </div>
                             <div class="d-flex flex-wrap fw-semibold mb-2 fs-5 text-gray-500">
                                 Batch: &nbsp;<span class="text-gray-800 ms-19">{{ $invoice->student->batch->name }}</span>
