@@ -10,7 +10,6 @@ use App\Models\Student\Student;
 use App\Services\WalletService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class PaymentTransactionController extends Controller
@@ -20,58 +19,34 @@ class PaymentTransactionController extends Controller
      */
     public function index()
     {
-        if (!auth()->user()->can('transactions.view')) {
+        if (! auth()->user()->can('transactions.view')) {
             return redirect()->back()->with('warning', 'No permission to view transactions.');
         }
 
-        $user = auth()->user();
+        $user     = auth()->user();
         $branchId = $user->branch_id;
-        $isAdmin = $user->hasRole('admin');
+        $isAdmin  = $user->hasRole('admin');
 
         // Get all branches for admin
         $branches = Branch::all();
 
+        // Get transaction counts for tabs (lightweight query)
+        $transactionCounts = [];
         if ($isAdmin) {
-            // For admin: Get transactions grouped by branch
-            $transactionsByBranch = [];
-
             foreach ($branches as $branch) {
-                $cacheKey = 'transactions_branch_' . $branch->id;
-
-                $transactionsByBranch[$branch->id] = Cache::remember($cacheKey, now()->addHours(1), function () use ($branch) {
-                    return PaymentTransaction::with(['paymentInvoice:id,invoice_number,created_at', 'createdBy:id,name', 'student:id,name,student_unique_id,branch_id', 'student.branch:id,branch_name'])
-                        ->whereHas('student', function ($query) use ($branch) {
-                            $query->where('branch_id', $branch->id);
-                        })
-                        ->latest('id')
-                        ->get();
-                });
+                $transactionCounts[$branch->id] = PaymentTransaction::whereHas('student', function ($query) use ($branch) {
+                    $query->where('branch_id', $branch->id);
+                })->count();
             }
+        }
 
-            $transactions = collect(); // Empty collection for admin (uses tabs)
-
+        if ($isAdmin) {
             // Get students for all branches for the modal
             $students = Student::active()->select('id', 'name', 'student_unique_id', 'branch_id')->orderBy('student_unique_id')->get();
 
             // Group students by branch for the modal
             $studentsByBranch = $students->groupBy('branch_id');
         } else {
-            // For non-admin: Get only their branch transactions
-            $cacheKey = 'transactions_branch_' . $branchId;
-
-            $transactions = Cache::remember($cacheKey, now()->addHours(1), function () use ($branchId) {
-                return PaymentTransaction::with(['paymentInvoice:id,invoice_number,created_at', 'createdBy:id,name', 'student:id,name,student_unique_id,branch_id', 'student.branch:id,branch_name'])
-                    ->whereHas('student', function ($query) use ($branchId) {
-                        if ($branchId != 0) {
-                            $query->where('branch_id', $branchId);
-                        }
-                    })
-                    ->latest('id')
-                    ->get();
-            });
-
-            $transactionsByBranch = [];
-
             // Simplified students query for non-admin
             $students = Student::active()
                 ->when($branchId != 0, function ($query) use ($branchId) {
@@ -84,7 +59,273 @@ class PaymentTransactionController extends Controller
             $studentsByBranch = [];
         }
 
-        return view('transactions.index', compact('transactions', 'transactionsByBranch', 'students', 'studentsByBranch', 'branches', 'isAdmin'));
+        return view('transactions.index', compact('transactionCounts', 'students', 'studentsByBranch', 'branches', 'isAdmin', 'branchId'));
+    }
+
+    /**
+     * Get transactions data for AJAX DataTable
+     */
+    public function getData(Request $request)
+    {
+        if (! auth()->user()->can('transactions.view')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $user         = auth()->user();
+        $userBranchId = $user->branch_id;
+        $isAdmin      = $user->hasRole('admin');
+
+        // Get branch filter from request
+        $branchId = $request->get('branch_id');
+
+        // Base query
+        $query = PaymentTransaction::with([
+            'paymentInvoice:id,invoice_number,created_at',
+            'createdBy:id,name',
+            'student:id,name,student_unique_id,branch_id',
+            'student.branch:id,branch_name',
+        ]);
+
+        // Apply branch filter
+        if ($isAdmin && $branchId) {
+            $query->whereHas('student', function ($q) use ($branchId) {
+                $q->where('branch_id', $branchId);
+            });
+        } elseif (! $isAdmin && $userBranchId != 0) {
+            $query->whereHas('student', function ($q) use ($userBranchId) {
+                $q->where('branch_id', $userBranchId);
+            });
+        }
+
+        // Get total count before filtering
+        $totalRecords = $query->count();
+
+        // Search filter
+        $searchValue = $request->get('search')['value'] ?? '';
+        if (! empty($searchValue)) {
+            $query->where(function ($q) use ($searchValue) {
+                $q->where('voucher_no', 'like', "%{$searchValue}%")
+                    ->orWhere('amount_paid', 'like', "%{$searchValue}%")
+                    ->orWhere('payment_type', 'like', "%{$searchValue}%")
+                    ->orWhereHas('paymentInvoice', function ($q) use ($searchValue) {
+                        $q->where('invoice_number', 'like', "%{$searchValue}%");
+                    })
+                    ->orWhereHas('student', function ($q) use ($searchValue) {
+                        $q->where('name', 'like', "%{$searchValue}%")
+                            ->orWhere('student_unique_id', 'like', "%{$searchValue}%");
+                    })
+                    ->orWhereHas('createdBy', function ($q) use ($searchValue) {
+                        $q->where('name', 'like', "%{$searchValue}%");
+                    });
+            });
+        }
+
+        // Payment type filter
+        $paymentTypeFilter = $request->get('payment_type_filter');
+        if (! empty($paymentTypeFilter)) {
+            $typeMap = [
+                'T_partial'    => 'partial',
+                'T_full_paid'  => 'full',
+                'T_discounted' => 'discounted',
+            ];
+            if (isset($typeMap[$paymentTypeFilter])) {
+                $query->where('payment_type', $typeMap[$paymentTypeFilter]);
+            }
+        }
+
+        // Get filtered count
+        $filteredRecords = $query->count();
+
+        // Sorting
+        $orderColumnIndex = $request->get('order')[0]['column'] ?? 0;
+        $orderDirection   = $request->get('order')[0]['dir'] ?? 'desc';
+
+        $columns     = ['id', 'payment_invoice_id', 'voucher_no', 'amount_paid', 'payment_type', 'payment_type', 'student_id', 'created_at', 'created_by'];
+        $orderColumn = $columns[$orderColumnIndex] ?? 'id';
+
+        if ($orderColumn === 'id') {
+            $query->orderBy('id', 'desc');
+        } else {
+            $query->orderBy($orderColumn, $orderDirection);
+        }
+
+        // Pagination
+        $start  = $request->get('start', 0);
+        $length = $request->get('length', 10);
+
+        $transactions = $query->skip($start)->take($length)->get();
+
+        // Format data for DataTable
+        $data    = [];
+        $counter = $start + 1;
+
+        foreach ($transactions as $transaction) {
+            $paymentTypeBadge = match ($transaction->payment_type) {
+                'partial'    => '<span class="badge badge-warning rounded-pill">Partial</span>',
+                'full'       => '<span class="badge badge-success rounded-pill">Full Paid</span>',
+                'discounted' => '<span class="badge badge-info rounded-pill">Discounted</span>',
+                default      => ''
+            };
+
+            $paymentTypeFilter = match ($transaction->payment_type) {
+                'partial'    => 'T_partial',
+                'full'       => 'T_full_paid',
+                'discounted' => 'T_discounted',
+                default      => ''
+            };
+
+            // Build actions HTML
+            $actions = $this->buildActionsHtml($transaction, $request);
+
+            $data[] = [
+                'DT_RowId'            => 'row_' . $transaction->id,
+                'sl'                  => $counter++,
+                'invoice_no'          => '<a href="' . route('invoices.show', $transaction->paymentInvoice->id) . '">' . $transaction->paymentInvoice->invoice_number . '</a>',
+                'invoice_no_raw'      => $transaction->paymentInvoice->invoice_number,
+                'voucher_no'          => $transaction->voucher_no,
+                'amount_paid'         => $transaction->amount_paid,
+                'payment_type_filter' => $paymentTypeFilter,
+                'payment_type'        => $paymentTypeBadge,
+                'payment_type_raw'    => ucfirst($transaction->payment_type),
+                'student'             => '<a href="' . route('students.show', $transaction->student->id) . '">' . $transaction->student->name . ', ' . $transaction->student->student_unique_id . '</a>',
+                'student_raw'         => $transaction->student->name . ', ' . $transaction->student->student_unique_id,
+                'branch'              => $transaction->student->branch->branch_name ?? '',
+                'payment_date'        => $transaction->created_at->format('h:i:s A, d-M-Y'),
+                'payment_date_raw'    => $transaction->created_at->format('Y-m-d H:i:s'),
+                'received_by'         => $transaction->createdBy->name ?? 'System',
+                'actions'             => $actions,
+                'is_approved'         => $transaction->is_approved,
+                'student_id'          => $transaction->student_id,
+                'invoice_year'        => $transaction->paymentInvoice->created_at->format('Y'),
+                'transaction_id'      => $transaction->id,
+            ];
+        }
+
+        return response()->json([
+            'draw'            => intval($request->get('draw')),
+            'recordsTotal'    => $totalRecords,
+            'recordsFiltered' => $filteredRecords,
+            'data'            => $data,
+        ]);
+    }
+
+    /**
+     * Build actions HTML for a transaction
+     */
+    private function buildActionsHtml($transaction, $request)
+    {
+        $canApproveTxn      = auth()->user()->can('transactions.approve');
+        $canDeleteTxn       = auth()->user()->can('transactions.delete');
+        $canDownloadPayslip = auth()->user()->can('transactions.payslip.download');
+
+        $actions = '';
+
+        if ($transaction->is_approved === false) {
+            if ($canApproveTxn) {
+                $actions .= '<a href="#" title="Approve Transaction" class="btn btn-icon text-hover-success w-30px h-30px approve-txn me-2" data-txn-id="' . $transaction->id . '"><i class="bi bi-check-circle fs-2"></i></a>';
+            }
+
+            if ($canDeleteTxn) {
+                $actions .= '<a href="#" title="Delete Transaction" class="btn btn-icon text-hover-danger w-30px h-30px delete-txn" data-txn-id="' . $transaction->id . '"><i class="bi bi-trash fs-2"></i></a>';
+            }
+
+            if (! $canApproveTxn) {
+                $actions .= '<span class="badge rounded-pill text-bg-secondary">Pending Approval</span>';
+            }
+        } else {
+            if ($canDownloadPayslip) {
+                $actions .= '<a href="#" data-bs-toggle="tooltip" title="Download Statement" class="btn btn-icon text-hover-primary w-30px h-30px download-statement" data-student-id="' . $transaction->student_id . '" data-year="' . $transaction->paymentInvoice->created_at->format('Y') . '"><i class="bi bi-download fs-2"></i></a>';
+            }
+        }
+
+        return $actions;
+    }
+
+    /**
+     * Get all transactions for export (without pagination)
+     */
+    public function getExportData(Request $request)
+    {
+        if (! auth()->user()->can('transactions.view')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $user         = auth()->user();
+        $userBranchId = $user->branch_id;
+        $isAdmin      = $user->hasRole('admin');
+
+        $branchId = $request->get('branch_id');
+
+        $query = PaymentTransaction::with([
+            'paymentInvoice:id,invoice_number,created_at',
+            'createdBy:id,name',
+            'student:id,name,student_unique_id,branch_id',
+            'student.branch:id,branch_name',
+        ]);
+
+        // Apply branch filter
+        if ($isAdmin && $branchId) {
+            $query->whereHas('student', function ($q) use ($branchId) {
+                $q->where('branch_id', $branchId);
+            });
+        } elseif (! $isAdmin && $userBranchId != 0) {
+            $query->whereHas('student', function ($q) use ($userBranchId) {
+                $q->where('branch_id', $userBranchId);
+            });
+        }
+
+        // Search filter
+        $searchValue = $request->get('search');
+        if (! empty($searchValue)) {
+            $query->where(function ($q) use ($searchValue) {
+                $q->where('voucher_no', 'like', "%{$searchValue}%")
+                    ->orWhere('amount_paid', 'like', "%{$searchValue}%")
+                    ->orWhere('payment_type', 'like', "%{$searchValue}%")
+                    ->orWhereHas('paymentInvoice', function ($q) use ($searchValue) {
+                        $q->where('invoice_number', 'like', "%{$searchValue}%");
+                    })
+                    ->orWhereHas('student', function ($q) use ($searchValue) {
+                        $q->where('name', 'like', "%{$searchValue}%")
+                            ->orWhere('student_unique_id', 'like', "%{$searchValue}%");
+                    })
+                    ->orWhereHas('createdBy', function ($q) use ($searchValue) {
+                        $q->where('name', 'like', "%{$searchValue}%");
+                    });
+            });
+        }
+
+        // Payment type filter
+        $paymentTypeFilter = $request->get('payment_type_filter');
+        if (! empty($paymentTypeFilter)) {
+            $typeMap = [
+                'T_partial'    => 'partial',
+                'T_full_paid'  => 'full',
+                'T_discounted' => 'discounted',
+            ];
+            if (isset($typeMap[$paymentTypeFilter])) {
+                $query->where('payment_type', $typeMap[$paymentTypeFilter]);
+            }
+        }
+
+        $transactions = $query->orderBy('id', 'desc')->get();
+
+        $data    = [];
+        $counter = 1;
+
+        foreach ($transactions as $transaction) {
+            $data[] = [
+                'sl'           => $counter++,
+                'invoice_no'   => $transaction->paymentInvoice->invoice_number,
+                'voucher_no'   => $transaction->voucher_no,
+                'amount_paid'  => $transaction->amount_paid,
+                'payment_type' => ucfirst($transaction->payment_type),
+                'student'      => $transaction->student->name . ', ' . $transaction->student->student_unique_id,
+                'payment_date' => $transaction->created_at->format('h:i:s A, d-M-Y'),
+                'received_by'  => $transaction->createdBy->name ?? 'System',
+            ];
+        }
+
+        return response()->json(['data' => $data]);
     }
 
     /**
@@ -103,8 +344,8 @@ class PaymentTransactionController extends Controller
         $validated = $request->validate([
             'transaction_student' => 'required|exists:students,id',
             'transaction_invoice' => 'required|exists:payment_invoices,id',
-            'transaction_type' => 'required|in:full,partial,discounted',
-            'transaction_amount' => 'required|numeric|min:1',
+            'transaction_type'    => 'required|in:full,partial,discounted',
+            'transaction_amount'  => 'required|numeric|min:1',
             'transaction_remarks' => 'nullable|string|max:1000',
         ]);
 
@@ -117,9 +358,9 @@ class PaymentTransactionController extends Controller
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            $maxAmount = $invoice->amount_due;
+            $maxAmount   = $invoice->amount_due;
             $paymentType = $validated['transaction_type'];
-            $amount = $validated['transaction_amount'];
+            $amount      = $validated['transaction_amount'];
 
             /* ---------------- Amount validation ---------------- */
             if ($invoice->status === 'partially_paid') {
@@ -147,23 +388,23 @@ class PaymentTransactionController extends Controller
 
             /* ---------------- Create transaction ---------------- */
             $transaction = PaymentTransaction::create([
-                'student_id' => $invoice->student_id,
-                'student_classname' => $invoice->student->class->name . ' (' . $invoice->student->class->class_numeral . ')',
+                'student_id'         => $invoice->student_id,
+                'student_classname'  => $invoice->student->class->name . ' (' . $invoice->student->class->class_numeral . ')',
                 'payment_invoice_id' => $invoice->id,
-                'amount_paid' => $amount,
-                'remaining_amount' => $newAmountDue,
-                'payment_type' => $paymentType,
-                'voucher_no' => $voucherNo,
-                'created_by' => auth()->id(),
-                'remarks' => $validated['transaction_remarks'],
-                'is_approved' => $paymentType !== 'discounted',
+                'amount_paid'        => $amount,
+                'remaining_amount'   => $newAmountDue,
+                'payment_type'       => $paymentType,
+                'voucher_no'         => $voucherNo,
+                'created_by'         => auth()->id(),
+                'remarks'            => $validated['transaction_remarks'],
+                'is_approved'        => $paymentType !== 'discounted',
             ]);
 
             /* ---------------- Update invoice ---------------- */
             if ($paymentType !== 'discounted') {
                 $invoice->update([
                     'amount_due' => max($newAmountDue, 0),
-                    'status' => $newAmountDue <= 0 ? 'paid' : 'partially_paid',
+                    'status'     => $newAmountDue <= 0 ? 'paid' : 'partially_paid',
                 ]);
             }
 
@@ -175,9 +416,9 @@ class PaymentTransactionController extends Controller
             if ($invoice->invoiceType?->type_name === 'Sheet Fee') {
                 $sheet = $invoice->student->class?->sheet;
 
-                if ($sheet && !SheetPayment::where('invoice_id', $invoice->id)->exists()) {
+                if ($sheet && ! SheetPayment::where('invoice_id', $invoice->id)->exists()) {
                     SheetPayment::create([
-                        'sheet_id' => $sheet->id,
+                        'sheet_id'   => $sheet->id,
                         'invoice_id' => $invoice->id,
                         'student_id' => $invoice->student_id,
                     ]);
@@ -189,23 +430,23 @@ class PaymentTransactionController extends Controller
 
             if ($mobile) {
                 send_auto_sms('student_payment_success', $mobile, [
-                    'student_name' => $transaction->student->name,
-                    'invoice_no' => $invoice->invoice_number,
-                    'voucher_no' => $transaction->voucher_no,
-                    'paid_amount' => $transaction->amount_paid,
+                    'student_name'     => $transaction->student->name,
+                    'invoice_no'       => $invoice->invoice_number,
+                    'voucher_no'       => $transaction->voucher_no,
+                    'paid_amount'      => $transaction->amount_paid,
                     'remaining_amount' => $transaction->remaining_amount,
-                    'payment_time' => $transaction->created_at->format('d M Y, h:i A'),
+                    'payment_time'     => $transaction->created_at->format('d M Y, h:i A'),
                 ]);
             }
 
             // Store transaction data for response
             $transactionData = [
-                'id' => $transaction->id,
-                'student_id' => $transaction->student_id,
-                'invoice_id' => $transaction->payment_invoice_id,
-                'voucher_no' => $transaction->voucher_no,
+                'id'          => $transaction->id,
+                'student_id'  => $transaction->student_id,
+                'invoice_id'  => $transaction->payment_invoice_id,
+                'voucher_no'  => $transaction->voucher_no,
                 'amount_paid' => $transaction->amount_paid,
-                'year' => $invoice->created_at->format('Y'),
+                'year'        => $invoice->created_at->format('Y'),
                 'is_approved' => $transaction->is_approved,
             ];
 
@@ -220,8 +461,8 @@ class PaymentTransactionController extends Controller
         // Return JSON for AJAX requests
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
-                'success' => true,
-                'message' => 'Transaction recorded successfully.',
+                'success'     => true,
+                'message'     => 'Transaction recorded successfully.',
                 'transaction' => $transactionData,
             ]);
         }

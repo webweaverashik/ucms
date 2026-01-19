@@ -1,76 +1,113 @@
 "use strict";
 
-var KTAllTransactionsList = function () {
+var KTAllTransactionsList = (function () {
       // Define shared variables
       var datatables = {};
       var activeDatatable = null;
+      var activeBranchId = null;
       var initializedTabs = {};
+      var currentSearchValue = "";
+      var currentPaymentTypeFilter = "";
+      var searchDebounceTimer = null;
 
-      // Get DataTable config based on whether branch column is shown
-      var getDataTableConfig = function (showBranchColumn) {
-            var config = {
-                  "info": true,
-                  'order': [],
-                  "lengthMenu": [10, 25, 50, 100],
-                  "pageLength": 10,
-                  "lengthChange": true,
-                  "autoWidth": false,
-                  'columnDefs': []
+      // Get DataTable config for AJAX loading
+      var getDataTableConfig = function (branchId) {
+            return {
+                  processing: true,
+                  serverSide: true,
+                  ajax: {
+                        url: routeAjaxData,
+                        type: "GET",
+                        data: function (d) {
+                              d.branch_id = branchId;
+                              d.payment_type_filter = currentPaymentTypeFilter;
+                        },
+                        error: function (xhr, error, thrown) {
+                              console.error("DataTables AJAX error:", error, thrown);
+                              toastr.error("Failed to load transactions. Please refresh the page.");
+                        },
+                  },
+                  columns: [
+                        { data: "sl", orderable: false, searchable: false },
+                        { data: "invoice_no", name: "invoice_no" },
+                        { data: "voucher_no", name: "voucher_no" },
+                        { data: "amount_paid", name: "amount_paid" },
+                        {
+                              data: "payment_type_filter",
+                              name: "payment_type_filter",
+                              visible: false,
+                        },
+                        { data: "payment_type", name: "payment_type", orderable: false },
+                        { data: "student", name: "student" },
+                        { data: "payment_date", name: "payment_date" },
+                        { data: "received_by", name: "received_by" },
+                        { data: "actions", orderable: false, searchable: false },
+                  ],
+                  order: [[0, "desc"]],
+                  pageLength: 10,
+                  lengthMenu: [10, 25, 50, 100],
+                  language: {
+                        processing:
+                              '<div class="d-flex align-items-center"><span class="spinner-border spinner-border-sm me-2" role="status"></span> Loading...</div>',
+                        emptyTable: "No transactions found",
+                        zeroRecords: "No matching transactions found",
+                  },
+                  drawCallback: function () {
+                        KTMenu.init();
+                        initTooltips();
+                  },
             };
+      };
 
-            // Adjust action column index based on branch column visibility
-            if (showBranchColumn) {
-                  config.columnDefs.push({ orderable: false, targets: 10 }); // Actions column with branch
-            } else {
-                  config.columnDefs.push({ orderable: false, targets: 9 }); // Actions column without branch
-            }
-
-            return config;
+      // Initialize tooltips
+      var initTooltips = function () {
+            var tooltipTriggerList = [].slice.call(
+                  document.querySelectorAll('[data-bs-toggle="tooltip"]')
+            );
+            tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+                  new bootstrap.Tooltip(tooltipTriggerEl);
+            });
       };
 
       // Initialize a single datatable
-      var initSingleDatatable = function (tableId, showBranchColumn) {
+      var initSingleDatatable = function (tableId, branchId) {
             var table = document.getElementById(tableId);
             if (!table) {
                   return null;
             }
 
-            var config = getDataTableConfig(showBranchColumn);
+            var config = getDataTableConfig(branchId);
             var datatable = $(table).DataTable(config);
-
-            // Re-init functions on every table re-draw
-            datatable.on('draw', function () {
-                  KTMenu.init();
-            });
 
             return datatable;
       };
 
       // Initialize datatables for admin (multiple tabs)
       var initAdminDatatables = function () {
-            // Initialize the first branch tab (it's active by default)
             if (branchIds && branchIds.length > 0) {
                   var firstBranchId = branchIds[0];
-                  var firstTableId = 'kt_transactions_table_branch_' + firstBranchId;
-                  var firstBranchTable = document.getElementById(firstTableId);
+                  var firstTableId = "kt_transactions_table_branch_" + firstBranchId;
 
-                  if (firstBranchTable) {
-                        datatables[firstBranchId] = initSingleDatatable(firstTableId, false);
-                        activeDatatable = datatables[firstBranchId];
-                        initializedTabs[firstBranchId] = true;
-                  }
+                  datatables[firstBranchId] = initSingleDatatable(firstTableId, firstBranchId);
+                  activeDatatable = datatables[firstBranchId];
+                  activeBranchId = firstBranchId;
+                  initializedTabs[firstBranchId] = true;
             }
 
             // Setup tab change event listener for lazy loading
-            var tabLinks = document.querySelectorAll('#transactionBranchTabs a[data-bs-toggle="tab"]');
+            var tabLinks = document.querySelectorAll(
+                  '#transactionBranchTabs a[data-bs-toggle="tab"]'
+            );
             tabLinks.forEach(function (tabLink) {
-                  tabLink.addEventListener('shown.bs.tab', function (event) {
-                        var branchId = event.target.getAttribute('data-branch-id');
-                        var tableId = 'kt_transactions_table_branch_' + branchId;
+                  tabLink.addEventListener("shown.bs.tab", function (event) {
+                        var branchId = event.target.getAttribute("data-branch-id");
+                        var tableId = "kt_transactions_table_branch_" + branchId;
+
+                        activeBranchId = branchId;
 
                         // Initialize datatable for this tab if not already done
                         if (!initializedTabs[branchId]) {
-                              datatables[branchId] = initSingleDatatable(tableId, false);
+                              datatables[branchId] = initSingleDatatable(tableId, branchId);
                               initializedTabs[branchId] = true;
                         }
 
@@ -81,181 +118,396 @@ var KTAllTransactionsList = function () {
                         if (activeDatatable) {
                               activeDatatable.columns.adjust().draw(false);
                         }
-
-                        // Reinitialize export buttons for the active table
-                        updateExportButtons();
                   });
             });
       };
 
       // Initialize datatable for non-admin (single table)
       var initNonAdminDatatable = function () {
-            var table = document.getElementById('kt_transactions_table');
+            var table = document.getElementById("kt_transactions_table");
             if (!table) {
                   return;
             }
 
-            datatables['single'] = initSingleDatatable('kt_transactions_table', false);
-            activeDatatable = datatables['single'];
+            var branchId = table.getAttribute("data-branch-id") || "";
+            datatables["single"] = initSingleDatatable("kt_transactions_table", branchId);
+            activeDatatable = datatables["single"];
+            activeBranchId = branchId;
       };
 
-      // Hook export buttons
-      var exportButtons = function () {
-            updateExportButtons();
-
-            // Hook dropdown export actions
-            const exportItems = document.querySelectorAll('#kt_table_report_dropdown_menu [data-row-export]');
-            exportItems.forEach(exportItem => {
-                  exportItem.addEventListener('click', function (e) {
-                        e.preventDefault();
-                        const exportValue = this.getAttribute('data-row-export');
-                        const target = document.querySelector('.buttons-' + exportValue);
-                        if (target) {
-                              target.click();
-                        } else {
-                              console.warn('Export button not found:', exportValue);
-                        }
-                  });
-            });
-      };
-
-      // Update export buttons for the active datatable
-      var updateExportButtons = function () {
-            if (!activeDatatable) return;
-
-            const documentTitle = 'Transactions Report';
-
-            // Clear existing buttons
-            var hiddenContainer = document.getElementById('kt_hidden_export_buttons');
-            if (hiddenContainer) {
-                  hiddenContainer.innerHTML = '';
-            }
-
-            // Create new buttons for the active datatable
-            new $.fn.dataTable.Buttons(activeDatatable, {
-                  buttons: [
-                        {
-                              extend: 'copyHtml5',
-                              className: 'buttons-copy',
-                              title: documentTitle,
-                              exportOptions: {
-                                    columns: ':visible:not(.not-export)'
-                              }
-                        },
-                        {
-                              extend: 'excelHtml5',
-                              className: 'buttons-excel',
-                              title: documentTitle,
-                              exportOptions: {
-                                    columns: ':visible:not(.not-export)'
-                              }
-                        },
-                        {
-                              extend: 'csvHtml5',
-                              className: 'buttons-csv',
-                              title: documentTitle,
-                              exportOptions: {
-                                    columns: ':visible:not(.not-export)'
-                              }
-                        },
-                        {
-                              extend: 'pdfHtml5',
-                              className: 'buttons-pdf',
-                              title: documentTitle,
-                              exportOptions: {
-                                    columns: ':visible:not(.not-export)',
-                                    modifier: {
-                                          page: 'all',
-                                          search: 'applied'
-                                    }
-                              },
-                              customize: function (doc) {
-                                    doc.pageMargins = [20, 20, 20, 40];
-                                    doc.defaultStyle.fontSize = 10;
-                                    if (typeof getPdfFooterWithPrintTime === 'function') {
-                                          doc.footer = getPdfFooterWithPrintTime();
-                                    }
-                              }
-                        }
-                  ]
-            }).container().appendTo('#kt_hidden_export_buttons');
-      };
-
-      // Search Datatable
+      // Search Handler with debounce
       var handleSearch = function () {
-            const filterSearch = document.querySelector('[data-transaction-table-filter="search"]');
+            const filterSearch = document.querySelector(
+                  '[data-transaction-table-filter="search"]'
+            );
             if (!filterSearch) return;
 
-            filterSearch.addEventListener('keyup', function (e) {
-                  if (activeDatatable) {
-                        activeDatatable.search(e.target.value).draw();
-                  }
+            filterSearch.addEventListener("keyup", function (e) {
+                  clearTimeout(searchDebounceTimer);
+                  currentSearchValue = e.target.value;
+
+                  searchDebounceTimer = setTimeout(function () {
+                        if (activeDatatable) {
+                              activeDatatable.search(currentSearchValue).draw();
+                        }
+                  }, 400);
             });
       };
 
-      // Filter Datatable
+      // Filter Handler
       var handleFilter = function () {
-            const filterForm = document.querySelector('[data-transaction-table-filter="form"]');
+            const filterForm = document.querySelector(
+                  '[data-transaction-table-filter="form"]'
+            );
             if (!filterForm) return;
 
-            const filterButton = filterForm.querySelector('[data-transaction-table-filter="filter"]');
-            const resetButton = filterForm.querySelector('[data-transaction-table-filter="reset"]');
-            const selectOptions = filterForm.querySelectorAll('select');
+            const filterButton = filterForm.querySelector(
+                  '[data-transaction-table-filter="filter"]'
+            );
+            const resetButton = filterForm.querySelector(
+                  '[data-transaction-table-filter="reset"]'
+            );
+            const paymentTypeSelect = document.getElementById(
+                  "payment_type_filter_select"
+            );
 
             // Filter datatable on submit
             if (filterButton) {
-                  filterButton.addEventListener('click', function () {
-                        var filterString = '';
-
-                        selectOptions.forEach((item, index) => {
-                              if (item.value && item.value !== '') {
-                                    if (index !== 0) {
-                                          filterString += ' ';
-                                    }
-                                    filterString += item.value;
-                              }
-                        });
+                  filterButton.addEventListener("click", function () {
+                        currentPaymentTypeFilter = paymentTypeSelect
+                              ? paymentTypeSelect.value
+                              : "";
 
                         if (activeDatatable) {
-                              activeDatatable.search(filterString).draw();
+                              activeDatatable.ajax.reload();
                         }
                   });
             }
 
-            // Reset datatable
+            // Reset filter
             if (resetButton) {
-                  resetButton.addEventListener('click', function () {
-                        selectOptions.forEach((item) => {
-                              $(item).val(null).trigger('change');
-                        });
+                  resetButton.addEventListener("click", function () {
+                        if (paymentTypeSelect) {
+                              $(paymentTypeSelect).val(null).trigger("change");
+                        }
+                        currentPaymentTypeFilter = "";
 
                         if (activeDatatable) {
-                              activeDatatable.search('').draw();
+                              activeDatatable.ajax.reload();
                         }
                   });
             }
       };
 
+      // Export handlers using SheetJS and jsPDF
+      var handleExport = function () {
+            const exportItems = document.querySelectorAll(
+                  "#kt_table_report_dropdown_menu [data-row-export]"
+            );
+
+            exportItems.forEach((exportItem) => {
+                  exportItem.addEventListener("click", function (e) {
+                        e.preventDefault();
+
+                        const exportType = this.getAttribute("data-row-export");
+                        const exportBtn = document.getElementById("export_dropdown_btn");
+
+                        // Show loading state
+                        if (exportBtn) {
+                              exportBtn.classList.add("export-loading");
+                              exportBtn.innerHTML =
+                                    '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Exporting...';
+                        }
+
+                        // Fetch all data for export
+                        fetchExportData()
+                              .then((data) => {
+                                    switch (exportType) {
+                                          case "copy":
+                                                copyToClipboard(data);
+                                                break;
+                                          case "excel":
+                                                exportToExcel(data);
+                                                break;
+                                          case "csv":
+                                                exportToCSV(data);
+                                                break;
+                                          case "pdf":
+                                                exportToPDF(data);
+                                                break;
+                                    }
+                              })
+                              .catch((error) => {
+                                    console.error("Export error:", error);
+                                    toastr.error("Failed to export data. Please try again.");
+                              })
+                              .finally(() => {
+                                    // Reset button state
+                                    if (exportBtn) {
+                                          exportBtn.classList.remove("export-loading");
+                                          exportBtn.innerHTML =
+                                                '<i class="ki-outline ki-exit-up fs-2"></i>Export';
+                                    }
+                              });
+                  });
+            });
+      };
+
+      // Fetch export data from server
+      var fetchExportData = function () {
+            return new Promise((resolve, reject) => {
+                  const params = new URLSearchParams({
+                        branch_id: activeBranchId || "",
+                        search: currentSearchValue,
+                        payment_type_filter: currentPaymentTypeFilter,
+                  });
+
+                  fetch(`${routeExportData}?${params.toString()}`, {
+                        method: "GET",
+                        headers: {
+                              "X-CSRF-TOKEN": csrfToken,
+                              Accept: "application/json",
+                        },
+                  })
+                        .then((response) => {
+                              if (!response.ok) throw new Error("Network response was not ok");
+                              return response.json();
+                        })
+                        .then((data) => resolve(data.data))
+                        .catch((error) => reject(error));
+            });
+      };
+
+      // Copy to clipboard
+      var copyToClipboard = function (data) {
+            const headers = [
+                  "SL",
+                  "Invoice No.",
+                  "Voucher No.",
+                  "Amount (Tk)",
+                  "Payment Type",
+                  "Student",
+                  "Payment Date",
+                  "Received By",
+            ];
+
+            let text = headers.join("\t") + "\n";
+
+            data.forEach((row) => {
+                  text +=
+                        [
+                              row.sl,
+                              row.invoice_no,
+                              row.voucher_no,
+                              row.amount_paid,
+                              row.payment_type,
+                              row.student,
+                              row.payment_date,
+                              row.received_by,
+                        ].join("\t") + "\n";
+            });
+
+            navigator.clipboard
+                  .writeText(text)
+                  .then(() => {
+                        toastr.success("Data copied to clipboard!");
+                  })
+                  .catch((err) => {
+                        console.error("Copy failed:", err);
+                        // Fallback for older browsers
+                        const textarea = document.createElement("textarea");
+                        textarea.value = text;
+                        document.body.appendChild(textarea);
+                        textarea.select();
+                        document.execCommand("copy");
+                        document.body.removeChild(textarea);
+                        toastr.success("Data copied to clipboard!");
+                  });
+      };
+
+      // Export to Excel using SheetJS
+      var exportToExcel = function (data) {
+            const headers = [
+                  "SL",
+                  "Invoice No.",
+                  "Voucher No.",
+                  "Amount (Tk)",
+                  "Payment Type",
+                  "Student",
+                  "Payment Date",
+                  "Received By",
+            ];
+
+            const wsData = [headers];
+
+            data.forEach((row) => {
+                  wsData.push([
+                        row.sl,
+                        row.invoice_no,
+                        row.voucher_no,
+                        row.amount_paid,
+                        row.payment_type,
+                        row.student,
+                        row.payment_date,
+                        row.received_by,
+                  ]);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Transactions");
+
+            // Set column widths
+            ws["!cols"] = [
+                  { wch: 5 },
+                  { wch: 15 },
+                  { wch: 25 },
+                  { wch: 12 },
+                  { wch: 12 },
+                  { wch: 30 },
+                  { wch: 22 },
+                  { wch: 15 },
+            ];
+
+            const fileName = `Transactions_Report_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+            toastr.success("Excel file downloaded successfully!");
+      };
+
+      // Export to CSV using SheetJS
+      var exportToCSV = function (data) {
+            const headers = [
+                  "SL",
+                  "Invoice No.",
+                  "Voucher No.",
+                  "Amount (Tk)",
+                  "Payment Type",
+                  "Student",
+                  "Payment Date",
+                  "Received By",
+            ];
+
+            const wsData = [headers];
+
+            data.forEach((row) => {
+                  wsData.push([
+                        row.sl,
+                        row.invoice_no,
+                        row.voucher_no,
+                        row.amount_paid,
+                        row.payment_type,
+                        row.student,
+                        row.payment_date,
+                        row.received_by,
+                  ]);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            const csv = XLSX.utils.sheet_to_csv(ws);
+
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const link = document.createElement("a");
+            const fileName = `Transactions_Report_${new Date().toISOString().slice(0, 10)}.csv`;
+
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            link.click();
+            URL.revokeObjectURL(link.href);
+            toastr.success("CSV file downloaded successfully!");
+      };
+
+      // Export to PDF using jsPDF
+      var exportToPDF = function (data) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF("l", "mm", "a4"); // Landscape orientation
+
+            const headers = [
+                  ["SL", "Invoice No.", "Voucher No.", "Amount", "Type", "Student", "Payment Date", "Received By"],
+            ];
+
+            const rows = data.map((row) => [
+                  row.sl,
+                  row.invoice_no,
+                  row.voucher_no,
+                  row.amount_paid,
+                  row.payment_type,
+                  row.student,
+                  row.payment_date,
+                  row.received_by,
+            ]);
+
+            // Title
+            doc.setFontSize(16);
+            doc.text("Transactions Report", 14, 15);
+
+            // Date
+            doc.setFontSize(10);
+            doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 22);
+
+            // Table
+            doc.autoTable({
+                  head: headers,
+                  body: rows,
+                  startY: 28,
+                  styles: {
+                        fontSize: 8,
+                        cellPadding: 2,
+                  },
+                  headStyles: {
+                        fillColor: [41, 128, 185],
+                        textColor: 255,
+                        fontStyle: "bold",
+                  },
+                  alternateRowStyles: {
+                        fillColor: [245, 245, 245],
+                  },
+                  columnStyles: {
+                        0: { cellWidth: 10 },
+                        1: { cellWidth: 25 },
+                        2: { cellWidth: 40 },
+                        3: { cellWidth: 20 },
+                        4: { cellWidth: 20 },
+                        5: { cellWidth: 50 },
+                        6: { cellWidth: 40 },
+                        7: { cellWidth: 25 },
+                  },
+                  margin: { top: 28 },
+                  didDrawPage: function (data) {
+                        // Footer
+                        doc.setFontSize(8);
+                        doc.text(
+                              `Page ${doc.internal.getNumberOfPages()}`,
+                              doc.internal.pageSize.width - 20,
+                              doc.internal.pageSize.height - 10
+                        );
+                  },
+            });
+
+            const fileName = `Transactions_Report_${new Date().toISOString().slice(0, 10)}.pdf`;
+            doc.save(fileName);
+            toastr.success("PDF file downloaded successfully!");
+      };
+
       // Delete Transaction
-      const handleDeletion = function () {
-            document.addEventListener('click', function (e) {
-                  const deleteBtn = e.target.closest('.delete-txn');
+      var handleDeletion = function () {
+            document.addEventListener("click", function (e) {
+                  const deleteBtn = e.target.closest(".delete-txn");
                   if (!deleteBtn) return;
 
                   e.preventDefault();
 
-                  let txnId = deleteBtn.getAttribute('data-txn-id');
-                  let url = routeDeleteTxn.replace(':id', txnId);
+                  let txnId = deleteBtn.getAttribute("data-txn-id");
+                  let url = routeDeleteTxn.replace(":id", txnId);
 
                   Swal.fire({
-                        title: 'Are you sure you want to delete?',
+                        title: "Are you sure you want to delete?",
                         text: "Once deleted, this transaction will be removed.",
-                        icon: 'warning',
+                        icon: "warning",
                         showCancelButton: true,
-                        confirmButtonColor: '#3085d6',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Yes, delete it',
-                        cancelButtonText: 'Cancel',
+                        confirmButtonColor: "#3085d6",
+                        cancelButtonColor: "#d33",
+                        confirmButtonText: "Yes, delete it",
+                        cancelButtonText: "Cancel",
                   }).then((result) => {
                         if (result.isConfirmed) {
                               fetch(url, {
@@ -265,24 +517,34 @@ var KTAllTransactionsList = function () {
                                           "X-CSRF-TOKEN": csrfToken,
                                     },
                               })
-                                    .then(response => response.json())
-                                    .then(data => {
+                                    .then((response) => response.json())
+                                    .then((data) => {
                                           if (data.success) {
                                                 Swal.fire({
-                                                      title: 'Success!',
-                                                      text: 'Transaction deleted successfully.',
-                                                      icon: 'success',
-                                                      confirmButtonText: 'Okay',
+                                                      title: "Success!",
+                                                      text: "Transaction deleted successfully.",
+                                                      icon: "success",
+                                                      confirmButtonText: "Okay",
                                                 }).then(() => {
-                                                      location.reload();
+                                                      if (activeDatatable) {
+                                                            activeDatatable.ajax.reload(null, false);
+                                                      }
                                                 });
                                           } else {
-                                                Swal.fire('Failed!', 'Transaction could not be deleted.', 'error');
+                                                Swal.fire(
+                                                      "Failed!",
+                                                      "Transaction could not be deleted.",
+                                                      "error"
+                                                );
                                           }
                                     })
-                                    .catch(error => {
+                                    .catch((error) => {
                                           console.error("Fetch Error:", error);
-                                          Swal.fire('Failed!', 'An error occurred. Please contact support.', 'error');
+                                          Swal.fire(
+                                                "Failed!",
+                                                "An error occurred. Please contact support.",
+                                                "error"
+                                          );
                                     });
                         }
                   });
@@ -290,23 +552,23 @@ var KTAllTransactionsList = function () {
       };
 
       // Transaction approval AJAX
-      const handleApproval = function () {
-            document.addEventListener('click', function (e) {
-                  const approveBtn = e.target.closest('.approve-txn');
+      var handleApproval = function () {
+            document.addEventListener("click", function (e) {
+                  const approveBtn = e.target.closest(".approve-txn");
                   if (!approveBtn) return;
 
                   e.preventDefault();
 
-                  let txnId = approveBtn.getAttribute('data-txn-id');
+                  let txnId = approveBtn.getAttribute("data-txn-id");
 
                   Swal.fire({
-                        title: 'Are you sure?',
+                        title: "Are you sure?",
                         text: "Do you want to approve this transaction?",
-                        icon: 'warning',
+                        icon: "warning",
                         showCancelButton: true,
-                        confirmButtonColor: '#3085d6',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Yes, approve!'
+                        confirmButtonColor: "#3085d6",
+                        cancelButtonColor: "#d33",
+                        confirmButtonText: "Yes, approve!",
                   }).then((result) => {
                         if (result.isConfirmed) {
                               fetch(`/transactions/${txnId}/approve`, {
@@ -314,17 +576,19 @@ var KTAllTransactionsList = function () {
                                     headers: {
                                           "Content-Type": "application/json",
                                           "X-CSRF-TOKEN": csrfToken,
-                                    }
+                                    },
                               })
-                                    .then(response => response.json())
-                                    .then(data => {
+                                    .then((response) => response.json())
+                                    .then((data) => {
                                           if (data.success) {
                                                 Swal.fire({
                                                       title: "Approved!",
                                                       text: "Transaction approved successfully.",
                                                       icon: "success",
                                                 }).then(() => {
-                                                      location.reload();
+                                                      if (activeDatatable) {
+                                                            activeDatatable.ajax.reload(null, false);
+                                                      }
                                                 });
                                           } else {
                                                 Swal.fire({
@@ -334,7 +598,7 @@ var KTAllTransactionsList = function () {
                                                 });
                                           }
                                     })
-                                    .catch(error => {
+                                    .catch((error) => {
                                           console.error("Fetch Error:", error);
                                           Swal.fire({
                                                 title: "Error!",
@@ -348,53 +612,58 @@ var KTAllTransactionsList = function () {
       };
 
       // Statement Download Handler
-      const handleStatementDownload = function () {
-            document.addEventListener('click', function (e) {
-                  const downloadBtn = e.target.closest('.download-statement');
+      var handleStatementDownload = function () {
+            document.addEventListener("click", function (e) {
+                  const downloadBtn = e.target.closest(".download-statement");
                   if (!downloadBtn) return;
 
                   e.preventDefault();
 
-                  const studentId = downloadBtn.getAttribute('data-student-id');
-                  const year = downloadBtn.getAttribute('data-year');
+                  const studentId = downloadBtn.getAttribute("data-student-id");
+                  const year = downloadBtn.getAttribute("data-year");
 
                   if (!studentId || !year) {
                         Swal.fire({
-                              title: 'Error!',
-                              text: 'Missing student or year information.',
-                              icon: 'error',
+                              title: "Error!",
+                              text: "Missing student or year information.",
+                              icon: "error",
                         });
                         return;
                   }
 
                   // Show loading state on button
                   const originalIcon = downloadBtn.innerHTML;
-                  downloadBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
-                  downloadBtn.style.pointerEvents = 'none';
+                  downloadBtn.innerHTML =
+                        '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+                  downloadBtn.style.pointerEvents = "none";
 
                   // Create FormData for POST request
                   const formData = new FormData();
-                  formData.append('student_id', studentId);
-                  formData.append('statement_year', year);
+                  formData.append("student_id", studentId);
+                  formData.append("statement_year", year);
 
                   fetch(routeDownloadStatement, {
                         method: "POST",
                         headers: {
                               "X-CSRF-TOKEN": csrfToken,
                         },
-                        body: formData
+                        body: formData,
                   })
-                        .then(response => {
+                        .then((response) => {
                               if (!response.ok) {
-                                    return response.text().then(text => {
-                                          throw new Error(text || 'Server error occurred');
+                                    return response.text().then((text) => {
+                                          throw new Error(text || "Server error occurred");
                                     });
                               }
                               return response.text();
                         })
-                        .then(html => {
+                        .then((html) => {
                               // Create a new window with the HTML content
-                              const printWindow = window.open("", "_blank", "width=900,height=700,scrollbars=yes,resizable=yes");
+                              const printWindow = window.open(
+                                    "",
+                                    "_blank",
+                                    "width=900,height=700,scrollbars=yes,resizable=yes"
+                              );
                               if (printWindow) {
                                     printWindow.document.open();
                                     printWindow.document.write(html);
@@ -402,81 +671,88 @@ var KTAllTransactionsList = function () {
                                     printWindow.focus();
                               } else {
                                     Swal.fire({
-                                          title: 'Popup Blocked!',
-                                          text: 'Please allow popups for this website to view the statement.',
-                                          icon: 'warning',
+                                          title: "Popup Blocked!",
+                                          text: "Please allow popups for this website to view the statement.",
+                                          icon: "warning",
                                     });
                               }
 
                               // Restore button state
                               downloadBtn.innerHTML = originalIcon;
-                              downloadBtn.style.pointerEvents = 'auto';
+                              downloadBtn.style.pointerEvents = "auto";
                         })
-                        .catch(error => {
+                        .catch((error) => {
                               console.error("Statement Download Error:", error);
 
                               const errorMessage = error.message.toLowerCase();
-                              if (errorMessage.includes('no transactions')) {
+                              if (errorMessage.includes("no transactions")) {
                                     Swal.fire({
-                                          title: 'No Data Found',
-                                          text: 'No transactions found for the selected year.',
-                                          icon: 'info',
+                                          title: "No Data Found",
+                                          text: "No transactions found for the selected year.",
+                                          icon: "info",
                                     });
                               } else {
                                     Swal.fire({
-                                          title: 'Error!',
-                                          text: 'Failed to load statement. Please try again.',
-                                          icon: 'error',
+                                          title: "Error!",
+                                          text: "Failed to load statement. Please try again.",
+                                          icon: "error",
                                     });
                               }
 
                               // Restore button state
                               downloadBtn.innerHTML = originalIcon;
-                              downloadBtn.style.pointerEvents = 'auto';
+                              downloadBtn.style.pointerEvents = "auto";
                         });
             });
+      };
+
+      // Refresh current datatable (can be called after creating new transaction)
+      var refreshTable = function () {
+            if (activeDatatable) {
+                  activeDatatable.ajax.reload(null, false);
+            }
       };
 
       return {
             init: function () {
                   // Check if admin or non-admin based on the presence of tabs
-                  if (typeof isAdmin !== 'undefined' && isAdmin) {
+                  if (typeof isAdmin !== "undefined" && isAdmin) {
                         initAdminDatatables();
                   } else {
                         initNonAdminDatatable();
                   }
 
-                  exportButtons();
                   handleSearch();
                   handleFilter();
+                  handleExport();
                   handleDeletion();
                   handleApproval();
                   handleStatementDownload();
             },
             getActiveDatatable: function () {
                   return activeDatatable;
-            }
-      }
-}();
+            },
+            refreshTable: refreshTable,
+      };
+})();
 
-
-var KTAddTransaction = function () {
+var KTAddTransaction = (function () {
       // Shared variables
-      const element = document.getElementById('kt_modal_add_transaction');
+      const element = document.getElementById("kt_modal_add_transaction");
 
       // Early return if element doesn't exist
       if (!element) {
             return {
-                  init: function () { }
+                  init: function () { },
             };
       }
 
-      const form = element.querySelector('#kt_modal_add_transaction_form');
+      const form = element.querySelector("#kt_modal_add_transaction_form");
       const modal = bootstrap.Modal.getOrCreateInstance(element);
-      const branchSelect = document.getElementById('transaction_branch_select');
-      const studentSelect = document.getElementById('transaction_student_select');
-      const invoiceSelect = document.getElementById('student_due_invoice_select');
-      const amountInput = document.getElementById('transaction_amount_input');
+      const branchSelect = document.getElementById("transaction_branch_select");
+      const studentSelect = document.getElementById("transaction_student_select");
+      const invoiceSelect = document.getElementById("student_due_invoice_select");
+      const amountInput = document.getElementById("transaction_amount_input");
 
       // Store invoices data
       let invoices = [];
@@ -486,13 +762,23 @@ var KTAddTransaction = function () {
 
       // Format "07_2025" to "July 2025"
       var formatMonthYear = function (raw) {
-            if (!raw) return '';
+            if (!raw) return "";
 
-            const [monthStr, year] = raw.split('_');
+            const [monthStr, year] = raw.split("_");
             const month = parseInt(monthStr, 10);
             const monthNames = [
-                  'January', 'February', 'March', 'April', 'May', 'June',
-                  'July', 'August', 'September', 'October', 'November', 'December'
+                  "January",
+                  "February",
+                  "March",
+                  "April",
+                  "May",
+                  "June",
+                  "July",
+                  "August",
+                  "September",
+                  "October",
+                  "November",
+                  "December",
             ];
 
             if (month >= 1 && month <= 12 && year) {
@@ -500,63 +786,76 @@ var KTAddTransaction = function () {
             }
 
             return raw;
-      }
+      };
 
       // Handle branch select (for admin)
       var handleBranchSelect = function () {
             if (!branchSelect) return;
 
-            $(branchSelect).on('change', function () {
+            $(branchSelect).on("change", function () {
                   const branchId = $(this).val();
                   const $studentSelect = $(studentSelect);
 
                   // Clear student select
-                  $studentSelect.empty().append('<option value="">Select a student</option>');
+                  $studentSelect
+                        .empty()
+                        .append('<option value="">Select a student</option>');
 
                   // Clear invoice select
-                  $(invoiceSelect).empty().append('<option value="">Select Due Invoice</option>');
+                  $(invoiceSelect)
+                        .empty()
+                        .append('<option value="">Select Due Invoice</option>');
 
                   // Reset amount input
-                  $(amountInput).val('').prop('disabled', true);
+                  $(amountInput).val("").prop("disabled", true);
 
                   if (!branchId) return;
 
                   // Populate students for selected branch
-                  if (typeof studentsByBranch !== 'undefined' && studentsByBranch[branchId]) {
-                        studentsByBranch[branchId].forEach(student => {
+                  if (
+                        typeof studentsByBranch !== "undefined" &&
+                        studentsByBranch[branchId]
+                  ) {
+                        studentsByBranch[branchId].forEach((student) => {
                               $studentSelect.append(
                                     `<option value="${student.id}">${student.name} (${student.student_unique_id})</option>`
                               );
                         });
                   }
             });
-      }
+      };
 
       // Fetch invoices on student select
       var handleStudentSelect = function () {
-            $(studentSelect).on('change', function () {
+            $(studentSelect).on("change", function () {
                   const studentId = $(this).val();
 
                   if (!studentId) return;
 
                   $.ajax({
                         url: `/students/${studentId}/due-invoices`,
-                        method: 'GET',
+                        method: "GET",
                         success: function (response) {
                               invoices = response;
 
                               const $invoiceSelect = $(invoiceSelect);
-                              $invoiceSelect.empty().append(`<option value="">Select Due Invoice</option>`);
+                              $invoiceSelect
+                                    .empty()
+                                    .append(`<option value="">Select Due Invoice</option>`);
 
                               if (response.length === 0) {
-                                    $invoiceSelect.append(`<option disabled>No due invoices found</option>`);
+                                    $invoiceSelect.append(
+                                          `<option disabled>No due invoices found</option>`
+                                    );
                               } else {
-                                    response.forEach(invoice => {
-                                          const total = Number(invoice.total_amount).toLocaleString('en-BD');
-                                          const due = Number(invoice.amount_due).toLocaleString('en-BD');
+                                    response.forEach((invoice) => {
+                                          const total = Number(invoice.total_amount).toLocaleString(
+                                                "en-BD"
+                                          );
+                                          const due = Number(invoice.amount_due).toLocaleString("en-BD");
                                           const label = invoice.month_year
                                                 ? formatMonthYear(invoice.month_year)
-                                                : (invoice.invoice_type || 'Unknown');
+                                                : invoice.invoice_type || "Unknown";
 
                                           $invoiceSelect.append(
                                                 `<option value="${invoice.id}">
@@ -566,119 +865,120 @@ var KTAddTransaction = function () {
                                     });
                               }
 
-                              $(amountInput)
-                                    .val('')
-                                    .prop('disabled', true)
-                                    .removeClass('is-invalid');
+                              $(amountInput).val("").prop("disabled", true).removeClass("is-invalid");
 
-                              $('#transaction_amount_error').remove();
-                              $('input[name="transaction_type"]').prop('disabled', false);
+                              $("#transaction_amount_error").remove();
+                              $('input[name="transaction_type"]').prop("disabled", false);
                         },
                         error: function () {
-                              alert('Failed to load due invoices. Please try again.');
-                        }
+                              alert("Failed to load due invoices. Please try again.");
+                        },
                   });
             });
-      }
+      };
 
       // Populate amount and adjust payment options when invoice selected
       var handleInvoiceSelect = function () {
-            $(invoiceSelect).on('change', function () {
+            $(invoiceSelect).on("change", function () {
                   const selectedId = $(this).val();
-                  const invoice = invoices.find(inv => inv.id == selectedId);
+                  const invoice = invoices.find((inv) => inv.id == selectedId);
 
                   if (invoice) {
                         const $amountInput = $(amountInput);
 
                         $amountInput
                               .val(invoice.amount_due)
-                              .prop('disabled', false)
-                              .data('max', invoice.amount_due)
-                              .attr('min', 1);
+                              .prop("disabled", false)
+                              .data("max", invoice.amount_due)
+                              .attr("min", 1);
 
-                        const $fullPaymentOption = $('input[name="transaction_type"][value="full"]');
-                        const $partialPaymentOption = $('input[name="transaction_type"][value="partial"]');
+                        const $fullPaymentOption = $(
+                              'input[name="transaction_type"][value="full"]'
+                        );
+                        const $partialPaymentOption = $(
+                              'input[name="transaction_type"][value="partial"]'
+                        );
 
                         if (invoice.amount_due < invoice.total_amount) {
                               // Invoice is partially paid
                               isPartiallyPaidInvoice = true;
-                              $fullPaymentOption.prop('disabled', true).prop('checked', false);
-                              $partialPaymentOption.prop('checked', true);
-                              $amountInput.val('');
+                              $fullPaymentOption.prop("disabled", true).prop("checked", false);
+                              $partialPaymentOption.prop("checked", true);
+                              $amountInput.val("");
                         } else {
                               // Fresh invoice
                               isPartiallyPaidInvoice = false;
-                              $fullPaymentOption.prop('disabled', false);
-                              $partialPaymentOption.prop('disabled', false);
-                              $fullPaymentOption.prop('checked', true);
+                              $fullPaymentOption.prop("disabled", false);
+                              $partialPaymentOption.prop("disabled", false);
+                              $fullPaymentOption.prop("checked", true);
                               $amountInput.val(invoice.amount_due);
                         }
                   }
             });
-      }
+      };
 
       // Toggle input behavior for payment type
       var handlePaymentTypeChange = function () {
-            $('input[name="transaction_type"]').on('change', function () {
+            $('input[name="transaction_type"]').on("change", function () {
                   const paymentType = $(this).val();
                   const $amountInput = $(amountInput);
                   const selectedId = $(invoiceSelect).val();
-                  const invoice = invoices.find(inv => inv.id == selectedId);
+                  const invoice = invoices.find((inv) => inv.id == selectedId);
 
                   if (invoice) {
-                        if (paymentType === 'partial') {
-                              $amountInput.val('');
-                        } else if (paymentType === 'discounted') {
-                              $amountInput.val('');
+                        if (paymentType === "partial") {
+                              $amountInput.val("");
+                        } else if (paymentType === "discounted") {
+                              $amountInput.val("");
                         } else {
                               $amountInput.val(invoice.amount_due);
                         }
                   }
             });
-      }
+      };
 
       // Validate amount input
       var handleAmountValidation = function () {
-            $(amountInput).on('input', function () {
+            $(amountInput).on("input", function () {
                   const amount = parseFloat($(this).val());
-                  const maxAmount = parseFloat($(this).data('max'));
+                  const maxAmount = parseFloat($(this).data("max"));
                   const paymentType = $('input[name="transaction_type"]:checked').val();
 
                   // Remove previous error state
-                  $(this).removeClass('is-invalid');
-                  $('#transaction_amount_error').remove();
+                  $(this).removeClass("is-invalid");
+                  $("#transaction_amount_error").remove();
 
                   // Validate the amount
                   let isValid = true;
-                  let errorMessage = '';
+                  let errorMessage = "";
 
                   if (isNaN(amount)) {
                         isValid = false;
-                        errorMessage = 'Please enter a valid number';
+                        errorMessage = "Please enter a valid number";
                   } else if (amount < 1) {
                         isValid = false;
-                        errorMessage = 'Amount must be at least ৳1';
+                        errorMessage = "Amount must be at least ৳1";
                   } else if (
-                        (paymentType === 'partial' || paymentType === 'discounted') &&
+                        (paymentType === "partial" || paymentType === "discounted") &&
                         !isPartiallyPaidInvoice &&
                         amount >= maxAmount
                   ) {
                         isValid = false;
                         errorMessage = `For ${paymentType} payment, amount must be less than the due amount of ৳${maxAmount}`;
                   } else if (
-                        (paymentType === 'partial' || paymentType === 'discounted') &&
+                        (paymentType === "partial" || paymentType === "discounted") &&
                         isPartiallyPaidInvoice &&
                         amount > maxAmount
                   ) {
                         isValid = false;
                         errorMessage = `Amount must be less than or equal to the due amount of ৳${maxAmount}`;
-                  } else if (paymentType === 'full' && amount != maxAmount) {
+                  } else if (paymentType === "full" && amount != maxAmount) {
                         isValid = false;
                         errorMessage = `For full payment, amount must be exactly ৳${maxAmount}`;
                   }
 
                   if (!isValid) {
-                        $(this).addClass('is-invalid');
+                        $(this).addClass("is-invalid");
                         $(this).after(
                               `<div class="invalid-feedback" id="transaction_amount_error">
                         ${errorMessage}
@@ -686,15 +986,15 @@ var KTAddTransaction = function () {
                         );
                   }
             });
-      }
+      };
 
       // Form submission via AJAX
       var handleFormSubmit = function () {
-            $(form).on('submit', function (e) {
+            $(form).on("submit", function (e) {
                   e.preventDefault();
 
                   const amount = parseFloat($(amountInput).val());
-                  const maxAmount = parseFloat($(amountInput).data('max'));
+                  const maxAmount = parseFloat($(amountInput).data("max"));
                   const paymentType = $('input[name="transaction_type"]:checked').val();
 
                   let isValid = true;
@@ -704,29 +1004,31 @@ var KTAddTransaction = function () {
                   } else if (amount < 1) {
                         isValid = false;
                   } else if (
-                        (paymentType === 'partial' || paymentType === 'discounted') &&
+                        (paymentType === "partial" || paymentType === "discounted") &&
                         !isPartiallyPaidInvoice &&
                         amount >= maxAmount
                   ) {
                         isValid = false;
                   } else if (
-                        (paymentType === 'partial' || paymentType === 'discounted') &&
+                        (paymentType === "partial" || paymentType === "discounted") &&
                         isPartiallyPaidInvoice &&
                         amount > maxAmount
                   ) {
                         isValid = false;
-                  } else if (paymentType === 'full' && amount != maxAmount) {
+                  } else if (paymentType === "full" && amount != maxAmount) {
                         isValid = false;
                   }
 
-                  if (!isValid || $(amountInput).hasClass('is-invalid')) {
-                        toastr.warning('Please enter a valid amount.');
+                  if (!isValid || $(amountInput).hasClass("is-invalid")) {
+                        toastr.warning("Please enter a valid amount.");
                         return false;
                   }
 
                   // Get submit button and show loading state
-                  const submitBtn = form.querySelector('[data-kt-add-transaction-modal-action="submit"]');
-                  submitBtn.setAttribute('data-kt-indicator', 'on');
+                  const submitBtn = form.querySelector(
+                        '[data-kt-add-transaction-modal-action="submit"]'
+                  );
+                  submitBtn.setAttribute("data-kt-indicator", "on");
                   submitBtn.disabled = true;
 
                   // Prepare form data
@@ -734,23 +1036,27 @@ var KTAddTransaction = function () {
 
                   // Submit via AJAX
                   fetch(form.action, {
-                        method: 'POST',
+                        method: "POST",
                         headers: {
-                              'X-CSRF-TOKEN': csrfToken,
-                              'Accept': 'application/json',
-                              'X-Requested-With': 'XMLHttpRequest'
+                              "X-CSRF-TOKEN": csrfToken,
+                              Accept: "application/json",
+                              "X-Requested-With": "XMLHttpRequest",
                         },
-                        body: formData
+                        body: formData,
                   })
-                        .then(response => {
+                        .then((response) => {
                               if (!response.ok) {
-                                    return response.json().then(err => { throw err; });
+                                    return response.json().then((err) => {
+                                          throw err;
+                                    });
                               }
                               return response.json();
                         })
-                        .then(data => {
+                        .then((data) => {
                               if (data.success) {
-                                    toastr.success(data.message || 'Transaction recorded successfully.');
+                                    toastr.success(
+                                          data.message || "Transaction recorded successfully."
+                                    );
 
                                     const transactionData = data.transaction;
 
@@ -759,79 +1065,86 @@ var KTAddTransaction = function () {
 
                                     if (transactionData && transactionData.is_approved) {
                                           Swal.fire({
-                                                title: 'Transaction Successful!',
-                                                text: 'Do you want to download the payment statement?',
-                                                icon: 'success',
+                                                title: "Transaction Successful!",
+                                                text: "Do you want to download the payment statement?",
+                                                icon: "success",
                                                 showCancelButton: true,
-                                                confirmButtonColor: '#3085d6',
-                                                cancelButtonColor: '#6c757d',
-                                                confirmButtonText: 'Yes, download',
-                                                cancelButtonText: 'No, just reload'
+                                                confirmButtonColor: "#3085d6",
+                                                cancelButtonColor: "#6c757d",
+                                                confirmButtonText: "Yes, download",
+                                                cancelButtonText: "No, just reload",
                                           }).then((result) => {
                                                 if (result.isConfirmed) {
-                                                      downloadStatementAndReload(transactionData.student_id, transactionData.year);
+                                                      downloadStatementAndRefresh(
+                                                            transactionData.student_id,
+                                                            transactionData.year
+                                                      );
                                                 } else {
-                                                      location.reload();
+                                                      KTAllTransactionsList.refreshTable();
                                                 }
                                           });
                                     } else {
                                           Swal.fire({
-                                                title: 'Transaction Recorded!',
-                                                text: 'This transaction requires approval before the statement can be downloaded.',
-                                                icon: 'info',
-                                                confirmButtonText: 'OK'
+                                                title: "Transaction Recorded!",
+                                                text: "This transaction requires approval before the statement can be downloaded.",
+                                                icon: "info",
+                                                confirmButtonText: "OK",
                                           }).then(() => {
-                                                location.reload();
+                                                KTAllTransactionsList.refreshTable();
                                           });
                                     }
                               } else {
-                                    toastr.error(data.message || 'Failed to record transaction.');
-                                    submitBtn.removeAttribute('data-kt-indicator');
+                                    toastr.error(data.message || "Failed to record transaction.");
+                                    submitBtn.removeAttribute("data-kt-indicator");
                                     submitBtn.disabled = false;
                               }
                         })
-                        .catch(error => {
-                              console.error('Transaction Error:', error);
+                        .catch((error) => {
+                              console.error("Transaction Error:", error);
 
-                              let errorMessage = 'An error occurred. Please try again.';
+                              let errorMessage = "An error occurred. Please try again.";
 
                               if (error.message) {
                                     errorMessage = error.message;
                               } else if (error.errors) {
-                                    errorMessage = Object.values(error.errors).flat().join('\n');
+                                    errorMessage = Object.values(error.errors).flat().join("\n");
                               }
 
                               toastr.error(errorMessage);
 
-                              submitBtn.removeAttribute('data-kt-indicator');
+                              submitBtn.removeAttribute("data-kt-indicator");
                               submitBtn.disabled = false;
                         });
 
                   return false;
             });
-      }
+      };
 
-      // Download statement and then reload page
-      var downloadStatementAndReload = function (studentId, year) {
+      // Download statement and then refresh table (no page reload)
+      var downloadStatementAndRefresh = function (studentId, year) {
             const formData = new FormData();
-            formData.append('student_id', studentId);
-            formData.append('statement_year', year);
+            formData.append("student_id", studentId);
+            formData.append("statement_year", year);
 
             fetch(routeDownloadStatement, {
-                  method: 'POST',
+                  method: "POST",
                   headers: {
-                        'X-CSRF-TOKEN': csrfToken,
+                        "X-CSRF-TOKEN": csrfToken,
                   },
-                  body: formData
+                  body: formData,
             })
-                  .then(response => {
+                  .then((response) => {
                         if (!response.ok) {
-                              throw new Error('Failed to load statement');
+                              throw new Error("Failed to load statement");
                         }
                         return response.text();
                   })
-                  .then(html => {
-                        const printWindow = window.open('', '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes');
+                  .then((html) => {
+                        const printWindow = window.open(
+                              "",
+                              "_blank",
+                              "width=900,height=700,scrollbars=yes,resizable=yes"
+                        );
                         if (printWindow) {
                               printWindow.document.open();
                               printWindow.document.write(html);
@@ -839,70 +1152,74 @@ var KTAddTransaction = function () {
                               printWindow.focus();
                         } else {
                               Swal.fire({
-                                    title: 'Popup Blocked!',
-                                    text: 'Please allow popups for this website to view the statement.',
-                                    icon: 'warning',
+                                    title: "Popup Blocked!",
+                                    text: "Please allow popups for this website to view the statement.",
+                                    icon: "warning",
                               });
                         }
 
-                        location.reload();
+                        KTAllTransactionsList.refreshTable();
                   })
-                  .catch(error => {
-                        console.error('Statement Download Error:', error);
-                        toastr.error('Failed to download statement. Page will reload.');
-                        location.reload();
+                  .catch((error) => {
+                        console.error("Statement Download Error:", error);
+                        toastr.error("Failed to download statement.");
+                        KTAllTransactionsList.refreshTable();
                   });
-      }
+      };
 
       // Reset form and close modal
       var resetForm = function () {
             if (form) form.reset();
 
-            if (branchSelect && $(branchSelect).data('select2')) {
-                  $(branchSelect).val(null).trigger('change');
+            if (branchSelect && $(branchSelect).data("select2")) {
+                  $(branchSelect).val(null).trigger("change");
             }
 
-            if (studentSelect && $(studentSelect).data('select2')) {
-                  $(studentSelect).val(null).trigger('change');
+            if (studentSelect && $(studentSelect).data("select2")) {
+                  $(studentSelect).val(null).trigger("change");
             }
 
-            if (invoiceSelect && $(invoiceSelect).data('select2')) {
-                  $(invoiceSelect).val(null).trigger('change');
+            if (invoiceSelect && $(invoiceSelect).data("select2")) {
+                  $(invoiceSelect).val(null).trigger("change");
             }
 
             if (amountInput) {
-                  amountInput.value = '';
+                  amountInput.value = "";
                   amountInput.disabled = true;
             }
 
-            $(amountInput).removeClass('is-invalid');
-            $('#transaction_amount_error').remove();
+            $(amountInput).removeClass("is-invalid");
+            $("#transaction_amount_error").remove();
 
             // Reset invoices array and flags
             invoices = [];
             isPartiallyPaidInvoice = false;
-      }
+      };
 
       // Handle modal close actions
       var handleCloseModal = function () {
-            const cancelButton = element.querySelector('[data-kt-add-transaction-modal-action="cancel"]');
+            const cancelButton = element.querySelector(
+                  '[data-kt-add-transaction-modal-action="cancel"]'
+            );
             if (cancelButton) {
-                  cancelButton.addEventListener('click', function (e) {
+                  cancelButton.addEventListener("click", function (e) {
                         e.preventDefault();
                         resetForm();
                         modal.hide();
                   });
             }
 
-            const closeButton = element.querySelector('[data-kt-add-transaction-modal-action="close"]');
+            const closeButton = element.querySelector(
+                  '[data-kt-add-transaction-modal-action="close"]'
+            );
             if (closeButton) {
-                  closeButton.addEventListener('click', function (e) {
+                  closeButton.addEventListener("click", function (e) {
                         e.preventDefault();
                         resetForm();
                         modal.hide();
                   });
             }
-      }
+      };
 
       return {
             init: function () {
@@ -913,10 +1230,9 @@ var KTAddTransaction = function () {
                   handleAmountValidation();
                   handleFormSubmit();
                   handleCloseModal();
-            }
+            },
       };
-}();
-
+})();
 
 // On document ready
 KTUtil.onDOMContentLoaded(function () {

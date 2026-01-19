@@ -1,5 +1,32 @@
 @push('page-css')
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <style>
+        .dataTables_processing {
+            background: rgba(255, 255, 255, 0.9) !important;
+            border: 1px solid #e4e6ef !important;
+            border-radius: 0.475rem !important;
+            padding: 1rem !important;
+            z-index: 999 !important;
+        }
+
+        .table-loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .export-loading {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+    </style>
 @endpush
 
 @extends('layouts.app')
@@ -54,6 +81,7 @@
         // Map branches to badge colors dynamically
         $branchColors = [];
         foreach ($branches as $index => $branch) {
+            $branchColors[$branch->id] = $badgeColors[$index % count($badgeColors)];
             $branchColors[$branch->branch_name] = $badgeColors[$index % count($badgeColors)];
         }
 
@@ -76,10 +104,6 @@
                         class="form-control form-control-solid w-md-350px ps-12" placeholder="Search in transactions">
                 </div>
                 <!--end::Search-->
-
-                <!--begin::Export hidden buttons-->
-                <div id="kt_hidden_export_buttons" class="d-none"></div>
-                <!--end::Export buttons-->
             </div>
             <!--begin::Card title-->
 
@@ -107,7 +131,8 @@
                             <div class="mb-10">
                                 <label class="form-label fs-6 fw-semibold">Payment Type:</label>
                                 <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                    data-placeholder="Select option" data-allow-clear="true" data-hide-search="true">
+                                    data-placeholder="Select option" data-allow-clear="true" data-hide-search="true"
+                                    id="payment_type_filter_select">
                                     <option></option>
                                     <option value="T_partial">Partial</option>
                                     <option value="T_full_paid">Full Paid</option>
@@ -132,7 +157,7 @@
                     <!--begin::Export dropdown-->
                     <div class="dropdown">
                         <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
-                            data-kt-menu-placement="bottom-end">
+                            data-kt-menu-placement="bottom-end" id="export_dropdown_btn">
                             <i class="ki-outline ki-exit-up fs-2"></i>Export
                         </button>
 
@@ -142,12 +167,10 @@
                             data-kt-menu="true">
                             <!--begin::Menu item-->
                             <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3" data-row-export="copy">Copy to
-                                    clipboard</a>
+                                <a href="#" class="menu-link px-3" data-row-export="copy">Copy to clipboard</a>
                             </div>
                             <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3" data-row-export="excel">Export as
-                                    Excel</a>
+                                <a href="#" class="menu-link px-3" data-row-export="excel">Export as Excel</a>
                             </div>
                             <div class="menu-item px-3">
                                 <a href="#" class="menu-link px-3" data-row-export="csv">Export as CSV</a>
@@ -182,9 +205,7 @@
                 <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-5 fs-6" id="transactionBranchTabs" role="tablist">
                     @foreach ($branches as $index => $branch)
                         @php
-                            $branchTxnCount = isset($transactionsByBranch[$branch->id])
-                                ? $transactionsByBranch[$branch->id]->count()
-                                : 0;
+                            $branchTxnCount = $transactionCounts[$branch->id] ?? 0;
                             $tabBadgeColor = $badgeColors[$index % count($badgeColors)];
                         @endphp
                         <li class="nav-item" role="presentation">
@@ -196,7 +217,8 @@
                                 data-branch-id="{{ $branch->id }}">
                                 <i class="ki-outline ki-bank fs-4 me-1"></i>
                                 {{ ucfirst($branch->branch_name) }}
-                                <span class="badge {{ $tabBadgeColor }} ms-2">{{ $branchTxnCount }}</span>
+                                <span class="badge {{ $tabBadgeColor }} ms-2 branch-count-badge"
+                                    data-branch-id="{{ $branch->id }}">{{ $branchTxnCount }}</span>
                             </a>
                         </li>
                     @endforeach
@@ -209,14 +231,10 @@
                         <div class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}"
                             id="kt_tab_txn_branch_{{ $branch->id }}" role="tabpanel"
                             aria-labelledby="tab-txn-branch-{{ $branch->id }}">
-                            @include('transactions.partials.transactions-table', [
-                                'transactions' => $transactionsByBranch[$branch->id] ?? collect(),
+                            @include('transactions.partials.transactions-table-ajax', [
                                 'tableId' => 'kt_transactions_table_branch_' . $branch->id,
-                                'branchColors' => $branchColors,
+                                'branchId' => $branch->id,
                                 'showBranchColumn' => false,
-                                'canApproveTxn' => $canApproveTxn,
-                                'canDeleteTxn' => $canDeleteTxn,
-                                'canDownloadPayslip' => $canDownloadPayslip,
                             ])
                         </div>
                     @endforeach
@@ -224,14 +242,10 @@
                 <!--end::Tab Content-->
             @else
                 <!--begin::Single Table for Non-Admin-->
-                @include('transactions.partials.transactions-table', [
-                    'transactions' => $transactions,
+                @include('transactions.partials.transactions-table-ajax', [
                     'tableId' => 'kt_transactions_table',
-                    'branchColors' => $branchColors,
+                    'branchId' => $branchId,
                     'showBranchColumn' => false,
-                    'canApproveTxn' => $canApproveTxn,
-                    'canDeleteTxn' => $canDeleteTxn,
-                    'canDownloadPayslip' => $canDownloadPayslip,
                 ])
                 <!--end::Single Table for Non-Admin-->
             @endif
@@ -481,10 +495,17 @@
 
 @push('vendor-js')
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
+    <!-- SheetJS for Excel export -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <!-- jsPDF for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
 @endpush
 
 @push('page-js')
     <script>
+        const routeAjaxData = "{{ route('transactions.ajax-data') }}";
+        const routeExportData = "{{ route('transactions.export-data') }}";
         const routeDeleteTxn = "{{ route('transactions.destroy', ':id') }}";
         const routeApproveTxn = "{{ route('transactions.approve', ':id') }}";
         const routeDownloadStatement = "{{ route('student.statement.download') }}";
@@ -492,6 +513,7 @@
         const isAdmin = @json($isAdmin);
         const branchIds = @json($branches->pluck('id')->toArray());
         const studentsByBranch = @json($isAdmin ? $studentsByBranch : []);
+        const branchColors = @json($branchColors);
     </script>
 
     <script src="{{ asset('js/transactions/index.js') }}"></script>

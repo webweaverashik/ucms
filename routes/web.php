@@ -122,6 +122,8 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::get('autoinvoice/due', [AutoInvoiceController::class, 'generateDue'])->name('auto.invoice.due');
 
     // Transactions
+    Route::get('transactions/ajax-data', [PaymentTransactionController::class, 'getData'])->name('transactions.ajax-data');
+    Route::get('transactions/export-data', [PaymentTransactionController::class, 'getExportData'])->name('transactions.export-data');
     Route::get('transactions/{id}/download-payslip', [PdfController::class, 'downloadPaySlip'])->name('transactions.download');
     Route::post('transactions/{id}/approve', [PaymentTransactionController::class, 'approve'])->name('transactions.approve');
 
