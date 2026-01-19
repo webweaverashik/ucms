@@ -2,6 +2,7 @@
 
 @push('page-css')
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('assets/plugins/custom/flatpickr/flatpickr.min.css') }}" rel="stylesheet" type="text/css" />
 @endpush
 
 @section('title', 'Wallet History - ' . $user->name)
@@ -15,25 +16,29 @@
             {{ $user->name }} - Wallet History
         </h1>
         <!--end::Title-->
+
         <!--begin::Separator-->
         <span class="h-20px border-gray-300 border-start mx-4"></span>
         <!--end::Separator-->
+
         <!--begin::Breadcrumb-->
         <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 ">
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                <a href="{{ route('settlements.index') }}" class="text-muted text-hover-primary">
-                    Settlements</a>
+                <a href="{{ route('settlements.index') }}" class="text-muted text-hover-primary"> Settlements</a>
             </li>
             <!--end::Item-->
+
             <!--begin::Item-->
             <li class="breadcrumb-item">
                 <span class="bullet bg-gray-500 w-5px h-2px"></span>
             </li>
             <!--end::Item-->
+
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                Personal Wallet </li>
+                Personal Wallet
+            </li>
             <!--end::Item-->
         </ul>
         <!--end::Breadcrumb-->
@@ -89,7 +94,8 @@
                     <div class="d-flex flex-wrap flex-stack">
                         <div class="d-flex flex-column flex-grow-1 pe-8">
                             <div class="d-flex flex-wrap">
-                                <div class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
+                                <div
+                                    class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
                                     <div class="d-flex align-items-center">
                                         <i class="ki-outline ki-arrow-up fs-3 text-success me-2"></i>
                                         <div class="fs-2 fw-bold text-success">
@@ -99,7 +105,8 @@
                                     <div class="fw-semibold fs-6 text-gray-500">Total Collected</div>
                                 </div>
 
-                                <div class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
+                                <div
+                                    class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
                                     <div class="d-flex align-items-center">
                                         <i class="ki-outline ki-arrow-down fs-3 text-info me-2"></i>
                                         <div class="fs-2 fw-bold text-info">
@@ -109,10 +116,11 @@
                                     <div class="fw-semibold fs-6 text-gray-500">Total Settled</div>
                                 </div>
 
-                                <div class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
+                                <div
+                                    class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
                                     <div class="d-flex align-items-center">
                                         <i class="ki-outline ki-wallet fs-3 text-warning me-2"></i>
-                                        <div class="fs-2 fw-bold text-warning"
+                                        <div class="fs-2 fw-bold text-warning" id="current_balance_display"
                                             data-wallet-balance="{{ $summary['current_balance'] }}">
                                             ৳{{ number_format($summary['current_balance'], 0) }}
                                         </div>
@@ -148,6 +156,7 @@
                 </div>
             </div>
         </div>
+
         <div class="col-md-6 col-xl-4">
             <div class="card card-flush h-100">
                 <div class="card-header pt-5">
@@ -167,100 +176,138 @@
             <div class="card-title">
                 <div class="d-flex align-items-center position-relative my-1">
                     <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
-                    <input type="text" data-kt-filter="search" class="form-control form-control-solid w-300px ps-13"
-                        placeholder="Search..." />
+                    <input type="text" id="kt_filter_search"
+                        class="form-control form-control-solid w-250px ps-13" placeholder="Search..." />
                 </div>
             </div>
-            <div class="card-toolbar">
-                <div class="d-flex align-items-center gap-3">
-                    {{-- Type Filter --}}
-                    <select class="form-select form-select-solid w-200px" data-kt-filter="type" data-control="select2"
-                        data-placeholder="All Types" data-allow-clear="true" data-hide-search="true">
-                        <option></option>
-                        <option value="collection">Collection</option>
-                        <option value="settlement">Settlement</option>
-                        <option value="adjustment">Adjustment</option>
-                    </select>
 
+            <div class="card-toolbar">
+                <!--begin::Toolbar-->
+                <div class="d-flex justify-content-end gap-3">
+                    <!--begin::Filter-->
+                    <button type="button" class="btn btn-light-primary" id="kt_filter_btn">
+                        <i class="ki-outline ki-filter fs-2"></i>Filter
+                    </button>
+                    <!--begin::Filter Menu-->
+                    <div class="menu menu-sub menu-sub-dropdown w-300px w-md-350px" id="kt_filter_menu">
+                        <!--begin::Header-->
+                        <div class="px-7 py-5">
+                            <div class="fs-5 text-gray-900 fw-bold">Filter Options</div>
+                        </div>
+                        <!--end::Header-->
+
+                        <!--begin::Separator-->
+                        <div class="separator border-gray-200"></div>
+                        <!--end::Separator-->
+
+                        <!--begin::Content-->
+                        <div class="px-7 py-5">
+                            <div class="row">
+                                <!--begin::Input group-->
+                                <div class="col-12 mb-5">
+                                    <label class="form-label fs-6 fw-semibold">Type:</label>
+                                    <select class="form-select form-select-solid fw-bold" id="filter_type">
+                                        <option value="">All Types</option>
+                                        <option value="collection">Collection</option>
+                                        <option value="settlement">Settlement</option>
+                                        <option value="adjustment">Adjustment</option>
+                                    </select>
+                                </div>
+                                <!--end::Input group-->
+
+                                <!--begin::Input group-->
+                                <div class="col-6 mb-5">
+                                    <label class="form-label fs-6 fw-semibold">Date From:</label>
+                                    <input type="text" class="form-control form-control-solid fw-bold flatpickr-input"
+                                        id="filter_date_from" placeholder="Select date" readonly />
+                                </div>
+                                <!--end::Input group-->
+
+                                <!--begin::Input group-->
+                                <div class="col-6 mb-5">
+                                    <label class="form-label fs-6 fw-semibold">Date To:</label>
+                                    <input type="text" class="form-control form-control-solid fw-bold flatpickr-input"
+                                        id="filter_date_to" placeholder="Select date" readonly />
+                                </div>
+                                <!--end::Input group-->
+                            </div>
+
+                            <!--begin::Actions-->
+                            <div class="d-flex justify-content-end">
+                                <button type="button"
+                                    class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
+                                    id="kt_filter_reset">Reset</button>
+                                <button type="button" class="btn btn-primary fw-semibold px-6"
+                                    id="kt_filter_apply">Apply</button>
+                            </div>
+                            <!--end::Actions-->
+                        </div>
+                        <!--end::Content-->
+                    </div>
+                    <!--end::Filter Menu-->
+                    <!--end::Filter-->
+
+                    <!--begin::Export-->
+                    <button type="button" class="btn btn-light-primary" id="kt_export_btn">
+                        <i class="ki-outline ki-exit-up fs-2"></i>Export
+                    </button>
+                    <!--begin::Export Menu-->
+                    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
+                        id="kt_export_menu">
+                        <!--begin::Menu item-->
+                        <div class="menu-item px-3">
+                            <a href="#" class="menu-link px-3" data-kt-export="copy">Copy to clipboard</a>
+                        </div>
+                        <div class="menu-item px-3">
+                            <a href="#" class="menu-link px-3" data-kt-export="excel">Export as Excel</a>
+                        </div>
+                        <div class="menu-item px-3">
+                            <a href="#" class="menu-link px-3" data-kt-export="csv">Export as CSV</a>
+                        </div>
+                        <div class="menu-item px-3">
+                            <a href="#" class="menu-link px-3" data-kt-export="pdf">Export as PDF</a>
+                        </div>
+                        <!--end::Menu item-->
+                    </div>
+                    <!--end::Export Menu-->
+                    <!--end::Export-->
+
+                    <!--begin::Action Buttons-->
                     <button type="button" class="btn btn-light-warning btn-adjustment text-nowrap"
                         data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}"
                         data-balance="{{ $user->current_balance }}">
-                        <i class="ki-outline ki-wrench fs-4 me-1"></i>
-                        Adjustment
+                        <i class="ki-outline ki-wrench fs-4 me-1"></i> Adjustment
                     </button>
 
                     @if ($user->current_balance > 0)
                         <button type="button" class="btn btn-primary btn-settle text-nowrap"
                             data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}"
                             data-balance="{{ $user->current_balance }}">
-                            <i class="ki-outline ki-dollar fs-4 me-1"></i>
-                            Settle Now
+                            <i class="ki-outline ki-dollar fs-4 me-1"></i> Settle Now
                         </button>
                     @endif
+                    <!--end::Action Buttons-->
                 </div>
+                <!--end::Toolbar-->
             </div>
         </div>
 
         <div class="card-body pt-0">
-            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_wallet_logs_table">
+            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table"
+                id="kt_wallet_logs_table">
                 <thead>
                     <tr class="fw-bold fs-7 text-uppercase gs-0">
                         <th class="w-20px">#</th>
                         <th class="w-100px">Date</th>
                         <th class="w-100px">Type</th>
                         <th class="w-250px">Description</th>
-                        <th class="w-100px">Amount</th>
-                        <th class="w-100px">Old Balance</th>
-                        <th class="w-100px">New Balance</th>
+                        <th class="w-100px text-end">Amount</th>
+                        <th class="w-100px text-end">Old Balance</th>
+                        <th class="w-100px text-end">New Balance</th>
                         <th class="w-100px">Created By</th>
                     </tr>
                 </thead>
                 <tbody class="fw-semibold text-gray-600">
-                    @forelse($logs as $log)
-                        <tr data-type="{{ $log->type }}">
-                            <td>{{ $loop->iteration }}</td>
-                            <td>
-                                <span class="text-gray-800">{{ $log->created_at->format('d M, Y') }}</span>
-                                <span class="text-gray-500 d-block fs-7">{{ $log->created_at->format('h:i A') }}</span>
-                            </td>
-                            <td>
-                                @if ($log->type === 'collection')
-                                    <span class="badge badge-success">Collection</span>
-                                @elseif($log->type === 'settlement')
-                                    <span class="badge badge-info">Settlement</span>
-                                @else
-                                    <span class="badge badge-warning">Adjustment</span>
-                                @endif
-                            </td>
-                            <td>
-                                @if ($log->paymentTransaction)
-                                    <a href="{{ route('invoices.show', $log->paymentTransaction->payment_invoice_id) }}"
-                                        class="text-gray-800 text-hover-primary text-wrap" target="_blank">
-                                        {{ $log->description }}
-                                    </a>
-                                @else
-                                    <span class="text-gray-800">{{ $log->description ?? '-' }}</span>
-                                @endif
-                            </td>
-                            <td>
-                                @if ($log->amount >= 0)
-                                    <span class="text-success fw-bold">+৳{{ number_format($log->amount, 0) }}</span>
-                                @else
-                                    <span class="text-danger fw-bold">৳{{ number_format($log->amount, 0) }}</span>
-                                @endif
-                            </td>
-                            <td>
-                                <span class="text-gray-600">৳{{ number_format($log->old_balance, 0) }}</span>
-                            </td>
-                            <td>
-                                <span class="text-gray-800 fw-bold">৳{{ number_format($log->new_balance, 0) }}</span>
-                            </td>
-                            <td>
-                                <span class="text-gray-700">{{ $log->creator->name ?? 'System' }}</span>
-                            </td>
-                        </tr>
-                    @empty
-                    @endforelse
                 </tbody>
             </table>
         </div>
@@ -276,6 +323,7 @@
                         <i class="ki-outline ki-cross fs-1"></i>
                     </div>
                 </div>
+
                 <div class="modal-body scroll-y mx-5 mx-xl-10 pt-0 pb-15">
                     <div class="text-center mb-13">
                         <h1 class="mb-3">Record Settlement</h1>
@@ -297,7 +345,7 @@
                                     <div class="flex-grow-1">
                                         <span class="text-gray-700 fw-semibold d-block fs-6">Current Balance</span>
                                         <span class="text-warning fw-bolder fs-2"
-                                            id="modal_current_balance">৳{{ number_format($user->current_balance, 2) }}</span>
+                                            id="modal_current_balance">৳{{ number_format($user->current_balance, 0) }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -311,7 +359,7 @@
                                 <span class="input-group-text">
                                     <i class="ki-outline ki-dollar fs-3"></i>
                                 </span>
-                                <input type="number" step="0.01" min="1" max="{{ $user->current_balance }}"
+                                <input type="number" step="1" min="1" max="{{ $user->current_balance }}"
                                     class="form-control form-control-solid rounded-start-0 border-start"
                                     placeholder="Enter amount" name="amount" id="settlement_amount" required />
                                 <button type="button" class="btn btn-light-primary" id="btn_full_amount">Full</button>
@@ -321,7 +369,8 @@
 
                         <div class="d-flex flex-column mb-8 fv-row">
                             <label class="fs-6 fw-semibold mb-2">Notes (Optional)</label>
-                            <textarea class="form-control form-control-solid" rows="3" name="notes" placeholder="Enter any notes..."></textarea>
+                            <textarea class="form-control form-control-solid" rows="3" name="notes"
+                                placeholder="Enter any notes..."></textarea>
                         </div>
 
                         <div class="text-center">
@@ -349,6 +398,7 @@
                         <i class="ki-outline ki-cross fs-1"></i>
                     </div>
                 </div>
+
                 <div class="modal-body scroll-y mx-5 mx-xl-10 pt-0 pb-15">
                     <div class="text-center mb-13">
                         <h1 class="mb-3">Balance Adjustment</h1>
@@ -370,7 +420,7 @@
                                     <div class="flex-grow-1">
                                         <span class="text-gray-700 fw-semibold d-block fs-6">Current Balance</span>
                                         <span class="text-info fw-bolder fs-2"
-                                            id="adj_modal_current_balance">৳{{ number_format($user->current_balance, 2) }}</span>
+                                            id="adj_modal_current_balance">৳{{ number_format($user->current_balance, 0) }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -385,16 +435,14 @@
                                     <input class="form-check-input" type="radio" name="adjustment_type"
                                         value="increase" checked />
                                     <span class="form-check-label text-success fw-semibold">
-                                        <i class="ki-outline ki-arrow-up fs-4 me-1"></i>
-                                        Increase Balance
+                                        <i class="ki-outline ki-arrow-up fs-4 me-1"></i> Increase Balance
                                     </span>
                                 </label>
                                 <label class="form-check form-check-custom form-check-solid form-check-sm">
                                     <input class="form-check-input" type="radio" name="adjustment_type"
                                         value="decrease" />
                                     <span class="form-check-label text-danger fw-semibold">
-                                        <i class="ki-outline ki-arrow-down fs-4 me-1"></i>
-                                        Decrease Balance
+                                        <i class="ki-outline ki-arrow-down fs-4 me-1"></i> Decrease Balance
                                     </span>
                                 </label>
                             </div>
@@ -408,7 +456,7 @@
                                 <span class="input-group-text">
                                     <i class="ki-outline ki-dollar fs-3"></i>
                                 </span>
-                                <input type="number" step="0.01" min="0.01"
+                                <input type="number" step="1" min="1"
                                     class="form-control form-control-solid rounded-start-0 border-start"
                                     placeholder="Enter amount" name="amount" id="adjustment_amount" required />
                             </div>
@@ -442,11 +490,24 @@
 
 @push('vendor-js')
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
+    <script src="{{ asset('assets/plugins/custom/flatpickr/flatpickr.min.js') }}"></script>
+    <!-- SheetJS for Excel export -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <!-- jsPDF for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
 @endpush
 
 @push('page-js')
+    <script>
+        var KT_USER_ID = {{ $user->id }};
+        var KT_USER_NAME = "{{ $user->name }}";
+        var KT_SHOW_DATA_URL = "{{ route('settlements.show.data', $user) }}";
+        var KT_SHOW_EXPORT_URL = "{{ route('settlements.show.export', $user) }}";
+        var KT_SETTLEMENT_URL = "{{ route('settlements.store') }}";
+        var KT_ADJUSTMENT_URL = "{{ route('settlements.adjustment') }}";
+    </script>
     <script src="{{ asset('js/settlements/show.js') }}"></script>
-
     <script>
         document.getElementById("settlements_menu")?.classList.add("here", "show");
         document.getElementById("settlements_link")?.classList.add("active");

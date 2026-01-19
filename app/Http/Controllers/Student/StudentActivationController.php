@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
@@ -15,7 +14,7 @@ class StudentActivationController extends Controller
 {
     public function approve(Request $request, string $id): JsonResponse
     {
-        $user = auth()->user();
+        $user    = auth()->user();
         $student = Student::findOrFail($id);
 
         // Authorization check: Manager can only approve students from their own branch
@@ -49,9 +48,9 @@ class StudentActivationController extends Controller
         // For Admin: If due invoice exists and not confirmed, ask for confirmation
         if ($user->isAdmin() && $hasDueInvoice && ! $request->boolean('confirm_due')) {
             return response()->json([
-                'success' => false,
+                'success'               => false,
                 'requires_confirmation' => true,
-                'message' => 'This student tuition fee is still due.',
+                'message'               => 'This student tuition fee is still due.',
             ]);
         }
 
@@ -61,16 +60,14 @@ class StudentActivationController extends Controller
 
         return DB::transaction(function () use ($request, $student, $hasDueInvoice, $user) {
             // Prepare reason
-            $reason = $hasDueInvoice && $user->isAdmin()
-                ? 'Approved with pending tuition fee'
-                : 'Admission Approved';
+            $reason = $hasDueInvoice && $user->isAdmin() ? 'Approved with pending tuition fee' : 'Admission Approved';
 
             // Create Activation Entry
             $activation = StudentActivation::create([
-                'student_id' => $student->id,
+                'student_id'    => $student->id,
                 'active_status' => $request->active_status,
-                'reason' => $reason,
-                'updated_by' => Auth::id(),
+                'reason'        => $reason,
+                'updated_by'    => Auth::id(),
             ]);
 
             // Update Student's Activation ID
@@ -80,12 +77,12 @@ class StudentActivationController extends Controller
             $mobileNumber = $student->mobileNumbers->where('number_type', 'sms')->first();
             if ($mobileNumber) {
                 send_auto_sms('student_registration_success', $mobileNumber->mobile_number, [
-                    'student_name' => $student->name,
-                    'student_unique_id' => $student->student_unique_id,
+                    'student_name'       => $student->name,
+                    'student_unique_id'  => $student->student_unique_id,
                     'student_class_name' => $student->class->name,
                     'student_batch_name' => $student->batch->name,
-                    'tuition_fee' => $student->payments->tuition_fee ?? 0,
-                    'due_date' => $student->payments->due_date ?? '',
+                    'tuition_fee'        => $student->payments->tuition_fee ?? 0,
+                    'due_date'           => $student->payments->due_date ?? '',
                 ]);
             }
 
@@ -103,16 +100,19 @@ class StudentActivationController extends Controller
     {
         try {
             $request->validate([
-                'student_id' => 'required|integer|exists:students,id',
+                'student_id'    => 'required|integer|exists:students,id',
                 'active_status' => 'required|in:active,inactive',
-                'reason' => 'required|string|max:255',
+                'reason'        => 'required|string|max:255',
             ]);
         } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed.',
-                'errors' => $e->errors(),
-            ], 422);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Validation failed.',
+                    'errors'  => $e->errors(),
+                ],
+                422,
+            );
         }
 
         $student = Student::findOrFail($request->student_id);
@@ -120,27 +120,30 @@ class StudentActivationController extends Controller
         // Authorization check: Non-admin users can only toggle students from their own branch
         $user = auth()->user();
         if ($user->branch_id != 0 && $student->branch_id !== $user->branch_id) {
-            return response()->json([
-                'success' => false,
-                'message' => 'You are not authorized to modify students from other branches.',
-            ], 403);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'You are not authorized to modify students from other branches.',
+                ],
+                403,
+            );
         }
 
         try {
             return DB::transaction(function () use ($request, $student) {
                 // Create Activation Entry
                 $activation = StudentActivation::create([
-                    'student_id' => $student->id,
+                    'student_id'    => $student->id,
                     'active_status' => $request->active_status,
-                    'reason' => $request->reason,
-                    'updated_by' => Auth::id(),
+                    'reason'        => $request->reason,
+                    'updated_by'    => Auth::id(),
                 ]);
 
                 // Update Student's Activation ID
                 $student->update(['student_activation_id' => $activation->id]);
 
                 // Clear the cache
-                clearServerCache();
+                // clearServerCache();
 
                 $statusText = $request->active_status === 'active' ? 'activated' : 'deactivated';
 
@@ -151,10 +154,13 @@ class StudentActivationController extends Controller
                 ]);
             });
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'An error occurred while updating student status.',
-            ], 500);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'An error occurred while updating student status.',
+                ],
+                500,
+            );
         }
     }
 }

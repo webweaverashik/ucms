@@ -15,25 +15,29 @@
             User Settlements
         </h1>
         <!--end::Title-->
+
         <!--begin::Separator-->
         <span class="h-20px border-gray-300 border-start mx-4"></span>
         <!--end::Separator-->
+
         <!--begin::Breadcrumb-->
         <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 ">
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                <a href="{{ route('settlements.index') }}" class="text-muted text-hover-primary">
-                    Settlements</a>
+                <a href="{{ route('settlements.index') }}" class="text-muted text-hover-primary"> Settlements</a>
             </li>
             <!--end::Item-->
+
             <!--begin::Item-->
             <li class="breadcrumb-item">
                 <span class="bullet bg-gray-500 w-5px h-2px"></span>
             </li>
             <!--end::Item-->
+
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                User Wise Settlements </li>
+                User Wise Settlements
+            </li>
             <!--end::Item-->
         </ul>
         <!--end::Breadcrumb-->
@@ -54,8 +58,7 @@
                 <div class="card-body d-flex align-items-end pt-0">
                     <div class="d-flex align-items-center flex-wrap">
                         <span class="badge badge-light-warning fs-base">
-                            <i class="ki-outline ki-wallet fs-5 text-warning me-1"></i>
-                            Pending Collection
+                            <i class="ki-outline ki-wallet fs-5 text-warning me-1"></i> Pending Collection
                         </span>
                     </div>
                 </div>
@@ -66,16 +69,14 @@
             <div class="card card-flush h-md-100">
                 <div class="card-header pt-5">
                     <div class="card-title d-flex flex-column">
-                        <span
-                            class="fs-2hx fw-bold text-danger me-2 lh-1 ls-n2">৳{{ number_format($totalPending, 0) }}</span>
+                        <span class="fs-2hx fw-bold text-danger me-2 lh-1 ls-n2">৳{{ number_format($totalPending, 0) }}</span>
                         <span class="text-gray-500 pt-1 fw-semibold fs-6">Total Pending</span>
                     </div>
                 </div>
                 <div class="card-body d-flex align-items-end pt-0">
                     <div class="d-flex align-items-center flex-wrap">
                         <span class="badge badge-light-danger fs-base">
-                            <i class="ki-outline ki-dollar fs-5 text-danger me-1"></i>
-                            To be Collected
+                            <i class="ki-outline ki-dollar fs-5 text-danger me-1"></i> To be Collected
                         </span>
                     </div>
                 </div>
@@ -93,8 +94,7 @@
                 <div class="card-body d-flex align-items-end pt-0">
                     <div class="d-flex align-items-center flex-wrap">
                         <span class="badge badge-light-primary fs-base">
-                            <i class="ki-outline ki-bank fs-5 text-primary me-1"></i>
-                            Active Branches
+                            <i class="ki-outline ki-bank fs-5 text-primary me-1"></i> Active Branches
                         </span>
                     </div>
                 </div>
@@ -114,30 +114,25 @@
                                 data-bs-toggle="tab" href="#kt_tab_branch_{{ $branch->id }}">
                                 <i class="ki-outline ki-bank fs-4 me-2"></i>
                                 {{ $branch->branch_name }}
-                                @php
-                                    $branchPending = $usersByBranch[$branch->id]->sum('current_balance');
-                                @endphp
-                                @if ($branchPending > 0)
-                                    <span
-                                        class="badge badge-light-danger ms-2">৳{{ number_format($branchPending, 0) }}</span>
-                                @endif
                             </a>
                         </li>
                     @endforeach
                 </ul>
             </div>
+
             <div class="card-toolbar">
                 <div class="d-flex justify-content-end align-items-center gap-3">
                     {{-- Search --}}
                     <div class="d-flex align-items-center position-relative">
                         <i class="ki-outline ki-magnifier fs-3 position-absolute ms-4"></i>
-                        <input type="text" data-kt-filter="search" class="form-control form-control-solid w-175px w-md-300px ps-12"
-                            placeholder="Search user..." />
+                        <input type="text" data-kt-filter="search"
+                            class="form-control form-control-solid w-175px w-md-300px ps-12" placeholder="Search user..." />
                     </div>
 
                     {{-- Balance Filter --}}
-                    <select class="form-select form-select-solid w-120px w-md-200px" data-kt-filter="balance" data-control="select2"
-                        data-placeholder="All Balances" data-allow-clear="true" data-hide-search="true">
+                    <select class="form-select form-select-solid w-120px w-md-200px" data-kt-filter="balance"
+                        data-control="select2" data-placeholder="All Balances" data-allow-clear="true"
+                        data-hide-search="true">
                         <option></option>
                         <option value="with_balance">With Balance</option>
                         <option value="zero_balance">Zero Balance</option>
@@ -152,8 +147,7 @@
                 @foreach ($branches as $index => $branch)
                     <div class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}"
                         id="kt_tab_branch_{{ $branch->id }}">
-                        <table
-                            class="table table-hover align-middle table-row-dashed fs-6 gy-5 kt-settlements-table ucms-table"
+                        <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 kt-settlements-table ucms-table"
                             data-branch-id="{{ $branch->id }}">
                             <thead>
                                 <tr class="fw-bold fs-7 text-uppercase gs-0">
@@ -174,8 +168,8 @@
                                             <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
                                                 @if ($user->photo_url)
                                                     <div class="symbol-label">
-                                                        <img src="{{ asset($user->photo_url) }}" alt="{{ $user->name }}"
-                                                            class="w-100" />
+                                                        <img src="{{ asset($user->photo_url) }}"
+                                                            alt="{{ $user->name }}" class="w-100" />
                                                     </div>
                                                 @else
                                                     <div class="symbol-label fs-3 bg-light-primary text-primary">
@@ -183,7 +177,7 @@
                                                     </div>
                                                 @endif
                                             </div>
-                                            <div class="d-flex flex-column  text-start">
+                                            <div class="d-flex flex-column text-start">
                                                 <a href="{{ route('settlements.show', $user) }}"
                                                     class="text-gray-800 text-hover-primary mb-1">{{ $user->name }}</a>
                                                 <span>{{ $user->mobile_number }}</span>
@@ -202,18 +196,28 @@
                                             @endif
                                         </td>
                                         <td class="text-end">
-                                            <span
-                                                class="text-success fw-bold">৳ {{ number_format($user->total_collected, 0) }}</span>
+                                            @if ($user->isAdmin() && isset($user->branch_total_collected))
+                                                <span class="text-success fw-bold">৳
+                                                    {{ number_format($user->branch_total_collected, 0) }}</span>
+                                            @else
+                                                <span class="text-success fw-bold">৳
+                                                    {{ number_format($user->total_collected, 0) }}</span>
+                                            @endif
                                         </td>
                                         <td class="text-end">
-                                            <span
-                                                class="text-info fw-bold">৳ {{ number_format($user->total_settled, 0) }}</span>
+                                            @if ($user->isAdmin() && isset($user->branch_total_settled))
+                                                <span class="text-info fw-bold">৳
+                                                    {{ number_format($user->branch_total_settled, 0) }}</span>
+                                            @else
+                                                <span class="text-info fw-bold">৳
+                                                    {{ number_format($user->total_settled, 0) }}</span>
+                                            @endif
                                         </td>
                                         <td class="text-end"
                                             data-filter="{{ $user->current_balance > 0 ? 'with_balance' : 'zero_balance' }}">
                                             @if ($user->current_balance > 0)
-                                                <span
-                                                    class="text-danger fw-bolder fs-5">৳ {{ number_format($user->current_balance, 0) }}</span>
+                                                <span class="text-danger fw-bolder fs-5">৳
+                                                    {{ number_format($user->current_balance, 0) }}</span>
                                             @else
                                                 <span class="text-muted">৳ 0</span>
                                             @endif
@@ -230,8 +234,7 @@
                                                 <div class="menu-item px-3">
                                                     <a href="{{ route('settlements.show', $user) }}"
                                                         class="menu-link px-3">
-                                                        <i class="ki-outline ki-eye fs-4 me-2"></i>
-                                                        View History
+                                                        <i class="ki-outline ki-eye fs-4 me-2"></i> View History
                                                     </a>
                                                 </div>
                                                 @if ($user->current_balance > 0)
@@ -240,8 +243,7 @@
                                                             data-user-id="{{ $user->id }}"
                                                             data-user-name="{{ $user->name }}"
                                                             data-balance="{{ $user->current_balance }}">
-                                                            <i class="ki-outline ki-dollar fs-4 me-2"></i>
-                                                            Settle Now
+                                                            <i class="ki-outline ki-dollar fs-4 me-2"></i> Settle Now
                                                         </a>
                                                     </div>
                                                 @endif
@@ -250,7 +252,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center py-10">
+                                        <td colspan="7" class="text-center py-10">
                                             <div class="d-flex flex-column align-items-center">
                                                 <i class="ki-outline ki-wallet fs-3x text-gray-400 mb-3"></i>
                                                 <span class="text-gray-500 fs-5">No users found in this branch</span>
@@ -276,6 +278,7 @@
                         <i class="ki-outline ki-cross fs-1"></i>
                     </div>
                 </div>
+
                 <div class="modal-body scroll-y mx-5 mx-xl-10 pt-0 pb-15">
                     <div class="text-center mb-13">
                         <h1 class="mb-3">Record Settlement</h1>
@@ -312,10 +315,11 @@
                                 <span class="input-group-text">
                                     <i class="ki-outline ki-dollar fs-3"></i>
                                 </span>
-                                <input type="number" step="0.01" min="1"
-                                    class="form-control form-control-solid rounded-start-0 border-start" placeholder="Enter amount" name="amount"
-                                    id="settlement_amount" required />
-                                <button type="button" class="btn btn-light-primary" id="btn_full_amount" data-bs-toggle="tooltip" title="Settle full balance">Full</button>
+                                <input type="number" step="1" min="1"
+                                    class="form-control form-control-solid rounded-start-0 border-start"
+                                    placeholder="Enter amount" name="amount" id="settlement_amount" required />
+                                <button type="button" class="btn btn-light-primary" id="btn_full_amount"
+                                    data-bs-toggle="tooltip" title="Settle full balance">Full</button>
                             </div>
                             <div class="fv-plugins-message-container invalid-feedback" id="amount_error"></div>
                         </div>
@@ -348,7 +352,6 @@
 
 @push('page-js')
     <script src="{{ asset('js/settlements/index.js') }}"></script>
-
     <script>
         document.getElementById("settlements_menu")?.classList.add("here", "show");
         document.getElementById("settlements_link")?.classList.add("active");

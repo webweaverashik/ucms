@@ -1,12 +1,14 @@
 "use strict";
 
+// Shared modal instance
+var toggleActivationModal = null;
+
 var KTStudentsActions = function () {
     // Delete pending students
     const handleDeletion = function () {
         document.querySelectorAll('.delete-student').forEach(item => {
             item.addEventListener('click', function (e) {
                 e.preventDefault();
-
                 let studentId = this.getAttribute('data-student-id');
                 let url = routeDeleteStudent.replace(':id', studentId); // Replace ':id' with actual student ID
 
@@ -59,43 +61,235 @@ var KTStudentsActions = function () {
         });
     };
 
-    // Toggle activation modal AJAX
-    const handleToggleActivationAJAX = function () {
-        const toggleButtons = document.querySelectorAll('[data-bs-target="#kt_toggle_activation_student_modal"]');
+    // Initialize Toggle Activation Modal
+    var initToggleActivationModal = function () {
+        var modalElement = document.getElementById('kt_toggle_activation_student_modal');
+        if (modalElement) {
+            toggleActivationModal = new bootstrap.Modal(modalElement);
+        }
+    };
 
-        toggleButtons.forEach(button => {
-            button.addEventListener('click', function (e) {
+    // Handle toggle activation modal trigger from action dropdown/menu
+    var handleToggleActivationTrigger = function () {
+        document.addEventListener('click', function (e) {
+            var toggleButton = e.target.closest('[data-bs-target="#kt_toggle_activation_student_modal"]');
+            if (!toggleButton) return;
+
+            e.preventDefault();
+
+            var studentId = toggleButton.getAttribute('data-student-id');
+            var studentName = toggleButton.getAttribute('data-student-name');
+            var studentUniqueId = toggleButton.getAttribute('data-student-unique-id');
+            var activeStatus = toggleButton.getAttribute('data-active-status');
+
+            // Populate hidden fields
+            document.getElementById('student_id').value = studentId;
+
+            // Set the NEW status (opposite of current)
+            document.getElementById('activation_status').value = (activeStatus === 'active') ? 'inactive' : 'active';
+
+            // Update modal title and label based on current status
+            var modalTitle = document.getElementById('toggle-activation-modal-title');
+            var reasonLabel = document.getElementById('reason_label');
+            var reasonTextarea = document.querySelector('#kt_toggle_activation_student_modal textarea[name="reason"]');
+
+            if (activeStatus === 'active') {
+                modalTitle.textContent = 'Deactivate Student - ' + studentName + ' (' + studentUniqueId + ')';
+                reasonLabel.textContent = 'Deactivation Reason';
+                if (reasonTextarea) {
+                    reasonTextarea.placeholder = 'Write the reason for deactivating this student';
+                }
+            } else {
+                modalTitle.textContent = 'Activate Student - ' + studentName + ' (' + studentUniqueId + ')';
+                reasonLabel.textContent = 'Activation Reason';
+                if (reasonTextarea) {
+                    reasonTextarea.placeholder = 'Write the reason for activating this student';
+                }
+            }
+
+            // Clear previous reason
+            if (reasonTextarea) {
+                reasonTextarea.value = '';
+            }
+        });
+    };
+
+    // Handle toggle activation form submission via AJAX
+    var handleToggleActivationSubmit = function () {
+        var toggleForm = document.querySelector('#kt_toggle_activation_student_modal form');
+        if (!toggleForm) return;
+
+        toggleForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            var submitBtn = toggleForm.querySelector('button[type="submit"]');
+            var originalBtnText = submitBtn.innerHTML;
+
+            // Validate reason field
+            var reasonField = toggleForm.querySelector('textarea[name="reason"]');
+            if (!reasonField.value.trim()) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Reason Required',
+                    text: 'Please provide a reason for this status change.',
+                    buttonsStyling: false,
+                    confirmButtonText: 'Ok, got it!',
+                    customClass: {
+                        confirmButton: 'btn btn-primary'
+                    }
+                });
+                reasonField.focus();
+                return;
+            }
+
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing...';
+
+            // Prepare form data
+            var formData = new FormData(toggleForm);
+
+            // Get CSRF token
+            var csrfToken = document.querySelector('meta[name="csrf-token"]');
+            if (!csrfToken) {
+                console.error('CSRF token not found');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+                return;
+            }
+
+            // Send AJAX request
+            fetch(toggleForm.getAttribute('action'), {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(function (response) {
+                    return response.json().then(function (data) {
+                        return { status: response.status, data: data };
+                    });
+                })
+                .then(function (result) {
+                    var response = result.data;
+
+                    // Re-enable button
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+
+                    if (response.success) {
+                        // Close modal
+                        if (toggleActivationModal) {
+                            toggleActivationModal.hide();
+                        }
+
+                        // Reset form
+                        toggleForm.reset();
+
+                        // Determine action text for message
+                        var newStatus = document.getElementById('activation_status').value;
+                        var actionText = newStatus === 'active' ? 'activated' : 'deactivated';
+
+                        // Show success message
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: response.message || 'Student has been ' + actionText + ' successfully.',
+                            buttonsStyling: false,
+                            confirmButtonText: 'Ok, got it!',
+                            customClass: {
+                                confirmButton: 'btn btn-primary'
+                            }
+                        }).then(function () {
+                            // Reload page to reflect changes
+                            location.reload();
+                        });
+                    } else {
+                        // Show error message
+                        var errorMessage = response.message || 'Something went wrong.';
+
+                        if (response.errors) {
+                            var errorList = [];
+                            Object.keys(response.errors).forEach(function (key) {
+                                errorList.push(response.errors[key].join(', '));
+                            });
+                            errorMessage = errorList.join('\n');
+                        }
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: errorMessage,
+                            buttonsStyling: false,
+                            confirmButtonText: 'Ok, got it!',
+                            customClass: {
+                                confirmButton: 'btn btn-primary'
+                            }
+                        });
+                    }
+                })
+                .catch(function (error) {
+                    console.error('Toggle activation error:', error);
+
+                    // Re-enable button
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'An unexpected error occurred. Please try again.',
+                        buttonsStyling: false,
+                        confirmButtonText: 'Ok, got it!',
+                        customClass: {
+                            confirmButton: 'btn btn-primary'
+                        }
+                    });
+                });
+        });
+    };
+
+    // Handle modal cancel/close button
+    var handleModalClose = function () {
+        var modalElement = document.getElementById('kt_toggle_activation_student_modal');
+        if (!modalElement) return;
+
+        var cancelButton = modalElement.querySelector('button[type="reset"]');
+        var closeButton = modalElement.querySelector('[data-bs-dismiss="modal"]');
+        var toggleForm = modalElement.querySelector('form');
+
+        // Handle cancel button click
+        if (cancelButton) {
+            cancelButton.addEventListener('click', function (e) {
                 e.preventDefault();
-
-                const studentId = this.getAttribute('data-student-id');
-                const studentName = this.getAttribute('data-student-name');
-                const studentUniqueId = this.getAttribute('data-student-unique-id');
-                const activeStatus = this.getAttribute('data-active-status');
-
-                // Set hidden field values
-                document.getElementById('student_id').value = studentId;
-                document.getElementById('activation_status').value = (activeStatus === 'active') ? 'inactive' : 'active';
-
-                // Update modal title and label
-                const modalTitle = document.getElementById('toggle-activation-modal-title');
-                const reasonLabel = document.getElementById('reason_label');
-
-                if (activeStatus === 'active') {
-                    modalTitle.textContent = `Deactivate Student - ${studentName} (${studentUniqueId})`;
-                    reasonLabel.textContent = 'Deactivation Reason';
-                } else {
-                    modalTitle.textContent = `Activate Student - ${studentName} (${studentUniqueId})`;
-                    reasonLabel.textContent = 'Activation Reason';
+                if (toggleForm) {
+                    toggleForm.reset();
+                }
+                if (toggleActivationModal) {
+                    toggleActivationModal.hide();
                 }
             });
+        }
+
+        // Reset form when modal is hidden
+        modalElement.addEventListener('hidden.bs.modal', function () {
+            if (toggleForm) {
+                toggleForm.reset();
+            }
         });
-    }
+    };
 
     return {
         // Public functions
         init: function () {
             handleDeletion();
-            handleToggleActivationAJAX();
+            initToggleActivationModal();
+            handleToggleActivationTrigger();
+            handleToggleActivationSubmit();
+            handleModalClose();
         }
     }
 }();
@@ -122,6 +316,7 @@ var KTStudentsInvoicesView = function () {
 
         // Re-init functions on every table re-draw -- more info: https://datatables.net/reference/event/draw
         datatable.on('draw', function () {
+
         });
     }
 
@@ -131,6 +326,7 @@ var KTStudentsInvoicesView = function () {
             if (!target) return;
 
             e.preventDefault();
+
             const invoiceId = target.getAttribute('data-invoice-id');
             console.log('Invoice to be deleted:', invoiceId);
 
@@ -216,9 +412,11 @@ var KTEditInvoiceModal = function () {
     // Helper function to format month year for display
     var formatMonthYear = function (monthYear) {
         if (!monthYear) return '';
+
         const [month, year] = monthYear.split('_');
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
             'July', 'August', 'September', 'October', 'November', 'December'];
+
         return `${monthNames[parseInt(month) - 1]} ${year}`;
     };
 
@@ -369,7 +567,6 @@ var KTEditInvoiceModal = function () {
     // Handle form submission via AJAX
     var handleFormSubmit = function () {
         submitButton = element.querySelector('[data-kt-edit-invoice-modal-action="submit"]');
-
         if (!submitButton) return;
 
         submitButton.addEventListener('click', function (e) {
@@ -474,7 +671,6 @@ var KTEditInvoiceModal = function () {
     return {
         init: function () {
             element = document.getElementById('kt_modal_edit_invoice');
-
             if (!element) {
                 return;
             }
@@ -512,6 +708,7 @@ var KTStudentsTransactionsView = function () {
 
         // Re-init functions on every table re-draw -- more info: https://datatables.net/reference/event/draw
         datatable.on('draw', function () {
+
         });
     }
 
@@ -522,6 +719,7 @@ var KTStudentsTransactionsView = function () {
             if (!deleteBtn) return;
 
             e.preventDefault();
+
             let txnId = deleteBtn.getAttribute('data-txn-id');
             console.log('TXN ID:', txnId);
             let url = routeDeleteTxn.replace(':id', txnId);
@@ -573,7 +771,6 @@ var KTStudentsTransactionsView = function () {
         document.querySelectorAll('.approve-txn').forEach(item => {
             item.addEventListener('click', function (e) {
                 e.preventDefault();
-
                 let txnId = this.getAttribute('data-txn-id');
                 console.log("TXN ID:", txnId);
 
@@ -680,6 +877,7 @@ var KTStudentsTransactionsView = function () {
                         printWindow.document.open();
                         printWindow.document.write(html);
                         printWindow.document.close();
+
                         // Focus on the new window
                         printWindow.focus();
                     } else {
@@ -760,6 +958,7 @@ var KTStudentsSheetsView = function () {
 
         // Re-init functions on every table re-draw -- more info: https://datatables.net/reference/event/draw
         datatable.on('draw', function () {
+
         });
     }
 
@@ -938,6 +1137,7 @@ var KTStudentViewAttendance = function () {
             editable: false,
             dayMaxEvents: true,
             events: eventsData,
+
             // Tooltip Logic (Works for both Grid and List views)
             eventDidMount: function (info) {
                 var remarks = info.event.extendedProps.description;
@@ -950,6 +1150,7 @@ var KTStudentViewAttendance = function () {
                     });
                 }
             },
+
             // --- CUSTOM CONTENT RENDERING ---
             eventContent: function (arg) {
                 // A. Logic for LIST View (Show Date + Status)
@@ -1071,7 +1272,6 @@ var KTStudentViewAttendance = function () {
 
                             // Calculate Percentage
                             var percentage = Math.round((value / total) * 100) + '%';
-
                             return percentage;
                         }
                     }
@@ -1083,7 +1283,6 @@ var KTStudentViewAttendance = function () {
     // --- 3. Handle Tab Logic ---
     var handleTabSwitch = function () {
         var tabLink = document.querySelector('a[href="#kt_student_view_attendance_tab"]');
-
         if (!tabLink) {
             tabLink = document.querySelector('button[data-bs-target="#kt_student_view_attendance_tab"]');
         }

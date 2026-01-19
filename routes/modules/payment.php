@@ -56,9 +56,13 @@ Route::prefix('settlements')
     ->group(function () {
         Route::get('/', [SettlementController::class, 'index'])->name('index');
         Route::get('/logs', [SettlementController::class, 'logs'])->name('logs');
+        Route::get('/logs/data', [SettlementController::class, 'logsData'])->name('logs.data');
+        Route::get('/logs/export', [SettlementController::class, 'logsExport'])->name('logs.export');
         Route::post('/', [SettlementController::class, 'store'])->name('store');
         Route::post('/adjustment', [SettlementController::class, 'adjustment'])->name('adjustment');
         Route::get('/{user}', [SettlementController::class, 'show'])->name('show');
+        Route::get('/{user}/data', [SettlementController::class, 'showData'])->name('show.data');
+        Route::get('/{user}/export', [SettlementController::class, 'showExport'])->name('show.export');
     });
 
 // Resource controllers
