@@ -43,6 +43,7 @@
         // Preloading permissions checking
         $canEditInvoice = auth()->user()->can('invoices.edit');
         $canDeleteInvoice = auth()->user()->can('invoices.delete');
+        $canViewInvoice = auth()->user()->can('invoices.view');
     @endphp
     <!--begin:::Tabs-->
     <ul class="nav nav-custom nav-tabs nav-line-tabs nav-line-tabs-2x border-0 fs-4 fw-semibold mb-8">
@@ -203,10 +204,12 @@
                                     data-kt-menu="true">
                                     <!--begin::Menu item-->
                                     <div class="menu-item px-3">
-                                        <a href="#" class="menu-link px-3" data-row-export="copy">Copy to clipboard</a>
+                                        <a href="#" class="menu-link px-3" data-row-export="copy">Copy to
+                                            clipboard</a>
                                     </div>
                                     <div class="menu-item px-3">
-                                        <a href="#" class="menu-link px-3" data-row-export="excel">Export as Excel</a>
+                                        <a href="#" class="menu-link px-3" data-row-export="excel">Export as
+                                            Excel</a>
                                     </div>
                                     <div class="menu-item px-3">
                                         <a href="#" class="menu-link px-3" data-row-export="csv">Export as CSV</a>
@@ -259,7 +262,8 @@
                                             {{ $invoice->invoice_number }}
                                         </a>
                                         @if ($invoice->comments_count > 0)
-                                            <span class="badge badge-circle badge-sm badge-primary ms-1">{{ $invoice->comments_count }}</span>
+                                            <span
+                                                class="badge badge-circle badge-sm badge-primary ms-1">{{ $invoice->comments_count }}</span>
                                         @endif
                                     </td>
                                     <td>
@@ -369,6 +373,9 @@
                                                                 class="ki-outline ki-pencil fs-3 me-2"></i> Edit
                                                             Invoice</a>
                                                     </div>
+                                                @endif
+
+                                                @if ($canViewInvoice)
                                                     <div class="menu-item px-3">
                                                         <a href="#" data-invoice-id="{{ $invoice->id }}"
                                                             data-invoice-number="{{ $invoice->invoice_number }}"
@@ -378,6 +385,7 @@
                                                         </a>
                                                     </div>
                                                 @endif
+
                                                 @if ($canDeleteInvoice)
                                                     <div class="menu-item px-3">
                                                         <a href="#" data-invoice-id="{{ $invoice->id }}"
@@ -529,10 +537,12 @@
                                     data-kt-menu="true">
                                     <!--begin::Menu item-->
                                     <div class="menu-item px-3">
-                                        <a href="#" class="menu-link px-3" data-row-export="copy">Copy to clipboard</a>
+                                        <a href="#" class="menu-link px-3" data-row-export="copy">Copy to
+                                            clipboard</a>
                                     </div>
                                     <div class="menu-item px-3">
-                                        <a href="#" class="menu-link px-3" data-row-export="excel">Export as Excel</a>
+                                        <a href="#" class="menu-link px-3" data-row-export="excel">Export as
+                                            Excel</a>
                                     </div>
                                     <div class="menu-item px-3">
                                         <a href="#" class="menu-link px-3" data-row-export="csv">Export as CSV</a>
@@ -612,7 +622,8 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="badge badge-success rounded-pill">{{ ucfirst($invoice->status) }}</span>
+                                        <span
+                                            class="badge badge-success rounded-pill">{{ ucfirst($invoice->status) }}</span>
                                     </td>
                                     <td>
                                         {{ $invoice->created_at->format('d-m-Y') }}<br>
@@ -681,7 +692,8 @@
                                                 <option></option>
                                                 @foreach ($students as $student)
                                                     <option value="{{ $student->id }}">{{ $student->name }}
-                                                        ({{ $student->student_unique_id }}) -
+                                                        ({{ $student->student_unique_id }})
+                                                        -
                                                         {{ ucfirst($student->payments->payment_style) }} -
                                                         1/{{ $student->payments->due_date }}
                                                     </option>
@@ -730,8 +742,8 @@
                                         <!--begin::New Month Year-->
                                         <div class="col-lg-6">
                                             <!--begin::Option-->
-                                            <input type="radio" class="btn-check" name="month_year_type" checked="checked"
-                                                value="new_invoice" id="new_invoice_input" />
+                                            <input type="radio" class="btn-check" name="month_year_type"
+                                                checked="checked" value="new_invoice" id="new_invoice_input" />
                                             <label
                                                 class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                                 for="new_invoice_input">
@@ -748,8 +760,8 @@
                                         <!--begin::Old Month Year-->
                                         <div class="col-lg-6">
                                             <!--begin::Option-->
-                                            <input type="radio" class="btn-check" name="month_year_type" value="old_invoice"
-                                                id="old_invoice_input" />
+                                            <input type="radio" class="btn-check" name="month_year_type"
+                                                value="old_invoice" id="old_invoice_input" />
                                             <label
                                                 class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                                 for="old_invoice_input">
@@ -881,7 +893,8 @@
                                 <label class="fw-semibold fs-6 mb-2">Invoice Type</label>
                                 <!--end::Label-->
                                 <!--begin::Display field-->
-                                <div class="form-control form-control-solid bg-light-secondary" id="edit_invoice_type_display">
+                                <div class="form-control form-control-solid bg-light-secondary"
+                                    id="edit_invoice_type_display">
                                     <span class="text-muted">Loading...</span>
                                 </div>
                                 <!--end::Display field-->
@@ -893,7 +906,8 @@
                                 <label class="fw-semibold fs-6 mb-2">Billing Month</label>
                                 <!--end::Label-->
                                 <!--begin::Display field-->
-                                <div class="form-control form-control-solid bg-light-secondary" id="edit_month_year_display">
+                                <div class="form-control form-control-solid bg-light-secondary"
+                                    id="edit_month_year_display">
                                     <span class="text-muted">Loading...</span>
                                 </div>
                                 <!--end::Display field-->
@@ -974,11 +988,12 @@
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_add_comment_header"
                             data-kt-scroll-wrappers="#kt_modal_add_comment_scroll" data-kt-scroll-offset="300px">
-                            
+
                             <!--begin::Previous Comments Section-->
                             <div class="mb-7" id="previous_comments_section">
                                 <label class="fw-semibold fs-6 mb-3">Previous Comments</label>
-                                <div id="previous_comments_container" class="border rounded p-4 bg-light-secondary" style="max-height: 200px; overflow-y: auto;">
+                                <div id="previous_comments_container" class="border rounded p-4 bg-light-secondary"
+                                    style="max-height: 200px; overflow-y: auto;">
                                     <div class="text-center text-muted py-3" id="comments_loading">
                                         <span class="spinner-border spinner-border-sm me-2"></span>Loading comments...
                                     </div>
