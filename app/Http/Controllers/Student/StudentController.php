@@ -140,12 +140,12 @@ class StudentController extends Controller
 
         // Payment filters - use JOIN instead of whereHas
         if ($filterPaymentType || $filterDueDate) {
-            $query->join('payments', 'students.id', '=', 'payments.student_id');
+            $query->join('payments_info', 'students.id', '=', 'payments_info.student_id');
             if ($filterPaymentType) {
-                $query->where('payments.payment_style', $filterPaymentType);
+                $query->where('payments_info.payment_style', $filterPaymentType);
             }
             if ($filterDueDate) {
-                $query->where('payments.due_date', $filterDueDate);
+                $query->where('payments_info.due_date', $filterDueDate);
             }
         }
 
