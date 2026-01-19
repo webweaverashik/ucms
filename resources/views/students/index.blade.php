@@ -1,5 +1,16 @@
 @push('page-css')
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <style>
+        /* Loading animation for badge counts */
+        .branch-count-badge.badge-loading {
+            min-width: 30px;
+        }
+        .branch-count-badge .spinner-border {
+            width: 12px;
+            height: 12px;
+            border-width: 2px;
+        }
+    </style>
 @endpush
 
 @extends('layouts.app')
@@ -15,11 +26,9 @@
             All running students in this branch
         </h1>
         <!--end::Title-->
-
         <!--begin::Separator-->
         <span class="h-20px border-gray-300 border-start mx-4"></span>
         <!--end::Separator-->
-
         <!--begin::Breadcrumb-->
         <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 ">
             <!--begin::Item-->
@@ -83,7 +92,6 @@
                 <!--end::Search-->
             </div>
             <!--begin::Card title-->
-
             <!--begin::Card toolbar-->
             <div class="card-toolbar">
                 <!--begin::Toolbar-->
@@ -226,7 +234,6 @@
                         <!--end::Content-->
                     </div>
                     <!--end::Menu 1-->
-
                     <!--begin::Export dropdown-->
                     <div class="dropdown">
                         <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
@@ -255,7 +262,6 @@
                         <!--end::Menu-->
                     </div>
                     <!--end::Export dropdown-->
-
                     @can('students.create')
                         <!--begin::Add Student-->
                         <a href="{{ route('students.create') }}" class="btn btn-primary">
@@ -268,7 +274,6 @@
             <!--end::Card toolbar-->
         </div>
         <!--end::Card header-->
-
         <!--begin::Card body-->
         <div class="card-body py-4">
             @if ($isAdmin)
@@ -287,10 +292,9 @@
                                 data-branch-id="{{ $branch->id }}">
                                 <i class="ki-outline ki-bank fs-4 me-1"></i>
                                 {{ ucfirst($branch->branch_name) }}
-                                <span class="badge {{ $tabBadgeColor }} ms-2 branch-count-badge"
+                                <span class="badge {{ $tabBadgeColor }} ms-2 branch-count-badge badge-loading"
                                     data-branch-id="{{ $branch->id }}">
-                                    <span class="spinner-border spinner-border-sm" role="status"
-                                        style="width: 10px; height: 10px;"></span>
+                                    <span class="spinner-border spinner-border-sm" role="status"></span>
                                 </span>
                             </a>
                         </li>
@@ -367,8 +371,8 @@
                                             <textarea class="form-control" rows="3" name="reason" id="activation_reason"
                                                 placeholder="Write the reason for this update" required minlength="3"></textarea>
                                             <!--end::Input-->
-                                            <div class="fv-plugins-message-container invalid-feedback"
-                                                id="reason_error"></div>
+                                            <div class="fv-plugins-message-container invalid-feedback" id="reason_error">
+                                            </div>
                                         </div>
                                         <!--end::Input group-->
                                     </div>
@@ -419,6 +423,7 @@
         const routeStudentShow = "{{ route('students.show', ':id') }}";
         const routeStudentEdit = "{{ route('students.edit', ':id') }}";
         const routeStudentDownload = "{{ route('students.download', ':id') }}";
+        const routeBranchCounts = "{{ route('students.branch-counts') }}";
         const isAdmin = @json($isAdmin);
         const branchIds = @json($branches->pluck('id')->toArray());
     </script>

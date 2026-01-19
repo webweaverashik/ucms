@@ -40,6 +40,50 @@ var KTStudentsList = function () {
         return div.innerHTML;
     }
 
+    // Fetch and update branch counts on page load (for admin only)
+    var fetchBranchCounts = function () {
+        if (!isAdmin || typeof routeBranchCounts === 'undefined') {
+            return;
+        }
+
+        $.ajax({
+            url: routeBranchCounts,
+            type: 'GET',
+            dataType: 'json',
+            success: function (response) {
+                if (response.success && response.counts) {
+                    // Update all branch badges with their counts
+                    Object.keys(response.counts).forEach(function (branchId) {
+                        var badge = document.querySelector('.branch-count-badge[data-branch-id="' + branchId + '"]');
+                        if (badge) {
+                            badge.innerHTML = response.counts[branchId];
+                            badge.classList.remove('badge-loading');
+                        }
+                    });
+
+                    // Set 0 for branches with no students
+                    var allBadges = document.querySelectorAll('.branch-count-badge');
+                    allBadges.forEach(function (badge) {
+                        var branchId = badge.getAttribute('data-branch-id');
+                        if (!response.counts[branchId]) {
+                            badge.innerHTML = '0';
+                            badge.classList.remove('badge-loading');
+                        }
+                    });
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Failed to fetch branch counts:', error);
+                // On error, show 0 or dash for all badges
+                var allBadges = document.querySelectorAll('.branch-count-badge');
+                allBadges.forEach(function (badge) {
+                    badge.innerHTML = '-';
+                    badge.classList.remove('badge-loading');
+                });
+            }
+        });
+    };
+
     // Get DataTable AJAX config
     var getDataTableConfig = function (tableId, branchId) {
         var config = {
@@ -62,7 +106,7 @@ var KTStudentsList = function () {
                     return d;
                 },
                 dataSrc: function (json) {
-                    // Update badge count if admin
+                    // Update badge count if admin (as fallback/refresh)
                     if (isAdmin && branchId) {
                         var badge = document.querySelector('.branch-count-badge[data-branch-id="' + branchId + '"]');
                         if (badge) {
@@ -87,7 +131,6 @@ var KTStudentsList = function () {
                         var nameClass = data.is_active ? 'text-gray-800 text-hover-primary' : 'text-danger';
                         var tooltip = data.is_active ? '' : 'title="Inactive Student" data-bs-toggle="tooltip" data-bs-placement="top"';
                         var showUrl = routeStudentShow.replace(':id', data.id);
-
                         return '<div class="d-flex align-items-center">' +
                             '<div class="d-flex flex-column text-start">' +
                             '<a href="' + showUrl + '" class="' + nameClass + ' mb-1" ' + tooltip + '>' + escapeHtml(data.name) + '</a>' +
@@ -140,7 +183,6 @@ var KTStudentsList = function () {
                 });
             }
         };
-
         return config;
     };
 
@@ -159,10 +201,12 @@ var KTStudentsList = function () {
 
     // Initialize datatables for admin (multiple tabs)
     var initAdminDatatables = function () {
+        // First, fetch all branch counts immediately
+        fetchBranchCounts();
+
         if (branchIds && branchIds.length > 0) {
             var firstBranchId = branchIds[0];
             var firstTableId = 'kt_students_table_branch_' + firstBranchId;
-
             datatables[firstBranchId] = initSingleDatatable(firstTableId, firstBranchId);
             activeDatatable = datatables[firstBranchId];
             initializedTabs[firstBranchId] = true;
@@ -182,6 +226,7 @@ var KTStudentsList = function () {
                 }
 
                 activeDatatable = datatables[branchId];
+
                 if (activeDatatable) {
                     activeDatatable.columns.adjust().draw(false);
                 }
@@ -193,7 +238,6 @@ var KTStudentsList = function () {
     var initNonAdminDatatable = function () {
         var table = document.getElementById('kt_students_table');
         if (!table) return;
-
         datatables['single'] = initSingleDatatable('kt_students_table', null);
         activeDatatable = datatables['single'];
     };
@@ -306,7 +350,6 @@ var KTStudentsList = function () {
             textarea.select();
             document.execCommand('copy');
             document.body.removeChild(textarea);
-
             Swal.fire({
                 icon: 'success',
                 title: 'Copied!',
@@ -335,7 +378,6 @@ var KTStudentsList = function () {
     var exportToCSV = function (data) {
         var exportData = prepareExportData(data);
         var csvContent = '';
-
         csvContent += exportData.headers.map(function (h) {
             return '"' + h.replace(/"/g, '""') + '"';
         }).join(',') + '\n';
@@ -442,6 +484,8 @@ var KTStudentsList = function () {
                 Object.keys(datatables).forEach(function (key) {
                     if (datatables[key]) datatables[key].ajax.reload();
                 });
+                // Also refresh counts after filter
+                fetchBranchCounts();
             } else if (activeDatatable) {
                 activeDatatable.ajax.reload();
             }
@@ -460,6 +504,8 @@ var KTStudentsList = function () {
                 Object.keys(datatables).forEach(function (key) {
                     if (datatables[key]) datatables[key].search('').ajax.reload();
                 });
+                // Also refresh counts after reset
+                fetchBranchCounts();
             } else if (activeDatatable) {
                 activeDatatable.search('').ajax.reload();
             }
@@ -505,6 +551,8 @@ var KTStudentsList = function () {
                             })
                             .then(function() {
                                 if (activeDatatable) activeDatatable.ajax.reload();
+                                // Refresh counts after deletion
+                                if (isAdmin) fetchBranchCounts();
                             });
                         } else {
                             Swal.fire({
@@ -541,7 +589,6 @@ var KTStudentsList = function () {
             if (!toggleButton) return;
 
             e.preventDefault();
-
             var studentId = toggleButton.getAttribute('data-student-id');
             var studentName = toggleButton.getAttribute('data-student-name');
             var studentUniqueId = toggleButton.getAttribute('data-student-unique-id');
@@ -660,6 +707,8 @@ var KTStudentsList = function () {
                         if (activeDatatable) {
                             activeDatatable.ajax.reload(null, false);
                         }
+                        // Refresh counts after status change
+                        if (isAdmin) fetchBranchCounts();
                     });
                 } else {
                     // Show error message
@@ -729,15 +778,18 @@ var KTStudentsList = function () {
             handleToggleActivationSubmit();
             handleModalReset();
         },
-
         reload: function () {
             if (activeDatatable) activeDatatable.ajax.reload();
+            if (isAdmin) fetchBranchCounts();
         },
-
         reloadAll: function () {
             Object.keys(datatables).forEach(function (key) {
                 if (datatables[key]) datatables[key].ajax.reload();
             });
+            if (isAdmin) fetchBranchCounts();
+        },
+        refreshCounts: function() {
+            if (isAdmin) fetchBranchCounts();
         }
     };
 }();
