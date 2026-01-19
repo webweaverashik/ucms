@@ -76,8 +76,7 @@ class StudentController extends Controller
         $counts = Student::query()
             ->select('students.branch_id', DB::raw('COUNT(students.id) as count'))
             ->join('class_names', function ($join) {
-                $join->on('students.class_id', '=', 'class_names.id')
-                    ->where('class_names.is_active', '=', true);
+                $join->on('students.class_id', '=', 'class_names.id')->where('class_names.is_active', '=', true);
             })
             ->whereNotNull('students.student_activation_id')
             ->groupBy('students.branch_id')
@@ -144,8 +143,7 @@ class StudentController extends Controller
         $query = Student::query()
             ->select('students.*')
             ->join('class_names', function ($join) {
-                $join->on('students.class_id', '=', 'class_names.id')
-                    ->where('class_names.is_active', '=', true);
+                $join->on('students.class_id', '=', 'class_names.id')->where('class_names.is_active', '=', true);
             })
             ->whereNotNull('students.student_activation_id');
 
@@ -162,8 +160,7 @@ class StudentController extends Controller
         // Status filter - use JOIN instead of whereHas
         if ($filterStatus) {
             $query->join('student_activations', function ($join) use ($filterStatus) {
-                $join->on('students.student_activation_id', '=', 'student_activations.id')
-                    ->where('student_activations.active_status', '=', $filterStatus);
+                $join->on('students.student_activation_id', '=', 'student_activations.id')->where('student_activations.active_status', '=', $filterStatus);
             });
         }
 
@@ -195,8 +192,7 @@ class StudentController extends Controller
 
         // Institution filter - use JOIN instead of whereHas
         if ($filterInstitution) {
-            $query->join('institutions', 'students.institution_id', '=', 'institutions.id')
-                ->where('institutions.name', 'like', "%{$filterInstitution}%");
+            $query->join('institutions', 'students.institution_id', '=', 'institutions.id')->where('institutions.name', 'like', "%{$filterInstitution}%");
         }
 
         // Global search - optimized with direct column searches where possible
@@ -206,19 +202,22 @@ class StudentController extends Controller
                     ->orWhere('students.student_unique_id', 'like', "%{$search}%")
                     ->orWhere('class_names.name', 'like', "%{$search}%")
                     ->orWhereExists(function ($subquery) use ($search) {
-                        $subquery->selectRaw('1')
+                        $subquery
+                            ->selectRaw('1')
                             ->from('batches')
                             ->whereColumn('batches.id', 'students.batch_id')
                             ->where('batches.name', 'like', "%{$search}%");
                     })
                     ->orWhereExists(function ($subquery) use ($search) {
-                        $subquery->selectRaw('1')
+                        $subquery
+                            ->selectRaw('1')
                             ->from('institutions')
                             ->whereColumn('institutions.id', 'students.institution_id')
                             ->where('institutions.name', 'like', "%{$search}%");
                     })
                     ->orWhereExists(function ($subquery) use ($search) {
-                        $subquery->selectRaw('1')
+                        $subquery
+                            ->selectRaw('1')
                             ->from('mobile_numbers')
                             ->whereColumn('mobile_numbers.student_id', 'students.id')
                             ->where('mobile_numbers.mobile_number', 'like', "%{$search}%");
@@ -229,8 +228,7 @@ class StudentController extends Controller
         // Get total count for this branch (cached calculation)
         $totalQuery = Student::query()
             ->join('class_names', function ($join) {
-                $join->on('students.class_id', '=', 'class_names.id')
-                    ->where('class_names.is_active', '=', true);
+                $join->on('students.class_id', '=', 'class_names.id')->where('class_names.is_active', '=', true);
             })
             ->whereNotNull('students.student_activation_id');
 
@@ -256,15 +254,7 @@ class StudentController extends Controller
         }
 
         // Eager load relationships for the final result set only
-        $students = $query->with([
-            'class:id,name,class_numeral',
-            'branch:id,branch_name,branch_prefix',
-            'batch:id,name',
-            'institution:id,name',
-            'studentActivation:id,active_status',
-            'mobileNumbers:id,mobile_number,number_type,student_id',
-            'payments:id,payment_style,due_date,tuition_fee,student_id',
-        ])->get();
+        $students = $query->with(['class:id,name,class_numeral', 'branch:id,branch_name,branch_prefix', 'batch:id,name', 'institution:id,name', 'studentActivation:id,active_status', 'mobileNumbers:id,mobile_number,number_type,student_id', 'payments:id,payment_style,due_date,tuition_fee,student_id'])->get();
 
         // Format data for DataTable
         $data    = [];
@@ -286,7 +276,8 @@ class StudentController extends Controller
             // Academic group badge
             $groupBadge = '';
             if ($student->academic_group && $student->academic_group !== 'General') {
-                $badgeClass = [
+                $badgeClass =
+                [
                     'Science'  => 'info',
                     'Commerce' => 'primary',
                     'Arts'     => 'warning',
@@ -995,29 +986,26 @@ class StudentController extends Controller
      */
     public function show(string $id)
     {
-        // Try to find the student including trashed ones with optimized eager loading
         $student = Student::with([
             // Attendances for calendar
             'attendances',
 
-            // Class with all needed fields
-            'class'                   => function ($q) {
-                $q->select('id', 'name', 'class_numeral', 'is_active');
-            },
+            // Class
+            'class:id,name,class_numeral,is_active',
 
-            // Branch info
+            // Branch
             'branch:id,branch_name,branch_prefix',
 
-            // Batch info
+            // Batch
             'batch:id,name',
 
-            // Institution info
+            // Institution
             'institution:id,name,eiin_number',
 
-            // Activation status
+            // Activation
             'studentActivation:id,active_status,created_at',
 
-            // All activations for activity tab
+            // Activation history
             'activations.updatedBy:id,name',
 
             // Guardians
@@ -1029,111 +1017,68 @@ class StudentController extends Controller
             // Mobile numbers
             'mobileNumbers:id,mobile_number,number_type,student_id',
 
-            // Payments
+            // Payment profile
             'payments:id,payment_style,due_date,tuition_fee,student_id',
 
-            // Payment invoices with invoice type
-            'paymentInvoices'         => function ($q) {
+            // Payment invoices
+            'paymentInvoices'      => function ($q) {
                 $q->with(['invoiceType:id,type_name', 'student.payments:id,payment_style,due_date,student_id']);
             },
 
-            // Payment transactions with invoice
-            'paymentTransactions'     => function ($q) {
+            // Payment transactions
+            'paymentTransactions'  => function ($q) {
                 $q->with(['paymentInvoice:id,invoice_number,created_at']);
             },
 
-            // Subjects taken with subject details
-            'subjectsTaken'           => function ($q) {
-                $q->with(['subject:id,name,academic_group,subject_type']);
+            // Subjects taken
+            'subjectsTaken.subject:id,name,academic_group,subject_type',
+
+            // ✅ FIXED: Sheet topics taken
+            'sheetsTopicTaken'     => function ($q) {
+                $q->with(['sheetTopic:id,topic_name,subject_id', 'sheetTopic.subject:id,name,class_id', 'sheetTopic.subject.class:id,name,class_numeral', 'distributedBy:id,name']);
             },
 
-            // Sheets topic taken for sheets tab
-            'sheetsTopicTaken'        => function ($q) {
+            // Sheet payments
+            'sheetPayments.sheet'  => function ($q) {
+                $q->with(['class:id,name,class_numeral', 'class.subjects:id,name,class_id']);
+            },
+
+            // Reference
+            'reference.referer',
+
+            // Secondary classes
+            'secondaryClasses.secondaryClass.class:id,name,class_numeral',
+
+            // Class change history
+            'classChangeHistories' => function ($q) {
                 $q->with([
-                    'sheetTopic:id,topic_name,subject_id',
-                    'sheetTopic.subject:id,name',
-                    'class' => function ($q) {
-                        $q->withoutGlobalScopes()->select('id', 'name', 'class_numeral');
-                    },
-                    'class.sheet:id,class_id',
-                    'distributedBy:id,name',
-                ]);
-            },
-
-            // Sheet payments for sidebar info
-            'sheetPayments'           => function ($q) {
-                $q->with(['sheet' => function ($sq) {
-                    $sq->with([
-                        'class' => function ($cq) {
-                            $cq->withoutGlobalScopes()->select('id', 'name', 'class_numeral');
-                        },
-                        'class.subjects:id,name,class_id',
-                    ]);
-                }]);
-            },
-
-            // Reference with referer
-            'reference'               => function ($q) {
-                $q->with(['referer']);
-            },
-
-            // Secondary classes (special classes) enrollment
-            // Returns StudentSecondaryClass models with nested secondaryClass->class
-            'secondaryClasses'        => function ($q) {
-                $q->with([
-                    'secondaryClass' => function ($sq) {
-                        $sq->with(['class:id,name,class_numeral']);
-                    },
-                ]);
-            },
-
-            // Class change history for activity tab
-            'classChangeHistories'    => function ($q) {
-                $q->with([
-                    'fromClass' => function ($cq) {
-                        $cq->withTrashed()->select('id', 'name', 'class_numeral');
-                    },
-                    'toClass'   => function ($cq) {
-                        $cq->withTrashed()->select('id', 'name', 'class_numeral');
-                    },
+                    'fromClass' => fn($cq) => $cq->withTrashed()->select('id', 'name', 'class_numeral'),
+                    'toClass'   => fn($cq)   => $cq->withTrashed()->select('id', 'name', 'class_numeral'),
                     'createdBy:id,name',
                 ]);
             },
 
-            // Secondary class history for activity tab
-            'secondaryClassHistories' => function ($q) {
-                $q->with([
-                    'secondaryClass' => function ($sq) {
-                        $sq->with(['class:id,name,class_numeral']);
-                    },
-                    'createdBy:id,name',
-                ]);
-            },
+            // Secondary class history
+            'secondaryClassHistories.secondaryClass.class:id,name,class_numeral',
+            'secondaryClassHistories.createdBy:id,name',
         ])->find($id);
 
-        // If not found or trashed, redirect with warning
         if (! $student) {
             return redirect()->route('students.index')->with('warning', 'Student not found or deleted.');
         }
 
-        // Restrict access: Only allow editing if the user belongs to the same branch
         if (auth()->user()->branch_id != 0 && auth()->user()->branch_id != $student->branch_id) {
             return redirect()->route('students.index')->with('error', 'Student not found in this branch.');
         }
 
-        // --- Prepare Attendance Events for Calendar ---
+        // Attendance calendar events
         $attendance_events = $student->attendances->map(function ($attendance) {
-                                 // Define Metronic Theme Colors
-            $color  = '#50cd89'; // Green (Present)
-            $status = strtolower($attendance->status);
-
-            if ($status === 'absent') {
-                $color = '#f1416c'; // Red
-            } elseif ($status === 'late') {
-                $color = '#ffc700'; // Yellow/Orange
-            } elseif ($status === 'excused' || $status === 'leave') {
-                $color = '#7239ea'; // Purple
-            }
+            $color = match (strtolower($attendance->status)) {
+                'absent' => '#f1416c',
+                'late'   => '#ffc700',
+                'excused', 'leave' => '#7239ea',
+                default  => '#50cd89',
+            };
 
             return [
                 'title'       => ucfirst($attendance->status),
@@ -1143,32 +1088,25 @@ class StudentController extends Controller
             ];
         });
 
-        // --- Extract sheet class names and subjects (already eager loaded) ---
+        // Sheet sidebar info
         $sheetPayments = $student->sheetPayments;
 
-        // Extract unique class names
-        $sheet_class_names = $sheetPayments->pluck('sheet.class')->filter()
-            ->unique('id')
-            ->map(function ($class) {
-                return [
-                    'name'          => $class->name,
-                    'class_numeral' => $class->class_numeral,
-                ];
-            });
+        $sheet_class_names = $sheetPayments->pluck('sheet.class')->filter()->unique('id')->map(
+            fn($class) => [
+                'name'          => $class->name,
+                'class_numeral' => $class->class_numeral,
+            ],
+        );
 
-        // Extract unique subject names from those classes
-        $sheet_subjectNames = $sheetPayments->pluck('sheet.class.subjects')->flatten()->filter()
-            ->unique('name')->pluck('name')->sort()->values();
+        $sheet_subjectNames = $sheetPayments->pluck('sheet.class.subjects')->flatten()->unique('name')->pluck('name')->sort()->values();
 
-        // Get invoice types for edit modal
         $invoice_types = PaymentInvoiceType::select('id', 'type_name')->oldest('type_name')->get();
 
-        // Check if class is active to determine which view to render
         if ($student->class->isActive() === false) {
             return view('students.alumni.view', compact('student', 'sheet_class_names', 'sheet_subjectNames'));
-        } else {
-            return view('students.view', compact('student', 'sheet_class_names', 'sheet_subjectNames', 'attendance_events', 'invoice_types'));
         }
+
+        return view('students.view', compact('student', 'sheet_class_names', 'sheet_subjectNames', 'attendance_events', 'invoice_types'));
     }
 
     /**
