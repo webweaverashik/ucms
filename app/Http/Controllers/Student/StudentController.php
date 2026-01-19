@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
@@ -47,17 +46,47 @@ class StudentController extends Controller
 
         // Use simple queries without eager loading for filter dropdowns
         $classnames = ClassName::where('is_active', true)->select('id', 'name', 'class_numeral')->get();
-        
+
         $batches = Batch::select('batches.id', 'batches.name', 'batches.branch_id', 'branches.branch_name')
             ->join('branches', 'batches.branch_id', '=', 'branches.id')
             ->when($branchId != 0, function ($query) use ($branchId) {
                 $query->where('batches.branch_id', $branchId);
             })
             ->get();
-            
+
         $institutions = Institution::select('id', 'name')->get();
 
         return view('students.index', compact('classnames', 'batches', 'institutions', 'branches', 'isAdmin'));
+    }
+
+    /**
+     * Get student counts for all branches (for admin tabs)
+     * This endpoint is called on page load to show counts without loading full data
+     */
+    public function getBranchCounts(): JsonResponse
+    {
+        $user = auth()->user();
+
+        // Only admin can access this endpoint
+        if (! $user->hasRole('admin')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Get counts grouped by branch - uses same query logic as main listing
+        $counts = Student::query()
+            ->select('students.branch_id', DB::raw('COUNT(students.id) as count'))
+            ->join('class_names', function ($join) {
+                $join->on('students.class_id', '=', 'class_names.id')
+                    ->where('class_names.is_active', '=', true);
+            })
+            ->whereNotNull('students.student_activation_id')
+            ->groupBy('students.branch_id')
+            ->pluck('count', 'students.branch_id');
+
+        return response()->json([
+            'success' => true,
+            'counts'  => $counts,
+        ]);
     }
 
     /**
@@ -73,12 +102,12 @@ class StudentController extends Controller
         $isExport = $request->boolean('export', false);
 
         // Get DataTable parameters
-        $draw   = $request->input('draw', 1);
-        $start  = $request->input('start', 0);
-        $length = $isExport ? -1 : $request->input('length', 10);
-        $search = $request->input('search.value', '');
+        $draw             = $request->input('draw', 1);
+        $start            = $request->input('start', 0);
+        $length           = $isExport ? -1 : $request->input('length', 10);
+        $search           = $request->input('search.value', '');
         $orderColumnIndex = $request->input('order.0.column', 0);
-        $orderDir = $request->input('order.0.dir', 'desc');
+        $orderDir         = $request->input('order.0.dir', 'desc');
 
         // Custom filters
         $filterBranchId    = $request->input('branch_id');
@@ -93,11 +122,11 @@ class StudentController extends Controller
 
         // Column mapping for ordering
         $columns = [
-            0 => 'students.id',
-            1 => 'students.name',
-            5 => 'students.class_id',
-            7 => 'students.academic_group',
-            9 => 'students.batch_id',
+            0  => 'students.id',
+            1  => 'students.name',
+            5  => 'students.class_id',
+            7  => 'students.academic_group',
+            9  => 'students.batch_id',
             10 => 'students.institution_id',
         ];
 
@@ -107,7 +136,7 @@ class StudentController extends Controller
         $effectiveBranchId = null;
         if ($isAdmin && $filterBranchId) {
             $effectiveBranchId = $filterBranchId;
-        } elseif (!$isAdmin && $branchId != 0) {
+        } elseif (! $isAdmin && $branchId != 0) {
             $effectiveBranchId = $branchId;
         }
 
@@ -116,7 +145,7 @@ class StudentController extends Controller
             ->select('students.*')
             ->join('class_names', function ($join) {
                 $join->on('students.class_id', '=', 'class_names.id')
-                     ->where('class_names.is_active', '=', true);
+                    ->where('class_names.is_active', '=', true);
             })
             ->whereNotNull('students.student_activation_id');
 
@@ -134,7 +163,7 @@ class StudentController extends Controller
         if ($filterStatus) {
             $query->join('student_activations', function ($join) use ($filterStatus) {
                 $join->on('students.student_activation_id', '=', 'student_activations.id')
-                     ->where('student_activations.active_status', '=', $filterStatus);
+                    ->where('student_activations.active_status', '=', $filterStatus);
             });
         }
 
@@ -167,33 +196,33 @@ class StudentController extends Controller
         // Institution filter - use JOIN instead of whereHas
         if ($filterInstitution) {
             $query->join('institutions', 'students.institution_id', '=', 'institutions.id')
-                  ->where('institutions.name', 'like', "%{$filterInstitution}%");
+                ->where('institutions.name', 'like', "%{$filterInstitution}%");
         }
 
         // Global search - optimized with direct column searches where possible
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('students.name', 'like', "%{$search}%")
-                  ->orWhere('students.student_unique_id', 'like', "%{$search}%")
-                  ->orWhere('class_names.name', 'like', "%{$search}%")
-                  ->orWhereExists(function ($subquery) use ($search) {
-                      $subquery->selectRaw('1')
-                               ->from('batches')
-                               ->whereColumn('batches.id', 'students.batch_id')
-                               ->where('batches.name', 'like', "%{$search}%");
-                  })
-                  ->orWhereExists(function ($subquery) use ($search) {
-                      $subquery->selectRaw('1')
-                               ->from('institutions')
-                               ->whereColumn('institutions.id', 'students.institution_id')
-                               ->where('institutions.name', 'like', "%{$search}%");
-                  })
-                  ->orWhereExists(function ($subquery) use ($search) {
-                      $subquery->selectRaw('1')
-                               ->from('mobile_numbers')
-                               ->whereColumn('mobile_numbers.student_id', 'students.id')
-                               ->where('mobile_numbers.mobile_number', 'like', "%{$search}%");
-                  });
+                    ->orWhere('students.student_unique_id', 'like', "%{$search}%")
+                    ->orWhere('class_names.name', 'like', "%{$search}%")
+                    ->orWhereExists(function ($subquery) use ($search) {
+                        $subquery->selectRaw('1')
+                            ->from('batches')
+                            ->whereColumn('batches.id', 'students.batch_id')
+                            ->where('batches.name', 'like', "%{$search}%");
+                    })
+                    ->orWhereExists(function ($subquery) use ($search) {
+                        $subquery->selectRaw('1')
+                            ->from('institutions')
+                            ->whereColumn('institutions.id', 'students.institution_id')
+                            ->where('institutions.name', 'like', "%{$search}%");
+                    })
+                    ->orWhereExists(function ($subquery) use ($search) {
+                        $subquery->selectRaw('1')
+                            ->from('mobile_numbers')
+                            ->whereColumn('mobile_numbers.student_id', 'students.id')
+                            ->where('mobile_numbers.mobile_number', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -201,7 +230,7 @@ class StudentController extends Controller
         $totalQuery = Student::query()
             ->join('class_names', function ($join) {
                 $join->on('students.class_id', '=', 'class_names.id')
-                     ->where('class_names.is_active', '=', true);
+                    ->where('class_names.is_active', '=', true);
             })
             ->whereNotNull('students.student_activation_id');
 
@@ -234,33 +263,33 @@ class StudentController extends Controller
             'institution:id,name',
             'studentActivation:id,active_status',
             'mobileNumbers:id,mobile_number,number_type,student_id',
-            'payments:id,payment_style,due_date,tuition_fee,student_id'
+            'payments:id,payment_style,due_date,tuition_fee,student_id',
         ])->get();
 
         // Format data for DataTable
-        $data = [];
+        $data    = [];
         $counter = $start + 1;
 
         foreach ($students as $student) {
             $isActive = optional($student->studentActivation)->active_status === 'active';
-            
+
             // Get home mobile number
-            $homeMobile = $student->mobileNumbers->where('number_type', 'home')->first();
+            $homeMobile       = $student->mobileNumbers->where('number_type', 'home')->first();
             $homeMobileNumber = $homeMobile ? $homeMobile->mobile_number : '-';
 
             // Payment info
-            $tuitionFee = optional($student->payments)->tuition_fee ?? '';
+            $tuitionFee   = optional($student->payments)->tuition_fee ?? '';
             $paymentStyle = optional($student->payments)->payment_style ?? '';
-            $dueDate = optional($student->payments)->due_date ?? '';
-            $paymentInfo = $paymentStyle ? ucfirst($paymentStyle) . '-1/' . $dueDate : '';
+            $dueDate      = optional($student->payments)->due_date ?? '';
+            $paymentInfo  = $paymentStyle ? ucfirst($paymentStyle) . '-1/' . $dueDate : '';
 
             // Academic group badge
             $groupBadge = '';
             if ($student->academic_group && $student->academic_group !== 'General') {
                 $badgeClass = [
-                    'Science' => 'info',
+                    'Science'  => 'info',
                     'Commerce' => 'primary',
-                    'Arts' => 'warning',
+                    'Arts'     => 'warning',
                 ][$student->academic_group] ?? 'secondary';
                 $groupBadge = '<span class="badge badge-pill badge-' . $badgeClass . '">' . $student->academic_group . '</span>';
             } else {
@@ -271,36 +300,36 @@ class StudentController extends Controller
             $actions = $this->buildActionsDropdown($student, $isActive);
 
             $data[] = [
-                'DT_RowId' => 'row_' . $student->id,
-                'counter' => $counter++,
-                'student' => [
-                    'id' => $student->id,
-                    'name' => $student->name,
+                'DT_RowId'         => 'row_' . $student->id,
+                'counter'          => $counter++,
+                'student'          => [
+                    'id'                => $student->id,
+                    'name'              => $student->name,
                     'student_unique_id' => $student->student_unique_id,
-                    'is_active' => $isActive,
+                    'is_active'         => $isActive,
                 ],
-                'gender_filter' => 'student_' . $student->gender,
-                'status_filter' => $isActive ? 'active' : 'suspended',
-                'class_filter' => $student->class_id . '_' . optional($student->class)->class_numeral . '_ucms',
-                'class_name' => optional($student->class)->name ?? '-',
-                'group_filter' => 'ucms_' . $student->academic_group,
-                'group_badge' => $groupBadge,
-                'batch_filter' => $student->batch_id . '_' . optional($student->batch)->name . '_' . optional($student->branch)->branch_name,
-                'batch_name' => optional($student->batch)->name ?? '-',
+                'gender_filter'    => 'student_' . $student->gender,
+                'status_filter'    => $isActive ? 'active' : 'suspended',
+                'class_filter'     => $student->class_id . '_' . optional($student->class)->class_numeral . '_ucms',
+                'class_name'       => optional($student->class)->name ?? '-',
+                'group_filter'     => 'ucms_' . $student->academic_group,
+                'group_badge'      => $groupBadge,
+                'batch_filter'     => $student->batch_id . '_' . optional($student->batch)->name . '_' . optional($student->branch)->branch_name,
+                'batch_name'       => optional($student->batch)->name ?? '-',
                 'institution_name' => optional($student->institution)->name ?? '-',
-                'home_mobile' => $homeMobileNumber,
-                'tuition_fee' => $tuitionFee,
-                'payment_info' => $paymentInfo,
-                'branch_filter' => $student->branch_id . '_' . optional($student->branch)->branch_name,
-                'actions' => $actions,
+                'home_mobile'      => $homeMobileNumber,
+                'tuition_fee'      => $tuitionFee,
+                'payment_info'     => $paymentInfo,
+                'branch_filter'    => $student->branch_id . '_' . optional($student->branch)->branch_name,
+                'actions'          => $actions,
             ];
         }
 
         return response()->json([
-            'draw' => intval($draw),
-            'recordsTotal' => $totalRecords,
+            'draw'            => intval($draw),
+            'recordsTotal'    => $totalRecords,
             'recordsFiltered' => $filteredRecords,
-            'data' => $data,
+            'data'            => $data,
         ]);
     }
 
@@ -309,13 +338,13 @@ class StudentController extends Controller
      */
     private function buildActionsDropdown(Student $student, bool $isActive): string
     {
-        $user = auth()->user();
-        $canDeactivate = $user->can('students.deactivate');
+        $user            = auth()->user();
+        $canDeactivate   = $user->can('students.deactivate');
         $canDownloadForm = $user->can('students.form.download');
-        $canEdit = $user->can('students.edit');
-        $canDelete = $user->can('students.delete');
+        $canEdit         = $user->can('students.edit');
+        $canDelete       = $user->can('students.delete');
 
-        $html = '<a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions <i class="ki-outline ki-down fs-5 m-0"></i></a>';
+        $html  = '<a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions <i class="ki-outline ki-down fs-5 m-0"></i></a>';
         $html .= '<div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-175px py-4" data-kt-menu="true">';
 
         if ($canDeactivate) {

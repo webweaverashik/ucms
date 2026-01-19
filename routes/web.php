@@ -65,6 +65,8 @@ Route::middleware(['auth', 'isLoggedIn'])->group(function () {
     Route::put('profile/update', [ProfileController::class, 'updateProfile'])->name('users.profile.update');
 
     // Students
+    // fetching branch counts (for admin tabs)
+    Route::get('students/branch-counts', [StudentController::class, 'getBranchCounts'])->name('students.branch-counts');
     Route::get('students/data', [StudentController::class, 'getStudentsData'])->name('students.data');
     Route::get('students/pending', [StudentController::class, 'pending'])->name('students.pending');
     Route::get('students/alumni', [StudentController::class, 'alumniStudent'])->name('students.alumni.index');
