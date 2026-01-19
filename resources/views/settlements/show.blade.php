@@ -2,7 +2,6 @@
 
 @push('page-css')
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
-    <link href="{{ asset('assets/plugins/custom/flatpickr/flatpickr.min.css') }}" rel="stylesheet" type="text/css" />
 @endpush
 
 @section('title', 'Wallet History - ' . $user->name)
@@ -94,8 +93,7 @@
                     <div class="d-flex flex-wrap flex-stack">
                         <div class="d-flex flex-column flex-grow-1 pe-8">
                             <div class="d-flex flex-wrap">
-                                <div
-                                    class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
+                                <div class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
                                     <div class="d-flex align-items-center">
                                         <i class="ki-outline ki-arrow-up fs-3 text-success me-2"></i>
                                         <div class="fs-2 fw-bold text-success">
@@ -105,8 +103,7 @@
                                     <div class="fw-semibold fs-6 text-gray-500">Total Collected</div>
                                 </div>
 
-                                <div
-                                    class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
+                                <div class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
                                     <div class="d-flex align-items-center">
                                         <i class="ki-outline ki-arrow-down fs-3 text-info me-2"></i>
                                         <div class="fs-2 fw-bold text-info">
@@ -116,8 +113,7 @@
                                     <div class="fw-semibold fs-6 text-gray-500">Total Settled</div>
                                 </div>
 
-                                <div
-                                    class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
+                                <div class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
                                     <div class="d-flex align-items-center">
                                         <i class="ki-outline ki-wallet fs-3 text-warning me-2"></i>
                                         <div class="fs-2 fw-bold text-warning" id="current_balance_display"
@@ -176,8 +172,8 @@
             <div class="card-title">
                 <div class="d-flex align-items-center position-relative my-1">
                     <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
-                    <input type="text" id="kt_filter_search"
-                        class="form-control form-control-solid w-250px ps-13" placeholder="Search..." />
+                    <input type="text" id="kt_filter_search" class="form-control form-control-solid w-250px ps-13"
+                        placeholder="Search..." />
                 </div>
             </div>
 
@@ -293,8 +289,7 @@
         </div>
 
         <div class="card-body pt-0">
-            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table"
-                id="kt_wallet_logs_table">
+            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_wallet_logs_table">
                 <thead>
                     <tr class="fw-bold fs-7 text-uppercase gs-0">
                         <th class="w-20px">#</th>
@@ -369,8 +364,7 @@
 
                         <div class="d-flex flex-column mb-8 fv-row">
                             <label class="fs-6 fw-semibold mb-2">Notes (Optional)</label>
-                            <textarea class="form-control form-control-solid" rows="3" name="notes"
-                                placeholder="Enter any notes..."></textarea>
+                            <textarea class="form-control form-control-solid" rows="3" name="notes" placeholder="Enter any notes..."></textarea>
                         </div>
 
                         <div class="text-center">
@@ -490,7 +484,6 @@
 
 @push('vendor-js')
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
-    <script src="{{ asset('assets/plugins/custom/flatpickr/flatpickr.min.js') }}"></script>
     <!-- SheetJS for Excel export -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <!-- jsPDF for PDF export -->

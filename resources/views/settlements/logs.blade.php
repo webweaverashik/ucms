@@ -2,7 +2,6 @@
 
 @push('page-css')
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
-    <link href="{{ asset('assets/plugins/custom/flatpickr/flatpickr.min.css') }}" rel="stylesheet" type="text/css" />
 @endpush
 
 @section('title', 'All Wallet Logs')
@@ -187,7 +186,6 @@
 
 @push('vendor-js')
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
-    <script src="{{ asset('assets/plugins/custom/flatpickr/flatpickr.min.js') }}"></script>
     <!-- SheetJS for Excel export -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <!-- jsPDF for PDF export -->
