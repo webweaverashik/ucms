@@ -2,12 +2,28 @@
 
 use App\Http\Middleware\IsLoggedIn;
 use Illuminate\Foundation\Application;
-use Illuminate\Session\TokenMismatchException;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Session\TokenMismatchException;
+use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
-    ->withRouting(web: __DIR__ . '/../routes/web.php', commands: __DIR__ . '/../routes/console.php', health: '/up')
+    ->withRouting(
+        web: __DIR__ . '/../routes/web.php',
+        commands: __DIR__ . '/../routes/console.php',
+        health: '/up',
+        then: function () {
+            // Guest routes (password reset, etc.)
+            Route::middleware('web')->group(base_path('routes/auth.php'));
+
+            // All authenticated module routes
+            $modules = ['student', 'teacher', 'academic', 'payment', 'sms', 'report', 'settings'];
+
+            foreach ($modules as $module) {
+                Route::middleware(['web', 'auth', 'isLoggedIn'])->group(base_path("routes/modules/{$module}.php"));
+            }
+        },
+    )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'isLoggedIn' => IsLoggedIn::class,
@@ -15,7 +31,6 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (TokenMismatchException $e, $request) {
-            // For AJAX / Fetch requests
             if ($request->expectsJson()) {
                 return response()->json(
                     [
@@ -25,7 +40,6 @@ return Application::configure(basePath: dirname(__DIR__))
                 );
             }
 
-            // For normal form submissions
             return redirect()->route('login')->with('error', 'Your session has expired due to inactivity. Please login again.');
         });
     })
