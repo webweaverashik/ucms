@@ -72,7 +72,7 @@
                     <div class="card-title">
                         <h3 class="text-gray-600">Special Class Info</h3>
                     </div>
-                    @if (($isAdmin || $isManager) && $secondaryClass->is_active)
+                    @if (($isAdmin) && $secondaryClass->is_active)
                         <div class="card-toolbar">
                             <a href="#" class="btn btn-sm btn-light btn-icon" data-kt-menu-trigger="click"
                                 data-kt-menu-placement="bottom-end">
