@@ -211,7 +211,7 @@
 
             @if ($isAdmin && $branches->count() > 0)
                 <!--begin::Branch Tabs for Admin-->
-                <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x fs-6 border-0" id="branchTabs" role="tablist">
+                <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x fs-6 mb-5" id="branchTabs" role="tablist">
                     @foreach ($branches as $index => $branch)
                         <li class="nav-item" role="presentation">
                             <a class="nav-link fw-bold {{ $index === 0 ? 'active' : '' }}"
