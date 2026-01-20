@@ -1,14 +1,15 @@
 <?php
 
-use App\Http\Controllers\Academic\BatchController;
-use App\Http\Controllers\Academic\ClassNameController;
-use App\Http\Controllers\Academic\InstitutionController;
-use App\Http\Controllers\Academic\SecondaryClassController;
-use App\Http\Controllers\Academic\SubjectController;
-use App\Http\Controllers\Sheet\SheetController;
-use App\Http\Controllers\Sheet\SheetTopicController;
-use App\Http\Controllers\Sheet\SheetTopicTakenController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Sheet\SheetController;
+use App\Http\Controllers\Academic\BatchController;
+use App\Http\Controllers\Academic\SubjectController;
+use App\Http\Controllers\Sheet\SheetTopicController;
+use App\Http\Controllers\Academic\ClassNameController;
+use App\Http\Controllers\Sheet\SheetPaymentController;
+use App\Http\Controllers\Academic\InstitutionController;
+use App\Http\Controllers\Sheet\SheetTopicTakenController;
+use App\Http\Controllers\Academic\SecondaryClassController;
 
 /*
 |--------------------------------------------------------------------------
@@ -52,8 +53,16 @@ Route::resource('secondary-classes', SecondaryClassController::class);
 Route::get('get-subjects', [SubjectController::class, 'getSubjects']);
 Route::get('get-taken-subjects', [SubjectController::class, 'getTakenSubjects']);
 
-// Sheets - Note: 'sheet.payments' not 'sheets.payments' (original name)
-Route::get('sheets/payments', [SheetController::class, 'sheetPayments'])->name('sheet.payments');
+// Sheet Payments Routes
+Route::prefix('sheets/payments')
+    ->name('sheet-payments.')
+    ->group(function () {
+        Route::get('/', [SheetPaymentController::class, 'index'])->name('index');
+        Route::get('/data', [SheetPaymentController::class, 'getData'])->name('data');
+        Route::get('/export', [SheetPaymentController::class, 'export'])->name('export');
+    });
+
+// Sheets - Note
 Route::get('/sheets/paid/{student}', [SheetController::class, 'getPaidSheets'])->name('sheets.paid');
 Route::get('/sheets/{sheet}/topics/{student}', [SheetController::class, 'getSheetTopics'])->name('sheets.topics');
 

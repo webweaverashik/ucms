@@ -307,7 +307,7 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" id="sheet_payments_link" href="{{ route('sheet.payments') }}">
+                                        <a class="menu-link" id="sheet_payments_link" href="{{ route('sheet-payments.index') }}">
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot">
                                                 </span>

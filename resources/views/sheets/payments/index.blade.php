@@ -1,5 +1,48 @@
 @push('page-css')
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <style>
+        /* Smooth tab transitions */
+        #branchTabs .nav-link {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        #branchTabs .nav-link.active {
+            transition: all 0.3s ease;
+        }
+
+        #branchTabs .nav-link:hover:not(.active) {
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+
+        /* Smooth table loading transition */
+        .card-body {
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        .card-body.loading {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* DataTable processing indicator */
+        .dataTables_processing {
+            background: rgba(255, 255, 255, 0.9) !important;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 20px !important;
+            z-index: 999;
+        }
+
+        /* Table fade effect */
+        #kt_sheet_payments_table {
+            transition: opacity 0.15s ease-in-out;
+        }
+
+        #kt_sheet_payments_table.table-loading {
+            opacity: 0.3;
+        }
+    </style>
 @endpush
 
 
@@ -51,9 +94,9 @@
             <div class="card-title">
                 <!--begin::Search-->
                 <div class="d-flex align-items-center position-relative my-1">
-                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
-                        data-sheet-payments-table-filter="search" class="form-control form-control-solid w-md-350px ps-12"
-                        placeholder="Search in payments">
+                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
+                    <input type="text" data-sheet-payments-table-filter="search"
+                        class="form-control form-control-solid w-md-350px ps-12" placeholder="Search in payments">
                 </div>
                 <!--end::Search-->
 
@@ -88,7 +131,7 @@
                                 <label class="form-label fs-6 fw-semibold">Sheet Group:</label>
                                 <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                     data-placeholder="Select option" data-allow-clear="true"
-                                    data-sheet-payments-table-filter="status" data-hide-search="true">
+                                    data-sheet-payments-table-filter="sheet_group" data-hide-search="true">
                                     <option></option>
                                     @foreach ($sheet_groups as $sheet)
                                         <option value="{{ $sheet->class->name }} ({{ $sheet->class->class_numeral }})">
@@ -103,7 +146,7 @@
                                 <label class="form-label fs-6 fw-semibold">Payment Type:</label>
                                 <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                     data-placeholder="Select option" data-allow-clear="true"
-                                    data-sheet-payments-table-filter="status" data-hide-search="true">
+                                    data-sheet-payments-table-filter="payment_status" data-hide-search="true">
                                     <option></option>
                                     <option value="T_due">Due</option>
                                     <option value="T_partially_paid">Partial Paid</option>
@@ -139,12 +182,10 @@
                             data-kt-menu="true">
                             <!--begin::Menu item-->
                             <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3" data-row-export="copy">Copy to
-                                    clipboard</a>
+                                <a href="#" class="menu-link px-3" data-row-export="copy">Copy to clipboard</a>
                             </div>
                             <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3" data-row-export="excel">Export as
-                                    Excel</a>
+                                <a href="#" class="menu-link px-3" data-row-export="excel">Export as Excel</a>
                             </div>
                             <div class="menu-item px-3">
                                 <a href="#" class="menu-link px-3" data-row-export="csv">Export as CSV</a>
@@ -167,6 +208,27 @@
 
         <!--begin::Card body-->
         <div class="card-body py-4">
+
+            @if ($isAdmin && $branches->count() > 0)
+                <!--begin::Branch Tabs for Admin-->
+                <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x fs-6 border-0" id="branchTabs" role="tablist">
+                    @foreach ($branches as $index => $branch)
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link fw-bold {{ $index === 0 ? 'active' : '' }}"
+                                id="tab-branch-{{ $branch->id }}" data-bs-toggle="tab"
+                                href="#kt_tab_branch_{{ $branch->id }}" role="tab"
+                                aria-controls="kt_tab_branch_{{ $branch->id }}"
+                                aria-selected="{{ $index === 0 ? 'true' : 'false' }}"
+                                data-branch-id="{{ $branch->id }}">
+                                <i class="ki-outline ki-bank fs-4 me-1"></i>
+                                {{ ucfirst($branch->branch_name) }}
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+                <!--end::Branch Tabs for Admin-->
+            @endif
+            
             <!--begin::Table-->
             <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table"
                 id="kt_sheet_payments_table">
@@ -184,61 +246,6 @@
                     </tr>
                 </thead>
                 <tbody class="text-gray-600 fw-semibold">
-                    @foreach ($payments as $payment)
-                        <tr>
-                            <td>{{ $loop->index + 1 }}</td>
-                            <td>
-                                <a href="{{ route('sheets.show', $payment->sheet->id) }}">
-                                    {{ $payment->sheet->class->name }} ({{ $payment->sheet->class->class_numeral }})
-                                </a>
-                            </td>
-
-                            <td>
-                                <a href="{{ route('invoices.show', $payment->invoice->id) }}">
-                                    {{ $payment->invoice->invoice_number }}
-                                </a>
-                            </td>
-
-                            <td>{{ $payment->invoice->total_amount }}</td>
-                            <td class="d-none">
-                                @if ($payment->invoice->status === 'due')
-                                    T_due
-                                @elseif ($payment->invoice->status === 'partially_paid')
-                                    T_partially_paid
-                                @elseif ($payment->invoice->status === 'paid')
-                                    T_paid
-                                @endif
-                            </td>
-
-
-                            <td>
-                                @if ($payment->invoice->status === 'due')
-                                    <span class="badge badge-warning">Due</span>
-                                @elseif ($payment->invoice->status === 'partially_paid')
-                                    <span class="badge badge-info">Partial</span>
-                                @elseif ($payment->invoice->status === 'paid')
-                                    <span class="badge badge-success">Paid</span>
-                                @endif
-                            </td>
-
-                            <td>{{ $payment->invoice->paymentTransactions->sum('amount_paid') }}</td>
-
-                            <td>
-                                <a href="{{ route('students.show', $payment->student->id) }}">
-                                    {{ $payment->student->name }}, {{ $payment->student->student_unique_id }}
-                                </a>
-                            </td>
-
-                            <td>
-                                {{ $payment->created_at->format('d-M-Y') }}
-                                <span class="ms-1" data-bs-toggle="tooltip"
-                                    title="{{ $payment->created_at->format('h:i:s A, d-M-Y') }}">
-                                    <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
-                                </span>
-                            </td>
-
-                        </tr>
-                    @endforeach
                 </tbody>
             </table>
             <!--end::Table-->
@@ -251,10 +258,23 @@
 
 @push('vendor-js')
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
+    <!-- SheetJS for Excel export -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <!-- jsPDF for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
 @endpush
 
 @push('page-js')
-    <script src="{{ asset('js/sheets/payments.js') }}"></script>
+    <script>
+        // Pass routes and config to JavaScript
+        var sheetPaymentsConfig = {
+            dataUrl: "{{ route('sheet-payments.data') }}",
+            exportUrl: "{{ route('sheet-payments.export') }}",
+            isAdmin: {{ $isAdmin ? 'true' : 'false' }}
+        };
+    </script>
+    <script src="{{ asset('js/sheets/payments/index.js') }}"></script>
 
     <script>
         document.getElementById("sheets_menu").classList.add("here", "show");

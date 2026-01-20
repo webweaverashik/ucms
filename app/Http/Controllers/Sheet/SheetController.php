@@ -191,30 +191,6 @@ class SheetController extends Controller
         ]);
     }
 
-    public function sheetPayments()
-    {
-        $user = auth()->user();
-
-        $payments = SheetPayment::query()
-            ->with([
-                'sheet.class',                 // $payment->sheet->class
-                'invoice.paymentTransactions', // $payment->invoice->paymentTransactions
-                'student',                     // $payment->student
-            ])
-            ->when(
-                ! $user->hasRole('admin'),
-                fn($query) => $query->whereHas('student', function ($q) use ($user) {
-                    $q->where('branch_id', $user->branch_id);
-                }),
-            )
-            ->latest()
-            ->get();
-
-        $sheet_groups = Sheet::whereHas('class', fn($q) => $q->active())->get();
-
-        return view('sheets.sheet_payments', compact('payments', 'sheet_groups'));
-    }
-
     public function getPaidSheets($studentId)
     {
         $payments = SheetPayment::with('sheet')->where('student_id', $studentId)->whereHas('invoice', fn($q) => $q->whereIn('status', ['paid', 'partially_paid'])->whereHas('invoiceType', fn($i) => $i->where('type_name', 'Sheet Fee')))->get();
