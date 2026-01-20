@@ -11,10 +11,6 @@
             transition: all 0.3s ease;
         }
 
-        #branchTabs .nav-link:hover:not(.active) {
-            background-color: rgba(0, 0, 0, 0.03);
-        }
-
         /* Smooth table loading transition */
         .card-body {
             transition: opacity 0.2s ease-in-out;
