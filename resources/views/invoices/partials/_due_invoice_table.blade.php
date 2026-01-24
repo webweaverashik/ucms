@@ -144,8 +144,8 @@
             <thead>
                 <tr class="fw-bold fs-7 text-uppercase gs-0">
                     <th class="w-25px">SL</th>
-                    <th class="w-100px">Invoice No.</th>
-                    <th class="w-300px">Student</th>
+                    <th class="w-150px">Invoice No.</th>
+                    <th class="w-250px">Student</th>
                     <th>Invoice Type</th>
                     <th>Billing Month</th>
                     <th>Total Amount (Tk)</th>
