@@ -218,13 +218,13 @@
         <div class="tab-pane fade show active" id="kt_active_classnames_tab" role="tabpanel">
             <div id="active_classes_container" class="row g-6 g-xl-9">
                 @forelse ($active_classes as $classname)
-                    @include('classnames.partials.class-card', [
+                    @include('classnames.partials.index.class-card', [
                         'classname' => $classname,
                         'isActive' => true,
                     ])
                 @empty
                     <div class="col-12 empty-state-original">
-                        @include('classnames.partials.empty-state', ['type' => 'active'])
+                        @include('classnames.partials.index.empty-state', ['type' => 'active'])
                     </div>
                 @endforelse
             </div>
@@ -235,13 +235,13 @@
         <div class="tab-pane fade" id="kt_inactive_classnames_tab" role="tabpanel">
             <div id="inactive_classes_container" class="row g-6 g-xl-9">
                 @forelse ($inactive_classes as $classname)
-                    @include('classnames.partials.class-card', [
+                    @include('classnames.partials.index.class-card', [
                         'classname' => $classname,
                         'isActive' => false,
                     ])
                 @empty
                     <div class="col-12 empty-state-original">
-                        @include('classnames.partials.empty-state', ['type' => 'inactive'])
+                        @include('classnames.partials.index.empty-state', ['type' => 'inactive'])
                     </div>
                 @endforelse
             </div>
@@ -251,11 +251,11 @@
     <!--end::Tab Content-->
 
     <!--begin::Modal - Add Class-->
-    @include('classnames.partials.modal-add')
+    @include('classnames.partials.index.modal-add')
     <!--end::Modal - Add Class-->
 
     <!--begin::Modal - Edit Class-->
-    @include('classnames.partials.modal-edit')
+    @include('classnames.partials.index.modal-edit')
     <!--end::Modal - Edit Class-->
 @endsection
 

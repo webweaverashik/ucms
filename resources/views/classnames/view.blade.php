@@ -8,7 +8,7 @@
 @section('title', 'Class - ' . $classname->name)
 
 @section('header-title')
-    @include('classnames.view.partials.header')
+    @include('classnames.partials.view.header')
 @endsection
 
 @section('content')
@@ -45,27 +45,27 @@
     <!--begin::Layout-->
     <div class="d-flex flex-column flex-xl-row">
         <!--begin::Sidebar-->
-        @include('classnames.view.partials.sidebar')
+        @include('classnames.partials.view.sidebar')
         <!--end::Sidebar-->
 
         <!--begin::Content-->
         <div class="flex-lg-row-fluid ms-lg-10" data-kt-swapper="false">
             <!--begin:::Tabs-->
-            @include('classnames.view.partials.tabs-nav')
+            @include('classnames.partials.view.tabs-nav')
             <!--end:::Tabs-->
 
             <!--begin:::Tab content-->
             <div class="tab-content" id="myTabContent">
                 <!--begin:::Subjects Tab pane-->
-                @include('classnames.view.partials.tabs.subjects')
+                @include('classnames.partials.view.tabs.subjects')
                 <!--end:::Subjects Tab pane-->
 
                 <!--begin:::Students Tab pane-->
-                @include('classnames.view.partials.tabs.students')
+                @include('classnames.partials.view.tabs.students')
                 <!--end:::Students Tab pane-->
 
                 <!--begin:::Secondary Classes Tab pane-->
-                @include('classnames.view.partials.tabs.secondary-classes')
+                @include('classnames.partials.view.tabs.secondary-classes')
                 <!--end:::Secondary Classes Tab pane-->
             </div>
             <!--end:::Tab content-->
@@ -75,12 +75,12 @@
     <!--end::Layout-->
 
     <!--begin::Modals-->
-    @include('classnames.view.partials.modals.add-subject')
-    @include('classnames.view.partials.modals.edit-class')
-    @include('classnames.view.partials.modals.add-special-class')
-    @include('classnames.view.partials.modals.edit-special-class')
-    @include('classnames.view.partials.modals.toggle-activation')
-    @include('classnames.view.partials.modals.bulk-toggle-activation')
+    @include('classnames.partials.view.modals.add-subject')
+    @include('classnames.partials.view.modals.edit-class')
+    @include('classnames.partials.view.modals.add-special-class')
+    @include('classnames.partials.view.modals.edit-special-class')
+    @include('classnames.partials.view.modals.toggle-activation')
+    @include('classnames.partials.view.modals.bulk-toggle-activation')
     <!--end::Modals-->
 @endsection
 

@@ -223,7 +223,7 @@ class ClassNameController extends Controller
             }
         }
 
-        return view('classnames.view.index', compact('classname', 'branches', 'isAdmin', 'branchStudentCounts'));
+        return view('classnames.view', compact('classname', 'branches', 'isAdmin', 'branchStudentCounts'));
     }
 
     /**
