@@ -252,7 +252,7 @@
                 <!--end:::Tab item-->
 
                 <!--begin:::Tab item-->
-                @if ($createClass || $manageSubjects)
+                @if (($createClass || $manageSubjects) && $classname->isActive())
                     <li class="nav-item ms-auto">
                         <!--begin::Action menu-->
                         <a href="#" class="btn btn-primary ps-7" data-kt-menu-trigger="click"
