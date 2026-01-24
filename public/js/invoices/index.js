@@ -162,13 +162,13 @@ var KTDueInvoicesList = function () {
                     data: null, render: function (data) {
                         var url = routeInvoiceShow.replace(':id', data.id);
                         var badge = data.comments_count > 0 ? '<span class="badge badge-circle badge-sm badge-primary ms-1">' + data.comments_count + '</span>' : '';
-                        return '<a href="' + url + '">' + InvoiceUtils.escapeHtml(data.invoice_number) + '</a>' + badge;
+                        return '<a class="text-gray-600 text-hover-primary" href="' + url + '">' + InvoiceUtils.escapeHtml(data.invoice_number) + '</a>' + badge;
                     }
                 },
                 {
                     data: null, render: function (data) {
                         var url = routeStudentShow.replace(':id', data.student_id);
-                        return '<a href="' + url + '" target="_blank">' + InvoiceUtils.escapeHtml(data.student_name) + ', ' + InvoiceUtils.escapeHtml(data.student_unique_id) + '</a>';
+                        return '<a class="text-gray-600 text-hover-primary" href="' + url + '" target="_blank">' + InvoiceUtils.escapeHtml(data.student_name) + ', ' + InvoiceUtils.escapeHtml(data.student_unique_id) + '</a>';
                     }
                 },
                 { data: 'invoice_type' },
@@ -411,13 +411,13 @@ var KTPaidInvoicesList = function () {
                     data: null, render: function (data) {
                         var url = routeInvoiceShow.replace(':id', data.id);
                         var badge = data.comments_count > 0 ? '<span class="badge badge-circle badge-sm badge-primary ms-1">' + data.comments_count + '</span>' : '';
-                        return '<a href="' + url + '">' + InvoiceUtils.escapeHtml(data.invoice_number) + '</a>' + badge;
+                        return '<a class="text-gray-600 text-hover-primary" href="' + url + '">' + InvoiceUtils.escapeHtml(data.invoice_number) + '</a>' + badge;
                     }
                 },
                 {
                     data: null, render: function (data) {
                         var url = routeStudentShow.replace(':id', data.student_id);
-                        return '<a href="' + url + '">' + InvoiceUtils.escapeHtml(data.student_name) + ', ' + InvoiceUtils.escapeHtml(data.student_unique_id) + '</a>';
+                        return '<a class="text-gray-600 text-hover-primary" href="' + url + '">' + InvoiceUtils.escapeHtml(data.student_name) + ', ' + InvoiceUtils.escapeHtml(data.student_unique_id) + '</a>';
                     }
                 },
                 { data: 'invoice_type' },

@@ -154,7 +154,7 @@
                     <th>Status</th>
                     <th class="min-w-150px">Last Comment</th>
                     <th>Created At</th>
-                    <th class="w-100px">Actions</th>
+                    <th class="w-150px">Actions</th>
                 </tr>
             </thead>
             <tbody class="text-gray-600 fw-semibold">
