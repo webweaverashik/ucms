@@ -96,7 +96,7 @@
                     @foreach ($branches as $index => $branch)
                         <div class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}"
                             id="due_branch_{{ $branch->id }}" role="tabpanel">
-                            @include('invoices.partials._due_invoice_table', [
+                            @include('invoices.partials.due_invoice_table', [
                                 'branchId' => $branch->id,
                                 'tableId' => 'kt_due_invoices_table_' . $branch->id,
                             ])
@@ -105,7 +105,7 @@
                 </div>
                 <!--end::Branch Tab Content-->
             @else
-                @include('invoices.partials._due_invoice_table', [
+                @include('invoices.partials.due_invoice_table', [
                     'branchId' => auth()->user()->branch_id,
                     'tableId' => 'kt_due_invoices_table',
                 ])
@@ -134,7 +134,7 @@
                     @foreach ($branches as $index => $branch)
                         <div class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}"
                             id="paid_branch_{{ $branch->id }}" role="tabpanel">
-                            @include('invoices.partials._paid_invoice_table', [
+                            @include('invoices.partials.paid_invoice_table', [
                                 'branchId' => $branch->id,
                                 'tableId' => 'kt_paid_invoices_table_' . $branch->id,
                             ])
@@ -143,7 +143,7 @@
                 </div>
                 <!--end::Branch Tab Content-->
             @else
-                @include('invoices.partials._paid_invoice_table', [
+                @include('invoices.partials.paid_invoice_table', [
                     'branchId' => auth()->user()->branch_id,
                     'tableId' => 'kt_paid_invoices_table',
                 ])
