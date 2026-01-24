@@ -14,12 +14,17 @@ use Illuminate\Support\Facades\Route;
 | Payment Routes
 |--------------------------------------------------------------------------
 | Invoices, transactions, settlements, costs
-| ⚠️ IMPORTANT: Route names are kept EXACTLY as original web.php
 */
 
 // Invoices
 Route::get('students/{student}/due-invoices', [PaymentInvoiceController::class, 'getDueInvoices'])->name('students.due.invoices');
 Route::get('invoices/{invoice}/view-ajax', [PaymentInvoiceController::class, 'viewAjax'])->name('invoices.view.ajax');
+
+// AJAX DataTable Routes
+Route::get('invoices/unpaid-ajax', [PaymentInvoiceController::class, 'getUnpaidInvoicesAjax'])->name('invoices.unpaid.ajax');
+Route::get('invoices/paid-ajax', [PaymentInvoiceController::class, 'getPaidInvoicesAjax'])->name('invoices.paid.ajax');
+Route::get('invoices/export-ajax', [PaymentInvoiceController::class, 'exportInvoicesAjax'])->name('invoices.export.ajax');
+Route::get('invoices/filter-options', [PaymentInvoiceController::class, 'getFilterOptions'])->name('invoices.filter.options');
 
 // Invoice Comments
 Route::post('invoice-comments', [PaymentInvoiceCommentController::class, 'store'])->name('invoice.comments.store');
