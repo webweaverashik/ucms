@@ -541,6 +541,131 @@
       }
 }
 
+/* ============================================================================
+   DataTable Processing Overlay
+   ============================================================================ */
+.dataTables_processing {
+      position: absolute !important;
+      top: 50% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      z-index: 999 !important;
+      background: rgba(255, 255, 255, 0.9) !important;
+      padding: 1.5rem 2rem !important;
+      border-radius: 0.5rem !important;
+      box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ============================================================================
+   Bulk Actions Toolbar Styles
+   ============================================================================ */
+#bulk_actions_toolbar {
+      background: linear-gradient(135deg, var(--bs-light) 0%, var(--bs-gray-100) 100%);
+      border: 1px solid var(--bs-gray-200);
+      border-radius: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      transition: all 0.3s ease;
+}
+
+#bulk_actions_toolbar:hover {
+      box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
+}
+
+#selected_count {
+      font-size: 1.1rem;
+      color: var(--bs-primary);
+}
+
+#multipage_indicator {
+      font-style: italic;
+}
+
+/* Checkbox column styling */
+#kt_enrolled_regular_students_table .student-checkbox {
+      cursor: pointer;
+      transition: transform 0.15s ease;
+}
+
+#kt_enrolled_regular_students_table .student-checkbox:hover {
+      transform: scale(1.1);
+}
+
+#kt_enrolled_regular_students_table .student-checkbox:checked {
+      background-color: var(--bs-primary);
+      border-color: var(--bs-primary);
+}
+
+/* Header checkbox styling */
+#select_all_checkbox {
+      cursor: pointer;
+      margin: 0 auto;
+      display: block;
+}
+
+/* Checkbox column center alignment */
+#kt_enrolled_regular_students_table th.checkbox-column,
+#kt_enrolled_regular_students_table td.checkbox-column {
+      text-align: center !important;
+      vertical-align: middle !important;
+}
+
+/* Center the checkbox wrapper in data cells */
+#kt_enrolled_regular_students_table td.checkbox-column .form-check {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+      padding: 0;
+      min-height: auto;
+}
+
+/* Center the actual checkbox input in data cells */
+#kt_enrolled_regular_students_table td.checkbox-column .form-check-input {
+      margin: 0;
+      float: none;
+      cursor: pointer;
+}
+
+#select_all_checkbox:indeterminate {
+      background-color: var(--bs-primary);
+      border-color: var(--bs-primary);
+}
+
+/* Row highlight when selected */
+#kt_enrolled_regular_students_table tbody tr:has(.student-checkbox:checked) {
+      background-color: rgba(var(--bs-primary-rgb), 0.05);
+}
+
+#kt_enrolled_regular_students_table tbody tr:has(.student-checkbox:checked):hover {
+      background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+/* Bulk action buttons */
+#btn_bulk_activate,
+#btn_bulk_deactivate {
+      transition: all 0.2s ease;
+}
+
+#btn_bulk_activate:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0.25rem 0.5rem rgba(var(--bs-success-rgb), 0.3);
+}
+
+#btn_bulk_deactivate:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0.25rem 0.5rem rgba(var(--bs-warning-rgb), 0.3);
+}
+
+/* Clear selection button */
+#btn_clear_selection {
+      transition: all 0.2s ease;
+}
+
+#btn_clear_selection:hover {
+      background-color: var(--bs-danger);
+      color: #fff;
+}
+
 /* ========================================================================== 
    Dark Mode Support 
    ========================================================================== */
@@ -706,4 +831,24 @@
 
 [data-bs-theme="dark"] #branchTabs .nav-link.active {
       color: var(--bs-primary);
+}
+
+/* Dark Mode - DataTable Processing */
+[data-bs-theme="dark"] .dataTables_processing {
+      background: rgba(30, 30, 45, 0.95) !important;
+      color: var(--bs-gray-200) !important;
+}
+
+/* Dark Mode - Bulk Actions Toolbar */
+[data-bs-theme="dark"] #bulk_actions_toolbar {
+      background: linear-gradient(135deg, var(--bs-gray-800) 0%, var(--bs-gray-900) 100%);
+      border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] #kt_enrolled_regular_students_table tbody tr:has(.student-checkbox:checked) {
+      background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+[data-bs-theme="dark"] #kt_enrolled_regular_students_table tbody tr:has(.student-checkbox:checked):hover {
+      background-color: rgba(var(--bs-primary-rgb), 0.15);
 }

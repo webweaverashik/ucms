@@ -12,7 +12,7 @@ var KTStudentsList = function () {
     // Get current filters from the filter form
     var getFilters = function () {
         var filters = {};
-        var filterForm = document.querySelector('[data-kt-subscription-table-filter="form"]');
+        var filterForm = document.querySelector('[data-kt-students-list-table-filter="form"]');
         if (filterForm) {
             var filterSelects = filterForm.querySelectorAll('select[data-filter-field]');
             filterSelects.forEach(function (select) {
@@ -28,7 +28,7 @@ var KTStudentsList = function () {
 
     // Get current search value
     var getSearchValue = function () {
-        var searchInput = document.querySelector('[data-kt-subscription-table-filter="search"]');
+        var searchInput = document.querySelector('[data-kt-students-list-table-filter="search"]');
         return searchInput ? searchInput.value : '';
     };
 
@@ -460,7 +460,7 @@ var KTStudentsList = function () {
 
     // Search with debouncing
     var handleSearch = function () {
-        var filterSearch = document.querySelector('[data-kt-subscription-table-filter="search"]');
+        var filterSearch = document.querySelector('[data-kt-students-list-table-filter="search"]');
         if (!filterSearch) return;
 
         filterSearch.addEventListener('keyup', function (e) {
@@ -473,11 +473,11 @@ var KTStudentsList = function () {
 
     // Filter
     var handleFilter = function () {
-        var filterForm = document.querySelector('[data-kt-subscription-table-filter="form"]');
+        var filterForm = document.querySelector('[data-kt-students-list-table-filter="form"]');
         if (!filterForm) return;
 
-        var filterButton = filterForm.querySelector('[data-kt-subscription-table-filter="filter"]');
-        var resetButton = filterForm.querySelector('[data-kt-subscription-table-filter="reset"]');
+        var filterButton = filterForm.querySelector('[data-kt-students-list-table-filter="filter"]');
+        var resetButton = filterForm.querySelector('[data-kt-students-list-table-filter="reset"]');
 
         filterButton.addEventListener('click', function () {
             if (isAdmin) {
@@ -497,7 +497,7 @@ var KTStudentsList = function () {
                 $(select).val(null).trigger('change');
             });
 
-            var searchInput = document.querySelector('[data-kt-subscription-table-filter="search"]');
+            var searchInput = document.querySelector('[data-kt-students-list-table-filter="search"]');
             if (searchInput) searchInput.value = '';
 
             if (isAdmin) {

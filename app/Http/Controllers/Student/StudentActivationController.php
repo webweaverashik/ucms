@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\Academic\ClassName;
 use App\Models\Student\Student;
 use App\Models\Student\StudentActivation;
 use Illuminate\Http\JsonResponse;
@@ -60,7 +61,9 @@ class StudentActivationController extends Controller
 
         return DB::transaction(function () use ($request, $student, $hasDueInvoice, $user) {
             // Prepare reason
-            $reason = $hasDueInvoice && $user->isAdmin() ? 'Approved with pending tuition fee' : 'Admission Approved';
+            $reason = $hasDueInvoice && $user->isAdmin()
+                ? 'Approved with pending tuition fee'
+                : 'Admission Approved';
 
             // Create Activation Entry
             $activation = StudentActivation::create([
@@ -103,6 +106,7 @@ class StudentActivationController extends Controller
                 'student_id'    => 'required|integer|exists:students,id',
                 'active_status' => 'required|in:active,inactive',
                 'reason'        => 'required|string|max:255',
+                'class_id'      => 'nullable|integer|exists:class_names,id',
             ]);
         } catch (ValidationException $e) {
             return response()->json(
@@ -130,7 +134,7 @@ class StudentActivationController extends Controller
         }
 
         try {
-            return DB::transaction(function () use ($request, $student) {
+            return DB::transaction(function () use ($request, $student, $user) {
                 // Create Activation Entry
                 $activation = StudentActivation::create([
                     'student_id'    => $student->id,
@@ -147,10 +151,32 @@ class StudentActivationController extends Controller
 
                 $statusText = $request->active_status === 'active' ? 'activated' : 'deactivated';
 
+                // Calculate stats if class_id is provided
+                $stats = null;
+                if ($request->class_id) {
+                    $class = ClassName::find($request->class_id);
+                    if ($class) {
+                        $branchId    = $user->branch_id;
+                        $activeCount = $class->activeStudents()
+                            ->when(! $user->isAdmin(), fn($q) => $q->where('branch_id', $branchId))
+                            ->count();
+                        $inactiveCount = $class->inactiveStudents()
+                            ->when(! $user->isAdmin(), fn($q) => $q->where('branch_id', $branchId))
+                            ->count();
+
+                        $stats = [
+                            'total'    => $activeCount + $inactiveCount,
+                            'active'   => $activeCount,
+                            'inactive' => $inactiveCount,
+                        ];
+                    }
+                }
+
                 return response()->json([
                     'success' => true,
                     'message' => "Student has been {$statusText} successfully.",
                     'new_status' => $request->active_status,
+                    'stats'      => $stats,
                 ]);
             });
         } catch (\Exception $e) {
@@ -158,6 +184,126 @@ class StudentActivationController extends Controller
                 [
                     'success' => false,
                     'message' => 'An error occurred while updating student status.',
+                ],
+                500,
+            );
+        }
+    }
+
+    /**
+     * Bulk toggle activation for multiple students
+     */
+    public function bulkToggleActive(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'student_ids'   => 'required|array|min:1',
+                'student_ids.*' => 'integer|exists:students,id',
+                'active_status' => 'required|in:active,inactive',
+                'reason'        => 'required|string|max:255',
+                'class_id'      => 'required|integer|exists:class_names,id',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Validation failed.',
+                    'errors'  => $e->errors(),
+                ],
+                422,
+            );
+        }
+
+        $user         = auth()->user();
+        $studentIds   = $request->student_ids;
+        $activeStatus = $request->active_status;
+        $reason       = $request->reason;
+        $classId      = $request->class_id;
+
+        // Get all students
+        $students = Student::whereIn('id', $studentIds)->get();
+
+        // Authorization check for non-admin users
+        if ($user->branch_id != 0) {
+            $unauthorizedStudents = $students->filter(fn($s) => $s->branch_id !== $user->branch_id);
+            if ($unauthorizedStudents->isNotEmpty()) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'You are not authorized to modify some students from other branches.',
+                    ],
+                    403,
+                );
+            }
+        }
+
+        try {
+            return DB::transaction(function () use ($students, $activeStatus, $reason, $classId, $user) {
+                $successCount = 0;
+                $failedCount  = 0;
+
+                foreach ($students as $student) {
+                    try {
+                        // Create Activation Entry
+                        $activation = StudentActivation::create([
+                            'student_id'    => $student->id,
+                            'active_status' => $activeStatus,
+                            'reason'        => $reason,
+                            'updated_by'    => Auth::id(),
+                        ]);
+
+                        // Update Student's Activation ID
+                        $student->update(['student_activation_id' => $activation->id]);
+                        $successCount++;
+                    } catch (\Exception $e) {
+                        $failedCount++;
+                    }
+                }
+
+                $statusText = $activeStatus === 'active' ? 'activated' : 'deactivated';
+
+                // Calculate updated stats
+                $class    = ClassName::findOrFail($classId);
+                $branchId = $user->branch_id;
+
+                $activeCount = $class->activeStudents()
+                    ->when(! $user->isAdmin(), fn($q) => $q->where('branch_id', $branchId))
+                    ->count();
+                $inactiveCount = $class->inactiveStudents()
+                    ->when(! $user->isAdmin(), fn($q) => $q->where('branch_id', $branchId))
+                    ->count();
+
+                $stats = [
+                    'total'    => $activeCount + $inactiveCount,
+                    'active'   => $activeCount,
+                    'inactive' => $inactiveCount,
+                ];
+
+                if ($failedCount > 0) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => "{$successCount} student(s) {$statusText} successfully. {$failedCount} failed.",
+                        'new_status'    => $activeStatus,
+                        'success_count' => $successCount,
+                        'failed_count'  => $failedCount,
+                        'stats'         => $stats,
+                    ]);
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "{$successCount} student(s) have been {$statusText} successfully.",
+                    'new_status'    => $activeStatus,
+                    'success_count' => $successCount,
+                    'failed_count'  => 0,
+                    'stats'         => $stats,
+                ]);
+            });
+        } catch (\Exception $e) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'An error occurred while updating student statuses.',
                 ],
                 500,
             );

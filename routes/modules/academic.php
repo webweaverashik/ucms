@@ -1,22 +1,21 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Sheet\SheetController;
 use App\Http\Controllers\Academic\BatchController;
-use App\Http\Controllers\Academic\SubjectController;
-use App\Http\Controllers\Sheet\SheetTopicController;
 use App\Http\Controllers\Academic\ClassNameController;
-use App\Http\Controllers\Sheet\SheetPaymentController;
 use App\Http\Controllers\Academic\InstitutionController;
-use App\Http\Controllers\Sheet\SheetTopicTakenController;
 use App\Http\Controllers\Academic\SecondaryClassController;
+use App\Http\Controllers\Academic\SubjectController;
+use App\Http\Controllers\Sheet\SheetController;
+use App\Http\Controllers\Sheet\SheetPaymentController;
+use App\Http\Controllers\Sheet\SheetTopicController;
+use App\Http\Controllers\Sheet\SheetTopicTakenController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
 | Academic Routes
 |--------------------------------------------------------------------------
 | Classes, subjects, sheets, notes distribution
-| ⚠️ IMPORTANT: Route names are kept EXACTLY as original web.php
 */
 
 // Class Names
@@ -25,6 +24,15 @@ Route::prefix('classnames')
     ->group(function () {
         Route::get('ajax-data/{class}', [ClassNameController::class, 'getClassName'])->name('ajax');
         Route::get('branch-counts/{class}', [ClassNameController::class, 'getBranchCounts'])->name('branch-counts');
+
+        // AJAX endpoint for students datatable (server-side processing)
+        Route::get('{classname}/students-ajax', [ClassNameController::class, 'getStudentsAjax'])->name('students-ajax');
+
+        // AJAX endpoint for class stats
+        Route::get('{classname}/stats', [ClassNameController::class, 'getStats'])->name('stats');
+
+        // AJAX endpoint for subjects
+        Route::get('{classname}/subjects-ajax', [ClassNameController::class, 'getSubjectsAjax'])->name('subjects-ajax');
 
         // Secondary Classes (nested under classnames)
         Route::prefix('{classname}/secondary-classes')

@@ -5,7 +5,6 @@
 // ============================================================================
 var KTAddSubject = function () {
       const element = document.getElementById('kt_modal_add_subject');
-
       if (!element) {
             return { init: function () { } };
       }
@@ -99,7 +98,11 @@ var KTAddSubject = function () {
                                                 if (data.success) {
                                                       toastr.success(data.message || 'Subject added successfully');
                                                       modal.hide();
-                                                      setTimeout(() => { window.location.reload(); }, 1500);
+                                                      form.reset();
+                                                      $(form).find('select[data-control="select2"]').val(null).trigger('change');
+
+                                                      // Reload subjects via AJAX
+                                                      reloadSubjectsSection();
                                                 } else {
                                                       throw new Error(data.message || 'Add failed');
                                                 }
@@ -178,11 +181,9 @@ var KTEditSubject = function () {
                         subjectText.classList.add('d-none');
                         if (editIcon) editIcon.classList.add('d-none');
                         if (deleteIcon) deleteIcon.classList.add('d-none');
-
                         subjectInput.classList.remove('d-none');
                         if (checkIcon) checkIcon.classList.remove('d-none');
                         if (cancelIcon) cancelIcon.classList.remove('d-none');
-
                         card.classList.add('is-editing');
                         subjectInput.focus();
                         subjectInput.select();
@@ -192,11 +193,9 @@ var KTEditSubject = function () {
                         subjectText.classList.remove('d-none');
                         if (editIcon) editIcon.classList.remove('d-none');
                         if (deleteIcon) deleteIcon.classList.remove('d-none');
-
                         subjectInput.classList.add('d-none');
                         if (checkIcon) checkIcon.classList.add('d-none');
                         if (cancelIcon) cancelIcon.classList.add('d-none');
-
                         card.classList.remove('is-editing');
                   };
 
@@ -240,9 +239,9 @@ var KTEditSubject = function () {
                               const data = await response.json();
 
                               if (data.success) {
-                                    subjectText.textContent = updatedValue;
-                                    exitEditMode();
                                     toastr.success("Subject updated successfully");
+                                    // Reload subjects section to reflect changes
+                                    reloadSubjectsSection();
                               }
                         } catch (error) {
                               toastr.error(error.message || 'Failed to update subject');
@@ -290,7 +289,8 @@ var KTEditSubject = function () {
                                           .then(data => {
                                                 if (data.success) {
                                                       toastr.success('Subject deleted successfully');
-                                                      setTimeout(() => { window.location.reload(); }, 1500);
+                                                      // Reload subjects section via AJAX
+                                                      reloadSubjectsSection();
                                                 } else {
                                                       toastr.error(data.message);
                                                 }
@@ -321,7 +321,6 @@ var KTEditSubject = function () {
 // ============================================================================
 var KTEditClassName = function () {
       const element = document.getElementById('kt_modal_edit_class');
-
       if (!element) {
             return { init: function () { } };
       }
@@ -461,7 +460,9 @@ var KTEditClassName = function () {
                                                 if (data.success) {
                                                       toastr.success(data.message || 'Class updated successfully');
                                                       modal.hide();
-                                                      setTimeout(() => { window.location.reload(); }, 1500);
+                                                      setTimeout(() => {
+                                                            window.location.reload();
+                                                      }, 1500);
                                                 } else {
                                                       throw new Error(data.message || 'Update failed');
                                                 }
@@ -488,54 +489,399 @@ var KTEditClassName = function () {
 }();
 
 // ============================================================================
-// Regular Students List with Branch Filtering
+// Regular Students List with Server-Side DataTable, Branch Filtering, and Bulk Selection
 // ============================================================================
 var KTRegularStudentsList = function () {
       var table;
       var datatable;
       var currentBranchFilter = null;
+      var currentGroupFilter = null;
+      var currentStatusFilter = null;
+      var toggleActivationModal = null;
+      var bulkToggleActivationModal = null;
+
+      // Store selected student IDs across all pages
+      var selectedStudents = new Map(); // Map of studentId => {name, isActive}
 
       var initDatatable = function () {
+            // Build columns array dynamically based on whether checkbox column should show
+            var columns = [];
+
+            if (typeof showCheckboxColumn !== 'undefined' && showCheckboxColumn) {
+                  columns.push({
+                        data: 'checkbox',
+                        name: 'checkbox',
+                        orderable: false,
+                        searchable: false,
+                        className: 'checkbox-column'
+                  });
+            }
+
+            columns = columns.concat([
+                  { data: 'row_number', name: 'row_number', orderable: false, searchable: false },
+                  { data: 'student_name', name: 'student_name' },
+                  { data: 'academic_group', name: 'academic_group' },
+                  { data: 'batch', name: 'batch' },
+                  { data: 'created_by', name: 'created_by' },
+                  { data: 'created_at', name: 'created_at' },
+                  { data: 'actions', name: 'actions', orderable: false, searchable: false }
+            ]);
+
             datatable = $(table).DataTable({
-                  "info": true,
-                  'order': [],
-                  "lengthMenu": [10, 25, 50, 100],
-                  "pageLength": 10,
-                  "lengthChange": true,
-                  "autoWidth": false,
-                  'columnDefs': [
-                        // { orderable: false, targets: 8 },
-                  ]
-            });
-
-            datatable.on('draw', function () {
-                  // Re-initialize tooltips after redraw
-                  $('[data-bs-toggle="tooltip"]').tooltip();
-
-                  // Update row numbers to start from 1 for filtered results
-                  updateRowNumbers();
+                  processing: true,
+                  serverSide: true,
+                  ajax: {
+                        url: routeStudentsAjax,
+                        type: 'GET',
+                        data: function (d) {
+                              // Add custom filters
+                              d.branch_id = currentBranchFilter;
+                              d.academic_group = currentGroupFilter;
+                              d.status = currentStatusFilter;
+                        },
+                        dataSrc: function (json) {
+                              // Re-check checkboxes for selected students after data load
+                              setTimeout(function () {
+                                    updateCheckboxStates();
+                              }, 100);
+                              return json.data;
+                        }
+                  },
+                  columns: columns,
+                  // Order by student_name column (mapped to student_unique_id in backend)
+                  // With checkbox: index 2, without checkbox: index 1
+                  order: [[typeof showCheckboxColumn !== 'undefined' && showCheckboxColumn ? 2 : 1, 'asc']],
+                  pageLength: 10,
+                  lengthMenu: [10, 25, 50, 100],
+                  drawCallback: function () {
+                        // Re-initialize KTMenu for action dropdowns
+                        if (typeof KTMenu !== 'undefined') {
+                              KTMenu.init();
+                              KTMenu.createInstances('[data-kt-menu="true"]');
+                        }
+                        // Re-initialize tooltips
+                        $('[data-bs-toggle="tooltip"]').tooltip();
+                        // Update checkbox states after draw
+                        updateCheckboxStates();
+                  },
+                  language: {
+                        processing: '<div class="d-flex justify-content-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>'
+                  }
             });
       }
 
-      // Function to update row numbers starting from 1 for each filtered view
-      var updateRowNumbers = function () {
-            var visibleIndex = 1;
-            datatable.rows({ search: 'applied' }).every(function (rowIdx) {
-                  var row = this.node();
-                  if (row) {
-                        var firstCell = row.querySelector('td:first-child');
-                        if (firstCell) {
-                              firstCell.textContent = visibleIndex++;
-                        }
+      // Update checkbox states based on selectedStudents Map
+      var updateCheckboxStates = function () {
+            if (typeof showCheckboxColumn === 'undefined' || !showCheckboxColumn) return;
+
+            // Update individual checkboxes
+            $(table).find('.student-checkbox').each(function () {
+                  var studentId = $(this).data('student-id');
+                  $(this).prop('checked', selectedStudents.has(studentId));
+            });
+
+            // Update header checkbox
+            var allChecked = true;
+            var anyChecked = false;
+            $(table).find('.student-checkbox').each(function () {
+                  if ($(this).is(':checked')) {
+                        anyChecked = true;
+                  } else {
+                        allChecked = false;
                   }
+            });
+
+            var headerCheckbox = $('#select_all_checkbox');
+            if (headerCheckbox.length) {
+                  headerCheckbox.prop('checked', allChecked && anyChecked);
+                  headerCheckbox.prop('indeterminate', anyChecked && !allChecked);
+            }
+
+            // Update toolbar visibility and count
+            updateBulkToolbar();
+      }
+
+      // Update bulk actions toolbar
+      var updateBulkToolbar = function () {
+            var toolbar = $('#bulk_actions_toolbar');
+            var countSpan = $('#selected_count');
+            var multipageIndicator = $('#multipage_indicator');
+
+            if (!toolbar.length) return;
+
+            var count = selectedStudents.size;
+            countSpan.text(count);
+
+            if (count > 0) {
+                  toolbar.removeClass('d-none').css('display', 'flex');
+
+                  // Check if selections span multiple pages
+                  var currentPageIds = [];
+                  $(table).find('.student-checkbox').each(function () {
+                        currentPageIds.push($(this).data('student-id'));
+                  });
+
+                  var hasMultiPageSelections = false;
+                  selectedStudents.forEach(function (value, key) {
+                        if (!currentPageIds.includes(key)) {
+                              hasMultiPageSelections = true;
+                        }
+                  });
+
+                  if (hasMultiPageSelections) {
+                        multipageIndicator.show();
+                  } else {
+                        multipageIndicator.hide();
+                  }
+            } else {
+                  toolbar.addClass('d-none').css('display', 'none !important');
+                  multipageIndicator.hide();
+            }
+      }
+
+      // Handle individual checkbox change
+      var handleCheckboxChange = function () {
+            $(document).on('change', '.student-checkbox', function () {
+                  var studentId = parseInt($(this).data('student-id'));
+                  var studentName = $(this).data('student-name');
+                  var isActive = $(this).data('is-active') === 1 || $(this).data('is-active') === '1';
+
+                  if ($(this).is(':checked')) {
+                        selectedStudents.set(studentId, {
+                              name: studentName,
+                              isActive: isActive
+                        });
+                  } else {
+                        selectedStudents.delete(studentId);
+                  }
+
+                  updateCheckboxStates();
+            });
+      }
+
+      // Handle select all checkbox
+      var handleSelectAllCheckbox = function () {
+            $(document).on('change', '#select_all_checkbox', function () {
+                  var isChecked = $(this).is(':checked');
+
+                  $(table).find('.student-checkbox').each(function () {
+                        var studentId = parseInt($(this).data('student-id'));
+                        var studentName = $(this).data('student-name');
+                        var isActive = $(this).data('is-active') === 1 || $(this).data('is-active') === '1';
+
+                        $(this).prop('checked', isChecked);
+
+                        if (isChecked) {
+                              selectedStudents.set(studentId, {
+                                    name: studentName,
+                                    isActive: isActive
+                              });
+                        } else {
+                              selectedStudents.delete(studentId);
+                        }
+                  });
+
+                  updateBulkToolbar();
+            });
+      }
+
+      // Handle clear selection button
+      var handleClearSelection = function () {
+            $(document).on('click', '#btn_clear_selection', function () {
+                  selectedStudents.clear();
+                  $(table).find('.student-checkbox').prop('checked', false);
+                  $('#select_all_checkbox').prop('checked', false).prop('indeterminate', false);
+                  updateBulkToolbar();
+            });
+      }
+
+      // Handle bulk activate button
+      var handleBulkActivate = function () {
+            $(document).on('click', '#btn_bulk_activate', function () {
+                  if (selectedStudents.size === 0) {
+                        toastr.warning('Please select at least one student');
+                        return;
+                  }
+
+                  // Open bulk modal with activate action
+                  openBulkModal('active');
+            });
+      }
+
+      // Handle bulk deactivate button
+      var handleBulkDeactivate = function () {
+            $(document).on('click', '#btn_bulk_deactivate', function () {
+                  if (selectedStudents.size === 0) {
+                        toastr.warning('Please select at least one student');
+                        return;
+                  }
+
+                  // Open bulk modal with deactivate action
+                  openBulkModal('inactive');
+            });
+      }
+
+      // Open bulk toggle modal
+      var openBulkModal = function (status) {
+            var modalTitle = document.getElementById('bulk-toggle-activation-modal-title');
+            var actionType = document.getElementById('bulk_action_type');
+            var studentCount = document.getElementById('bulk_student_count');
+            var statusInput = document.getElementById('bulk_activation_status');
+            var reasonLabel = document.getElementById('bulk_reason_label');
+            var reasonTextarea = document.getElementById('bulk_activation_reason');
+            var submitBtn = document.getElementById('kt_bulk_toggle_activation_submit');
+
+            if (status === 'active') {
+                  modalTitle.textContent = 'Bulk Activate Students';
+                  actionType.textContent = 'activate';
+                  reasonLabel.textContent = 'Activation Reason';
+                  if (reasonTextarea) {
+                        reasonTextarea.placeholder = 'Write a common reason for activating all selected students';
+                  }
+                  submitBtn.classList.remove('btn-warning');
+                  submitBtn.classList.add('btn-success');
+            } else {
+                  modalTitle.textContent = 'Bulk Deactivate Students';
+                  actionType.textContent = 'deactivate';
+                  reasonLabel.textContent = 'Deactivation Reason';
+                  if (reasonTextarea) {
+                        reasonTextarea.placeholder = 'Write a common reason for deactivating all selected students';
+                  }
+                  submitBtn.classList.remove('btn-success');
+                  submitBtn.classList.add('btn-warning');
+            }
+
+            studentCount.textContent = selectedStudents.size;
+            statusInput.value = status;
+
+            if (reasonTextarea) {
+                  reasonTextarea.value = '';
+            }
+
+            if (bulkToggleActivationModal) {
+                  bulkToggleActivationModal.show();
+            }
+      }
+
+      // Update stats cards in the sidebar
+      var updateStatsCards = function (stats) {
+            if (!stats) return;
+
+            var totalEl = document.getElementById('stats-total-students');
+            var activeEl = document.getElementById('stats-active-students');
+            var inactiveEl = document.getElementById('stats-inactive-students');
+
+            if (totalEl) totalEl.textContent = stats.total;
+            if (activeEl) activeEl.textContent = stats.active;
+            if (inactiveEl) inactiveEl.textContent = stats.inactive;
+
+            // Add brief highlight animation
+            [totalEl, activeEl, inactiveEl].forEach(function (el) {
+                  if (el) {
+                        el.style.transition = 'transform 0.3s ease';
+                        el.style.transform = 'scale(1.2)';
+                        setTimeout(function () {
+                              el.style.transform = 'scale(1)';
+                        }, 300);
+                  }
+            });
+      }
+
+      // Handle bulk toggle form submission
+      var handleBulkToggleSubmit = function () {
+            var form = document.getElementById('kt_bulk_toggle_activation_form');
+            if (!form) return;
+
+            form.addEventListener('submit', function (e) {
+                  e.preventDefault();
+
+                  var submitBtn = document.getElementById('kt_bulk_toggle_activation_submit');
+                  var reasonField = document.getElementById('bulk_activation_reason');
+                  var statusField = document.getElementById('bulk_activation_status');
+
+                  if (!reasonField.value.trim()) {
+                        toastr.warning('Please provide a reason for this action');
+                        reasonField.focus();
+                        return;
+                  }
+
+                  if (selectedStudents.size === 0) {
+                        toastr.warning('No students selected');
+                        return;
+                  }
+
+                  // Disable button and show loading
+                  submitBtn.disabled = true;
+                  submitBtn.querySelector('.indicator-label').style.display = 'none';
+                  submitBtn.querySelector('.indicator-progress').style.display = 'inline-block';
+
+                  // Prepare data
+                  var studentIds = Array.from(selectedStudents.keys());
+
+                  var formData = new FormData();
+                  formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+                  formData.append('active_status', statusField.value);
+                  formData.append('reason', reasonField.value);
+                  formData.append('class_id', classId);
+                  studentIds.forEach(function (id) {
+                        formData.append('student_ids[]', id);
+                  });
+
+                  fetch(routeBulkToggleActive, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                              'Accept': 'application/json',
+                              'X-Requested-With': 'XMLHttpRequest'
+                        }
+                  })
+                        .then(function (response) {
+                              return response.json();
+                        })
+                        .then(function (data) {
+                              submitBtn.disabled = false;
+                              submitBtn.querySelector('.indicator-label').style.display = 'inline-block';
+                              submitBtn.querySelector('.indicator-progress').style.display = 'none';
+
+                              if (data.success) {
+                                    bulkToggleActivationModal.hide();
+                                    form.reset();
+
+                                    // Clear selections
+                                    selectedStudents.clear();
+                                    updateBulkToolbar();
+
+                                    toastr.success(data.message);
+
+                                    // Update stats cards
+                                    if (data.stats) {
+                                          updateStatsCards(data.stats);
+                                    }
+
+                                    // Reload datatable
+                                    datatable.ajax.reload(null, false);
+                              } else {
+                                    toastr.error(data.message || 'An error occurred');
+                              }
+                        })
+                        .catch(function (error) {
+                              submitBtn.disabled = false;
+                              submitBtn.querySelector('.indicator-label').style.display = 'inline-block';
+                              submitBtn.querySelector('.indicator-progress').style.display = 'none';
+                              toastr.error('An unexpected error occurred');
+                        });
             });
       }
 
       var handleSearch = function () {
             const filterSearch = document.querySelector('[data-enrolled-regular-students-table-filter="search"]');
             if (filterSearch) {
+                  let debounceTimer;
                   filterSearch.addEventListener('keyup', function (e) {
-                        datatable.search(e.target.value).draw();
+                        clearTimeout(debounceTimer);
+                        debounceTimer = setTimeout(function () {
+                              datatable.search(e.target.value).draw();
+                        }, 300);
                   });
             }
       }
@@ -546,27 +892,33 @@ var KTRegularStudentsList = function () {
 
             const filterButton = filterForm.querySelector('[data-enrolled-regular-students-table-filter="filter"]');
             const resetButton = filterForm.querySelector('[data-enrolled-regular-students-table-filter="reset"]');
-            const selectOptions = filterForm.querySelectorAll('select');
 
             if (filterButton) {
                   filterButton.addEventListener('click', function () {
-                        var filterString = '';
-                        selectOptions.forEach((item, index) => {
-                              if (item.value && item.value !== '') {
-                                    if (index !== 0) filterString += ' ';
-                                    filterString += item.value;
-                              }
-                        });
-                        datatable.search(filterString).draw();
+                        // Get filter values
+                        var groupSelect = document.getElementById('filter_academic_group');
+                        var statusSelect = document.getElementById('filter_status');
+
+                        currentGroupFilter = groupSelect ? groupSelect.value : null;
+                        currentStatusFilter = statusSelect ? statusSelect.value : null;
+
+                        // Reload datatable with new filters
+                        datatable.ajax.reload();
                   });
             }
 
             if (resetButton) {
                   resetButton.addEventListener('click', function () {
-                        selectOptions.forEach((item) => {
-                              $(item).val(null).trigger('change');
-                        });
-                        datatable.search('').draw();
+                        // Reset select2 elements
+                        $('#filter_academic_group').val(null).trigger('change');
+                        $('#filter_status').val(null).trigger('change');
+
+                        // Clear filter variables
+                        currentGroupFilter = null;
+                        currentStatusFilter = null;
+
+                        // Reload datatable
+                        datatable.ajax.reload();
                   });
             }
       }
@@ -578,38 +930,224 @@ var KTRegularStudentsList = function () {
             if (!branchTabs.length) return;
 
             // Set initial filter to first branch
-            const firstTab = branchTabs[0];
-            if (firstTab) {
-                  currentBranchFilter = firstTab.getAttribute('data-branch-filter');
-
-                  // Apply initial filter
-                  $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-                        const row = datatable.row(dataIndex).node();
-                        if (!row) return false;
-                        const rowBranchId = row.getAttribute('data-branch-id');
-                        return rowBranchId === currentBranchFilter;
-                  });
-                  datatable.draw();
+            if (typeof firstBranchId !== 'undefined' && firstBranchId !== null) {
+                  currentBranchFilter = firstBranchId;
             }
 
             branchTabs.forEach(tab => {
                   tab.addEventListener('click', function () {
                         currentBranchFilter = this.getAttribute('data-branch-filter');
-
-                        // Custom filtering function - remove previous and add new
-                        $.fn.dataTable.ext.search.pop();
-
-                        $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-                              const row = datatable.row(dataIndex).node();
-                              if (!row) return false;
-                              const rowBranchId = row.getAttribute('data-branch-id');
-                              return rowBranchId === currentBranchFilter;
-                        });
-
-                        datatable.draw();
+                        // Reload datatable with new branch filter
+                        datatable.ajax.reload();
                   });
             });
       }
+
+      // Initialize Toggle Activation Modal
+      var initToggleActivationModal = function () {
+            var modalElement = document.getElementById('kt_toggle_activation_student_modal');
+            if (modalElement) {
+                  toggleActivationModal = new bootstrap.Modal(modalElement);
+            }
+
+            var bulkModalElement = document.getElementById('kt_bulk_toggle_activation_modal');
+            if (bulkModalElement) {
+                  bulkToggleActivationModal = new bootstrap.Modal(bulkModalElement);
+            }
+      };
+
+      // Handle toggle activation modal trigger from action dropdown (using event delegation)
+      var handleToggleActivationTrigger = function () {
+            $(document).on('click', '.toggle-activation-btn', function (e) {
+                  e.preventDefault();
+
+                  var studentId = $(this).data('student-id');
+                  var studentName = $(this).data('student-name');
+                  var studentUniqueId = $(this).data('student-unique-id');
+                  var activeStatus = $(this).data('active-status');
+
+                  // Populate hidden fields
+                  document.getElementById('student_id').value = studentId;
+                  document.getElementById('toggle_class_id').value = classId;
+
+                  // Set the NEW status (opposite of current)
+                  document.getElementById('activation_status').value = (activeStatus === 'active') ? 'inactive' : 'active';
+
+                  // Update modal title and label based on current status
+                  var modalTitle = document.getElementById('toggle-activation-modal-title');
+                  var reasonLabel = document.getElementById('reason_label');
+                  var reasonTextarea = document.querySelector('#kt_toggle_activation_student_modal textarea[name="reason"]');
+
+                  if (activeStatus === 'active') {
+                        modalTitle.textContent = 'Deactivate Student - ' + studentName + ' (' + studentUniqueId + ')';
+                        reasonLabel.textContent = 'Deactivation Reason';
+                        if (reasonTextarea) {
+                              reasonTextarea.placeholder = 'Write the reason for deactivating this student';
+                        }
+                  } else {
+                        modalTitle.textContent = 'Activate Student - ' + studentName + ' (' + studentUniqueId + ')'
+                        reasonLabel.textContent = 'Activation Reason';
+                        if (reasonTextarea) {
+                              reasonTextarea.placeholder = 'Write the reason for activating this student';
+                        }
+                  }
+
+                  // Clear previous reason
+                  if (reasonTextarea) {
+                        reasonTextarea.value = '';
+                  }
+
+                  // Show the modal
+                  if (toggleActivationModal) {
+                        toggleActivationModal.show();
+                  }
+            });
+      };
+
+      // Handle toggle activation form submission via AJAX
+      var handleToggleActivationSubmit = function () {
+            var toggleForm = document.querySelector('#kt_toggle_activation_student_modal form');
+            if (!toggleForm) return;
+
+            toggleForm.addEventListener('submit', function (e) {
+                  e.preventDefault();
+
+                  var submitBtn = toggleForm.querySelector('button[type="submit"]');
+                  var originalBtnText = submitBtn.innerHTML;
+
+                  // Validate reason field
+                  var reasonField = toggleForm.querySelector('textarea[name="reason"]');
+                  if (!reasonField.value.trim()) {
+                        Swal.fire({
+                              icon: 'warning',
+                              title: 'Reason Required',
+                              text: 'Please provide a reason for this status change.'
+                        });
+                        reasonField.focus();
+                        return;
+                  }
+
+                  // Disable button and show loading
+                  submitBtn.disabled = true;
+                  submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing...';
+
+                  // Prepare form data
+                  var formData = new FormData(toggleForm);
+
+                  // Get CSRF token
+                  var csrfToken = document.querySelector('meta[name="csrf-token"]');
+                  if (!csrfToken) {
+                        console.error('CSRF token not found');
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnText;
+                        return;
+                  }
+
+                  // Send AJAX request
+                  fetch(toggleForm.getAttribute('action'), {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                              'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
+                              'Accept': 'application/json',
+                              'X-Requested-With': 'XMLHttpRequest'
+                        }
+                  })
+                        .then(function (response) {
+                              return response.json().then(function (data) {
+                                    return { status: response.status, data: data };
+                              });
+                        })
+                        .then(function (result) {
+                              var response = result.data;
+
+                              // Re-enable button
+                              submitBtn.disabled = false;
+                              submitBtn.innerHTML = originalBtnText;
+
+                              if (response.success) {
+                                    // Close modal
+                                    if (toggleActivationModal) {
+                                          toggleActivationModal.hide();
+                                    }
+
+                                    // Reset form
+                                    toggleForm.reset();
+
+                                    // Show success message
+                                    Swal.fire({
+                                          icon: 'success',
+                                          title: 'Success!',
+                                          text: response.message || 'Student status updated successfully.',
+                                          timer: 2000,
+                                          showConfirmButton: false
+                                    }).then(function () {
+                                          // Update stats cards
+                                          if (response.stats) {
+                                                updateStatsCards(response.stats);
+                                          }
+
+                                          // Reload datatable to reflect changes
+                                          if (datatable) {
+                                                datatable.ajax.reload(null, false);
+                                          }
+                                    });
+                              } else {
+                                    // Show error message
+                                    var errorMessage = response.message || 'Something went wrong.';
+                                    if (response.errors) {
+                                          var errorList = [];
+                                          Object.keys(response.errors).forEach(function (key) {
+                                                errorList.push(response.errors[key].join(', '));
+                                          });
+                                          errorMessage = errorList.join('\n');
+                                    }
+
+                                    Swal.fire({
+                                          icon: 'error',
+                                          title: 'Error!',
+                                          text: errorMessage
+                                    });
+                              }
+                        })
+                        .catch(function (error) {
+                              console.error('Toggle activation error:', error);
+
+                              // Re-enable button
+                              submitBtn.disabled = false;
+                              submitBtn.innerHTML = originalBtnText;
+
+                              Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error!',
+                                    text: 'An unexpected error occurred. Please try again.'
+                              });
+                        });
+            });
+      };
+
+      // Handle modal close - reset form
+      var handleModalReset = function () {
+            var modalElement = document.getElementById('kt_toggle_activation_student_modal');
+            if (modalElement) {
+                  modalElement.addEventListener('hidden.bs.modal', function () {
+                        var toggleForm = modalElement.querySelector('form');
+                        if (toggleForm) {
+                              toggleForm.reset();
+                        }
+                  });
+            }
+
+            var bulkModalElement = document.getElementById('kt_bulk_toggle_activation_modal');
+            if (bulkModalElement) {
+                  bulkModalElement.addEventListener('hidden.bs.modal', function () {
+                        var bulkForm = bulkModalElement.querySelector('form');
+                        if (bulkForm) {
+                              bulkForm.reset();
+                        }
+                  });
+            }
+      };
 
       return {
             init: function () {
@@ -620,6 +1158,20 @@ var KTRegularStudentsList = function () {
                   handleSearch();
                   handleFilter();
                   handleBranchTabs();
+                  initToggleActivationModal();
+                  handleToggleActivationTrigger();
+                  handleToggleActivationSubmit();
+                  handleModalReset();
+
+                  // Bulk selection handlers
+                  if (typeof showCheckboxColumn !== 'undefined' && showCheckboxColumn) {
+                        handleCheckboxChange();
+                        handleSelectAllCheckbox();
+                        handleClearSelection();
+                        handleBulkActivate();
+                        handleBulkDeactivate();
+                        handleBulkToggleSubmit();
+                  }
             }
       }
 }();
@@ -629,7 +1181,6 @@ var KTRegularStudentsList = function () {
 // ============================================================================
 var KTAddSpecialClass = function () {
       const element = document.getElementById('kt_modal_add_special_class');
-
       if (!element) {
             return { init: function () { } };
       }
@@ -764,7 +1315,6 @@ var KTAddSpecialClass = function () {
 // ============================================================================
 var KTEditSpecialClass = function () {
       const element = document.getElementById('kt_modal_edit_special_class');
-
       if (!element) {
             return { init: function () { } };
       }
@@ -1126,6 +1676,250 @@ var KTSecondaryClassActions = function () {
 // ============================================================================
 // Helper Functions
 // ============================================================================
+
+/**
+ * Reload subjects section via AJAX
+ */
+function reloadSubjectsSection() {
+      const container = document.getElementById('subjects-container');
+      const countText = document.getElementById('subjects-count-text');
+      const statsSubjects = document.getElementById('stats-total-subjects');
+
+      if (!container) return;
+
+      // Show loading state
+      container.innerHTML = '<div class="text-center py-10"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+
+      fetch(routeSubjectsAjax, {
+            headers: {
+                  'Accept': 'application/json',
+                  'X-Requested-With': 'XMLHttpRequest'
+            }
+      })
+            .then(response => {
+                  if (!response.ok) {
+                        throw new Error('Failed to load subjects');
+                  }
+                  return response.json();
+            })
+            .then(data => {
+                  if (data.success) {
+                        // Update container content
+                        if (data.data.is_empty) {
+                              container.innerHTML = data.data.empty_html;
+                        } else {
+                              container.innerHTML = data.data.groups_html;
+                        }
+
+                        // Update counts
+                        if (countText) {
+                              countText.textContent = data.data.total_subjects;
+                        }
+                        if (statsSubjects) {
+                              statsSubjects.textContent = data.data.total_subjects;
+                              // Add brief animation
+                              statsSubjects.style.transition = 'transform 0.3s ease';
+                              statsSubjects.style.transform = 'scale(1.2)';
+                              setTimeout(function () {
+                                    statsSubjects.style.transform = 'scale(1)';
+                              }, 300);
+                        }
+
+                        // Re-initialize tooltips
+                        $('[data-bs-toggle="tooltip"]').tooltip();
+
+                        // Re-initialize subject editing handlers
+                        reinitializeSubjectHandlers();
+                  } else {
+                        throw new Error(data.message || 'Failed to load subjects');
+                  }
+            })
+            .catch(error => {
+                  console.error('Error loading subjects:', error);
+                  container.innerHTML = '<div class="text-center py-10 text-danger"><i class="ki-outline ki-cross-circle fs-1"></i><p class="mt-3">Failed to load subjects. Please refresh the page.</p></div>';
+            });
+}
+
+/**
+ * Re-initialize subject editing handlers after AJAX reload
+ */
+function reinitializeSubjectHandlers() {
+      document.querySelectorAll('.subject-editable').forEach(card => {
+            const subjectText = card.querySelector('.subject-text');
+            const subjectInput = card.querySelector('.subject-input');
+            const editIcon = card.querySelector('.edit-icon');
+            const deleteIcon = card.querySelector('.delete-subject');
+            const checkIcon = card.querySelector('.check-icon');
+            const cancelIcon = card.querySelector('.cancel-icon');
+
+            if (!subjectText || !subjectInput) return;
+
+            const originalValue = subjectInput.value;
+
+            const enterEditMode = () => {
+                  subjectText.classList.add('d-none');
+                  if (editIcon) editIcon.classList.add('d-none');
+                  if (deleteIcon) deleteIcon.classList.add('d-none');
+                  subjectInput.classList.remove('d-none');
+                  if (checkIcon) checkIcon.classList.remove('d-none');
+                  if (cancelIcon) cancelIcon.classList.remove('d-none');
+                  card.classList.add('is-editing');
+                  subjectInput.focus();
+                  subjectInput.select();
+            };
+
+            const exitEditMode = () => {
+                  subjectText.classList.remove('d-none');
+                  if (editIcon) editIcon.classList.remove('d-none');
+                  if (deleteIcon) deleteIcon.classList.remove('d-none');
+                  subjectInput.classList.add('d-none');
+                  if (checkIcon) checkIcon.classList.add('d-none');
+                  if (cancelIcon) cancelIcon.classList.add('d-none');
+                  card.classList.remove('is-editing');
+            };
+
+            const saveChanges = async () => {
+                  const updatedValue = subjectInput.value.trim();
+                  const subjectId = card.dataset.id;
+
+                  if (!updatedValue) {
+                        toastr.error("Subject name cannot be empty");
+                        subjectInput.focus();
+                        return;
+                  }
+
+                  if (updatedValue === originalValue) {
+                        exitEditMode();
+                        return;
+                  }
+
+                  const saveIcon = checkIcon ? checkIcon.querySelector('i') : null;
+                  if (saveIcon) {
+                        saveIcon.classList.remove('ki-check');
+                        saveIcon.classList.add('ki-arrows-circle', 'spinning');
+                  }
+                  if (checkIcon) checkIcon.disabled = true;
+
+                  try {
+                        const url = typeof routeUpdateSubject !== 'undefined'
+                              ? routeUpdateSubject.replace(':id', subjectId)
+                              : `/subjects/${subjectId}`;
+
+                        const response = await fetch(url, {
+                              method: 'PUT',
+                              headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                              },
+                              body: JSON.stringify({ subject_name: updatedValue })
+                        });
+
+                        if (!response.ok) {
+                              const error = await response.json().catch(() => ({}));
+                              throw new Error(error.message || 'Update failed');
+                        }
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                              toastr.success("Subject updated successfully");
+                              reloadSubjectsSection();
+                        }
+                  } catch (error) {
+                        toastr.error(error.message || 'Failed to update subject');
+                        subjectInput.value = originalValue;
+                        if (saveIcon) {
+                              saveIcon.classList.remove('ki-arrows-circle', 'spinning');
+                              saveIcon.classList.add('ki-check');
+                        }
+                        if (checkIcon) checkIcon.disabled = false;
+                  }
+            };
+
+            // Attach event listeners
+            if (editIcon) {
+                  editIcon.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        enterEditMode();
+                  });
+            }
+
+            if (cancelIcon) {
+                  cancelIcon.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        exitEditMode();
+                        subjectInput.value = originalValue;
+                  });
+            }
+
+            if (checkIcon) {
+                  checkIcon.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        saveChanges();
+                  });
+            }
+
+            subjectInput.addEventListener('keydown', (e) => {
+                  if (e.key === 'Enter') {
+                        e.preventDefault();
+                        saveChanges();
+                  } else if (e.key === 'Escape') {
+                        exitEditMode();
+                        subjectInput.value = originalValue;
+                  }
+            });
+
+            // Handle delete button
+            if (deleteIcon) {
+                  deleteIcon.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        let subjectId = this.getAttribute('data-subject-id');
+                        if (!subjectId) return;
+
+                        let url = routeDeleteSubject.replace(':id', subjectId);
+
+                        Swal.fire({
+                              title: "Are you sure to delete this subject?",
+                              text: "This action cannot be undone!",
+                              icon: "warning",
+                              showCancelButton: true,
+                              confirmButtonColor: "#d33",
+                              cancelButtonColor: "#3085d6",
+                              confirmButtonText: "Yes, delete!",
+                        }).then((result) => {
+                              if (result.isConfirmed) {
+                                    fetch(url, {
+                                          method: "DELETE",
+                                          headers: {
+                                                "Content-Type": "application/json",
+                                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                                          },
+                                    })
+                                          .then(response => response.json())
+                                          .then(data => {
+                                                if (data.success) {
+                                                      toastr.success('Subject deleted successfully');
+                                                      reloadSubjectsSection();
+                                                } else {
+                                                      toastr.error(data.message);
+                                                }
+                                          })
+                                          .catch(error => {
+                                                Swal.fire({
+                                                      title: "Error!",
+                                                      text: "Something went wrong. Please try again.",
+                                                      icon: "error",
+                                                });
+                                          });
+                              }
+                        });
+                  });
+            }
+      });
+}
+
 function addSecondaryClassCard(data) {
       const container = document.getElementById('secondary-classes-container');
       if (!container) return;
@@ -1153,11 +1947,7 @@ function addSecondaryClassCard(data) {
                     </div>
                     <div class="secondary-class-actions">
                         <div class="form-check form-switch form-check-solid form-check-success">
-                            <input class="form-check-input toggle-secondary-activation" type="checkbox"
-                                value="${data.id}"
-                                data-secondary-class-id="${data.id}"
-                                data-bs-toggle="tooltip" title="Change status"
-                                checked>
+                            <input class="form-check-input toggle-secondary-activation" type="checkbox" value="${data.id}" data-secondary-class-id="${data.id}" data-bs-toggle="tooltip" title="Change status" checked>
                         </div>
                     </div>
                 </div>
@@ -1178,16 +1968,10 @@ function addSecondaryClassCard(data) {
                             Active
                         </span>
                         <div class="btn-group">
-                            <button type="button" class="btn btn-sm btn-light-primary edit-secondary-class"
-                                data-secondary-class-id="${data.id}"
-                                data-is-active="1"
-                                data-bs-toggle="tooltip" title="Edit">
+                            <button type="button" class="btn btn-sm btn-light-primary edit-secondary-class" data-secondary-class-id="${data.id}" data-is-active="1" data-bs-toggle="tooltip" title="Edit">
                                 <i class="ki-outline ki-pencil fs-5"></i>
                             </button>
-                            <button type="button" class="btn btn-sm btn-light-danger delete-secondary-class"
-                                data-secondary-class-id="${data.id}"
-                                data-is-active="1"
-                                data-bs-toggle="tooltip" title="Delete">
+                            <button type="button" class="btn btn-sm btn-light-danger delete-secondary-class" data-secondary-class-id="${data.id}" data-is-active="1" data-bs-toggle="tooltip" title="Delete">
                                 <i class="ki-outline ki-trash fs-5"></i>
                             </button>
                         </div>
@@ -1231,8 +2015,7 @@ function showEmptyState() {
                 <p class="text-muted fs-6 mb-6 mw-400px mx-auto">
                     Create special classes for additional courses or programs under this class.
                 </p>
-                <a href="#" class="btn btn-primary" data-bs-toggle="modal"
-                    data-bs-target="#kt_modal_add_special_class">
+                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_special_class">
                     <i class="ki-outline ki-plus fs-3 me-1"></i> Add First Special Class
                 </a>
             </div>

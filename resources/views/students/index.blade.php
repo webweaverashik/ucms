@@ -86,7 +86,7 @@
                 <!--begin::Search-->
                 <div class="d-flex align-items-center position-relative my-1">
                     <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
-                    <input type="text" data-kt-subscription-table-filter="search"
+                    <input type="text" data-kt-students-list-table-filter="search"
                         class="form-control form-control-solid w-350px ps-12" placeholder="Search Students">
                 </div>
                 <!--end::Search-->
@@ -111,7 +111,7 @@
                         <div class="separator border-gray-200"></div>
                         <!--end::Separator-->
                         <!--begin::Content-->
-                        <div class="px-7 py-5" data-kt-subscription-table-filter="form">
+                        <div class="px-7 py-5" data-kt-students-list-table-filter="form">
                             <div class="row">
                                 <div class="col-6 mb-5">
                                     <label class="form-label fs-6 fw-semibold">Student Gender:</label>
@@ -224,10 +224,10 @@
                                 <button type="reset"
                                     class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
                                     data-kt-menu-dismiss="true"
-                                    data-kt-subscription-table-filter="reset">Reset</button>
+                                    data-kt-students-list-table-filter="reset">Reset</button>
                                 <button type="submit" class="btn btn-primary fw-semibold px-6"
                                     data-kt-menu-dismiss="true"
-                                    data-kt-subscription-table-filter="filter">Apply</button>
+                                    data-kt-students-list-table-filter="filter">Apply</button>
                             </div>
                             <!--end::Actions-->
                         </div>

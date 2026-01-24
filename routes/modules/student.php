@@ -26,8 +26,12 @@ Route::get('students/branch-counts', [StudentController::class, 'getBranchCounts
 Route::get('students/data', [StudentController::class, 'getStudentsData'])->name('students.data');
 Route::get('students/pending', [StudentController::class, 'pending'])->name('students.pending');
 Route::get('students/alumni', [StudentController::class, 'alumniStudent'])->name('students.alumni.index');
+
+// Student Activation
 Route::post('students/{id}/approve', [StudentActivationController::class, 'approve'])->name('students.activate');
 Route::post('students/toggle-active', [StudentActivationController::class, 'toggleActive'])->name('students.toggleActive');
+Route::post('students/bulk-toggle-active', [StudentActivationController::class, 'bulkToggleActive'])->name('students.bulkToggleActive');
+
 Route::get('students/{id}/download-form', [PdfController::class, 'downloadAdmissionForm'])->name('students.download');
 Route::get('students/{student}/invoice-months-data', [StudentController::class, 'getInvoiceMonthsData']);
 Route::get('students/{id}/sheet-fee', [StudentController::class, 'getSheetFee']);

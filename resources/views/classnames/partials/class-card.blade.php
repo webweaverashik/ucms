@@ -48,55 +48,57 @@
 
             <!--begin::Card Toolbar-->
             <div class="card-toolbar m-0">
-                <button type="button" class="btn btn-icon btn-sm btn-light btn-active-light-primary"
-                    data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
-                    <i class="ki-outline ki-dots-vertical fs-3"></i>
-                </button>
+                @if ($canEditClass || $canDeleteClass)
+                    <button type="button" class="btn btn-icon btn-sm btn-light btn-active-light-primary"
+                        data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
+                        <i class="ki-outline ki-dots-vertical fs-3"></i>
+                    </button>
 
-                <!--begin::Menu-->
-                <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-semibold w-200px py-3"
-                    data-kt-menu="true">
-                    @if ($canEditClass)
-                        <!--begin::Menu Item - Edit-->
-                        <div class="menu-item px-3">
-                            <a href="#" class="menu-link px-3" data-bs-toggle="modal"
-                                data-bs-target="#kt_modal_edit_class" data-class-id="{{ $classname->id }}">
-                                <i class="ki-outline ki-pencil fs-5 me-2"></i> Edit Class
-                            </a>
-                        </div>
-                        <!--end::Menu Item-->
+                    <!--begin::Menu-->
+                    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-semibold w-200px py-3"
+                        data-kt-menu="true">
+                        @if ($canEditClass)
+                            <!--begin::Menu Item - Edit-->
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3" data-bs-toggle="modal"
+                                    data-bs-target="#kt_modal_edit_class" data-class-id="{{ $classname->id }}">
+                                    <i class="ki-outline ki-pencil fs-5 me-2"></i> Edit Class
+                                </a>
+                            </div>
+                            <!--end::Menu Item-->
 
-                        <!--begin::Menu Item - Toggle Status-->
-                        <div class="menu-item px-3">
-                            <a href="#" class="menu-link px-3 toggle-status-btn"
-                                data-class-id="{{ $classname->id }}"
-                                data-current-status="{{ $isActive ? 'active' : 'inactive' }}">
-                                @if ($isActive)
-                                    <i class="ki-outline ki-toggle-off fs-5 me-2"></i> Deactivate
-                                @else
-                                    <i class="ki-outline ki-toggle-on fs-5 me-2"></i> Activate
-                                @endif
-                            </a>
-                        </div>
-                        <!--end::Menu Item-->
-                    @endif
+                            <!--begin::Menu Item - Toggle Status-->
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3 toggle-status-btn"
+                                    data-class-id="{{ $classname->id }}"
+                                    data-current-status="{{ $isActive ? 'active' : 'inactive' }}">
+                                    @if ($isActive)
+                                        <i class="ki-outline ki-toggle-off fs-5 me-2"></i> Deactivate
+                                    @else
+                                        <i class="ki-outline ki-toggle-on fs-5 me-2"></i> Activate
+                                    @endif
+                                </a>
+                            </div>
+                            <!--end::Menu Item-->
+                        @endif
 
-                    @if ($canDeleteClass && $classname->students_count == 0)
-                        <!--begin::Menu Separator-->
-                        <div class="separator my-2"></div>
-                        <!--end::Menu Separator-->
+                        @if ($canDeleteClass && $classname->students_count == 0)
+                            <!--begin::Menu Separator-->
+                            <div class="separator my-2"></div>
+                            <!--end::Menu Separator-->
 
-                        <!--begin::Menu Item - Delete-->
-                        <div class="menu-item px-3">
-                            <a href="#" class="menu-link px-3 text-danger class-delete-button"
-                                data-class-id="{{ $classname->id }}">
-                                <i class="ki-outline ki-trash fs-5 me-2"></i> Delete
-                            </a>
-                        </div>
-                        <!--end::Menu Item-->
-                    @endif
-                </div>
-                <!--end::Menu-->
+                            <!--begin::Menu Item - Delete-->
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3 text-danger class-delete-button"
+                                    data-class-id="{{ $classname->id }}">
+                                    <i class="ki-outline ki-trash fs-5 me-2"></i> Delete
+                                </a>
+                            </div>
+                            <!--end::Menu Item-->
+                        @endif
+                    </div>
+                    <!--end::Menu-->
+                @endif
             </div>
             <!--end::Card Toolbar-->
         </div>
@@ -115,7 +117,8 @@
                 <i class="ki-outline ki-information-2 fs-4 text-primary"></i>
                 <div class="d-flex flex-column">
                     <span class="text-gray-700 fs-7 fw-semibold">Student ID Format</span>
-                    <code class="text-primary fs-7 bg-light">{{ $displayYearPrefix }}{{ $classname->class_numeral }}XX</code>
+                    <code
+                        class="text-primary fs-7 bg-light">{{ $displayYearPrefix }}{{ $classname->class_numeral }}XX</code>
                 </div>
             </div>
             <!--end::Student ID Format Info-->
