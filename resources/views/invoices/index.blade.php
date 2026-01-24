@@ -208,7 +208,7 @@
                                                 data-placeholder="Select a invoice type" data-hide-search="false" required
                                                 disabled>
                                                 <option></option>
-                                                @foreach ($invoice_types as $type)
+                                                @foreach ($invoice_types->where('type_name', '!=', 'Special Class Fee') as $type)
                                                     <option value="{{ $type->id }}"
                                                         data-type-name="{{ $type->type_name }}">{{ $type->type_name }}
                                                     </option>

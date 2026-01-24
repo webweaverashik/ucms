@@ -63,7 +63,6 @@ class PaymentInvoiceController extends Controller
 
         // Get invoice types
         $invoice_types = PaymentInvoiceType::select('id', 'type_name')
-            ->where('type_name', '!=', 'Special Class Fee')
             ->orderBy('type_name')
             ->get();
 
