@@ -43,8 +43,7 @@
                         <div class="col-sm-6 mb-10">
                             <label class="form-label fs-6 fw-semibold">Invoice Type:</label>
                             <select class="form-select form-select-solid fw-bold filter-invoice-type"
-                                data-kt-select2="true" data-placeholder="Select option" data-allow-clear="true"
-                                data-hide-search="true" data-table-id="{{ $tableId }}">
+                                data-kt-select2="true" data-placeholder="Select option" data-allow-clear="true" data-hide-search="true" data-table-id="{{ $tableId }}">
                                 <option></option>
                             </select>
                         </div>
@@ -80,7 +79,7 @@
                         <div class="col-sm-6 mb-10">
                             <label class="form-label fs-6 fw-semibold">Billing Month:</label>
                             <select class="form-select form-select-solid fw-bold filter-billing-month"
-                                data-kt-select2="true" data-placeholder="Select option" data-allow-clear="true"
+                                data-kt-select2="true" data-placeholder="Select option" data-allow-clear="true" data-hide-search="true"
                                 data-table-id="{{ $tableId }}">
                                 <option></option>
                             </select>
@@ -145,17 +144,16 @@
             <thead>
                 <tr class="fw-bold fs-7 text-uppercase gs-0">
                     <th class="w-25px">SL</th>
-                    <th class="w-125px">Invoice No.</th>
+                    <th class="w-150px">Invoice No.</th>
                     <th class="w-250px">Student</th>
-                    <th>Mobile</th>
                     <th>Invoice Type</th>
                     <th>Billing Month</th>
-                    <th class="w-100px">Total Amount (Tk)</th>
-                    <th class="w-100px">Remaining (Tk)</th>
+                    <th>Total Amount (Tk)</th>
+                    <th>Remaining (Tk)</th>
                     <th>Due Date</th>
                     <th>Status</th>
-                    <th class="w-150px">Last Comment</th>
-                    <th class="w-120px">Created At</th>
+                    <th class="min-w-150px">Last Comment</th>
+                    <th>Created At</th>
                     <th class="w-150px">Actions</th>
                 </tr>
             </thead>

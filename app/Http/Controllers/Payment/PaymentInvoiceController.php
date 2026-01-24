@@ -62,7 +62,10 @@ class PaymentInvoiceController extends Controller
             ->get();
 
         // Get invoice types
-        $invoice_types = PaymentInvoiceType::select('id', 'type_name')->orderBy('type_name')->get();
+        $invoice_types = PaymentInvoiceType::select('id', 'type_name')
+            ->where('type_name', '!=', 'Special Class Fee')
+            ->orderBy('type_name')
+            ->get();
 
         return view('invoices.index', compact('branches', 'students', 'invoice_types', 'isAdmin', 'branchDueCounts'));
     }
@@ -88,9 +91,23 @@ class PaymentInvoiceController extends Controller
             }
         };
 
-        $dueMonths = PaymentInvoice::where('status', '!=', 'paid')->whereHas('student', $studentQuery)->whereNotNull('month_year')->pluck('month_year')->filter(fn($month) => preg_match('/^\d{2}_\d{4}$/', $month))->unique()->sortBy(fn($month) => Carbon::createFromFormat('m_Y', $month))->values();
+        $dueMonths = PaymentInvoice::where('status', '!=', 'paid')
+            ->whereHas('student', $studentQuery)
+            ->whereNotNull('month_year')
+            ->pluck('month_year')
+            ->filter(fn($month) => preg_match('/^\d{2}_\d{4}$/', $month))
+            ->unique()
+            ->sortBy(fn($month) => Carbon::createFromFormat('m_Y', $month))
+            ->values();
 
-        $paidMonths = PaymentInvoice::where('status', 'paid')->whereHas('student', $studentQuery)->whereNotNull('month_year')->pluck('month_year')->filter(fn($month) => preg_match('/^\d{2}_\d{4}$/', $month))->unique()->sortBy(fn($month) => Carbon::createFromFormat('m_Y', $month))->values();
+        $paidMonths = PaymentInvoice::where('status', 'paid')
+            ->whereHas('student', $studentQuery)
+            ->whereNotNull('month_year')
+            ->pluck('month_year')
+            ->filter(fn($month) => preg_match('/^\d{2}_\d{4}$/', $month))
+            ->unique()
+            ->sortBy(fn($month) => Carbon::createFromFormat('m_Y', $month))
+            ->values();
 
         return response()->json([
             'dueMonths'  => $dueMonths->map(function ($month) {
@@ -144,7 +161,13 @@ class PaymentInvoiceController extends Controller
         };
 
         // Base query
-        $query = PaymentInvoice::with(['student:id,name,student_unique_id,branch_id', 'student.payments:id,student_id,payment_style,due_date,tuition_fee', 'student.mobileNumbers:id,student_id,mobile_number,number_type', 'invoiceType:id,type_name', 'comments' => fn($q) => $q->with('commentedBy:id,name')->latest()->limit(1)])
+        $query = PaymentInvoice::with([
+            'student:id,name,student_unique_id,branch_id',
+            'student.payments:id,student_id,payment_style,due_date,tuition_fee',
+            'student.mobileNumbers:id,student_id,mobile_number,number_type',
+            'invoiceType:id,type_name',
+            'comments' => fn($q) => $q->with('commentedBy:id,name')->latest()->limit(1),
+        ])
             ->withCount('comments')
             ->where('status', '!=', 'paid')
             ->whereHas('student', $studentQuery);
@@ -201,14 +224,21 @@ class PaymentInvoiceController extends Controller
         // Filter overdue if needed (after pagination for better performance)
         if ($status === 'I_overdue') {
             // For overdue, we need to re-query without pagination
-            $overdueQuery = PaymentInvoice::with(['student:id,name,student_unique_id,branch_id', 'student.payments:id,student_id,payment_style,due_date,tuition_fee', 'student.mobileNumbers:id,student_id,mobile_number,number_type', 'invoiceType:id,type_name', 'comments' => fn($q) => $q->with('commentedBy:id,name')->latest()->limit(1)])
+            $overdueQuery = PaymentInvoice::with([
+                'student:id,name,student_unique_id,branch_id',
+                'student.payments:id,student_id,payment_style,due_date,tuition_fee',
+                'student.mobileNumbers:id,student_id,mobile_number,number_type',
+                'invoiceType:id,type_name',
+                'comments' => fn($q) => $q->with('commentedBy:id,name')->latest()->limit(1),
+            ])
                 ->withCount('comments')
                 ->where('status', '!=', 'paid')
                 ->whereHas('student', $studentQuery);
 
             if ($search) {
                 $overdueQuery->where(function ($q) use ($search) {
-                    $q->where('invoice_number', 'like', "%{$search}%")->orWhereHas('student', fn($sq) => $sq->where('name', 'like', "%{$search}%")->orWhere('student_unique_id', 'like', "%{$search}%"));
+                    $q->where('invoice_number', 'like', "%{$search}%")
+                        ->orWhereHas('student', fn($sq) => $sq->where('name', 'like', "%{$search}%")->orWhere('student_unique_id', 'like', "%{$search}%"));
                 });
             }
 
@@ -259,6 +289,7 @@ class PaymentInvoiceController extends Controller
                 if ($isOverdue) {
                     $statusHtml .= ' <span class="badge badge-danger rounded-pill ms-1">Overdue</span>';
                 }
+
             }
 
             $lastComment  = $invoice->comments->first();
@@ -335,7 +366,13 @@ class PaymentInvoiceController extends Controller
             }
         };
 
-        $query = PaymentInvoice::with(['student:id,name,student_unique_id,branch_id', 'student.payments:id,student_id,payment_style,due_date,tuition_fee', 'student.mobileNumbers:id,student_id,mobile_number,number_type', 'invoiceType:id,type_name', 'comments' => fn($q) => $q->with('commentedBy:id,name')->latest()->limit(1)])
+        $query = PaymentInvoice::with([
+            'student:id,name,student_unique_id,branch_id',
+            'student.payments:id,student_id,payment_style,due_date,tuition_fee',
+            'student.mobileNumbers:id,student_id,mobile_number,number_type',
+            'invoiceType:id,type_name',
+            'comments' => fn($q) => $q->with('commentedBy:id,name')->latest()->limit(1),
+        ])
             ->withCount('comments')
             ->where('status', 'paid')
             ->whereHas('student', $studentQuery);
@@ -371,10 +408,10 @@ class PaymentInvoiceController extends Controller
         $recordsFiltered = $recordsTotal;
 
         // Order and paginate
-        if (in_array($orderBy, ['id', 'invoice_number', 'total_amount', 'created_at'])) {
+        if (in_array($orderBy, ['id', 'invoice_number', 'total_amount', 'updated_at'])) {
             $query->orderBy($orderBy, $orderDir);
         } else {
-            $query->orderBy('id', 'desc');
+            $query->orderBy('updated_at', 'desc');
         }
 
         $invoices = $query->skip($start)->take($length)->get();
@@ -414,6 +451,8 @@ class PaymentInvoiceController extends Controller
                 'status'            => 'Paid',
                 'created_at'        => $invoice->created_at->format('d-m-Y'),
                 'created_at_time'   => $invoice->created_at->format('h:i:s A'),
+                'updated_at'        => $invoice->updated_at->format('d-m-Y'),
+                'updated_at_time'   => $invoice->updated_at->format('h:i:s A'),
                 'last_comment'      => $lastComment ? $lastComment->comment : '',
                 'last_comment_by'   => $lastComment && $lastComment->commentedBy ? $lastComment->commentedBy->name : '',
                 'last_comment_at'   => $lastComment ? $lastComment->created_at->format('d M Y, h:i A') : '',
@@ -454,7 +493,14 @@ class PaymentInvoiceController extends Controller
             }
         };
 
-        $query = PaymentInvoice::with(['student:id,name,student_unique_id,branch_id', 'student.payments:id,student_id,payment_style,due_date,tuition_fee', 'student.mobileNumbers:id,student_id,mobile_number,number_type', 'invoiceType:id,type_name', 'comments' => fn($q) => $q->with('commentedBy:id,name')->latest()->limit(1)])->whereHas('student', $studentQuery);
+        $query = PaymentInvoice::with([
+            'student:id,name,student_unique_id,branch_id',
+            'student.payments:id,student_id,payment_style,due_date,tuition_fee',
+            'student.mobileNumbers:id,student_id,mobile_number,number_type',
+            'invoiceType:id,type_name',
+            'comments' => fn($q) => $q->with('commentedBy:id,name')->latest()->limit(1),
+        ])
+            ->whereHas('student', $studentQuery);
 
         if ($type === 'paid') {
             $query->where('status', 'paid');
@@ -493,17 +539,15 @@ class PaymentInvoiceController extends Controller
 
         // Filter overdue if needed
         if ($request->get('status') === 'I_overdue') {
-            $invoices = $invoices
-                ->filter(function ($invoice) {
-                    $payment = optional($invoice->student)->payments;
-                    if ($payment && $payment->due_date && $invoice->month_year && preg_match('/^\d{2}_\d{4}$/', $invoice->month_year)) {
-                        $monthYear = Carbon::createFromFormat('m_Y', $invoice->month_year);
-                        $dueDate   = $monthYear->copy()->day((int) $payment->due_date);
-                        return in_array($invoice->status, ['due', 'partially_paid']) && now()->toDateString() > $dueDate->toDateString();
-                    }
-                    return false;
-                })
-                ->values();
+            $invoices = $invoices->filter(function ($invoice) {
+                $payment = optional($invoice->student)->payments;
+                if ($payment && $payment->due_date && $invoice->month_year && preg_match('/^\d{2}_\d{4}$/', $invoice->month_year)) {
+                    $monthYear = Carbon::createFromFormat('m_Y', $invoice->month_year);
+                    $dueDate   = $monthYear->copy()->day((int) $payment->due_date);
+                    return in_array($invoice->status, ['due', 'partially_paid']) && now()->toDateString() > $dueDate->toDateString();
+                }
+                return false;
+            })->values();
         }
 
         $data = $invoices->map(function ($invoice, $index) use ($type) {
@@ -532,7 +576,7 @@ class PaymentInvoiceController extends Controller
             $homeMobile  = $invoice->student->mobileNumbers->where('number_type', 'home')->pluck('mobile_number')->implode(', ');
             $lastComment = $invoice->comments->first();
 
-            return [
+            $baseData = [
                 'sl'                => $index + 1,
                 'invoice_number'    => $invoice->invoice_number,
                 'student_name'      => $invoice->student->name,
@@ -541,15 +585,23 @@ class PaymentInvoiceController extends Controller
                 'invoice_type'      => $invoice->invoiceType?->type_name ?? '-',
                 'billing_month'     => $billingMonth,
                 'total_amount'      => $invoice->total_amount,
-                'amount_due'        => $invoice->amount_due ?? 0,
                 'due_date'          => $dueDateStr,
-                'status_text'       => $type === 'paid' ? 'Paid' : ucfirst($status) . ($isOverdue ? ' (Overdue)' : ''),
+                'status_text'       => $type === 'paid' ? 'Paid' : (ucfirst($status) . ($isOverdue ? ' (Overdue)' : '')),
                 'last_comment'      => $lastComment ? $lastComment->comment : '',
                 'last_comment_by'   => $lastComment && $lastComment->commentedBy ? $lastComment->commentedBy->name : '',
                 'last_comment_at'   => $lastComment ? $lastComment->created_at->format('d M Y, h:i A') : '',
-                'created_at'        => $invoice->created_at->format('d-m-Y'),
-                'created_at_time'   => $invoice->created_at->format('h:i:s A'),
             ];
+
+            if ($type === 'due') {
+                $baseData['amount_due']      = $invoice->amount_due ?? 0;
+                $baseData['created_at']      = $invoice->created_at->format('d-m-Y');
+                $baseData['created_at_time'] = $invoice->created_at->format('h:i:s A');
+            } else {
+                $baseData['updated_at']      = $invoice->updated_at->format('d-m-Y');
+                $baseData['updated_at_time'] = $invoice->updated_at->format('h:i:s A');
+            }
+
+            return $baseData;
         });
 
         return response()->json(['data' => $data]);
@@ -557,7 +609,13 @@ class PaymentInvoiceController extends Controller
 
     private function getFilteredMonths(string $operator, string $value)
     {
-        return PaymentInvoice::where('status', $operator, $value)->whereNotNull('month_year')->pluck('month_year')->filter(fn($month) => preg_match('/^\d{2}_\d{4}$/', $month) && Carbon::hasFormat($month, 'm_Y'))->unique()->sortBy(fn($month) => Carbon::createFromFormat('m_Y', $month))->values();
+        return PaymentInvoice::where('status', $operator, $value)
+            ->whereNotNull('month_year')
+            ->pluck('month_year')
+            ->filter(fn($month) => preg_match('/^\d{2}_\d{4}$/', $month) && Carbon::hasFormat($month, 'm_Y'))
+            ->unique()
+            ->sortBy(fn($month) => Carbon::createFromFormat('m_Y', $month))
+            ->values();
     }
 
     public function create()
@@ -682,12 +740,9 @@ class PaymentInvoiceController extends Controller
     {
         if (! in_array($number % 100, [11, 12, 13])) {
             switch ($number % 10) {
-                case 1:
-                    return $number . 'st';
-                case 2:
-                    return $number . 'nd';
-                case 3:
-                    return $number . 'rd';
+                case 1:return $number . 'st';
+                case 2:return $number . 'nd';
+                case 3:return $number . 'rd';
             }
         }
         return $number . 'th';
@@ -785,16 +840,14 @@ class PaymentInvoiceController extends Controller
             ->with('invoiceType:id,type_name')
             ->latest('id')
             ->get(['id', 'invoice_number', 'total_amount', 'amount_due', 'month_year', 'invoice_type_id'])
-            ->map(
-                fn($invoice) => [
-                    'id'             => $invoice->id,
-                    'invoice_number' => $invoice->invoice_number,
-                    'total_amount'   => $invoice->total_amount,
-                    'amount_due'     => $invoice->amount_due,
-                    'month_year'     => $invoice->month_year,
-                    'invoice_type'   => $invoice->invoiceType?->type_name,
-                ],
-            );
+            ->map(fn($invoice) => [
+                'id'             => $invoice->id,
+                'invoice_number' => $invoice->invoice_number,
+                'total_amount'   => $invoice->total_amount,
+                'amount_due'     => $invoice->amount_due,
+                'month_year'     => $invoice->month_year,
+                'invoice_type'   => $invoice->invoiceType?->type_name,
+            ]);
 
         return response()->json($dueInvoices);
     }

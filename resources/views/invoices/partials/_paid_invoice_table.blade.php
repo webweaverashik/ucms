@@ -127,14 +127,15 @@
                 <tr class="fw-bold fs-7 text-uppercase gs-0">
                     <th class="w-25px">SL</th>
                     <th class="w-150px">Invoice No.</th>
-                    <th class="w-350px">Student</th>
+                    <th class="min-w-200px">Student</th>
+                    <th>Mobile</th>
                     <th>Invoice Type</th>
                     <th>Amount (Tk)</th>
                     <th>Billing Month</th>
                     <th>Due Date</th>
                     <th>Status</th>
                     <th class="min-w-150px">Last Comment</th>
-                    <th>Created At</th>
+                    <th>Paid At</th>
                 </tr>
             </thead>
             <tbody class="text-gray-600 fw-semibold">
