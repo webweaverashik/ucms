@@ -155,7 +155,7 @@
                     <th>Due Date</th>
                     <th>Status</th>
                     <th class="w-150px">Last Comment</th>
-                    <th class="w-120px">Created At</th>
+                    <th class="w-125px">Created At</th>
                     <th class="w-150px">Actions</th>
                 </tr>
             </thead>
