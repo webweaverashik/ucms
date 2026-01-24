@@ -55,6 +55,16 @@
     </ul>
     <!--end:::Tabs-->
 
+    @php
+        $badgeColors = [
+            'badge-light-primary',
+            'badge-light-success',
+            'badge-light-warning',
+            'badge-light-danger',
+            'badge-light-info',
+        ];
+    @endphp
+
     <!--begin:::Tab content-->
     <div class="tab-content" id="myTabContent">
         <!--begin:::Tab pane - Due Invoices-->
@@ -63,10 +73,18 @@
                 <!--begin::Branch Tabs for Admin-->
                 <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-5 fs-6" id="branchTabsDue">
                     @foreach ($branches as $index => $branch)
+                        @php
+                            $colorClass = $badgeColors[$index % count($badgeColors)];
+                        @endphp
                         <li class="nav-item">
                             <a class="nav-link {{ $index === 0 ? 'active' : '' }}" data-bs-toggle="tab"
-                                href="#due_branch_{{ $branch->id }}" data-branch-id="{{ $branch->id }}">
-                                {{ $branch->branch_name }}
+                                href="#due_branch_{{ $branch->id }}" data-branch-id="{{ $branch->id }}"
+                                data-badge-color="{{ $colorClass }}">
+                                <i class="ki-outline ki-bank fs-4 me-1"></i>{{ $branch->branch_name }}
+                                @if (isset($branchDueCounts[$branch->id]) && $branchDueCounts[$branch->id] > 0)
+                                    <span
+                                        class="badge {{ $colorClass }} badge-sm ms-2">{{ $branchDueCounts[$branch->id] }}</span>
+                                @endif
                             </a>
                         </li>
                     @endforeach
@@ -104,7 +122,7 @@
                         <li class="nav-item">
                             <a class="nav-link {{ $index === 0 ? 'active' : '' }}" data-bs-toggle="tab"
                                 href="#paid_branch_{{ $branch->id }}" data-branch-id="{{ $branch->id }}">
-                                {{ $branch->branch_name }}
+                                <i class="ki-outline ki-bank fs-4 me-1"></i>{{ $branch->branch_name }}
                             </a>
                         </li>
                     @endforeach
@@ -421,6 +439,7 @@
         const routeFilterOptions = "{{ route('invoices.filter.options') }}";
         const routeInvoiceShow = "{{ route('invoices.show', ':id') }}";
         const routeStudentShow = "{{ route('students.show', ':id') }}";
+        const routeBranchDueCounts = "{{ route('invoices.branch.due.counts') }}";
 
         // Permissions
         const canEditInvoice = {{ $canEditInvoice ? 'true' : 'false' }};

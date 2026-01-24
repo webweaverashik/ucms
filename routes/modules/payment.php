@@ -25,6 +25,7 @@ Route::get('invoices/unpaid-ajax', [PaymentInvoiceController::class, 'getUnpaidI
 Route::get('invoices/paid-ajax', [PaymentInvoiceController::class, 'getPaidInvoicesAjax'])->name('invoices.paid.ajax');
 Route::get('invoices/export-ajax', [PaymentInvoiceController::class, 'exportInvoicesAjax'])->name('invoices.export.ajax');
 Route::get('invoices/filter-options', [PaymentInvoiceController::class, 'getFilterOptions'])->name('invoices.filter.options');
+Route::get('invoices/branch-due-counts', [PaymentInvoiceController::class, 'getBranchDueCounts'])->name('invoices.branch.due.counts');
 
 // Invoice Comments
 Route::post('invoice-comments', [PaymentInvoiceCommentController::class, 'store'])->name('invoice.comments.store');

@@ -42,6 +42,37 @@ var InvoiceManager = {
         }
     },
 
+    // Update branch due counts badges
+    updateBranchDueCounts: function () {
+        if (typeof routeBranchDueCounts === 'undefined') return;
+
+        $.get(routeBranchDueCounts, function (response) {
+            if (response.counts) {
+                Object.keys(response.counts).forEach(function (branchId) {
+                    var count = response.counts[branchId];
+                    var tabLink = document.querySelector('#branchTabsDue .nav-link[data-branch-id="' + branchId + '"]');
+                    if (tabLink) {
+                        // Get the badge color from data attribute
+                        var badgeColor = tabLink.getAttribute('data-badge-color') || 'badge-light-primary';
+
+                        // Remove existing badge
+                        var existingBadge = tabLink.querySelector('.badge');
+                        if (existingBadge) {
+                            existingBadge.remove();
+                        }
+                        // Add new badge if count > 0
+                        if (count > 0) {
+                            var badge = document.createElement('span');
+                            badge.className = 'badge ' + badgeColor + ' badge-sm ms-2';
+                            badge.textContent = count;
+                            tabLink.appendChild(badge);
+                        }
+                    }
+                });
+            }
+        });
+    },
+
     // Get current active due table ID
     getActiveDueTableId: function () {
         if (isAdmin) {
@@ -130,7 +161,7 @@ var KTDueInvoicesList = function () {
                 {
                     data: null, render: function (data) {
                         var url = routeInvoiceShow.replace(':id', data.id);
-                        var badge = data.comments_count > 0 ? '<span class="badge badge-circle badge-sm badge-primary ms-2" data-bs-toggle="tooltip" title="Comments">' + data.comments_count + '</span>' : '';
+                        var badge = data.comments_count > 0 ? '<span class="badge badge-circle badge-sm badge-primary ms-1">' + data.comments_count + '</span>' : '';
                         return '<a href="' + url + '">' + InvoiceUtils.escapeHtml(data.invoice_number) + '</a>' + badge;
                     }
                 },
@@ -297,8 +328,9 @@ var KTDueInvoicesList = function () {
                         success: function (data) {
                             if (data.success) {
                                 Swal.fire("Deleted!", "The invoice has been deleted successfully.", "success");
-                                // Reload tables via AJAX
+                                // Reload tables via AJAX and update badge counts
                                 InvoiceManager.reloadDueTables();
+                                InvoiceManager.updateBranchDueCounts();
                             } else {
                                 Swal.fire("Error!", data.error || "Something went wrong.", "error");
                             }
@@ -977,8 +1009,9 @@ var KTCreateInvoiceModal = function () {
                                         if (result.isConfirmed) {
                                             modal.hide();
                                             resetForm();
-                                            // Reload tables via AJAX instead of page reload
+                                            // Reload tables via AJAX and update badge counts
                                             InvoiceManager.reloadDueTables();
+                                            InvoiceManager.updateBranchDueCounts();
                                         }
                                     });
                                 } else {
@@ -1125,8 +1158,9 @@ var KTEditInvoiceModal = function () {
                                     Swal.fire({ text: data.message || 'Invoice updated successfully!', icon: 'success', buttonsStyling: false, confirmButtonText: 'Ok, got it!', customClass: { confirmButton: 'btn btn-primary' } }).then(function (result) {
                                         if (result.isConfirmed) {
                                             modal.hide();
-                                            // Reload tables via AJAX instead of page reload
+                                            // Reload tables via AJAX and update badge counts
                                             InvoiceManager.reloadDueTables();
+                                            InvoiceManager.updateBranchDueCounts();
                                         }
                                     });
                                 } else {

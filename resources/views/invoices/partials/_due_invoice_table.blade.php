@@ -28,7 +28,7 @@
                     data-kt-menu-placement="bottom-end">
                     <i class="ki-outline ki-filter fs-2"></i>Filter</button>
                 <!--begin::Menu 1-->
-                <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
+                <div class="menu menu-sub menu-sub-dropdown w-300px w-sm-450px" data-kt-menu="true">
                     <!--begin::Header-->
                     <div class="px-7 py-5">
                         <div class="fs-5 text-gray-900 fw-bold">Filter Options</div>
@@ -38,19 +38,18 @@
                     <div class="separator border-gray-200"></div>
                     <!--end::Separator-->
                     <!--begin::Content-->
-                    <div class="px-7 py-5">
+                    <div class="px-7 py-5 row">
                         <!--begin::Input group-->
-                        <div class="mb-10">
+                        <div class="col-sm-6 mb-10">
                             <label class="form-label fs-6 fw-semibold">Invoice Type:</label>
                             <select class="form-select form-select-solid fw-bold filter-invoice-type"
-                                data-kt-select2="true" data-placeholder="Select option" data-allow-clear="true"
-                                data-hide-search="true" data-table-id="{{ $tableId }}">
+                                data-kt-select2="true" data-placeholder="Select option" data-allow-clear="true" data-hide-search="true" data-table-id="{{ $tableId }}">
                                 <option></option>
                             </select>
                         </div>
                         <!--end::Input group-->
                         <!--begin::Input group-->
-                        <div class="mb-10">
+                        <div class="col-sm-6 mb-10">
                             <label class="form-label fs-6 fw-semibold">Due Date:</label>
                             <select class="form-select form-select-solid fw-bold filter-due-date" data-kt-select2="true"
                                 data-placeholder="Select option" data-allow-clear="true" data-hide-search="true"
@@ -64,7 +63,7 @@
                         </div>
                         <!--end::Input group-->
                         <!--begin::Input group-->
-                        <div class="mb-10">
+                        <div class="col-sm-6 mb-10">
                             <label class="form-label fs-6 fw-semibold">Invoice Status:</label>
                             <select class="form-select form-select-solid fw-bold filter-status" data-kt-select2="true"
                                 data-placeholder="Select option" data-allow-clear="true" data-hide-search="true"
@@ -77,10 +76,10 @@
                         </div>
                         <!--end::Input group-->
                         <!--begin::Input group-->
-                        <div class="mb-10">
+                        <div class="col-sm-6 mb-10">
                             <label class="form-label fs-6 fw-semibold">Billing Month:</label>
                             <select class="form-select form-select-solid fw-bold filter-billing-month"
-                                data-kt-select2="true" data-placeholder="Select option" data-allow-clear="true"
+                                data-kt-select2="true" data-placeholder="Select option" data-allow-clear="true" data-hide-search="true"
                                 data-table-id="{{ $tableId }}">
                                 <option></option>
                             </select>
@@ -145,8 +144,8 @@
             <thead>
                 <tr class="fw-bold fs-7 text-uppercase gs-0">
                     <th class="w-25px">SL</th>
-                    <th class="w-150px">Invoice No.</th>
-                    <th class="w-250px">Student</th>
+                    <th class="w-100px">Invoice No.</th>
+                    <th class="w-300px">Student</th>
                     <th>Invoice Type</th>
                     <th>Billing Month</th>
                     <th>Total Amount (Tk)</th>
@@ -155,7 +154,7 @@
                     <th>Status</th>
                     <th class="min-w-150px">Last Comment</th>
                     <th>Created At</th>
-                    <th class="w-150px">Actions</th>
+                    <th class="w-100px">Actions</th>
                 </tr>
             </thead>
             <tbody class="text-gray-600 fw-semibold">
