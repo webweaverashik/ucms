@@ -54,7 +54,7 @@ class StudentController extends Controller
             })
             ->get();
 
-        $institutions = Institution::select('id', 'name')->get();
+        $institutions = Institution::select('id', 'name')->oldest('name')->get();
 
         return view('students.index', compact('classnames', 'batches', 'institutions', 'branches', 'isAdmin'));
     }
@@ -119,16 +119,15 @@ class StudentController extends Controller
         $filterClassId     = $request->input('class_id');
         $filterInstitution = $request->input('institution');
 
-        // Column mapping for ordering
+        // Column mapping for ordering (updated indices after removing hidden columns)
         $columns = [
-            0  => 'students.id',
-            1  => 'students.name',
-            5  => 'students.class_id',
-            7  => 'students.academic_group',
-            9  => 'students.batch_id',
-            10 => 'students.institution_id',
+            0 => 'students.id',
+            1 => 'students.name',
+            2 => 'students.class_id',
+            4 => 'students.batch_id',
+            5 => 'students.institution_id',
+            7 => 'students.tuition_fee',
         ];
-
         $orderColumn = $columns[$orderColumnIndex] ?? 'students.updated_at';
 
         // Determine effective branch filter
@@ -167,6 +166,7 @@ class StudentController extends Controller
         // Payment filters - use JOIN instead of whereHas
         if ($filterPaymentType || $filterDueDate) {
             $query->join('payments_info', 'students.id', '=', 'payments_info.student_id');
+
             if ($filterPaymentType) {
                 $query->where('payments_info.payment_style', $filterPaymentType);
             }
@@ -235,7 +235,6 @@ class StudentController extends Controller
         if ($effectiveBranchId) {
             $totalQuery->where('students.branch_id', $effectiveBranchId);
         }
-
         $totalRecords = $totalQuery->count();
 
         // Get filtered count
@@ -259,7 +258,6 @@ class StudentController extends Controller
         // Format data for DataTable
         $data    = [];
         $counter = $start + 1;
-
         foreach ($students as $student) {
             $isActive = optional($student->studentActivation)->active_status === 'active';
 
@@ -276,8 +274,7 @@ class StudentController extends Controller
             // Academic group badge
             $groupBadge = '';
             if ($student->academic_group && $student->academic_group !== 'General') {
-                $badgeClass =
-                [
+                $badgeClass = [
                     'Science'  => 'info',
                     'Commerce' => 'primary',
                     'Arts'     => 'warning',
@@ -299,19 +296,13 @@ class StudentController extends Controller
                     'student_unique_id' => $student->student_unique_id,
                     'is_active'         => $isActive,
                 ],
-                'gender_filter'    => 'student_' . $student->gender,
-                'status_filter'    => $isActive ? 'active' : 'suspended',
-                'class_filter'     => $student->class_id . '_' . optional($student->class)->class_numeral . '_ucms',
                 'class_name'       => optional($student->class)->name ?? '-',
-                'group_filter'     => 'ucms_' . $student->academic_group,
                 'group_badge'      => $groupBadge,
-                'batch_filter'     => $student->batch_id . '_' . optional($student->batch)->name . '_' . optional($student->branch)->branch_name,
                 'batch_name'       => optional($student->batch)->name ?? '-',
                 'institution_name' => optional($student->institution)->name ?? '-',
                 'home_mobile'      => $homeMobileNumber,
                 'tuition_fee'      => $tuitionFee,
                 'payment_info'     => $paymentInfo,
-                'branch_filter'    => $student->branch_id . '_' . optional($student->branch)->branch_name,
                 'actions'          => $actions,
             ];
         }
@@ -390,12 +381,14 @@ class StudentController extends Controller
         }
 
         $classnames = ClassName::active()->get();
-        $batches    = Batch::with('branch:id,branch_name')
+
+        $batches = Batch::with('branch:id,branch_name')
             ->when(! $isAdmin, function ($query) use ($branchId) {
                 $query->where('branch_id', $branchId);
             })
             ->select('id', 'name', 'branch_id')
             ->get();
+
         $institutions = Institution::all();
         $branches     = Branch::all();
 
@@ -509,6 +502,7 @@ class StudentController extends Controller
                     if (! $request->referer_type || ! $value) {
                         return;
                     }
+
                     if ($request->referer_type === 'student') {
                         $exists = DB::table('students')->where('id', $value)->exists();
                     } elseif ($request->referer_type === 'teacher') {
@@ -516,6 +510,7 @@ class StudentController extends Controller
                     } else {
                         $exists = false;
                     }
+
                     if (! $exists) {
                         $fail('The referred person must be a valid ' . $request->referer_type . '.');
                     }
@@ -607,9 +602,11 @@ class StudentController extends Controller
                 $extension = $file->getClientOriginalExtension();
                 $filename  = $studentUniqueId . '_photo.' . $extension;
                 $photoPath = public_path('uploads/students/');
+
                 if (! file_exists($photoPath)) {
                     mkdir($photoPath, 0777, true);
                 }
+
                 $file->move($photoPath, $filename);
                 $student->update(['photo_url' => 'uploads/students/' . $filename]);
             }
@@ -716,11 +713,9 @@ class StudentController extends Controller
                      */
                     if ($feeAmount > 0) {
                         $monthYear = null;
-
                         if ($secondaryClass->payment_type === 'monthly') {
                             $monthYear = now()->format('m_Y');
                         }
-
                         $this->createInvoice($student, $feeAmount, 'Special Class Fee', $monthYear, 'secondary_class', $secondaryClassId);
                     }
                 }
@@ -765,9 +760,9 @@ class StudentController extends Controller
      * - Optional subjects are truly optional (not required)
      * - Only validates that Main ≠ 4th when BOTH are selected
      *
-     * @param array $validated
-     * @param int $classNumeral
-     * @param string $group
+     * @param  array  $validated
+     * @param  int  $classNumeral
+     * @param  string  $group
      * @return bool|string
      */
     private function validateOptionalSubjects(array $validated, int $classNumeral, string $group): bool | string
@@ -812,8 +807,8 @@ class StudentController extends Controller
      * Store student subjects - FIXED VERSION
      * Now properly reads the is_4th flag from each subject in the array
      *
-     * @param Student $student
-     * @param array $validated
+     * @param  Student  $student
+     * @param  array  $validated
      */
     private function storeStudentSubjects(Student $student, array $validated): void
     {
@@ -852,7 +847,7 @@ class StudentController extends Controller
      * Helper to determine if a value represents a 4th subject
      * Handles various input formats: '1', '0', 1, 0, true, false, 'true', 'false'
      *
-     * @param mixed $value
+     * @param  mixed  $value
      * @return bool
      */
     private function isFourthSubjectValue($value): bool
@@ -860,12 +855,15 @@ class StudentController extends Controller
         if (is_bool($value)) {
             return $value;
         }
+
         if (is_numeric($value)) {
             return (int) $value === 1;
         }
+
         if (is_string($value)) {
             return $value === '1' || strtolower($value) === 'true';
         }
+
         return false;
     }
 
@@ -882,8 +880,8 @@ class StudentController extends Controller
      * 3. Sequential number is shared across ALL classes with same class_numeral in same branch
      *    (e.g., 'HSC Sci' and 'HSC Com' both with class_numeral=11 share the sequence)
      *
-     * @param Branch $branch
-     * @param ClassName $class
+     * @param  Branch  $branch
+     * @param  ClassName  $class
      * @return string
      */
     private function generateStudentUniqueId(Branch $branch, ClassName $class): string
@@ -944,10 +942,10 @@ class StudentController extends Controller
     /**
      * Create a payment invoice for a student
      *
-     * @param Student $student
-     * @param float $amount
-     * @param string $typeName - e.g., 'Admission Fee', 'Sheet Fee', 'Special Class Fee'
-     * @param string|null $monthYear
+     * @param  Student  $student
+     * @param  float  $amount
+     * @param  string  $typeName  - e.g., 'Admission Fee', 'Sheet Fee', 'Special Class Fee'
+     * @param  string|null  $monthYear
      * @return void
      */
     private function createInvoice(Student $student, float $amount, string $typeName, ?string $monthYear = null): void
@@ -961,13 +959,15 @@ class StudentController extends Controller
             ->withTrashed()
             ->first();
 
-        $nextSequence  = $lastInvoice ? (int) substr($lastInvoice->invoice_number, strrpos($lastInvoice->invoice_number, '_') + 1) + 1 : 1001;
+        $nextSequence = $lastInvoice ? (int) substr($lastInvoice->invoice_number, strrpos($lastInvoice->invoice_number, '_') + 1) + 1 : 1001;
+
         $invoiceNumber = "{$prefix}{$yearSuffix}{$month}_{$nextSequence}";
 
         $invoiceType = PaymentInvoiceType::where('type_name', $typeName)->first();
 
         if (! $invoiceType) {
             \Log::warning("Invoice type '{$typeName}' not found for student {$student->id}");
+
             return;
         }
 
@@ -989,66 +989,48 @@ class StudentController extends Controller
         $student = Student::with([
             // Attendances for calendar
             'attendances',
-
             // Class
             'class:id,name,class_numeral,is_active',
-
             // Branch
             'branch:id,branch_name,branch_prefix',
-
             // Batch
             'batch:id,name',
-
             // Institution
             'institution:id,name,eiin_number',
-
             // Activation
             'studentActivation:id,active_status,created_at',
-
             // Activation history
             'activations.updatedBy:id,name',
-
             // Guardians
             'guardians:id,name,mobile_number,gender,relationship,student_id',
-
             // Siblings
             'siblings:id,name,year,class,institution_name,relationship,student_id',
-
             // Mobile numbers
             'mobileNumbers:id,mobile_number,number_type,student_id',
-
             // Payment profile
             'payments:id,payment_style,due_date,tuition_fee,student_id',
-
             // Payment invoices
             'paymentInvoices'      => function ($q) {
                 $q->with(['invoiceType:id,type_name', 'student.payments:id,payment_style,due_date,student_id']);
             },
-
             // Payment transactions
             'paymentTransactions'  => function ($q) {
                 $q->with(['paymentInvoice:id,invoice_number,created_at']);
             },
-
             // Subjects taken
             'subjectsTaken.subject:id,name,academic_group,subject_type',
-
             // ✅ FIXED: Sheet topics taken
             'sheetsTopicTaken'     => function ($q) {
                 $q->with(['sheetTopic:id,topic_name,subject_id', 'sheetTopic.subject:id,name,class_id', 'sheetTopic.subject.class:id,name,class_numeral', 'distributedBy:id,name']);
             },
-
             // Sheet payments
             'sheetPayments.sheet'  => function ($q) {
                 $q->with(['class:id,name,class_numeral', 'class.subjects:id,name,class_id']);
             },
-
             // Reference
             'reference.referer',
-
             // Secondary classes
             'secondaryClasses.secondaryClass.class:id,name,class_numeral',
-
             // Class change history
             'classChangeHistories' => function ($q) {
                 $q->with([
@@ -1057,7 +1039,6 @@ class StudentController extends Controller
                     'createdBy:id,name',
                 ]);
             },
-
             // Secondary class history
             'secondaryClassHistories.secondaryClass.class:id,name,class_numeral',
             'secondaryClassHistories.createdBy:id,name',
@@ -1089,8 +1070,7 @@ class StudentController extends Controller
         });
 
         // Sheet sidebar info
-        $sheetPayments = $student->sheetPayments;
-
+        $sheetPayments     = $student->sheetPayments;
         $sheet_class_names = $sheetPayments->pluck('sheet.class')->filter()->unique('id')->map(
             fn($class) => [
                 'name'          => $class->name,
@@ -1135,7 +1115,6 @@ class StudentController extends Controller
 
         // Fetch students for sidebar/list
         $studentsQuery = Student::whereNotNull('student_activation_id')->latest('id');
-
         if (auth()->user()->branch_id != 0) {
             $studentsQuery->where('branch_id', auth()->user()->branch_id);
         }
@@ -1244,9 +1223,11 @@ class StudentController extends Controller
                 $extension = $file->getClientOriginalExtension();
                 $filename  = $student->student_unique_id . '_photo.' . $extension;
                 $photoPath = public_path('uploads/students/');
+
                 if (! file_exists($photoPath)) {
                     mkdir($photoPath, 0777, true);
                 }
+
                 $file->move($photoPath, $filename);
                 $student->update(['photo_url' => 'uploads/students/' . $filename]);
             }
@@ -1438,7 +1419,6 @@ class StudentController extends Controller
     private function updateMobileNumbers(Student $student, array $validated): void
     {
         $student->mobileNumbers()->updateOrCreate(['number_type' => 'home'], ['mobile_number' => $validated['student_phone_home']]);
-
         $student->mobileNumbers()->updateOrCreate(['number_type' => 'sms'], ['mobile_number' => $validated['student_phone_sms']]);
 
         if (! empty($validated['student_phone_whatsapp'])) {
@@ -1491,6 +1471,7 @@ class StudentController extends Controller
 
                 // Finally force delete student
                 $student->forceDelete();
+
                 return;
             }
 
@@ -1501,11 +1482,13 @@ class StudentController extends Controller
              */
             // Audit
             $student->update(['deleted_by' => $deletedBy]);
+
             // Soft delete only the student
             $student->delete();
         });
 
         clearServerCache();
+
         return response()->json(['success' => true]);
     }
 
@@ -1516,6 +1499,7 @@ class StudentController extends Controller
         if ($refererType == 'teacher') {
                                                     // Fetch teacher data (no unique_id)
             $teachers = \App\Models\Teacher::all(); // Adjust according to your data model
+
             return response()->json(
                 $teachers->map(function ($teacher) {
                     return [
@@ -1527,6 +1511,7 @@ class StudentController extends Controller
         } elseif ($refererType == 'student') {
                                         // Fetch student data
             $students = Student::all(); // Adjust according to your data model
+
             return response()->json(
                 $students->map(function ($student) {
                     return [
@@ -1553,8 +1538,7 @@ class StudentController extends Controller
             $q->where('type_name', 'Tuition Fee');
         });
 
-        $lastInvoice = (clone $tuitionInvoices)->orderByRaw("CAST(SUBSTRING_INDEX(month_year, '_', -1) AS UNSIGNED) DESC, CAST(SUBSTRING_INDEX(month_year, '_', 1) AS UNSIGNED) DESC")->first();
-
+        $lastInvoice   = (clone $tuitionInvoices)->orderByRaw("CAST(SUBSTRING_INDEX(month_year, '_', -1) AS UNSIGNED) DESC, CAST(SUBSTRING_INDEX(month_year, '_', 1) AS UNSIGNED) DESC")->first();
         $oldestInvoice = (clone $tuitionInvoices)->orderByRaw("CAST(SUBSTRING_INDEX(month_year, '_', -1) AS UNSIGNED) ASC, CAST(SUBSTRING_INDEX(month_year, '_', 1) AS UNSIGNED) ASC")->first();
 
         return response()->json([
@@ -1570,6 +1554,7 @@ class StudentController extends Controller
     {
         $student  = Student::with('class.sheet')->findOrFail($id);
         $sheetFee = optional($student->class->sheet)->price;
+
         return response()->json(['sheet_fee' => $sheetFee]);
     }
 
@@ -1627,6 +1612,7 @@ class StudentController extends Controller
                         ->get();
                 });
             }
+
             $students = collect(); // Empty collection for admin (uses tabs)
         } else {
             // For non-admin: Get only their branch alumni students
@@ -1654,17 +1640,20 @@ class StudentController extends Controller
                     ->latest('updated_at')
                     ->get();
             });
+
             $studentsByBranch = [];
         }
 
         $classnames = ClassName::withoutGlobalScope('active')->where('is_active', false)->get();
-        $batches    = Batch::with('branch:id,branch_name')
+
+        $batches = Batch::with('branch:id,branch_name')
             ->when($branchId != 0, function ($query) use ($branchId) {
                 $query->where('branch_id', $branchId);
             })
             ->select('id', 'name', 'branch_id')
             ->get();
-        $institutions = Institution::all();
+
+        $institutions = Institution::select('id', 'name')->oldest('name')->get();
 
         return view('students.alumni.index', compact('students', 'studentsByBranch', 'classnames', 'batches', 'institutions', 'branches', 'isAdmin'));
     }

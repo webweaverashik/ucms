@@ -5,6 +5,7 @@
         .branch-count-badge.badge-loading {
             min-width: 30px;
         }
+
         .branch-count-badge .spinner-border {
             width: 12px;
             height: 12px;
@@ -223,11 +224,9 @@
                             <div class="d-flex justify-content-end">
                                 <button type="reset"
                                     class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
-                                    data-kt-menu-dismiss="true"
-                                    data-kt-students-list-table-filter="reset">Reset</button>
+                                    data-kt-menu-dismiss="true" data-kt-students-list-table-filter="reset">Reset</button>
                                 <button type="submit" class="btn btn-primary fw-semibold px-6"
-                                    data-kt-menu-dismiss="true"
-                                    data-kt-students-list-table-filter="filter">Apply</button>
+                                    data-kt-menu-dismiss="true" data-kt-students-list-table-filter="filter">Apply</button>
                             </div>
                             <!--end::Actions-->
                         </div>
@@ -301,7 +300,6 @@
                     @endforeach
                 </ul>
                 <!--end::Tabs for Admin-->
-
                 <!--begin::Tab Content-->
                 <div class="tab-content" id="branchTabsContent">
                     @foreach ($branches as $index => $branch)

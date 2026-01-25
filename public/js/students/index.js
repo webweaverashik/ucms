@@ -13,6 +13,7 @@ var KTStudentsList = function () {
     var getFilters = function () {
         var filters = {};
         var filterForm = document.querySelector('[data-kt-students-list-table-filter="form"]');
+
         if (filterForm) {
             var filterSelects = filterForm.querySelectorAll('select[data-filter-field]');
             filterSelects.forEach(function (select) {
@@ -23,6 +24,7 @@ var KTStudentsList = function () {
                 }
             });
         }
+
         return filters;
     };
 
@@ -98,11 +100,13 @@ var KTStudentsList = function () {
                     if (branchId) {
                         d.branch_id = branchId;
                     }
+
                     // Add custom filters
                     var filters = getFilters();
                     Object.keys(filters).forEach(function (key) {
                         d[key] = filters[key];
                     });
+
                     return d;
                 },
                 dataSrc: function (json) {
@@ -120,7 +124,11 @@ var KTStudentsList = function () {
                 }
             },
             columns: [
-                { data: 'counter', orderable: false, searchable: false },
+                {
+                    data: 'counter',
+                    orderable: false,
+                    searchable: false
+                },
                 {
                     data: 'student',
                     orderable: true,
@@ -128,9 +136,11 @@ var KTStudentsList = function () {
                         if (type === 'export') {
                             return data.name + ' (' + data.student_unique_id + ')';
                         }
+
                         var nameClass = data.is_active ? 'text-gray-800 text-hover-primary' : 'text-danger';
                         var tooltip = data.is_active ? '' : 'title="Inactive Student" data-bs-toggle="tooltip" data-bs-placement="top"';
                         var showUrl = routeStudentShow.replace(':id', data.id);
+
                         return '<div class="d-flex align-items-center">' +
                             '<div class="d-flex flex-column text-start">' +
                             '<a href="' + showUrl + '" class="' + nameClass + ' mb-1" ' + tooltip + '>' + escapeHtml(data.name) + '</a>' +
@@ -138,11 +148,11 @@ var KTStudentsList = function () {
                             '</div></div>';
                     }
                 },
-                { data: 'gender_filter', visible: false, searchable: true },
-                { data: 'status_filter', visible: false, searchable: true },
-                { data: 'class_filter', visible: false, searchable: true },
-                { data: 'class_name', orderable: true },
-                { data: 'group_filter', visible: false, searchable: true },
+                {
+                    data: 'class_name',
+                    orderable: true,
+                    searchable: false
+                },
                 {
                     data: 'group_badge',
                     orderable: false,
@@ -156,14 +166,37 @@ var KTStudentsList = function () {
                         return data;
                     }
                 },
-                { data: 'batch_filter', visible: false, searchable: true },
-                { data: 'batch_name', orderable: true },
-                { data: 'institution_name', orderable: true },
-                { data: 'home_mobile', orderable: false, searchable: true },
-                { data: 'tuition_fee', orderable: true, searchable: false },
-                { data: 'payment_info', orderable: false, searchable: false },
-                { data: 'branch_filter', visible: false, searchable: true },
-                { data: 'actions', orderable: false, searchable: false, className: 'not-export' }
+                {
+                    data: 'batch_name',
+                    orderable: true,
+                    searchable: false
+                },
+                {
+                    data: 'institution_name',
+                    orderable: true,
+                    searchable: false
+                },
+                {
+                    data: 'home_mobile',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'tuition_fee',
+                    orderable: true,
+                    searchable: false
+                },
+                {
+                    data: 'payment_info',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'actions',
+                    orderable: false,
+                    searchable: false,
+                    className: 'not-export'
+                }
             ],
             order: [],
             pageLength: 10,
@@ -183,6 +216,7 @@ var KTStudentsList = function () {
                 });
             }
         };
+
         return config;
     };
 
@@ -207,6 +241,7 @@ var KTStudentsList = function () {
         if (branchIds && branchIds.length > 0) {
             var firstBranchId = branchIds[0];
             var firstTableId = 'kt_students_table_branch_' + firstBranchId;
+
             datatables[firstBranchId] = initSingleDatatable(firstTableId, firstBranchId);
             activeDatatable = datatables[firstBranchId];
             initializedTabs[firstBranchId] = true;
@@ -218,6 +253,7 @@ var KTStudentsList = function () {
             tabLink.addEventListener('shown.bs.tab', function (event) {
                 var branchId = event.target.getAttribute('data-branch-id');
                 var tableId = 'kt_students_table_branch_' + branchId;
+
                 currentBranchId = branchId;
 
                 if (!initializedTabs[branchId]) {
@@ -238,6 +274,7 @@ var KTStudentsList = function () {
     var initNonAdminDatatable = function () {
         var table = document.getElementById('kt_students_table');
         if (!table) return;
+
         datatables['single'] = initSingleDatatable('kt_students_table', null);
         activeDatatable = datatables['single'];
     };
@@ -266,7 +303,7 @@ var KTStudentsList = function () {
             text: 'Fetching all data, please wait.',
             allowOutsideClick: false,
             allowEscapeKey: false,
-            didOpen: function() {
+            didOpen: function () {
                 Swal.showLoading();
             }
         });
@@ -367,8 +404,15 @@ var KTStudentsList = function () {
         var ws = XLSX.utils.aoa_to_sheet(wsData);
 
         ws['!cols'] = [
-            { wch: 5 }, { wch: 35 }, { wch: 20 }, { wch: 12 },
-            { wch: 15 }, { wch: 40 }, { wch: 15 }, { wch: 12 }, { wch: 15 }
+            { wch: 5 },
+            { wch: 35 },
+            { wch: 20 },
+            { wch: 12 },
+            { wch: 15 },
+            { wch: 40 },
+            { wch: 15 },
+            { wch: 12 },
+            { wch: 15 }
         ];
 
         XLSX.utils.book_append_sheet(wb, ws, 'Students');
@@ -378,6 +422,7 @@ var KTStudentsList = function () {
     var exportToCSV = function (data) {
         var exportData = prepareExportData(data);
         var csvContent = '';
+
         csvContent += exportData.headers.map(function (h) {
             return '"' + h.replace(/"/g, '""') + '"';
         }).join(',') + '\n';
@@ -402,6 +447,7 @@ var KTStudentsList = function () {
 
         doc.setFontSize(16);
         doc.text('Student Lists Report', 14, 15);
+
         doc.setFontSize(10);
         doc.text('Generated: ' + new Date().toLocaleString(), 14, 22);
 
@@ -410,16 +456,27 @@ var KTStudentsList = function () {
             body: exportData.rows,
             startY: 28,
             styles: { fontSize: 8, cellPadding: 2 },
-            headStyles: { fillColor: [63, 81, 181], textColor: 255, fontStyle: 'bold' },
+            headStyles: {
+                fillColor: [63, 81, 181],
+                textColor: 255,
+                fontStyle: 'bold'
+            },
             alternateRowStyles: { fillColor: [245, 245, 245] },
             columnStyles: {
-                0: { cellWidth: 10 }, 1: { cellWidth: 50 }, 2: { cellWidth: 30 },
-                3: { cellWidth: 20 }, 4: { cellWidth: 25 }, 5: { cellWidth: 55 },
-                6: { cellWidth: 25 }, 7: { cellWidth: 20 }, 8: { cellWidth: 25 }
+                0: { cellWidth: 10 },
+                1: { cellWidth: 50 },
+                2: { cellWidth: 30 },
+                3: { cellWidth: 20 },
+                4: { cellWidth: 25 },
+                5: { cellWidth: 55 },
+                6: { cellWidth: 25 },
+                7: { cellWidth: 20 },
+                8: { cellWidth: 25 }
             },
             didDrawPage: function (data) {
                 doc.setFontSize(8);
-                doc.text('Page ' + doc.internal.getNumberOfPages(),
+                doc.text(
+                    'Page ' + doc.internal.getNumberOfPages(),
                     doc.internal.pageSize.width / 2,
                     doc.internal.pageSize.height - 10,
                     { align: 'center' }
@@ -433,7 +490,7 @@ var KTStudentsList = function () {
     // Hook export buttons
     var exportButtons = function () {
         var exportItems = document.querySelectorAll('#kt_table_report_dropdown_menu [data-row-export]');
-        exportItems.forEach(function(exportItem) {
+        exportItems.forEach(function (exportItem) {
             exportItem.addEventListener('click', function (e) {
                 e.preventDefault();
                 var exportType = this.getAttribute('data-row-export');
@@ -465,6 +522,7 @@ var KTStudentsList = function () {
 
         filterSearch.addEventListener('keyup', function (e) {
             if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+
             searchDebounceTimer = setTimeout(function () {
                 if (activeDatatable) activeDatatable.search(e.target.value).draw();
             }, 300);
@@ -530,7 +588,7 @@ var KTStudentsList = function () {
                 confirmButtonColor: "#d33",
                 cancelButtonColor: "#3085d6",
                 confirmButtonText: "Yes, delete!"
-            }).then(function(result) {
+            }).then(function (result) {
                 if (result.isConfirmed) {
                     fetch(url, {
                         method: "DELETE",
@@ -539,36 +597,36 @@ var KTStudentsList = function () {
                             "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
                         }
                     })
-                    .then(function(response) {
-                        return response.json();
-                    })
-                    .then(function(data) {
-                        if (data.success) {
-                            Swal.fire({
-                                title: "Deleted!",
-                                text: "The student has been removed.",
-                                icon: "success"
-                            })
-                            .then(function() {
-                                if (activeDatatable) activeDatatable.ajax.reload();
-                                // Refresh counts after deletion
-                                if (isAdmin) fetchBranchCounts();
-                            });
-                        } else {
+                        .then(function (response) {
+                            return response.json();
+                        })
+                        .then(function (data) {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: "Deleted!",
+                                    text: "The student has been removed.",
+                                    icon: "success"
+                                })
+                                    .then(function () {
+                                        if (activeDatatable) activeDatatable.ajax.reload();
+                                        // Refresh counts after deletion
+                                        if (isAdmin) fetchBranchCounts();
+                                    });
+                            } else {
+                                Swal.fire({
+                                    title: "Error!",
+                                    text: data.message,
+                                    icon: "error"
+                                });
+                            }
+                        })
+                        .catch(function () {
                             Swal.fire({
                                 title: "Error!",
-                                text: data.message,
+                                text: "Something went wrong.",
                                 icon: "error"
                             });
-                        }
-                    })
-                    .catch(function() {
-                        Swal.fire({
-                            title: "Error!",
-                            text: "Something went wrong.",
-                            icon: "error"
                         });
-                    });
                 }
             });
         });
@@ -589,6 +647,7 @@ var KTStudentsList = function () {
             if (!toggleButton) return;
 
             e.preventDefault();
+
             var studentId = toggleButton.getAttribute('data-student-id');
             var studentName = toggleButton.getAttribute('data-student-name');
             var studentUniqueId = toggleButton.getAttribute('data-student-unique-id');
@@ -674,73 +733,73 @@ var KTStudentsList = function () {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             })
-            .then(function(response) {
-                return response.json().then(function(data) {
-                    return { status: response.status, data: data };
-                });
-            })
-            .then(function(result) {
-                var response = result.data;
-
-                // Re-enable button
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
-
-                if (response.success) {
-                    // Close modal
-                    if (toggleActivationModal) {
-                        toggleActivationModal.hide();
-                    }
-
-                    // Reset form
-                    toggleForm.reset();
-
-                    // Show success message
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: response.message || 'Student status updated successfully.',
-                        timer: 2000,
-                        showConfirmButton: false
-                    }).then(function() {
-                        // Reload datatable to reflect changes
-                        if (activeDatatable) {
-                            activeDatatable.ajax.reload(null, false);
-                        }
-                        // Refresh counts after status change
-                        if (isAdmin) fetchBranchCounts();
+                .then(function (response) {
+                    return response.json().then(function (data) {
+                        return { status: response.status, data: data };
                     });
-                } else {
-                    // Show error message
-                    var errorMessage = response.message || 'Something went wrong.';
-                    if (response.errors) {
-                        var errorList = [];
-                        Object.keys(response.errors).forEach(function(key) {
-                            errorList.push(response.errors[key].join(', '));
+                })
+                .then(function (result) {
+                    var response = result.data;
+
+                    // Re-enable button
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+
+                    if (response.success) {
+                        // Close modal
+                        if (toggleActivationModal) {
+                            toggleActivationModal.hide();
+                        }
+
+                        // Reset form
+                        toggleForm.reset();
+
+                        // Show success message
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: response.message || 'Student status updated successfully.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(function () {
+                            // Reload datatable to reflect changes
+                            if (activeDatatable) {
+                                activeDatatable.ajax.reload(null, false);
+                            }
+                            // Refresh counts after status change
+                            if (isAdmin) fetchBranchCounts();
                         });
-                        errorMessage = errorList.join('\n');
+                    } else {
+                        // Show error message
+                        var errorMessage = response.message || 'Something went wrong.';
+                        if (response.errors) {
+                            var errorList = [];
+                            Object.keys(response.errors).forEach(function (key) {
+                                errorList.push(response.errors[key].join(', '));
+                            });
+                            errorMessage = errorList.join('\n');
+                        }
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: errorMessage
+                        });
                     }
+                })
+                .catch(function (error) {
+                    console.error('Toggle activation error:', error);
+
+                    // Re-enable button
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
 
                     Swal.fire({
                         icon: 'error',
                         title: 'Error!',
-                        text: errorMessage
+                        text: 'An unexpected error occurred. Please try again.'
                     });
-                }
-            })
-            .catch(function(error) {
-                console.error('Toggle activation error:', error);
-
-                // Re-enable button
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
-
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error!',
-                    text: 'An unexpected error occurred. Please try again.'
                 });
-            });
         });
     };
 
@@ -778,17 +837,20 @@ var KTStudentsList = function () {
             handleToggleActivationSubmit();
             handleModalReset();
         },
+
         reload: function () {
             if (activeDatatable) activeDatatable.ajax.reload();
             if (isAdmin) fetchBranchCounts();
         },
+
         reloadAll: function () {
             Object.keys(datatables).forEach(function (key) {
                 if (datatables[key]) datatables[key].ajax.reload();
             });
             if (isAdmin) fetchBranchCounts();
         },
-        refreshCounts: function() {
+
+        refreshCounts: function () {
             if (isAdmin) fetchBranchCounts();
         }
     };

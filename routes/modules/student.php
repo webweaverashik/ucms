@@ -18,7 +18,6 @@ use Illuminate\Support\Facades\Route;
 | All student-related routes: CRUD, transfers, attendance, etc.
 | Middleware: ['web', 'auth', 'isLoggedIn'] applied in bootstrap/app.php
 |
-| ⚠️ IMPORTANT: Route names are kept EXACTLY as original web.php
 */
 
 // Students
