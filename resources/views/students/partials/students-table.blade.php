@@ -1,20 +1,8 @@
 {{-- Partial view for students table - AJAX version --}}
-@php
-    $canDeactivate = auth()->user()->can('students.deactivate');
-@endphp
 <table class="table table-hover table-row-dashed align-middle fs-6 gy-5 ucms-table students-datatable"
-    id="{{ $tableId }}" data-branch-id="{{ $branchId ?? '' }}"
-    data-can-deactivate="{{ $canDeactivate ? 'true' : 'false' }}">
+    id="{{ $tableId }}" data-branch-id="{{ $branchId ?? '' }}">
     <thead>
         <tr class="fw-bold fs-7 text-uppercase gs-0">
-            @if ($canDeactivate)
-                <th class="text-center not-export" style="width: 40px;">
-                    <div class="form-check form-check-sm form-check-custom form-check-solid justify-content-center">
-                        <input class="form-check-input header-checkbox" type="checkbox" data-kt-check="true"
-                            data-kt-check-target="#{{ $tableId }} .row-checkbox" value="1" />
-                    </div>
-                </th>
-            @endif
             <th class="w-25px">#</th>
             <th class="min-w-200px">Student</th>
             <th>Class</th>
