@@ -1,17 +1,6 @@
 @push('page-css')
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
-    <style>
-        /* Loading animation for badge counts */
-        .branch-count-badge.badge-loading {
-            min-width: 30px;
-        }
-
-        .branch-count-badge .spinner-border {
-            width: 12px;
-            height: 12px;
-            border-width: 2px;
-        }
-    </style>
+    <link href="{{ asset('css/students/index.css') }}" rel="stylesheet" type="text/css" />
 @endpush
 
 @extends('layouts.app')
@@ -300,6 +289,34 @@
                     @endforeach
                 </ul>
                 <!--end::Tabs for Admin-->
+
+                @can('students.deactivate')
+                    <!--begin::Bulk Actions Toolbar-->
+                    <div class="d-flex justify-content-between align-items-center mb-4" id="bulk_actions_toolbar"
+                        style="display: none !important;">
+                        <div class="d-flex align-items-center">
+                            <span class="fw-bold text-gray-700 me-3">
+                                <span id="selected_count">0</span> student(s) selected
+                                <span class="text-muted fs-7" id="multipage_indicator" style="display: none;">
+                                    (across multiple pages)
+                                </span>
+                            </span>
+                            <button type="button" class="btn btn-sm btn-light-danger me-2" id="btn_clear_selection">
+                                <i class="ki-outline ki-cross fs-5 me-1"></i> Clear Selection
+                            </button>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-success" id="btn_bulk_activate">
+                                <i class="bi bi-person-check fs-5 me-1"></i> Activate Selected
+                            </button>
+                            <button type="button" class="btn btn-sm btn-warning" id="btn_bulk_deactivate">
+                                <i class="bi bi-person-slash fs-5 me-1"></i> Deactivate Selected
+                            </button>
+                        </div>
+                    </div>
+                    <!--end::Bulk Actions Toolbar-->
+                @endcan
+
                 <!--begin::Tab Content-->
                 <div class="tab-content" id="branchTabsContent">
                     @foreach ($branches as $index => $branch)
@@ -315,6 +332,33 @@
                 </div>
                 <!--end::Tab Content-->
             @else
+                @can('students.deactivate')
+                    <!--begin::Bulk Actions Toolbar-->
+                    <div class="d-flex justify-content-between align-items-center mb-4" id="bulk_actions_toolbar"
+                        style="display: none !important;">
+                        <div class="d-flex align-items-center">
+                            <span class="fw-bold text-gray-700 me-3">
+                                <span id="selected_count">0</span> student(s) selected
+                                <span class="text-muted fs-7" id="multipage_indicator" style="display: none;">
+                                    (across multiple pages)
+                                </span>
+                            </span>
+                            <button type="button" class="btn btn-sm btn-light-danger me-2" id="btn_clear_selection">
+                                <i class="ki-outline ki-cross fs-5 me-1"></i> Clear Selection
+                            </button>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-success" id="btn_bulk_activate">
+                                <i class="bi bi-person-check fs-5 me-1"></i> Activate Selected
+                            </button>
+                            <button type="button" class="btn btn-sm btn-warning" id="btn_bulk_deactivate">
+                                <i class="bi bi-person-slash fs-5 me-1"></i> Deactivate Selected
+                            </button>
+                        </div>
+                    </div>
+                    <!--end::Bulk Actions Toolbar-->
+                @endcan
+
                 <!--begin::Single Table for Non-Admin-->
                 @include('students.partials.students-table', [
                     'tableId' => 'kt_students_table',
@@ -402,6 +446,99 @@
         <!--end::Modal dialog-->
     </div>
     <!--end::Modal - Toggle Activation Student-->
+
+    <!--begin::Modal - Bulk Toggle Activation Student-->
+    <div class="modal fade" id="kt_bulk_toggle_activation_modal" tabindex="-1" aria-hidden="true"
+        data-bs-backdrop="static" data-bs-keyboard="false">
+        <!--begin::Modal dialog-->
+        <div class="modal-dialog modal-dialog-centered mw-650px">
+            <!--begin::Modal content-->
+            <div class="modal-content">
+                <!--begin::Modal header-->
+                <div class="modal-header">
+                    <!--begin::Modal title-->
+                    <h2 id="bulk-toggle-activation-modal-title">Bulk Activation/Deactivation</h2>
+                    <!--end::Modal title-->
+                    <!--begin::Close-->
+                    <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
+                        <i class="ki-outline ki-cross fs-1"></i>
+                    </div>
+                    <!--end::Close-->
+                </div>
+                <!--end::Modal header-->
+                <!--begin::Modal body-->
+                <div class="modal-body py-lg-5">
+                    <!--begin::Content-->
+                    <div class="flex-row-fluid p-lg-5">
+                        <form action="{{ route('students.bulkToggleActive') }}" class="form d-flex flex-column"
+                            method="POST" id="kt_bulk_toggle_activation_form">
+                            @csrf
+                            <!--begin::Left column-->
+                            <div class="d-flex flex-column">
+                                <input type="hidden" name="active_status" id="bulk_activation_status" />
+                                <div id="bulk_student_ids_container">
+                                    <!-- Hidden inputs for student IDs will be added here dynamically -->
+                                </div>
+                                <!--begin::Selected students summary-->
+                                <div class="mb-5">
+                                    <div class="alert alert-info d-flex align-items-center p-5">
+                                        <i class="ki-outline ki-information-5 fs-2hx text-info me-4"></i>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold">You are about to <span
+                                                    id="bulk_action_type">activate/deactivate</span>
+                                                <span id="bulk_student_count">0</span> student(s).</span>
+                                            <span class="text-muted fs-7">This action will update the status of all
+                                                selected students.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--end::Selected students summary-->
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <!--begin::Input group-->
+                                        <div class="d-flex flex-column mb-5 fv-row">
+                                            <!--begin::Label-->
+                                            <label class="fs-5 fw-semibold mb-2 required" id="bulk_reason_label">Reason
+                                                for this action</label>
+                                            <!--end::Label-->
+                                            <!--begin::Input-->
+                                            <textarea class="form-control" rows="3" name="reason" id="bulk_activation_reason"
+                                                placeholder="Write a common reason for all selected students" required minlength="3"></textarea>
+                                            <!--end::Input-->
+                                            <div class="fv-plugins-message-container invalid-feedback"
+                                                id="bulk_reason_error">
+                                            </div>
+                                        </div>
+                                        <!--end::Input group-->
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <!--begin::Button-->
+                                    <button type="button" class="btn btn-secondary me-5"
+                                        data-bs-dismiss="modal">Cancel</button>
+                                    <!--end::Button-->
+                                    <!--begin::Button-->
+                                    <button type="submit" class="btn btn-primary" id="kt_bulk_toggle_activation_submit">
+                                        <span class="indicator-label">Submit</span>
+                                        <span class="indicator-progress">Please wait...
+                                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                        </span>
+                                    </button>
+                                    <!--end::Button-->
+                                </div>
+                            </div>
+                            <!--end::Left column-->
+                        </form>
+                    </div>
+                    <!--end::Content-->
+                </div>
+                <!--end::Modal body-->
+            </div>
+            <!--end::Modal content-->
+        </div>
+        <!--end::Modal dialog-->
+    </div>
+    <!--end::Modal - Bulk Toggle Activation Student-->
 @endsection
 
 @push('vendor-js')
@@ -417,13 +554,16 @@
     <script>
         const routeDeleteStudent = "{{ route('students.destroy', ':id') }}";
         const routeToggleActive = "{{ route('students.toggleActive') }}";
+        const routeBulkToggleActive = "{{ route('students.bulkToggleActive') }}";
         const routeStudentsData = "{{ route('students.data') }}";
         const routeStudentShow = "{{ route('students.show', ':id') }}";
         const routeStudentEdit = "{{ route('students.edit', ':id') }}";
         const routeStudentDownload = "{{ route('students.download', ':id') }}";
         const routeBranchCounts = "{{ route('students.branch-counts') }}";
+        const routeClassShow = "{{ route('classnames.show', ':id') }}";
         const isAdmin = @json($isAdmin);
         const branchIds = @json($branches->pluck('id')->toArray());
+        const canDeactivate = @json($canDeactivate);
     </script>
     <script src="{{ asset('js/students/index.js') }}"></script>
     <script>

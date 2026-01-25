@@ -54,7 +54,7 @@ class StudentController extends Controller
             })
             ->get();
 
-        $institutions = Institution::select('id', 'name')->oldest('name')->get();
+        $institutions = Institution::select('id', 'name')->get();
 
         return view('students.index', compact('classnames', 'batches', 'institutions', 'branches', 'isAdmin'));
     }
@@ -289,6 +289,7 @@ class StudentController extends Controller
 
             $data[] = [
                 'DT_RowId'         => 'row_' . $student->id,
+                'checkbox'         => $student->id, // For checkbox column
                 'counter'          => $counter++,
                 'student'          => [
                     'id'                => $student->id,
@@ -296,6 +297,7 @@ class StudentController extends Controller
                     'student_unique_id' => $student->student_unique_id,
                     'is_active'         => $isActive,
                 ],
+                'class_id'         => $student->class_id,
                 'class_name'       => optional($student->class)->name ?? '-',
                 'group_badge'      => $groupBadge,
                 'batch_name'       => optional($student->batch)->name ?? '-',
@@ -1653,7 +1655,7 @@ class StudentController extends Controller
             ->select('id', 'name', 'branch_id')
             ->get();
 
-        $institutions = Institution::select('id', 'name')->oldest('name')->get();
+        $institutions = Institution::all();
 
         return view('students.alumni.index', compact('students', 'studentsByBranch', 'classnames', 'batches', 'institutions', 'branches', 'isAdmin'));
     }

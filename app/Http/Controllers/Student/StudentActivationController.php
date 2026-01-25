@@ -78,6 +78,7 @@ class StudentActivationController extends Controller
 
             // AutoSMS for invoice created
             $mobileNumber = $student->mobileNumbers->where('number_type', 'sms')->first();
+
             if ($mobileNumber) {
                 send_auto_sms('student_registration_success', $mobileNumber->mobile_number, [
                     'student_name'       => $student->name,
@@ -147,30 +148,12 @@ class StudentActivationController extends Controller
                 $student->update(['student_activation_id' => $activation->id]);
 
                 // Clear the cache
-                // clearServerCache();
+                clearServerCache();
 
                 $statusText = $request->active_status === 'active' ? 'activated' : 'deactivated';
 
-                // Calculate stats if class_id is provided
-                $stats = null;
-                if ($request->class_id) {
-                    $class = ClassName::find($request->class_id);
-                    if ($class) {
-                        $branchId    = $user->branch_id;
-                        $activeCount = $class->activeStudents()
-                            ->when(! $user->isAdmin(), fn($q) => $q->where('branch_id', $branchId))
-                            ->count();
-                        $inactiveCount = $class->inactiveStudents()
-                            ->when(! $user->isAdmin(), fn($q) => $q->where('branch_id', $branchId))
-                            ->count();
-
-                        $stats = [
-                            'total'    => $activeCount + $inactiveCount,
-                            'active'   => $activeCount,
-                            'inactive' => $inactiveCount,
-                        ];
-                    }
-                }
+                // Calculate stats only if class_id is provided (for classnames view page)
+                $stats = $this->calculateClassStats($request->class_id, $user);
 
                 return response()->json([
                     'success' => true,
@@ -192,6 +175,9 @@ class StudentActivationController extends Controller
 
     /**
      * Bulk toggle activation for multiple students
+     * Works for both:
+     * - Students index page (no class_id, no stats needed)
+     * - Classnames view page (class_id provided, stats returned)
      */
     public function bulkToggleActive(Request $request): JsonResponse
     {
@@ -201,7 +187,7 @@ class StudentActivationController extends Controller
                 'student_ids.*' => 'integer|exists:students,id',
                 'active_status' => 'required|in:active,inactive',
                 'reason'        => 'required|string|max:255',
-                'class_id'      => 'required|integer|exists:class_names,id',
+                'class_id'      => 'nullable|integer|exists:class_names,id', // Optional - only for classnames view
             ]);
         } catch (ValidationException $e) {
             return response()->json(
@@ -218,7 +204,7 @@ class StudentActivationController extends Controller
         $studentIds   = $request->student_ids;
         $activeStatus = $request->active_status;
         $reason       = $request->reason;
-        $classId      = $request->class_id;
+        $classId      = $request->class_id; // May be null for students index page
 
         // Get all students
         $students = Student::whereIn('id', $studentIds)->get();
@@ -254,6 +240,7 @@ class StudentActivationController extends Controller
 
                         // Update Student's Activation ID
                         $student->update(['student_activation_id' => $activation->id]);
+
                         $successCount++;
                     } catch (\Exception $e) {
                         $failedCount++;
@@ -262,22 +249,11 @@ class StudentActivationController extends Controller
 
                 $statusText = $activeStatus === 'active' ? 'activated' : 'deactivated';
 
-                // Calculate updated stats
-                $class    = ClassName::findOrFail($classId);
-                $branchId = $user->branch_id;
+                // Calculate stats only if class_id is provided (for classnames view page)
+                $stats = $this->calculateClassStats($classId, $user);
 
-                $activeCount = $class->activeStudents()
-                    ->when(! $user->isAdmin(), fn($q) => $q->where('branch_id', $branchId))
-                    ->count();
-                $inactiveCount = $class->inactiveStudents()
-                    ->when(! $user->isAdmin(), fn($q) => $q->where('branch_id', $branchId))
-                    ->count();
-
-                $stats = [
-                    'total'    => $activeCount + $inactiveCount,
-                    'active'   => $activeCount,
-                    'inactive' => $inactiveCount,
-                ];
+                // Clear server cache after bulk update
+                clearServerCache();
 
                 if ($failedCount > 0) {
                     return response()->json([
@@ -308,5 +284,41 @@ class StudentActivationController extends Controller
                 500,
             );
         }
+    }
+
+    /**
+     * Calculate class statistics for active/inactive students
+     * Used by classnames view page to update the UI stats
+     *
+     * @param int|null $classId
+     * @param mixed $user
+     * @return array|null
+     */
+    private function calculateClassStats(?int $classId, $user): ?array
+    {
+        if (! $classId) {
+            return null;
+        }
+
+        $class = ClassName::find($classId);
+        if (! $class) {
+            return null;
+        }
+
+        $branchId = $user->branch_id;
+
+        $activeCount = $class->activeStudents()
+            ->when(! $user->isAdmin(), fn($q) => $q->where('branch_id', $branchId))
+            ->count();
+
+        $inactiveCount = $class->inactiveStudents()
+            ->when(! $user->isAdmin(), fn($q) => $q->where('branch_id', $branchId))
+            ->count();
+
+        return [
+            'total'    => $activeCount + $inactiveCount,
+            'active'   => $activeCount,
+            'inactive' => $inactiveCount,
+        ];
     }
 }

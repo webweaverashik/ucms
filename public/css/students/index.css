@@ -1,0 +1,310 @@
+/**
+ * Students Index Page Styles
+ * =============================================================================
+ * This file contains all styles specific to the students listing page
+ * including DataTable styling, bulk actions, and checkbox interactions.
+ */
+
+/* ============================================================================
+   Loading Animation for Branch Count Badges
+   ============================================================================ */
+.branch-count-badge.badge-loading {
+      min-width: 30px;
+}
+
+.branch-count-badge .spinner-border {
+      width: 12px;
+      height: 12px;
+      border-width: 2px;
+}
+
+/* ============================================================================
+   Bulk Actions Toolbar Styles
+   ============================================================================ */
+#bulk_actions_toolbar {
+      background: linear-gradient(135deg, var(--bs-light) 0%, var(--bs-gray-100) 100%);
+      border: 1px solid var(--bs-gray-200);
+      border-radius: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      transition: all 0.3s ease;
+}
+
+#bulk_actions_toolbar:hover {
+      box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
+}
+
+#selected_count {
+      font-size: 1.1rem;
+      color: var(--bs-primary);
+}
+
+#multipage_indicator {
+      font-style: italic;
+}
+
+/* ============================================================================
+   Checkbox Column Styling
+   ============================================================================ */
+
+/* General checkbox styling for student tables */
+.students-datatable .row-checkbox {
+      cursor: pointer;
+      transition: transform 0.15s ease;
+}
+
+.students-datatable .row-checkbox:hover {
+      transform: scale(1.1);
+}
+
+.students-datatable .row-checkbox:checked {
+      background-color: var(--bs-primary);
+      border-color: var(--bs-primary);
+}
+
+/* Header checkbox styling */
+.students-datatable .header-checkbox {
+      cursor: pointer;
+}
+
+.students-datatable .header-checkbox:indeterminate {
+      background-color: var(--bs-primary);
+      border-color: var(--bs-primary);
+}
+
+/* Row highlight when selected */
+.students-datatable tbody tr:has(.row-checkbox:checked) {
+      background-color: rgba(var(--bs-primary-rgb), 0.05);
+}
+
+.students-datatable tbody tr:has(.row-checkbox:checked):hover {
+      background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+/* ============================================================================
+   Bulk Action Buttons
+   ============================================================================ */
+#btn_bulk_activate,
+#btn_bulk_deactivate {
+      transition: all 0.2s ease;
+}
+
+#btn_bulk_activate:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0.25rem 0.5rem rgba(var(--bs-success-rgb), 0.3);
+}
+
+#btn_bulk_deactivate:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0.25rem 0.5rem rgba(var(--bs-warning-rgb), 0.3);
+}
+
+/* Clear selection button */
+#btn_clear_selection {
+      transition: all 0.2s ease;
+}
+
+#btn_clear_selection:hover {
+      background-color: var(--bs-danger);
+      color: #fff;
+}
+
+/* ============================================================================
+   DataTable Specific Styles
+   ============================================================================ */
+
+/* Checkbox column center alignment */
+.students-datatable th:first-child,
+.students-datatable td:first-child {
+      text-align: center !important;
+      vertical-align: middle !important;
+      width: 40px !important;
+      min-width: 40px !important;
+      max-width: 40px !important;
+}
+
+/* Center the header checkbox */
+.students-datatable th:first-child .form-check {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+      padding: 0;
+      min-height: auto;
+}
+
+.students-datatable th:first-child .form-check-input {
+      margin: 0;
+      float: none;
+}
+
+/* Center the checkbox wrapper in data cells */
+.students-datatable td:first-child .form-check {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+      padding: 0;
+      min-height: auto;
+}
+
+/* Center the actual checkbox input in data cells */
+.students-datatable td:first-child .form-check-input {
+      margin: 0;
+      float: none;
+      cursor: pointer;
+}
+
+/* Ensure checkbox column doesn't affect sorting icon */
+.students-datatable th:first-child.sorting,
+.students-datatable th:first-child.sorting_asc,
+.students-datatable th:first-child.sorting_desc {
+      background-image: none !important;
+      cursor: default !important;
+}
+
+/* ============================================================================
+   Modal Styles
+   ============================================================================ */
+
+/* Bulk toggle activation modal info alert */
+#kt_bulk_toggle_activation_modal .alert-info {
+      border-left: 4px solid var(--bs-info);
+}
+
+/* Modal submit button states */
+#kt_bulk_toggle_activation_submit.btn-success {
+      background-color: var(--bs-success);
+      border-color: var(--bs-success);
+}
+
+#kt_bulk_toggle_activation_submit.btn-warning {
+      background-color: var(--bs-warning);
+      border-color: var(--bs-warning);
+}
+
+/* ============================================================================
+   Responsive Adjustments
+   ============================================================================ */
+@media (max-width: 768px) {
+      #bulk_actions_toolbar {
+            flex-direction: column;
+            gap: 0.75rem;
+            padding: 1rem;
+      }
+
+      #bulk_actions_toolbar>div {
+            width: 100%;
+            justify-content: center;
+      }
+
+      #bulk_actions_toolbar .d-flex.gap-2 {
+            flex-wrap: wrap;
+            justify-content: center;
+      }
+
+      #bulk_actions_toolbar .btn {
+            flex: 1;
+            min-width: 120px;
+      }
+}
+
+@media (max-width: 576px) {
+      #selected_count {
+            font-size: 1rem;
+      }
+
+      #multipage_indicator {
+            display: block;
+            margin-top: 0.25rem;
+      }
+
+      #bulk_actions_toolbar .btn {
+            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+      }
+}
+
+/* ============================================================================
+   Animation Classes
+   ============================================================================ */
+
+/* Fade in animation for bulk toolbar */
+@keyframes fadeInSlideDown {
+      from {
+            opacity: 0;
+            transform: translateY(-10px);
+      }
+
+      to {
+            opacity: 1;
+            transform: translateY(0);
+      }
+}
+
+#bulk_actions_toolbar[style*="display: flex"] {
+      animation: fadeInSlideDown 0.3s ease-out;
+}
+
+/* Pulse animation for selected count when updating */
+@keyframes pulseCount {
+
+      0%,
+      100% {
+            transform: scale(1);
+      }
+
+      50% {
+            transform: scale(1.1);
+      }
+}
+
+#selected_count.updating {
+      animation: pulseCount 0.3s ease-in-out;
+}
+
+/* ============================================================================
+   Student Status Indicators
+   ============================================================================ */
+
+/* Inactive student name styling - red text only, no underline */
+.students-datatable .text-danger {
+      /* Red color is applied via Bootstrap's text-danger class */
+}
+
+/* ============================================================================
+   Export Menu Styles
+   ============================================================================ */
+#kt_table_report_dropdown_menu .menu-link {
+      transition: all 0.2s ease;
+}
+
+#kt_table_report_dropdown_menu .menu-link:hover {
+      padding-left: 1.25rem;
+}
+
+/* ============================================================================
+   Filter Form Styles
+   ============================================================================ */
+[data-kt-students-list-table-filter="form"] .form-select {
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+[data-kt-students-list-table-filter="form"] .form-select:focus {
+      border-color: var(--bs-primary);
+      box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.1);
+}
+
+/* ============================================================================
+   Tab Badge Styles
+   ============================================================================ */
+#branchTabs .nav-link .branch-count-badge {
+      transition: all 0.2s ease;
+}
+
+#branchTabs .nav-link.active .branch-count-badge {
+      transform: scale(1.05);
+}
+
+#branchTabs .nav-link:hover .branch-count-badge {
+      opacity: 0.9;
+}

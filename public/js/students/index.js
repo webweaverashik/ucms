@@ -8,6 +8,12 @@ var KTStudentsList = function () {
     var searchDebounceTimer = null;
     var currentBranchId = null;
     var toggleActivationModal = null;
+    var bulkToggleModal = null;
+
+    // Store selected student IDs across pages (using Set for uniqueness)
+    var selectedStudents = new Set();
+    // Track which pages have selections for multi-page indicator
+    var pagesWithSelections = new Set();
 
     // Get current filters from the filter form
     var getFilters = function () {
@@ -41,6 +47,113 @@ var KTStudentsList = function () {
         div.textContent = text;
         return div.innerHTML;
     }
+
+    // Get current page number from active datatable
+    var getCurrentPage = function () {
+        if (activeDatatable) {
+            return activeDatatable.page.info().page;
+        }
+        return 0;
+    };
+
+    // Update bulk actions toolbar visibility and count
+    var updateBulkActionsToolbar = function () {
+        var toolbar = document.getElementById('bulk_actions_toolbar');
+        var selectedCountEl = document.getElementById('selected_count');
+        var multipageIndicator = document.getElementById('multipage_indicator');
+
+        if (!toolbar) return;
+
+        var count = selectedStudents.size;
+
+        // Update count display
+        if (selectedCountEl) {
+            selectedCountEl.textContent = count;
+        }
+
+        // Show/hide multi-page indicator
+        if (multipageIndicator) {
+            if (pagesWithSelections.size > 1) {
+                multipageIndicator.style.display = 'inline';
+            } else {
+                multipageIndicator.style.display = 'none';
+            }
+        }
+
+        // Show/hide toolbar
+        if (count > 0) {
+            toolbar.style.display = 'flex';
+            toolbar.style.cssText = 'display: flex !important;';
+        } else {
+            toolbar.style.display = 'none';
+            toolbar.style.cssText = 'display: none !important;';
+        }
+
+        // Update header checkboxes state
+        updateHeaderCheckboxes();
+    };
+
+    // Update header checkbox state based on current page selection
+    var updateHeaderCheckboxes = function () {
+        var headerCheckboxes = document.querySelectorAll('.header-checkbox');
+
+        headerCheckboxes.forEach(function (headerCheckbox) {
+            var table = headerCheckbox.closest('table');
+            if (!table) return;
+
+            var rowCheckboxes = table.querySelectorAll('.row-checkbox');
+            var checkedCount = 0;
+            var totalCount = rowCheckboxes.length;
+
+            rowCheckboxes.forEach(function (checkbox) {
+                if (checkbox.checked) {
+                    checkedCount++;
+                }
+            });
+
+            if (totalCount === 0) {
+                headerCheckbox.checked = false;
+                headerCheckbox.indeterminate = false;
+            } else if (checkedCount === 0) {
+                headerCheckbox.checked = false;
+                headerCheckbox.indeterminate = false;
+            } else if (checkedCount === totalCount) {
+                headerCheckbox.checked = true;
+                headerCheckbox.indeterminate = false;
+            } else {
+                headerCheckbox.checked = false;
+                headerCheckbox.indeterminate = true;
+            }
+        });
+    };
+
+    // Sync checkboxes with selected students after table redraw
+    var syncCheckboxesWithSelection = function () {
+        var rowCheckboxes = document.querySelectorAll('.row-checkbox');
+
+        rowCheckboxes.forEach(function (checkbox) {
+            var studentId = parseInt(checkbox.value);
+            checkbox.checked = selectedStudents.has(studentId);
+        });
+
+        updateHeaderCheckboxes();
+        updateBulkActionsToolbar();
+    };
+
+    // Clear all selections
+    var clearAllSelections = function () {
+        selectedStudents.clear();
+        pagesWithSelections.clear();
+
+        // Uncheck all checkboxes
+        var allCheckboxes = document.querySelectorAll('.row-checkbox, .header-checkbox');
+        allCheckboxes.forEach(function (checkbox) {
+            checkbox.checked = false;
+            checkbox.indeterminate = false;
+        });
+
+        updateBulkActionsToolbar();
+    };
 
     // Fetch and update branch counts on page load (for admin only)
     var fetchBranchCounts = function () {
@@ -86,6 +199,133 @@ var KTStudentsList = function () {
         });
     };
 
+    // Build columns array based on permissions
+    var buildColumns = function () {
+        var columns = [];
+
+        // Checkbox column - only if user can deactivate
+        if (typeof canDeactivate !== 'undefined' && canDeactivate) {
+            columns.push({
+                data: 'checkbox',
+                orderable: false,
+                searchable: false,
+                className: 'text-center not-export',
+                render: function (data, type, row) {
+                    var isChecked = selectedStudents.has(row.student.id) ? 'checked' : '';
+                    return '<div class="form-check form-check-sm form-check-custom form-check-solid justify-content-center">' +
+                        '<input class="form-check-input row-checkbox" type="checkbox" value="' + row.student.id + '" ' + isChecked + ' />' +
+                        '</div>';
+                }
+            });
+        }
+
+        // Counter column
+        columns.push({
+            data: 'counter',
+            orderable: false,
+            searchable: false
+        });
+
+        // Student column
+        columns.push({
+            data: 'student',
+            orderable: true,
+            render: function (data, type, row) {
+                if (type === 'export') {
+                    return data.name + ' (' + data.student_unique_id + ')';
+                }
+
+                var nameClass = data.is_active ? 'text-gray-800 text-hover-primary' : 'text-danger';
+                var tooltip = data.is_active ? '' : 'title="Inactive Student" data-bs-toggle="tooltip" data-bs-placement="top"';
+                var showUrl = routeStudentShow.replace(':id', data.id);
+
+                return '<div class="d-flex align-items-center">' +
+                    '<div class="d-flex flex-column text-start">' +
+                    '<a href="' + showUrl + '" class="' + nameClass + ' mb-1" ' + tooltip + '>' + escapeHtml(data.name) + '</a>' +
+                    '<span class="fw-bold fs-base">' + escapeHtml(data.student_unique_id) + '</span>' +
+                    '</div></div>';
+            }
+        });
+
+        // Class name column
+        columns.push({
+            data: 'class_name',
+            orderable: true,
+            searchable: false,
+            render: function (data, type, row) {
+                if (type === 'export' || !data || data === '-') {
+                    return data || '-';
+                }
+                var classId = row.class_id;
+                if (classId && typeof routeClassShow !== 'undefined') {
+                    var classUrl = routeClassShow.replace(':id', classId);
+                    return '<a href="' + classUrl + '" class="text-gray-800 text-hover-primary">' + escapeHtml(data) + '</a>';
+                }
+                return escapeHtml(data);
+            }
+        });
+
+        // Group badge column
+        columns.push({
+            data: 'group_badge',
+            orderable: false,
+            searchable: false,
+            render: function (data, type) {
+                if (type === 'export') {
+                    var temp = document.createElement('div');
+                    temp.innerHTML = data;
+                    return temp.textContent || temp.innerText || '-';
+                }
+                return data;
+            }
+        });
+
+        // Batch name column
+        columns.push({
+            data: 'batch_name',
+            orderable: true,
+            searchable: false
+        });
+
+        // Institution column
+        columns.push({
+            data: 'institution_name',
+            orderable: true,
+            searchable: false
+        });
+
+        // Home mobile column
+        columns.push({
+            data: 'home_mobile',
+            orderable: false,
+            searchable: false
+        });
+
+        // Tuition fee column
+        columns.push({
+            data: 'tuition_fee',
+            orderable: true,
+            searchable: false
+        });
+
+        // Payment info column
+        columns.push({
+            data: 'payment_info',
+            orderable: false,
+            searchable: false
+        });
+
+        // Actions column
+        columns.push({
+            data: 'actions',
+            orderable: false,
+            searchable: false,
+            className: 'not-export'
+        });
+
+        return columns;
+    };
+
     // Get DataTable AJAX config
     var getDataTableConfig = function (tableId, branchId) {
         var config = {
@@ -123,81 +363,7 @@ var KTStudentsList = function () {
                     console.error('DataTable AJAX error:', error, thrown);
                 }
             },
-            columns: [
-                {
-                    data: 'counter',
-                    orderable: false,
-                    searchable: false
-                },
-                {
-                    data: 'student',
-                    orderable: true,
-                    render: function (data, type, row) {
-                        if (type === 'export') {
-                            return data.name + ' (' + data.student_unique_id + ')';
-                        }
-
-                        var nameClass = data.is_active ? 'text-gray-800 text-hover-primary' : 'text-danger';
-                        var tooltip = data.is_active ? '' : 'title="Inactive Student" data-bs-toggle="tooltip" data-bs-placement="top"';
-                        var showUrl = routeStudentShow.replace(':id', data.id);
-
-                        return '<div class="d-flex align-items-center">' +
-                            '<div class="d-flex flex-column text-start">' +
-                            '<a href="' + showUrl + '" class="' + nameClass + ' mb-1" ' + tooltip + '>' + escapeHtml(data.name) + '</a>' +
-                            '<span class="fw-bold fs-base">' + escapeHtml(data.student_unique_id) + '</span>' +
-                            '</div></div>';
-                    }
-                },
-                {
-                    data: 'class_name',
-                    orderable: true,
-                    searchable: false
-                },
-                {
-                    data: 'group_badge',
-                    orderable: false,
-                    searchable: false,
-                    render: function (data, type) {
-                        if (type === 'export') {
-                            var temp = document.createElement('div');
-                            temp.innerHTML = data;
-                            return temp.textContent || temp.innerText || '-';
-                        }
-                        return data;
-                    }
-                },
-                {
-                    data: 'batch_name',
-                    orderable: true,
-                    searchable: false
-                },
-                {
-                    data: 'institution_name',
-                    orderable: true,
-                    searchable: false
-                },
-                {
-                    data: 'home_mobile',
-                    orderable: false,
-                    searchable: false
-                },
-                {
-                    data: 'tuition_fee',
-                    orderable: true,
-                    searchable: false
-                },
-                {
-                    data: 'payment_info',
-                    orderable: false,
-                    searchable: false
-                },
-                {
-                    data: 'actions',
-                    orderable: false,
-                    searchable: false,
-                    className: 'not-export'
-                }
-            ],
+            columns: buildColumns(),
             order: [],
             pageLength: 10,
             lengthMenu: [10, 25, 50, 100],
@@ -214,6 +380,9 @@ var KTStudentsList = function () {
                 tooltipTriggerList.forEach(function (tooltipTriggerEl) {
                     new bootstrap.Tooltip(tooltipTriggerEl);
                 });
+
+                // Sync checkboxes after draw
+                syncCheckboxesWithSelection();
             }
         };
 
@@ -266,6 +435,9 @@ var KTStudentsList = function () {
                 if (activeDatatable) {
                     activeDatatable.columns.adjust().draw(false);
                 }
+
+                // Sync checkboxes when switching tabs
+                syncCheckboxesWithSelection();
             });
         });
     };
@@ -277,6 +449,311 @@ var KTStudentsList = function () {
 
         datatables['single'] = initSingleDatatable('kt_students_table', null);
         activeDatatable = datatables['single'];
+    };
+
+    // Handle checkbox events
+    var handleCheckboxEvents = function () {
+        // Skip if user doesn't have deactivate permission
+        if (typeof canDeactivate === 'undefined' || !canDeactivate) {
+            return;
+        }
+
+        // Handle header checkbox (select all on current page)
+        document.addEventListener('change', function (e) {
+            if (e.target.classList.contains('header-checkbox')) {
+                var table = e.target.closest('table');
+                if (!table) return;
+
+                var rowCheckboxes = table.querySelectorAll('.row-checkbox');
+                var isChecked = e.target.checked;
+                var currentPage = getCurrentPage();
+
+                rowCheckboxes.forEach(function (checkbox) {
+                    checkbox.checked = isChecked;
+                    var studentId = parseInt(checkbox.value);
+
+                    if (isChecked) {
+                        selectedStudents.add(studentId);
+                        pagesWithSelections.add(currentPage);
+                    } else {
+                        selectedStudents.delete(studentId);
+                    }
+                });
+
+                // Update pages with selections
+                if (!isChecked) {
+                    updatePagesWithSelections();
+                }
+
+                updateBulkActionsToolbar();
+            }
+        });
+
+        // Handle individual row checkbox
+        document.addEventListener('change', function (e) {
+            if (e.target.classList.contains('row-checkbox')) {
+                var studentId = parseInt(e.target.value);
+                var currentPage = getCurrentPage();
+
+                if (e.target.checked) {
+                    selectedStudents.add(studentId);
+                    pagesWithSelections.add(currentPage);
+                } else {
+                    selectedStudents.delete(studentId);
+                    updatePagesWithSelections();
+                }
+
+                updateBulkActionsToolbar();
+            }
+        });
+
+        // Handle clear selection button
+        var clearBtn = document.getElementById('btn_clear_selection');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function () {
+                clearAllSelections();
+            });
+        }
+    };
+
+    // Update which pages have selections (recalculate after deselection)
+    var updatePagesWithSelections = function () {
+        // We can't easily track which page each student is on after they're deselected
+        // So we just check if there are still selections
+        if (selectedStudents.size === 0) {
+            pagesWithSelections.clear();
+        }
+    };
+
+    // Handle bulk activation buttons
+    var handleBulkActivation = function () {
+        // Skip if user doesn't have deactivate permission
+        if (typeof canDeactivate === 'undefined' || !canDeactivate) {
+            return;
+        }
+
+        var bulkActivateBtn = document.getElementById('btn_bulk_activate');
+        var bulkDeactivateBtn = document.getElementById('btn_bulk_deactivate');
+
+        if (bulkActivateBtn) {
+            bulkActivateBtn.addEventListener('click', function () {
+                openBulkModal('active');
+            });
+        }
+
+        if (bulkDeactivateBtn) {
+            bulkDeactivateBtn.addEventListener('click', function () {
+                openBulkModal('inactive');
+            });
+        }
+    };
+
+    // Open bulk modal
+    var openBulkModal = function (status) {
+        if (selectedStudents.size === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Selection',
+                text: 'Please select at least one student.'
+            });
+            return;
+        }
+
+        // Update modal content
+        var actionText = status === 'active' ? 'activate' : 'deactivate';
+        var modalTitle = document.getElementById('bulk-toggle-activation-modal-title');
+        var actionTypeText = document.getElementById('bulk_action_type');
+        var countDisplay = document.getElementById('bulk_student_count');
+        var reasonLabel = document.getElementById('bulk_reason_label');
+        var statusInput = document.getElementById('bulk_activation_status');
+        var submitBtn = document.getElementById('kt_bulk_toggle_activation_submit');
+
+        if (modalTitle) {
+            modalTitle.textContent = 'Bulk ' + (status === 'active' ? 'Activation' : 'Deactivation');
+        }
+
+        if (actionTypeText) {
+            actionTypeText.textContent = actionText;
+        }
+
+        if (countDisplay) {
+            countDisplay.textContent = selectedStudents.size;
+        }
+
+        if (reasonLabel) {
+            reasonLabel.textContent = (status === 'active' ? 'Activation' : 'Deactivation') + ' Reason';
+        }
+
+        if (statusInput) {
+            statusInput.value = status;
+        }
+
+        if (submitBtn) {
+            submitBtn.className = 'btn ' + (status === 'active' ? 'btn-success' : 'btn-warning');
+            // Reset button text
+            submitBtn.innerHTML = '<span class="indicator-label">Submit</span><span class="indicator-progress">Please wait...<span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>';
+        }
+
+        // Populate hidden student IDs
+        var container = document.getElementById('bulk_student_ids_container');
+        if (container) {
+            container.innerHTML = '';
+            selectedStudents.forEach(function (studentId) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'student_ids[]';
+                input.value = studentId;
+                container.appendChild(input);
+            });
+        }
+
+        // Clear previous reason
+        var reasonTextarea = document.getElementById('bulk_activation_reason');
+        if (reasonTextarea) {
+            reasonTextarea.value = '';
+        }
+
+        // Show modal
+        if (bulkToggleModal) {
+            bulkToggleModal.show();
+        }
+    };
+
+    // Handle bulk form submission
+    var handleBulkFormSubmit = function () {
+        // Skip if user doesn't have deactivate permission
+        if (typeof canDeactivate === 'undefined' || !canDeactivate) {
+            return;
+        }
+
+        var bulkForm = document.getElementById('kt_bulk_toggle_activation_form');
+        if (!bulkForm) return;
+
+        bulkForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            var submitBtn = document.getElementById('kt_bulk_toggle_activation_submit');
+            if (!submitBtn) return;
+
+            var originalBtnText = submitBtn.innerHTML;
+
+            // Validate reason field
+            var reasonField = document.getElementById('bulk_activation_reason');
+            if (!reasonField || !reasonField.value.trim()) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Reason Required',
+                    text: 'Please provide a reason for this bulk status change.'
+                });
+                if (reasonField) reasonField.focus();
+                return;
+            }
+
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.querySelector('.indicator-label').style.display = 'none';
+            submitBtn.querySelector('.indicator-progress').style.display = 'inline-block';
+
+            // Prepare form data
+            var formData = new FormData(bulkForm);
+
+            // Get CSRF token
+            var csrfToken = document.querySelector('meta[name="csrf-token"]');
+            if (!csrfToken) {
+                console.error('CSRF token not found');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+                return;
+            }
+
+            // Send AJAX request
+            fetch(routeBulkToggleActive, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(function (response) {
+                    return response.json().then(function (data) {
+                        return { status: response.status, data: data };
+                    });
+                })
+                .then(function (result) {
+                    var response = result.data;
+
+                    // Re-enable button
+                    submitBtn.disabled = false;
+                    submitBtn.querySelector('.indicator-label').style.display = 'inline-block';
+                    submitBtn.querySelector('.indicator-progress').style.display = 'none';
+
+                    if (response.success) {
+                        // Close modal
+                        if (bulkToggleModal) {
+                            bulkToggleModal.hide();
+                        }
+
+                        // Reset form
+                        bulkForm.reset();
+
+                        // Clear selections
+                        clearAllSelections();
+
+                        // Show success message
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: response.message || 'Student statuses updated successfully.',
+                            timer: 2500,
+                            showConfirmButton: false
+                        }).then(function () {
+                            // Reload all datatables to reflect changes
+                            if (isAdmin) {
+                                Object.keys(datatables).forEach(function (key) {
+                                    if (datatables[key]) {
+                                        datatables[key].ajax.reload(null, false);
+                                    }
+                                });
+                                fetchBranchCounts();
+                            } else if (activeDatatable) {
+                                activeDatatable.ajax.reload(null, false);
+                            }
+                        });
+                    } else {
+                        // Show error message
+                        var errorMessage = response.message || 'Something went wrong.';
+                        if (response.errors) {
+                            var errorList = [];
+                            Object.keys(response.errors).forEach(function (key) {
+                                errorList.push(response.errors[key].join(', '));
+                            });
+                            errorMessage = errorList.join('\n');
+                        }
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: errorMessage
+                        });
+                    }
+                })
+                .catch(function (error) {
+                    console.error('Bulk toggle activation error:', error);
+
+                    // Re-enable button
+                    submitBtn.disabled = false;
+                    submitBtn.querySelector('.indicator-label').style.display = 'inline-block';
+                    submitBtn.querySelector('.indicator-progress').style.display = 'none';
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'An unexpected error occurred. Please try again.'
+                    });
+                });
+        });
     };
 
     // Fetch all data for export
@@ -537,37 +1014,47 @@ var KTStudentsList = function () {
         var filterButton = filterForm.querySelector('[data-kt-students-list-table-filter="filter"]');
         var resetButton = filterForm.querySelector('[data-kt-students-list-table-filter="reset"]');
 
-        filterButton.addEventListener('click', function () {
-            if (isAdmin) {
-                Object.keys(datatables).forEach(function (key) {
-                    if (datatables[key]) datatables[key].ajax.reload();
-                });
-                // Also refresh counts after filter
-                fetchBranchCounts();
-            } else if (activeDatatable) {
-                activeDatatable.ajax.reload();
-            }
-        });
+        if (filterButton) {
+            filterButton.addEventListener('click', function () {
+                // Clear selections when filter changes
+                clearAllSelections();
 
-        resetButton.addEventListener('click', function () {
-            var filterSelects = filterForm.querySelectorAll('select[data-filter-field]');
-            filterSelects.forEach(function (select) {
-                $(select).val(null).trigger('change');
+                if (isAdmin) {
+                    Object.keys(datatables).forEach(function (key) {
+                        if (datatables[key]) datatables[key].ajax.reload();
+                    });
+                    // Also refresh counts after filter
+                    fetchBranchCounts();
+                } else if (activeDatatable) {
+                    activeDatatable.ajax.reload();
+                }
             });
+        }
 
-            var searchInput = document.querySelector('[data-kt-students-list-table-filter="search"]');
-            if (searchInput) searchInput.value = '';
-
-            if (isAdmin) {
-                Object.keys(datatables).forEach(function (key) {
-                    if (datatables[key]) datatables[key].search('').ajax.reload();
+        if (resetButton) {
+            resetButton.addEventListener('click', function () {
+                var filterSelects = filterForm.querySelectorAll('select[data-filter-field]');
+                filterSelects.forEach(function (select) {
+                    $(select).val(null).trigger('change');
                 });
-                // Also refresh counts after reset
-                fetchBranchCounts();
-            } else if (activeDatatable) {
-                activeDatatable.search('').ajax.reload();
-            }
-        });
+
+                var searchInput = document.querySelector('[data-kt-students-list-table-filter="search"]');
+                if (searchInput) searchInput.value = '';
+
+                // Clear selections when filter resets
+                clearAllSelections();
+
+                if (isAdmin) {
+                    Object.keys(datatables).forEach(function (key) {
+                        if (datatables[key]) datatables[key].search('').ajax.reload();
+                    });
+                    // Also refresh counts after reset
+                    fetchBranchCounts();
+                } else if (activeDatatable) {
+                    activeDatatable.search('').ajax.reload();
+                }
+            });
+        }
     };
 
     // Delete students
@@ -608,6 +1095,10 @@ var KTStudentsList = function () {
                                     icon: "success"
                                 })
                                     .then(function () {
+                                        // Remove from selections if selected
+                                        selectedStudents.delete(parseInt(studentId));
+                                        updateBulkActionsToolbar();
+
                                         if (activeDatatable) activeDatatable.ajax.reload();
                                         // Refresh counts after deletion
                                         if (isAdmin) fetchBranchCounts();
@@ -637,6 +1128,11 @@ var KTStudentsList = function () {
         var modalElement = document.getElementById('kt_toggle_activation_student_modal');
         if (modalElement) {
             toggleActivationModal = new bootstrap.Modal(modalElement);
+        }
+
+        var bulkModalElement = document.getElementById('kt_bulk_toggle_activation_modal');
+        if (bulkModalElement) {
+            bulkToggleModal = new bootstrap.Modal(bulkModalElement);
         }
     };
 
@@ -806,14 +1302,33 @@ var KTStudentsList = function () {
     // Handle modal close - reset form
     var handleModalReset = function () {
         var modalElement = document.getElementById('kt_toggle_activation_student_modal');
-        if (!modalElement) return;
+        if (modalElement) {
+            modalElement.addEventListener('hidden.bs.modal', function () {
+                var toggleForm = modalElement.querySelector('form');
+                if (toggleForm) {
+                    toggleForm.reset();
+                }
+            });
+        }
 
-        modalElement.addEventListener('hidden.bs.modal', function () {
-            var toggleForm = modalElement.querySelector('form');
-            if (toggleForm) {
-                toggleForm.reset();
-            }
-        });
+        var bulkModalElement = document.getElementById('kt_bulk_toggle_activation_modal');
+        if (bulkModalElement) {
+            bulkModalElement.addEventListener('hidden.bs.modal', function () {
+                var bulkForm = bulkModalElement.querySelector('form');
+                if (bulkForm) {
+                    bulkForm.reset();
+                }
+                // Reset submit button state
+                var submitBtn = document.getElementById('kt_bulk_toggle_activation_submit');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    var indicatorLabel = submitBtn.querySelector('.indicator-label');
+                    var indicatorProgress = submitBtn.querySelector('.indicator-progress');
+                    if (indicatorLabel) indicatorLabel.style.display = 'inline-block';
+                    if (indicatorProgress) indicatorProgress.style.display = 'none';
+                }
+            });
+        }
     };
 
     return {
@@ -825,10 +1340,13 @@ var KTStudentsList = function () {
                 initNonAdminDatatable();
             }
 
-            // Initialize modal
+            // Initialize modals
             initToggleActivationModal();
 
             // Setup handlers
+            handleCheckboxEvents();
+            handleBulkActivation();
+            handleBulkFormSubmit();
             exportButtons();
             handleSearch();
             handleDeletion();
@@ -852,6 +1370,14 @@ var KTStudentsList = function () {
 
         refreshCounts: function () {
             if (isAdmin) fetchBranchCounts();
+        },
+
+        clearSelections: function () {
+            clearAllSelections();
+        },
+
+        getSelectedStudents: function () {
+            return Array.from(selectedStudents);
         }
     };
 }();
