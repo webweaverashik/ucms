@@ -77,7 +77,7 @@
                             $colorClass = $badgeColors[$index % count($badgeColors)];
                         @endphp
                         <li class="nav-item">
-                            <a class="nav-link {{ $index === 0 ? 'active' : '' }}" data-bs-toggle="tab"
+                            <a class="nav-link fw-bold {{ $index === 0 ? 'active' : '' }}" data-bs-toggle="tab"
                                 href="#due_branch_{{ $branch->id }}" data-branch-id="{{ $branch->id }}"
                                 data-badge-color="{{ $colorClass }}">
                                 <i class="ki-outline ki-bank fs-4 me-1"></i>{{ $branch->branch_name }}
@@ -120,7 +120,7 @@
                 <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-5 fs-6" id="branchTabsPaid">
                     @foreach ($branches as $index => $branch)
                         <li class="nav-item">
-                            <a class="nav-link {{ $index === 0 ? 'active' : '' }}" data-bs-toggle="tab"
+                            <a class="nav-link fw-bold {{ $index === 0 ? 'active' : '' }}" data-bs-toggle="tab"
                                 href="#paid_branch_{{ $branch->id }}" data-branch-id="{{ $branch->id }}">
                                 <i class="ki-outline ki-bank fs-4 me-1"></i>{{ $branch->branch_name }}
                             </a>
