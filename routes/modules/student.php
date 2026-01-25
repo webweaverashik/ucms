@@ -67,3 +67,10 @@ Route::resources([
     'guardians' => GuardianController::class,
     'siblings'  => SiblingController::class,
 ]);
+
+// AJAX data endpoints for DataTables
+Route::get('guardians-data', [GuardianController::class, 'getData'])->name('guardians.data');
+Route::get('guardians-count', [GuardianController::class, 'getCount'])->name('guardians.count');
+
+Route::get('siblings-data', [SiblingController::class, 'getData'])->name('siblings.data');
+Route::get('siblings-count', [SiblingController::class, 'getCount'])->name('siblings.count');

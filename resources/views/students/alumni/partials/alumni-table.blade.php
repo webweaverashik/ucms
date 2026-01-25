@@ -14,7 +14,6 @@
             <th class="d-none">Batch (Filter)</th>
             <th>Batch</th>
             <th class="w-300px">Institution</th>
-            <th>Guardians</th>
             <th>Mobile<br>(Home)</th>
             <th>Fee (Tk)</th>
             <th>Payment<br>Type</th>
@@ -66,13 +65,6 @@
                 </td>
                 <td>{{ $student->batch->name }}</td>
                 <td>{{ $student->institution->name }} (EIIN: {{ $student->institution->eiin_number }})
-                </td>
-                <td>
-                    @foreach ($student->guardians as $guardian)
-                        <a href="#"><span
-                                class="badge badge-light-primary rounded-pill text-hover-success fs-7">{{ $guardian->name }},
-                                {{ ucfirst($guardian->relationship) }}</span></a><br>
-                    @endforeach
                 </td>
                 <td>
                     {!! $student->mobileNumbers->where('number_type', 'home')->pluck('mobile_number')->implode('<br>') ?: '-' !!}

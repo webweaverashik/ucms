@@ -2,78 +2,169 @@
 
 var KTGuardiansList = function () {
     // Define shared variables
-    var table;
-    var datatable;
+    var datatables = {};
+    var currentFilters = {
+        relationship: '',
+        gender: ''
+    };
 
-    // Private functions
-    var initDatatable = function () {
-        // Init datatable --- more info on datatables: https://datatables.net/manual/
-        datatable = $(table).DataTable({
-            "info": true,
-            'order': [],
-            "lengthMenu": [10, 25, 50, 100],
-            "pageLength": 10,
-            "lengthChange": true,
-            "autoWidth": false,  // Disable auto width
-            'columnDefs': [
-                { orderable: false, targets: [4, 7] }
-            ]
+    // Initialize DataTable for a specific table
+    var initDatatable = function (tableId, branchId) {
+        var table = document.getElementById(tableId);
+        if (!table) {
+            return null;
+        }
+
+        var datatable = $(table).DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: routeGuardiansData,
+                type: 'GET',
+                data: function (d) {
+                    d.branch_id = branchId;
+                    d.relationship = currentFilters.relationship;
+                    d.gender = currentFilters.gender;
+                },
+                error: function (xhr, error, thrown) {
+                    console.error('DataTable AJAX Error:', error);
+                    toastr.error('Failed to load data. Please try again.');
+                }
+            },
+            columns: [
+                { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+                { data: 'name', name: 'name' },
+                { data: 'mobile', name: 'mobile_number' },
+                { data: 'gender', name: 'gender' },
+                { data: 'student', name: 'student', orderable: false },
+                { data: 'relationship', name: 'relationship' },
+                { data: 'actions', name: 'actions', orderable: false, searchable: false }
+            ],
+            order: [],
+            lengthMenu: [10, 25, 50, 100],
+            pageLength: 10,
+            autoWidth: false,
+            language: {
+                processing: '<div class="d-flex justify-content-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>'
+            },
+            drawCallback: function () {
+                // Reinitialize tooltips after table redraw
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            }
         });
 
-        // Re-init functions on every table re-draw -- more info: https://datatables.net/reference/event/draw
-        datatable.on('draw', function () {
+        return datatable;
+    };
 
+    // Initialize all datatables
+    var initAllDatatables = function () {
+        if (isAdmin) {
+            branchIds.forEach(function (branchId) {
+                var tableId = 'kt_guardians_table_branch_' + branchId;
+                datatables[branchId] = initDatatable(tableId, branchId);
+            });
+        } else {
+            datatables['single'] = initDatatable('kt_guardians_table', null);
+        }
+    };
+
+    // Load badge counts for tabs
+    var loadBadgeCounts = function () {
+        if (!isAdmin) return;
+
+        branchIds.forEach(function (branchId) {
+            fetch(routeGuardiansCount + '?branch_id=' + branchId)
+                .then(response => response.json())
+                .then(data => {
+                    var badge = document.querySelector('.guardian-count-badge[data-branch-id="' + branchId + '"]');
+                    if (badge) {
+                        badge.classList.remove('badge-loading');
+                        badge.innerHTML = data.count;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading count:', error);
+                    var badge = document.querySelector('.guardian-count-badge[data-branch-id="' + branchId + '"]');
+                    if (badge) {
+                        badge.classList.remove('badge-loading');
+                        badge.innerHTML = '?';
+                    }
+                });
         });
-    }
+    };
 
-    // Search Datatable --- official docs reference: https://datatables.net/reference/api/search()
+    // Search Datatable
     var handleSearch = function () {
-        const filterSearch = document.querySelector('[data-kt-subscription-table-filter="search"]');
+        const filterSearch = document.querySelector('[data-kt-guardians-table-filter="search"]');
+        if (!filterSearch) return;
+
+        let debounceTimer;
         filterSearch.addEventListener('keyup', function (e) {
-            datatable.search(e.target.value).draw();
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(function () {
+                // Reload all datatables with new search
+                Object.values(datatables).forEach(function (dt) {
+                    if (dt) {
+                        dt.search(e.target.value).draw();
+                    }
+                });
+            }, 300);
         });
-    }
+    };
 
     // Filter Datatable
     var handleFilter = function () {
-        // Select filter options
-        const filterForm = document.querySelector('[data-kt-subscription-table-filter="form"]');
-        const filterButton = filterForm.querySelector('[data-kt-subscription-table-filter="filter"]');
-        const resetButton = filterForm.querySelector('[data-kt-subscription-table-filter="reset"]');
-        const selectOptions = filterForm.querySelectorAll('select');
+        const filterForm = document.querySelector('[data-kt-guardians-table-filter="form"]');
+        if (!filterForm) return;
+
+        const filterButton = filterForm.querySelector('[data-kt-guardians-table-filter="filter"]');
+        const resetButton = filterForm.querySelector('[data-kt-guardians-table-filter="reset"]');
+        const relationshipSelect = filterForm.querySelector('[data-kt-guardians-table-filter="relationship"]');
+        const genderSelect = filterForm.querySelector('[data-kt-guardians-table-filter="gender"]');
 
         // Filter datatable on submit
-        filterButton.addEventListener('click', function () {
-            var filterString = '';
+        if (filterButton) {
+            filterButton.addEventListener('click', function () {
+                currentFilters.relationship = relationshipSelect ? relationshipSelect.value : '';
+                currentFilters.gender = genderSelect ? genderSelect.value : '';
 
-            // Get filter values
-            selectOptions.forEach((item, index) => {
-                if (item.value && item.value !== '') {
-                    if (index !== 0) {
-                        filterString += ' ';
+                // Reload all datatables
+                Object.values(datatables).forEach(function (dt) {
+                    if (dt) {
+                        dt.ajax.reload();
                     }
+                });
 
-                    // Build filter value options
-                    filterString += item.value;
-                }
+                // Reload badge counts
+                loadBadgeCounts();
             });
-
-            // Filter datatable --- official docs reference: https://datatables.net/reference/api/search()
-            datatable.search(filterString).draw();
-        });
+        }
 
         // Reset datatable
-        resetButton.addEventListener('click', function () {
-            // Reset filter form
-            selectOptions.forEach((item, index) => {
-                // Reset Select2 dropdown --- official docs reference: https://select2.org/programmatic-control/add-select-clear-items
-                $(item).val(null).trigger('change');
-            });
+        if (resetButton) {
+            resetButton.addEventListener('click', function () {
+                // Reset filter values
+                if (relationshipSelect) $(relationshipSelect).val(null).trigger('change');
+                if (genderSelect) $(genderSelect).val(null).trigger('change');
 
-            // Filter datatable --- official docs reference: https://datatables.net/reference/api/search()
-            datatable.search('').draw();
-        });
-    }
+                currentFilters.relationship = '';
+                currentFilters.gender = '';
+
+                // Reload all datatables
+                Object.values(datatables).forEach(function (dt) {
+                    if (dt) {
+                        dt.ajax.reload();
+                    }
+                });
+
+                // Reload badge counts
+                loadBadgeCounts();
+            });
+        }
+    };
 
     // Delete guardian using event delegation
     const handleDeletion = function () {
@@ -108,15 +199,22 @@ var KTGuardiansList = function () {
                             if (data.success) {
                                 Swal.fire({
                                     title: "Deleted!",
-                                    text: "The guardian has been removed successfully.",
+                                    text: data.message || "The guardian has been removed successfully.",
                                     icon: "success",
                                 }).then(() => {
-                                    location.reload();
+                                    // Reload all datatables
+                                    Object.values(datatables).forEach(function (dt) {
+                                        if (dt) {
+                                            dt.ajax.reload(null, false);
+                                        }
+                                    });
+                                    // Reload badge counts
+                                    loadBadgeCounts();
                                 });
                             } else {
                                 Swal.fire({
                                     title: "Error!",
-                                    text: data.message,
+                                    text: data.message || "Failed to delete guardian.",
                                     icon: "error",
                                 });
                             }
@@ -134,24 +232,42 @@ var KTGuardiansList = function () {
         });
     };
 
+    // Handle tab change - reload data when tab is shown
+    var handleTabChange = function () {
+        if (!isAdmin) return;
+
+        document.querySelectorAll('#guardianBranchTabs a[data-bs-toggle="tab"]').forEach(function (tab) {
+            tab.addEventListener('shown.bs.tab', function (e) {
+                var branchId = e.target.getAttribute('data-branch-id');
+                if (datatables[branchId]) {
+                    // Adjust columns when tab becomes visible
+                    datatables[branchId].columns.adjust();
+                }
+            });
+        });
+    };
 
     return {
-        // Public functions  
+        // Public functions
         init: function () {
-            table = document.getElementById('kt_guardians_table');
-
-            if (!table) {
-                return;
-            }
-
-            initDatatable();
+            initAllDatatables();
+            loadBadgeCounts();
             handleSearch();
             handleDeletion();
             handleFilter();
+            handleTabChange();
+        },
+        // Expose method to reload datatables
+        reloadDatatables: function () {
+            Object.values(datatables).forEach(function (dt) {
+                if (dt) {
+                    dt.ajax.reload(null, false);
+                }
+            });
+            loadBadgeCounts();
         }
     }
 }();
-
 
 var KTGuardiansEditGuardian = function () {
     // Shared variables
@@ -167,8 +283,7 @@ var KTGuardiansEditGuardian = function () {
 
     const form = element.querySelector('#kt_modal_edit_guardian_form');
     const modal = bootstrap.Modal.getOrCreateInstance(element);
-
-    let guardianId = null; // Declare globally
+    let guardianId = null;
 
     // Init edit guardian modal
     var initEditGuardian = () => {
@@ -230,11 +345,11 @@ var KTGuardiansEditGuardian = function () {
                         checkRadio('guardian_gender', guardian.gender);
                         setValue("select[name='guardian_relationship']", guardian.relationship);
 
-                        // Dispatch change events
+                        // Dispatch change events for Select2
                         const studentSelect = document.querySelector("select[name='guardian_student']");
                         const relationshipSelect = document.querySelector("select[name='guardian_relationship']");
-                        if (studentSelect) studentSelect.dispatchEvent(new Event("change"));
-                        if (relationshipSelect) relationshipSelect.dispatchEvent(new Event("change"));
+                        if (studentSelect) $(studentSelect).trigger("change");
+                        if (relationshipSelect) $(relationshipSelect).trigger("change");
 
                         // Show modal
                         modal.show();
@@ -249,7 +364,6 @@ var KTGuardiansEditGuardian = function () {
         });
     };
 
-
     // Form validation
     var initValidation = function () {
         if (!form) return;
@@ -258,13 +372,6 @@ var KTGuardiansEditGuardian = function () {
             form,
             {
                 fields: {
-                    // 'guardian_student': {
-                    //     validators: {
-                    //         notEmpty: {
-                    //             message: 'Please, select a student'
-                    //         }
-                    //     }
-                    // },
                     'guardian_name': {
                         validators: {
                             notEmpty: {
@@ -278,7 +385,7 @@ var KTGuardiansEditGuardian = function () {
                                 message: 'Mobile number is required'
                             },
                             regexp: {
-                                regexp: /^01[4-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
+                                regexp: /^01[3-9][0-9](?!\b(\d)\1{7}\b)\d{7}$/,
                                 message: 'Please enter a valid Bangladeshi mobile number'
                             },
                             stringLength: {
@@ -327,14 +434,12 @@ var KTGuardiansEditGuardian = function () {
 
                         // Prepare form data
                         const formData = new FormData(form);
-
-                        // Add CSRF token for Laravel
                         formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
-                        formData.append('_method', 'PUT'); // For Laravel resource route
+                        formData.append('_method', 'PUT');
 
                         // Submit via AJAX
                         fetch(`/guardians/${guardianId}`, {
-                            method: 'POST', // Laravel expects POST for PUT routes
+                            method: 'POST',
                             body: formData,
                             headers: {
                                 'Accept': 'application/json',
@@ -342,7 +447,9 @@ var KTGuardiansEditGuardian = function () {
                             }
                         })
                             .then(response => {
-                                if (!response.ok) throw new Error('Network response was not ok');
+                                if (!response.ok) {
+                                    return response.json().then(err => { throw err; });
+                                }
                                 return response.json();
                             })
                             .then(data => {
@@ -352,9 +459,10 @@ var KTGuardiansEditGuardian = function () {
                                 if (data.success) {
                                     toastr.success(data.message || 'Guardian updated successfully');
                                     modal.hide();
+                                    form.reset();
 
-                                    // Reload the page
-                                    window.location.reload();
+                                    // Reload datatables
+                                    KTGuardiansList.reloadDatatables();
                                 } else {
                                     throw new Error(data.message || 'Update failed');
                                 }
@@ -362,7 +470,15 @@ var KTGuardiansEditGuardian = function () {
                             .catch(error => {
                                 submitButton.removeAttribute('data-kt-indicator');
                                 submitButton.disabled = false;
-                                toastr.error(error.message || 'Failed to update guardian');
+
+                                if (error.errors) {
+                                    // Handle validation errors
+                                    Object.keys(error.errors).forEach(function (key) {
+                                        toastr.error(error.errors[key][0]);
+                                    });
+                                } else {
+                                    toastr.error(error.message || 'Failed to update guardian');
+                                }
                                 console.error('Error:', error);
                             });
                     } else {

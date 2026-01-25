@@ -2,81 +2,167 @@
 
 var KTSiblingsList = function () {
     // Define shared variables
-    var table;
-    var datatable;
+    var datatables = {};
+    var currentFilters = {
+        relationship: ''
+    };
 
-    // Private functions
-    var initDatatable = function () {
-        // Init datatable --- more info on datatables: https://datatables.net/manual/
-        datatable = $(table).DataTable({
-            "info": true,
-            'order': [],
-            "lengthMenu": [10, 25, 50, 100],
-            "pageLength": 10,
-            "lengthChange": true,
-            "autoWidth": false,  // Disable auto width
-            'columnDefs': [
-                { orderable: false, targets: 4 }, // Disable ordering on column sibling                
-                { orderable: false, targets: 10 }, // Disable ordering on column Actions                
-            ]
+    // Initialize DataTable for a specific table
+    var initDatatable = function (tableId, branchId) {
+        var table = document.getElementById(tableId);
+        if (!table) {
+            return null;
+        }
+
+        var datatable = $(table).DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: routeSiblingsData,
+                type: 'GET',
+                data: function (d) {
+                    d.branch_id = branchId;
+                    d.relationship = currentFilters.relationship;
+                },
+                error: function (xhr, error, thrown) {
+                    console.error('DataTable AJAX Error:', error);
+                    toastr.error('Failed to load data. Please try again.');
+                }
+            },
+            columns: [
+                { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+                { data: 'name', name: 'name' },
+                { data: 'gender', name: 'gender' },
+                { data: 'student', name: 'student', orderable: false },
+                { data: 'class', name: 'class' },
+                { data: 'year', name: 'year' },
+                { data: 'institution', name: 'institution' },
+                { data: 'relationship', name: 'relationship' },
+                { data: 'actions', name: 'actions', orderable: false, searchable: false }
+            ],
+            order: [],
+            lengthMenu: [10, 25, 50, 100],
+            pageLength: 10,
+            autoWidth: false,
+            language: {
+                processing: '<div class="d-flex justify-content-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>'
+            },
+            drawCallback: function () {
+                // Reinitialize tooltips after table redraw
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            }
         });
 
-        // Re-init functions on every table re-draw -- more info: https://datatables.net/reference/event/draw
-        datatable.on('draw', function () {
+        return datatable;
+    };
 
+    // Initialize all datatables
+    var initAllDatatables = function () {
+        if (isAdmin) {
+            branchIds.forEach(function (branchId) {
+                var tableId = 'kt_siblings_table_branch_' + branchId;
+                datatables[branchId] = initDatatable(tableId, branchId);
+            });
+        } else {
+            datatables['single'] = initDatatable('kt_siblings_table', null);
+        }
+    };
+
+    // Load badge counts for tabs
+    var loadBadgeCounts = function () {
+        if (!isAdmin) return;
+
+        branchIds.forEach(function (branchId) {
+            fetch(routeSiblingsCount + '?branch_id=' + branchId)
+                .then(response => response.json())
+                .then(data => {
+                    var badge = document.querySelector('.sibling-count-badge[data-branch-id="' + branchId + '"]');
+                    if (badge) {
+                        badge.classList.remove('badge-loading');
+                        badge.innerHTML = data.count;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading count:', error);
+                    var badge = document.querySelector('.sibling-count-badge[data-branch-id="' + branchId + '"]');
+                    if (badge) {
+                        badge.classList.remove('badge-loading');
+                        badge.innerHTML = '?';
+                    }
+                });
         });
-    }
+    };
 
-    // Search Datatable --- official docs reference: https://datatables.net/reference/api/search()
+    // Search Datatable
     var handleSearch = function () {
         const filterSearch = document.querySelector('[data-kt-siblings-table-filter="search"]');
+        if (!filterSearch) return;
+
+        let debounceTimer;
         filterSearch.addEventListener('keyup', function (e) {
-            datatable.search(e.target.value).draw();
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(function () {
+                // Reload all datatables with new search
+                Object.values(datatables).forEach(function (dt) {
+                    if (dt) {
+                        dt.search(e.target.value).draw();
+                    }
+                });
+            }, 300);
         });
-    }
+    };
 
     // Filter Datatable
     var handleFilter = function () {
-        // Select filter options
         const filterForm = document.querySelector('[data-kt-siblings-table-filter="form"]');
+        if (!filterForm) return;
+
         const filterButton = filterForm.querySelector('[data-kt-siblings-table-filter="filter"]');
         const resetButton = filterForm.querySelector('[data-kt-siblings-table-filter="reset"]');
-        const selectOptions = filterForm.querySelectorAll('select');
+        const relationshipSelect = filterForm.querySelector('[data-kt-siblings-table-filter="relationship"]');
 
         // Filter datatable on submit
-        filterButton.addEventListener('click', function () {
-            var filterString = '';
+        if (filterButton) {
+            filterButton.addEventListener('click', function () {
+                currentFilters.relationship = relationshipSelect ? relationshipSelect.value : '';
 
-            // Get filter values
-            selectOptions.forEach((item, index) => {
-                if (item.value && item.value !== '') {
-                    if (index !== 0) {
-                        filterString += ' ';
+                // Reload all datatables
+                Object.values(datatables).forEach(function (dt) {
+                    if (dt) {
+                        dt.ajax.reload();
                     }
+                });
 
-                    // Build filter value options
-                    filterString += item.value;
-                }
+                // Reload badge counts
+                loadBadgeCounts();
             });
-
-            // Filter datatable --- official docs reference: https://datatables.net/reference/api/search()
-            datatable.search(filterString).draw();
-        });
+        }
 
         // Reset datatable
-        resetButton.addEventListener('click', function () {
-            // Reset filter form
-            selectOptions.forEach((item, index) => {
-                // Reset Select2 dropdown --- official docs reference: https://select2.org/programmatic-control/add-select-clear-items
-                $(item).val(null).trigger('change');
+        if (resetButton) {
+            resetButton.addEventListener('click', function () {
+                // Reset filter values
+                if (relationshipSelect) $(relationshipSelect).val(null).trigger('change');
+
+                currentFilters.relationship = '';
+
+                // Reload all datatables
+                Object.values(datatables).forEach(function (dt) {
+                    if (dt) {
+                        dt.ajax.reload();
+                    }
+                });
+
+                // Reload badge counts
+                loadBadgeCounts();
             });
+        }
+    };
 
-            // Filter datatable --- official docs reference: https://datatables.net/reference/api/search()
-            datatable.search('').draw();
-        });
-    }
-
-    // Delete siblings
+    // Delete sibling using event delegation
     const handleDeletion = function () {
         document.addEventListener('click', function (e) {
             const deleteBtn = e.target.closest('.delete-sibling');
@@ -84,8 +170,8 @@ var KTSiblingsList = function () {
 
             e.preventDefault();
 
-            let siblingId = deleteBtn.getAttribute('data-sibling-id');
-            let url = routeDeleteSibling.replace(':id', siblingId);
+            const siblingId = deleteBtn.getAttribute('data-sibling-id');
+            const url = routeDeleteSibling.replace(':id', siblingId);
 
             Swal.fire({
                 title: "Are you sure to delete this sibling?",
@@ -109,15 +195,22 @@ var KTSiblingsList = function () {
                             if (data.success) {
                                 Swal.fire({
                                     title: "Deleted!",
-                                    text: "The sibling has been removed successfully.",
+                                    text: data.message || "The sibling has been removed successfully.",
                                     icon: "success",
                                 }).then(() => {
-                                    location.reload();
+                                    // Reload all datatables
+                                    Object.values(datatables).forEach(function (dt) {
+                                        if (dt) {
+                                            dt.ajax.reload(null, false);
+                                        }
+                                    });
+                                    // Reload badge counts
+                                    loadBadgeCounts();
                                 });
                             } else {
                                 Swal.fire({
                                     title: "Error!",
-                                    text: data.message,
+                                    text: data.message || "Failed to delete sibling.",
                                     icon: "error",
                                 });
                             }
@@ -135,24 +228,42 @@ var KTSiblingsList = function () {
         });
     };
 
+    // Handle tab change - reload data when tab is shown
+    var handleTabChange = function () {
+        if (!isAdmin) return;
+
+        document.querySelectorAll('#siblingBranchTabs a[data-bs-toggle="tab"]').forEach(function (tab) {
+            tab.addEventListener('shown.bs.tab', function (e) {
+                var branchId = e.target.getAttribute('data-branch-id');
+                if (datatables[branchId]) {
+                    // Adjust columns when tab becomes visible
+                    datatables[branchId].columns.adjust();
+                }
+            });
+        });
+    };
 
     return {
-        // Public functions  
+        // Public functions
         init: function () {
-            table = document.getElementById('kt_siblings_table');
-
-            if (!table) {
-                return;
-            }
-
-            initDatatable();
+            initAllDatatables();
+            loadBadgeCounts();
             handleSearch();
             handleDeletion();
             handleFilter();
+            handleTabChange();
+        },
+        // Expose method to reload datatables
+        reloadDatatables: function () {
+            Object.values(datatables).forEach(function (dt) {
+                if (dt) {
+                    dt.ajax.reload(null, false);
+                }
+            });
+            loadBadgeCounts();
         }
     }
 }();
-
 
 var KTSiblingsEdit = function () {
     // Shared variables
@@ -168,8 +279,7 @@ var KTSiblingsEdit = function () {
 
     const form = element.querySelector('#kt_modal_edit_sibling_form');
     const modal = bootstrap.Modal.getOrCreateInstance(element);
-
-    let siblingId = null; // Declare globally
+    let siblingId = null;
 
     // Init edit sibling modal
     var initEditSibling = () => {
@@ -193,7 +303,7 @@ var KTSiblingsEdit = function () {
             });
         }
 
-        // Edit button click (using delegation)
+        // Delegate edit button click
         document.addEventListener("click", function (e) {
             const button = e.target.closest("[data-bs-target='#kt_modal_edit_sibling']");
             if (!button) return;
@@ -230,10 +340,10 @@ var KTSiblingsEdit = function () {
                         setValue("input[name='sibling_institution']", sibling.institution_name);
                         setValue("select[name='sibling_relationship']", sibling.relationship);
 
-                        // Trigger change events
+                        // Trigger change events for Select2
                         ["sibling_student", "sibling_relationship"].forEach(name => {
                             const el = document.querySelector(`select[name='${name}']`);
-                            if (el) el.dispatchEvent(new Event("change"));
+                            if (el) $(el).trigger("change");
                         });
 
                         // Show modal
@@ -249,7 +359,6 @@ var KTSiblingsEdit = function () {
         });
     };
 
-
     // Form validation
     var initValidation = function () {
         if (!form) return;
@@ -258,13 +367,6 @@ var KTSiblingsEdit = function () {
             form,
             {
                 fields: {
-                    // 'sibling_student': {
-                    //     validators: {
-                    //         notEmpty: {
-                    //             message: 'Please, select a student'
-                    //         }
-                    //     }
-                    // },
                     'sibling_name': {
                         validators: {
                             notEmpty: {
@@ -275,7 +377,7 @@ var KTSiblingsEdit = function () {
                     'sibling_year': {
                         validators: {
                             notEmpty: {
-                                message: 'Please, mention the age.'
+                                message: 'Please, mention the year.'
                             }
                         }
                     },
@@ -325,14 +427,12 @@ var KTSiblingsEdit = function () {
 
                         // Prepare form data
                         const formData = new FormData(form);
-
-                        // Add CSRF token for Laravel
                         formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
-                        formData.append('_method', 'PUT'); // For Laravel resource route
+                        formData.append('_method', 'PUT');
 
                         // Submit via AJAX
                         fetch(`/siblings/${siblingId}`, {
-                            method: 'POST', // Laravel expects POST for PUT routes
+                            method: 'POST',
                             body: formData,
                             headers: {
                                 'Accept': 'application/json',
@@ -340,7 +440,9 @@ var KTSiblingsEdit = function () {
                             }
                         })
                             .then(response => {
-                                if (!response.ok) throw new Error('Network response was not ok');
+                                if (!response.ok) {
+                                    return response.json().then(err => { throw err; });
+                                }
                                 return response.json();
                             })
                             .then(data => {
@@ -348,11 +450,12 @@ var KTSiblingsEdit = function () {
                                 submitButton.disabled = false;
 
                                 if (data.success) {
-                                    toastr.success(data.message || 'sibling updated successfully');
+                                    toastr.success(data.message || 'Sibling updated successfully');
                                     modal.hide();
+                                    form.reset();
 
-                                    // Reload the page
-                                    window.location.reload();
+                                    // Reload datatables
+                                    KTSiblingsList.reloadDatatables();
                                 } else {
                                     throw new Error(data.message || 'Update failed');
                                 }
@@ -360,7 +463,15 @@ var KTSiblingsEdit = function () {
                             .catch(error => {
                                 submitButton.removeAttribute('data-kt-indicator');
                                 submitButton.disabled = false;
-                                toastr.error(error.message || 'Failed to update sibling');
+
+                                if (error.errors) {
+                                    // Handle validation errors
+                                    Object.keys(error.errors).forEach(function (key) {
+                                        toastr.error(error.errors[key][0]);
+                                    });
+                                } else {
+                                    toastr.error(error.message || 'Failed to update sibling');
+                                }
                                 console.error('Error:', error);
                             });
                     } else {

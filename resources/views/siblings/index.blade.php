@@ -2,7 +2,6 @@
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
 @endpush
 
-
 @extends('layouts.app')
 
 @section('title', 'All Siblings')
@@ -24,7 +23,8 @@
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
                 <a href="#" class="text-muted text-hover-primary">
-                    Student Info </a>
+                    Student Info
+                </a>
             </li>
             <!--end::Item-->
             <!--begin::Item-->
@@ -34,20 +34,24 @@
             <!--end::Item-->
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                Siblings </li>
+                Siblings
+            </li>
             <!--end::Item-->
         </ul>
         <!--end::Breadcrumb-->
     </div>
 @endsection
 
-
 @section('content')
-
     @php
         // Define badge colors for different branches
-        $badgeColors = ['badge-light-primary', 'badge-light-success', 'badge-light-warning'];
-
+        $badgeColors = [
+            'badge-light-primary',
+            'badge-light-success',
+            'badge-light-warning',
+            'badge-light-danger',
+            'badge-light-info',
+        ];
         // Map branches to badge colors dynamically
         $branchColors = [];
         foreach ($branches as $index => $branch) {
@@ -63,18 +67,17 @@
             <div class="card-title">
                 <!--begin::Search-->
                 <div class="d-flex align-items-center position-relative my-1">
-                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
-                        data-kt-siblings-table-filter="search"
+                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
+                    <input type="text" data-kt-siblings-table-filter="search"
                         class="form-control form-control-solid w-250px w-sm-400px ps-12" placeholder="Search in sibling">
                 </div>
                 <!--end::Search-->
             </div>
             <!--begin::Card title-->
-
             <!--begin::Card toolbar-->
             <div class="card-toolbar">
                 <!--begin::Toolbar-->
-                <div class="d-flex justify-content-end" data-kt-subscription-table-toolbar="base">
+                <div class="d-flex justify-content-end" data-kt-siblings-table-toolbar="base">
                     <!--begin::Filter-->
                     <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
                         data-kt-menu-placement="bottom-end">
@@ -96,31 +99,13 @@
                                 <label class="form-label fs-6 fw-semibold">Relationship Type:</label>
                                 <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                     data-placeholder="Select option" data-allow-clear="true"
-                                    data-kt-siblings-table-filter="billing" data-hide-search="true">
+                                    data-kt-siblings-table-filter="relationship" data-hide-search="true">
                                     <option></option>
                                     <option value="Brother">Brother</option>
                                     <option value="Sister">Sister</option>
                                 </select>
                             </div>
                             <!--end::Input group-->
-
-                            @if (auth()->user()->hasRole('admin'))
-                                <!--begin::Input group-->
-                                <div class="mb-10">
-                                    <label class="form-label fs-6 fw-semibold">Branch:</label>
-                                    <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                        data-placeholder="Select option" data-allow-clear="true"
-                                        data-kt-subscription-table-filter="product" data-hide-search="true">
-                                        <option></option>
-                                        @foreach ($branches as $branch)
-                                            <option value="{{ ucfirst($branch->branch_name) }}">
-                                                {{ ucfirst($branch->branch_name) }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <!--end::Input group-->
-                            @endif
-
                             <!--begin::Actions-->
                             <div class="d-flex justify-content-end">
                                 <button type="reset" class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
@@ -136,106 +121,59 @@
                     <!--end::Filter-->
                 </div>
                 <!--end::Toolbar-->
-
             </div>
             <!--end::Card toolbar-->
         </div>
         <!--end::Card header-->
-
         <!--begin::Card body-->
-        <div class="card-body pt-0">
-            <!--begin::Table-->
-            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_siblings_table">
-                <thead>
-                    <tr class="fw-bold fs-7 text-uppercase gs-0">
-                        <th class="w-10px pe-2">SL</th>
-                        <th class="min-w-200px">Name</th>
-                        <th class="d-none">Gender (filter)</th>
-                        <th>Gender</th>
-                        <th>Students</th>
-                        <th>Class/Age</th>
-                        <th>Year</th>
-                        <th>Institution</th>
-                        <th>Relationship</th>
-                        <th class="@if (!auth()->user()->hasRole('admin')) d-none @endif">Branch</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="text-gray-600 fw-semibold">
-                    @foreach ($siblings as $sibling)
-                        <tr>
-                            <td class="pe-2">{{ $loop->index + 1 }}</td>
-                            <td class="text-gray-800">
-                                {{ $sibling->name }}
-                            </td>
-                            <td class="d-none">gd_{{ $sibling->relationship }}</td>
-                            <td>
-                                @if ($sibling->relationship == 'brother')
-                                    <i class="las la-mars"></i>
-                                    Male
-                                @else
-                                    <i class="las la-venus"></i>
-                                    Female
-                                @endif
-                            </td>
-                            <td>
-                                @if ($sibling->student)
-                                    <a href="{{ route('students.show', $sibling->student->id) }}">
-                                        <span class="text-hover-success fs-6">
-                                            {{ $sibling->student->name }},
-                                            {{ $sibling->student->student_unique_id }}
-                                        </span>
-                                    </a>
-                                @else
-                                    <span class="badge badge-light-danger">-</span>
-                                @endif
-                            </td>
-                            <td>
-                                {{ $sibling->class }}
-                            </td>
-                            <td>
-                                {{ $sibling->year }}
-                            </td>
-                            <td>
-                                {{ $sibling->institution_name }}
-                            </td>
-                            <td>
-                                {{ ucfirst($sibling->relationship) }}
-                            </td>
-
-                            <td class="@if (!auth()->user()->hasRole('admin')) d-none @endif">
-                                @if ($sibling->student && $sibling->student->branch)
-                                    @php
-                                        $branchName = $sibling->student->branch->branch_name;
-                                        $badgeColor = $branchColors[$branchName] ?? 'badge-light-secondary'; // Default color
-                                    @endphp
-                                    <span class="badge {{ $badgeColor }}">{{ $branchName }}</span>
-                                @else
-                                    <span class="badge badge-light-danger">-</span>
-                                @endif
-                            </td>
-                            <td>
-                                @can('siblings.edit')
-                                    <a href="#" title="Edit Sibling" data-bs-toggle="modal"
-                                        data-bs-target="#kt_modal_edit_sibling" data-sibling-id="{{ $sibling->id }}"
-                                        class="btn btn-icon text-hover-primary w-30px h-30px">
-                                        <i class="ki-outline ki-pencil fs-2"></i>
-                                    </a>
-                                @endcan
-
-                                @can('siblings.delete')
-                                    <a href="#" title="Delete Sibling" data-bs-toggle="tooltip"
-                                        class="btn btn-icon text-hover-danger w-30px h-30px delete-sibling"
-                                        data-sibling-id="{{ $sibling->id }}">
-                                        <i class="ki-outline ki-trash fs-2"></i>
-                                    </a>
-                                @endcan
-                            </td>
-                        </tr>
+        <div class="card-body py-4">
+            @if ($isAdmin)
+                <!--begin::Tabs for Admin-->
+                <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-5 fs-6" id="siblingBranchTabs" role="tablist">
+                    @foreach ($branches as $index => $branch)
+                        @php
+                            $tabBadgeColor = $badgeColors[$index % count($badgeColors)];
+                        @endphp
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link fw-bold {{ $index === 0 ? 'active' : '' }}"
+                                id="tab-sibling-branch-{{ $branch->id }}" data-bs-toggle="tab"
+                                href="#kt_tab_sibling_branch_{{ $branch->id }}" role="tab"
+                                aria-controls="kt_tab_sibling_branch_{{ $branch->id }}"
+                                aria-selected="{{ $index === 0 ? 'true' : 'false' }}" data-branch-id="{{ $branch->id }}">
+                                <i class="ki-outline ki-bank fs-4 me-1"></i>
+                                {{ ucfirst($branch->branch_name) }}
+                                <span class="badge {{ $tabBadgeColor }} ms-2 sibling-count-badge badge-loading"
+                                    data-branch-id="{{ $branch->id }}">
+                                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                                </span>
+                            </a>
+                        </li>
                     @endforeach
-                </tbody>
-            </table>
-            <!--end::Table-->
+                </ul>
+                <!--end::Tabs for Admin-->
+
+                <!--begin::Tab Content-->
+                <div class="tab-content" id="siblingBranchTabsContent">
+                    @foreach ($branches as $index => $branch)
+                        <div class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}"
+                            id="kt_tab_sibling_branch_{{ $branch->id }}" role="tabpanel"
+                            aria-labelledby="tab-sibling-branch-{{ $branch->id }}">
+                            @include('siblings.partials.siblings-table', [
+                                'tableId' => 'kt_siblings_table_branch_' . $branch->id,
+                                'branchId' => $branch->id,
+                            ])
+                        </div>
+                    @endforeach
+                </div>
+                <!--end::Tab Content-->
+            @else
+                <!--begin::Single Table for Non-Admin-->
+                @include('siblings.partials.siblings-table', [
+                    'tableId' => 'kt_siblings_table',
+                    'branchId' => null,
+                ])
+                <!--end::Single Table for Non-Admin-->
+            @endif
         </div>
         <!--end::Card body-->
     </div>
@@ -255,8 +193,7 @@
                     <!--end::Modal title-->
                     <!--begin::Close-->
                     <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-siblings-modal-action="close">
-                        <i class="ki-outline ki-cross fs-1">
-                        </i>
+                        <i class="ki-outline ki-cross fs-1"> </i>
                     </div>
                     <!--end::Close-->
                 </div>
@@ -270,21 +207,17 @@
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_edit_sibling_header"
                             data-kt-scroll-wrappers="#kt_modal_edit_sibling_scroll" data-kt-scroll-offset="300px">
-
                             <div class="row">
-
                                 <!--begin::Student Input group-->
                                 <div class="col-12 fv-row mb-7">
                                     <!--begin::Label-->
                                     <label class="form-label">
                                         <span>Corrosponding Student</span>
                                         <span class="ms-1" data-bs-toggle="tooltip" title="Student cannot be changed.">
-                                            <i class="ki-outline ki-information-5 text-gray-500 fs-6">
-                                            </i>
+                                            <i class="ki-outline ki-information-5 text-gray-500 fs-6"> </i>
                                         </span>
                                     </label>
                                     <!--end::Label-->
-
                                     <!--begin::Solid input group style-->
                                     <div class="input-group input-group-solid flex-nowrap">
                                         <span class="input-group-text">
@@ -297,8 +230,8 @@
                                                 data-placeholder="Select an option" disabled>
                                                 <option></option>
                                                 @foreach ($students as $student)
-                                                    <option value="{{ $student->id }}">{{ $student->name }}
-                                                        (ID: {{ $student->student_unique_id }})
+                                                    <option value="{{ $student->id }}">{{ $student->name }} (ID:
+                                                        {{ $student->student_unique_id }})
                                                     </option>
                                                 @endforeach
                                             </select>
@@ -352,7 +285,6 @@
                                     <!--begin::Label-->
                                     <label class="d-flex align-items-center form-label mb-3 required">Institution</label>
                                     <!--end::Label-->
-
                                     <!--begin::Row-->
                                     <div class="input-group input-group-solid flex-nowrap">
                                         <span class="input-group-text">
@@ -373,7 +305,6 @@
                                     <!--begin::Label-->
                                     <label class="form-label required">Relationship with student</label>
                                     <!--end::Label-->
-
                                     <!--begin::Solid input group style-->
                                     <select name="sibling_relationship" class="form-select form-select-solid"
                                         data-control="select2" data-hide-search="true"
@@ -385,7 +316,6 @@
                                     <!--end::Solid input group style-->
                                 </div>
                                 <!--end::Input group-->
-
                             </div>
                         </div>
                         <!--end::Scroll-->
@@ -412,7 +342,6 @@
     <!--end::Modal - Edit sibling-->
 @endsection
 
-
 @push('vendor-js')
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
 @endpush
@@ -420,11 +349,12 @@
 @push('page-js')
     <script>
         const routeDeleteSibling = "{{ route('siblings.destroy', ':id') }}";
+        const routeSiblingsData = "{{ route('siblings.data') }}";
+        const routeSiblingsCount = "{{ route('siblings.count') }}";
+        const isAdmin = {{ $isAdmin ? 'true' : 'false' }};
+        const branchIds = @json($branches->pluck('id'));
     </script>
-
     <script src="{{ asset('js/siblings/index.js') }}"></script>
-
-
     <script>
         document.getElementById("student_info_menu").classList.add("here", "show");
         document.getElementById("siblings_link").classList.add("active");
