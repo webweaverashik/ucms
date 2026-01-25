@@ -154,7 +154,7 @@
             <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_sms_logs_table">
                 <thead>
                     <tr class="fw-bold fs-7 text-uppercase gs-0">
-                        <th class="w-25px">SL</th>
+                        <th class="w-50px">SL</th>
                         <th class="w-150px">Recipient</th>
                         <th>Message</th>
                         <th class="d-none">Status (Filter)</th>

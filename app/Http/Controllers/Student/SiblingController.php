@@ -108,8 +108,8 @@ class SiblingController extends Controller
             $studentInfo = '';
             if ($sibling->student) {
                 $studentUrl  = route('students.show', $sibling->student->id);
-                $studentInfo = '<a href="' . $studentUrl . '"><span class="text-hover-success fs-6">' .
-                e($sibling->student->name) . ', ' . e($sibling->student->student_unique_id) . '</span></a>';
+                $studentInfo = '<a href="' . $studentUrl . '" class="text-gray-700 text-hover-primary fs-6">' .
+                e($sibling->student->name) . ', ' . e($sibling->student->student_unique_id) . '</a>';
             } else {
                 $studentInfo = '<span class="badge badge-light-danger">-</span>';
             }

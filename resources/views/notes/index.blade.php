@@ -156,9 +156,9 @@
             <!--begin::Card body-->
             <div class="card-body pt-0">
                 <!--begin::Table-->
-                <table class="table table-hover align-middle table-row-dashed fs-6 gy-5" id="kt_notes_distribution_table">
+                <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_notes_distribution_table">
                     <thead>
-                        <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+                        <tr class="fw-bold fs-7 text-uppercase gs-0">
                             <th class="w-50px">SL</th>
                             <th class="min-w-150px">Topic Name</th>
                             <th class="min-w-120px">Subject</th>

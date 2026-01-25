@@ -43,149 +43,146 @@
 
 
 @section('content')
-    <div class="container-xxl">
-        <!--begin::Card-->
-        <div class="card">
-            <!--begin::Card header-->
-            <div class="card-header border-0 pt-6">
-                <!--begin::Card title-->
-                <div class="card-title">
-                    <!--begin::Search-->
-                    <div class="d-flex align-items-center position-relative my-1">
-                        <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
-                            data-teachers-table-filter="search" class="form-control form-control-solid w-md-350px ps-12"
-                            placeholder="Search in teachers">
-                    </div>
-                    <!--end::Search-->
-
-                    <!--begin::Export hidden buttons-->
-                    <div id="kt_hidden_export_buttons" class="d-none"></div>
-                    <!--end::Export buttons-->
-
+    <!--begin::Card-->
+    <div class="card">
+        <!--begin::Card header-->
+        <div class="card-header border-0 pt-6">
+            <!--begin::Card title-->
+            <div class="card-title">
+                <!--begin::Search-->
+                <div class="d-flex align-items-center position-relative my-1">
+                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
+                        data-teachers-table-filter="search" class="form-control form-control-solid w-md-350px ps-12"
+                        placeholder="Search in teachers">
                 </div>
-                <!--begin::Card title-->
+                <!--end::Search-->
 
-                <!--begin::Card toolbar-->
-                <div class="card-toolbar">
-                    <!--begin::Toolbar-->
-                    <div class="d-flex justify-content-end" data-teachers-table-filter="base">
-                        <!--begin::Export dropdown-->
-                        <div class="dropdown">
-                            <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
-                                data-kt-menu-placement="bottom-end">
-                                <i class="ki-outline ki-exit-up fs-2"></i>Export
-                            </button>
+                <!--begin::Export hidden buttons-->
+                <div id="kt_hidden_export_buttons" class="d-none"></div>
+                <!--end::Export buttons-->
 
-                            <!--begin::Menu-->
-                            <div id="kt_table_report_dropdown_menu"
-                                class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
-                                data-kt-menu="true">
-                                <!--begin::Menu item-->
-                                <div class="menu-item px-3">
-                                    <a href="#" class="menu-link px-3" data-row-export="copy">Copy to
-                                        clipboard</a>
-                                </div>
-                                <div class="menu-item px-3">
-                                    <a href="#" class="menu-link px-3" data-row-export="excel">Export as Excel</a>
-                                </div>
-                                <div class="menu-item px-3">
-                                    <a href="#" class="menu-link px-3" data-row-export="csv">Export as CSV</a>
-                                </div>
-                                <div class="menu-item px-3">
-                                    <a href="#" class="menu-link px-3" data-row-export="pdf">Export as PDF</a>
-                                </div>
-                                <!--end::Menu item-->
+            </div>
+            <!--begin::Card title-->
+
+            <!--begin::Card toolbar-->
+            <div class="card-toolbar">
+                <!--begin::Toolbar-->
+                <div class="d-flex justify-content-end" data-teachers-table-filter="base">
+                    <!--begin::Export dropdown-->
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
+                            data-kt-menu-placement="bottom-end">
+                            <i class="ki-outline ki-exit-up fs-2"></i>Export
+                        </button>
+
+                        <!--begin::Menu-->
+                        <div id="kt_table_report_dropdown_menu"
+                            class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
+                            data-kt-menu="true">
+                            <!--begin::Menu item-->
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3" data-row-export="copy">Copy to
+                                    clipboard</a>
                             </div>
-                            <!--end::Menu-->
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3" data-row-export="excel">Export as Excel</a>
+                            </div>
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3" data-row-export="csv">Export as CSV</a>
+                            </div>
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3" data-row-export="pdf">Export as PDF</a>
+                            </div>
+                            <!--end::Menu item-->
                         </div>
-                        <!--end::Export dropdown-->
-
-                        @can('teachers.create')
-                            <!--begin::Add Teacher-->
-                            <a href="#" class="btn btn-primary" data-bs-toggle="modal"
-                                data-bs-target="#kt_modal_add_teacher">
-                                <i class="ki-outline ki-plus fs-2"></i>New Teacher</a>
-                            <!--end::Add Teacher-->
-                        @endcan
-                        <!--end::Filter-->
+                        <!--end::Menu-->
                     </div>
-                    <!--end::Toolbar-->
+                    <!--end::Export dropdown-->
+
+                    @can('teachers.create')
+                        <!--begin::Add Teacher-->
+                        <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_teacher">
+                            <i class="ki-outline ki-plus fs-2"></i>New Teacher</a>
+                        <!--end::Add Teacher-->
+                    @endcan
+                    <!--end::Filter-->
                 </div>
-                <!--end::Card toolbar-->
+                <!--end::Toolbar-->
             </div>
-            <!--end::Card header-->
-
-            <!--begin::Card body-->
-            <div class="card-body py-4">
-                <!--begin::Table-->
-                <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_teachers_table">
-                    <thead>
-                        <tr class="fw-bold fs-7 text-uppercase gs-0">
-                            <th class="w-25px">SL</th>
-                            <th class="">Name</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th class="w-100px">Base Salary (Tk)</th>
-                            <th class="w-200px">Active/Inactive</th>
-                            <th class="not-export">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-gray-600 fw-semibold">
-                        @foreach ($teachers as $teacher)
-                            <tr>
-                                <td>{{ $loop->index + 1 }}</td>
-                                <td>
-                                    <a href="{{ route('teachers.show', $teacher->id) }}">
-                                        {{ $teacher->name }}
-                                    </a>
-                                </td>
-
-                                <td>{{ $teacher->email }}</td>
-                                <td>{{ $teacher->phone }}</td>
-                                <td>{{ $teacher->base_salary }}</td>
-                                <td>
-                                    <div
-                                        class="form-check form-switch form-check-solid form-check-success d-flex justify-content-center">
-                                        <input class="form-check-input toggle-active" type="checkbox"
-                                            value="{{ $teacher->id }}" @if ($teacher->is_active == 1) checked @endif
-                                            @cannot('teachers.edit') disabled @endcan>
-                                    </div>
-                                </td>
-                                <td>
-                                    @can('teachers.edit')
-                                        <a href="#" title="Edit Teacher" data-bs-toggle="modal"
-                                            data-bs-target="#kt_modal_edit_teacher"
-                                            class="btn btn-icon text-hover-primary w-30px h-30px edit-teacher me-2"
-                                            data-teacher-id={{ $teacher->id }}>
-                                            <i class="ki-outline ki-pencil fs-2"></i>
-                                        </a>
-                                    @endcan
-
-                                    <a href="#" title="Reset Passsword" data-bs-toggle="modal"
-                                        data-bs-target="#kt_modal_edit_password" data-teacher-id="{{ $teacher->id }}"
-                                        data-teacher-name="{{ $teacher->name }}"
-                                        class="btn btn-icon text-hover-primary w-30px h-30px change-password-btn">
-                                        <i class="ki-outline ki-key fs-2"></i>
-                                    </a>
-
-                                    @can('teachers.delete')
-                                        <a href="#" title="Delete Teacher"
-                                            class="btn btn-icon text-hover-danger w-30px h-30px delete-teacher"
-                                            data-teacher-id={{ $teacher->id }}>
-                                            <i class="ki-outline ki-trash fs-2"></i>
-                                        </a>
-                                    @endcan
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-                <!--end::Table-->
-            </div>
-            <!--end::Card body-->
+            <!--end::Card toolbar-->
         </div>
-        <!--end::Card-->
+        <!--end::Card header-->
+
+        <!--begin::Card body-->
+        <div class="card-body py-4">
+            <!--begin::Table-->
+            <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_teachers_table">
+                <thead>
+                    <tr class="fw-bold fs-7 text-uppercase gs-0">
+                        <th class="w-50px">SL</th>
+                        <th class="">Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th class="w-100px">Base Salary (Tk)</th>
+                        <th class="w-200px">Active/Inactive</th>
+                        <th class="not-export">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-600 fw-semibold">
+                    @foreach ($teachers as $teacher)
+                        <tr>
+                            <td>{{ $loop->index + 1 }}</td>
+                            <td>
+                                <a href="{{ route('teachers.show', $teacher->id) }}">
+                                    {{ $teacher->name }}
+                                </a>
+                            </td>
+
+                            <td>{{ $teacher->email }}</td>
+                            <td>{{ $teacher->phone }}</td>
+                            <td>{{ $teacher->base_salary }}</td>
+                            <td>
+                                <div
+                                    class="form-check form-switch form-check-solid form-check-success d-flex justify-content-center">
+                                    <input class="form-check-input toggle-active" type="checkbox"
+                                        value="{{ $teacher->id }}" @if ($teacher->is_active == 1) checked @endif
+                                        @cannot('teachers.edit') disabled @endcan>
+                                </div>
+                            </td>
+                            <td>
+                                @can('teachers.edit')
+                                    <a href="#" title="Edit Teacher" data-bs-toggle="modal"
+                                        data-bs-target="#kt_modal_edit_teacher"
+                                        class="btn btn-icon text-hover-primary w-30px h-30px edit-teacher me-2"
+                                        data-teacher-id={{ $teacher->id }}>
+                                        <i class="ki-outline ki-pencil fs-2"></i>
+                                    </a>
+                                @endcan
+
+                                <a href="#" title="Reset Passsword" data-bs-toggle="modal"
+                                    data-bs-target="#kt_modal_edit_password" data-teacher-id="{{ $teacher->id }}"
+                                    data-teacher-name="{{ $teacher->name }}"
+                                    class="btn btn-icon text-hover-primary w-30px h-30px change-password-btn">
+                                    <i class="ki-outline ki-key fs-2"></i>
+                                </a>
+
+                                @can('teachers.delete')
+                                    <a href="#" title="Delete Teacher"
+                                        class="btn btn-icon text-hover-danger w-30px h-30px delete-teacher"
+                                        data-teacher-id={{ $teacher->id }}>
+                                        <i class="ki-outline ki-trash fs-2"></i>
+                                    </a>
+                                @endcan
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            <!--end::Table-->
+        </div>
+        <!--end::Card body-->
     </div>
+    <!--end::Card-->
 
     <!--begin::Modal - Add Teacher-->
     <div class="modal fade" id="kt_modal_add_teacher" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"

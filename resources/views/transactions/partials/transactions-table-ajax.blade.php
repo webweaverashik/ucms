@@ -4,7 +4,7 @@
         id="{{ $tableId }}" data-branch-id="{{ $branchId }}">
         <thead>
             <tr class="fw-bold fs-7 text-uppercase gs-0">
-                <th class="w-25px">SL</th>
+                <th class="w-50px">SL</th>
                 <th class="w-150px">Invoice No.</th>
                 <th>Voucher No.</th>
                 <th>Amount (Tk)</th>
