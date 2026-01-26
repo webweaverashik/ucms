@@ -1,5 +1,6 @@
 @push('page-css')
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('css/students/pending.css') }}" rel="stylesheet" type="text/css" />
 @endpush
 
 @extends('layouts.app')
@@ -52,6 +53,7 @@
             'badge-light-danger',
             'badge-light-info',
         ];
+
         // Map branches to badge colors dynamically
         $branchColors = [];
         foreach ($branches as $index => $branch) {
@@ -74,13 +76,10 @@
                 <!--begin::Search-->
                 <div class="d-flex align-items-center position-relative my-1">
                     <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
-                    <input type="text" data-kt-subscription-table-filter="search"
+                    <input type="text" data-kt-pending-table-filter="search"
                         class="form-control form-control-solid w-350px ps-12" placeholder="Search Students">
                 </div>
                 <!--end::Search-->
-                <!--begin::Export hidden buttons-->
-                <div id="kt_hidden_export_buttons" class="d-none"></div>
-                <!--end::Export buttons-->
             </div>
             <!--begin::Card title-->
 
@@ -103,23 +102,23 @@
                         <div class="separator border-gray-200"></div>
                         <!--end::Separator-->
                         <!--begin::Content-->
-                        <div class="px-7 py-5" data-kt-subscription-table-filter="form">
+                        <div class="px-7 py-5" data-kt-pending-table-filter="form">
                             <div class="row">
                                 <div class="col-6 mb-5">
                                     <label class="form-label fs-6 fw-semibold">Student Gender:</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                        data-placeholder="Select option" data-allow-clear="true"
-                                        data-kt-subscription-table-filter="status" data-hide-search="true">
+                                        data-placeholder="Select option" data-allow-clear="true" data-filter-field="gender"
+                                        data-hide-search="true">
                                         <option></option>
-                                        <option value="student_male">Male</option>
-                                        <option value="student_female">Female</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
                                     </select>
                                 </div>
                                 <div class="col-6 mb-5">
                                     <label class="form-label fs-6 fw-semibold">Payment Type:</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                         data-placeholder="Select option" data-allow-clear="true"
-                                        data-kt-subscription-table-filter="billing" data-hide-search="true">
+                                        data-filter-field="payment_type" data-hide-search="true">
                                         <option></option>
                                         <option value="due">Due</option>
                                         <option value="current">Current</option>
@@ -130,12 +129,12 @@
                                     <label class="form-label fs-6 fw-semibold">Due Date:</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                         data-placeholder="Select option" data-allow-clear="true"
-                                        data-kt-subscription-table-filter="product" data-hide-search="true">
+                                        data-filter-field="due_date" data-hide-search="true">
                                         <option></option>
-                                        <option value="1/7">1-7</option>
-                                        <option value="1/10">1-10</option>
-                                        <option value="1/15">1-15</option>
-                                        <option value="1/30">1-30</option>
+                                        <option value="7">1-7</option>
+                                        <option value="10">1-10</option>
+                                        <option value="15">1-15</option>
+                                        <option value="30">1-30</option>
                                     </select>
                                 </div>
                                 <!--end::Input group-->
@@ -144,11 +143,10 @@
                                     <label class="form-label fs-6 fw-semibold">Batches:</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                         data-placeholder="Select option" data-allow-clear="true"
-                                        data-kt-subscription-table-filter="product" data-hide-search="true">
+                                        data-filter-field="batch_id" data-hide-search="true">
                                         <option></option>
                                         @foreach ($batches as $batch)
-                                            <option
-                                                value="{{ $batch->id }}_{{ $batch->name }}_{{ $batch->branch->branch_name }}">
+                                            <option value="{{ $batch->id }}">
                                                 {{ $batch->name }}
                                                 @if ($isAdmin)
                                                     ({{ $batch->branch->branch_name }})
@@ -163,10 +161,11 @@
                                     <label class="form-label fs-6 fw-semibold">Academic Group:</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                         data-placeholder="Select option" data-allow-clear="true"
-                                        data-kt-subscription-table-filter="product" data-hide-search="true">
+                                        data-filter-field="academic_group" data-hide-search="true">
                                         <option></option>
-                                        <option value="ucms_Science">Science</option>
-                                        <option value="ucms_Commerce">Commerce</option>
+                                        <option value="Science">Science</option>
+                                        <option value="Commerce">Commerce</option>
+                                        <option value="Arts">Arts</option>
                                     </select>
                                 </div>
                                 <!--end::Input group-->
@@ -175,10 +174,10 @@
                                     <label class="form-label fs-6 fw-semibold">Class</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                         data-placeholder="Select option" data-allow-clear="true"
-                                        data-kt-subscription-table-filter="status">
+                                        data-filter-field="class_id">
                                         <option></option>
                                         @foreach ($classnames as $classname)
-                                            <option value="{{ $classname->id }}_{{ $classname->class_numeral }}_ucms">
+                                            <option value="{{ $classname->id }}">
                                                 {{ $classname->name }}
                                             </option>
                                         @endforeach
@@ -190,12 +189,11 @@
                                     <label class="form-label fs-6 fw-semibold">Institutions</label>
                                     <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                         data-placeholder="Select option" data-allow-clear="true"
-                                        data-kt-subscription-table-filter="status">
+                                        data-filter-field="institution">
                                         <option></option>
                                         @foreach ($institutions as $institution)
-                                            <option
-                                                value="{{ $institution->name }} (EIIN: {{ $institution->eiin_number }})">
-                                                {{ $institution->name }} ({{ $institution->eiin_number }})
+                                            <option value="{{ $institution->name }}">
+                                                {{ $institution->name }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -206,9 +204,9 @@
                             <div class="d-flex justify-content-end">
                                 <button type="reset"
                                     class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
-                                    data-kt-menu-dismiss="true" data-kt-subscription-table-filter="reset">Reset</button>
+                                    data-kt-menu-dismiss="true" data-kt-pending-table-filter="reset">Reset</button>
                                 <button type="submit" class="btn btn-primary fw-semibold px-6"
-                                    data-kt-menu-dismiss="true" data-kt-subscription-table-filter="filter">Apply</button>
+                                    data-kt-menu-dismiss="true" data-kt-pending-table-filter="filter">Apply</button>
                             </div>
                             <!--end::Actions-->
                         </div>
@@ -265,9 +263,6 @@
                 <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-5 fs-6" id="pendingBranchTabs" role="tablist">
                     @foreach ($branches as $index => $branch)
                         @php
-                            $branchStudentCount = isset($studentsByBranch[$branch->id])
-                                ? $studentsByBranch[$branch->id]->count()
-                                : 0;
                             $tabBadgeColor = $badgeColors[$index % count($badgeColors)];
                         @endphp
                         <li class="nav-item" role="presentation">
@@ -279,7 +274,10 @@
                                 data-branch-id="{{ $branch->id }}">
                                 <i class="ki-outline ki-bank fs-4 me-1"></i>
                                 {{ ucfirst($branch->branch_name) }}
-                                <span class="badge {{ $tabBadgeColor }} ms-2">{{ $branchStudentCount }}</span>
+                                <span class="badge {{ $tabBadgeColor }} ms-2 branch-count-badge badge-loading"
+                                    data-branch-id="{{ $branch->id }}">
+                                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                                </span>
                             </a>
                         </li>
                     @endforeach
@@ -292,15 +290,9 @@
                         <div class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}"
                             id="kt_tab_pending_branch_{{ $branch->id }}" role="tabpanel"
                             aria-labelledby="tab-pending-branch-{{ $branch->id }}">
-
                             @include('students.pending.partials.pending-table', [
-                                'students' => $studentsByBranch[$branch->id] ?? collect(),
                                 'tableId' => 'kt_pending_students_table_branch_' . $branch->id,
-                                'branchColors' => $branchColors,
-                                'canApprove' => $canApprove,
-                                'canEdit' => $canEdit,
-                                'canDelete' => $canDelete,
-                                'isAdmin' => $isAdmin,
+                                'branchId' => $branch->id,
                             ])
                         </div>
                     @endforeach
@@ -309,13 +301,8 @@
             @else
                 <!--begin::Single Table for Non-Admin-->
                 @include('students.pending.partials.pending-table', [
-                    'students' => $students,
                     'tableId' => 'kt_pending_students_table',
-                    'branchColors' => $branchColors,
-                    'canApprove' => $canApprove,
-                    'canEdit' => $canEdit,
-                    'canDelete' => $canDelete,
-                    'isAdmin' => $isAdmin,
+                    'branchId' => null,
                 ])
                 <!--end::Single Table for Non-Admin-->
             @endif
@@ -323,17 +310,25 @@
         <!--end::Card body-->
     </div>
     <!--end::Card-->
-
 @endsection
 
 @push('vendor-js')
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
+    <!-- SheetJS for Excel export -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <!-- jsPDF for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
 @endpush
 
 @push('page-js')
     <script>
         const routeDeleteStudent = "{{ route('students.destroy', ':id') }}";
         const routeApproveStudent = "{{ url('students') }}/:id/approve";
+        const routePendingData = "{{ route('students.pending.data') }}";
+        const routePendingBranchCounts = "{{ route('students.pending.branch-counts') }}";
+        const routeStudentShow = "{{ route('students.show', ':id') }}";
+        const routeStudentEdit = "{{ route('students.edit', ':id') }}";
         const isAdmin = @json($isAdmin);
         const branchIds = @json($branches->pluck('id')->toArray());
     </script>

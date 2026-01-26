@@ -13,7 +13,6 @@ var KTStudentsList = function () {
     var getFilters = function () {
         var filters = {};
         var filterForm = document.querySelector('[data-kt-students-list-table-filter="form"]');
-
         if (filterForm) {
             var filterSelects = filterForm.querySelectorAll('select[data-filter-field]');
             filterSelects.forEach(function (select) {
@@ -24,7 +23,6 @@ var KTStudentsList = function () {
                 }
             });
         }
-
         return filters;
     };
 
@@ -105,11 +103,9 @@ var KTStudentsList = function () {
                 if (type === 'export') {
                     return data.name + ' (' + data.student_unique_id + ')';
                 }
-
                 var nameClass = data.is_active ? 'text-gray-800 text-hover-primary' : 'text-danger';
                 var tooltip = data.is_active ? '' : 'title="Inactive Student" data-bs-toggle="tooltip" data-bs-placement="top"';
                 var showUrl = routeStudentShow.replace(':id', data.id);
-
                 return '<div class="d-flex align-items-center">' +
                     '<div class="d-flex flex-column text-start">' +
                     '<a href="' + showUrl + '" class="' + nameClass + ' mb-1" ' + tooltip + '>' + escapeHtml(data.name) + '</a>' +
@@ -211,13 +207,11 @@ var KTStudentsList = function () {
                     if (branchId) {
                         d.branch_id = branchId;
                     }
-
                     // Add custom filters
                     var filters = getFilters();
                     Object.keys(filters).forEach(function (key) {
                         d[key] = filters[key];
                     });
-
                     return d;
                 },
                 dataSrc: function (json) {
@@ -290,7 +284,6 @@ var KTStudentsList = function () {
             tabLink.addEventListener('shown.bs.tab', function (event) {
                 var branchId = event.target.getAttribute('data-branch-id');
                 var tableId = 'kt_students_table_branch_' + branchId;
-
                 currentBranchId = branchId;
 
                 if (!initializedTabs[branchId]) {
@@ -314,6 +307,61 @@ var KTStudentsList = function () {
 
         datatables['single'] = initSingleDatatable('kt_students_table', null);
         activeDatatable = datatables['single'];
+    };
+
+    // Get formatted date time for export
+    var getExportDateTime = function () {
+        var now = new Date();
+        return now.toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+        });
+    };
+
+    // Get export filename with timestamp
+    var getExportFilename = function (extension) {
+        var now = new Date();
+        var timestamp = now.getFullYear().toString() +
+            String(now.getMonth() + 1).padStart(2, '0') +
+            String(now.getDate()).padStart(2, '0') + '_' +
+            String(now.getHours()).padStart(2, '0') +
+            String(now.getMinutes()).padStart(2, '0');
+        return 'Students_Report_' + timestamp + '.' + extension;
+    };
+
+    // Show export success notification
+    var showExportSuccess = function (type, rowCount) {
+        var messages = {
+            'copy': 'Data copied to clipboard successfully!',
+            'excel': 'Excel file exported successfully!',
+            'csv': 'CSV file exported successfully!',
+            'pdf': 'PDF file exported successfully!'
+        };
+
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": true,
+            "progressBar": true,
+            "positionClass": "toastr-top-right",
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "3000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        };
+
+        toastr.success(messages[type] + ' (' + rowCount + ' rows)', 'Export Complete');
     };
 
     // Fetch all data for export
@@ -404,19 +452,18 @@ var KTStudentsList = function () {
     // Export functions
     var copyToClipboard = function (data) {
         var exportData = prepareExportData(data);
-        var text = exportData.headers.join('\t') + '\n';
+        var exportDateTime = getExportDateTime();
+
+        // Add title and timestamp
+        var text = 'Students Report\n';
+        text += 'Exported on: ' + exportDateTime + '\n\n';
+        text += exportData.headers.join('\t') + '\n';
         exportData.rows.forEach(function (row) {
             text += row.join('\t') + '\n';
         });
 
         navigator.clipboard.writeText(text).then(function () {
-            Swal.fire({
-                icon: 'success',
-                title: 'Copied!',
-                text: exportData.rows.length + ' rows copied to clipboard.',
-                timer: 2000,
-                showConfirmButton: false
-            });
+            showExportSuccess('copy', exportData.rows.length);
         }).catch(function () {
             var textarea = document.createElement('textarea');
             textarea.value = text;
@@ -424,21 +471,31 @@ var KTStudentsList = function () {
             textarea.select();
             document.execCommand('copy');
             document.body.removeChild(textarea);
-            Swal.fire({
-                icon: 'success',
-                title: 'Copied!',
-                text: exportData.rows.length + ' rows copied to clipboard.',
-                timer: 2000,
-                showConfirmButton: false
-            });
+
+            showExportSuccess('copy', exportData.rows.length);
         });
     };
 
     var exportToExcel = function (data) {
         var exportData = prepareExportData(data);
+        var exportDateTime = getExportDateTime();
         var wb = XLSX.utils.book_new();
-        var wsData = [exportData.headers].concat(exportData.rows);
+
+        // Create worksheet data with title and timestamp
+        var wsData = [
+            ['Students Report'],
+            ['Exported on: ' + exportDateTime],
+            [], // Empty row for spacing
+            exportData.headers
+        ].concat(exportData.rows);
+
         var ws = XLSX.utils.aoa_to_sheet(wsData);
+
+        // Merge cells for title row
+        ws['!merges'] = [
+            { s: { r: 0, c: 0 }, e: { r: 0, c: exportData.headers.length - 1 } }, // Title row
+            { s: { r: 1, c: 0 }, e: { r: 1, c: exportData.headers.length - 1 } }  // Timestamp row
+        ];
 
         ws['!cols'] = [
             { wch: 5 },
@@ -453,12 +510,20 @@ var KTStudentsList = function () {
         ];
 
         XLSX.utils.book_append_sheet(wb, ws, 'Students');
-        XLSX.writeFile(wb, 'Student_Lists_Report.xlsx');
+        XLSX.writeFile(wb, getExportFilename('xlsx'));
+
+        showExportSuccess('excel', exportData.rows.length);
     };
 
     var exportToCSV = function (data) {
         var exportData = prepareExportData(data);
+        var exportDateTime = getExportDateTime();
         var csvContent = '';
+
+        // Add title and timestamp
+        csvContent += '"Students Report"\n';
+        csvContent += '"Exported on: ' + exportDateTime + '"\n';
+        csvContent += '\n'; // Empty row for spacing
 
         csvContent += exportData.headers.map(function (h) {
             return '"' + h.replace(/"/g, '""') + '"';
@@ -473,32 +538,40 @@ var KTStudentsList = function () {
         var blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
         var link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = 'Student_Lists_Report.csv';
+        link.download = getExportFilename('csv');
         link.click();
         URL.revokeObjectURL(link.href);
+
+        showExportSuccess('csv', exportData.rows.length);
     };
 
     var exportToPDF = function (data) {
         var exportData = prepareExportData(data);
+        var exportDateTime = getExportDateTime();
         var doc = new jspdf.jsPDF('l', 'mm', 'a4');
 
         doc.setFontSize(16);
-        doc.text('Student Lists Report', 14, 15);
+        doc.text('Students Report', 14, 15);
 
         doc.setFontSize(10);
-        doc.text('Generated: ' + new Date().toLocaleString(), 14, 22);
+        doc.text('Exported on: ' + exportDateTime, 14, 22);
 
         doc.autoTable({
             head: [exportData.headers],
             body: exportData.rows,
             startY: 28,
-            styles: { fontSize: 8, cellPadding: 2 },
+            styles: {
+                fontSize: 8,
+                cellPadding: 2
+            },
             headStyles: {
                 fillColor: [63, 81, 181],
                 textColor: 255,
                 fontStyle: 'bold'
             },
-            alternateRowStyles: { fillColor: [245, 245, 245] },
+            alternateRowStyles: {
+                fillColor: [245, 245, 245]
+            },
             columnStyles: {
                 0: { cellWidth: 10 },
                 1: { cellWidth: 50 },
@@ -521,12 +594,15 @@ var KTStudentsList = function () {
             }
         });
 
-        doc.save('Student_Lists_Report.pdf');
+        doc.save(getExportFilename('pdf'));
+
+        showExportSuccess('pdf', exportData.rows.length);
     };
 
     // Hook export buttons
     var exportButtons = function () {
         var exportItems = document.querySelectorAll('#kt_table_report_dropdown_menu [data-row-export]');
+
         exportItems.forEach(function (exportItem) {
             exportItem.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -618,6 +694,7 @@ var KTStudentsList = function () {
             if (!deleteBtn) return;
 
             e.preventDefault();
+
             var studentId = deleteBtn.getAttribute('data-student-id');
             var url = routeDeleteStudent.replace(':id', studentId);
 
@@ -646,7 +723,9 @@ var KTStudentsList = function () {
                                 Swal.fire({
                                     title: "Deleted!",
                                     text: "The student has been removed.",
-                                    icon: "success"
+                                    icon: "success",
+                                    timer: 2000,
+                                    showConfirmButton: false
                                 })
                                     .then(function () {
                                         if (activeDatatable) activeDatatable.ajax.reload();
@@ -696,6 +775,7 @@ var KTStudentsList = function () {
 
             // Populate hidden fields
             document.getElementById('student_id').value = studentId;
+
             // Set the NEW status (opposite of current)
             document.getElementById('activation_status').value = (activeStatus === 'active') ? 'inactive' : 'active';
 

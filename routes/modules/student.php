@@ -24,6 +24,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('students/branch-counts', [StudentController::class, 'getBranchCounts'])->name('students.branch-counts');
 Route::get('students/data', [StudentController::class, 'getStudentsData'])->name('students.data');
 Route::get('students/pending', [StudentController::class, 'pending'])->name('students.pending');
+Route::get('students/pending/data', [StudentController::class, 'getPendingStudentsData'])->name('students.pending.data');
+Route::get('students/pending/branch-counts', [StudentController::class, 'getPendingBranchCounts'])->name('students.pending.branch-counts');
 Route::get('students/alumni', [StudentController::class, 'alumniStudent'])->name('students.alumni.index');
 
 // Student Activation
@@ -71,6 +73,5 @@ Route::resources([
 // AJAX data endpoints for DataTables
 Route::get('guardians-data', [GuardianController::class, 'getData'])->name('guardians.data');
 Route::get('guardians-count', [GuardianController::class, 'getCount'])->name('guardians.count');
-
 Route::get('siblings-data', [SiblingController::class, 'getData'])->name('siblings.data');
 Route::get('siblings-count', [SiblingController::class, 'getCount'])->name('siblings.count');

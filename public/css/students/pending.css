@@ -1,0 +1,209 @@
+/**
+ * Pending Students Page Styles
+ * =============================================================================
+ * This file contains all styles specific to the pending students listing page
+ * including DataTable styling and tab interactions.
+ */
+
+/* ============================================================================
+   Loading Animation for Branch Count Badges
+   ============================================================================ */
+
+.branch-count-badge.badge-loading {
+      min-width: 30px;
+}
+
+.branch-count-badge .spinner-border {
+      width: 12px;
+      height: 12px;
+      border-width: 2px;
+}
+
+/* ============================================================================
+   DataTable Specific Styles
+   ============================================================================ */
+
+/* Ensure proper alignment for all cells */
+.pending-students-datatable td,
+.pending-students-datatable th {
+      vertical-align: middle !important;
+}
+
+/* Processing overlay styling */
+.pending-students-datatable.dataTable .dataTables_processing {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================================================
+   Export Menu Styles
+   ============================================================================ */
+
+#kt_table_report_dropdown_menu .menu-link {
+      transition: all 0.2s ease;
+}
+
+#kt_table_report_dropdown_menu .menu-link:hover {
+      padding-left: 1.25rem;
+}
+
+/* ============================================================================
+   Filter Form Styles
+   ============================================================================ */
+
+[data-kt-pending-table-filter="form"] .form-select {
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+[data-kt-pending-table-filter="form"] .form-select:focus {
+      border-color: var(--bs-primary);
+      box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.1);
+}
+
+/* ============================================================================
+   Tab Badge Styles
+   ============================================================================ */
+
+#pendingBranchTabs .nav-link .branch-count-badge {
+      transition: all 0.2s ease;
+}
+
+#pendingBranchTabs .nav-link.active .branch-count-badge {
+      transform: scale(1.05);
+}
+
+#pendingBranchTabs .nav-link:hover .branch-count-badge {
+      opacity: 0.9;
+}
+
+/* ============================================================================
+   Responsive Adjustments
+   ============================================================================ */
+
+@media (max-width: 768px) {
+      .pending-students-datatable {
+            font-size: 0.875rem;
+      }
+}
+
+@media (max-width: 576px) {
+      #pendingBranchTabs .nav-link {
+            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+      }
+
+      #pendingBranchTabs .nav-link .branch-count-badge {
+            font-size: 0.7rem;
+      }
+}
+
+/* ============================================================================
+   Actions Menu Styles
+   ============================================================================ */
+
+.pending-students-datatable .menu-link {
+      transition: all 0.2s ease;
+}
+
+.pending-students-datatable .menu-link:hover {
+      transform: translateX(3px);
+}
+
+/* ============================================================================
+   Table Row Hover Effects
+   ============================================================================ */
+
+.pending-students-datatable tbody tr {
+      transition: background-color 0.2s ease;
+}
+
+.pending-students-datatable tbody tr:hover {
+      background-color: rgba(var(--bs-primary-rgb), 0.03);
+}
+
+/* ============================================================================
+   Student Avatar Styles
+   ============================================================================ */
+
+.pending-students-datatable .symbol-50px {
+      width: 50px;
+      height: 50px;
+}
+
+.pending-students-datatable .symbol-label img {
+      object-fit: cover;
+}
+
+/* ============================================================================
+   Eligibility Indicator Styles
+   ============================================================================ */
+
+/* Green circle badge for eligible students */
+.pending-students-datatable .badge-circle {
+      width: 18px;
+      height: 18px;
+      min-width: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      padding: 0;
+}
+
+.pending-students-datatable .badge-circle i {
+      font-size: 10px !important;
+      line-height: 1;
+}
+
+/* Pulse animation for eligibility indicator */
+.pending-students-datatable .badge-circle.badge-success {
+      animation: eligibility-pulse 2s ease-in-out infinite;
+}
+
+@keyframes eligibility-pulse {
+
+      0%,
+      100% {
+            box-shadow: 0 0 0 0 rgba(80, 205, 137, 0.4);
+      }
+
+      50% {
+            box-shadow: 0 0 0 4px rgba(80, 205, 137, 0);
+      }
+}
+
+/* ============================================================================
+   Empty State Styles
+   ============================================================================ */
+
+.pending-students-datatable tbody .dataTables_empty {
+      text-align: center;
+      padding: 2rem !important;
+      color: var(--bs-gray-500);
+}
+
+/* ============================================================================
+   Action Button Styles
+   ============================================================================ */
+
+.pending-students-datatable .btn-sm {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+}
+
+/* Approve button hover effect */
+.pending-students-datatable .approve-student:hover {
+      color: var(--bs-success) !important;
+}
+
+/* Delete button hover effect */
+.pending-students-datatable .delete-student:hover {
+      color: var(--bs-danger) !important;
+}
+
+/* Edit button hover effect */
+.pending-students-datatable .menu-link[href*="edit"]:hover {
+      color: var(--bs-primary) !important;
+}

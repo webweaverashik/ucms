@@ -76,7 +76,7 @@ class StudentActivationController extends Controller
             // Update Student's Activation ID
             $student->update(['student_activation_id' => $activation->id]);
 
-            // AutoSMS for invoice created
+            // AutoSMS for student registration success
             $mobileNumber = $student->mobileNumbers->where('number_type', 'sms')->first();
 
             if ($mobileNumber) {
