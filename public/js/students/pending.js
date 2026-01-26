@@ -245,7 +245,7 @@ var KTPendingStudentsList = (function () {
             },
             columns: buildColumns(),
             order: [[9, 'desc']], // Order by admission date desc
-            pageLength: 25,
+            pageLength: 10,
             lengthMenu: [10, 25, 50, 100],
             lengthChange: true,
             autoWidth: false,
