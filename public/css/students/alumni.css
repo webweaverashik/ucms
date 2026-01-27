@@ -1,0 +1,156 @@
+/**
+ * Alumni Students Index Page Styles
+ * =============================================================================
+ * This file contains all styles specific to the alumni students listing page
+ * including DataTable styling and tab interactions.
+ */
+
+/* ============================================================================
+   Loading Animation for Branch Count Badges
+   ============================================================================ */
+
+.alumni-branch-count-badge.badge-loading {
+      min-width: 30px;
+}
+
+.alumni-branch-count-badge .spinner-border {
+      width: 12px;
+      height: 12px;
+      border-width: 2px;
+}
+
+/* ============================================================================
+   DataTable Specific Styles
+   ============================================================================ */
+
+/* Ensure proper alignment for all cells */
+.alumni-students-datatable td,
+.alumni-students-datatable th {
+      vertical-align: middle !important;
+}
+
+/* Processing indicator styling */
+.alumni-students-datatable .dataTables_processing {
+      background: rgba(255, 255, 255, 0.9) !important;
+      z-index: 100;
+}
+
+/* ============================================================================
+   Student Status Indicators
+   ============================================================================ */
+
+/* Inactive student name styling - red text only */
+.alumni-students-datatable .text-danger {
+      /* Red color is applied via Bootstrap's text-danger class */
+}
+
+/* ============================================================================
+   Export Menu Styles
+   ============================================================================ */
+
+#kt_alumni_export_dropdown_menu .menu-link {
+      transition: all 0.2s ease;
+}
+
+#kt_alumni_export_dropdown_menu .menu-link:hover {
+      padding-left: 1.25rem;
+}
+
+/* ============================================================================
+   Filter Form Styles
+   ============================================================================ */
+
+[data-kt-alumni-table-filter="form"] .form-select {
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+[data-kt-alumni-table-filter="form"] .form-select:focus {
+      border-color: var(--bs-primary);
+      box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.1);
+}
+
+/* ============================================================================
+   Tab Badge Styles
+   ============================================================================ */
+
+#alumniBranchTabs .nav-link .alumni-branch-count-badge {
+      transition: all 0.2s ease;
+}
+
+#alumniBranchTabs .nav-link.active .alumni-branch-count-badge {
+      transform: scale(1.05);
+}
+
+#alumniBranchTabs .nav-link:hover .alumni-branch-count-badge {
+      opacity: 0.9;
+}
+
+/* ============================================================================
+   Responsive Adjustments
+   ============================================================================ */
+
+@media (max-width: 768px) {
+      .alumni-students-datatable {
+            font-size: 0.875rem;
+      }
+}
+
+@media (max-width: 576px) {
+      #alumniBranchTabs .nav-link {
+            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+      }
+
+      #alumniBranchTabs .nav-link .alumni-branch-count-badge {
+            font-size: 0.7rem;
+      }
+}
+
+/* ============================================================================
+   Actions Menu Styles
+   ============================================================================ */
+
+.alumni-students-datatable .menu-link {
+      transition: all 0.2s ease;
+}
+
+.alumni-students-datatable .menu-link:hover {
+      transform: translateX(3px);
+}
+
+/* ============================================================================
+   Table Row Hover Effects
+   ============================================================================ */
+
+.alumni-students-datatable tbody tr {
+      transition: background-color 0.2s ease;
+}
+
+.alumni-students-datatable tbody tr:hover {
+      background-color: rgba(var(--bs-primary-rgb), 0.03);
+}
+
+/* ============================================================================
+   Loading Overlay
+   ============================================================================ */
+
+.dataTables_wrapper .dataTables_processing {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 1rem 2rem;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 0.475rem;
+      box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================================================
+   Empty State Styling
+   ============================================================================ */
+
+.alumni-students-datatable .dataTables_empty {
+      text-align: center;
+      padding: 2rem;
+      color: var(--bs-gray-600);
+}

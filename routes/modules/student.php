@@ -26,7 +26,11 @@ Route::get('students/data', [StudentController::class, 'getStudentsData'])->name
 Route::get('students/pending', [StudentController::class, 'pending'])->name('students.pending');
 Route::get('students/pending/data', [StudentController::class, 'getPendingStudentsData'])->name('students.pending.data');
 Route::get('students/pending/branch-counts', [StudentController::class, 'getPendingBranchCounts'])->name('students.pending.branch-counts');
+
+// Alumni Students AJAX endpoints
 Route::get('students/alumni', [StudentController::class, 'alumniStudent'])->name('students.alumni.index');
+Route::get('students/alumni/data', [StudentController::class, 'getAlumniStudentsData'])->name('students.alumni.data');
+Route::get('students/alumni/branch-counts', [StudentController::class, 'getAlumniBranchCounts'])->name('students.alumni.branch-counts');
 
 // Student Activation
 Route::post('students/{id}/approve', [StudentActivationController::class, 'approve'])->name('students.activate');

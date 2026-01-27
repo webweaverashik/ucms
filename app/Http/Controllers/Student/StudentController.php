@@ -22,7 +22,6 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -378,6 +377,7 @@ class StudentController extends Controller
             })
             ->select('id', 'name', 'branch_id')
             ->get();
+
         $institutions = Institution::all();
         $branches     = Branch::all();
 
@@ -635,9 +635,7 @@ class StudentController extends Controller
             $actions = $this->buildPendingActionsDropdown($student, $canApprove, $canEdit, $canDelete);
 
             // Student info with photo
-            $photoUrl = $student->photo_url
-                ? asset($student->photo_url)
-                : asset($student->gender == 'male' ? 'img/boy.png' : 'img/girl.png');
+            $photoUrl = $student->photo_url ? asset($student->photo_url) : asset($student->gender == 'male' ? 'img/boy.png' : 'img/girl.png');
 
             $data[] = [
                 'DT_RowId'         => 'row_' . $student->id,
@@ -723,7 +721,8 @@ class StudentController extends Controller
     {
         $classnames   = ClassName::active()->latest('class_numeral')->get();
         $institutions = Institution::select('id', 'name', 'eiin_number')->get();
-        $batches      = Batch::when(auth()->user()->branch_id != 0, function ($query) {
+
+        $batches = Batch::when(auth()->user()->branch_id != 0, function ($query) {
             $query->where('branch_id', auth()->user()->branch_id);
         })
             ->select('id', 'name', 'branch_id')
@@ -797,7 +796,6 @@ class StudentController extends Controller
             'guardian_1_mobile'       => 'required|string|max:11',
             'guardian_1_gender'       => 'required|in:male,female',
             'guardian_1_relationship' => 'required|string|in:father,mother,brother,sister,uncle,aunt',
-
             'guardian_2_name'         => 'nullable|string|max:255',
             'guardian_2_mobile'       => 'nullable|string|max:11',
             'guardian_2_gender'       => 'nullable|in:male,female',
@@ -808,7 +806,6 @@ class StudentController extends Controller
             'sibling_1_class'         => 'nullable|string',
             'sibling_1_institution'   => 'nullable|string',
             'sibling_1_relationship'  => 'nullable|string|in:brother,sister',
-
             'sibling_2_name'          => 'nullable|string|max:255',
             'sibling_2_year'          => 'nullable|string',
             'sibling_2_class'         => 'nullable|string',
@@ -921,7 +918,6 @@ class StudentController extends Controller
                 $extension = $file->getClientOriginalExtension();
                 $filename  = $studentUniqueId . '_photo.' . $extension;
                 $photoPath = public_path('uploads/students/');
-
                 if (! file_exists($photoPath)) {
                     mkdir($photoPath, 0777, true);
                 }
@@ -1077,9 +1073,9 @@ class StudentController extends Controller
      * - Optional subjects are truly optional (not required)
      * - Only validates that Main ≠ 4th when BOTH are selected
      *
-     * @param  array  $validated
-     * @param  int  $classNumeral
-     * @param  string  $group
+     * @param array $validated
+     * @param int $classNumeral
+     * @param string $group
      * @return bool|string
      */
     private function validateOptionalSubjects(array $validated, int $classNumeral, string $group): bool | string
@@ -1103,6 +1099,7 @@ class StudentController extends Controller
 
         foreach ($subjects as $subject) {
             $is4th = $this->isFourthSubjectValue($subject['is_4th'] ?? '0');
+
             if ($is4th) {
                 $fourthSubjectIds[] = $subject['id'];
             } else {
@@ -1124,8 +1121,8 @@ class StudentController extends Controller
      * Store student subjects - FIXED VERSION
      * Now properly reads the is_4th flag from each subject in the array
      *
-     * @param  Student  $student
-     * @param  array  $validated
+     * @param Student $student
+     * @param array $validated
      */
     private function storeStudentSubjects(Student $student, array $validated): void
     {
@@ -1164,7 +1161,7 @@ class StudentController extends Controller
      * Helper to determine if a value represents a 4th subject
      * Handles various input formats: '1', '0', 1, 0, true, false, 'true', 'false'
      *
-     * @param  mixed  $value
+     * @param mixed $value
      * @return bool
      */
     private function isFourthSubjectValue($value): bool
@@ -1172,15 +1169,12 @@ class StudentController extends Controller
         if (is_bool($value)) {
             return $value;
         }
-
         if (is_numeric($value)) {
             return (int) $value === 1;
         }
-
         if (is_string($value)) {
             return $value === '1' || strtolower($value) === 'true';
         }
-
         return false;
     }
 
@@ -1197,8 +1191,8 @@ class StudentController extends Controller
      * 3. Sequential number is shared across ALL classes with same class_numeral in same branch
      *    (e.g., 'HSC Sci' and 'HSC Com' both with class_numeral=11 share the sequence)
      *
-     * @param  Branch  $branch
-     * @param  ClassName  $class
+     * @param Branch $branch
+     * @param ClassName $class
      * @return string
      */
     private function generateStudentUniqueId(Branch $branch, ClassName $class): string
@@ -1259,10 +1253,10 @@ class StudentController extends Controller
     /**
      * Create a payment invoice for a student
      *
-     * @param  Student  $student
-     * @param  float  $amount
-     * @param  string  $typeName  - e.g., 'Admission Fee', 'Sheet Fee', 'Special Class Fee'
-     * @param  string|null  $monthYear
+     * @param Student $student
+     * @param float $amount
+     * @param string $typeName - e.g., 'Admission Fee', 'Sheet Fee', 'Special Class Fee'
+     * @param string|null $monthYear
      * @return void
      */
     private function createInvoice(Student $student, float $amount, string $typeName, ?string $monthYear = null): void
@@ -1286,7 +1280,6 @@ class StudentController extends Controller
 
         if (! $invoiceType) {
             \Log::warning("Invoice type '{$typeName}' not found for student {$student->id}");
-
             return;
         }
 
@@ -1396,6 +1389,7 @@ class StudentController extends Controller
                 'class_numeral' => $class->class_numeral,
             ],
         );
+
         $sheet_subjectNames = $sheetPayments->pluck('sheet.class.subjects')->flatten()->unique('name')->pluck('name')->sort()->values();
 
         $invoice_types = PaymentInvoiceType::select('id', 'type_name')->oldest('type_name')->get();
@@ -1500,7 +1494,6 @@ class StudentController extends Controller
             'guardian_1_mobile'       => 'required|string|max:11',
             'guardian_1_gender'       => 'required|in:male,female',
             'guardian_1_relationship' => 'required|string|in:father,mother,brother,sister,uncle,aunt',
-
             'guardian_2_id'           => 'nullable|integer|exists:guardians,id',
             'guardian_2_name'         => 'nullable|string|max:255',
             'guardian_2_mobile'       => 'nullable|string|max:11',
@@ -1514,7 +1507,6 @@ class StudentController extends Controller
             'sibling_1_class'         => 'nullable|string',
             'sibling_1_institution'   => 'nullable|string',
             'sibling_1_relationship'  => 'nullable|string|in:brother,sister',
-
             'sibling_2_id'            => 'nullable|integer|exists:siblings,id',
             'sibling_2_name'          => 'nullable|string|max:255',
             'sibling_2_year'          => 'nullable|string',
@@ -1527,7 +1519,9 @@ class StudentController extends Controller
             // Update student record
             $student->update([
                 'name'          => $validated['student_name'],
-                'date_of_birth' => ! empty($validated['birth_date']) ? Carbon::createFromFormat('d-m-Y', $validated['birth_date']) : null,
+                'date_of_birth' => ! empty($validated['birth_date'])
+                    ? Carbon::createFromFormat('d-m-Y', $validated['birth_date'])
+                    : null,
                 'gender'        => $validated['student_gender'],
                 'religion'      => $validated['student_religion'] ?? null,
                 'blood_group'   => $validated['student_blood_group'] ?? null,
@@ -1542,7 +1536,6 @@ class StudentController extends Controller
                 $extension = $file->getClientOriginalExtension();
                 $filename  = $student->student_unique_id . '_photo.' . $extension;
                 $photoPath = public_path('uploads/students/');
-
                 if (! file_exists($photoPath)) {
                     mkdir($photoPath, 0777, true);
                 }
@@ -1737,6 +1730,7 @@ class StudentController extends Controller
     private function updateMobileNumbers(Student $student, array $validated): void
     {
         $student->mobileNumbers()->updateOrCreate(['number_type' => 'home'], ['mobile_number' => $validated['student_phone_home']]);
+
         $student->mobileNumbers()->updateOrCreate(['number_type' => 'sms'], ['mobile_number' => $validated['student_phone_sms']]);
 
         if (! empty($validated['student_phone_whatsapp'])) {
@@ -1856,7 +1850,8 @@ class StudentController extends Controller
             $q->where('type_name', 'Tuition Fee');
         });
 
-        $lastInvoice   = (clone $tuitionInvoices)->orderByRaw("CAST(SUBSTRING_INDEX(month_year, '_', -1) AS UNSIGNED) DESC, CAST(SUBSTRING_INDEX(month_year, '_', 1) AS UNSIGNED) DESC")->first();
+        $lastInvoice = (clone $tuitionInvoices)->orderByRaw("CAST(SUBSTRING_INDEX(month_year, '_', -1) AS UNSIGNED) DESC, CAST(SUBSTRING_INDEX(month_year, '_', 1) AS UNSIGNED) DESC")->first();
+
         $oldestInvoice = (clone $tuitionInvoices)->orderByRaw("CAST(SUBSTRING_INDEX(month_year, '_', -1) AS UNSIGNED) ASC, CAST(SUBSTRING_INDEX(month_year, '_', 1) AS UNSIGNED) ASC")->first();
 
         return response()->json([
@@ -1870,7 +1865,8 @@ class StudentController extends Controller
     /* Get the sheet fee for a student */
     public function getSheetFee($id)
     {
-        $student  = Student::with('class.sheet')->findOrFail($id);
+        $student = Student::with('class.sheet')->findOrFail($id);
+
         $sheetFee = optional($student->class->sheet)->price;
 
         return response()->json(['sheet_fee' => $sheetFee]);
@@ -1901,81 +1897,350 @@ class StudentController extends Controller
         $isAdmin  = $user->hasRole('admin');
 
         // Get all branches for admin
-        $branches = Branch::all();
+        $branches = Branch::select('id', 'branch_name', 'branch_prefix')->get();
 
-        if ($isAdmin) {
-            // For admin: Get alumni students grouped by branch
-            $studentsByBranch = [];
+        // DON'T load alumni students here - they will be loaded via AJAX when DataTable initializes
+        // This makes the page load instantly
 
-            foreach ($branches as $branch) {
-                $cacheKey = 'alumni_students_list_branch_' . $branch->id;
-
-                $studentsByBranch[$branch->id] = Cache::remember($cacheKey, now()->addHours(1), function () use ($branch) {
-                    return Student::with([
-                        'class' => function ($q) {
-                            $q->inactive()->select('id', 'name', 'class_numeral');
-                        },
-                        'branch:id,branch_name,branch_prefix',
-                        'batch:id,name',
-                        'institution:id,name,eiin_number',
-                        'studentActivation:id,active_status',
-                        'guardians:id,name,relationship,student_id',
-                        'mobileNumbers:id,mobile_number,number_type,student_id',
-                        'payments:id,payment_style,due_date,tuition_fee,student_id',
-                    ])
-                        ->whereNotNull('student_activation_id')
-                        ->where('branch_id', $branch->id)
-                        ->whereHas('class', function ($q) {
-                            $q->inactive();
-                        })
-                        ->latest('updated_at')
-                        ->get();
-                });
-            }
-
-            $students = collect(); // Empty collection for admin (uses tabs)
-        } else {
-            // For non-admin: Get only their branch alumni students
-            $cacheKey = 'alumni_students_list_branch_' . $branchId;
-
-            $students = Cache::remember($cacheKey, now()->addHours(1), function () use ($branchId) {
-                return Student::with([
-                    'class' => function ($q) {
-                        $q->withoutGlobalScope('active')->select('id', 'name', 'class_numeral');
-                    },
-                    'branch:id,branch_name,branch_prefix',
-                    'batch:id,name',
-                    'institution:id,name,eiin_number',
-                    'studentActivation:id,active_status',
-                    'guardians:id,name,relationship,student_id',
-                    'mobileNumbers:id,mobile_number,number_type,student_id',
-                    'payments:id,payment_style,due_date,tuition_fee,student_id',
-                ])
-                    ->whereNotNull('student_activation_id')
-                    ->when($branchId != 0, function ($query) use ($branchId) {
-                        $query->where('branch_id', $branchId);
-                    })
-                    ->whereHas('class', function ($q) {
-                        $q->withoutGlobalScope('active')->where('is_active', false);
-                    })
-                    ->latest('updated_at')
-                    ->get();
-            });
-
-            $studentsByBranch = [];
-        }
-
-        $classnames = ClassName::withoutGlobalScope('active')->where('is_active', false)->get();
-
-        $batches = Batch::with('branch:id,branch_name')
-            ->when($branchId != 0, function ($query) use ($branchId) {
-                $query->where('branch_id', $branchId);
-            })
-            ->select('id', 'name', 'branch_id')
+        // Use simple queries without eager loading for filter dropdowns
+        $classnames = ClassName::withoutGlobalScope('active')
+            ->where('is_active', false)
+            ->select('id', 'name', 'class_numeral')
             ->get();
 
-        $institutions = Institution::all();
+        $batches = Batch::select('batches.id', 'batches.name', 'batches.branch_id', 'branches.branch_name')
+            ->join('branches', 'batches.branch_id', '=', 'branches.id')
+            ->when($branchId != 0, function ($query) use ($branchId) {
+                $query->where('batches.branch_id', $branchId);
+            })
+            ->get();
 
-        return view('students.alumni.index', compact('students', 'studentsByBranch', 'classnames', 'batches', 'institutions', 'branches', 'isAdmin'));
+        $institutions = Institution::select('id', 'name')->oldest('name')->get();
+
+        return view('students.alumni.index', compact('classnames', 'batches', 'institutions', 'branches', 'isAdmin'));
+    }
+
+    /**
+     * Get alumni student counts for all branches (for admin tabs)
+     * This endpoint is called on page load to show counts without loading full data
+     */
+    public function getAlumniBranchCounts(): JsonResponse
+    {
+        $user = auth()->user();
+
+        // Only admin can access this endpoint
+        if (! $user->hasRole('admin')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Get counts grouped by branch for alumni students (inactive classes)
+        $counts = Student::query()
+            ->select('students.branch_id', DB::raw('COUNT(students.id) as count'))
+            ->join('class_names', function ($join) {
+                $join->on('students.class_id', '=', 'class_names.id')
+                    ->where('class_names.is_active', '=', false);
+            })
+            ->whereNotNull('students.student_activation_id')
+            ->groupBy('students.branch_id')
+            ->pluck('count', 'students.branch_id');
+
+        return response()->json([
+            'success' => true,
+            'counts'  => $counts,
+        ]);
+    }
+
+    /**
+     * Get alumni students data for DataTable AJAX
+     */
+    public function getAlumniStudentsData(Request $request): JsonResponse
+    {
+        $user     = auth()->user();
+        $branchId = $user->branch_id;
+        $isAdmin  = $user->hasRole('admin');
+
+        // Check if this is an export request (fetch all data)
+        $isExport = $request->boolean('export', false);
+
+        // Get DataTable parameters
+        $draw             = $request->input('draw', 1);
+        $start            = $request->input('start', 0);
+        $length           = $isExport ? -1 : $request->input('length', 10);
+        $search           = $request->input('search.value', '');
+        $orderColumnIndex = $request->input('order.0.column', 0);
+        $orderDir         = $request->input('order.0.dir', 'desc');
+
+        // Custom filters
+        $filterBranchId    = $request->input('branch_id');
+        $filterGender      = $request->input('gender');
+        $filterStatus      = $request->input('status');
+        $filterPaymentType = $request->input('payment_type');
+        $filterDueDate     = $request->input('due_date');
+        $filterBatchId     = $request->input('batch_id');
+        $filterGroup       = $request->input('academic_group');
+        $filterClassId     = $request->input('class_id');
+        $filterInstitution = $request->input('institution');
+
+        // Column mapping for ordering
+        $columns = [
+            0 => 'students.id',
+            1 => 'students.name',
+            2 => 'students.class_id',
+            4 => 'students.batch_id',
+            5 => 'students.institution_id',
+            7 => 'payments_info.tuition_fee',
+        ];
+
+        $orderColumn = $columns[$orderColumnIndex] ?? 'students.updated_at';
+
+        // Determine effective branch filter
+        $effectiveBranchId = null;
+        if ($isAdmin && $filterBranchId) {
+            $effectiveBranchId = $filterBranchId;
+        } elseif (! $isAdmin && $branchId != 0) {
+            $effectiveBranchId = $branchId;
+        }
+
+        // Build base query - ALUMNI students (inactive classes)
+        $query = Student::query()
+            ->select('students.*')
+            ->join('class_names', function ($join) {
+                $join->on('students.class_id', '=', 'class_names.id')
+                    ->where('class_names.is_active', '=', false);
+            })
+            ->whereNotNull('students.student_activation_id');
+
+        // Apply branch filter early
+        if ($effectiveBranchId) {
+            $query->where('students.branch_id', $effectiveBranchId);
+        }
+
+        // Gender filter
+        if ($filterGender) {
+            $query->where('students.gender', $filterGender);
+        }
+
+        // Status filter - use JOIN instead of whereHas
+        if ($filterStatus) {
+            $query->join('student_activations', function ($join) use ($filterStatus) {
+                $join->on('students.student_activation_id', '=', 'student_activations.id')
+                    ->where('student_activations.active_status', '=', $filterStatus);
+            });
+        }
+
+        // Payment filters - use LEFT JOIN to handle students without payment records
+        if ($filterPaymentType || $filterDueDate) {
+            $query->leftJoin('payments_info', 'students.id', '=', 'payments_info.student_id');
+
+            if ($filterPaymentType) {
+                $query->where('payments_info.payment_style', $filterPaymentType);
+            }
+
+            if ($filterDueDate) {
+                $query->where('payments_info.due_date', $filterDueDate);
+            }
+        }
+
+        // Batch filter
+        if ($filterBatchId) {
+            $query->where('students.batch_id', $filterBatchId);
+        }
+
+        // Academic group filter
+        if ($filterGroup) {
+            $query->where('students.academic_group', $filterGroup);
+        }
+
+        // Class filter
+        if ($filterClassId) {
+            $query->where('students.class_id', $filterClassId);
+        }
+
+        // Institution filter
+        if ($filterInstitution) {
+            $query->whereExists(function ($subquery) use ($filterInstitution) {
+                $subquery
+                    ->selectRaw('1')
+                    ->from('institutions')
+                    ->whereColumn('institutions.id', 'students.institution_id')
+                    ->where('institutions.name', 'like', "%{$filterInstitution}%");
+            });
+        }
+
+        // Global search
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('students.name', 'like', "%{$search}%")
+                    ->orWhere('students.student_unique_id', 'like', "%{$search}%")
+                    ->orWhere('class_names.name', 'like', "%{$search}%")
+                    ->orWhereExists(function ($subquery) use ($search) {
+                        $subquery
+                            ->selectRaw('1')
+                            ->from('batches')
+                            ->whereColumn('batches.id', 'students.batch_id')
+                            ->where('batches.name', 'like', "%{$search}%");
+                    })
+                    ->orWhereExists(function ($subquery) use ($search) {
+                        $subquery
+                            ->selectRaw('1')
+                            ->from('institutions')
+                            ->whereColumn('institutions.id', 'students.institution_id')
+                            ->where('institutions.name', 'like', "%{$search}%");
+                    })
+                    ->orWhereExists(function ($subquery) use ($search) {
+                        $subquery
+                            ->selectRaw('1')
+                            ->from('mobile_numbers')
+                            ->whereColumn('mobile_numbers.student_id', 'students.id')
+                            ->where('mobile_numbers.mobile_number', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Get total count for this branch
+        $totalQuery = Student::query()
+            ->join('class_names', function ($join) {
+                $join->on('students.class_id', '=', 'class_names.id')
+                    ->where('class_names.is_active', '=', false);
+            })
+            ->whereNotNull('students.student_activation_id');
+
+        if ($effectiveBranchId) {
+            $totalQuery->where('students.branch_id', $effectiveBranchId);
+        }
+
+        $totalRecords = $totalQuery->count();
+
+        // Get filtered count
+        $filteredRecords = $query->count('students.id');
+
+        // Apply ordering
+        if ($orderColumn === 'students.updated_at') {
+            $query->latest('students.updated_at');
+        } else {
+            $query->orderBy($orderColumn, $orderDir);
+        }
+
+        // Apply pagination
+        if ($length > 0) {
+            $query->skip($start)->take($length);
+        }
+
+        // Eager load relationships
+        $students = $query->with([
+            'class' => function ($q) {
+                $q->withoutGlobalScope('active')->select('id', 'name', 'class_numeral');
+            },
+            'branch:id,branch_name,branch_prefix',
+            'batch:id,name',
+            'institution:id,name,eiin_number',
+            'studentActivation:id,active_status',
+            'mobileNumbers:id,mobile_number,number_type,student_id',
+            'payments:id,payment_style,due_date,tuition_fee,student_id',
+        ])->get();
+
+        // Format data for DataTable
+        $data    = [];
+        $counter = $start + 1;
+
+        // Permission checks
+        $canDeactivate   = $user->can('students.deactivate');
+        $canDownloadForm = $user->can('students.form.download');
+        $canEdit         = $user->can('students.edit');
+        $canDelete       = $user->can('students.delete');
+
+        foreach ($students as $student) {
+            $isActive = optional($student->studentActivation)->active_status === 'active';
+
+            // Get home mobile number
+            $homeMobile       = $student->mobileNumbers->where('number_type', 'home')->first();
+            $homeMobileNumber = $homeMobile ? $homeMobile->mobile_number : '-';
+
+            // Payment info
+            $tuitionFee   = optional($student->payments)->tuition_fee ?? '';
+            $paymentStyle = optional($student->payments)->payment_style ?? '';
+            $dueDate      = optional($student->payments)->due_date ?? '';
+            $paymentInfo  = $paymentStyle ? ucfirst($paymentStyle) . '-1/' . $dueDate : '';
+
+            // Academic group badge
+            $groupBadge = '';
+            if ($student->academic_group && $student->academic_group !== 'General') {
+                $badgeClass = [
+                    'Science'  => 'info',
+                    'Commerce' => 'success',
+                    'Arts'     => 'warning',
+                ][$student->academic_group] ?? 'secondary';
+                $groupBadge = '<span class="badge badge-pill badge-' . $badgeClass . '">' . $student->academic_group . '</span>';
+            } else {
+                $groupBadge = '<span class="text-muted">-</span>';
+            }
+
+            // Build actions dropdown
+            $actions = $this->buildAlumniActionsDropdown($student, $isActive, $isAdmin, $canDeactivate, $canDownloadForm, $canEdit, $canDelete);
+
+            $data[] = [
+                'DT_RowId'         => 'row_' . $student->id,
+                'counter'          => $counter++,
+                'student'          => [
+                    'id'                => $student->id,
+                    'name'              => $student->name,
+                    'student_unique_id' => $student->student_unique_id,
+                    'is_active'         => $isActive,
+                    'show_url'          => route('students.show', $student->id),
+                ],
+                'class_id'         => $student->class_id,
+                'class_name'       => optional($student->class)->name ?? '-',
+                'academic_group'   => $student->academic_group,
+                'group_badge'      => $groupBadge,
+                'batch_id'         => $student->batch_id,
+                'batch_name'       => optional($student->batch)->name ?? '-',
+                'branch_id'        => $student->branch_id,
+                'branch_name'      => optional($student->branch)->branch_name ?? '-',
+                'institution_name' => optional($student->institution)->name ?? '-',
+                'institution_eiin' => optional($student->institution)->eiin_number ?? '',
+                'home_mobile'      => $homeMobileNumber,
+                'tuition_fee'      => $tuitionFee,
+                'payment_style'    => $paymentStyle,
+                'due_date'         => $dueDate,
+                'payment_info'     => $paymentInfo,
+                'actions'          => $actions,
+            ];
+        }
+
+        return response()->json([
+            'draw'            => intval($draw),
+            'recordsTotal'    => $totalRecords,
+            'recordsFiltered' => $filteredRecords,
+            'data'            => $data,
+        ]);
+    }
+
+    /**
+     * Build actions dropdown HTML for an alumni student
+     */
+    private function buildAlumniActionsDropdown(Student $student, bool $isActive, bool $isAdmin, bool $canDeactivate, bool $canDownloadForm, bool $canEdit, bool $canDelete): string
+    {
+        if (! $isAdmin) {
+            return '<span class="text-muted">-</span>';
+        }
+
+        $html  = '<a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions <i class="ki-outline ki-down fs-5 m-0"></i></a>';
+        $html .= '<div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-175px py-4" data-kt-menu="true">';
+
+        if ($canDownloadForm && $isActive) {
+            $html .= '<div class="menu-item px-3">';
+            $html .= '<a href="' . route('students.download', $student->id) . '" class="menu-link text-hover-primary px-3" target="_blank"><i class="bi bi-download fs-3 me-2"></i> Download Form</a>';
+            $html .= '</div>';
+        }
+
+        if ($canEdit) {
+            $html .= '<div class="menu-item px-3">';
+            $html .= '<a href="' . route('students.edit', $student->id) . '" class="menu-link text-hover-primary px-3"><i class="las la-pen fs-3 me-2"></i> Edit Student</a>';
+            $html .= '</div>';
+        }
+
+        $html .= '</div>';
+
+        return $html;
     }
 }

@@ -103,9 +103,11 @@ var KTStudentsList = function () {
                 if (type === 'export') {
                     return data.name + ' (' + data.student_unique_id + ')';
                 }
+
                 var nameClass = data.is_active ? 'text-gray-800 text-hover-primary' : 'text-danger';
                 var tooltip = data.is_active ? '' : 'title="Inactive Student" data-bs-toggle="tooltip" data-bs-placement="top"';
                 var showUrl = routeStudentShow.replace(':id', data.id);
+
                 return '<div class="d-flex align-items-center">' +
                     '<div class="d-flex flex-column text-start">' +
                     '<a href="' + showUrl + '" class="' + nameClass + ' mb-1" ' + tooltip + '>' + escapeHtml(data.name) + '</a>' +
@@ -207,11 +209,13 @@ var KTStudentsList = function () {
                     if (branchId) {
                         d.branch_id = branchId;
                     }
+
                     // Add custom filters
                     var filters = getFilters();
                     Object.keys(filters).forEach(function (key) {
                         d[key] = filters[key];
                     });
+
                     return d;
                 },
                 dataSrc: function (json) {
@@ -241,6 +245,7 @@ var KTStudentsList = function () {
             },
             drawCallback: function () {
                 KTMenu.init();
+
                 var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
                 tooltipTriggerList.forEach(function (tooltipTriggerEl) {
                     new bootstrap.Tooltip(tooltipTriggerEl);
@@ -284,6 +289,7 @@ var KTStudentsList = function () {
             tabLink.addEventListener('shown.bs.tab', function (event) {
                 var branchId = event.target.getAttribute('data-branch-id');
                 var tableId = 'kt_students_table_branch_' + branchId;
+
                 currentBranchId = branchId;
 
                 if (!initializedTabs[branchId]) {
@@ -341,24 +347,6 @@ var KTStudentsList = function () {
             'excel': 'Excel file exported successfully!',
             'csv': 'CSV file exported successfully!',
             'pdf': 'PDF file exported successfully!'
-        };
-
-        toastr.options = {
-            "closeButton": true,
-            "debug": false,
-            "newestOnTop": true,
-            "progressBar": true,
-            "positionClass": "toastr-top-right",
-            "preventDuplicates": false,
-            "onclick": null,
-            "showDuration": "300",
-            "hideDuration": "1000",
-            "timeOut": "3000",
-            "extendedTimeOut": "1000",
-            "showEasing": "swing",
-            "hideEasing": "linear",
-            "showMethod": "fadeIn",
-            "hideMethod": "fadeOut"
         };
 
         toastr.success(messages[type] + ' (' + rowCount + ' rows)', 'Export Complete');
@@ -423,8 +411,8 @@ var KTStudentsList = function () {
     // Prepare export data
     var prepareExportData = function (data) {
         var headers = ['#', 'Student', 'Class', 'Group', 'Batch', 'Institution', 'Mobile (Home)', 'Tuition Fee', 'Payment Type'];
-        var rows = [];
 
+        var rows = [];
         data.forEach(function (row, index) {
             var groupText = '-';
             if (row.group_badge) {
@@ -458,6 +446,7 @@ var KTStudentsList = function () {
         var text = 'Students Report\n';
         text += 'Exported on: ' + exportDateTime + '\n\n';
         text += exportData.headers.join('\t') + '\n';
+
         exportData.rows.forEach(function (row) {
             text += row.join('\t') + '\n';
         });
@@ -471,7 +460,6 @@ var KTStudentsList = function () {
             textarea.select();
             document.execCommand('copy');
             document.body.removeChild(textarea);
-
             showExportSuccess('copy', exportData.rows.length);
         });
     };
@@ -479,6 +467,7 @@ var KTStudentsList = function () {
     var exportToExcel = function (data) {
         var exportData = prepareExportData(data);
         var exportDateTime = getExportDateTime();
+
         var wb = XLSX.utils.book_new();
 
         // Create worksheet data with title and timestamp
@@ -511,13 +500,13 @@ var KTStudentsList = function () {
 
         XLSX.utils.book_append_sheet(wb, ws, 'Students');
         XLSX.writeFile(wb, getExportFilename('xlsx'));
-
         showExportSuccess('excel', exportData.rows.length);
     };
 
     var exportToCSV = function (data) {
         var exportData = prepareExportData(data);
         var exportDateTime = getExportDateTime();
+
         var csvContent = '';
 
         // Add title and timestamp
@@ -541,13 +530,13 @@ var KTStudentsList = function () {
         link.download = getExportFilename('csv');
         link.click();
         URL.revokeObjectURL(link.href);
-
         showExportSuccess('csv', exportData.rows.length);
     };
 
     var exportToPDF = function (data) {
         var exportData = prepareExportData(data);
         var exportDateTime = getExportDateTime();
+
         var doc = new jspdf.jsPDF('l', 'mm', 'a4');
 
         doc.setFontSize(16);
@@ -595,7 +584,6 @@ var KTStudentsList = function () {
         });
 
         doc.save(getExportFilename('pdf'));
-
         showExportSuccess('pdf', exportData.rows.length);
     };
 
@@ -694,7 +682,6 @@ var KTStudentsList = function () {
             if (!deleteBtn) return;
 
             e.preventDefault();
-
             var studentId = deleteBtn.getAttribute('data-student-id');
             var url = routeDeleteStudent.replace(':id', studentId);
 
@@ -775,14 +762,13 @@ var KTStudentsList = function () {
 
             // Populate hidden fields
             document.getElementById('student_id').value = studentId;
-
             // Set the NEW status (opposite of current)
             document.getElementById('activation_status').value = (activeStatus === 'active') ? 'inactive' : 'active';
 
             // Update modal title and label based on current status
             var modalTitle = document.getElementById('toggle-activation-modal-title');
             var reasonLabel = document.getElementById('reason_label');
-            var reasonTextarea = document.querySelector('#kt_toggle_activation_student_modal textarea[name="reason"]');
+            var reasonTextarea = document.getElementById('activation_reason');
 
             if (activeStatus === 'active') {
                 modalTitle.textContent = 'Deactivate Student - ' + studentName + ' (' + studentUniqueId + ')';
@@ -798,58 +784,51 @@ var KTStudentsList = function () {
                 }
             }
 
-            // Clear previous reason
+            // Clear previous reason and error
             if (reasonTextarea) {
                 reasonTextarea.value = '';
+            }
+            var reasonError = document.getElementById('reason_error');
+            if (reasonError) {
+                reasonError.textContent = '';
             }
         });
     };
 
     // Handle toggle activation form submission via AJAX
     var handleToggleActivationSubmit = function () {
-        var toggleForm = document.querySelector('#kt_toggle_activation_student_modal form');
+        var toggleForm = document.getElementById('kt_toggle_activation_form');
         if (!toggleForm) return;
 
         toggleForm.addEventListener('submit', function (e) {
             e.preventDefault();
 
-            var submitBtn = toggleForm.querySelector('button[type="submit"]');
-            var originalBtnText = submitBtn.innerHTML;
+            var submitBtn = document.getElementById('kt_toggle_activation_submit');
+            var reasonField = document.getElementById('activation_reason');
+            var reasonError = document.getElementById('reason_error');
 
             // Validate reason field
-            var reasonField = toggleForm.querySelector('textarea[name="reason"]');
-            if (!reasonField.value.trim()) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Reason Required',
-                    text: 'Please provide a reason for this status change.'
-                });
+            if (!reasonField.value.trim() || reasonField.value.trim().length < 3) {
+                reasonError.textContent = 'Please provide a valid reason (at least 3 characters).';
                 reasonField.focus();
                 return;
             }
 
-            // Disable button and show loading
+            // Clear error
+            reasonError.textContent = '';
+
+            // Show loading
+            submitBtn.setAttribute('data-kt-indicator', 'on');
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing...';
 
             // Prepare form data
             var formData = new FormData(toggleForm);
 
-            // Get CSRF token
-            var csrfToken = document.querySelector('meta[name="csrf-token"]');
-            if (!csrfToken) {
-                console.error('CSRF token not found');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
-                return;
-            }
-
-            // Send AJAX request
-            fetch(toggleForm.getAttribute('action'), {
+            fetch(routeToggleActive, {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     'Accept': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest'
                 }
@@ -863,8 +842,8 @@ var KTStudentsList = function () {
                     var response = result.data;
 
                     // Re-enable button
+                    submitBtn.removeAttribute('data-kt-indicator');
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalBtnText;
 
                     if (response.success) {
                         // Close modal
@@ -883,7 +862,7 @@ var KTStudentsList = function () {
                             timer: 2000,
                             showConfirmButton: false
                         }).then(function () {
-                            // Reload datatable to reflect changes
+                            // Reload datatable
                             if (activeDatatable) {
                                 activeDatatable.ajax.reload(null, false);
                             }
@@ -912,8 +891,8 @@ var KTStudentsList = function () {
                     console.error('Toggle activation error:', error);
 
                     // Re-enable button
+                    submitBtn.removeAttribute('data-kt-indicator');
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalBtnText;
 
                     Swal.fire({
                         icon: 'error',
@@ -929,9 +908,13 @@ var KTStudentsList = function () {
         var modalElement = document.getElementById('kt_toggle_activation_student_modal');
         if (modalElement) {
             modalElement.addEventListener('hidden.bs.modal', function () {
-                var toggleForm = modalElement.querySelector('form');
+                var toggleForm = document.getElementById('kt_toggle_activation_form');
                 if (toggleForm) {
                     toggleForm.reset();
+                }
+                var reasonError = document.getElementById('reason_error');
+                if (reasonError) {
+                    reasonError.textContent = '';
                 }
             });
         }

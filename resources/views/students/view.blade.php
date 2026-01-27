@@ -1135,7 +1135,7 @@
                                     class="table table-hover align-middle table-row-dashed fs-6 fw-semibold gy-4 ucms-table">
                                     <thead class="border-bottom border-gray-200">
                                         <tr class="fw-bold fs-7 text-uppercase gs-0">
-                                            <th class="w-25px">SL</th>
+                                            <th class="w-25px">#</th>
                                             <th class="w-150px">Invoice No.</th>
                                             <th>Invoice Type</th>
                                             <th>Billing Month</th>
@@ -1246,7 +1246,7 @@
                                     class="table table-hover align-middle table-row-dashed fs-6 fw-semibold gy-4 ucms-table">
                                     <thead class="border-bottom border-gray-200">
                                         <tr class="fw-bold fs-7 text-uppercase gs-0">
-                                            <th class="w-25px">SL</th>
+                                            <th class="w-25px">#</th>
                                             <th class="w-150px">Date</th>
                                             <th class="w-150px">Invoice No.</th>
                                             <th class="w-150px">Voucher No.</th>
@@ -1425,10 +1425,10 @@
                         <div class="card-body pb-5">
                             <!--begin::Table-->
                             <table id="kt_student_view_sheets_table"
-                                class="table align-middle table-row-dashed fs-6 text-gray-600 fw-semibold gy-4">
-                                <thead class="border-bottom border-gray-200">
+                                class="table align-middle table-row-dashed table-hover fs-6 gy-5 ucms-table">
+                                <thead>
                                     <tr class="fw-bold fs-7 text-uppercase gs-0">
-                                        <th class="w-30px">SL</th>
+                                        <th class="w-30px">#</th>
                                         <th>Topic Name</th>
                                         <th>Sujbect</th>
                                         <th class="w-200px">Sheet Group</th>
@@ -1439,7 +1439,7 @@
                                 <tbody class="text-gray-600 fw-semibold">
                                     @foreach ($student->sheetsTopicTaken->sortByDesc('created_at') as $note)
                                         <tr>
-                                            <td class="pe-2">{{ $loop->index + 1 }}</td>
+                                            <td>{{ $loop->index + 1 }}</td>
                                             <td class="text-gray-800 mb-1">{{ $note->sheetTopic->topic_name }}</td>
                                             <td>{{ $note->sheetTopic->subject->name }}</td>
                                             <td><a href="{{ route('sheets.show', $note->class->sheet->id) }}"
@@ -1535,7 +1535,7 @@
                                 id="kt_students_acitivation_table">
                                 <thead>
                                     <tr class="fw-bold fs-7 text-uppercase gs-0">
-                                        <th class="w-20px">SL</th>
+                                        <th class="w-20px">#</th>
                                         <th class="min-w-100px">Activity</th>
                                         <th>Reason</th>
                                         <th>Updated by</th>
@@ -1545,7 +1545,7 @@
                                 <tbody class="fs-6 fw-semibold text-gray-600">
                                     @foreach ($student->activations->sortByDesc('created_at') as $record)
                                         <tr>
-                                            <td class="pe-2">{{ $loop->index + 1 }}</td>
+                                            <td>{{ $loop->index + 1 }}</td>
                                             <td>
                                                 @if ($record->active_status == 'inactive')
                                                     <span
@@ -1601,7 +1601,7 @@
                                     id="kt_students_class_change_history_table">
                                     <thead>
                                         <tr class="fw-bold fs-7 text-uppercase gs-0">
-                                            <th class="w-20px">SL</th>
+                                            <th class="w-20px">#</th>
                                             <th class="min-w-150px">From Class</th>
                                             <th class="min-w-150px">To Class</th>
                                             <th class="min-w-100px">Changed By</th>
@@ -1611,7 +1611,7 @@
                                     <tbody class="fs-6 fw-semibold text-gray-600">
                                         @foreach ($student->classChangeHistories->sortByDesc('created_at') as $history)
                                             <tr>
-                                                <td class="pe-2">{{ $loop->index + 1 }}</td>
+                                                <td>{{ $loop->index + 1 }}</td>
                                                 <td>
                                                     <div class="d-flex align-items-center">
                                                         <span class="badge badge-light-danger me-2">
@@ -1685,7 +1685,7 @@
                                     id="kt_students_secondary_class_history_table">
                                     <thead>
                                         <tr class="fw-bold fs-7 text-uppercase gs-0">
-                                            <th class="w-20px">SL</th>
+                                            <th class="w-20px">#</th>
                                             <th class="min-w-200px">Special Class</th>
                                             <th class="min-w-100px">Action</th>
                                             <th class="min-w-100px">By</th>
@@ -1695,7 +1695,7 @@
                                     <tbody class="fs-6 fw-semibold text-gray-600">
                                         @foreach ($student->secondaryClassHistories->sortByDesc('created_at') as $history)
                                             <tr>
-                                                <td class="pe-2">{{ $loop->index + 1 }}</td>
+                                                <td >{{ $loop->index + 1 }}</td>
                                                 <td>
                                                     <div class="d-flex align-items-center">
                                                         <div class="symbol symbol-35px symbol-circle bg-light-info me-3">
