@@ -296,9 +296,9 @@
                         <th class="w-100px">Date</th>
                         <th class="w-100px">Type</th>
                         <th class="w-250px">Description</th>
-                        <th class="w-100px text-end">Amount</th>
-                        <th class="w-100px text-end">Old Balance</th>
-                        <th class="w-100px text-end">New Balance</th>
+                        <th class="w-100px">Amount</th>
+                        <th class="w-100px">Old Balance</th>
+                        <th class="w-100px">New Balance</th>
                         <th class="w-100px">Created By</th>
                     </tr>
                 </thead>
