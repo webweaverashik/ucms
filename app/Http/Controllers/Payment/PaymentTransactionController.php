@@ -511,16 +511,16 @@ class PaymentTransactionController extends Controller
      */
     public function approve(string $id)
     {
-        $transaction = PaymentTransaction::with(['student', 'paymentInvoice'])->findOrFail($id);
+        $transaction = PaymentTransaction::with(['student', 'paymentInvoice', 'createdBy'])->findOrFail($id);
 
         $transaction->update(['is_approved' => true]);
         $transaction->paymentInvoice->update(['amount_due' => 0, 'status' => 'paid']);
 
-        /* ---------------- Update wallet on approval ---------------- */
+        /* ---------------- Update wallet on approval (credited to transaction creator) ---------------- */
         $walletService = new WalletService();
 
         $walletService->recordCollection(
-            user: auth()->user(),
+            user: $transaction->createdBy,
             amount: $transaction->amount_paid,
             payment: $transaction,
             description: "Collection from Student #{$transaction->student->student_unique_id} for Invoice #{$transaction->paymentInvoice->invoice_number} (Voucher #{$transaction->voucher_no})"
