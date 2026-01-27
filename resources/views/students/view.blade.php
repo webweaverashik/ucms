@@ -67,7 +67,7 @@
             <div class="card card-flush mb-0
             @if (optional($student->studentActivation)->active_status === 'inactive') border border-dashed border-danger
             @elseif($student->studentActivation == null) border border-dashed border-info @endif"
-                data-kt-sticky="true" data-kt-sticky-name="student-summary" data-kt-sticky-offset="{default: false, lg: 0}"
+                data-kt-sticky="false" data-kt-sticky-name="student-summary" data-kt-sticky-offset="{default: false, lg: 0}"
                 data-kt-sticky-width="{lg: '250px', xl: '350px'}" data-kt-sticky-left="auto" data-kt-sticky-top="100px"
                 data-kt-sticky-animation="false" data-kt-sticky-zindex="95">
                 <!--begin::Card header-->

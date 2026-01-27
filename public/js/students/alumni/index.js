@@ -225,7 +225,7 @@ var KTAlumniStudentsList = function () {
                 }
             },
             columns: getColumns(),
-            order: [[0, 'desc']],
+            order: [],
             lengthMenu: [10, 25, 50, 100],
             pageLength: 10,
             lengthChange: true,

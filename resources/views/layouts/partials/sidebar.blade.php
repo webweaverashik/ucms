@@ -154,7 +154,7 @@
                                 @can('students.view')
                                     <div class="menu-item">
                                         <a class="menu-link" id="pending_approval_link"
-                                            href="{{ route('students.pending') }}">
+                                            href="{{ route('students.pending.index') }}">
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot"></span>
                                             </span>
@@ -187,7 +187,7 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link--><a class="menu-link" id="transfer_students_link"
-                                            href="{{ route('students.transfer') }}"><span class="menu-bullet"><span
+                                            href="{{ route('students.transfer.index') }}"><span class="menu-bullet"><span
                                                     class="bullet bullet-dot"></span></span><span class="menu-title">Transfer
                                                 Students</span></a>
                                         <!--end:Menu link-->
