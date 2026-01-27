@@ -107,6 +107,8 @@ var initSingleDataTable = function (tableId, branchId, statusType) {
                     return '<span class="badge badge-light-info">Science</span>';
                 } else if (data === 'Commerce') {
                     return '<span class="badge badge-light-success">Commerce</span>';
+                } else if (data === 'Arts') {
+                    return '<span class="badge badge-light-warning">Arts</span>';
                 }
                 return '<span class="text-muted">-</span>';
             }
@@ -137,20 +139,20 @@ var initSingleDataTable = function (tableId, branchId, statusType) {
             orderable: true
         },
         {
-        data: null,
-        orderable: false,
-        searchable: false,
-        className: 'text-end',
-        render: function (data, type, row) {
-            if (!row.can_manage) {
-                return '<span class="text-muted">-</span>';
-            }
+            data: null,
+            orderable: false,
+            searchable: false,
+            className: 'text-end',
+            render: function (data, type, row) {
+                if (!row.can_manage) {
+                    return '<span class="text-muted">-</span>';
+                }
 
-            let actions = '<div class="d-flex justify-content-end gap-2">';
+                let actions = '<div class="d-flex justify-content-end gap-2">';
 
-            // Edit button for monthly payment type
-            if (row.payment_type === 'monthly') {
-                actions += `
+                // Edit button for monthly payment type
+                if (row.payment_type === 'monthly') {
+                    actions += `
                     <button type="button" class="btn btn-sm btn-icon btn-light-primary edit-enrollment"
                         data-student-id="${row.student_id}"
                         data-student-name="${row.name}"
@@ -159,11 +161,11 @@ var initSingleDataTable = function (tableId, branchId, statusType) {
                         <i class="ki-outline ki-pencil fs-5"></i>
                     </button>
                 `;
-            }
+                }
 
-            // Toggle activation button
-            if (row.is_active) {
-                actions += `
+                // Toggle activation button
+                if (row.is_active) {
+                    actions += `
                     <button type="button" class="btn btn-sm btn-light-danger toggle-enrollment-activation"
                         data-student-id="${row.student_id}"
                         data-student-name="${row.name}"
@@ -173,8 +175,8 @@ var initSingleDataTable = function (tableId, branchId, statusType) {
                         <span class="d-none d-md-inline">Deactivate</span>
                     </button>
                 `;
-            } else {
-                actions += `
+                } else {
+                    actions += `
                     <button type="button" class="btn btn-sm btn-light-success toggle-enrollment-activation"
                         data-student-id="${row.student_id}"
                         data-student-name="${row.name}"
@@ -184,12 +186,12 @@ var initSingleDataTable = function (tableId, branchId, statusType) {
                         <span class="d-none d-md-inline">Activate</span>
                     </button>
                 `;
-            }
+                }
 
-            actions += '</div>';
-            return actions;
+                actions += '</div>';
+                return actions;
+            }
         }
-    }
     ];
 
     // Initialize DataTable with server-side processing
@@ -246,7 +248,7 @@ var initSingleDataTable = function (tableId, branchId, statusType) {
 
     // Initialize refresh button
     initRefreshButton(tableId);
-    
+
     // Initialize Select2 for filter dropdowns
     initFilterSelect2(tableId);
 
@@ -284,9 +286,9 @@ var initFilterHandlers = function () {
         btn.addEventListener('click', function () {
             const tableId = this.getAttribute('data-table-id');
             const filterContainer = this.closest('.menu-sub-dropdown');
-            
+
             if (!filterContainer || !tableId) return;
-            
+
             const groupSelect = filterContainer.querySelector('.filter-group-select');
             const batchSelect = filterContainer.querySelector('.filter-batch-select');
 
@@ -310,9 +312,9 @@ var initFilterHandlers = function () {
         btn.addEventListener('click', function () {
             const tableId = this.getAttribute('data-table-id');
             const filterContainer = this.closest('.menu-sub-dropdown');
-            
+
             if (!filterContainer || !tableId) return;
-            
+
             const groupSelect = filterContainer.querySelector('.filter-group-select');
             const batchSelect = filterContainer.querySelector('.filter-batch-select');
 
@@ -879,7 +881,7 @@ var handleToggleActivation = function () {
                 if (response.success) {
                     toastr.success(response.message);
                     modal.hide();
-                    
+
                     // Refresh all tables and update counts
                     refreshAllTables();
                 } else {
