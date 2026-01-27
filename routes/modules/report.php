@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Route;
 | Report Routes
 |--------------------------------------------------------------------------
 | Attendance reports, finance reports, cost records
-| ⚠️ IMPORTANT: Route names are kept EXACTLY as original web.php
 */
 
 // Reports index

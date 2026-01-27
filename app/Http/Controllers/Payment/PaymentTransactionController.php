@@ -450,10 +450,12 @@ class PaymentTransactionController extends Controller
                 'is_approved' => $transaction->is_approved,
             ];
 
-            /* ---------------- Update wallet ---------------- */
-            $walletService = new WalletService();
+            /* ---------------- Update wallet (skip for discounted - will be added on approval) ---------------- */
+            if ($paymentType !== 'discounted') {
+                $walletService = new WalletService();
 
-            $walletService->recordCollection(user: auth()->user(), amount: $transaction->amount_paid, payment: $transaction, description: "Collection from Student #{$transaction->student->student_unique_id} for Invoice #{$invoice->invoice_number} (Voucher #{$transaction->voucher_no})");
+                $walletService->recordCollection(user: auth()->user(), amount: $transaction->amount_paid, payment: $transaction, description: "Collection from Student #{$transaction->student->student_unique_id} for Invoice #{$invoice->invoice_number} (Voucher #{$transaction->voucher_no})");
+            }
         });
 
         clearServerCache();
@@ -509,10 +511,20 @@ class PaymentTransactionController extends Controller
      */
     public function approve(string $id)
     {
-        $transaction = PaymentTransaction::findOrFail($id);
+        $transaction = PaymentTransaction::with(['student', 'paymentInvoice'])->findOrFail($id);
 
         $transaction->update(['is_approved' => true]);
         $transaction->paymentInvoice->update(['amount_due' => 0, 'status' => 'paid']);
+
+        /* ---------------- Update wallet on approval ---------------- */
+        $walletService = new WalletService();
+
+        $walletService->recordCollection(
+            user: auth()->user(),
+            amount: $transaction->amount_paid,
+            payment: $transaction,
+            description: "Collection from Student #{$transaction->student->student_unique_id} for Invoice #{$transaction->paymentInvoice->invoice_number} (Voucher #{$transaction->voucher_no})"
+        );
 
         return response()->json(['success' => true]);
     }
