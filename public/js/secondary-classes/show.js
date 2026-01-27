@@ -149,9 +149,10 @@ var initSingleDataTable = function (tableId, branchId, statusType) {
                 }
 
                 let actions = '<div class="d-flex justify-content-end gap-2">';
+                const isMonthly = row.payment_type === 'monthly';
 
                 // Edit button for monthly payment type
-                if (row.payment_type === 'monthly') {
+                if (isMonthly) {
                     actions += `
                     <button type="button" class="btn btn-sm btn-icon btn-light-primary edit-enrollment"
                         data-student-id="${row.student_id}"
@@ -163,29 +164,57 @@ var initSingleDataTable = function (tableId, branchId, statusType) {
                 `;
                 }
 
-                // Toggle activation button
+                // Toggle activation button - icon only for monthly, full button for one-time
                 if (row.is_active) {
-                    actions += `
-                    <button type="button" class="btn btn-sm btn-light-danger toggle-enrollment-activation"
-                        data-student-id="${row.student_id}"
-                        data-student-name="${row.name}"
-                        data-is-active="1"
-                        data-bs-toggle="tooltip" title="Deactivate Enrollment">
-                        <i class="ki-outline ki-cross-circle fs-5 me-1"></i>
-                        <span class="d-none d-md-inline">Deactivate</span>
-                    </button>
-                `;
+                    if (isMonthly) {
+                        // Icon-only button for monthly payment type
+                        actions += `
+                        <button type="button" class="btn btn-sm btn-icon btn-light-danger toggle-enrollment-activation"
+                            data-student-id="${row.student_id}"
+                            data-student-name="${row.name}"
+                            data-is-active="1"
+                            data-bs-toggle="tooltip" title="Deactivate Enrollment">
+                            <i class="ki-outline ki-cross-circle fs-5"></i>
+                        </button>
+                    `;
+                    } else {
+                        // Full button for one-time payment type
+                        actions += `
+                        <button type="button" class="btn btn-sm btn-light-danger toggle-enrollment-activation"
+                            data-student-id="${row.student_id}"
+                            data-student-name="${row.name}"
+                            data-is-active="1"
+                            data-bs-toggle="tooltip" title="Deactivate Enrollment">
+                            <i class="ki-outline ki-cross-circle fs-5 me-1"></i>
+                            <span class="d-none d-md-inline">Deactivate</span>
+                        </button>
+                    `;
+                    }
                 } else {
-                    actions += `
-                    <button type="button" class="btn btn-sm btn-light-success toggle-enrollment-activation"
-                        data-student-id="${row.student_id}"
-                        data-student-name="${row.name}"
-                        data-is-active="0"
-                        data-bs-toggle="tooltip" title="Activate Enrollment">
-                        <i class="ki-outline ki-check-circle fs-5 me-1"></i>
-                        <span class="d-none d-md-inline">Activate</span>
-                    </button>
-                `;
+                    if (isMonthly) {
+                        // Icon-only button for monthly payment type
+                        actions += `
+                        <button type="button" class="btn btn-sm btn-icon btn-light-success toggle-enrollment-activation"
+                            data-student-id="${row.student_id}"
+                            data-student-name="${row.name}"
+                            data-is-active="0"
+                            data-bs-toggle="tooltip" title="Activate Enrollment">
+                            <i class="ki-outline ki-check-circle fs-5"></i>
+                        </button>
+                    `;
+                    } else {
+                        // Full button for one-time payment type
+                        actions += `
+                        <button type="button" class="btn btn-sm btn-light-success toggle-enrollment-activation"
+                            data-student-id="${row.student_id}"
+                            data-student-name="${row.name}"
+                            data-is-active="0"
+                            data-bs-toggle="tooltip" title="Activate Enrollment">
+                            <i class="ki-outline ki-check-circle fs-5 me-1"></i>
+                            <span class="d-none d-md-inline">Activate</span>
+                        </button>
+                    `;
+                    }
                 }
 
                 actions += '</div>';
