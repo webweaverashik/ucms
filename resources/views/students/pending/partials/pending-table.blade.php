@@ -3,7 +3,7 @@
     id="{{ $tableId }}" data-branch-id="{{ $branchId ?? '' }}">
     <thead>
         <tr class="fw-bold fs-7 text-uppercase gs-0">
-            <th class="w-50px">SL</th>
+            <th class="w-25px">#</th>
             <th class="min-w-200px">Student</th>
             <th>Class</th>
             <th>Group</th>

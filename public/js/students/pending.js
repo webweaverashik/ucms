@@ -113,7 +113,7 @@ var KTPendingStudentsList = (function () {
                 if (data.is_eligible_for_approval) {
                     eligibilityIndicator = '<span class="badge badge-circle badge-success ms-2" ' +
                         'data-bs-toggle="tooltip" data-bs-placement="top" ' +
-                        'title="Ready to approve - No pending tuition fee">' +
+                        'title="Eligible to approve - No due tuition fee">' +
                         '<i class="bi bi-check-lg text-white fs-7"></i></span>';
                 }
 
