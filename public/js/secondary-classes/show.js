@@ -148,7 +148,7 @@ var initSingleDataTable = function (tableId, branchId, statusType) {
                     return '<span class="text-muted">-</span>';
                 }
 
-                let actions = '<div class="d-flex justify-content-end gap-2">';
+                let actions = '<div class="d-flex justify-content-center gap-2">';
                 const isMonthly = row.payment_type === 'monthly';
 
                 // Edit button for monthly payment type
