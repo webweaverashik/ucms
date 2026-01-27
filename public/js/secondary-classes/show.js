@@ -107,8 +107,6 @@ var initSingleDataTable = function (tableId, branchId, statusType) {
                     return '<span class="badge badge-light-info">Science</span>';
                 } else if (data === 'Commerce') {
                     return '<span class="badge badge-light-success">Commerce</span>';
-                } else if (data === 'Arts') {
-                    return '<span class="badge badge-light-warning">Arts</span>';
                 }
                 return '<span class="text-muted">-</span>';
             }
@@ -124,14 +122,14 @@ var initSingleDataTable = function (tableId, branchId, statusType) {
             data: 'amount',
             orderable: true,
             render: function (data) {
-                return `<span class="fw-bold text-primary">৳ ${Number(data).toLocaleString()}</span>`;
+                return `<span class="fw-bold text-primary">৳${Number(data).toLocaleString()}</span>`;
             }
         },
         {
             data: 'total_paid',
             orderable: false,
             render: function (data) {
-                return `<span class="fw-bold text-success">৳ ${Number(data).toLocaleString()}</span>`;
+                return `<span class="fw-bold text-success">৳${Number(data).toLocaleString()}</span>`;
             }
         },
         {
@@ -139,20 +137,20 @@ var initSingleDataTable = function (tableId, branchId, statusType) {
             orderable: true
         },
         {
-            data: null,
-            orderable: false,
-            searchable: false,
-            className: 'text-end',
-            render: function (data, type, row) {
-                if (!row.can_manage) {
-                    return '<span class="text-muted">-</span>';
-                }
+        data: null,
+        orderable: false,
+        searchable: false,
+        className: 'text-end',
+        render: function (data, type, row) {
+            if (!row.can_manage) {
+                return '<span class="text-muted">-</span>';
+            }
 
-                let actions = '<div class="d-flex justify-content-center gap-2">';
+            let actions = '<div class="d-flex justify-content-end gap-2">';
 
-                // Edit button for monthly payment type
-                if (row.payment_type === 'monthly') {
-                    actions += `
+            // Edit button for monthly payment type
+            if (row.payment_type === 'monthly') {
+                actions += `
                     <button type="button" class="btn btn-sm btn-icon btn-light-primary edit-enrollment"
                         data-student-id="${row.student_id}"
                         data-student-name="${row.name}"
@@ -161,11 +159,11 @@ var initSingleDataTable = function (tableId, branchId, statusType) {
                         <i class="ki-outline ki-pencil fs-5"></i>
                     </button>
                 `;
-                }
+            }
 
-                // Toggle activation button
-                if (row.is_active) {
-                    actions += `
+            // Toggle activation button
+            if (row.is_active) {
+                actions += `
                     <button type="button" class="btn btn-sm btn-light-danger toggle-enrollment-activation"
                         data-student-id="${row.student_id}"
                         data-student-name="${row.name}"
@@ -175,8 +173,8 @@ var initSingleDataTable = function (tableId, branchId, statusType) {
                         <span class="d-none d-md-inline">Deactivate</span>
                     </button>
                 `;
-                } else {
-                    actions += `
+            } else {
+                actions += `
                     <button type="button" class="btn btn-sm btn-light-success toggle-enrollment-activation"
                         data-student-id="${row.student_id}"
                         data-student-name="${row.name}"
@@ -186,12 +184,12 @@ var initSingleDataTable = function (tableId, branchId, statusType) {
                         <span class="d-none d-md-inline">Activate</span>
                     </button>
                 `;
-                }
-
-                actions += '</div>';
-                return actions;
             }
+
+            actions += '</div>';
+            return actions;
         }
+    }
     ];
 
     // Initialize DataTable with server-side processing
@@ -210,7 +208,7 @@ var initSingleDataTable = function (tableId, branchId, statusType) {
             }
         },
         columns: columns,
-        order: [], // Default order by enrolled_at (column index 6) descending
+        order: [[6, 'desc']], // Default order by enrolled_at (column index 6) descending
         pageLength: 10,
         lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
         language: {
@@ -248,7 +246,7 @@ var initSingleDataTable = function (tableId, branchId, statusType) {
 
     // Initialize refresh button
     initRefreshButton(tableId);
-
+    
     // Initialize Select2 for filter dropdowns
     initFilterSelect2(tableId);
 
@@ -286,9 +284,9 @@ var initFilterHandlers = function () {
         btn.addEventListener('click', function () {
             const tableId = this.getAttribute('data-table-id');
             const filterContainer = this.closest('.menu-sub-dropdown');
-
+            
             if (!filterContainer || !tableId) return;
-
+            
             const groupSelect = filterContainer.querySelector('.filter-group-select');
             const batchSelect = filterContainer.querySelector('.filter-batch-select');
 
@@ -312,9 +310,9 @@ var initFilterHandlers = function () {
         btn.addEventListener('click', function () {
             const tableId = this.getAttribute('data-table-id');
             const filterContainer = this.closest('.menu-sub-dropdown');
-
+            
             if (!filterContainer || !tableId) return;
-
+            
             const groupSelect = filterContainer.querySelector('.filter-group-select');
             const batchSelect = filterContainer.querySelector('.filter-batch-select');
 
@@ -405,8 +403,9 @@ var updateBranchCounts = function (statusType) {
             if (response.success) {
                 // Update all branch count badges for this status type
                 document.querySelectorAll(`.branch-count-badge[data-status-type="${statusType}"]`).forEach(function (badge) {
-                    const branchId = badge.getAttribute('data-branch-id');
-                    const count = response.counts[branchId] || 0;
+                    const branchId = parseInt(badge.getAttribute('data-branch-id'), 10);
+                    // Try both string and integer keys for compatibility
+                    const count = response.counts[branchId] || response.counts[String(branchId)] || 0;
                     badge.textContent = count;
                     badge.classList.remove('badge-loading');
                 });
@@ -434,17 +433,21 @@ var updateStats = function () {
                 $('#stat_total_students').text(stats.total_students);
                 $('#stat_active_students').text(stats.active_students);
                 $('#stat_inactive_students').text(stats.inactive_students);
-                $('#stat_total_revenue').text('৳ ' + Number(stats.total_revenue).toLocaleString());
+                $('#stat_total_revenue').text('৳' + Number(stats.total_revenue).toLocaleString());
 
                 if (paymentType === 'monthly') {
-                    $('#stat_expected_monthly').text('৳ ' + Number(stats.expected_monthly_revenue).toLocaleString());
+                    $('#stat_expected_monthly').text('৳' + Number(stats.expected_monthly_revenue).toLocaleString());
                 }
 
                 // Update branch stats in sidebar
                 if (stats.branch_stats) {
                     Object.keys(stats.branch_stats).forEach(function (branchId) {
                         const branchStat = stats.branch_stats[branchId];
-                        const branchItem = $(`.branch-stat-item[data-branch-id="${branchId}"]`);
+                        // Try to find by both string and integer branch ID for compatibility
+                        let branchItem = $(`.branch-stat-item[data-branch-id="${branchId}"]`);
+                        if (!branchItem.length) {
+                            branchItem = $(`.branch-stat-item[data-branch-id="${parseInt(branchId, 10)}"]`);
+                        }
                         if (branchItem.length) {
                             branchItem.find('.branch-total-count').text(branchStat.total);
                             branchItem.find('.branch-active-count').text(branchStat.active);
@@ -826,7 +829,7 @@ var handleToggleActivation = function () {
                         // Show unpaid warning
                         deactivateWarning.classList.add('d-none');
                         unpaidWarning.classList.remove('d-none');
-                        unpaidMessage.innerHTML = `This student has <strong>${response.unpaid_count}</strong> unpaid Special Class Fee invoice(s) totaling <strong>৳ ${response.unpaid_amount.toLocaleString()}</strong>. Please clear all dues before deactivation.`;
+                        unpaidMessage.innerHTML = `This student has <strong>${response.unpaid_count}</strong> unpaid Special Class Fee invoice(s) totaling <strong>৳${response.unpaid_amount.toLocaleString()}</strong>. Please clear all dues before deactivation.`;
                         submitButton.disabled = true;
                     }
 
@@ -876,7 +879,7 @@ var handleToggleActivation = function () {
                 if (response.success) {
                     toastr.success(response.message);
                     modal.hide();
-
+                    
                     // Refresh all tables and update counts
                     refreshAllTables();
                 } else {

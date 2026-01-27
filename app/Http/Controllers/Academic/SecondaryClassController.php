@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Academic;
 
 use App\Http\Controllers\Controller;
@@ -35,7 +36,7 @@ class SecondaryClassController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $secondaryClasses,
+            'data' => $secondaryClasses,
         ]);
     }
 
@@ -55,24 +56,24 @@ class SecondaryClassController extends Controller
         }
 
         $validated = $request->validate([
-            'class_id'     => 'required|exists:class_names,id',
-            'name'         => 'required|string|max:255',
+            'class_id' => 'required|exists:class_names,id',
+            'name' => 'required|string|max:255',
             'payment_type' => 'required|in:one_time,monthly',
-            'fee_amount'   => 'required|numeric|min:0',
+            'fee_amount' => 'required|numeric|min:0',
         ]);
 
         $secondaryClass = SecondaryClass::create([
-            'class_id'     => $validated['class_id'],
-            'name'         => $validated['name'],
+            'class_id' => $validated['class_id'],
+            'name' => $validated['name'],
             'payment_type' => $validated['payment_type'],
-            'fee_amount'   => $validated['fee_amount'],
-            'is_active'    => true,
+            'fee_amount' => $validated['fee_amount'],
+            'is_active' => true,
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Special class created successfully.',
-            'data'    => $secondaryClass->load('class:id,name')->loadCount('students'),
+            'data' => $secondaryClass->load('class:id,name')->loadCount('students'),
         ]);
     }
 
@@ -93,13 +94,13 @@ class SecondaryClassController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => [
-                'id'             => $secondaryClass->id,
-                'class_id'       => $secondaryClass->class_id,
-                'name'           => $secondaryClass->name,
-                'payment_type'   => $secondaryClass->payment_type,
-                'fee_amount'     => $secondaryClass->fee_amount,
-                'is_active'      => $secondaryClass->is_active,
+            'data' => [
+                'id' => $secondaryClass->id,
+                'class_id' => $secondaryClass->class_id,
+                'name' => $secondaryClass->name,
+                'payment_type' => $secondaryClass->payment_type,
+                'fee_amount' => $secondaryClass->fee_amount,
+                'is_active' => $secondaryClass->is_active,
                 'students_count' => $secondaryClass->students()->count(),
             ],
         ]);
@@ -114,8 +115,8 @@ class SecondaryClassController extends Controller
             return redirect()->back()->with('warning', 'No permission to view classes.');
         }
 
-        $user     = auth()->user();
-        $isAdmin  = $user->isAdmin();
+        $user = auth()->user();
+        $isAdmin = $user->isAdmin();
         $branchId = $user->branch_id;
 
         // Verify the secondary class belongs to this class
@@ -159,8 +160,8 @@ class SecondaryClassController extends Controller
      */
     public function getEnrolledStudentsAjax(Request $request, ClassName $classname, SecondaryClass $secondaryClass)
     {
-        $user     = auth()->user();
-        $isAdmin  = $user->isAdmin();
+        $user = auth()->user();
+        $isAdmin = $user->isAdmin();
         $branchId = $user->branch_id;
 
         $isManager = false;
@@ -169,18 +170,18 @@ class SecondaryClassController extends Controller
         } catch (\Throwable $e) {
         }
 
-                                                                // Get filter parameters
-        $statusType   = $request->get('status_type', 'active'); // 'active' or 'inactive'
+        // Get filter parameters
+        $statusType = $request->get('status_type', 'active'); // 'active' or 'inactive'
         $branchFilter = $request->get('branch_id');
-        $groupFilter  = $request->get('academic_group');
-        $batchFilter  = $request->get('batch_id');
-        $search       = $request->get('search')['value'] ?? '';
+        $groupFilter = $request->get('academic_group');
+        $batchFilter = $request->get('batch_id');
+        $search = $request->get('search')['value'] ?? '';
 
         // DataTables parameters
-        $start       = $request->get('start', 0);
-        $length      = $request->get('length', 10);
+        $start = $request->get('start', 0);
+        $length = $request->get('length', 10);
         $orderColumn = $request->get('order')[0]['column'] ?? 0;
-        $orderDir    = $request->get('order')[0]['dir'] ?? 'asc';
+        $orderDir = $request->get('order')[0]['dir'] ?? 'asc';
 
         // Column mapping for ordering
         $columns = ['id', 'name', 'academic_group', 'batch_name', 'amount', 'total_paid', 'enrolled_at', 'actions'];
@@ -231,7 +232,7 @@ class SecondaryClassController extends Controller
         // Get total count before pagination (with branch filter for proper count)
         $totalRecordsQuery = StudentSecondaryClass::where('secondary_class_id', $secondaryClass->id)
             ->where('is_active', $statusType === 'active');
-
+            
         // Apply branch filter for total records count
         if (! $isAdmin) {
             $totalRecordsQuery->whereHas('student', function ($sq) use ($branchId) {
@@ -242,7 +243,7 @@ class SecondaryClassController extends Controller
                 $sq->where('branch_id', $branchFilter);
             });
         }
-
+        
         $totalRecords = $totalRecordsQuery->count();
 
         $filteredRecords = $query->count();
@@ -264,7 +265,7 @@ class SecondaryClassController extends Controller
                 $hasCustomOrder = true;
             }
         }
-
+        
         // Default ordering: enrolled_at descending (newest first)
         if (! $hasCustomOrder) {
             $query->orderBy('enrolled_at', 'desc');
@@ -295,38 +296,38 @@ class SecondaryClassController extends Controller
             }
 
             $row = [
-                'DT_RowId'          => 'row_' . $enrollment->id,
-                'DT_RowAttr'        => [
-                    'data-branch-id'         => $student->branch_id,
-                    'data-student-id'        => $student->id,
-                    'data-enrollment-id'     => $enrollment->id,
+                'DT_RowId' => 'row_' . $enrollment->id,
+                'DT_RowAttr' => [
+                    'data-branch-id' => $student->branch_id,
+                    'data-student-id' => $student->id,
+                    'data-enrollment-id' => $enrollment->id,
                     'data-enrollment-status' => $enrollment->is_active ? 'active' : 'inactive',
-                    'data-academic-group'    => $student->academic_group ?? '',
+                    'data-academic-group' => $student->academic_group ?? '',
                 ],
-                'index'             => $start + $index + 1,
-                'student_id'        => $student->id,
+                'index' => $start + $index + 1,
+                'student_id' => $student->id,
                 'student_unique_id' => $student->student_unique_id,
-                'name'              => $student->name,
-                'academic_group'    => $student->academic_group,
-                'batch_name'        => $student->batch->name ?? '-',
-                'branch_id'         => $student->branch_id,
-                'branch_name'       => $student->branch->branch_name ?? '-',
-                'amount'            => $enrollment->amount,
-                'total_paid'        => $enrollment->total_paid ?? 0,
-                'enrolled_at'       => $enrollment->enrolled_at ? $enrollment->enrolled_at->format('d-M-Y') : '-',
-                'is_active'         => $enrollment->is_active,
-                'can_manage'        => ($isAdmin || $isManager) && $secondaryClass->is_active,
-                'payment_type'      => $secondaryClass->payment_type,
+                'name' => $student->name,
+                'academic_group' => $student->academic_group,
+                'batch_name' => $student->batch->name ?? '-',
+                'branch_id' => $student->branch_id,
+                'branch_name' => $student->branch->branch_name ?? '-',
+                'amount' => $enrollment->amount,
+                'total_paid' => $enrollment->total_paid ?? 0,
+                'enrolled_at' => $enrollment->enrolled_at ? $enrollment->enrolled_at->format('d-M-Y') : '-',
+                'is_active' => $enrollment->is_active,
+                'can_manage' => ($isAdmin || $isManager) && $secondaryClass->is_active,
+                'payment_type' => $secondaryClass->payment_type,
             ];
 
             $data[] = $row;
         }
 
         return response()->json([
-            'draw'            => intval($request->get('draw')),
-            'recordsTotal'    => $totalRecords,
+            'draw' => intval($request->get('draw')),
+            'recordsTotal' => $totalRecords,
             'recordsFiltered' => $filteredRecords,
-            'data'            => $data,
+            'data' => $data,
         ]);
     }
 
@@ -335,8 +336,8 @@ class SecondaryClassController extends Controller
      */
     public function getStatsAjax(ClassName $classname, SecondaryClass $secondaryClass)
     {
-        $user     = auth()->user();
-        $isAdmin  = $user->isAdmin();
+        $user = auth()->user();
+        $isAdmin = $user->isAdmin();
         $branchId = $user->branch_id;
         $branches = $isAdmin ? Branch::select('id', 'branch_name', 'branch_prefix')->orderBy('branch_name')->get() : collect();
 
@@ -344,7 +345,7 @@ class SecondaryClassController extends Controller
 
         return response()->json([
             'success' => true,
-            'stats'   => $stats,
+            'stats' => $stats,
         ]);
     }
 
@@ -353,9 +354,9 @@ class SecondaryClassController extends Controller
      */
     public function getBranchCountsAjax(Request $request, ClassName $classname, SecondaryClass $secondaryClass)
     {
-        $user       = auth()->user();
-        $isAdmin    = $user->isAdmin();
-        $branchId   = $user->branch_id;
+        $user = auth()->user();
+        $isAdmin = $user->isAdmin();
+        $branchId = $user->branch_id;
         $statusType = $request->get('status_type', 'active');
 
         $query = StudentSecondaryClass::where('secondary_class_id', $secondaryClass->id)
@@ -370,13 +371,19 @@ class SecondaryClassController extends Controller
 
         $enrollments = $query->get();
 
-        $branchCounts = $enrollments->groupBy(function ($enrollment) {
-            return $enrollment->student->branch_id ?? 0;
-        })->map->count();
+        // Group by branch_id and count, ensuring integer keys for consistent JS comparison
+        $branchCounts = [];
+        foreach ($enrollments as $enrollment) {
+            $studentBranchId = (int) ($enrollment->student->branch_id ?? 0);
+            if (!isset($branchCounts[$studentBranchId])) {
+                $branchCounts[$studentBranchId] = 0;
+            }
+            $branchCounts[$studentBranchId]++;
+        }
 
         return response()->json([
             'success' => true,
-            'counts'  => $branchCounts,
+            'counts' => $branchCounts,
         ]);
     }
 
@@ -410,15 +417,15 @@ class SecondaryClassController extends Controller
                 }
 
                 return [
-                    'id'                => $student->id,
+                    'id' => $student->id,
                     'student_unique_id' => $student->student_unique_id,
-                    'name'              => $student->name,
-                    'academic_group'    => $student->academic_group,
-                    'branch_id'         => $student->branch_id,
-                    'branch_name'       => $student->branch->branch_name ?? '-',
-                    'batch_name'        => $student->batch->name ?? '-',
-                    'status'            => $status,
-                    'is_pending'        => $student->student_activation_id === null,
+                    'name' => $student->name,
+                    'academic_group' => $student->academic_group,
+                    'branch_id' => $student->branch_id,
+                    'branch_name' => $student->branch->branch_name ?? '-',
+                    'batch_name' => $student->batch->name ?? '-',
+                    'status' => $status,
+                    'is_pending' => $student->student_activation_id === null,
                 ];
             });
     }
@@ -442,7 +449,7 @@ class SecondaryClassController extends Controller
         $totalStudents = $enrollments->count();
 
         // Use StudentSecondaryClass->is_active instead of student activation status
-        $activeStudents   = $enrollments->where('is_active', true)->count();
+        $activeStudents = $enrollments->where('is_active', true)->count();
         $inactiveStudents = $enrollments->where('is_active', false)->count();
 
         // Calculate total revenue from actual payments
@@ -467,7 +474,8 @@ class SecondaryClassController extends Controller
         $branchStats = [];
         if ($isAdmin && $branches->count() > 0) {
             foreach ($branches as $branch) {
-                $branchEnrollments = $enrollments->filter(fn($e) => $e->student?->branch_id === $branch->id);
+                // Use loose comparison (==) to handle string/int type differences between servers
+                $branchEnrollments = $enrollments->filter(fn ($e) => (int) $e->student?->branch_id === (int) $branch->id);
 
                 // Calculate branch revenue
                 $branchRevenue = 0;
@@ -484,24 +492,24 @@ class SecondaryClassController extends Controller
                 }
 
                 $branchStats[$branch->id] = [
-                    'name'     => $branch->branch_name,
-                    'prefix'   => $branch->branch_prefix,
-                    'total'    => $branchEnrollments->count(),
-                    'active'   => $branchEnrollments->where('is_active', true)->count(),
+                    'name' => $branch->branch_name,
+                    'prefix' => $branch->branch_prefix,
+                    'total' => $branchEnrollments->count(),
+                    'active' => $branchEnrollments->where('is_active', true)->count(),
                     'inactive' => $branchEnrollments->where('is_active', false)->count(),
-                    'revenue'  => $branchRevenue,
+                    'revenue' => $branchRevenue,
                 ];
             }
         }
 
         return [
-            'total_students'           => $totalStudents,
-            'active_students'          => $activeStudents,
-            'inactive_students'        => $inactiveStudents,
-            'total_revenue'            => $totalRevenue,
+            'total_students' => $totalStudents,
+            'active_students' => $activeStudents,
+            'inactive_students' => $inactiveStudents,
+            'total_revenue' => $totalRevenue,
             'expected_monthly_revenue' => $expectedMonthlyRevenue,
-            'default_fee'              => $secondaryClass->fee_amount,
-            'branch_stats'             => $branchStats,
+            'default_fee' => $secondaryClass->fee_amount,
+            'branch_stats' => $branchStats,
         ];
     }
 
@@ -527,17 +535,17 @@ class SecondaryClassController extends Controller
             ]);
 
             return response()->json([
-                'success'   => true,
-                'message'   => $secondaryClass->is_active ? 'Special class activated.' : 'Special class deactivated.',
+                'success' => true,
+                'message' => $secondaryClass->is_active ? 'Special class activated.' : 'Special class deactivated.',
                 'is_active' => $secondaryClass->is_active,
             ]);
         }
 
         // Full update
         $validated = $request->validate([
-            'name'         => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'payment_type' => 'required|in:one_time,monthly',
-            'fee_amount'   => 'required|numeric|min:0',
+            'fee_amount' => 'required|numeric|min:0',
         ]);
 
         $secondaryClass->update($validated);
@@ -545,7 +553,7 @@ class SecondaryClassController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Special class updated successfully.',
-            'data'    => $secondaryClass->fresh()->loadCount('students'),
+            'data' => $secondaryClass->fresh()->loadCount('students'),
         ]);
     }
 
@@ -589,7 +597,7 @@ class SecondaryClassController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $secondaryClasses,
+            'data' => $secondaryClasses,
         ]);
     }
 
@@ -598,7 +606,7 @@ class SecondaryClassController extends Controller
      */
     public function getAvailableStudents(ClassName $classname, SecondaryClass $secondaryClass, Request $request)
     {
-        $user      = auth()->user();
+        $user = auth()->user();
         $isManager = false;
         try {
             $isManager = $user->isManager();
@@ -617,14 +625,14 @@ class SecondaryClassController extends Controller
             );
         }
 
-        $isAdmin  = $user->isAdmin();
+        $isAdmin = $user->isAdmin();
         $branchId = $user->branch_id;
 
         $students = $this->getAvailableStudentsData($classname, $secondaryClass, $isAdmin, $branchId);
 
         return response()->json([
             'success' => true,
-            'data'    => $students,
+            'data' => $students,
         ]);
     }
 
@@ -633,7 +641,7 @@ class SecondaryClassController extends Controller
      */
     public function enrollStudent(Request $request, ClassName $classname, SecondaryClass $secondaryClass)
     {
-        $user      = auth()->user();
+        $user = auth()->user();
         $isManager = false;
         try {
             $isManager = $user->isManager();
@@ -652,7 +660,7 @@ class SecondaryClassController extends Controller
 
         $validated = $request->validate([
             'student_id' => 'required|exists:students,id',
-            'amount'     => 'required|numeric|min:0',
+            'amount' => 'required|numeric|min:0',
         ]);
 
         // Check if student belongs to this class
@@ -683,11 +691,11 @@ class SecondaryClassController extends Controller
         DB::transaction(function () use ($validated, $secondaryClass, $student) {
             // Create enrollment
             StudentSecondaryClass::create([
-                'student_id'         => $validated['student_id'],
+                'student_id' => $validated['student_id'],
                 'secondary_class_id' => $secondaryClass->id,
-                'amount'             => $validated['amount'],
-                'enrolled_at'        => now(),
-                'is_active'          => true,
+                'amount' => $validated['amount'],
+                'enrolled_at' => now(),
+                'is_active' => true,
             ]);
 
             // Create Invoice and SecondaryClassPayment
@@ -703,9 +711,9 @@ class SecondaryClassController extends Controller
                 // Create SecondaryClassPayment entry
                 if ($invoice) {
                     SecondaryClassPayment::create([
-                        'student_id'         => $student->id,
+                        'student_id' => $student->id,
                         'secondary_class_id' => $secondaryClass->id,
-                        'invoice_id'         => $invoice->id,
+                        'invoice_id' => $invoice->id,
                     ]);
                 }
             }
@@ -731,7 +739,7 @@ class SecondaryClassController extends Controller
     private function createInvoice(Student $student, int $amount, string $typeName, ?string $monthYear = null): ?PaymentInvoice
     {
         $yearSuffix = now()->format('y');
-        $month      = now()->format('m');
+        $month = now()->format('m');
 
         // Ensure branch is loaded
         if (! $student->relationLoaded('branch')) {
@@ -759,13 +767,13 @@ class SecondaryClassController extends Controller
         }
 
         return PaymentInvoice::create([
-            'invoice_number'  => $invoiceNumber,
-            'student_id'      => $student->id,
-            'total_amount'    => $amount,
-            'amount_due'      => $amount,
-            'month_year'      => $monthYear,
+            'invoice_number' => $invoiceNumber,
+            'student_id' => $student->id,
+            'total_amount' => $amount,
+            'amount_due' => $amount,
+            'month_year' => $monthYear,
             'invoice_type_id' => $invoiceType->id,
-            'created_by'      => auth()->id(),
+            'created_by' => auth()->id(),
         ]);
     }
 
@@ -774,7 +782,7 @@ class SecondaryClassController extends Controller
      */
     public function updateStudentEnrollment(Request $request, ClassName $classname, SecondaryClass $secondaryClass, Student $student)
     {
-        $user      = auth()->user();
+        $user = auth()->user();
         $isManager = false;
         try {
             $isManager = $user->isManager();
@@ -822,7 +830,7 @@ class SecondaryClassController extends Controller
      */
     public function toggleStudentActivation(Request $request, ClassName $classname, SecondaryClass $secondaryClass, Student $student)
     {
-        $user      = auth()->user();
+        $user = auth()->user();
         $isManager = false;
         try {
             $isManager = $user->isManager();
@@ -863,10 +871,10 @@ class SecondaryClassController extends Controller
             if ($unpaidPayments > 0) {
                 return response()->json(
                     [
-                        'success'      => false,
-                        'has_unpaid'   => true,
+                        'success' => false,
+                        'has_unpaid' => true,
                         'unpaid_count' => $unpaidPayments,
-                        'message'      => "Cannot deactivate. Student has {$unpaidPayments} unpaid Special Class Fee invoice(s). Please clear all dues first.",
+                        'message' => "Cannot deactivate. Student has {$unpaidPayments} unpaid Special Class Fee invoice(s). Please clear all dues first.",
                     ],
                     422,
                 );
@@ -892,7 +900,7 @@ class SecondaryClassController extends Controller
      */
     public function checkUnpaidInvoices(ClassName $classname, SecondaryClass $secondaryClass, Student $student)
     {
-        $user      = auth()->user();
+        $user = auth()->user();
         $isManager = false;
         try {
             $isManager = $user->isManager();
@@ -918,21 +926,21 @@ class SecondaryClassController extends Controller
             ->with('invoice')
             ->get();
 
-        $unpaidInvoices = $unpaidPayments->map(fn($p) => $p->invoice)->filter();
+        $unpaidInvoices = $unpaidPayments->map(fn ($p) => $p->invoice)->filter();
 
         return response()->json([
-            'success'         => true,
-            'has_unpaid'      => $unpaidInvoices->count() > 0,
-            'unpaid_count'    => $unpaidInvoices->count(),
-            'unpaid_amount'   => $unpaidInvoices->sum('amount_due'),
+            'success' => true,
+            'has_unpaid' => $unpaidInvoices->count() > 0,
+            'unpaid_count' => $unpaidInvoices->count(),
+            'unpaid_amount' => $unpaidInvoices->sum('amount_due'),
             'unpaid_invoices' => $unpaidInvoices->map(function ($invoice) {
                 return [
-                    'id'             => $invoice->id,
+                    'id' => $invoice->id,
                     'invoice_number' => $invoice->invoice_number,
-                    'month_year'     => $invoice->month_year,
-                    'total_amount'   => $invoice->total_amount,
-                    'amount_due'     => $invoice->amount_due,
-                    'status'         => $invoice->status,
+                    'month_year' => $invoice->month_year,
+                    'total_amount' => $invoice->total_amount,
+                    'amount_due' => $invoice->amount_due,
+                    'status' => $invoice->status,
                 ];
             }),
         ]);
@@ -944,7 +952,7 @@ class SecondaryClassController extends Controller
      */
     public function withdrawStudent(Request $request, ClassName $classname, SecondaryClass $secondaryClass, Student $student)
     {
-        $user      = auth()->user();
+        $user = auth()->user();
         $isManager = false;
         try {
             $isManager = $user->isManager();
@@ -972,10 +980,10 @@ class SecondaryClassController extends Controller
         if ($unpaidPayments > 0) {
             return response()->json(
                 [
-                    'success'      => false,
-                    'has_unpaid'   => true,
+                    'success' => false,
+                    'has_unpaid' => true,
                     'unpaid_count' => $unpaidPayments,
-                    'message'      => "Student has {$unpaidPayments} unpaid Special Class Fee invoice(s). Please clear all dues before withdrawal.",
+                    'message' => "Student has {$unpaidPayments} unpaid Special Class Fee invoice(s). Please clear all dues before withdrawal.",
                 ],
                 422,
             );
