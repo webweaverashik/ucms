@@ -69,7 +69,8 @@
             <div class="card card-flush h-md-100">
                 <div class="card-header pt-5">
                     <div class="card-title d-flex flex-column">
-                        <span class="fs-2hx fw-bold text-danger me-2 lh-1 ls-n2">৳{{ number_format($totalPending, 0) }}</span>
+                        <span
+                            class="fs-2hx fw-bold text-danger me-2 lh-1 ls-n2">৳{{ number_format($totalPending, 0) }}</span>
                         <span class="text-gray-500 pt-1 fw-semibold fs-6">Total Pending</span>
                     </div>
                 </div>
@@ -147,16 +148,17 @@
                 @foreach ($branches as $index => $branch)
                     <div class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}"
                         id="kt_tab_branch_{{ $branch->id }}">
-                        <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 kt-settlements-table ucms-table"
+                        <table
+                            class="table table-hover align-middle table-row-dashed fs-6 gy-5 kt-settlements-table ucms-table"
                             data-branch-id="{{ $branch->id }}">
                             <thead>
                                 <tr class="fw-bold fs-7 text-uppercase gs-0">
                                     <th class="w-50px">#</th>
                                     <th class="min-w-150px">User</th>
                                     <th class="min-w-80px">Role</th>
-                                    <th class="min-w-100px text-end">Total Collected</th>
-                                    <th class="min-w-100px text-end">Total Settled</th>
-                                    <th class="min-w-100px text-end">Current Balance</th>
+                                    <th class="min-w-100px">Total Collected</th>
+                                    <th class="min-w-100px">Total Settled</th>
+                                    <th class="min-w-100px">Current Balance</th>
                                     <th class="text-end min-w-100px">Actions</th>
                                 </tr>
                             </thead>
@@ -168,8 +170,8 @@
                                             <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
                                                 @if ($user->photo_url)
                                                     <div class="symbol-label">
-                                                        <img src="{{ asset($user->photo_url) }}"
-                                                            alt="{{ $user->name }}" class="w-100" />
+                                                        <img src="{{ asset($user->photo_url) }}" alt="{{ $user->name }}"
+                                                            class="w-100" />
                                                     </div>
                                                 @else
                                                     <div class="symbol-label fs-3 bg-light-primary text-primary">
@@ -195,7 +197,7 @@
                                                     class="badge badge-light-secondary">{{ $user->roles->first()?->name ?? 'User' }}</span>
                                             @endif
                                         </td>
-                                        <td class="text-end">
+                                        <td>
                                             @if ($user->isAdmin() && isset($user->branch_total_collected))
                                                 <span class="text-success fw-bold">৳
                                                     {{ number_format($user->branch_total_collected, 0) }}</span>
@@ -204,7 +206,7 @@
                                                     {{ number_format($user->total_collected, 0) }}</span>
                                             @endif
                                         </td>
-                                        <td class="text-end">
+                                        <td>
                                             @if ($user->isAdmin() && isset($user->branch_total_settled))
                                                 <span class="text-info fw-bold">৳
                                                     {{ number_format($user->branch_total_settled, 0) }}</span>
@@ -213,7 +215,7 @@
                                                     {{ number_format($user->total_settled, 0) }}</span>
                                             @endif
                                         </td>
-                                        <td class="text-end"
+                                        <td
                                             data-filter="{{ $user->current_balance > 0 ? 'with_balance' : 'zero_balance' }}">
                                             @if ($user->current_balance > 0)
                                                 <span class="text-danger fw-bolder fs-5">৳
@@ -222,7 +224,7 @@
                                                 <span class="text-muted">৳ 0</span>
                                             @endif
                                         </td>
-                                        <td class="text-end">
+                                        <td>
                                             <a href="#"
                                                 class="btn btn-sm btn-light btn-flex btn-center btn-active-light-primary"
                                                 data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">

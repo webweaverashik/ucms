@@ -1,13 +1,14 @@
 <?php
 namespace App\Services;
 
-use App\Models\Academic\ClassName;
-use App\Models\Academic\Subject;
+use Carbon\Carbon;
 use App\Models\Branch;
+use App\Models\Student\Student;
+use App\Models\Academic\Subject;
+use App\Models\Academic\ClassName;
 use App\Models\Payment\PaymentInvoice;
 use App\Models\Payment\PaymentInvoiceType;
-use App\Models\Student\Student;
-use Carbon\Carbon;
+use App\Models\Payment\SecondaryClassPayment;
 use Illuminate\Validation\ValidationException;
 
 class StudentService
@@ -244,7 +245,7 @@ class StudentService
      * @param string|null $monthYear
      * @return void
      */
-    public function createInvoice(Student $student, float $amount, string $typeName, ?string $monthYear = null): void
+    public function createInvoice(Student $student, float $amount, string $typeName, ?string $monthYear = null, ?int $secondaryClassId = null): void
     {
         $yearSuffix = now()->format('y');
         $month      = now()->format('m');
@@ -266,7 +267,7 @@ class StudentService
             return;
         }
 
-        PaymentInvoice::create([
+        $invoice = PaymentInvoice::create([
             'invoice_number'  => $invoiceNumber,
             'student_id'      => $student->id,
             'total_amount'    => $amount,
@@ -274,6 +275,14 @@ class StudentService
             'month_year'      => $monthYear,
             'invoice_type_id' => $invoiceType->id,
         ]);
+
+        if ($typeName === 'Special Class Fee' && $secondaryClassId) {
+            SecondaryClassPayment::create([
+                'student_id'         => $student->id,
+                'secondary_class_id' => $secondaryClassId,
+                'invoice_id'         => $invoice->id,
+            ]);
+        }
     }
 
     /**

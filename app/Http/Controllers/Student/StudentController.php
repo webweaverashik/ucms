@@ -790,7 +790,7 @@ class StudentController extends Controller
                 if ($secondaryClass->payment_type === 'monthly') {
                     $monthYear = now()->format('m_Y');
                 }
-                $this->studentService->createInvoice($student, $feeAmount, 'Special Class Fee', $monthYear);
+                $this->studentService->createInvoice($student, $feeAmount, 'Special Class Fee', $monthYear, $secondaryClassId);
             }
         }
     }

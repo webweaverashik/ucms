@@ -39,6 +39,12 @@ Route::prefix('classnames')
             ->name('secondary-classes.')
             ->group(function () {
                 Route::get('{secondaryClass}', [SecondaryClassController::class, 'showWithClass'])->name('show');
+                
+                // AJAX endpoints for DataTables and stats
+                Route::get('{secondaryClass}/enrolled-students-ajax', [SecondaryClassController::class, 'getEnrolledStudentsAjax'])->name('enrolled-students-ajax');
+                Route::get('{secondaryClass}/stats-ajax', [SecondaryClassController::class, 'getStatsAjax'])->name('stats-ajax');
+                Route::get('{secondaryClass}/branch-counts-ajax', [SecondaryClassController::class, 'getBranchCountsAjax'])->name('branch-counts-ajax');
+                
                 Route::post('{secondaryClass}/enroll', [SecondaryClassController::class, 'enrollStudent'])->name('enroll');
                 Route::put('{secondaryClass}/students/{student}', [SecondaryClassController::class, 'updateStudentEnrollment'])->name('update-student');
                 Route::delete('{secondaryClass}/students/{student}', [SecondaryClassController::class, 'withdrawStudent'])->name('withdraw');
@@ -47,6 +53,7 @@ Route::prefix('classnames')
                 Route::post('{secondaryClass}/students/{student}/toggle-activation', [SecondaryClassController::class, 'toggleStudentActivation'])->name('toggle-activation');
             });
     });
+
 Route::resource('classnames', ClassNameController::class);
 
 // Secondary Classes (standalone)
@@ -55,6 +62,7 @@ Route::prefix('secondary-classes')
     ->group(function () {
         Route::get('by-class/{classId}', [SecondaryClassController::class, 'getByClass'])->name('by-class');
     });
+
 Route::resource('secondary-classes', SecondaryClassController::class);
 
 // Subjects
@@ -98,8 +106,8 @@ Route::get('institutions/by-type/{type}', [InstitutionController::class, 'getByT
 // Resource controllers
 Route::resources([
     'institutions' => InstitutionController::class,
-    'batches'      => BatchController::class,
-    'subjects'     => SubjectController::class,
-    'sheets'       => SheetController::class,
-    'notes'        => SheetTopicController::class,
+    'batches' => BatchController::class,
+    'subjects' => SubjectController::class,
+    'sheets' => SheetController::class,
+    'notes' => SheetTopicController::class,
 ]);

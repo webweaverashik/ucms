@@ -1,142 +1,516 @@
 "use strict";
 
-// DataTable instances for both tables
+// DataTable instances - keyed by tableId
 var dataTables = {};
 
-// Initialize DataTables for both active and inactive student tables
+// Store current filters for each table
+var tableFilters = {};
+
+// Update batch options based on selected branch
+var updateBatchOptions = function (tableId, branchId) {
+    const batchSelect = document.querySelector(`.filter-batch-select[data-table-id="${tableId}"]`);
+    if (!batchSelect) return;
+
+    // Clear current options
+    $(batchSelect).val('').trigger('change');
+    batchSelect.innerHTML = '<option value="">All Batches</option>';
+
+    // Filter batches by branch
+    const filteredBatches = allBatches.filter(function (batch) {
+        return !branchId || batch.branch_id === null || batch.branch_id == branchId;
+    });
+
+    // Add filtered options
+    filteredBatches.forEach(function (batch) {
+        const option = document.createElement('option');
+        option.value = batch.id;
+        option.textContent = batch.name;
+        batchSelect.appendChild(option);
+    });
+
+    // Refresh Select2 if initialized
+    if ($(batchSelect).hasClass('select2-hidden-accessible')) {
+        $(batchSelect).trigger('change');
+    }
+};
+
+// Initialize all DataTables
 var initDataTables = function () {
-    const tableIds = ['kt_active_students_table', 'kt_inactive_students_table'];
+    // Find all student tables on the page
+    document.querySelectorAll('.students-datatable').forEach(function (table) {
+        const tableId = table.id;
+        const branchId = table.getAttribute('data-branch-id') || '';
+        const statusType = table.getAttribute('data-status-type') || 'active';
 
-    tableIds.forEach(function (tableId) {
-        const table = document.getElementById(tableId);
-        if (!table) return;
+        // Initialize filter state for this table
+        tableFilters[tableId] = {
+            branch: branchId,
+            group: '',
+            batch: '',
+            status: statusType
+        };
 
-        // Determine column count based on payment type
-        const hasMonthlyColumn = paymentType === 'monthly';
-        const actionColumnIndex = hasMonthlyColumn ? 8 : 7;
+        initSingleDataTable(tableId, branchId, statusType);
+    });
 
-        const isActiveTable = tableId === 'kt_active_students_table';
-        const emptyMessage = isActiveTable
-            ? 'No active students in this special class.'
-            : 'No inactive students in this special class.';
+    // Initialize filter handlers
+    initFilterHandlers();
 
-        dataTables[tableId] = $(table).DataTable({
-            info: false,
-            order: [],
-            pageLength: 10,
-            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-            columnDefs: [
-                // { orderable: false, targets: isAdminUser ? [0, actionColumnIndex] : [0] }
-            ],
-            language: {
-                emptyTable: function () {
-                    let html = `
-                        <div class="d-flex flex-column align-items-center justify-content-center py-10">
-                            <div class="empty-state-icon mb-4">
-                                <i class="ki-outline ki-people fs-3tx text-gray-300"></i>
-                            </div>
-                            <h4 class="text-gray-800 fw-bold mb-3">${emptyMessage}</h4>`;
+    // Initialize branch tab counts
+    updateAllBranchCounts();
+};
 
-                    if (isActiveTable && isAdminUser && typeof secondaryClassIsActive !== 'undefined' && secondaryClassIsActive) {
-                        html += `
-                            <p class="text-muted fs-6 mb-6">Start enrolling students to this special class.</p>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_enroll_student">
-                                <i class="ki-outline ki-plus fs-3 me-1"></i>Enroll First Student
-                            </button>`;
-                    } else if (!isActiveTable) {
-                        html += `<p class="text-muted fs-6 mb-0">All enrolled students are currently active.</p>`;
-                    }
+// Initialize a single DataTable
+var initSingleDataTable = function (tableId, branchId, statusType) {
+    const table = document.getElementById(tableId);
+    if (!table) return;
 
-                    html += `</div>`;
-                    return html;
+    // Column configuration
+    const isActiveTable = statusType === 'active';
+    const emptyMessage = isActiveTable
+        ? 'No active students in this special class.'
+        : 'No inactive students in this special class.';
+
+    // Column definitions
+    var columns = [
+        {
+            data: 'index',
+            orderable: false,
+            searchable: false,
+            className: 'pe-2',
+            width: '30px'
+        },
+        {
+            data: null,
+            orderable: true,
+            render: function (data, type, row) {
+                const statusClass = row.is_active ? 'text-gray-800 text-hover-primary' : 'text-danger';
+                const tooltip = row.is_active ? '' : 'title="Inactive Enrollment" data-bs-toggle="tooltip"';
+                const studentUrl = routeStudentShow.replace(':studentId', row.student_id);
+                return `
+                    <div class="d-flex align-items-center">
+                        <div class="d-flex flex-column text-start">
+                            <a href="${studentUrl}" class="${statusClass} fw-bold mb-1" ${tooltip}>
+                                ${row.name}
+                            </a>
+                            <span class="text-muted fs-7">${row.student_unique_id}</span>
+                        </div>
+                    </div>
+                `;
+            }
+        },
+        {
+            data: 'academic_group',
+            orderable: true,
+            render: function (data) {
+                if (data === 'Science') {
+                    return '<span class="badge badge-light-info">Science</span>';
+                } else if (data === 'Commerce') {
+                    return '<span class="badge badge-light-success">Commerce</span>';
                 }
+                return '<span class="text-muted">-</span>';
+            }
+        },
+        {
+            data: 'batch_name',
+            orderable: true,
+            render: function (data) {
+                return data || '<span class="text-muted">-</span>';
+            }
+        },
+        {
+            data: 'amount',
+            orderable: true,
+            render: function (data) {
+                return `<span class="fw-bold text-primary">৳ ${Number(data).toLocaleString()}</span>`;
+            }
+        },
+        {
+            data: 'total_paid',
+            orderable: false,
+            render: function (data) {
+                return `<span class="fw-bold text-success">৳ ${Number(data).toLocaleString()}</span>`;
+            }
+        },
+        {
+            data: 'enrolled_at',
+            orderable: true
+        },
+        {
+            data: null,
+            orderable: false,
+            searchable: false,
+            className: 'text-end',
+            render: function (data, type, row) {
+                if (!row.can_manage) {
+                    return '<span class="text-muted">-</span>';
+                }
+
+                let actions = '<div class="d-flex justify-content-center gap-2">';
+
+                // Edit button for monthly payment type
+                if (row.payment_type === 'monthly') {
+                    actions += `
+                    <button type="button" class="btn btn-sm btn-icon btn-light-primary edit-enrollment"
+                        data-student-id="${row.student_id}"
+                        data-student-name="${row.name}"
+                        data-amount="${row.amount}"
+                        data-bs-toggle="tooltip" title="Edit Fee Amount">
+                        <i class="ki-outline ki-pencil fs-5"></i>
+                    </button>
+                `;
+                }
+
+                // Toggle activation button
+                if (row.is_active) {
+                    actions += `
+                    <button type="button" class="btn btn-sm btn-light-danger toggle-enrollment-activation"
+                        data-student-id="${row.student_id}"
+                        data-student-name="${row.name}"
+                        data-is-active="1"
+                        data-bs-toggle="tooltip" title="Deactivate Enrollment">
+                        <i class="ki-outline ki-cross-circle fs-5 me-1"></i>
+                        <span class="d-none d-md-inline">Deactivate</span>
+                    </button>
+                `;
+                } else {
+                    actions += `
+                    <button type="button" class="btn btn-sm btn-light-success toggle-enrollment-activation"
+                        data-student-id="${row.student_id}"
+                        data-student-name="${row.name}"
+                        data-is-active="0"
+                        data-bs-toggle="tooltip" title="Activate Enrollment">
+                        <i class="ki-outline ki-check-circle fs-5 me-1"></i>
+                        <span class="d-none d-md-inline">Activate</span>
+                    </button>
+                `;
+                }
+
+                actions += '</div>';
+                return actions;
+            }
+        }
+    ];
+
+    // Initialize DataTable with server-side processing
+    dataTables[tableId] = $(table).DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: routeEnrolledStudentsAjax,
+            type: 'GET',
+            data: function (d) {
+                const filters = tableFilters[tableId];
+                d.status_type = filters.status;
+                d.branch_id = filters.branch;
+                d.academic_group = filters.group;
+                d.batch_id = filters.batch;
+            }
+        },
+        columns: columns,
+        order: [], // Default order by enrolled_at (column index 6) descending
+        pageLength: 10,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        language: {
+            emptyTable: function () {
+                let html = `
+                    <div class="d-flex flex-column align-items-center justify-content-center py-10">
+                        <div class="empty-state-icon mb-4">
+                            <i class="ki-outline ki-people fs-3tx text-gray-300"></i>
+                        </div>
+                        <h4 class="text-gray-800 fw-bold mb-3">${emptyMessage}</h4>`;
+
+                if (isActiveTable && isAdminUser && secondaryClassIsActive) {
+                    html += `
+                        <p class="text-muted fs-6 mb-6">Start enrolling students to this special class.</p>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_enroll_student">
+                            <i class="ki-outline ki-plus fs-3 me-1"></i>Enroll First Student
+                        </button>`;
+                } else if (!isActiveTable) {
+                    html += `<p class="text-muted fs-6 mb-0">All enrolled students are currently active.</p>`;
+                }
+
+                html += `</div>`;
+                return html;
             },
-            drawCallback: function () {
-                initTooltips();
+            processing: '<div class="d-flex justify-content-center"><span class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></span></div>',
+            zeroRecords: 'No matching students found'
+        },
+        drawCallback: function () {
+            initTooltips();
+        }
+    });
+
+    // Initialize search with debounce
+    initTableSearch(tableId);
+
+    // Initialize refresh button
+    initRefreshButton(tableId);
+
+    // Initialize Select2 for filter dropdowns
+    initFilterSelect2(tableId);
+
+    // Update branch counts after table is initialized
+    const statusType2 = tableFilters[tableId].status;
+    updateBranchCounts(statusType2);
+};
+
+// Initialize Select2 for filter dropdowns
+var initFilterSelect2 = function (tableId) {
+    const groupSelect = document.querySelector(`.filter-group-select[data-table-id="${tableId}"]`);
+    const batchSelect = document.querySelector(`.filter-batch-select[data-table-id="${tableId}"]`);
+
+    if (groupSelect && !$(groupSelect).hasClass('select2-hidden-accessible')) {
+        $(groupSelect).select2({
+            minimumResultsForSearch: -1,
+            allowClear: true,
+            placeholder: 'All Groups'
+        });
+    }
+
+    if (batchSelect && !$(batchSelect).hasClass('select2-hidden-accessible')) {
+        $(batchSelect).select2({
+            minimumResultsForSearch: -1,
+            allowClear: true,
+            placeholder: 'All Batches'
+        });
+    }
+};
+
+// Initialize filter handlers (Apply and Reset buttons)
+var initFilterHandlers = function () {
+    // Apply filter button click
+    document.querySelectorAll('[data-table-filter="apply"]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const tableId = this.getAttribute('data-table-id');
+            const filterContainer = this.closest('.menu-sub-dropdown');
+
+            if (!filterContainer || !tableId) return;
+
+            const groupSelect = filterContainer.querySelector('.filter-group-select');
+            const batchSelect = filterContainer.querySelector('.filter-batch-select');
+
+            // Update filter state
+            if (groupSelect) {
+                tableFilters[tableId].group = $(groupSelect).val() || '';
+            }
+            if (batchSelect) {
+                tableFilters[tableId].batch = $(batchSelect).val() || '';
+            }
+
+            // Reload table with new filters
+            if (dataTables[tableId]) {
+                dataTables[tableId].ajax.reload();
             }
         });
+    });
 
-        // Search functionality for each table
-        const searchInput = document.querySelector(`[data-table-filter="search"][data-table-id="${tableId}"]`);
-        if (searchInput) {
-            searchInput.addEventListener('input', function (e) {
+    // Reset filter button click
+    document.querySelectorAll('[data-table-filter="reset"]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const tableId = this.getAttribute('data-table-id');
+            const filterContainer = this.closest('.menu-sub-dropdown');
+
+            if (!filterContainer || !tableId) return;
+
+            const groupSelect = filterContainer.querySelector('.filter-group-select');
+            const batchSelect = filterContainer.querySelector('.filter-batch-select');
+
+            // Reset select values
+            if (groupSelect) {
+                $(groupSelect).val('').trigger('change');
+            }
+            if (batchSelect) {
+                $(batchSelect).val('').trigger('change');
+            }
+
+            // Reset filter state
+            tableFilters[tableId].group = '';
+            tableFilters[tableId].batch = '';
+
+            // Reload table
+            if (dataTables[tableId]) {
+                dataTables[tableId].ajax.reload();
+            }
+        });
+    });
+};
+
+// Initialize search functionality for a table
+var initTableSearch = function (tableId) {
+    const searchInput = document.querySelector(`[data-table-filter="search"][data-table-id="${tableId}"]`);
+    if (!searchInput) return;
+
+    let searchTimeout;
+    searchInput.addEventListener('input', function (e) {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(function () {
+            if (dataTables[tableId]) {
                 dataTables[tableId].search(e.target.value).draw();
+            }
+        }, 400);
+    });
+};
+
+// Initialize refresh button for a table
+var initRefreshButton = function (tableId) {
+    const refreshBtn = document.querySelector(`.refresh-table-btn[data-table-id="${tableId}"]`);
+    if (!refreshBtn) return;
+
+    refreshBtn.addEventListener('click', function () {
+        refreshTable(tableId);
+    });
+};
+
+// Refresh a specific table
+var refreshTable = function (tableId) {
+    if (dataTables[tableId]) {
+        dataTables[tableId].ajax.reload(null, false);
+        // Update branch counts for this table's status type
+        const statusType = tableFilters[tableId].status;
+        updateBranchCounts(statusType);
+    }
+};
+
+// Refresh all tables
+var refreshAllTables = function () {
+    Object.keys(dataTables).forEach(function (tableId) {
+        dataTables[tableId].ajax.reload(null, false);
+    });
+    updateAllBranchCounts();
+    updateStats();
+};
+
+// Update branch counts for all status types
+var updateAllBranchCounts = function () {
+    updateBranchCounts('active');
+    updateBranchCounts('inactive');
+};
+
+// Update branch counts in tabs
+var updateBranchCounts = function (statusType) {
+    // First, reset all badges for this status type to 0
+    document.querySelectorAll(`.branch-count-badge[data-status-type="${statusType}"]`).forEach(function (badge) {
+        badge.textContent = '0';
+        badge.classList.remove('badge-loading');
+    });
+
+    $.ajax({
+        url: routeBranchCountsAjax,
+        type: 'GET',
+        data: { status_type: statusType },
+        success: function (response) {
+            if (response.success) {
+                // Update all branch count badges for this status type
+                document.querySelectorAll(`.branch-count-badge[data-status-type="${statusType}"]`).forEach(function (badge) {
+                    const branchId = badge.getAttribute('data-branch-id');
+                    const count = response.counts[branchId] || 0;
+                    badge.textContent = count;
+                    badge.classList.remove('badge-loading');
+                });
+            }
+        },
+        error: function () {
+            // Remove loading state on error
+            document.querySelectorAll(`.branch-count-badge[data-status-type="${statusType}"]`).forEach(function (badge) {
+                badge.classList.remove('badge-loading');
             });
         }
     });
+};
 
-    // Branch tab filtering for each table
-    document.querySelectorAll('[data-branch-filter]').forEach(function (tab) {
-        tab.addEventListener('click', function () {
-            const branchId = this.getAttribute('data-branch-filter');
-            const tableId = this.getAttribute('data-table-id');
-            if (tableId && dataTables[tableId]) {
-                filterByBranch(tableId, branchId);
+// Update stats via AJAX
+var updateStats = function () {
+    $.ajax({
+        url: routeStatsAjax,
+        type: 'GET',
+        success: function (response) {
+            if (response.success) {
+                const stats = response.stats;
+
+                // Update main stats
+                $('#stat_total_students').text(stats.total_students);
+                $('#stat_active_students').text(stats.active_students);
+                $('#stat_inactive_students').text(stats.inactive_students);
+                $('#stat_total_revenue').text('৳ ' + Number(stats.total_revenue).toLocaleString());
+
+                if (paymentType === 'monthly') {
+                    $('#stat_expected_monthly').text('৳ ' + Number(stats.expected_monthly_revenue).toLocaleString());
+                }
+
+                // Update branch stats in sidebar
+                if (stats.branch_stats) {
+                    Object.keys(stats.branch_stats).forEach(function (branchId) {
+                        const branchStat = stats.branch_stats[branchId];
+                        const branchItem = $(`.branch-stat-item[data-branch-id="${branchId}"]`);
+                        if (branchItem.length) {
+                            branchItem.find('.branch-total-count').text(branchStat.total);
+                            branchItem.find('.branch-active-count').text(branchStat.active);
+                            branchItem.find('.branch-inactive-count').text(branchStat.inactive);
+                            branchItem.find('.branch-revenue').text(Number(branchStat.revenue).toLocaleString());
+                        }
+                    });
+                }
             }
-        });
-    });
-
-    // Apply initial filter for first branch tab (no "All Branches" now)
-    tableIds.forEach(function (tableId) {
-        const firstBranchTab = document.querySelector(`#branchTabs_${tableId} .nav-link.active[data-branch-filter]`);
-        if (firstBranchTab) {
-            const branchId = firstBranchTab.getAttribute('data-branch-filter');
-            filterByBranch(tableId, branchId);
         }
     });
 };
 
-// Store current filters for each table
-var tableFilters = {
-    'kt_active_students_table': { branch: null, group: null },
-    'kt_inactive_students_table': { branch: null, group: null }
-};
+// Refresh available students for enrollment modal
+var refreshAvailableStudents = function () {
+    $.ajax({
+        url: routeAvailableStudents,
+        type: 'GET',
+        success: function (response) {
+            if (response.success) {
+                const select = document.getElementById('enroll_student_select');
+                if (!select) return;
 
-// Apply combined filters (branch + group) for specific table
-var applyTableFilters = function (tableId) {
-    if (!dataTables[tableId]) return;
+                // Clear current options except placeholder
+                $(select).find('option:not(:first)').remove();
 
-    // Clear previous custom filters for this table
-    $.fn.dataTable.ext.search = $.fn.dataTable.ext.search.filter(function (fn) {
-        return fn.tableId !== tableId;
+                // Reset stored options
+                originalStudentOptions = [];
+
+                // Add new options
+                response.data.forEach(function (student) {
+                    const option = new Option(
+                        `${student.name} (${student.student_unique_id})`,
+                        student.id,
+                        false,
+                        false
+                    );
+                    $(option).attr('data-branch-id', student.branch_id);
+                    $(option).attr('data-student-id', student.student_unique_id);
+                    $(option).attr('data-branch-name', student.branch_name);
+                    $(option).attr('data-batch-name', student.batch_name);
+                    $(option).attr('data-status', student.status);
+                    $(option).attr('data-is-pending', student.is_pending ? '1' : '0');
+                    $(select).append(option);
+
+                    // Store for filtering
+                    originalStudentOptions.push({
+                        value: student.id,
+                        text: `${student.name} (${student.student_unique_id})`,
+                        branchId: student.branch_id,
+                        studentId: student.student_unique_id,
+                        branchName: student.branch_name,
+                        batchName: student.batch_name,
+                        status: student.status,
+                        isPending: student.is_pending
+                    });
+                });
+
+                // Trigger change to refresh Select2
+                $(select).trigger('change');
+            }
+        }
     });
-
-    var filterFn = function (settings, data, dataIndex) {
-        if (settings.nTable.id !== tableId) return true;
-
-        const row = dataTables[tableId].row(dataIndex).node();
-        const filters = tableFilters[tableId];
-
-        // Branch filter
-        let branchMatch = true;
-        if (filters.branch && filters.branch !== 'all') {
-            branchMatch = row.getAttribute('data-branch-id') === filters.branch;
-        }
-
-        // Group filter
-        let groupMatch = true;
-        if (filters.group) {
-            const rowGroup = row.getAttribute('data-academic-group') || '';
-            groupMatch = rowGroup === filters.group;
-        }
-
-        return branchMatch && groupMatch;
-    };
-    filterFn.tableId = tableId;
-    $.fn.dataTable.ext.search.push(filterFn);
-
-    dataTables[tableId].draw();
-};
-
-// Filter by branch for specific table
-var filterByBranch = function (tableId, branchId) {
-    if (!dataTables[tableId]) return;
-
-    tableFilters[tableId].branch = branchId;
-    applyTableFilters(tableId);
 };
 
 // Initialize Select2 for student enrollment with preloaded data
+var originalStudentOptions = [];
+
 var initStudentSelect = function () {
     const select = document.getElementById('enroll_student_select');
     if (!select) return;
@@ -175,6 +549,7 @@ var initStudentSelect = function () {
             statusBadge = '<span class="badge badge-light-danger ms-2">Inactive</span>';
         }
         $('#selected_student_status').html(statusBadge);
+
         $('#selected_student_info').removeClass('d-none');
     });
 
@@ -185,7 +560,11 @@ var initStudentSelect = function () {
     // Branch filter for enrollment modal
     const branchFilter = document.getElementById('enroll_branch_filter');
     if (branchFilter) {
-        $(branchFilter).on('change', function () {
+        $(branchFilter).select2({
+            minimumResultsForSearch: -1,
+            allowClear: true,
+            placeholder: 'All Branches'
+        }).on('change', function () {
             const selectedBranch = $(this).val();
             filterStudentOptionsByBranch(selectedBranch);
         });
@@ -193,7 +572,6 @@ var initStudentSelect = function () {
 };
 
 // Store original options for branch filtering
-var originalStudentOptions = [];
 var storeOriginalOptions = function () {
     const select = document.getElementById('enroll_student_select');
     if (!select || originalStudentOptions.length > 0) return;
@@ -214,7 +592,7 @@ var storeOriginalOptions = function () {
     });
 };
 
-// Filter student options by branch - show only matching branch students
+// Filter student options by branch
 var filterStudentOptionsByBranch = function (branchId) {
     const select = document.getElementById('enroll_student_select');
 
@@ -252,7 +630,7 @@ var formatStudentOption = function (data) {
     const branchName = element.data('branch-name') || '-';
     const batchName = element.data('batch-name') || '-';
 
-    // Determine status badge based on status value
+    // Determine status badge
     let statusClass, statusText;
     if (status === 'pending') {
         statusClass = 'badge-light-warning';
@@ -287,6 +665,7 @@ var handleEnrollStudent = function () {
     if (!form) return;
 
     const submitButton = document.getElementById('kt_modal_enroll_student_submit');
+    const modalElement = document.getElementById('kt_modal_enroll_student');
 
     form.addEventListener('submit', function (e) {
         e.preventDefault();
@@ -315,14 +694,37 @@ var handleEnrollStudent = function () {
                 _token: $('meta[name="csrf-token"]').attr('content')
             },
             success: function (response) {
+                submitButton.removeAttribute('data-kt-indicator');
+                submitButton.disabled = false;
+
                 if (response.success) {
-                    Swal.fire({
-                        text: response.message,
-                        icon: 'success',
-                        confirmButtonText: 'Ok'
-                    }).then(function () {
-                        location.reload();
-                    });
+                    // Get modal instance and hide it
+                    let modalInstance = bootstrap.Modal.getInstance(modalElement);
+                    if (!modalInstance) {
+                        modalInstance = new bootstrap.Modal(modalElement);
+                    }
+                    modalInstance.hide();
+
+                    // Reset form after modal starts hiding
+                    setTimeout(function () {
+                        form.reset();
+                        $('#enroll_student_select').val('').trigger('change');
+                        $('#selected_student_info').addClass('d-none');
+                        if (document.getElementById('enroll_amount')) {
+                            document.getElementById('enroll_amount').value = defaultFeeAmount;
+                        }
+                        if (document.getElementById('enroll_branch_filter')) {
+                            $('#enroll_branch_filter').val('').trigger('change');
+                            filterStudentOptionsByBranch('');
+                        }
+                    }, 50);
+
+                    // Show success message
+                    toastr.success(response.message);
+
+                    // Refresh data via AJAX
+                    refreshAllTables();
+                    refreshAvailableStudents();
                 } else {
                     Swal.fire({
                         text: response.message || 'An error occurred.',
@@ -332,31 +734,31 @@ var handleEnrollStudent = function () {
                 }
             },
             error: function (xhr) {
+                submitButton.removeAttribute('data-kt-indicator');
+                submitButton.disabled = false;
+
                 const message = xhr.responseJSON?.message || 'An error occurred.';
                 Swal.fire({
                     text: message,
                     icon: 'error',
                     confirmButtonText: 'Ok'
                 });
-            },
-            complete: function () {
-                submitButton.removeAttribute('data-kt-indicator');
-                submitButton.disabled = false;
             }
         });
     });
 
     // Reset form when modal is hidden
     $('#kt_modal_enroll_student').on('hidden.bs.modal', function () {
+        submitButton.removeAttribute('data-kt-indicator');
+        submitButton.disabled = false;
         form.reset();
         $('#enroll_student_select').val('').trigger('change');
         $('#selected_student_info').addClass('d-none');
-        document.getElementById('enroll_amount').value = defaultFeeAmount;
-
-        // Reset branch filter and restore all student options
+        if (document.getElementById('enroll_amount')) {
+            document.getElementById('enroll_amount').value = defaultFeeAmount;
+        }
         if (document.getElementById('enroll_branch_filter')) {
-            $('#enroll_branch_filter').val('');
-            // Restore all options
+            $('#enroll_branch_filter').val('').trigger('change');
             filterStudentOptionsByBranch('');
         }
     });
@@ -369,7 +771,6 @@ var handleToggleActivation = function () {
 
     const modal = new bootstrap.Modal(document.getElementById('kt_modal_toggle_activation'));
     const submitButton = document.getElementById('kt_modal_toggle_activation_submit');
-    const modalHeader = document.getElementById('toggle_modal_header');
     const modalTitle = document.getElementById('toggle_activation_modal_title');
     const submitLabel = document.getElementById('toggle_submit_label');
     const deactivateWarning = document.getElementById('toggle_deactivate_warning');
@@ -377,83 +778,81 @@ var handleToggleActivation = function () {
     const unpaidWarning = document.getElementById('toggle_unpaid_warning');
     const unpaidMessage = document.getElementById('toggle_unpaid_message');
 
-    // Open toggle modal - Event Delegation for both tables
-    document.querySelectorAll('.student-table').forEach(function (table) {
-        table.addEventListener('click', function (e) {
-            const button = e.target.closest('.toggle-enrollment-activation');
-            if (button) {
-                e.preventDefault();
+    // Open toggle modal - Event Delegation for all tables
+    $(document).on('click', '.toggle-enrollment-activation', function (e) {
+        e.preventDefault();
+        const button = $(this);
 
-                const studentId = button.getAttribute('data-student-id');
-                const studentName = button.getAttribute('data-student-name');
-                const isActive = button.getAttribute('data-is-active') === '1';
+        const studentId = button.attr('data-student-id');
+        const studentName = button.attr('data-student-name');
+        const isActive = button.attr('data-is-active') === '1';
 
-                // Set form values
-                document.getElementById('toggle_student_id').value = studentId;
-                document.getElementById('toggle_is_active').value = isActive ? '1' : '0';
-                document.getElementById('toggle_student_name_display').textContent = studentName;
-                document.getElementById('toggle_student_name_display_activate').textContent = studentName;
+        // Set form values
+        document.getElementById('toggle_student_id').value = studentId;
+        document.getElementById('toggle_is_active').value = isActive ? '1' : '0';
+        document.getElementById('toggle_student_name_display').textContent = studentName;
+        document.getElementById('toggle_student_name_display_activate').textContent = studentName;
 
-                // Reset state
-                unpaidWarning.classList.add('d-none');
-                submitButton.disabled = false;
+        // Reset state
+        unpaidWarning.classList.add('d-none');
+        submitButton.disabled = false;
 
-                if (isActive) {
-                    // Deactivating - show danger styling
-                    modalTitle.textContent = 'Deactivate Enrollment';
-                    modalTitle.classList.remove('text-success');
-                    modalTitle.classList.add('text-danger');
-                    submitLabel.textContent = 'Deactivate';
-                    submitButton.classList.remove('btn-success');
-                    submitButton.classList.add('btn-danger');
-                    deactivateWarning.classList.remove('d-none');
-                    activateInfo.classList.add('d-none');
+        if (isActive) {
+            // Deactivating - show danger styling
+            modalTitle.textContent = 'Deactivate Enrollment';
+            modalTitle.classList.remove('text-success');
+            modalTitle.classList.add('text-danger');
+            submitLabel.textContent = 'Deactivate';
+            submitButton.classList.remove('btn-success');
+            submitButton.classList.add('btn-danger');
+            deactivateWarning.classList.remove('d-none');
+            activateInfo.classList.add('d-none');
 
-                    // Check for unpaid invoices
-                    button.disabled = true;
-                    const originalContent = button.innerHTML;
-                    button.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            // Check for unpaid invoices
+            button.prop('disabled', true);
+            const originalContent = button.html();
+            button.html('<span class="spinner-border spinner-border-sm"></span>');
 
-                    $.ajax({
-                        url: routeCheckUnpaid.replace(':studentId', studentId),
-                        type: 'GET',
-                        success: function (response) {
-                            button.disabled = false;
-                            button.innerHTML = originalContent;
+            $.ajax({
+                url: routeCheckUnpaid.replace(':studentId', studentId),
+                type: 'GET',
+                success: function (response) {
+                    button.prop('disabled', false);
+                    button.html(originalContent);
 
-                            if (response.success && response.has_unpaid) {
-                                // Show unpaid warning
-                                deactivateWarning.classList.add('d-none');
-                                unpaidWarning.classList.remove('d-none');
-                                unpaidMessage.innerHTML = `This student has <strong>${response.unpaid_count}</strong> unpaid Special Class Fee invoice(s) totaling <strong>৳${response.unpaid_amount.toLocaleString()}</strong>. Please clear all dues before deactivation.`;
-                                submitButton.disabled = true;
-                            }
-                            modal.show();
-                        },
-                        error: function () {
-                            button.disabled = false;
-                            button.innerHTML = originalContent;
-                            Swal.fire({
-                                text: 'Failed to check unpaid invoices.',
-                                icon: 'error',
-                                confirmButtonText: 'Ok'
-                            });
-                        }
-                    });
-                } else {
-                    // Activating - show success styling
-                    modalTitle.textContent = 'Activate Enrollment';
-                    modalTitle.classList.remove('text-danger');
-                    modalTitle.classList.add('text-success');
-                    submitLabel.textContent = 'Activate';
-                    submitButton.classList.remove('btn-danger');
-                    submitButton.classList.add('btn-success');
-                    deactivateWarning.classList.add('d-none');
-                    activateInfo.classList.remove('d-none');
+                    if (response.success && response.has_unpaid) {
+                        // Show unpaid warning
+                        deactivateWarning.classList.add('d-none');
+                        unpaidWarning.classList.remove('d-none');
+                        unpaidMessage.innerHTML = `This student has <strong>${response.unpaid_count}</strong> unpaid Special Class Fee invoice(s) totaling <strong>৳ ${response.unpaid_amount.toLocaleString()}</strong>. Please clear all dues before deactivation.`;
+                        submitButton.disabled = true;
+                    }
+
                     modal.show();
+                },
+                error: function () {
+                    button.prop('disabled', false);
+                    button.html(originalContent);
+                    Swal.fire({
+                        text: 'Failed to check unpaid invoices.',
+                        icon: 'error',
+                        confirmButtonText: 'Ok'
+                    });
                 }
-            }
-        });
+            });
+        } else {
+            // Activating - show success styling
+            modalTitle.textContent = 'Activate Enrollment';
+            modalTitle.classList.remove('text-danger');
+            modalTitle.classList.add('text-success');
+            submitLabel.textContent = 'Activate';
+            submitButton.classList.remove('btn-danger');
+            submitButton.classList.add('btn-success');
+            deactivateWarning.classList.add('d-none');
+            activateInfo.classList.remove('d-none');
+
+            modal.show();
+        }
     });
 
     // Submit form
@@ -473,13 +872,11 @@ var handleToggleActivation = function () {
             },
             success: function (response) {
                 if (response.success) {
-                    Swal.fire({
-                        text: response.message,
-                        icon: 'success',
-                        confirmButtonText: 'Ok'
-                    }).then(function () {
-                        location.reload();
-                    });
+                    toastr.success(response.message);
+                    modal.hide();
+
+                    // Refresh all tables and update counts
+                    refreshAllTables();
                 } else {
                     Swal.fire({
                         text: response.message || 'An error occurred.',
@@ -491,7 +888,6 @@ var handleToggleActivation = function () {
             error: function (xhr) {
                 const response = xhr.responseJSON;
                 if (response && response.has_unpaid) {
-                    // Show unpaid warning in modal
                     deactivateWarning.classList.add('d-none');
                     unpaidWarning.classList.remove('d-none');
                     unpaidMessage.innerHTML = response.message;
@@ -533,24 +929,20 @@ var handleEditEnrollment = function () {
     const modal = new bootstrap.Modal(document.getElementById('kt_modal_edit_enrollment'));
     const submitButton = document.getElementById('kt_modal_edit_enrollment_submit');
 
-    // Open edit modal - Event Delegation for both tables
-    document.querySelectorAll('.student-table').forEach(function (table) {
-        table.addEventListener('click', function (e) {
-            const button = e.target.closest('.edit-enrollment');
-            if (button) {
-                e.preventDefault();
+    // Open edit modal - Event Delegation for all tables
+    $(document).on('click', '.edit-enrollment', function (e) {
+        e.preventDefault();
+        const button = $(this);
 
-                const studentId = button.getAttribute('data-student-id');
-                const studentName = button.getAttribute('data-student-name');
-                const amount = button.getAttribute('data-amount');
+        const studentId = button.attr('data-student-id');
+        const studentName = button.attr('data-student-name');
+        const amount = button.attr('data-amount');
 
-                document.getElementById('edit_student_id').value = studentId;
-                document.getElementById('edit_student_name_display').textContent = studentName;
-                document.getElementById('edit_amount').value = amount;
+        document.getElementById('edit_student_id').value = studentId;
+        document.getElementById('edit_student_name_display').textContent = studentName;
+        document.getElementById('edit_amount').value = amount;
 
-                modal.show();
-            }
-        });
+        modal.show();
     });
 
     // Submit form
@@ -572,13 +964,9 @@ var handleEditEnrollment = function () {
             },
             success: function (response) {
                 if (response.success) {
-                    Swal.fire({
-                        text: response.message,
-                        icon: 'success',
-                        confirmButtonText: 'Ok'
-                    }).then(function () {
-                        location.reload();
-                    });
+                    toastr.success(response.message);
+                    modal.hide();
+                    refreshAllTables();
                 } else {
                     Swal.fire({
                         text: response.message || 'An error occurred.',
@@ -609,6 +997,8 @@ var handleEditSecondaryClass = function () {
     if (!form) return;
 
     const submitButton = document.getElementById('kt_modal_edit_secondary_class_submit');
+    const modal = bootstrap.Modal.getInstance(document.getElementById('kt_modal_edit_secondary_class')) ||
+        new bootstrap.Modal(document.getElementById('kt_modal_edit_secondary_class'));
 
     form.addEventListener('submit', function (e) {
         e.preventDefault();
@@ -630,13 +1020,10 @@ var handleEditSecondaryClass = function () {
             },
             success: function (response) {
                 if (response.success) {
-                    Swal.fire({
-                        text: response.message,
-                        icon: 'success',
-                        confirmButtonText: 'Ok'
-                    }).then(function () {
+                    toastr.success(response.message);
+                    setTimeout(function () {
                         location.reload();
-                    });
+                    }, 1000);
                 } else {
                     Swal.fire({
                         text: response.message || 'An error occurred.',
@@ -665,7 +1052,6 @@ var handleEditSecondaryClass = function () {
 var initTooltips = function () {
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(function (tooltipTriggerEl) {
-        // Dispose existing tooltip first
         var existingTooltip = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
         if (existingTooltip) {
             existingTooltip.dispose();
@@ -674,57 +1060,27 @@ var initTooltips = function () {
     });
 };
 
-// Initialize Select2 for filters
-var initFilterSelects = function () {
-    $('select[data-kt-select2="true"]').select2({
-        minimumResultsForSearch: -1
-    });
-};
-
-// Initialize group filter handlers
-var initGroupFilters = function () {
-    // Apply filter button click
-    document.querySelectorAll('[data-table-filter="apply"]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            const tableId = this.getAttribute('data-table-id');
-            const filterContainer = this.closest('.menu-sub-dropdown');
-            const groupSelect = filterContainer.querySelector('.filter-group-select');
-
-            if (groupSelect && tableId) {
-                const selectedGroup = $(groupSelect).val();
-                tableFilters[tableId].group = selectedGroup || null;
-                applyTableFilters(tableId);
-            }
-        });
-    });
-
-    // Reset filter button click
-    document.querySelectorAll('[data-table-filter="reset"]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            const tableId = this.getAttribute('data-table-id');
-            const filterContainer = this.closest('.menu-sub-dropdown');
-            const groupSelect = filterContainer.querySelector('.filter-group-select');
-
-            if (groupSelect) {
-                $(groupSelect).val('').trigger('change');
-            }
-
-            if (tableId) {
-                tableFilters[tableId].group = null;
-                applyTableFilters(tableId);
-            }
-        });
-    });
-};
-
-// Reinitialize DataTable when tab is shown
+// Handle tab visibility for DataTable column adjustment
 var initTabEvents = function () {
-    const tabEl = document.querySelectorAll('#studentStatusTabs .nav-link');
-    tabEl.forEach(function (tab) {
+    // Main status tabs (Active/Inactive)
+    document.querySelectorAll('#studentStatusTabs .nav-link').forEach(function (tab) {
         tab.addEventListener('shown.bs.tab', function (event) {
-            // Adjust column widths when tab becomes visible
+            // Adjust all visible table columns
             Object.keys(dataTables).forEach(function (tableId) {
-                dataTables[tableId].columns.adjust();
+                if (dataTables[tableId]) {
+                    dataTables[tableId].columns.adjust();
+                }
+            });
+        });
+    });
+
+    // Branch tabs within each status tab
+    document.querySelectorAll('#activeBranchTabs .nav-link, #inactiveBranchTabs .nav-link').forEach(function (tab) {
+        tab.addEventListener('shown.bs.tab', function (event) {
+            Object.keys(dataTables).forEach(function (tableId) {
+                if (dataTables[tableId]) {
+                    dataTables[tableId].columns.adjust();
+                }
             });
         });
     });
@@ -734,8 +1090,6 @@ var initTabEvents = function () {
 document.addEventListener('DOMContentLoaded', function () {
     initDataTables();
     initStudentSelect();
-    initFilterSelects();
-    initGroupFilters();
     initTooltips();
     initTabEvents();
 

@@ -64,7 +64,7 @@ class PaymentInvoice extends Model
     */
     public function secondaryClassPayments()
     {
-        return $this->hasMany(SecondaryClassPayment::class, 'invoice_id');
+        return $this->hasOne(SecondaryClassPayment::class, 'invoice_id');
     }
 
     public function isSpecialClassFee(): bool

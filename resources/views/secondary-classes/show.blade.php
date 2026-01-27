@@ -14,7 +14,9 @@
         <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 align-items-center my-0">
             {{ $secondaryClass->name }}
         </h1>
+
         <span class="h-20px border-gray-300 border-start mx-4"></span>
+
         <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
             <li class="breadcrumb-item text-muted">
                 <a href="#" class="text-muted text-hover-primary">Academic</a>
@@ -55,6 +57,18 @@
                 $branchColors[$branch->id] = $badgeColors[$index % count($badgeColors)];
             }
         }
+
+        // Prepare batches data for JavaScript
+        $batchesForJs = $batches
+            ->map(function ($batch) {
+                return [
+                    'id' => $batch->id,
+                    'name' => $batch->name,
+                    'branch_id' => $batch->branch_id ?? null,
+                ];
+            })
+            ->values()
+            ->toArray();
     @endphp
 
     <!--begin::Layout-->
@@ -72,7 +86,7 @@
                     <div class="card-title">
                         <h3 class="text-gray-600">Special Class Info</h3>
                     </div>
-                    @if (($isAdmin) && $secondaryClass->is_active)
+                    @if ($isAdmin && $secondaryClass->is_active)
                         <div class="card-toolbar">
                             <a href="#" class="btn btn-sm btn-light btn-icon" data-kt-menu-trigger="click"
                                 data-kt-menu-placement="bottom-end">
@@ -111,7 +125,8 @@
                             </div>
                             <div class="d-flex flex-column">
                                 <span class="fs-6 text-gray-600 me-2">
-                                    Parent Class: <a href="{{ route('classnames.show', $classname->id) }}"
+                                    Parent Class:
+                                    <a href="{{ route('classnames.show', $classname->id) }}"
                                         class="fw-bold text-gray-600 text-hover-primary">{{ $classname->name }}</a>
                                 </span>
                             </div>
@@ -128,7 +143,7 @@
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <span class="text-gray-600">Default Fee Amount</span>
                                 <span
-                                    class="fs-2 fw-bold text-primary">৳{{ number_format($secondaryClass->fee_amount, 0) }}</span>
+                                    class="fs-2 fw-bold text-primary">৳ {{ number_format($secondaryClass->fee_amount, 0) }}</span>
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="text-gray-600">Payment Type</span>
@@ -142,30 +157,34 @@
                     <div class="separator separator-dashed mb-7"></div>
 
                     <!--begin::Section - Statistics-->
-                    <div class="mb-7">
+                    <div class="mb-7" id="stats_container">
                         <h5 class="mb-4">Statistics</h5>
                         <div class="row g-3">
                             <div class="col-6">
                                 <div class="stats-mini-card">
-                                    <div class="stats-value text-primary">{{ $stats['total_students'] }}</div>
+                                    <div class="stats-value text-primary" id="stat_total_students">
+                                        {{ $stats['total_students'] }}</div>
                                     <div class="stats-label">Total Students</div>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="stats-mini-card">
-                                    <div class="stats-value text-success">{{ $stats['active_students'] }}</div>
+                                    <div class="stats-value text-success" id="stat_active_students">
+                                        {{ $stats['active_students'] }}</div>
                                     <div class="stats-label">Active Enrollments</div>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="stats-mini-card">
-                                    <div class="stats-value text-danger">{{ $stats['inactive_students'] }}</div>
+                                    <div class="stats-value text-danger" id="stat_inactive_students">
+                                        {{ $stats['inactive_students'] }}</div>
                                     <div class="stats-label">Inactive Enrollments</div>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="stats-mini-card">
-                                    <div class="stats-value text-info">৳{{ number_format($stats['total_revenue'], 0) }}
+                                    <div class="stats-value text-info" id="stat_total_revenue">
+                                        ৳ {{ number_format($stats['total_revenue'], 0) }}
                                     </div>
                                     <div class="stats-label">Total Paid</div>
                                 </div>
@@ -173,8 +192,8 @@
                             @if ($secondaryClass->payment_type === 'monthly')
                                 <div class="col-12">
                                     <div class="stats-mini-card bg-light-success">
-                                        <div class="stats-value text-success">
-                                            ৳{{ number_format($stats['expected_monthly_revenue'], 0) }}</div>
+                                        <div class="stats-value text-success" id="stat_expected_monthly">
+                                            ৳ {{ number_format($stats['expected_monthly_revenue'], 0) }}</div>
                                         <div class="stats-label">Expected Monthly Revenue</div>
                                     </div>
                                 </div>
@@ -187,26 +206,28 @@
                         <div class="separator separator-dashed mb-7"></div>
 
                         <!--begin::Section - Branch Stats-->
-                        <div class="mb-0">
+                        <div class="mb-0" id="branch_stats_container">
                             <h5 class="mb-4">Branch-wise Distribution</h5>
                             <div class="branch-stats-list">
                                 @foreach ($stats['branch_stats'] as $branchId => $branchStat)
-                                    <div class="branch-stat-item">
+                                    <div class="branch-stat-item" data-branch-id="{{ $branchId }}">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span class="fw-semibold text-gray-700">{{ $branchStat['name'] }}</span>
-                                            <span class="badge {{ $branchColors[$branchId] ?? 'badge-light-primary' }}">
-                                                {{ $branchStat['total'] }} students
+                                            <span
+                                                class="badge {{ $branchColors[$branchId] ?? 'badge-light-primary' }} branch-total-badge">
+                                                <span class="branch-total-count">{{ $branchStat['total'] }}</span>
+                                                students
                                             </span>
                                         </div>
                                         <div class="d-flex gap-3 mt-2 text-muted fs-7">
-                                            <span><i
-                                                    class="ki-outline ki-check-circle text-success fs-7 me-1"></i>{{ $branchStat['active'] }}
+                                            <span><i class="ki-outline ki-check-circle text-success fs-7 me-1"></i><span
+                                                    class="branch-active-count">{{ $branchStat['active'] }}</span>
                                                 active</span>
-                                            <span><i
-                                                    class="ki-outline ki-cross-circle text-danger fs-7 me-1"></i>{{ $branchStat['inactive'] }}
+                                            <span><i class="ki-outline ki-cross-circle text-danger fs-7 me-1"></i><span
+                                                    class="branch-inactive-count">{{ $branchStat['inactive'] }}</span>
                                                 inactive</span>
-                                            <span><i
-                                                    class="ki-outline ki-wallet text-info fs-7 me-1"></i>৳{{ number_format($branchStat['revenue'], 0) }}</span>
+                                            <span><i class="ki-outline ki-wallet text-info fs-7 me-1"></i>৳ <span
+                                                    class="branch-revenue">{{ number_format($branchStat['revenue'], 0) }}</span></span>
                                         </div>
                                     </div>
                                 @endforeach
@@ -259,21 +280,23 @@
                 <!--begin:::Tab item - Active Students-->
                 <li class="nav-item" role="presentation">
                     <a class="nav-link text-active-primary pb-4 active" data-bs-toggle="tab"
-                        href="#kt_active_students_tab" role="tab" aria-selected="true">
+                        href="#kt_active_students_tab" role="tab" aria-selected="true" data-status-type="active">
                         <i class="ki-outline ki-people fs-3 me-2"></i>
                         Active Students
                     </a>
                 </li>
                 <!--end:::Tab item-->
+
                 <!--begin:::Tab item - Inactive Students-->
                 <li class="nav-item" role="presentation">
                     <a class="nav-link text-active-primary pb-4" data-bs-toggle="tab" href="#kt_inactive_students_tab"
-                        role="tab" aria-selected="false">
+                        role="tab" aria-selected="false" data-status-type="inactive">
                         <i class="ki-outline ki-people fs-3 me-2"></i>
                         Inactive Students
                     </a>
                 </li>
                 <!--end:::Tab item-->
+
                 @if (($isAdmin || $isManager) && $secondaryClass->is_active)
                     <li class="nav-item ms-auto">
                         <!--begin::Add Student-->
@@ -291,33 +314,147 @@
             <div class="tab-content" id="studentStatusTabContent">
                 <!--begin:::Active Students Tab pane-->
                 <div class="tab-pane fade show active" id="kt_active_students_tab" role="tabpanel">
-                    @include('secondary-classes.partials.student-table', [
-                        'students' => $activeEnrolledStudents,
-                        'secondaryClass' => $secondaryClass,
-                        'classname' => $classname,
-                        'branches' => $branches,
-                        'branchColors' => $branchColors,
-                        'isAdmin' => $isAdmin,
-                        'isManager' => $isManager,
-                        'tableId' => 'kt_active_students_table',
-                        'statusType' => 'active',
-                    ])
+                    <!--begin::Card-->
+                    <div class="card card-flush">
+                        <!--begin::Card body-->
+                        <div class="card-body py-4">
+                            @if ($isAdmin && $branches->count() > 0)
+                                <!--begin::Branch Tabs for Admin-->
+                                <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-5 fs-6" id="activeBranchTabs"
+                                    role="tablist">
+                                    @foreach ($branches as $index => $branch)
+                                        <li class="nav-item" role="presentation">
+                                            <a class="nav-link fw-bold {{ $index === 0 ? 'active' : '' }}"
+                                                id="active-tab-branch-{{ $branch->id }}" data-bs-toggle="tab"
+                                                href="#kt_active_tab_branch_{{ $branch->id }}" role="tab"
+                                                aria-controls="kt_active_tab_branch_{{ $branch->id }}"
+                                                aria-selected="{{ $index === 0 ? 'true' : 'false' }}"
+                                                data-branch-id="{{ $branch->id }}">
+                                                <i class="ki-outline ki-bank fs-4 me-1"></i>
+                                                {{ ucfirst($branch->branch_name) }}
+                                                <span
+                                                    class="badge {{ $branchColors[$branch->id] ?? 'badge-light-primary' }} ms-2 branch-count-badge"
+                                                    data-branch-id="{{ $branch->id }}" data-status-type="active">
+                                                    <span class="spinner-border spinner-border-sm"
+                                                        style="width: 0.75rem; height: 0.75rem;" role="status"></span>
+                                                </span>
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                                <!--end::Branch Tabs-->
+
+                                <!--begin::Tab Content-->
+                                <div class="tab-content" id="activeBranchTabsContent">
+                                    @foreach ($branches as $index => $branch)
+                                        <div class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}"
+                                            id="kt_active_tab_branch_{{ $branch->id }}" role="tabpanel"
+                                            aria-labelledby="active-tab-branch-{{ $branch->id }}">
+                                            @include('secondary-classes.partials.student-table', [
+                                                'tableId' => 'kt_active_students_table_branch_' . $branch->id,
+                                                'branchId' => $branch->id,
+                                                'statusType' => 'active',
+                                                'secondaryClass' => $secondaryClass,
+                                                'classname' => $classname,
+                                                'batches' => $batches->where('branch_id', $branch->id),
+                                                'isAdmin' => $isAdmin,
+                                                'isManager' => $isManager,
+                                            ])
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <!--end::Tab Content-->
+                            @else
+                                <!--begin::Single Table for Non-Admin-->
+                                @include('secondary-classes.partials.student-table', [
+                                    'tableId' => 'kt_active_students_table',
+                                    'branchId' => null,
+                                    'statusType' => 'active',
+                                    'secondaryClass' => $secondaryClass,
+                                    'classname' => $classname,
+                                    'batches' => $batches,
+                                    'isAdmin' => $isAdmin,
+                                    'isManager' => $isManager,
+                                ])
+                                <!--end::Single Table for Non-Admin-->
+                            @endif
+                        </div>
+                        <!--end::Card body-->
+                    </div>
+                    <!--end::Card-->
                 </div>
                 <!--end:::Active Students Tab pane-->
 
                 <!--begin:::Inactive Students Tab pane-->
                 <div class="tab-pane fade" id="kt_inactive_students_tab" role="tabpanel">
-                    @include('secondary-classes.partials.student-table', [
-                        'students' => $inactiveEnrolledStudents,
-                        'secondaryClass' => $secondaryClass,
-                        'classname' => $classname,
-                        'branches' => $branches,
-                        'branchColors' => $branchColors,
-                        'isAdmin' => $isAdmin,
-                        'isManager' => $isManager,
-                        'tableId' => 'kt_inactive_students_table',
-                        'statusType' => 'inactive',
-                    ])
+                    <!--begin::Card-->
+                    <div class="card card-flush">
+                        <!--begin::Card body-->
+                        <div class="card-body py-4">
+                            @if ($isAdmin && $branches->count() > 0)
+                                <!--begin::Branch Tabs for Admin-->
+                                <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-5 fs-6" id="inactiveBranchTabs"
+                                    role="tablist">
+                                    @foreach ($branches as $index => $branch)
+                                        <li class="nav-item" role="presentation">
+                                            <a class="nav-link fw-bold {{ $index === 0 ? 'active' : '' }}"
+                                                id="inactive-tab-branch-{{ $branch->id }}" data-bs-toggle="tab"
+                                                href="#kt_inactive_tab_branch_{{ $branch->id }}" role="tab"
+                                                aria-controls="kt_inactive_tab_branch_{{ $branch->id }}"
+                                                aria-selected="{{ $index === 0 ? 'true' : 'false' }}"
+                                                data-branch-id="{{ $branch->id }}">
+                                                <i class="ki-outline ki-bank fs-4 me-1"></i>
+                                                {{ ucfirst($branch->branch_name) }}
+                                                <span
+                                                    class="badge {{ $branchColors[$branch->id] ?? 'badge-light-primary' }} ms-2 branch-count-badge"
+                                                    data-branch-id="{{ $branch->id }}" data-status-type="inactive">
+                                                    <span class="spinner-border spinner-border-sm"
+                                                        style="width: 0.75rem; height: 0.75rem;" role="status"></span>
+                                                </span>
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                                <!--end::Branch Tabs-->
+
+                                <!--begin::Tab Content-->
+                                <div class="tab-content" id="inactiveBranchTabsContent">
+                                    @foreach ($branches as $index => $branch)
+                                        <div class="tab-pane fade {{ $index === 0 ? 'show active' : '' }}"
+                                            id="kt_inactive_tab_branch_{{ $branch->id }}" role="tabpanel"
+                                            aria-labelledby="inactive-tab-branch-{{ $branch->id }}">
+                                            @include('secondary-classes.partials.student-table', [
+                                                'tableId' => 'kt_inactive_students_table_branch_' . $branch->id,
+                                                'branchId' => $branch->id,
+                                                'statusType' => 'inactive',
+                                                'secondaryClass' => $secondaryClass,
+                                                'classname' => $classname,
+                                                'batches' => $batches->where('branch_id', $branch->id),
+                                                'isAdmin' => $isAdmin,
+                                                'isManager' => $isManager,
+                                            ])
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <!--end::Tab Content-->
+                            @else
+                                <!--begin::Single Table for Non-Admin-->
+                                @include('secondary-classes.partials.student-table', [
+                                    'tableId' => 'kt_inactive_students_table',
+                                    'branchId' => null,
+                                    'statusType' => 'inactive',
+                                    'secondaryClass' => $secondaryClass,
+                                    'classname' => $classname,
+                                    'batches' => $batches,
+                                    'isAdmin' => $isAdmin,
+                                    'isManager' => $isManager,
+                                ])
+                                <!--end::Single Table for Non-Admin-->
+                            @endif
+                        </div>
+                        <!--end::Card body-->
+                    </div>
+                    <!--end::Card-->
                 </div>
                 <!--end:::Inactive Students Tab pane-->
             </div>
@@ -408,18 +545,19 @@
                                 <div class="fv-row mb-7">
                                     <label class="required fw-semibold fs-6 mb-2">Fee Amount</label>
                                     <div class="input-group">
-                                        <span class="input-group-text">৳</span>
+                                        <span class="input-group-text">৳ </span>
                                         <input type="number" name="amount" id="enroll_amount"
                                             class="form-control form-control-solid"
                                             value="{{ $secondaryClass->fee_amount }}" min="0" required />
                                     </div>
                                     <div class="text-muted fs-7 mt-2">
-                                        Default fee: ৳{{ number_format($secondaryClass->fee_amount, 0) }}
+                                        Default fee: ৳ {{ number_format($secondaryClass->fee_amount, 0) }}
                                         ({{ ucwords(str_replace('_', ' ', $secondaryClass->payment_type)) }})
                                     </div>
                                 </div>
                                 <!--end::Amount-->
                             </div>
+
                             <div class="text-center pt-10">
                                 <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
                                 <button type="submit" class="btn btn-primary" id="kt_modal_enroll_student_submit">
@@ -463,13 +601,14 @@
                                 <div class="fv-row mb-7">
                                     <label class="required fw-semibold fs-6 mb-2">Fee Amount</label>
                                     <div class="input-group">
-                                        <span class="input-group-text">৳</span>
+                                        <span class="input-group-text">৳ </span>
                                         <input type="number" name="amount" id="edit_amount"
                                             class="form-control form-control-solid" min="0" required />
                                     </div>
                                 </div>
                                 <!--end::Amount-->
                             </div>
+
                             <div class="text-center pt-10">
                                 <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
                                 <button type="submit" class="btn btn-primary" id="kt_modal_edit_enrollment_submit">
@@ -525,7 +664,7 @@
                                 <div class="fv-row mb-7">
                                     <label class="required fw-semibold fs-6 mb-2">Fee Amount</label>
                                     <div class="input-group">
-                                        <span class="input-group-text">৳</span>
+                                        <span class="input-group-text">৳ </span>
                                         <input type="number" name="fee_amount" id="edit_secondary_class_fee"
                                             class="form-control form-control-solid"
                                             value="{{ $secondaryClass->fee_amount }}" min="0" required />
@@ -533,6 +672,7 @@
                                 </div>
                                 <!--end::Fee Amount-->
                             </div>
+
                             <div class="text-center pt-10">
                                 <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
                                 <button type="submit" class="btn btn-primary" id="kt_modal_edit_secondary_class_submit">
@@ -651,10 +791,27 @@
         const routeToggleActivation =
             "{{ route('classnames.secondary-classes.toggle-activation', [$classname->id, $secondaryClass->id, ':studentId']) }}";
         const routeUpdateSecondaryClass = "{{ route('secondary-classes.update', $secondaryClass->id) }}";
+        const routeEnrolledStudentsAjax =
+            "{{ route('classnames.secondary-classes.enrolled-students-ajax', [$classname->id, $secondaryClass->id]) }}";
+        const routeStatsAjax =
+            "{{ route('classnames.secondary-classes.stats-ajax', [$classname->id, $secondaryClass->id]) }}";
+        const routeBranchCountsAjax =
+            "{{ route('classnames.secondary-classes.branch-counts-ajax', [$classname->id, $secondaryClass->id]) }}";
+        const routeAvailableStudents =
+            "{{ route('classnames.secondary-classes.available-students', [$classname->id, $secondaryClass->id]) }}";
+        const routeStudentShow = "{{ route('students.show', ':studentId') }}";
+
         const isAdminUser = {{ $isAdmin || $isManager ? 'true' : 'false' }};
         const defaultFeeAmount = {{ $secondaryClass->fee_amount }};
         const secondaryClassIsActive = {{ $secondaryClass->is_active ? 'true' : 'false' }};
         const paymentType = "{{ $secondaryClass->payment_type }}";
+
+        // Branch colors for badges
+        const branchColors = @json($branchColors);
+        const branches = @json($branches);
+
+        // Batches with branch association
+        const allBatches = @json($batchesForJs);
     </script>
     <script src="{{ asset('js/secondary-classes/show.js') }}"></script>
     <script>

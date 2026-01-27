@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Academic;
 
 use App\Http\Controllers\Controller;
+use App\Models\Academic\Batch;
 use App\Models\Academic\ClassName;
 use App\Models\Academic\SecondaryClass;
 use App\Models\Branch;
@@ -125,52 +126,11 @@ class SecondaryClassController extends Controller
         // Get branches for admin
         $branches = $isAdmin ? Branch::select('id', 'branch_name', 'branch_prefix')->orderBy('branch_name')->get() : collect();
 
-        // Get enrolled students with relationships including payment data
-        $enrolledStudentsQuery = StudentSecondaryClass::where('secondary_class_id', $secondaryClass->id)->with([
-            'student' => function ($q) {
-                $q->select(['id', 'student_unique_id', 'name', 'academic_group', 'branch_id', 'batch_id', 'class_id', 'student_activation_id'])->with(['branch:id,branch_name,branch_prefix', 'batch:id,name', 'studentActivation:id,active_status']);
-            },
-        ]);
-
-        // Filter by branch for non-admin
-        if (! $isAdmin) {
-            $enrolledStudentsQuery->whereHas('student', function ($q) use ($branchId) {
-                $q->where('branch_id', $branchId);
-            });
-        }
-
-        $enrolledStudents = $enrolledStudentsQuery->get();
-
-        // Calculate total paid for each enrollment (for monthly payment type)
-        if ($secondaryClass->payment_type === 'monthly') {
-            foreach ($enrolledStudents as $enrollment) {
-                $totalPaid = SecondaryClassPayment::where('student_id', $enrollment->student_id)
-                    ->where('secondary_class_id', $secondaryClass->id)
-                    ->whereHas('invoice')
-                    ->with(['invoice.paymentTransactions'])
-                    ->get()
-                    ->sum(function ($payment) {
-                        return $payment->invoice?->paymentTransactions->sum('amount_paid') ?? 0;
-                    });
-
-                $enrollment->total_paid = $totalPaid;
-            }
-        }
-
-        // Separate active and inactive enrolled students
-        $activeEnrolledStudents   = $enrolledStudents->where('is_active', true)->values();
-        $inactiveEnrolledStudents = $enrolledStudents->where('is_active', false)->values();
+        // Get batches for filter (include branch_id for dynamic filtering)
+        $batches = Batch::select('id', 'name', 'branch_id')->orderBy('name')->get();
 
         // Calculate stats
         $stats = $this->calculateStats($secondaryClass, $isAdmin, $branchId, $branches);
-
-        // Group students by branch for admin (for both active and inactive)
-        $studentsByBranch = [];
-        if ($isAdmin) {
-            $studentsByBranch = $enrolledStudents->groupBy(function ($enrollment) {
-                return $enrollment->student->branch_id ?? 0;
-            });
-        }
 
         $isManager = false;
         try {
@@ -186,15 +146,238 @@ class SecondaryClassController extends Controller
             'isManager',
             'classname',
             'secondaryClass',
-            'enrolledStudents',
-            'activeEnrolledStudents',
-            'inactiveEnrolledStudents',
             'stats',
             'branches',
+            'batches',
             'isAdmin',
-            'studentsByBranch',
             'availableStudents'
         ));
+    }
+
+    /**
+     * Get enrolled students via AJAX for DataTables (server-side processing)
+     */
+    public function getEnrolledStudentsAjax(Request $request, ClassName $classname, SecondaryClass $secondaryClass)
+    {
+        $user     = auth()->user();
+        $isAdmin  = $user->isAdmin();
+        $branchId = $user->branch_id;
+
+        $isManager = false;
+        try {
+            $isManager = $user->isManager();
+        } catch (\Throwable $e) {
+        }
+
+                                                                // Get filter parameters
+        $statusType   = $request->get('status_type', 'active'); // 'active' or 'inactive'
+        $branchFilter = $request->get('branch_id');
+        $groupFilter  = $request->get('academic_group');
+        $batchFilter  = $request->get('batch_id');
+        $search       = $request->get('search')['value'] ?? '';
+
+        // DataTables parameters
+        $start       = $request->get('start', 0);
+        $length      = $request->get('length', 10);
+        $orderColumn = $request->get('order')[0]['column'] ?? 0;
+        $orderDir    = $request->get('order')[0]['dir'] ?? 'asc';
+
+        // Column mapping for ordering
+        $columns = ['id', 'name', 'academic_group', 'batch_name', 'amount', 'total_paid', 'enrolled_at', 'actions'];
+
+        // Base query
+        $query = StudentSecondaryClass::where('secondary_class_id', $secondaryClass->id)
+            ->where('is_active', $statusType === 'active')
+            ->with([
+                'student' => function ($q) {
+                    $q->select(['id', 'student_unique_id', 'name', 'academic_group', 'branch_id', 'batch_id', 'class_id', 'student_activation_id'])
+                        ->with(['branch:id,branch_name,branch_prefix', 'batch:id,name', 'studentActivation:id,active_status']);
+                },
+            ]);
+
+        // Filter by branch for non-admin
+        if (! $isAdmin) {
+            $query->whereHas('student', function ($q) use ($branchId) {
+                $q->where('branch_id', $branchId);
+            });
+        } elseif ($branchFilter) {
+            $query->whereHas('student', function ($q) use ($branchFilter) {
+                $q->where('branch_id', $branchFilter);
+            });
+        }
+
+        // Filter by academic group
+        if ($groupFilter) {
+            $query->whereHas('student', function ($q) use ($groupFilter) {
+                $q->where('academic_group', $groupFilter);
+            });
+        }
+
+        // Filter by batch
+        if ($batchFilter) {
+            $query->whereHas('student', function ($q) use ($batchFilter) {
+                $q->where('batch_id', $batchFilter);
+            });
+        }
+
+        // Search
+        if ($search) {
+            $query->whereHas('student', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('student_unique_id', 'like', "%{$search}%");
+            });
+        }
+
+        // Get total count before pagination (with branch filter for proper count)
+        $totalRecordsQuery = StudentSecondaryClass::where('secondary_class_id', $secondaryClass->id)
+            ->where('is_active', $statusType === 'active');
+
+        // Apply branch filter for total records count
+        if (! $isAdmin) {
+            $totalRecordsQuery->whereHas('student', function ($sq) use ($branchId) {
+                $sq->where('branch_id', $branchId);
+            });
+        } elseif ($branchFilter) {
+            $totalRecordsQuery->whereHas('student', function ($sq) use ($branchFilter) {
+                $sq->where('branch_id', $branchFilter);
+            });
+        }
+
+        $totalRecords = $totalRecordsQuery->count();
+
+        $filteredRecords = $query->count();
+
+        // Apply ordering
+        $hasCustomOrder = false;
+        if (isset($columns[$orderColumn])) {
+            $column = $columns[$orderColumn];
+            if ($column === 'name') {
+                $query->join('students', 'student_secondary_classes.student_id', '=', 'students.id')
+                    ->orderBy('students.name', $orderDir)
+                    ->select('student_secondary_classes.*');
+                $hasCustomOrder = true;
+            } elseif ($column === 'enrolled_at') {
+                $query->orderBy('enrolled_at', $orderDir);
+                $hasCustomOrder = true;
+            } elseif ($column === 'amount') {
+                $query->orderBy('amount', $orderDir);
+                $hasCustomOrder = true;
+            }
+        }
+
+        // Default ordering: enrolled_at descending (newest first)
+        if (! $hasCustomOrder) {
+            $query->orderBy('enrolled_at', 'desc');
+        }
+
+        // Pagination
+        $enrollments = $query->skip($start)->take($length)->get();
+
+        // Calculate total paid for all enrollments
+        foreach ($enrollments as $enrollment) {
+            $totalPaid = SecondaryClassPayment::where('student_id', $enrollment->student_id)
+                ->where('secondary_class_id', $secondaryClass->id)
+                ->whereHas('invoice')
+                ->with(['invoice.paymentTransactions'])
+                ->get()
+                ->sum(function ($payment) {
+                    return $payment->invoice?->paymentTransactions->sum('amount_paid') ?? 0;
+                });
+            $enrollment->total_paid = $totalPaid;
+        }
+
+        // Format data for DataTables
+        $data = [];
+        foreach ($enrollments as $index => $enrollment) {
+            $student = $enrollment->student;
+            if (! $student) {
+                continue;
+            }
+
+            $row = [
+                'DT_RowId'          => 'row_' . $enrollment->id,
+                'DT_RowAttr'        => [
+                    'data-branch-id'         => $student->branch_id,
+                    'data-student-id'        => $student->id,
+                    'data-enrollment-id'     => $enrollment->id,
+                    'data-enrollment-status' => $enrollment->is_active ? 'active' : 'inactive',
+                    'data-academic-group'    => $student->academic_group ?? '',
+                ],
+                'index'             => $start + $index + 1,
+                'student_id'        => $student->id,
+                'student_unique_id' => $student->student_unique_id,
+                'name'              => $student->name,
+                'academic_group'    => $student->academic_group,
+                'batch_name'        => $student->batch->name ?? '-',
+                'branch_id'         => $student->branch_id,
+                'branch_name'       => $student->branch->branch_name ?? '-',
+                'amount'            => $enrollment->amount,
+                'total_paid'        => $enrollment->total_paid ?? 0,
+                'enrolled_at'       => $enrollment->enrolled_at ? $enrollment->enrolled_at->format('d-M-Y') : '-',
+                'is_active'         => $enrollment->is_active,
+                'can_manage'        => ($isAdmin || $isManager) && $secondaryClass->is_active,
+                'payment_type'      => $secondaryClass->payment_type,
+            ];
+
+            $data[] = $row;
+        }
+
+        return response()->json([
+            'draw'            => intval($request->get('draw')),
+            'recordsTotal'    => $totalRecords,
+            'recordsFiltered' => $filteredRecords,
+            'data'            => $data,
+        ]);
+    }
+
+    /**
+     * Get stats via AJAX
+     */
+    public function getStatsAjax(ClassName $classname, SecondaryClass $secondaryClass)
+    {
+        $user     = auth()->user();
+        $isAdmin  = $user->isAdmin();
+        $branchId = $user->branch_id;
+        $branches = $isAdmin ? Branch::select('id', 'branch_name', 'branch_prefix')->orderBy('branch_name')->get() : collect();
+
+        $stats = $this->calculateStats($secondaryClass, $isAdmin, $branchId, $branches);
+
+        return response()->json([
+            'success' => true,
+            'stats'   => $stats,
+        ]);
+    }
+
+    /**
+     * Get branch counts for tabs
+     */
+    public function getBranchCountsAjax(Request $request, ClassName $classname, SecondaryClass $secondaryClass)
+    {
+        $user       = auth()->user();
+        $isAdmin    = $user->isAdmin();
+        $branchId   = $user->branch_id;
+        $statusType = $request->get('status_type', 'active');
+
+        $query = StudentSecondaryClass::where('secondary_class_id', $secondaryClass->id)
+            ->where('is_active', $statusType === 'active')
+            ->with('student:id,branch_id');
+
+        if (! $isAdmin) {
+            $query->whereHas('student', function ($q) use ($branchId) {
+                $q->where('branch_id', $branchId);
+            });
+        }
+
+        $enrollments = $query->get();
+
+        $branchCounts = $enrollments->groupBy(function ($enrollment) {
+            return $enrollment->student->branch_id ?? 0;
+        })->map->count();
+
+        return response()->json([
+            'success' => true,
+            'counts'  => $branchCounts,
+        ]);
     }
 
     /**
@@ -541,7 +724,7 @@ class SecondaryClassController extends Controller
      *
      * @param  Student  $student
      * @param  int  $amount
-     * @param  string  $typeName - e.g., 'Admission Fee', 'Sheet Fee', 'Special Class Fee'
+     * @param  string  $typeName  - e.g., 'Admission Fee', 'Sheet Fee', 'Special Class Fee'
      * @param  string|null  $monthYear
      * @return PaymentInvoice|null
      */
