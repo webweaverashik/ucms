@@ -59,6 +59,7 @@
                             <option value="">All Groups</option>
                             <option value="Science">Science</option>
                             <option value="Commerce">Commerce</option>
+                            <option value="Arts">Arts</option>
                         </select>
                     </div>
                     <!--end::Group Filter-->

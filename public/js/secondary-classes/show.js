@@ -107,6 +107,8 @@ var initSingleDataTable = function (tableId, branchId, statusType) {
                     return '<span class="badge badge-light-info">Science</span>';
                 } else if (data === 'Commerce') {
                     return '<span class="badge badge-light-success">Commerce</span>';
+                } else if (data === 'Arts') {
+                    return '<span class="badge badge-light-warning">Arts</span>';
                 }
                 return '<span class="text-muted">-</span>';
             }
