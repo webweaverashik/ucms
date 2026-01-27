@@ -215,7 +215,7 @@
                                             <span class="fw-semibold text-gray-700">{{ $branchStat['name'] }}</span>
                                             <span
                                                 class="badge {{ $branchColors[$branchId] ?? 'badge-light-primary' }} branch-total-badge">
-                                                <span class="branch-total-count">{{ $branchStat['total'] }}</span>
+                                                <span class="branch-total-count">{{ $branchStat['total'] }}&nbsp;</span>
                                                 students
                                             </span>
                                         </div>
