@@ -113,7 +113,7 @@
                                 <div class="menu-item px-3">
                                     <a href="{{ route('students.edit', $student->id) }}"
                                         class="menu-link text-hover-primary px-3">
-                                        <i class="las la-pen fs-3 me-2"></i> Edit
+                                        <i class="ki-outline ki-pencil fs-3 me-2"></i> Edit Student
                                     </a>
                                 </div>
                                 <!--end::Menu item-->
@@ -499,7 +499,7 @@
                             <div class="menu-item px-5 my-1">
                                 <a href="{{ route('students.edit', $student->id) }}"
                                     class="menu-link px-5 text-hover-primary">
-                                    <i class="las la-pen fs-3 me-2"></i> Edit Student
+                                    <i class="ki-outline ki-pencil fs-3 me-2"></i> Edit Student
                                 </a>
                             </div>
                             <!--end::Menu item-->

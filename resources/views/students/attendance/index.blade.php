@@ -182,7 +182,6 @@
         };
     </script>
     <script src="{{ asset('js/attendances/index.js') }}"></script>
-
     <script>
         // Sidebar menu active state
         document.getElementById("academic_menu")?.classList.add("here", "show");
