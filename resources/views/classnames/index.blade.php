@@ -164,7 +164,7 @@
                             data-placeholder="All Numerals" data-allow-clear="true" data-hide-search="true">
                             <option></option>
                             @foreach (range(4, 12) as $i)
-                                <option value="{{ sprintf('%02d', $i) }}">Class {{ sprintf('%02d', $i) }}</option>
+                                <option value="{{ sprintf('%02d', $i) }}">{{ sprintf('%02d', $i) }}</option>
                             @endforeach
                         </select>
                     </div>

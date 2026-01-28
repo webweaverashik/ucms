@@ -20,8 +20,6 @@ class DashboardController extends Controller
                 return view("dashboard.dashboard");
             }
         }
-
         abort(403, 'Unauthorized access');
     }
-
 }
