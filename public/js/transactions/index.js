@@ -43,7 +43,7 @@ var KTAllTransactionsList = (function () {
                         { data: "received_by", name: "received_by" },
                         { data: "actions", orderable: false, searchable: false },
                   ],
-                  order: [[0, "desc"]],
+                  order: [],
                   pageLength: 10,
                   lengthMenu: [10, 25, 50, 100],
                   language: {
