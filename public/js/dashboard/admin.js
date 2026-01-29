@@ -8,12 +8,15 @@ const AdminDashboard = (function () {
       const state = {
             currentBranchId: '',
             selectedDate: null,
+            selectedAttendanceDate: null,
+            selectedBatchId: '',
             costPeriod: 'month',
             charts: {
                   collection: null,
                   costPie: null
             },
             flatpickr: null,
+            attendanceFlatpickr: null,
             refreshInterval: null,
             initialized: false,
             isAdmin: true
@@ -30,7 +33,7 @@ const AdminDashboard = (function () {
        * Format currency in Bangladeshi Taka
        */
       const formatCurrency = (amount) => {
-            return '৳ ' + Number(amount || 0).toLocaleString('en-BD');
+            return '৳' + Number(amount || 0).toLocaleString('en-BD');
       };
 
       /**
@@ -730,21 +733,69 @@ const AdminDashboard = (function () {
        * Load attendance statistics
        */
       const loadAttendanceStats = async () => {
-            const result = await fetchData('attendance-stats');
+            const dateStr = formatApiDate(state.selectedAttendanceDate);
+            const params = { date: dateStr };
+            if (state.selectedBatchId) {
+                  params.batch_id = state.selectedBatchId;
+            }
+
+            const result = await fetchData('attendance-stats', params);
 
             if (result.success) {
                   const d = result.data;
+
+                  // Update date label
+                  const dateLabel = document.getElementById('attendanceDateLabel');
+                  if (dateLabel) {
+                        dateLabel.textContent = d.is_today ? "Today's summary" : `Summary for ${d.display_date}`;
+                  }
 
                   // Update today's stats
                   updateElement('attPresent', d.today.present || 0);
                   updateElement('attAbsent', d.today.absent || 0);
                   updateElement('attLate', d.today.late || 0);
-                  updateElement('attLeave', d.today.leave || 0);
 
-                  // Render class-wise and batch-wise data
+                  // Render batch tabs
+                  renderBatchTabs(d.filters.batches || []);
+
+                  // Render class-wise data
                   renderAttendanceList('attendanceByClassList', d.class_wise, 'class_name');
-                  renderAttendanceList('attendanceByBatchList', d.batch_wise, 'batch_name');
             }
+      };
+
+      /**
+       * Render batch tabs
+       */
+      const renderBatchTabs = (batches) => {
+            const container = document.getElementById('attendanceBatchTabs');
+            if (!container) return;
+
+            let html = `
+            <li class="nav-item">
+                <a class="nav-link fw-semibold ${!state.selectedBatchId ? 'active' : ''}" data-batch-id="" href="javascript:void(0)">All</a>
+            </li>
+        `;
+
+            batches.forEach(batch => {
+                  html += `
+                <li class="nav-item">
+                    <a class="nav-link fw-semibold ${state.selectedBatchId == batch.id ? 'active' : ''}" data-batch-id="${batch.id}" href="javascript:void(0)">${batch.name}</a>
+                </li>
+            `;
+            });
+
+            container.innerHTML = html;
+
+            // Re-attach event listeners
+            container.querySelectorAll('.nav-link').forEach(tab => {
+                  tab.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        container.querySelectorAll('.nav-link').forEach(t => t.classList.remove('active'));
+                        e.target.classList.add('active');
+                        state.selectedBatchId = e.target.dataset.batchId || '';
+                        loadAttendanceStats();
+                  });
+            });
       };
 
       /**
@@ -755,7 +806,7 @@ const AdminDashboard = (function () {
             if (!container) return;
 
             if (!items || items.length === 0) {
-                  container.innerHTML = '<div class="text-center py-5 text-muted"><span class="text-gray-500">No attendance data for today</span></div>';
+                  container.innerHTML = '<div class="text-center py-5 text-muted"><span class="text-gray-500">No attendance data for selected date</span></div>';
                   return;
             }
 
@@ -763,7 +814,7 @@ const AdminDashboard = (function () {
             <table class="table table-row-dashed align-middle gy-2 my-0">
                 <thead>
                     <tr class="text-muted fw-semibold fs-8 text-uppercase">
-                        <th>Name</th>
+                        <th>Class</th>
                         <th class="text-center">Present</th>
                         <th class="text-center">Absent</th>
                         <th class="text-center">Late</th>
@@ -860,7 +911,7 @@ const AdminDashboard = (function () {
       };
 
       /**
-       * Initialize flatpickr date picker
+       * Initialize flatpickr date picker for collection
        */
       const initDatePicker = () => {
             const dateInput = document.getElementById('collectionDatePicker');
@@ -881,7 +932,6 @@ const AdminDashboard = (function () {
                   onChange: function (selectedDates) {
                         if (selectedDates.length > 0) {
                               state.selectedDate = selectedDates[0];
-                              // Update the input display manually
                               dateInput.value = formatDisplayDate(state.selectedDate);
                               updateNextButtonState();
                               loadCollectionStats();
@@ -895,6 +945,7 @@ const AdminDashboard = (function () {
                   newDate.setDate(newDate.getDate() - 1);
                   state.selectedDate = newDate;
                   state.flatpickr.setDate(newDate);
+                  dateInput.value = formatDisplayDate(state.selectedDate);
                   updateNextButtonState();
                   loadCollectionStats();
             });
@@ -912,6 +963,7 @@ const AdminDashboard = (function () {
                         newDate.setDate(newDate.getDate() + 1);
                         state.selectedDate = newDate;
                         state.flatpickr.setDate(newDate);
+                        dateInput.value = formatDisplayDate(state.selectedDate);
                         updateNextButtonState();
                         loadCollectionStats();
                   }
@@ -932,6 +984,91 @@ const AdminDashboard = (function () {
             today.setHours(0, 0, 0, 0);
 
             const currentDate = new Date(state.selectedDate);
+            currentDate.setHours(0, 0, 0, 0);
+
+            if (currentDate >= today) {
+                  nextBtn.classList.add('disabled');
+                  nextBtn.setAttribute('disabled', 'disabled');
+            } else {
+                  nextBtn.classList.remove('disabled');
+                  nextBtn.removeAttribute('disabled');
+            }
+      };
+
+      /**
+       * Initialize flatpickr date picker for attendance
+       */
+      const initAttendanceDatePicker = () => {
+            const dateInput = document.getElementById('attendanceDatePicker');
+            if (!dateInput) return;
+
+            // Initialize state.selectedAttendanceDate to today
+            state.selectedAttendanceDate = new Date();
+
+            // Set initial display value
+            dateInput.value = formatDisplayDate(state.selectedAttendanceDate);
+
+            // Initialize flatpickr
+            state.attendanceFlatpickr = flatpickr(dateInput, {
+                  dateFormat: 'd M Y',
+                  defaultDate: state.selectedAttendanceDate,
+                  maxDate: 'today',
+                  disableMobile: true,
+                  onChange: function (selectedDates) {
+                        if (selectedDates.length > 0) {
+                              state.selectedAttendanceDate = selectedDates[0];
+                              dateInput.value = formatDisplayDate(state.selectedAttendanceDate);
+                              updateAttendanceNextButtonState();
+                              loadAttendanceStats();
+                        }
+                  }
+            });
+
+            // Previous day button
+            document.getElementById('prevAttDateBtn')?.addEventListener('click', () => {
+                  const newDate = new Date(state.selectedAttendanceDate);
+                  newDate.setDate(newDate.getDate() - 1);
+                  state.selectedAttendanceDate = newDate;
+                  state.attendanceFlatpickr.setDate(newDate);
+                  dateInput.value = formatDisplayDate(state.selectedAttendanceDate);
+                  updateAttendanceNextButtonState();
+                  loadAttendanceStats();
+            });
+
+            // Next day button
+            document.getElementById('nextAttDateBtn')?.addEventListener('click', () => {
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+
+                  const currentDate = new Date(state.selectedAttendanceDate);
+                  currentDate.setHours(0, 0, 0, 0);
+
+                  if (currentDate < today) {
+                        const newDate = new Date(state.selectedAttendanceDate);
+                        newDate.setDate(newDate.getDate() + 1);
+                        state.selectedAttendanceDate = newDate;
+                        state.attendanceFlatpickr.setDate(newDate);
+                        dateInput.value = formatDisplayDate(state.selectedAttendanceDate);
+                        updateAttendanceNextButtonState();
+                        loadAttendanceStats();
+                  }
+            });
+
+            // Update next button state initially
+            updateAttendanceNextButtonState();
+      };
+
+      /**
+       * Update attendance next button disabled state
+       */
+      const updateAttendanceNextButtonState = () => {
+            const nextBtn = document.getElementById('nextAttDateBtn');
+            if (!nextBtn) return;
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const currentDate = new Date(state.selectedAttendanceDate);
             currentDate.setHours(0, 0, 0, 0);
 
             if (currentDate >= today) {
@@ -1040,8 +1177,9 @@ const AdminDashboard = (function () {
                   }
             }
 
-            // Initialize date picker first
+            // Initialize date pickers first
             initDatePicker();
+            initAttendanceDatePicker();
 
             // Initialize dashboard
             initDashboard();

@@ -1,10 +1,9 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use App\Models\Branch;
 use App\Models\Academic\Batch;
 use App\Models\Academic\ClassName;
+use App\Models\Branch;
 use App\Models\Cost\Cost;
 use App\Models\Cost\CostEntry;
 use App\Models\Cost\CostType;
@@ -30,11 +29,11 @@ class DashboardController extends Controller
         foreach (['admin', 'manager', 'accountant'] as $role) {
             if ($user->hasRole($role)) {
                 $branches = $user->isAdmin() ? Branch::orderBy('branch_name')->get() : collect();
-                $isAdmin = $user->isAdmin();
-                
+                $isAdmin  = $user->isAdmin();
+
                 // For admin, get first branch ID; for others, use their branch
-                $branchId = $user->isAdmin() 
-                    ? ($branches->first()?->id ?? null) 
+                $branchId = $user->isAdmin()
+                    ? ($branches->first()?->id ?? null)
                     : $user->branch_id;
 
                 return view("dashboard.{$role}.index", compact('branchId', 'branches', 'isAdmin'));
@@ -49,7 +48,7 @@ class DashboardController extends Controller
      */
     public function getStudentStats(Request $request): JsonResponse
     {
-        $user = auth()->user();
+        $user     = auth()->user();
         $branchId = $this->resolveBranchId($request, $user);
 
         $query = Student::query();
@@ -63,15 +62,15 @@ class DashboardController extends Controller
             ->whereNotNull('student_activation_id')
             ->whereHas('class', fn($q) => $q->active())
             ->count();
-        
+
         // Active students must be in active classes
         $activeStudents = (clone $query)
             ->active()
             ->whereHas('class', fn($q) => $q->active())
             ->count();
-            
+
         $pendingStudents = (clone $query)->pending()->count();
-        
+
         $inactiveStudents = (clone $query)
             ->whereHas('studentActivation', fn($q) => $q->where('active_status', 'inactive'))
             ->count();
@@ -83,11 +82,11 @@ class DashboardController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => [
-                'total' => $totalStudents,
-                'active' => $activeStudents,
-                'pending' => $pendingStudents,
-                'inactive' => $inactiveStudents,
+            'data'    => [
+                'total'         => $totalStudents,
+                'active'        => $activeStudents,
+                'pending'       => $pendingStudents,
+                'inactive'      => $inactiveStudents,
                 'new_this_week' => $newStudentsThisWeek,
             ],
         ]);
@@ -98,7 +97,7 @@ class DashboardController extends Controller
      */
     public function getInvoiceStats(Request $request): JsonResponse
     {
-        $user = auth()->user();
+        $user     = auth()->user();
         $branchId = $this->resolveBranchId($request, $user);
 
         $studentQuery = function ($query) use ($branchId) {
@@ -112,7 +111,7 @@ class DashboardController extends Controller
             ->whereHas('student', $studentQuery)
             ->get();
 
-        $totalDueCount = $dueInvoices->count();
+        $totalDueCount  = $dueInvoices->count();
         $totalDueAmount = $dueInvoices->sum('amount_due');
 
         $topDueStudents = PaymentInvoice::select('student_id', DB::raw('SUM(amount_due) as total_due'), DB::raw('COUNT(*) as invoice_count'))
@@ -124,17 +123,17 @@ class DashboardController extends Controller
             ->with('student:id,name,student_unique_id,branch_id')
             ->get()
             ->map(fn($item) => [
-                'student_id' => $item->student_id,
-                'name' => $item->student?->name ?? 'Unknown',
+                'student_id'        => $item->student_id,
+                'name'              => $item->student?->name ?? 'Unknown',
                 'student_unique_id' => $item->student?->student_unique_id ?? '',
-                'invoice_count' => $item->invoice_count,
-                'total_due' => $item->total_due,
+                'invoice_count'     => $item->invoice_count,
+                'total_due'         => $item->total_due,
             ]);
 
         return response()->json([
             'success' => true,
-            'data' => [
-                'total_due_count' => $totalDueCount,
+            'data'    => [
+                'total_due_count'  => $totalDueCount,
                 'total_due_amount' => $totalDueAmount,
                 'top_due_students' => $topDueStudents,
             ],
@@ -148,7 +147,7 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
 
@@ -169,21 +168,21 @@ class DashboardController extends Controller
             ->limit(20)
             ->get()
             ->map(fn($txn) => [
-                'id' => $txn->id,
-                'voucher_no' => $txn->voucher_no,
-                'amount_paid' => $txn->amount_paid,
-                'student_name' => $txn->student?->name ?? 'Unknown',
-                'student_id' => $txn->student?->student_unique_id ?? '',
-                'branch' => $txn->student?->branch?->branch_name ?? '',
-                'invoice_id' => $txn->paymentInvoice?->id,
+                'id'             => $txn->id,
+                'voucher_no'     => $txn->voucher_no,
+                'amount_paid'    => $txn->amount_paid,
+                'student_name'   => $txn->student?->name ?? 'Unknown',
+                'student_id'     => $txn->student?->student_unique_id ?? '',
+                'branch'         => $txn->student?->branch?->branch_name ?? '',
+                'invoice_id'     => $txn->paymentInvoice?->id,
                 'invoice_number' => $txn->paymentInvoice?->invoice_number ?? '',
-                'created_by' => $txn->createdBy?->name ?? 'System',
-                'created_at' => $txn->created_at->format('d M Y, h:i A'),
+                'created_by'     => $txn->createdBy?->name ?? 'System',
+                'created_at'     => $txn->created_at->format('d M Y, h:i A'),
             ]);
 
         return response()->json([
             'success' => true,
-            'data' => $transactions,
+            'data'    => $transactions,
         ]);
     }
 
@@ -192,9 +191,9 @@ class DashboardController extends Controller
      */
     public function getCollectionStats(Request $request): JsonResponse
     {
-        $user = auth()->user();
+        $user     = auth()->user();
         $branchId = $this->resolveBranchId($request, $user);
-        $isAdmin = $user->isAdmin();
+        $isAdmin  = $user->isAdmin();
 
         // Get student IDs for branch filtering
         $studentIds = null;
@@ -205,11 +204,11 @@ class DashboardController extends Controller
         // Get date from request or use today
         $selectedDate = $request->get('date') ? Carbon::parse($request->get('date'))->toDateString() : Carbon::today()->toDateString();
         $currentMonth = Carbon::now()->month;
-        $currentYear = Carbon::now()->year;
+        $currentYear  = Carbon::now()->year;
 
         // Build base query for transactions
         $baseQuery = PaymentTransaction::where('is_approved', true);
-        if (!empty($studentIds)) {
+        if (! empty($studentIds)) {
             $baseQuery->whereIn('student_id', $studentIds);
         }
 
@@ -229,20 +228,20 @@ class DashboardController extends Controller
             ->selectRaw('HOUR(created_at) as hour, SUM(amount_paid) as total')
             ->where('is_approved', true)
             ->whereDate('created_at', $selectedDate);
-        
-        if (!empty($studentIds)) {
+
+        if (! empty($studentIds)) {
             $hourlyQuery->whereIn('student_id', $studentIds);
         }
-        
+
         $hourlyResults = $hourlyQuery
             ->groupBy(DB::raw('HOUR(created_at)'))
             ->orderBy('hour')
             ->get();
-        
+
         // Build hourly collection map
         $hourlyCollection = [];
         foreach ($hourlyResults as $row) {
-            $hour = (int) $row->hour;
+            $hour                    = (int) $row->hour;
             $hourlyCollection[$hour] = (float) $row->total;
         }
 
@@ -250,22 +249,22 @@ class DashboardController extends Controller
         // Default: 6 AM to 11 PM (typical coaching hours)
         $minHour = 6;
         $maxHour = 23;
-        
+
         // If there's data outside this range, expand to include it
-        if (!empty($hourlyCollection)) {
+        if (! empty($hourlyCollection)) {
             $dataMinHour = min(array_keys($hourlyCollection));
             $dataMaxHour = max(array_keys($hourlyCollection));
-            $minHour = min($minHour, $dataMinHour);
-            $maxHour = max($maxHour, $dataMaxHour);
+            $minHour     = min($minHour, $dataMinHour);
+            $maxHour     = max($maxHour, $dataMaxHour);
         }
 
         // Generate hourly data for chart
         $hourlyData = [];
         for ($i = $minHour; $i <= $maxHour; $i++) {
             // Format hour in 12-hour format for better readability
-            $hourLabel = $i == 0 ? '12 AM' : ($i < 12 ? $i . ' AM' : ($i == 12 ? '12 PM' : ($i - 12) . ' PM'));
+            $hourLabel    = $i == 0 ? '12 AM' : ($i < 12 ? $i . ' AM' : ($i == 12 ? '12 PM' : ($i - 12) . ' PM'));
             $hourlyData[] = [
-                'hour' => $hourLabel,
+                'hour'   => $hourLabel,
                 'amount' => $hourlyCollection[$i] ?? 0,
             ];
         }
@@ -273,11 +272,11 @@ class DashboardController extends Controller
         // User wise collection for selected date with user IDs for linking
         $userWiseQuery = PaymentTransaction::where('is_approved', true)
             ->whereDate('created_at', $selectedDate);
-        
-        if (!empty($studentIds)) {
+
+        if (! empty($studentIds)) {
             $userWiseQuery->whereIn('student_id', $studentIds);
         }
-        
+
         $userWiseResults = $userWiseQuery
             ->selectRaw('created_by, SUM(amount_paid) as total')
             ->groupBy('created_by')
@@ -286,30 +285,30 @@ class DashboardController extends Controller
 
         $userWiseCollection = [];
         foreach ($userWiseResults as $item) {
-            $createdBy = User::find($item->created_by);
+            $createdBy            = User::find($item->created_by);
             $userWiseCollection[] = [
-                'user_id' => $item->created_by,
+                'user_id'   => $item->created_by,
                 'user_name' => $createdBy?->name ?? 'System',
-                'total' => (float) $item->total,
+                'total'     => (float) $item->total,
             ];
         }
 
         // Format date for display
         $displayDate = Carbon::parse($selectedDate)->format('d M Y');
-        $isToday = $selectedDate === Carbon::today()->toDateString();
+        $isToday     = $selectedDate === Carbon::today()->toDateString();
 
         return response()->json([
             'success' => true,
-            'data' => [
-                'total_collection' => (float) $totalCollection,
+            'data'    => [
+                'total_collection'         => (float) $totalCollection,
                 'selected_date_collection' => (float) $selectedDateCollection,
-                'month_collection' => (float) $monthCollection,
-                'hourly_collection' => $hourlyData,
-                'user_wise_collection' => $userWiseCollection,
-                'is_admin' => $isAdmin,
-                'selected_date' => $selectedDate,
-                'display_date' => $displayDate,
-                'is_today' => $isToday,
+                'month_collection'         => (float) $monthCollection,
+                'hourly_collection'        => $hourlyData,
+                'user_wise_collection'     => $userWiseCollection,
+                'is_admin'                 => $isAdmin,
+                'selected_date'            => $selectedDate,
+                'display_date'             => $displayDate,
+                'is_today'                 => $isToday,
             ],
         ]);
     }
@@ -319,15 +318,15 @@ class DashboardController extends Controller
      */
     public function getCostStats(Request $request): JsonResponse
     {
-        $user = auth()->user();
+        $user     = auth()->user();
         $branchId = $this->resolveBranchId($request, $user);
-        $period = $request->get('period', 'month');
+        $period   = $request->get('period', 'month');
 
         $startDate = match ($period) {
             'today' => Carbon::today(),
-            'week' => Carbon::now()->startOfWeek(),
+            'week'  => Carbon::now()->startOfWeek(),
             'month' => Carbon::now()->startOfMonth(),
-            'year' => Carbon::now()->startOfYear(),
+            'year'  => Carbon::now()->startOfYear(),
             default => Carbon::now()->startOfMonth(),
         };
 
@@ -352,22 +351,22 @@ class DashboardController extends Controller
             ->groupBy('cost_type_id')
             ->get()
             ->map(fn($item) => [
-                'type_id' => $item->cost_type_id,
+                'type_id'   => $item->cost_type_id,
                 'type_name' => $item->costType?->name ?? 'Unknown',
-                'total' => $item->total,
+                'total'     => $item->total,
             ]);
 
         $costTypes = CostType::active()->orderBy('name')->get(['id', 'name']);
 
         return response()->json([
             'success' => true,
-            'data' => [
-                'total_cost' => $totalCost,
+            'data'    => [
+                'total_cost'          => $totalCost,
                 'cost_type_breakdown' => $costTypeBreakdown,
-                'cost_types' => $costTypes,
-                'period' => $period,
-                'start_date' => $startDate->format('d M Y'),
-                'end_date' => $endDate->format('d M Y'),
+                'cost_types'          => $costTypes,
+                'period'              => $period,
+                'start_date'          => $startDate->format('d M Y'),
+                'end_date'            => $endDate->format('d M Y'),
             ],
         ]);
     }
@@ -377,7 +376,7 @@ class DashboardController extends Controller
      */
     public function getRecentTransactions(Request $request): JsonResponse
     {
-        $user = auth()->user();
+        $user     = auth()->user();
         $branchId = $this->resolveBranchId($request, $user);
 
         $transactions = PaymentTransaction::with([
@@ -394,23 +393,23 @@ class DashboardController extends Controller
             ->limit(15)
             ->get()
             ->map(fn($txn) => [
-                'id' => $txn->id,
-                'voucher_no' => $txn->voucher_no,
-                'amount_paid' => (float) $txn->amount_paid,
-                'payment_type' => $txn->payment_type,
-                'student_name' => $txn->student?->name ?? 'Unknown',
-                'student_id' => $txn->student?->student_unique_id ?? '',
-                'branch' => $txn->student?->branch?->branch_name ?? '',
-                'invoice_id' => $txn->paymentInvoice?->id,
-                'invoice_number' => $txn->paymentInvoice?->invoice_number ?? '',
-                'created_by' => $txn->createdBy?->name ?? 'System',
-                'created_at' => $txn->created_at->format('d M Y, h:i A'),
+                'id'              => $txn->id,
+                'voucher_no'      => $txn->voucher_no,
+                'amount_paid'     => (float) $txn->amount_paid,
+                'payment_type'    => $txn->payment_type,
+                'student_name'    => $txn->student?->name ?? 'Unknown',
+                'student_id'      => $txn->student?->student_unique_id ?? '',
+                'branch'          => $txn->student?->branch?->branch_name ?? '',
+                'invoice_id'      => $txn->paymentInvoice?->id,
+                'invoice_number'  => $txn->paymentInvoice?->invoice_number ?? '',
+                'created_by'      => $txn->createdBy?->name ?? 'System',
+                'created_at'      => $txn->created_at->format('d M Y, h:i A'),
                 'created_at_diff' => $txn->created_at->diffForHumans(),
             ]);
 
         return response()->json([
             'success' => true,
-            'data' => $transactions,
+            'data'    => $transactions,
         ]);
     }
 
@@ -419,71 +418,62 @@ class DashboardController extends Controller
      */
     public function getAttendanceStats(Request $request): JsonResponse
     {
-        $user = auth()->user();
+        $user     = auth()->user();
         $branchId = $this->resolveBranchId($request, $user);
 
-        // Use today's date by default for consistency with the "Today's summary" label
+        // Get date from request or use today
         $filterDate = $request->get('date')
             ? Carbon::parse($request->get('date'))
             : Carbon::today();
 
-        // Class-wise attendance for today (or selected date)
-        $attendanceByClass = StudentAttendance::whereDate('attendance_date', $filterDate)
+        // Get batch filter
+        $batchId = $request->get('batch_id');
+
+        // Base query for the selected date
+        $baseQuery = StudentAttendance::whereDate('attendance_date', $filterDate)
+            ->when($branchId, fn($q) => $q->where('branch_id', $branchId));
+
+        // Today's attendance summary (always for selected date, all batches)
+        $summaryQuery = StudentAttendance::whereDate('attendance_date', $filterDate)
+            ->when($branchId, fn($q) => $q->where('branch_id', $branchId));
+
+        $todayAttendance = $summaryQuery
+            ->selectRaw('status, COUNT(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status')
+            ->toArray();
+
+        // Class-wise attendance for selected date with optional batch filter
+        $classQuery = StudentAttendance::whereDate('attendance_date', $filterDate)
             ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
+            ->when($batchId, fn($q) => $q->where('batch_id', $batchId))
             ->with('classname:id,name,class_numeral')
             ->selectRaw('class_id, status, COUNT(*) as count')
             ->groupBy('class_id', 'status')
             ->get();
 
         $classData = [];
-        foreach ($attendanceByClass as $item) {
+        foreach ($classQuery as $item) {
             $classId = $item->class_id;
-            if (!isset($classData[$classId])) {
+            if (! isset($classData[$classId])) {
                 $classData[$classId] = [
-                    'class_id' => $classId,
-                    'class_name' => $item->classname?->name ?? 'Unknown',
+                    'class_id'      => $classId,
+                    'class_name'    => $item->classname?->name ?? 'Unknown',
                     'class_numeral' => $item->classname?->class_numeral ?? '',
-                    'present' => 0,
-                    'absent' => 0,
-                    'late' => 0,
-                    'leave' => 0,
+                    'present'       => 0,
+                    'absent'        => 0,
+                    'late'          => 0,
                 ];
             }
             $classData[$classId][$item->status] = (int) $item->count;
         }
 
-        // Batch-wise attendance for today (or selected date)
-        $attendanceByBatch = StudentAttendance::whereDate('attendance_date', $filterDate)
-            ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
-            ->with('batch:id,name')
-            ->selectRaw('batch_id, status, COUNT(*) as count')
-            ->groupBy('batch_id', 'status')
-            ->get();
+        // Get batches for tabs
+        $batches = Batch::when($branchId, fn($q) => $q->where('branch_id', $branchId))
+            ->orderBy('name')
+            ->get(['id', 'name']);
 
-        $batchData = [];
-        foreach ($attendanceByBatch as $item) {
-            $batchId = $item->batch_id;
-            if (!isset($batchData[$batchId])) {
-                $batchData[$batchId] = [
-                    'batch_id' => $batchId,
-                    'batch_name' => $item->batch?->name ?? 'Unknown',
-                    'present' => 0,
-                    'absent' => 0,
-                    'late' => 0,
-                    'leave' => 0,
-                ];
-            }
-            $batchData[$batchId][$item->status] = (int) $item->count;
-        }
-
-        // Today's attendance summary
-        $todayAttendance = StudentAttendance::whereDate('attendance_date', Carbon::today())
-            ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
-            ->selectRaw('status, COUNT(*) as count')
-            ->groupBy('status')
-            ->pluck('count', 'status')
-            ->toArray();
-
+        // Get classes for filter
         $classes = ClassName::active()
             ->when($branchId, function ($q) use ($branchId) {
                 $q->whereHas('students', fn($sq) => $sq->where('branch_id', $branchId));
@@ -491,26 +481,26 @@ class DashboardController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'class_numeral']);
 
-        $batches = Batch::when($branchId, fn($q) => $q->where('branch_id', $branchId))
-            ->orderBy('name')
-            ->get(['id', 'name']);
+        // Format date for display
+        $displayDate = $filterDate->format('d M Y');
+        $isToday     = $filterDate->toDateString() === Carbon::today()->toDateString();
 
         return response()->json([
             'success' => true,
-            'data' => [
-                'class_wise' => array_values($classData),
-                'batch_wise' => array_values($batchData),
-                'today' => [
+            'data'    => [
+                'class_wise'   => array_values($classData),
+                'today'        => [
                     'present' => (int) ($todayAttendance['present'] ?? 0),
-                    'absent' => (int) ($todayAttendance['absent'] ?? 0),
-                    'late' => (int) ($todayAttendance['late'] ?? 0),
-                    'leave' => (int) ($todayAttendance['leave'] ?? 0),
+                    'absent'  => (int) ($todayAttendance['absent'] ?? 0),
+                    'late'    => (int) ($todayAttendance['late'] ?? 0),
                 ],
-                'filters' => [
+                'filters'      => [
                     'classes' => $classes,
                     'batches' => $batches,
                 ],
-                'filter_date' => $filterDate->format('Y-m-d'),
+                'filter_date'  => $filterDate->format('Y-m-d'),
+                'display_date' => $displayDate,
+                'is_today'     => $isToday,
             ],
         ]);
     }
@@ -520,14 +510,14 @@ class DashboardController extends Controller
      */
     public function getSummary(Request $request): JsonResponse
     {
-        $user = auth()->user();
+        $user     = auth()->user();
         $branchId = $this->resolveBranchId($request, $user);
 
         $studentQuery = Student::query()->when($branchId, fn($q) => $q->where('branch_id', $branchId));
 
         $studentStats = [
-            'total' => (clone $studentQuery)->whereNotNull('student_activation_id')->whereHas('class', fn($q) => $q->active())->count(),
-            'active' => (clone $studentQuery)->active()->whereHas('class', fn($q) => $q->active())->count(),
+            'total'   => (clone $studentQuery)->whereNotNull('student_activation_id')->whereHas('class', fn($q) => $q->active())->count(),
+            'active'  => (clone $studentQuery)->active()->whereHas('class', fn($q) => $q->active())->count(),
             'pending' => (clone $studentQuery)->pending()->count(),
         ];
 
@@ -542,7 +532,7 @@ class DashboardController extends Controller
             ->whereHas('student', $studentConstraint);
 
         $invoiceStats = [
-            'due_count' => $dueInvoices->count(),
+            'due_count'  => $dueInvoices->count(),
             'due_amount' => $dueInvoices->sum('amount_due'),
         ];
 
@@ -580,11 +570,11 @@ class DashboardController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => [
-                'students' => $studentStats,
-                'invoices' => $invoiceStats,
-                'collections' => $collectionStats,
-                'today_cost' => $todayCost,
+            'data'    => [
+                'students'          => $studentStats,
+                'invoices'          => $invoiceStats,
+                'collections'       => $collectionStats,
+                'today_cost'        => $todayCost,
                 'pending_approvals' => $pendingApprovals,
             ],
         ]);

@@ -42,7 +42,7 @@
                                         style="width: 100px; height: 36px;"></span>
                                 </div>
                             </div>
-                            <i class="bi bi-cash-stack fs-3x text-white opacity-75"></i>
+                            <i class="bi bi-cash-stack fs-3x text-white opacity-25"></i>
                         </div>
                     </div>
                 </div>
@@ -58,7 +58,7 @@
                                         style="width: 100px; height: 36px;"></span>
                                 </div>
                             </div>
-                            <i class="bi bi-calendar-check fs-3x text-white opacity-75"></i>
+                            <i class="bi bi-calendar-check fs-3x text-white opacity-25"></i>
                         </div>
                     </div>
                 </div>
@@ -73,9 +73,9 @@
                                     <span class="loading-skeleton d-inline-block"
                                         style="width: 100px; height: 36px;"></span>
                                 </div>
-                                <div class="text-white fs-7 opacity-75" id="statDueCount">- invoices</div>
+                                <div class="text-white fs-8 opacity-75" id="statDueCount">- invoices</div>
                             </div>
-                            <i class="bi bi-receipt fs-3x text-white opacity-75"></i>
+                            <i class="bi bi-receipt fs-3x text-white opacity-25"></i>
                         </div>
                     </div>
                 </div>
@@ -91,7 +91,7 @@
                                         style="width: 100px; height: 36px;"></span>
                                 </div>
                             </div>
-                            <i class="bi bi-wallet2 fs-3x text-white opacity-75"></i>
+                            <i class="bi bi-wallet2 fs-3x text-white opacity-25"></i>
                         </div>
                     </div>
                 </div>
@@ -311,52 +311,57 @@
                     <div class="card-header border-0 pt-5">
                         <h3 class="card-title align-items-start flex-column">
                             <span class="card-label fw-bold fs-4 mb-1">Attendance Overview</span>
-                            <span class="text-muted fw-semibold fs-7">Today's summary</span>
+                            <span class="text-muted fw-semibold fs-7" id="attendanceDateLabel">Today's summary</span>
                         </h3>
+                        <div class="card-toolbar">
+                            <div class="d-flex align-items-center">
+                                <button type="button" class="btn btn-icon btn-sm btn-light-primary me-2"
+                                    id="prevAttDateBtn" title="Previous Day">
+                                    <i class="bi bi-chevron-left fs-6"></i>
+                                </button>
+                                <div class="position-relative">
+                                    <input type="text" class="form-control form-control-sm text-center fw-semibold"
+                                        id="attendanceDatePicker" style="width: 130px;" readonly>
+                                </div>
+                                <button type="button" class="btn btn-icon btn-sm btn-light-primary ms-2"
+                                    id="nextAttDateBtn" title="Next Day">
+                                    <i class="bi bi-chevron-right fs-6"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     <div class="card-body pt-2">
                         <div class="row g-3 mb-5">
-                            <div class="col-md-3 col-6">
+                            <div class="col-md-4 col-4">
                                 <div class="bg-light-success rounded p-3 text-center">
                                     <div class="fs-3 fw-bold text-success" id="attPresent">-</div>
                                     <div class="fs-8 text-muted fw-semibold">Present</div>
                                 </div>
                             </div>
-                            <div class="col-md-3 col-6">
+                            <div class="col-md-4 col-4">
                                 <div class="bg-light-danger rounded p-3 text-center">
                                     <div class="fs-3 fw-bold text-danger" id="attAbsent">-</div>
                                     <div class="fs-8 text-muted fw-semibold">Absent</div>
                                 </div>
                             </div>
-                            <div class="col-md-3 col-6">
+                            <div class="col-md-4 col-4">
                                 <div class="bg-light-warning rounded p-3 text-center">
                                     <div class="fs-3 fw-bold text-warning" id="attLate">-</div>
                                     <div class="fs-8 text-muted fw-semibold">Late</div>
                                 </div>
                             </div>
-                            <div class="col-md-3 col-6">
-                                <div class="bg-light-info rounded p-3 text-center">
-                                    <div class="fs-3 fw-bold text-info" id="attLeave">-</div>
-                                    <div class="fs-8 text-muted fw-semibold">Leave</div>
-                                </div>
-                            </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h6 class="fw-semibold text-gray-700 mb-3">By Class</h6>
-                                <div id="attendanceByClassList" class="table-scrollable" style="max-height: 250px;">
-                                    <div class="d-flex justify-content-center py-5">
-                                        <span class="spinner-border spinner-border-sm text-primary"></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <h6 class="fw-semibold text-gray-700 mb-3">By Batch</h6>
-                                <div id="attendanceByBatchList" class="table-scrollable" style="max-height: 250px;">
-                                    <div class="d-flex justify-content-center py-5">
-                                        <span class="spinner-border spinner-border-sm text-primary"></span>
-                                    </div>
-                                </div>
+                        <div class="mb-4">
+                            <ul class="nav nav-tabs nav-line-tabs nav-stretch fs-7 border-0" id="attendanceBatchTabs">
+                                <li class="nav-item">
+                                    <a class="nav-link active fw-semibold" data-batch-id=""
+                                        href="javascript:void(0)">All</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div id="attendanceByClassList" class="table-scrollable" style="max-height: 250px;">
+                            <div class="d-flex justify-content-center py-5">
+                                <span class="spinner-border spinner-border-sm text-primary"></span>
                             </div>
                         </div>
                     </div>
