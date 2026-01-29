@@ -66,7 +66,7 @@ class StudentController extends Controller
             })
             ->get();
 
-        $institutions = Institution::select('id', 'name')->get();
+        $institutions = Institution::select('id', 'name')->oldest('name')->get();
 
         return view('students.index', compact('classnames', 'batches', 'institutions', 'branches', 'isAdmin'));
     }

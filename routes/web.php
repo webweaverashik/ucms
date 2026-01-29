@@ -2,20 +2,22 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DashboardController;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 /*
 routes/
-├── web.php                 # Main entry point (minimal)
-├── auth.php                # Authentication routes (guest)
-└── modules/                # Domain-specific route files
-    ├── student.php         # Student management
-    ├── teacher.php         # Teacher management  
-    ├── academic.php        # Classes, batches, subjects
-    ├── payment.php         # Invoices, transactions
-    ├── sms.php             # SMS campaigns, templates
-    ├── report.php          # All reports
-    └── settings.php        # User settings, branches
+├── web.php              # Main entry point (minimal)
+├── auth.php             # Authentication routes (guest)
+└── modules/             # Domain-specific route files
+    ├── dashboard.php    # Dashboard API routes
+    ├── student.php      # Student management
+    ├── teacher.php      # Teacher management
+    ├── academic.php     # Classes, batches, subjects
+    ├── payment.php      # Invoices, transactions
+    ├── sms.php          # SMS campaigns, templates
+    ├── report.php       # All reports
+    └── settings.php     # User settings, branches
 */
 
 /*
@@ -33,7 +35,20 @@ Route::post('/login', [AuthController::class, 'login']);
 
 // Authenticated core routes
 Route::middleware(['auth', 'isLoggedIn'])->group(function () {
+    // Dashboard main view
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Dashboard API Routes (AJAX endpoints)
+    Route::prefix('dashboard')->name('dashboard.')->group(function () {
+        Route::get('/summary', [DashboardController::class, 'getSummary'])->name('summary');
+        Route::get('/student-stats', [DashboardController::class, 'getStudentStats'])->name('student-stats');
+        Route::get('/invoice-stats', [DashboardController::class, 'getInvoiceStats'])->name('invoice-stats');
+        Route::get('/collection-stats', [DashboardController::class, 'getCollectionStats'])->name('collection-stats');
+        Route::get('/cost-stats', [DashboardController::class, 'getCostStats'])->name('cost-stats');
+        Route::get('/attendance-stats', [DashboardController::class, 'getAttendanceStats'])->name('attendance-stats');
+        Route::get('/recent-transactions', [DashboardController::class, 'getRecentTransactions'])->name('recent-transactions');
+        Route::get('/pending-discounted', [DashboardController::class, 'getPendingDiscountedTransactions'])->name('pending-discounted');
+    });
 
     // Logout routes
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

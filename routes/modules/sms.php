@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Route;
 | SMS Routes
 |--------------------------------------------------------------------------
 | SMS campaigns, templates, logs
-| ⚠️ IMPORTANT: Route names are kept EXACTLY as original web.php
 */
 
 // Single SMS
