@@ -1,7 +1,29 @@
 @push('page-css')
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <style>
+        /* Ensure message body displays fully with proper wrapping */
+        #kt_sms_logs_table td .text-wrap {
+            white-space: normal !important;
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+        
+        /* Make sure the table doesn't force single line */
+        #kt_sms_logs_table {
+            table-layout: auto !important;
+        }
+        
+        /* Failed reason column styling */
+        #kt_sms_logs_table pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 12px;
+            background: transparent;
+            padding: 0;
+        }
+    </style>
 @endpush
-
 
 @extends('layouts.app')
 
@@ -24,7 +46,8 @@
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
                 <a href="#" class="text-muted text-hover-primary">
-                    SMS </a>
+                    SMS
+                </a>
             </li>
             <!--end::Item-->
             <!--begin::Item-->
@@ -34,13 +57,13 @@
             <!--end::Item-->
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                Logs </li>
+                Logs
+            </li>
             <!--end::Item-->
         </ul>
         <!--end::Breadcrumb-->
     </div>
 @endsection
-
 
 @section('content')
     <!--begin::Card-->
@@ -51,16 +74,11 @@
             <div class="card-title">
                 <!--begin::Search-->
                 <div class="d-flex align-items-center position-relative my-1">
-                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i> <input type="text"
-                        data-sms-logs-table-filter="search" class="form-control form-control-solid w-350px ps-12"
-                        placeholder="Search in transactions">
+                    <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
+                    <input type="text" data-sms-logs-table-filter="search"
+                        class="form-control form-control-solid w-350px ps-12" placeholder="Search in sms logs">
                 </div>
                 <!--end::Search-->
-
-                <!--begin::Export hidden buttons-->
-                <div id="kt_hidden_export_buttons" class="d-none"></div>
-                <!--end::Export buttons-->
-
             </div>
             <!--begin::Card title-->
 
@@ -93,16 +111,18 @@
                                     <option></option>
                                     <option value="S_SUCCESS">Success</option>
                                     <option value="S_FAILED">Failed</option>
+                                    <option value="S_PENDING">Pending</option>
                                 </select>
                             </div>
                             <!--end::Input group-->
 
                             <!--begin::Actions-->
                             <div class="d-flex justify-content-end">
-                                <button type="reset" class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
+                                <button type="reset"
+                                    class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
                                     data-kt-menu-dismiss="true" data-sms-logs-table-filter="reset">Reset</button>
-                                <button type="submit" class="btn btn-primary fw-semibold px-6" data-kt-menu-dismiss="true"
-                                    data-sms-logs-table-filter="filter">Apply</button>
+                                <button type="submit" class="btn btn-primary fw-semibold px-6"
+                                    data-kt-menu-dismiss="true" data-sms-logs-table-filter="filter">Apply</button>
                             </div>
                             <!--end::Actions-->
                         </div>
@@ -116,15 +136,13 @@
                             data-kt-menu-placement="bottom-end">
                             <i class="ki-outline ki-exit-up fs-2"></i>Export
                         </button>
-
                         <!--begin::Menu-->
                         <div id="kt_table_report_dropdown_menu"
                             class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
                             data-kt-menu="true">
                             <!--begin::Menu item-->
                             <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3" data-row-export="copy">Copy to
-                                    clipboard</a>
+                                <a href="#" class="menu-link px-3" data-row-export="copy">Copy to clipboard</a>
                             </div>
                             <div class="menu-item px-3">
                                 <a href="#" class="menu-link px-3" data-row-export="excel">Export as Excel</a>
@@ -154,69 +172,18 @@
             <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="kt_sms_logs_table">
                 <thead>
                     <tr class="fw-bold fs-7 text-uppercase gs-0">
-                        <th class="w-50px">SL</th>
+                        <th class="w-25px">#</th>
                         <th class="w-150px">Recipient</th>
                         <th>Message</th>
-                        <th class="d-none">Status (Filter)</th>
-                        <th>Status</th>
-                        <th class="w-100px">Failed Reason (API)</th>
+                        <th class="w-80px">Status</th>
+                        <th class="w-300px">Failed Reason</th>
                         <th>Sent At</th>
                         <th>Sent By</th>
-                        <th class="not-export d-none">Actions</th>
+                        <th class="not-export">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="text-gray-600 fw-semibold">
-                    @foreach ($smsLogs as $log)
-                        <tr>
-                            <td>{{ $loop->index + 1 }}</td>
-                            <td>{{ $log->recipient }}</td>
-                            <td>{{ $log->message_body }}</td>
-                            <td class="d-none">
-                                @if ($log->status === 'PENDING')
-                                    S_PENDING
-                                @elseif ($log->status === 'SUCCESS')
-                                    S_SUCCESS
-                                @elseif ($log->status === 'FAILED')
-                                    S_FAILED
-                                @endif
-                            </td>
-                            <td>
-                                @if ($log->status === 'PENDING')
-                                    <span class="badge badge-secondary">Pending</span>
-                                @elseif ($log->status === 'SUCCESS')
-                                    <span class="badge badge-success">Success</span>
-                                @elseif ($log->status === 'FAILED')
-                                    <span class="badge badge-danger">Failed</span>
-                                @endif
-                            </td>
-
-                            {{-- Showing Failed API Response --}}
-                            @php
-                                $json = $log->api_error ? json_encode($log->api_error, JSON_PRETTY_PRINT) : null;
-                                $jsonWithoutBraces = $json ? trim($json, '{}') : null;
-                            @endphp
-
-                            <td>{!! $jsonWithoutBraces ? '<pre>' . $jsonWithoutBraces . '</pre>' : '' !!}</td>
-
-                            <td>
-                                {{ $log->updated_at->format('h:i:s A, d-M-Y') }}
-                            </td>
-
-                            <td>
-                                {{ $log->createdBy->name ?? 'System' }}
-                            </td>
-
-                            <td class="d-none">
-                                @if ($log->status === 'FAILED')
-                                    <a href="#" title="Retry SMS"
-                                        class="btn btn-icon text-hover-success w-30px h-30px retry-sms me-2"
-                                        data-sms-log-id={{ $log->id }}>
-                                        <i class="ki-outline ki-arrows-circle fs-2"></i>
-                                    </a>
-                                @endif
-                            </td>
-                        </tr>
-                    @endforeach
+                    <!-- Data will be loaded via AJAX -->
                 </tbody>
             </table>
             <!--end::Table-->
@@ -226,14 +193,24 @@
     <!--end::Card-->
 @endsection
 
-
 @push('vendor-js')
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
+    <!-- SheetJS for Excel export -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <!-- jsPDF for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
 @endpush
 
 @push('page-js')
+    <script>
+        // Pass routes to JavaScript
+        var smsLogsDataUrl = "{{ route('sms.logs.data') }}";
+        var smsLogsExportUrl = "{{ route('sms.logs.export') }}";
+        var smsLogsRetryUrl = "{{ url('sms/logs') }}";
+        var csrfToken = "{{ csrf_token() }}";
+    </script>
     <script src="{{ asset('js/sms/logs.js') }}"></script>
-
     <script>
         document.getElementById("sms_menu").classList.add("here", "show");
         document.getElementById("sms_logs_link").classList.add("active");

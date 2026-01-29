@@ -22,6 +22,10 @@ Route::post('/sms/send-campaign/{id}/approve', [SmsCampaignController::class, 'a
 
 // Logs & Status
 Route::get('sms/logs', [SmsController::class, 'smsLog'])->name('sms.logs.index');
+Route::get('sms/logs/data', [SmsController::class, 'getSmsLogsData'])->name('sms.logs.data');
+Route::get('sms/logs/export', [SmsController::class, 'exportSmsLogs'])->name('sms.logs.export');
+Route::post('sms/logs/{id}/retry', [SmsController::class, 'retrySms'])->name('sms.logs.retry');
+
 Route::get('sms/balance', [SmsController::class, 'checkBalance'])->name('sms.balance');
 Route::get('sms/status', [SmsController::class, 'checkSmsStatus'])->name('sms.status');
 
