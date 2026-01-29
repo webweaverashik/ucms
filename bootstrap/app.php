@@ -17,7 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware('web')->group(base_path('routes/auth.php'));
 
             // All authenticated module routes
-            $modules = ['student', 'teacher', 'academic', 'payment', 'sms', 'report', 'settings'];
+            $modules = ['student', 'teacher', 'academic', 'sheet', 'payment', 'sms', 'report', 'settings'];
 
             foreach ($modules as $module) {
                 Route::middleware(['web', 'auth', 'isLoggedIn'])->group(base_path("routes/modules/{$module}.php"));

@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Sheet;
 
 use App\Http\Controllers\Controller;
 use App\Models\Academic\Subject;
+use App\Models\Branch;
 use App\Models\Sheet\Sheet;
 use App\Models\Sheet\SheetPayment;
 use App\Models\Sheet\SheetTopic;
@@ -14,23 +15,290 @@ use Illuminate\Support\Facades\DB;
 class SheetTopicTakenController extends Controller
 {
     /**
-     * Display a listing of the resource (Updated to include sheetGroups for filter)
+     * Display a listing of the resource
      */
     public function index()
     {
-        $notes_taken = SheetTopicTaken::with(['student', 'sheetTopic.subject.class.sheet', 'distributedBy'])
-            ->whereHas('student', function ($query) {
-                if (auth()->user()->branch_id != 0) {
-                    $query->where('branch_id', auth()->user()->branch_id);
-                }
-            })
-            ->latest('id')
-            ->get();
+        $user     = auth()->user();
+        $branchId = $user->branch_id;
+        $isAdmin  = $user->hasRole('admin');
+
+        // Get all branches
+        $branches = Branch::all();
+
+        // Get distribution counts for tabs
+        $distributionCounts = [];
+        if ($isAdmin) {
+            foreach ($branches as $branch) {
+                $distributionCounts[$branch->id] = SheetTopicTaken::whereHas('student', function ($query) use ($branch) {
+                    $query->where('branch_id', $branch->id);
+                })->count();
+            }
+        }
 
         // Get all active sheet groups for filter dropdown
         $sheetGroups = Sheet::whereHas('class', fn($q) => $q->active())->with('class')->get();
 
-        return view('notes.index', compact('notes_taken', 'sheetGroups'));
+        return view('notes.index', compact('branches', 'distributionCounts', 'sheetGroups', 'isAdmin', 'branchId'));
+    }
+
+    /**
+     * Get distributions data for AJAX DataTable
+     */
+    public function getData(Request $request)
+    {
+        $user         = auth()->user();
+        $userBranchId = $user->branch_id;
+        $isAdmin      = $user->hasRole('admin');
+
+        // Get branch filter from request
+        $branchId = $request->get('branch_id');
+
+        // Base query
+        $query = SheetTopicTaken::with([
+            'student:id,name,student_unique_id,branch_id',
+            'student.branch:id,branch_name',
+            'sheetTopic:id,topic_name,subject_id',
+            'sheetTopic.subject:id,name,class_id',
+            'sheetTopic.subject.class:id,name,class_numeral',
+            'sheetTopic.subject.class.sheet:id,class_id',
+            'distributedBy:id,name',
+        ]);
+
+        // Apply branch filter
+        if ($isAdmin && $branchId) {
+            $query->whereHas('student', function ($q) use ($branchId) {
+                $q->where('branch_id', $branchId);
+            });
+        } elseif (! $isAdmin && $userBranchId != 0) {
+            $query->whereHas('student', function ($q) use ($userBranchId) {
+                $q->where('branch_id', $userBranchId);
+            });
+        }
+
+        // Get total count before filtering
+        $totalRecords = $query->count();
+
+        // Search filter
+        $searchValue = $request->get('search')['value'] ?? '';
+        if (! empty($searchValue)) {
+            $query->where(function ($q) use ($searchValue) {
+                $q->whereHas('sheetTopic', function ($q) use ($searchValue) {
+                    $q->where('topic_name', 'like', "%{$searchValue}%");
+                })
+                    ->orWhereHas('sheetTopic.subject', function ($q) use ($searchValue) {
+                        $q->where('name', 'like', "%{$searchValue}%");
+                    })
+                    ->orWhereHas('sheetTopic.subject.class', function ($q) use ($searchValue) {
+                        $q->where('name', 'like', "%{$searchValue}%")
+                            ->orWhere('class_numeral', 'like', "%{$searchValue}%");
+                    })
+                    ->orWhereHas('student', function ($q) use ($searchValue) {
+                        $q->where('name', 'like', "%{$searchValue}%")
+                            ->orWhere('student_unique_id', 'like', "%{$searchValue}%");
+                    })
+                    ->orWhereHas('distributedBy', function ($q) use ($searchValue) {
+                        $q->where('name', 'like', "%{$searchValue}%");
+                    });
+            });
+        }
+
+        // Sheet Group filter
+        $sheetGroupFilter = $request->get('sheet_group_filter');
+        if (! empty($sheetGroupFilter)) {
+            $sheet = Sheet::find($sheetGroupFilter);
+            if ($sheet) {
+                $query->whereHas('sheetTopic.subject', function ($q) use ($sheet) {
+                    $q->where('class_id', $sheet->class_id);
+                });
+            }
+        }
+
+        // Subject filter
+        $subjectFilter = $request->get('subject_filter');
+        if (! empty($subjectFilter)) {
+            $query->whereHas('sheetTopic', function ($q) use ($subjectFilter) {
+                $q->where('subject_id', $subjectFilter);
+            });
+        }
+
+        // Topic filter
+        $topicFilter = $request->get('topic_filter');
+        if (! empty($topicFilter)) {
+            $query->where('sheet_topic_id', $topicFilter);
+        }
+
+        // Get filtered count
+        $filteredRecords = $query->count();
+
+        // Sorting
+        $orderColumnIndex = $request->get('order')[0]['column'] ?? 0;
+        $orderDirection   = $request->get('order')[0]['dir'] ?? 'desc';
+        $columns          = ['id', 'sheet_topic_id', 'sheet_topic_id', 'sheet_topic_id', 'student_id', 'distributed_by', 'created_at'];
+        $orderColumn      = $columns[$orderColumnIndex] ?? 'id';
+
+        if ($orderColumn === 'id') {
+            $query->orderBy('id', 'desc');
+        } else {
+            $query->orderBy($orderColumn, $orderDirection);
+        }
+
+        // Pagination
+        $start         = $request->get('start', 0);
+        $length        = $request->get('length', 10);
+        $distributions = $query->skip($start)->take($length)->get();
+
+        // Format data for DataTable
+        $data    = [];
+        $counter = $start + 1;
+
+        foreach ($distributions as $note) {
+            $sheetGroup = $note->sheetTopic?->subject?->class;
+            $sheetId    = $sheetGroup?->sheet?->id ?? 0;
+
+            $data[] = [
+                'DT_RowId'           => 'row_' . $note->id,
+                'sl'                 => $counter++,
+                'topic_name'         => $note->sheetTopic->topic_name ?? '',
+                'subject'            => $note->sheetTopic->subject->name ?? '',
+                'subject_id'         => $note->sheetTopic->subject->id ?? 0,
+                'sheet_group'        => $sheetGroup
+                    ? '<a href="' . route('sheets.show', $sheetId) . '" class="text-gray-800 text-hover-primary" target="_blank">'
+                . $sheetGroup->name . ' (' . $sheetGroup->class_numeral . ')</a>'
+                    : '',
+                'sheet_group_raw'    => $sheetGroup ? $sheetGroup->name . ' (' . $sheetGroup->class_numeral . ')' : '',
+                'sheet_id'           => $sheetId,
+                'student'            => '<div class="d-flex align-items-center">
+                    <div class="symbol symbol-circle symbol-35px me-3">
+                        <span class="symbol-label bg-light-primary text-primary fw-bold">'
+                . substr($note->student->name ?? '', 0, 1) .
+                '</span>
+                    </div>
+                    <div class="d-flex flex-column">
+                        <a href="' . route('students.show', $note->student->id) . '" class="text-gray-800 text-hover-primary fw-bold" target="_blank">'
+                . ($note->student->name ?? '') .
+                '</a>
+                        <span class="text-muted fs-7">' . ($note->student->student_unique_id ?? '') . '</span>
+                    </div>
+                </div>',
+                'student_raw'        => ($note->student->name ?? '') . ', ' . ($note->student->student_unique_id ?? ''),
+                'student_id'         => $note->student->id ?? 0,
+                'distributed_by'     => $note->distributedBy
+                    ? '<span class="badge badge-light-info">' . $note->distributedBy->name . '</span>'
+                    : '<span class="badge badge-light">System</span>',
+                'distributed_by_raw' => $note->distributedBy->name ?? 'System',
+                'distributed_at'     => '<span class="text-muted">' . $note->created_at->format('d M Y') . '</span>
+                    <span class="d-block text-muted fs-7">' . $note->created_at->format('h:i A') . '</span>',
+                'distributed_at_raw' => $note->created_at->format('Y-m-d H:i:s'),
+            ];
+        }
+
+        return response()->json([
+            'draw'            => intval($request->get('draw')),
+            'recordsTotal'    => $totalRecords,
+            'recordsFiltered' => $filteredRecords,
+            'data'            => $data,
+        ]);
+    }
+
+    /**
+     * Get all distributions for export (without pagination)
+     */
+    public function getExportData(Request $request)
+    {
+        $user         = auth()->user();
+        $userBranchId = $user->branch_id;
+        $isAdmin      = $user->hasRole('admin');
+        $branchId     = $request->get('branch_id');
+
+        $query = SheetTopicTaken::with([
+            'student:id,name,student_unique_id,branch_id',
+            'sheetTopic:id,topic_name,subject_id',
+            'sheetTopic.subject:id,name,class_id',
+            'sheetTopic.subject.class:id,name,class_numeral',
+            'distributedBy:id,name',
+        ]);
+
+        // Apply branch filter
+        if ($isAdmin && $branchId) {
+            $query->whereHas('student', function ($q) use ($branchId) {
+                $q->where('branch_id', $branchId);
+            });
+        } elseif (! $isAdmin && $userBranchId != 0) {
+            $query->whereHas('student', function ($q) use ($userBranchId) {
+                $q->where('branch_id', $userBranchId);
+            });
+        }
+
+        // Search filter
+        $searchValue = $request->get('search');
+        if (! empty($searchValue)) {
+            $query->where(function ($q) use ($searchValue) {
+                $q->whereHas('sheetTopic', function ($q) use ($searchValue) {
+                    $q->where('topic_name', 'like', "%{$searchValue}%");
+                })
+                    ->orWhereHas('sheetTopic.subject', function ($q) use ($searchValue) {
+                        $q->where('name', 'like', "%{$searchValue}%");
+                    })
+                    ->orWhereHas('sheetTopic.subject.class', function ($q) use ($searchValue) {
+                        $q->where('name', 'like', "%{$searchValue}%")
+                            ->orWhere('class_numeral', 'like', "%{$searchValue}%");
+                    })
+                    ->orWhereHas('student', function ($q) use ($searchValue) {
+                        $q->where('name', 'like', "%{$searchValue}%")
+                            ->orWhere('student_unique_id', 'like', "%{$searchValue}%");
+                    })
+                    ->orWhereHas('distributedBy', function ($q) use ($searchValue) {
+                        $q->where('name', 'like', "%{$searchValue}%");
+                    });
+            });
+        }
+
+        // Sheet Group filter
+        $sheetGroupFilter = $request->get('sheet_group_filter');
+        if (! empty($sheetGroupFilter)) {
+            $sheet = Sheet::find($sheetGroupFilter);
+            if ($sheet) {
+                $query->whereHas('sheetTopic.subject', function ($q) use ($sheet) {
+                    $q->where('class_id', $sheet->class_id);
+                });
+            }
+        }
+
+        // Subject filter
+        $subjectFilter = $request->get('subject_filter');
+        if (! empty($subjectFilter)) {
+            $query->whereHas('sheetTopic', function ($q) use ($subjectFilter) {
+                $q->where('subject_id', $subjectFilter);
+            });
+        }
+
+        // Topic filter
+        $topicFilter = $request->get('topic_filter');
+        if (! empty($topicFilter)) {
+            $query->where('sheet_topic_id', $topicFilter);
+        }
+
+        $distributions = $query->orderBy('id', 'desc')->get();
+
+        $data    = [];
+        $counter = 1;
+
+        foreach ($distributions as $note) {
+            $sheetGroup = $note->sheetTopic?->subject?->class;
+
+            $data[] = [
+                'sl'             => $counter++,
+                'topic_name'     => $note->sheetTopic->topic_name ?? '',
+                'subject'        => $note->sheetTopic->subject->name ?? '',
+                'sheet_group'    => $sheetGroup ? $sheetGroup->name . ' (' . $sheetGroup->class_numeral . ')' : '',
+                'student'        => ($note->student->name ?? '') . ', ' . ($note->student->student_unique_id ?? ''),
+                'distributed_by' => $note->distributedBy->name ?? 'System',
+                'distributed_at' => $note->created_at->format('d M Y, h:i A'),
+            ];
+        }
+
+        return response()->json(['data' => $data]);
     }
 
     /**
@@ -60,7 +328,6 @@ class SheetTopicTakenController extends Controller
 
         // Get the sheet to verify class
         $sheet = Sheet::find($sheetId);
-
         if (! $sheet) {
             return response()->json(['message' => 'Sheet not found'], 404);
         }
@@ -93,6 +360,7 @@ class SheetTopicTakenController extends Controller
     }
 
     /* --- Added After 01.01.2026 12.45 AM --- */
+
     /**
      * Show bulk distribution page
      */
@@ -192,9 +460,11 @@ class SheetTopicTakenController extends Controller
                 ]);
                 $distributedCount++;
             }
+
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json(
                 [
                     'success' => false,
@@ -213,5 +483,6 @@ class SheetTopicTakenController extends Controller
             'skipped_count'     => $skippedCount,
         ]);
     }
+
     /** Till Now */
 }

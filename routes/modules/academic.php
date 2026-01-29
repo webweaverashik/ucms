@@ -5,17 +5,13 @@ use App\Http\Controllers\Academic\ClassNameController;
 use App\Http\Controllers\Academic\InstitutionController;
 use App\Http\Controllers\Academic\SecondaryClassController;
 use App\Http\Controllers\Academic\SubjectController;
-use App\Http\Controllers\Sheet\SheetController;
-use App\Http\Controllers\Sheet\SheetPaymentController;
-use App\Http\Controllers\Sheet\SheetTopicController;
-use App\Http\Controllers\Sheet\SheetTopicTakenController;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
 | Academic Routes
 |--------------------------------------------------------------------------
-| Classes, subjects, sheets, notes distribution
+| Classes, subjects, batches, institutions, secondary classes
 */
 
 // Class Names
@@ -39,12 +35,12 @@ Route::prefix('classnames')
             ->name('secondary-classes.')
             ->group(function () {
                 Route::get('{secondaryClass}', [SecondaryClassController::class, 'showWithClass'])->name('show');
-                
+
                 // AJAX endpoints for DataTables and stats
                 Route::get('{secondaryClass}/enrolled-students-ajax', [SecondaryClassController::class, 'getEnrolledStudentsAjax'])->name('enrolled-students-ajax');
                 Route::get('{secondaryClass}/stats-ajax', [SecondaryClassController::class, 'getStatsAjax'])->name('stats-ajax');
                 Route::get('{secondaryClass}/branch-counts-ajax', [SecondaryClassController::class, 'getBranchCountsAjax'])->name('branch-counts-ajax');
-                
+
                 Route::post('{secondaryClass}/enroll', [SecondaryClassController::class, 'enrollStudent'])->name('enroll');
                 Route::put('{secondaryClass}/students/{student}', [SecondaryClassController::class, 'updateStudentEnrollment'])->name('update-student');
                 Route::delete('{secondaryClass}/students/{student}', [SecondaryClassController::class, 'withdrawStudent'])->name('withdraw');
@@ -69,45 +65,12 @@ Route::resource('secondary-classes', SecondaryClassController::class);
 Route::get('get-subjects', [SubjectController::class, 'getSubjects']);
 Route::get('get-taken-subjects', [SubjectController::class, 'getTakenSubjects']);
 
-// Sheet Payments Routes
-Route::prefix('sheets/payments')
-    ->name('sheet-payments.')
-    ->group(function () {
-        Route::get('/', [SheetPaymentController::class, 'index'])->name('index');
-        Route::get('/data', [SheetPaymentController::class, 'getData'])->name('data');
-        Route::get('/export', [SheetPaymentController::class, 'export'])->name('export');
-    });
-
-// Sheets - Note
-Route::get('/sheets/paid/{student}', [SheetController::class, 'getPaidSheets'])->name('sheets.paid');
-Route::get('/sheets/{sheet}/topics/{student}', [SheetController::class, 'getSheetTopics'])->name('sheets.topics');
-
-// Sheet Topics API Routes (for AJAX)
-Route::prefix('sheets')->group(function () {
-    Route::get('{sheet}/subjects-list', [SheetController::class, 'getSubjectsList'])->name('sheets.subjects.list');
-    Route::get('{sheet}/subjects/{subject}/topics', [SheetController::class, 'getSubjectTopics'])->name('sheets.subject.topics');
-    Route::get('{sheet}/topics-list', [SheetController::class, 'getTopicsList'])->name('sheets.topics.list');
-    Route::get('{sheet}/topics/{topic}/pending-students', [SheetController::class, 'getPendingStudents'])->name('sheets.pending.students');
-});
-
-// Notes
-Route::put('notes/{sheetTopic}/status', [SheetTopicController::class, 'updateStatus'])->name('notes.updateStatus');
-Route::get('notes/distribution', [SheetTopicTakenController::class, 'index'])->name('notes.distribution.index');
-Route::get('notes/single-distribution', [SheetTopicTakenController::class, 'create'])->name('notes.single.create');
-Route::post('sheet-topics/distribute', [SheetTopicTakenController::class, 'store'])->name('sheet-topics.distribute');
-
-// Bulk Distribution
-Route::get('notes/bulk-distribution', [SheetTopicTakenController::class, 'bulkCreate'])->name('notes.bulk.create');
-Route::post('sheet-topics/bulk-distribute', [SheetTopicTakenController::class, 'bulkStore'])->name('sheet-topics.bulk.distribute');
-
 // Institutions
 Route::get('institutions/by-type/{type}', [InstitutionController::class, 'getByType'])->name('institutions.by-type');
 
 // Resource controllers
 Route::resources([
     'institutions' => InstitutionController::class,
-    'batches' => BatchController::class,
-    'subjects' => SubjectController::class,
-    'sheets' => SheetController::class,
-    'notes' => SheetTopicController::class,
+    'batches'      => BatchController::class,
+    'subjects'     => SubjectController::class,
 ]);

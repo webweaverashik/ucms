@@ -14,6 +14,7 @@ routes/
     ├── student.php      # Student management
     ├── teacher.php      # Teacher management
     ├── academic.php     # Classes, batches, subjects
+    ├── sheet.php        # Sheets, notes distribution
     ├── payment.php      # Invoices, transactions
     ├── sms.php          # SMS campaigns, templates
     ├── report.php       # All reports
