@@ -29,7 +29,7 @@ const ManagerDashboard = (function () {
        * Format currency in Bangladeshi Taka
        */
       const formatCurrency = (amount) => {
-            return '৳' + Number(amount || 0).toLocaleString('en-BD');
+            return '৳ ' + Number(amount || 0).toLocaleString('en-BD');
       };
 
       /**
