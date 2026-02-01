@@ -1,9 +1,26 @@
 @push('page-css')
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <style>
+        /* Column checkbox list styling */
+        .column-checkbox-list .form-check {
+            padding: 8px 0;
+            margin: 0;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        .column-checkbox-list .form-check:last-child {
+            border-bottom: none;
+        }
+        .column-checkbox-list .form-check:hover {
+            background-color: #f9f9f9;
+            border-radius: 6px;
+        }
+        .column-checkbox-list .form-check-input:disabled + .form-check-label {
+            opacity: 0.7;
+        }
+    </style>
 @endpush
 
 @extends('layouts.app')
-
 @section('title', 'All Invoices')
 
 @section('header-title')
@@ -185,8 +202,7 @@
                                                 <option></option>
                                                 @foreach ($students as $student)
                                                     <option value="{{ $student->id }}">{{ $student->name }}
-                                                        ({{ $student->student_unique_id }})
-                                                        -
+                                                        ({{ $student->student_unique_id }}) -
                                                         {{ ucfirst($student->payments->payment_style) }} -
                                                         1/{{ $student->payments->due_date }}
                                                     </option>
@@ -205,8 +221,8 @@
                                             <select name="invoice_type"
                                                 class="form-select form-select-solid rounded-start-0 border-start"
                                                 data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
-                                                data-placeholder="Select a invoice type" data-hide-search="false" required
-                                                disabled>
+                                                data-placeholder="Select a invoice type" data-hide-search="false"
+                                                required disabled>
                                                 <option></option>
                                                 @foreach ($invoice_types->where('type_name', '!=', 'Special Class Fee') as $type)
                                                     <option value="{{ $type->id }}"
@@ -256,8 +272,8 @@
                                             <select name="invoice_month_year"
                                                 class="form-select form-select-solid rounded-start-0 border-start"
                                                 data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
-                                                data-placeholder="Select billing month" data-hide-search="true" disabled
-                                                required>
+                                                data-placeholder="Select billing month" data-hide-search="true"
+                                                disabled required>
                                                 <option></option>
                                             </select>
                                         </div>
@@ -379,6 +395,7 @@
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_add_comment_header"
                             data-kt-scroll-wrappers="#kt_modal_add_comment_scroll" data-kt-scroll-offset="300px">
+
                             <div class="mb-7" id="previous_comments_section">
                                 <label class="fw-semibold fs-6 mb-3">Previous Comments</label>
                                 <div id="previous_comments_container" class="border rounded p-4 bg-light-secondary"
@@ -393,6 +410,7 @@
                                     </div>
                                 </div>
                             </div>
+
                             <div class="fv-row mb-7">
                                 <label class="required fw-semibold fs-6 mb-2">New Comment</label>
                                 <textarea name="comment" class="form-control form-control-solid" rows="4"

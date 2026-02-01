@@ -13,84 +13,130 @@
             <!--end::Search-->
         </div>
         <!--begin::Card title-->
+
         <!--begin::Card toolbar-->
         <div class="card-toolbar">
             <!--begin::Toolbar-->
-            <div class="d-flex justify-content-end" data-kt-paid-invoice-table-toolbar="base">
-                <!--begin::Filter-->
-                <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
-                    data-kt-menu-placement="bottom-end">
-                    <i class="ki-outline ki-filter fs-2"></i>Filter</button>
-                <!--begin::Menu 1-->
-                <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
-                    <!--begin::Header-->
-                    <div class="px-7 py-5">
-                        <div class="fs-5 text-gray-900 fw-bold">Filter Options</div>
+            <div class="d-flex justify-content-end flex-wrap gap-3" data-kt-paid-invoice-table-toolbar="base">
+
+                <!--begin::Column Selector Wrapper-->
+                <div>
+                    <button type="button" class="btn btn-light-info" data-kt-menu-trigger="click"
+                        data-kt-menu-placement="bottom-end">
+                        <i class="ki-outline ki-setting-2 fs-2"></i>Columns
+                    </button>
+                    <!--begin::Column Selector Menu-->
+                    <div class="menu menu-sub menu-sub-dropdown w-300px" data-kt-menu="true"
+                        id="column_selector_paid_{{ $tableId }}">
+                        <!--begin::Header-->
+                        <div class="px-7 py-5 d-flex justify-content-between align-items-center">
+                            <div class="fs-5 text-gray-900 fw-bold">Select Columns</div>
+                            <button type="button" class="btn btn-sm btn-icon btn-light-primary column-reset-btn"
+                                data-table-id="{{ $tableId }}" data-type="paid" title="Reset to Default">
+                                <i class="ki-outline ki-arrows-circle fs-4"></i>
+                            </button>
+                        </div>
+                        <!--end::Header-->
+                        <!--begin::Separator-->
+                        <div class="separator border-gray-200"></div>
+                        <!--end::Separator-->
+                        <!--begin::Content-->
+                        <div class="px-7 py-5 column-checkbox-list" data-table-id="{{ $tableId }}" data-type="paid"
+                            style="max-height: 300px; overflow-y: auto;">
+                            <!-- Checkboxes will be populated by JavaScript -->
+                        </div>
+                        <!--end::Content-->
+                        <!--begin::Footer-->
+                        <div class="separator border-gray-200"></div>
+                        <div class="px-7 py-4">
+                            <button type="button" class="btn btn-sm btn-primary w-100 column-apply-btn"
+                                data-kt-menu-dismiss="true" data-table-id="{{ $tableId }}" data-type="paid">
+                                Apply Changes
+                            </button>
+                        </div>
+                        <!--end::Footer-->
                     </div>
-                    <!--end::Header-->
-                    <!--begin::Separator-->
-                    <div class="separator border-gray-200"></div>
-                    <!--end::Separator-->
-                    <!--begin::Content-->
-                    <div class="px-7 py-5">
-                        <!--begin::Input group-->
-                        <div class="mb-10">
-                            <label class="form-label fs-6 fw-semibold">Invoice Type:</label>
-                            <select class="form-select form-select-solid fw-bold filter-invoice-type-paid"
-                                data-kt-select2="true" data-placeholder="Select option" data-allow-clear="true"
-                                data-hide-search="true" data-table-id="{{ $tableId }}">
-                                <option></option>
-                            </select>
-                        </div>
-                        <!--end::Input group-->
-                        <!--begin::Input group-->
-                        <div class="mb-10">
-                            <label class="form-label fs-6 fw-semibold">Due Date:</label>
-                            <select class="form-select form-select-solid fw-bold filter-due-date-paid"
-                                data-kt-select2="true" data-placeholder="Select option" data-allow-clear="true"
-                                data-hide-search="true" data-table-id="{{ $tableId }}">
-                                <option></option>
-                                <option value="1/7">1-7</option>
-                                <option value="1/10">1-10</option>
-                                <option value="1/15">1-15</option>
-                                <option value="1/30">1-30</option>
-                            </select>
-                        </div>
-                        <!--end::Input group-->
-                        <!--begin::Input group-->
-                        <div class="mb-10">
-                            <label class="form-label fs-6 fw-semibold">Billing Month:</label>
-                            <select class="form-select form-select-solid fw-bold filter-billing-month-paid"
-                                data-kt-select2="true" data-placeholder="Select option" data-allow-clear="true"
-                                data-table-id="{{ $tableId }}">
-                                <option></option>
-                            </select>
-                        </div>
-                        <!--end::Input group-->
-                        <!--begin::Actions-->
-                        <div class="d-flex justify-content-end">
-                            <button type="reset"
-                                class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6 filter-reset-btn-paid"
-                                data-kt-menu-dismiss="true" data-table-id="{{ $tableId }}">Reset</button>
-                            <button type="submit" class="btn btn-primary fw-semibold px-6 filter-apply-btn-paid"
-                                data-kt-menu-dismiss="true" data-table-id="{{ $tableId }}">Apply</button>
-                        </div>
-                        <!--end::Actions-->
-                    </div>
-                    <!--end::Content-->
+                    <!--end::Column Selector Menu-->
                 </div>
-                <!--end::Menu 1-->
-                <!--end::Filter-->
-                <!--begin::Export dropdown-->
-                <div class="dropdown">
-                    <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
+                <!--end::Column Selector Wrapper-->
+
+                <!--begin::Filter Wrapper-->
+                <div>
+                    <button type="button" class="btn btn-light-primary" data-kt-menu-trigger="click"
+                        data-kt-menu-placement="bottom-end">
+                        <i class="ki-outline ki-filter fs-2"></i>Filter
+                    </button>
+                    <!--begin::Menu 1-->
+                    <div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
+                        <!--begin::Header-->
+                        <div class="px-7 py-5">
+                            <div class="fs-5 text-gray-900 fw-bold">Filter Options</div>
+                        </div>
+                        <!--end::Header-->
+                        <!--begin::Separator-->
+                        <div class="separator border-gray-200"></div>
+                        <!--end::Separator-->
+                        <!--begin::Content-->
+                        <div class="px-7 py-5">
+                            <!--begin::Input group-->
+                            <div class="mb-10">
+                                <label class="form-label fs-6 fw-semibold">Invoice Type:</label>
+                                <select class="form-select form-select-solid fw-bold filter-invoice-type-paid"
+                                    data-kt-select2="true" data-placeholder="Select option" data-allow-clear="true"
+                                    data-hide-search="true" data-table-id="{{ $tableId }}">
+                                    <option></option>
+                                </select>
+                            </div>
+                            <!--end::Input group-->
+                            <!--begin::Input group-->
+                            <div class="mb-10">
+                                <label class="form-label fs-6 fw-semibold">Due Date:</label>
+                                <select class="form-select form-select-solid fw-bold filter-due-date-paid"
+                                    data-kt-select2="true" data-placeholder="Select option" data-allow-clear="true"
+                                    data-hide-search="true" data-table-id="{{ $tableId }}">
+                                    <option></option>
+                                    <option value="1/7">1-7</option>
+                                    <option value="1/10">1-10</option>
+                                    <option value="1/15">1-15</option>
+                                    <option value="1/30">1-30</option>
+                                </select>
+                            </div>
+                            <!--end::Input group-->
+                            <!--begin::Input group-->
+                            <div class="mb-10">
+                                <label class="form-label fs-6 fw-semibold">Billing Month:</label>
+                                <select class="form-select form-select-solid fw-bold filter-billing-month-paid"
+                                    data-kt-select2="true" data-placeholder="Select option" data-allow-clear="true"
+                                    data-table-id="{{ $tableId }}">
+                                    <option></option>
+                                </select>
+                            </div>
+                            <!--end::Input group-->
+                            <!--begin::Actions-->
+                            <div class="d-flex justify-content-end">
+                                <button type="reset"
+                                    class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6 filter-reset-btn-paid"
+                                    data-kt-menu-dismiss="true" data-table-id="{{ $tableId }}">Reset</button>
+                                <button type="submit" class="btn btn-primary fw-semibold px-6 filter-apply-btn-paid"
+                                    data-kt-menu-dismiss="true" data-table-id="{{ $tableId }}">Apply</button>
+                            </div>
+                            <!--end::Actions-->
+                        </div>
+                        <!--end::Content-->
+                    </div>
+                    <!--end::Menu 1-->
+                </div>
+                <!--end::Filter Wrapper-->
+
+                <!--begin::Export Wrapper-->
+                <div>
+                    <button type="button" class="btn btn-light-primary" data-kt-menu-trigger="click"
                         data-kt-menu-placement="bottom-end">
                         <i class="ki-outline ki-exit-up fs-2"></i>Export
                     </button>
                     <!--begin::Menu-->
                     <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
                         data-kt-menu="true">
-                        <!--begin::Menu item-->
                         <div class="menu-item px-3">
                             <a href="#" class="menu-link px-3 export-btn" data-table-id="{{ $tableId }}"
                                 data-type="paid" data-export="copy">Copy to clipboard</a>
@@ -107,35 +153,46 @@
                             <a href="#" class="menu-link px-3 export-btn" data-table-id="{{ $tableId }}"
                                 data-type="paid" data-export="pdf">Export as PDF</a>
                         </div>
-                        <!--end::Menu item-->
                     </div>
                     <!--end::Menu-->
                 </div>
-                <!--end::Export dropdown-->
+                <!--end::Export Wrapper-->
+
             </div>
             <!--end::Toolbar-->
         </div>
         <!--end::Card toolbar-->
     </div>
     <!--end::Card header-->
+
     <!--begin::Card body-->
     <div class="card-body py-4">
         <!--begin::Table-->
+        {{-- 
+            IMPORTANT: Column order must match exactly with JavaScript DataTable columns array
+            Index: 0=sl, 1=invoice_number, 2=student_name, 3=mobile, 4=class_name, 5=institution,
+                   6=tuition_fee, 7=activation_status, 8=invoice_type, 9=total_amount, 10=billing_month,
+                   11=due_date, 12=status, 13=last_comment, 14=paid_at
+        --}}
         <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table paid-invoices-table"
-            id="{{ $tableId }}" data-branch-id="{{ $branchId }}">
+            id="{{ $tableId }}" data-branch-id="{{ $branchId }}" data-table-type="paid">
             <thead>
                 <tr class="fw-bold fs-7 text-uppercase gs-0">
                     <th class="w-25px">SL</th>
-                    <th class="w-150px">Invoice No.</th>
-                    <th class="min-w-200px">Student</th>
-                    <th>Mobile</th>
-                    <th>Invoice Type</th>
-                    <th>Amount (Tk)</th>
-                    <th>Billing Month</th>
-                    <th>Due Date</th>
-                    <th>Status</th>
-                    <th class="min-w-150px">Last Comment</th>
-                    <th>Paid At</th>
+                    <th class="min-w-100px">Invoice No.</th>
+                    <th class="min-w-150px">Student</th>
+                    <th class="min-w-100px">Mobile</th>
+                    <th class="min-w-80px">Class</th>
+                    <th class="min-w-100px">Institution</th>
+                    <th class="min-w-80px">Tuition Fee</th>
+                    <th class="min-w-80px">Activation</th>
+                    <th class="min-w-100px">Invoice Type</th>
+                    <th class="min-w-80px">Amount (Tk)</th>
+                    <th class="min-w-100px">Billing Month</th>
+                    <th class="min-w-80px">Due Date</th>
+                    <th class="min-w-70px">Status</th>
+                    <th class="min-w-120px">Last Comment</th>
+                    <th class="min-w-100px">Paid At</th>
                 </tr>
             </thead>
             <tbody class="text-gray-600 fw-semibold">

@@ -1,10 +1,86 @@
 "use strict";
 
+/**
+ * Column Configuration
+ * IMPORTANT: The order here must match EXACTLY with:
+ * 1. The <th> elements in the blade templates
+ * 2. The DataTable columns array
+ */
+var ColumnConfig = {
+    // Due invoices columns - matching exact order in due_invoice_table.blade.php
+    due: [
+        { key: 'sl', label: 'SL', visible: true, required: true },
+        { key: 'invoice_number', label: 'Invoice No.', visible: true, required: true },
+        { key: 'student_name', label: 'Student', visible: true, required: false },
+        { key: 'mobile', label: 'Mobile', visible: true, required: false },
+        { key: 'class_name', label: 'Class', visible: false, required: false },
+        { key: 'institution', label: 'Institution', visible: false, required: false },
+        { key: 'tuition_fee', label: 'Tuition Fee', visible: false, required: false },
+        { key: 'activation_status', label: 'Activation', visible: false, required: false },
+        { key: 'invoice_type', label: 'Invoice Type', visible: true, required: false },
+        { key: 'billing_month', label: 'Billing Month', visible: true, required: false },
+        { key: 'total_amount', label: 'Total (Tk)', visible: true, required: false },
+        { key: 'amount_due', label: 'Remaining (Tk)', visible: true, required: false },
+        { key: 'due_date', label: 'Due Date', visible: true, required: false },
+        { key: 'status', label: 'Status', visible: true, required: false },
+        { key: 'last_comment', label: 'Last Comment', visible: true, required: false },
+        { key: 'created_at', label: 'Created At', visible: true, required: false },
+        { key: 'actions', label: 'Actions', visible: true, required: true }
+    ],
+    // Paid invoices columns - matching exact order in paid_invoice_table.blade.php
+    paid: [
+        { key: 'sl', label: 'SL', visible: true, required: true },
+        { key: 'invoice_number', label: 'Invoice No.', visible: true, required: true },
+        { key: 'student_name', label: 'Student', visible: true, required: false },
+        { key: 'mobile', label: 'Mobile', visible: true, required: false },
+        { key: 'class_name', label: 'Class', visible: false, required: false },
+        { key: 'institution', label: 'Institution', visible: false, required: false },
+        { key: 'tuition_fee', label: 'Tuition Fee', visible: false, required: false },
+        { key: 'activation_status', label: 'Activation', visible: false, required: false },
+        { key: 'invoice_type', label: 'Invoice Type', visible: true, required: false },
+        { key: 'total_amount', label: 'Amount (Tk)', visible: true, required: false },
+        { key: 'billing_month', label: 'Billing Month', visible: true, required: false },
+        { key: 'due_date', label: 'Due Date', visible: true, required: false },
+        { key: 'status', label: 'Status', visible: true, required: false },
+        { key: 'last_comment', label: 'Last Comment', visible: true, required: false },
+        { key: 'paid_at', label: 'Paid At', visible: true, required: false }
+    ]
+};
+
 // Store DataTables instances and filters
 var InvoiceManager = {
     tables: { due: {}, paid: {} },
     filters: { due: {}, paid: {} },
     initialized: { due: {}, paid: {} },
+    columnVisibility: { due: {}, paid: {} },
+
+    // Get column visibility for a table
+    getColumnVisibility: function (tableId, type) {
+        var storageKey = 'invoice_columns_' + tableId;
+        var stored = localStorage.getItem(storageKey);
+        
+        if (stored) {
+            try {
+                return JSON.parse(stored);
+            } catch (e) {
+                console.error('Error parsing stored column visibility:', e);
+            }
+        }
+        
+        // Return default visibility from config
+        var config = ColumnConfig[type] || ColumnConfig.due;
+        var visibility = {};
+        config.forEach(function (col, index) {
+            visibility[index] = col.visible;
+        });
+        return visibility;
+    },
+
+    // Save column visibility for a table
+    saveColumnVisibility: function (tableId, visibility) {
+        var storageKey = 'invoice_columns_' + tableId;
+        localStorage.setItem(storageKey, JSON.stringify(visibility));
+    },
 
     // Reload all initialized due tables
     reloadDueTables: function () {
@@ -52,15 +128,11 @@ var InvoiceManager = {
                     var count = response.counts[branchId];
                     var tabLink = document.querySelector('#branchTabsDue .nav-link[data-branch-id="' + branchId + '"]');
                     if (tabLink) {
-                        // Get the badge color from data attribute
                         var badgeColor = tabLink.getAttribute('data-badge-color') || 'badge-light-primary';
-
-                        // Remove existing badge
                         var existingBadge = tabLink.querySelector('.badge');
                         if (existingBadge) {
                             existingBadge.remove();
                         }
-                        // Add new badge if count > 0
                         if (count > 0) {
                             var badge = document.createElement('span');
                             badge.className = 'badge ' + badgeColor + ' badge-sm ms-2';
@@ -103,25 +175,176 @@ var InvoiceUtils = {
     getCsrfToken: function () {
         return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     },
+
     escapeHtml: function (text) {
         if (!text) return '';
         var div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
     },
+
     formatDate: function () {
         var now = new Date();
-        return now.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        return now.toLocaleString('en-GB', {
+            day: '2-digit', month: 'short', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
     },
+
     formatDateShort: function () {
         var now = new Date();
-        return now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/[,:]/g, '-');
+        return now.toLocaleDateString('en-GB', {
+            day: '2-digit', month: 'short', year: 'numeric'
+        }).replace(/[,:]/g, '-');
     }
 };
 
+// Column Selector Manager
+var KTColumnSelector = function () {
+    
+    // Initialize column selector for a table
+    var initColumnSelector = function (tableId, type) {
+        var container = document.querySelector('.column-checkbox-list[data-table-id="' + tableId + '"][data-type="' + type + '"]');
+        if (!container) return;
+
+        var config = ColumnConfig[type] || ColumnConfig.due;
+        var visibility = InvoiceManager.getColumnVisibility(tableId, type);
+        
+        // Build checkboxes HTML
+        var html = '';
+        config.forEach(function (col, index) {
+            var isVisible = visibility[index] !== undefined ? visibility[index] : col.visible;
+            var isDisabled = col.required ? 'disabled' : '';
+            var checkedAttr = isVisible ? 'checked' : '';
+            
+            html += '<div class="form-check form-check-custom form-check-solid mb-3">' +
+                '<input class="form-check-input column-visibility-checkbox" type="checkbox" ' +
+                'id="col_' + tableId + '_' + index + '" ' +
+                'data-column-index="' + index + '" ' +
+                'data-column-key="' + col.key + '" ' +
+                checkedAttr + ' ' + isDisabled + '>' +
+                '<label class="form-check-label fw-semibold text-gray-700" for="col_' + tableId + '_' + index + '">' +
+                col.label +
+                (col.required ? ' <span class="badge badge-sm badge-light-primary ms-1">Required</span>' : '') +
+                '</label>' +
+                '</div>';
+        });
+        
+        container.innerHTML = html;
+    };
+
+    // Apply column visibility to DataTable
+    var applyColumnVisibility = function (tableId, type) {
+        var container = document.querySelector('.column-checkbox-list[data-table-id="' + tableId + '"][data-type="' + type + '"]');
+        if (!container) return;
+
+        var dt = type === 'due' ? InvoiceManager.tables.due[tableId] : InvoiceManager.tables.paid[tableId];
+        if (!dt) return;
+
+        var visibility = {};
+        var checkboxes = container.querySelectorAll('.column-visibility-checkbox');
+        
+        checkboxes.forEach(function (checkbox) {
+            var colIndex = parseInt(checkbox.getAttribute('data-column-index'));
+            var isVisible = checkbox.checked;
+            visibility[colIndex] = isVisible;
+            
+            // Apply to DataTable column
+            var column = dt.column(colIndex);
+            if (column) {
+                column.visible(isVisible);
+            }
+        });
+        
+        // Save to localStorage
+        InvoiceManager.saveColumnVisibility(tableId, visibility);
+        
+        // Adjust columns after visibility change
+        dt.columns.adjust().draw(false);
+    };
+
+    // Reset to default visibility
+    var resetToDefaults = function (tableId, type) {
+        var container = document.querySelector('.column-checkbox-list[data-table-id="' + tableId + '"][data-type="' + type + '"]');
+        if (!container) return;
+
+        var config = ColumnConfig[type] || ColumnConfig.due;
+        var checkboxes = container.querySelectorAll('.column-visibility-checkbox');
+        
+        checkboxes.forEach(function (checkbox) {
+            var colIndex = parseInt(checkbox.getAttribute('data-column-index'));
+            var colConfig = config[colIndex];
+            if (colConfig && !colConfig.required) {
+                checkbox.checked = colConfig.visible;
+            }
+        });
+    };
+
+    // Apply initial column visibility when table is initialized
+    var applyInitialVisibility = function (tableId, type, dt) {
+        var visibility = InvoiceManager.getColumnVisibility(tableId, type);
+        
+        Object.keys(visibility).forEach(function (index) {
+            var colIndex = parseInt(index);
+            var isVisible = visibility[colIndex];
+            var column = dt.column(colIndex);
+            if (column) {
+                column.visible(isVisible);
+            }
+        });
+    };
+
+    // Handle events
+    var handleEvents = function () {
+        // Apply button click
+        $(document).on('click', '.column-apply-btn', function () {
+            var tableId = this.getAttribute('data-table-id');
+            var type = this.getAttribute('data-type');
+            applyColumnVisibility(tableId, type);
+            toastr.success('Column visibility updated');
+        });
+
+        // Reset button click
+        $(document).on('click', '.column-reset-btn', function () {
+            var tableId = this.getAttribute('data-table-id');
+            var type = this.getAttribute('data-type');
+            resetToDefaults(tableId, type);
+            toastr.info('Column selection reset to defaults. Click Apply to save.');
+        });
+    };
+
+    return {
+        init: function () {
+            handleEvents();
+        },
+        initForTable: function (tableId, type) {
+            initColumnSelector(tableId, type);
+        },
+        applyInitialVisibility: applyInitialVisibility,
+        getVisibleColumns: function (tableId, type) {
+            var visibility = InvoiceManager.getColumnVisibility(tableId, type);
+            var config = ColumnConfig[type] || ColumnConfig.due;
+            var visibleCols = [];
+            
+            config.forEach(function (col, index) {
+                var isVisible = visibility[index] !== undefined ? visibility[index] : col.visible;
+                if (isVisible && col.key !== 'actions') {
+                    visibleCols.push({
+                        key: col.key,
+                        label: col.label,
+                        index: index
+                    });
+                }
+            });
+            
+            return visibleCols;
+        }
+    };
+}();
+
 // Due Invoices DataTable Manager
 var KTDueInvoicesList = function () {
-
+    
     var initTable = function (tableId, branchId) {
         var table = document.getElementById(tableId);
         if (!table || InvoiceManager.initialized.due[tableId]) return;
@@ -131,13 +354,151 @@ var KTDueInvoicesList = function () {
 
         // Load filter options
         loadFilterOptions(branchId, tableId);
+        
+        // Initialize column selector
+        KTColumnSelector.initForTable(tableId, 'due');
 
-        // Column indexes:
-        // 0-SL, 1-Invoice No, 2-Student, 3-Mobile, 4-Invoice Type, 5-Billing Month, 6-Total Amount,
-        // 7-Remaining, 8-Due Date, 9-Status, 10-Last Comment, 11-Created At, 12-Actions
+        // Column definitions - MUST match exact order of <th> elements in blade template
+        var columns = [
+            // 0: SL
+            { data: 'sl', orderable: false },
+            // 1: Invoice No.
+            { 
+                data: null, 
+                render: function (data) {
+                    var url = routeInvoiceShow.replace(':id', data.id);
+                    var badge = data.comments_count > 0 
+                        ? '<span class="badge badge-circle badge-sm badge-primary ms-1">' + data.comments_count + '</span>' 
+                        : '';
+                    return '<a href="' + url + '" target="_blank" class="text-gray-800 text-hover-primary">' + 
+                        InvoiceUtils.escapeHtml(data.invoice_number) + '</a>' + badge;
+                }
+            },
+            // 2: Student
+            { 
+                data: null, 
+                render: function (data) {
+                    var url = routeStudentShow.replace(':id', data.student_id);
+                    return '<a href="' + url + '" target="_blank" class="text-gray-800 text-hover-primary">' + 
+                        InvoiceUtils.escapeHtml(data.student_name) + 
+                        '<br><small class="text-muted">' + InvoiceUtils.escapeHtml(data.student_unique_id) + '</small></a>';
+                }
+            },
+            // 3: Mobile
+            { data: 'mobile', orderable: false, defaultContent: '-' },
+            // 4: Class
+            { data: 'class_name', defaultContent: '-' },
+            // 5: Institution
+            { data: 'institution', defaultContent: '-' },
+            // 6: Tuition Fee
+            { 
+                data: 'tuition_fee', 
+                defaultContent: '-',
+                render: function (data) {
+                    return data ? '৳' + data : '-';
+                }
+            },
+            // 7: Activation Status
+            { 
+                data: null, 
+                orderable: false,
+                render: function (data) {
+                    return data.activation_status_html || '-';
+                }
+            },
+            // 8: Invoice Type
+            { data: 'invoice_type', defaultContent: '-' },
+            // 9: Billing Month
+            { 
+                data: null, 
+                render: function (data) {
+                    return data.billing_month === 'One Time' 
+                        ? '<span class="badge badge-primary rounded-pill">One Time</span>' 
+                        : InvoiceUtils.escapeHtml(data.billing_month);
+                }
+            },
+            // 10: Total Amount
+            { data: 'total_amount', defaultContent: '0' },
+            // 11: Amount Due (Remaining)
+            { data: 'amount_due', defaultContent: '0' },
+            // 12: Due Date
+            { data: 'due_date', defaultContent: '-' },
+            // 13: Status
+            { 
+                data: 'status_html', 
+                orderable: false,
+                defaultContent: '-'
+            },
+            // 14: Last Comment
+            { 
+                data: null, 
+                orderable: false, 
+                render: function (data) {
+                    if (!data.last_comment) return '-';
+                    var truncated = data.last_comment.length > 30 
+                        ? data.last_comment.substring(0, 30) + '...' 
+                        : data.last_comment;
+                    return '<div class="text-gray-700 fs-7" title="' + InvoiceUtils.escapeHtml(data.last_comment) + '">' + 
+                        InvoiceUtils.escapeHtml(truncated) + '</div>';
+                }
+            },
+            // 15: Created At
+            { 
+                data: null, 
+                render: function (data) {
+                    return data.created_at + '<br><small class="text-muted">' + data.created_at_time + '</small>';
+                }
+            },
+            // 16: Actions
+            { 
+                data: null, 
+                orderable: false, 
+                className: 'text-end',
+                render: function (data) {
+                    var actions = '';
+                    
+                    if (data.status === 'due') {
+                        if (canEditInvoice) {
+                            actions += '<div class="menu-item px-3"><a href="#" data-invoice-id="' + data.id + 
+                                '" data-bs-toggle="modal" data-bs-target="#kt_modal_edit_invoice" ' +
+                                'class="menu-link text-hover-primary px-3"><i class="ki-outline ki-pencil fs-3 me-2"></i> Edit</a></div>';
+                        }
+                        if (canViewInvoice) {
+                            actions += '<div class="menu-item px-3"><a href="#" data-invoice-id="' + data.id + 
+                                '" data-invoice-number="' + data.invoice_number + 
+                                '" data-bs-toggle="modal" data-bs-target="#kt_modal_add_comment" ' +
+                                'class="menu-link text-hover-primary px-3 add-comment-btn"><i class="ki-outline ki-messages fs-3 me-2"></i> Comment</a></div>';
+                        }
+                        if (canDeleteInvoice) {
+                            actions += '<div class="menu-item px-3"><a href="#" data-invoice-id="' + data.id + 
+                                '" class="menu-link text-hover-danger px-3 delete-invoice">' +
+                                '<i class="ki-outline ki-trash fs-3 me-2"></i> Delete</a></div>';
+                        }
+                    } else if (data.status === 'partially_paid') {
+                        if (canViewInvoice) {
+                            actions += '<div class="menu-item px-3"><a href="#" data-invoice-id="' + data.id + 
+                                '" data-invoice-number="' + data.invoice_number + 
+                                '" data-bs-toggle="modal" data-bs-target="#kt_modal_add_comment" ' +
+                                'class="menu-link text-hover-primary px-3 add-comment-btn"><i class="ki-outline ki-messages fs-3 me-2"></i> Comment</a></div>';
+                        }
+                    }
+                    
+                    if (!actions) {
+                        return '<span class="text-muted">-</span>';
+                    }
+                    
+                    return '<a href="#" class="btn btn-light btn-active-light-primary btn-sm" ' +
+                        'data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions ' +
+                        '<i class="ki-outline ki-down fs-5 m-0"></i></a>' +
+                        '<div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 ' +
+                        'menu-state-bg-light-primary fw-semibold fs-7 w-150px py-4" data-kt-menu="true">' +
+                        actions + '</div>';
+                }
+            }
+        ];
 
-        // Initialize DataTable with server-side processing
-        InvoiceManager.tables.due[tableId] = $(table).DataTable({
+        // Initialize DataTable
+        var dt = $(table).DataTable({
             processing: true,
             serverSide: true,
             ajax: {
@@ -156,74 +517,21 @@ var KTDueInvoicesList = function () {
                     return json.data || [];
                 }
             },
-            columns: [
-                { data: 'sl', orderable: false },
-                {
-                    data: null, render: function (data) {
-                        var url = routeInvoiceShow.replace(':id', data.id);
-                        var badge = data.comments_count > 0 ? '<span class="badge badge-circle badge-sm badge-primary ms-1">' + data.comments_count + '</span>' : '';
-                        return '<a href="' + url + '" target="_blank" class="text-gray-800 text-hover-primary">' + InvoiceUtils.escapeHtml(data.invoice_number) + '</a>' + badge;
-                    }
-                },
-                {
-                    data: null, render: function (data) {
-                        var url = routeStudentShow.replace(':id', data.student_id);
-                        return '<a href="' + url + '" target="_blank" class="text-gray-800 text-hover-primary">' + InvoiceUtils.escapeHtml(data.student_name) + '<br><small class="text-muted">' + InvoiceUtils.escapeHtml(data.student_unique_id) + '</small></a>';
-                    }
-                },
-                { data: 'mobile', orderable: false },
-                { data: 'invoice_type' },
-                {
-                    data: null, render: function (data) {
-                        return data.billing_month === 'One Time' ? '<span class="badge badge-primary rounded-pill">One Time</span>' : InvoiceUtils.escapeHtml(data.billing_month);
-                    }
-                },
-                { data: 'total_amount' },
-                { data: 'amount_due' },
-                { data: 'due_date' },
-                { data: 'status_html', orderable: false },
-                {
-                    data: null, orderable: false, render: function (data) {
-                        if (!data.last_comment) return '-';
-                        var truncated = data.last_comment.length > 50 ? data.last_comment.substring(0, 50) + '...' : data.last_comment;
-                        return '<div class="text-gray-800 fs-7">' + InvoiceUtils.escapeHtml(truncated) + '</div>';
-                    }
-                },
-                {
-                    data: null, render: function (data) {
-                        return data.created_at + '<br><small class="text-muted">' + data.created_at_time + '</small>';
-                    }
-                },
-                {
-                    data: null, orderable: false, render: function (data) {
-                        var actions = '';
-                        if (data.status === 'due') {
-                            if (canEditInvoice) {
-                                actions += '<div class="menu-item px-3"><a href="#" data-invoice-id="' + data.id + '" data-bs-toggle="modal" data-bs-target="#kt_modal_edit_invoice" class="menu-link text-hover-primary px-3"><i class="ki-outline ki-pencil fs-3 me-2"></i> Edit Invoice</a></div>';
-                            }
-                            if (canViewInvoice) {
-                                actions += '<div class="menu-item px-3"><a href="#" data-invoice-id="' + data.id + '" data-invoice-number="' + data.invoice_number + '" data-bs-toggle="modal" data-bs-target="#kt_modal_add_comment" class="menu-link text-hover-primary px-3 add-comment-btn"><i class="ki-outline ki-messages fs-3 me-2"></i> Add Comment</a></div>';
-                            }
-                            if (canDeleteInvoice) {
-                                actions += '<div class="menu-item px-3"><a href="#" data-invoice-id="' + data.id + '" class="menu-link text-hover-danger px-3 delete-invoice"><i class="ki-outline ki-trash fs-3 me-2"></i> Delete Invoice</a></div>';
-                            }
-                        } else if (data.status === 'partially_paid') {
-                            if (canViewInvoice) {
-                                actions += '<div class="menu-item px-3"><a href="#" data-invoice-id="' + data.id + '" data-invoice-number="' + data.invoice_number + '" data-bs-toggle="modal" data-bs-target="#kt_modal_add_comment" class="menu-link text-hover-primary px-3 add-comment-btn"><i class="ki-outline ki-messages fs-3 me-2"></i> Add Comment</a></div>';
-                            }
-                        }
-                        return '<a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions <i class="ki-outline ki-down fs-5 m-0"></i></a>' +
-                            '<div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-175px py-4" data-kt-menu="true">' + actions + '</div>';
-                    }
-                }
-            ],
-            order: [[11, 'desc']], // Default sort by created_at descending
+            columns: columns,
+            order: [[15, 'desc']], // Sort by created_at descending
             lengthMenu: [10, 25, 50, 100],
             pageLength: 10,
+            scrollX: true,
             drawCallback: function () {
                 KTMenu.createInstances();
+            },
+            initComplete: function () {
+                // Apply saved column visibility
+                KTColumnSelector.applyInitialVisibility(tableId, 'due', this.api());
             }
         });
+
+        InvoiceManager.tables.due[tableId] = dt;
 
         // Search handler with debounce
         var searchInput = document.querySelector('.due-invoice-search[data-table-id="' + tableId + '"]');
@@ -233,7 +541,7 @@ var KTDueInvoicesList = function () {
                 var value = this.value;
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(function () {
-                    InvoiceManager.tables.due[tableId].search(value).draw();
+                    dt.search(value).draw();
                 }, 500);
             });
         }
@@ -280,6 +588,7 @@ var KTDueInvoicesList = function () {
             if (monthSelect && monthSelect.value) filters.billing_month = monthSelect.value;
 
             InvoiceManager.filters.due[tableId] = filters;
+            
             if (InvoiceManager.tables.due[tableId]) {
                 InvoiceManager.tables.due[tableId].ajax.reload();
             }
@@ -300,6 +609,7 @@ var KTDueInvoicesList = function () {
             if (monthSelect) $(monthSelect).val(null).trigger('change');
 
             InvoiceManager.filters.due[tableId] = {};
+            
             if (InvoiceManager.tables.due[tableId]) {
                 InvoiceManager.tables.due[tableId].ajax.reload();
             }
@@ -329,7 +639,6 @@ var KTDueInvoicesList = function () {
                         success: function (data) {
                             if (data.success) {
                                 Swal.fire("Deleted!", "The invoice has been deleted successfully.", "success");
-                                // Reload tables via AJAX and update badge counts
                                 InvoiceManager.reloadDueTables();
                                 InvoiceManager.updateBranchDueCounts();
                             } else {
@@ -351,7 +660,7 @@ var KTDueInvoicesList = function () {
         $(document).on('shown.bs.tab', '#branchTabsDue .nav-link', function () {
             var branchId = this.getAttribute('data-branch-id');
             var tableId = 'kt_due_invoices_table_' + branchId;
-
+            
             if (!InvoiceManager.initialized.due[tableId]) {
                 initTable(tableId, branchId);
             }
@@ -365,6 +674,7 @@ var KTDueInvoicesList = function () {
             } else if (!isAdmin) {
                 initTable('kt_due_invoices_table', null);
             }
+            
             handleFilter();
             handleDeletion();
             handleBranchTabs();
@@ -374,7 +684,7 @@ var KTDueInvoicesList = function () {
 
 // Paid Invoices DataTable Manager
 var KTPaidInvoicesList = function () {
-
+    
     var initTable = function (tableId, branchId) {
         var table = document.getElementById(tableId);
         if (!table || InvoiceManager.initialized.paid[tableId]) return;
@@ -383,12 +693,98 @@ var KTPaidInvoicesList = function () {
         InvoiceManager.filters.paid[tableId] = {};
 
         loadFilterOptions(branchId, tableId);
+        
+        // Initialize column selector
+        KTColumnSelector.initForTable(tableId, 'paid');
 
-        // Column indexes:
-        // 0-SL, 1-Invoice No, 2-Student, 3-Mobile, 4-Invoice Type, 5-Amount, 6-Billing Month,
-        // 7-Due Date, 8-Status, 9-Last Comment, 10-Created At
+        // Column definitions - MUST match exact order of <th> elements in blade template
+        var columns = [
+            // 0: SL
+            { data: 'sl', orderable: false },
+            // 1: Invoice No.
+            { 
+                data: null, 
+                render: function (data) {
+                    var url = routeInvoiceShow.replace(':id', data.id);
+                    var badge = data.comments_count > 0 
+                        ? '<span class="badge badge-circle badge-sm badge-primary ms-1">' + data.comments_count + '</span>' 
+                        : '';
+                    return '<a href="' + url + '" target="_blank" class="text-gray-600 text-hover-primary">' + 
+                        InvoiceUtils.escapeHtml(data.invoice_number) + '</a>' + badge;
+                }
+            },
+            // 2: Student
+            { 
+                data: null, 
+                render: function (data) {
+                    var url = routeStudentShow.replace(':id', data.student_id);
+                    return '<a href="' + url + '" target="_blank" class="text-gray-600 text-hover-primary">' + 
+                        InvoiceUtils.escapeHtml(data.student_name) + 
+                        '<br><small class="text-muted">' + InvoiceUtils.escapeHtml(data.student_unique_id) + '</small></a>';
+                }
+            },
+            // 3: Mobile
+            { data: 'mobile', orderable: false, defaultContent: '-' },
+            // 4: Class
+            { data: 'class_name', defaultContent: '-' },
+            // 5: Institution
+            { data: 'institution', defaultContent: '-' },
+            // 6: Tuition Fee
+            { 
+                data: 'tuition_fee', 
+                defaultContent: '-',
+                render: function (data) {
+                    return data ? '৳' + data : '-';
+                }
+            },
+            // 7: Activation Status
+            { 
+                data: null, 
+                orderable: false,
+                render: function (data) {
+                    return data.activation_status_html || '-';
+                }
+            },
+            // 8: Invoice Type
+            { data: 'invoice_type', defaultContent: '-' },
+            // 9: Amount (Total)
+            { data: 'total_amount', defaultContent: '0' },
+            // 10: Billing Month
+            { data: 'billing_month', defaultContent: '-' },
+            // 11: Due Date
+            { data: 'due_date', defaultContent: '-' },
+            // 12: Status
+            { 
+                data: null, 
+                orderable: false,
+                render: function () {
+                    return '<span class="badge badge-success rounded-pill">Paid</span>';
+                }
+            },
+            // 13: Last Comment
+            { 
+                data: null, 
+                orderable: false, 
+                render: function (data) {
+                    if (!data.last_comment) return '-';
+                    var truncated = data.last_comment.length > 30 
+                        ? data.last_comment.substring(0, 30) + '...' 
+                        : data.last_comment;
+                    return '<div class="text-gray-700 fs-7" title="' + InvoiceUtils.escapeHtml(data.last_comment) + '">' + 
+                        InvoiceUtils.escapeHtml(truncated) + '</div>';
+                }
+            },
+            // 14: Paid At
+            { 
+                data: null, 
+                render: function (data) {
+                    return data.updated_at + '<br><small class="text-muted">' + data.updated_at_time + '</small>';
+                }
+            }
+        ];
 
-        InvoiceManager.tables.paid[tableId] = $(table).DataTable({
+        // Initialize DataTable
+        var dt = $(table).DataTable({
             processing: true,
             serverSide: true,
             ajax: {
@@ -406,48 +802,21 @@ var KTPaidInvoicesList = function () {
                     return json.data || [];
                 }
             },
-            columns: [
-                { data: 'sl', orderable: false },
-                {
-                    data: null, render: function (data) {
-                        var url = routeInvoiceShow.replace(':id', data.id);
-                        var badge = data.comments_count > 0 ? '<span class="badge badge-circle badge-sm badge-primary ms-1">' + data.comments_count + '</span>' : '';
-                        return '<a href="' + url + '" target="_blank" class="text-gray-600 text-hover-primary">' + InvoiceUtils.escapeHtml(data.invoice_number) + '</a>' + badge;
-                    }
-                },
-                {
-                    data: null, render: function (data) {
-                        var url = routeStudentShow.replace(':id', data.student_id);
-                        return '<a href="' + url + '" target="_blank" class="text-gray-600 text-hover-primary">' + InvoiceUtils.escapeHtml(data.student_name) + '<br><small class="text-muted">' + InvoiceUtils.escapeHtml(data.student_unique_id) + '</small></a>';
-                    }
-                },
-                { data: 'mobile', orderable: false },
-                { data: 'invoice_type' },
-                { data: 'total_amount' },
-                { data: 'billing_month' },
-                { data: 'due_date' },
-                {
-                    data: null, orderable: false, render: function () {
-                        return '<span class="badge badge-success rounded-pill">Paid</span>';
-                    }
-                },
-                {
-                    data: null, orderable: false, render: function (data) {
-                        if (!data.last_comment) return '-';
-                        var truncated = data.last_comment.length > 50 ? data.last_comment.substring(0, 50) + '...' : data.last_comment;
-                        return '<div class="text-gray-800 fs-7">' + InvoiceUtils.escapeHtml(truncated) + '</div>';
-                    }
-                },
-                {
-                    data: null, render: function (data) {
-                        return data.updated_at + '<br><small class="text-muted">' + data.updated_at_time + '</small>';
-                    }
-                }
-            ],
-            order: [[10, 'desc']], // Default sort by updated_at descending
+            columns: columns,
+            order: [[14, 'desc']], // Sort by paid_at descending
             lengthMenu: [10, 25, 50, 100],
-            pageLength: 10
+            pageLength: 10,
+            scrollX: true,
+            drawCallback: function () {
+                KTMenu.createInstances();
+            },
+            initComplete: function () {
+                // Apply saved column visibility
+                KTColumnSelector.applyInitialVisibility(tableId, 'paid', this.api());
+            }
         });
+
+        InvoiceManager.tables.paid[tableId] = dt;
 
         // Search handler with debounce
         var searchInput = document.querySelector('.paid-invoice-search[data-table-id="' + tableId + '"]');
@@ -457,7 +826,7 @@ var KTPaidInvoicesList = function () {
                 var value = this.value;
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(function () {
-                    InvoiceManager.tables.paid[tableId].search(value).draw();
+                    dt.search(value).draw();
                 }, 500);
             });
         }
@@ -499,6 +868,7 @@ var KTPaidInvoicesList = function () {
             if (monthSelect && monthSelect.value) filters.billing_month = monthSelect.value;
 
             InvoiceManager.filters.paid[tableId] = filters;
+            
             if (InvoiceManager.tables.paid[tableId]) {
                 InvoiceManager.tables.paid[tableId].ajax.reload();
             }
@@ -516,6 +886,7 @@ var KTPaidInvoicesList = function () {
             if (monthSelect) $(monthSelect).val(null).trigger('change');
 
             InvoiceManager.filters.paid[tableId] = {};
+            
             if (InvoiceManager.tables.paid[tableId]) {
                 InvoiceManager.tables.paid[tableId].ajax.reload();
             }
@@ -528,7 +899,7 @@ var KTPaidInvoicesList = function () {
         $(document).on('shown.bs.tab', '#branchTabsPaid .nav-link', function () {
             var branchId = this.getAttribute('data-branch-id');
             var tableId = 'kt_paid_invoices_table_' + branchId;
-
+            
             if (!InvoiceManager.initialized.paid[tableId]) {
                 initTable(tableId, branchId);
             }
@@ -561,7 +932,7 @@ var KTPaidInvoicesList = function () {
 
 // Export Manager
 var KTExportManager = function () {
-
+    
     var fetchExportData = function (tableId, type, callback) {
         var table = document.getElementById(tableId);
         var branchId = table ? table.getAttribute('data-branch-id') : null;
@@ -574,7 +945,6 @@ var KTExportManager = function () {
         if (filters.status) params.status = filters.status;
         if (filters.billing_month) params.billing_month = filters.billing_month;
 
-        // Add search value
         var dt = type === 'due' ? InvoiceManager.tables.due[tableId] : InvoiceManager.tables.paid[tableId];
         if (dt) {
             var searchValue = dt.search();
@@ -589,64 +959,115 @@ var KTExportManager = function () {
         });
     };
 
-    var formatExportData = function (data, type) {
-        return data.map(function (row, index) {
-            var lastCommentExport = '';
-            if (row.last_comment) {
-                lastCommentExport = row.last_comment;
-                if (row.last_comment_by) lastCommentExport += ' [By: ' + row.last_comment_by + ']';
-                if (row.last_comment_at) lastCommentExport += ' [At: ' + row.last_comment_at + ']';
-            }
+    var formatExportData = function (data, type, tableId) {
+        // Get visible columns
+        var visibleColumns = KTColumnSelector.getVisibleColumns(tableId, type);
+        
+        // Create column key to label mapping
+        var columnMap = {};
+        visibleColumns.forEach(function (col) {
+            columnMap[col.key] = col.label;
+        });
 
-            if (type === 'due') {
-                return {
-                    'SL': index + 1,
-                    'Invoice No.': row.invoice_number,
-                    'Student Name': row.student_name,
-                    'Student ID': row.student_unique_id,
-                    'Mobile': row.mobile || '',
-                    'Invoice Type': row.invoice_type,
-                    'Billing Month': row.billing_month,
-                    'Total Amount (Tk)': row.total_amount,
-                    'Remaining (Tk)': row.amount_due,
-                    'Due Date': row.due_date,
-                    'Status': row.status_text,
-                    'Last Comment': lastCommentExport,
-                    'Created At': row.created_at + ' ' + row.created_at_time
-                };
-            } else {
-                return {
-                    'SL': index + 1,
-                    'Invoice No.': row.invoice_number,
-                    'Student Name': row.student_name,
-                    'Student ID': row.student_unique_id,
-                    'Mobile': row.mobile || '',
-                    'Invoice Type': row.invoice_type,
-                    'Amount (Tk)': row.total_amount,
-                    'Billing Month': row.billing_month,
-                    'Due Date': row.due_date,
-                    'Status': row.status_text || 'Paid',
-                    'Last Comment': lastCommentExport,
-                    'Paid At': row.updated_at + ' ' + row.updated_at_time
-                };
-            }
+        return data.map(function (row, index) {
+            var exportRow = {};
+            
+            // Always include SL
+            exportRow['SL'] = index + 1;
+            
+            // Map data based on visible columns
+            visibleColumns.forEach(function (col) {
+                if (col.key === 'sl') return; // Already added
+                
+                var label = col.label;
+                var value = '';
+                
+                switch (col.key) {
+                    case 'invoice_number':
+                        value = row.invoice_number || '';
+                        break;
+                    case 'student_name':
+                        value = row.student_name || '';
+                        break;
+                    case 'mobile':
+                        value = row.mobile || '';
+                        break;
+                    case 'class_name':
+                        value = row.class_name || '';
+                        break;
+                    case 'institution':
+                        value = row.institution || '';
+                        break;
+                    case 'tuition_fee':
+                        value = row.tuition_fee || '';
+                        break;
+                    case 'activation_status':
+                        value = row.activation_status || '';
+                        break;
+                    case 'invoice_type':
+                        value = row.invoice_type || '';
+                        break;
+                    case 'billing_month':
+                        value = row.billing_month || '';
+                        break;
+                    case 'total_amount':
+                        value = row.total_amount || '0';
+                        break;
+                    case 'amount_due':
+                        value = row.amount_due || '0';
+                        break;
+                    case 'due_date':
+                        value = row.due_date || '';
+                        break;
+                    case 'status':
+                        value = row.status_text || '';
+                        break;
+                    case 'last_comment':
+                        value = row.last_comment || '';
+                        if (row.last_comment_by) value += ' [By: ' + row.last_comment_by + ']';
+                        if (row.last_comment_at) value += ' [At: ' + row.last_comment_at + ']';
+                        break;
+                    case 'created_at':
+                        value = (row.created_at || '') + ' ' + (row.created_at_time || '');
+                        break;
+                    case 'paid_at':
+                        value = (row.updated_at || '') + ' ' + (row.updated_at_time || '');
+                        break;
+                    default:
+                        value = row[col.key] || '';
+                }
+                
+                exportRow[label] = value;
+            });
+            
+            return exportRow;
         });
     };
 
     var copyToClipboard = function (data) {
-        if (data.length === 0) { toastr.warning('No data to export'); return; }
+        if (data.length === 0) {
+            toastr.warning('No data to export');
+            return;
+        }
+
         var headers = Object.keys(data[0]);
         var text = headers.join('\t') + '\n';
         data.forEach(function (row) {
             text += headers.map(function (h) { return row[h] || ''; }).join('\t') + '\n';
         });
+
         navigator.clipboard.writeText(text).then(function () {
             toastr.success('Data copied to clipboard');
-        }).catch(function () { toastr.error('Failed to copy to clipboard'); });
+        }).catch(function () {
+            toastr.error('Failed to copy to clipboard');
+        });
     };
 
     var exportExcel = function (data, type) {
-        if (data.length === 0) { toastr.warning('No data to export'); return; }
+        if (data.length === 0) {
+            toastr.warning('No data to export');
+            return;
+        }
 
         var title = type === 'due' ? 'Due Invoices Report' : 'Paid Invoices Report';
         var fileName = title + '_' + InvoiceUtils.formatDateShort();
@@ -670,13 +1091,17 @@ var KTExportManager = function () {
     };
 
     var exportCSV = function (data, type) {
-        if (data.length === 0) { toastr.warning('No data to export'); return; }
+        if (data.length === 0) {
+            toastr.warning('No data to export');
+            return;
+        }
 
         var title = type === 'due' ? 'Due Invoices Report' : 'Paid Invoices Report';
         var fileName = title + '_' + InvoiceUtils.formatDateShort();
 
         var ws = XLSX.utils.json_to_sheet(data);
         var csv = XLSX.utils.sheet_to_csv(ws);
+
         var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         var link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
@@ -686,7 +1111,10 @@ var KTExportManager = function () {
     };
 
     var exportPDF = function (data, type) {
-        if (data.length === 0) { toastr.warning('No data to export'); return; }
+        if (data.length === 0) {
+            toastr.warning('No data to export');
+            return;
+        }
 
         var jsPDF = window.jspdf.jsPDF;
         var doc = new jsPDF('l', 'mm', 'a4');
@@ -713,7 +1141,10 @@ var KTExportManager = function () {
             margin: { left: 10, right: 10 },
             didDrawPage: function () {
                 doc.setFontSize(8);
-                doc.text('Page ' + doc.internal.getNumberOfPages(), doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: 'center' });
+                doc.text('Page ' + doc.internal.getNumberOfPages(), 
+                    doc.internal.pageSize.width / 2, 
+                    doc.internal.pageSize.height - 10, 
+                    { align: 'center' });
             }
         });
 
@@ -724,27 +1155,34 @@ var KTExportManager = function () {
     var handleExportButtons = function () {
         $(document).on('click', '.export-btn', function (e) {
             e.preventDefault();
-
+            
             var tableId = this.getAttribute('data-table-id');
             var type = this.getAttribute('data-type');
             var exportType = this.getAttribute('data-export');
             var btn = this;
+            var originalText = btn.textContent;
 
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Exporting...';
 
             fetchExportData(tableId, type, function (rawData) {
-                var data = formatExportData(rawData, type);
-
+                var data = formatExportData(rawData, type, tableId);
+                
                 switch (exportType) {
-                    case 'copy': copyToClipboard(data); break;
-                    case 'excel': exportExcel(data, type); break;
-                    case 'csv': exportCSV(data, type); break;
-                    case 'pdf': exportPDF(data, type); break;
+                    case 'copy':
+                        copyToClipboard(data);
+                        break;
+                    case 'excel':
+                        exportExcel(data, type);
+                        break;
+                    case 'csv':
+                        exportCSV(data, type);
+                        break;
+                    case 'pdf':
+                        exportPDF(data, type);
+                        break;
                 }
 
-                btn.innerHTML = exportType === 'copy' ? 'Copy to clipboard' :
-                    exportType === 'excel' ? 'Export as Excel' :
-                        exportType === 'csv' ? 'Export as CSV' : 'Export as PDF';
+                btn.textContent = originalText;
             });
         });
     };
@@ -788,15 +1226,18 @@ var KTCreateInvoiceModal = function () {
         var month, year;
         if (invoiceData.lastInvoiceMonth) {
             var parts = invoiceData.lastInvoiceMonth.split('_').map(Number);
-            month = parts[0] + 1; year = parts[1];
+            month = parts[0] + 1;
+            year = parts[1];
             if (month > 12) { month = 1; year++; }
         } else {
             var currentDate = new Date();
             if (invoiceData.paymentStyle === 'due') {
-                month = currentDate.getMonth(); year = currentDate.getFullYear();
+                month = currentDate.getMonth();
+                year = currentDate.getFullYear();
                 if (month === 0) { month = 12; year--; }
             } else {
-                month = currentDate.getMonth() + 1; year = currentDate.getFullYear();
+                month = currentDate.getMonth() + 1;
+                year = currentDate.getFullYear();
             }
         }
         var monthStr = String(month).padStart(2, '0');
@@ -807,15 +1248,18 @@ var KTCreateInvoiceModal = function () {
         var month, year;
         if (invoiceData.oldestInvoiceMonth) {
             var parts = invoiceData.oldestInvoiceMonth.split('_').map(Number);
-            month = parts[0] - 1; year = parts[1];
+            month = parts[0] - 1;
+            year = parts[1];
             if (month < 1) { month = 12; year--; }
         } else {
             var currentDate = new Date();
             if (invoiceData.paymentStyle === 'due') {
-                month = currentDate.getMonth() - 1; year = currentDate.getFullYear();
+                month = currentDate.getMonth() - 1;
+                year = currentDate.getFullYear();
                 if (month < 0) { month = 11; year--; }
             } else {
-                month = currentDate.getMonth(); year = currentDate.getFullYear();
+                month = currentDate.getMonth();
+                year = currentDate.getFullYear();
                 if (month === 0) { month = 12; year--; }
             }
         }
@@ -826,6 +1270,7 @@ var KTCreateInvoiceModal = function () {
     var handleStudentChange = function () {
         $(studentSelect).on('change', function () {
             var studentId = this.value;
+
             if (studentId) {
                 invoiceTypeSelect.disabled = false;
                 monthYearTypeRadios.forEach(function (radio) { radio.disabled = false; });
@@ -870,7 +1315,10 @@ var KTCreateInvoiceModal = function () {
         monthYearTypeRadios.forEach(function (radio) {
             radio.addEventListener('change', function () {
                 if (!studentSelect.value) return;
-                var monthData = this.value === 'new_invoice' ? calculateNewInvoiceMonth() : calculateOldInvoiceMonth();
+
+                var monthData = this.value === 'new_invoice' 
+                    ? calculateNewInvoiceMonth() 
+                    : calculateOldInvoiceMonth();
                 setMonthYearOption(monthData.value, monthData.text);
 
                 var selectedTypeName = getSelectedTypeName();
@@ -890,7 +1338,9 @@ var KTCreateInvoiceModal = function () {
             var selectedTypeName = getSelectedTypeName();
             if (this.value) {
                 invoiceAmountInput.disabled = false;
-                if (selectedTypeName === 'Tuition Fee') invoiceAmountInput.value = invoiceData.tuitionFee || '';
+                if (selectedTypeName === 'Tuition Fee') {
+                    invoiceAmountInput.value = invoiceData.tuitionFee || '';
+                }
             } else {
                 invoiceAmountInput.disabled = true;
             }
@@ -939,7 +1389,9 @@ var KTCreateInvoiceModal = function () {
                 monthYearSelect.required = true;
                 monthYearTypeRadios.forEach(function (radio) { radio.disabled = false; });
                 invoiceAmountInput.disabled = !monthYearSelect.value;
-                if (monthYearSelect.value) invoiceAmountInput.value = invoiceData.tuitionFee || '';
+                if (monthYearSelect.value) {
+                    invoiceAmountInput.value = invoiceData.tuitionFee || '';
+                }
             }
         });
     };
@@ -965,9 +1417,22 @@ var KTCreateInvoiceModal = function () {
     var handleModalClose = function () {
         var cancelButton = element.querySelector('[data-kt-add-invoice-modal-action="cancel"]');
         var closeButton = element.querySelector('[data-kt-add-invoice-modal-action="close"]');
-        cancelButton.addEventListener('click', function (e) { e.preventDefault(); resetForm(); modal.hide(); });
-        closeButton.addEventListener('click', function (e) { e.preventDefault(); resetForm(); modal.hide(); });
-        element.addEventListener('hidden.bs.modal', function () { resetForm(); });
+
+        cancelButton.addEventListener('click', function (e) {
+            e.preventDefault();
+            resetForm();
+            modal.hide();
+        });
+
+        closeButton.addEventListener('click', function (e) {
+            e.preventDefault();
+            resetForm();
+            modal.hide();
+        });
+
+        element.addEventListener('hidden.bs.modal', function () {
+            resetForm();
+        });
     };
 
     var initValidation = function () {
@@ -975,19 +1440,30 @@ var KTCreateInvoiceModal = function () {
             fields: {
                 'invoice_student': { validators: { notEmpty: { message: 'Student is required' } } },
                 'invoice_type': { validators: { notEmpty: { message: 'Invoice type is required' } } },
-                'invoice_amount': { validators: { notEmpty: { message: 'Amount is required' }, greaterThan: { min: 50, message: 'Amount must be at least 50' } } }
+                'invoice_amount': {
+                    validators: {
+                        notEmpty: { message: 'Amount is required' },
+                        greaterThan: { min: 50, message: 'Amount must be at least 50' }
+                    }
+                }
             },
             plugins: {
                 trigger: new FormValidation.plugins.Trigger(),
-                bootstrap: new FormValidation.plugins.Bootstrap5({ rowSelector: '.fv-row', eleInvalidClass: '', eleValidClass: '' })
+                bootstrap: new FormValidation.plugins.Bootstrap5({
+                    rowSelector: '.fv-row',
+                    eleInvalidClass: '',
+                    eleValidClass: ''
+                })
             }
         });
     };
 
     var handleFormSubmit = function () {
         submitButton = element.querySelector('[data-kt-add-invoice-modal-action="submit"]');
+        
         submitButton.addEventListener('click', function (e) {
             e.preventDefault();
+
             if (validator) {
                 validator.validate().then(function (status) {
                     if (status === 'Valid') {
@@ -1006,35 +1482,65 @@ var KTCreateInvoiceModal = function () {
                             success: function (data) {
                                 submitButton.removeAttribute('data-kt-indicator');
                                 submitButton.disabled = false;
+
                                 if (data.success) {
-                                    Swal.fire({ text: data.message || 'Invoice created successfully!', icon: 'success', buttonsStyling: false, confirmButtonText: 'Ok, got it!', customClass: { confirmButton: 'btn btn-primary' } }).then(function (result) {
+                                    Swal.fire({
+                                        text: data.message || 'Invoice created successfully!',
+                                        icon: 'success',
+                                        buttonsStyling: false,
+                                        confirmButtonText: 'Ok, got it!',
+                                        customClass: { confirmButton: 'btn btn-primary' }
+                                    }).then(function (result) {
                                         if (result.isConfirmed) {
                                             modal.hide();
                                             resetForm();
-                                            // Reload tables via AJAX and update badge counts
                                             InvoiceManager.reloadDueTables();
                                             InvoiceManager.updateBranchDueCounts();
                                         }
                                     });
                                 } else {
-                                    Swal.fire({ html: data.message || 'Failed to create invoice', icon: 'error', buttonsStyling: false, confirmButtonText: 'Ok, got it!', customClass: { confirmButton: 'btn btn-primary' } });
+                                    Swal.fire({
+                                        html: data.message || 'Failed to create invoice',
+                                        icon: 'error',
+                                        buttonsStyling: false,
+                                        confirmButtonText: 'Ok, got it!',
+                                        customClass: { confirmButton: 'btn btn-primary' }
+                                    });
                                 }
                             },
                             error: function (xhr) {
                                 submitButton.removeAttribute('data-kt-indicator');
                                 submitButton.disabled = false;
+                                
                                 var message = 'Something went wrong. Please try again.';
-                                if (xhr.responseJSON && xhr.responseJSON.message) message = xhr.responseJSON.message;
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    message = xhr.responseJSON.message;
+                                }
                                 if (xhr.responseJSON && xhr.responseJSON.errors) {
                                     var errors = [];
-                                    $.each(xhr.responseJSON.errors, function (key, val) { errors.push(val[0]); });
+                                    $.each(xhr.responseJSON.errors, function (key, val) {
+                                        errors.push(val[0]);
+                                    });
                                     message = errors.join('<br>');
                                 }
-                                Swal.fire({ html: message, icon: 'error', buttonsStyling: false, confirmButtonText: 'Ok, got it!', customClass: { confirmButton: 'btn btn-primary' } });
+
+                                Swal.fire({
+                                    html: message,
+                                    icon: 'error',
+                                    buttonsStyling: false,
+                                    confirmButtonText: 'Ok, got it!',
+                                    customClass: { confirmButton: 'btn btn-primary' }
+                                });
                             }
                         });
                     } else {
-                        Swal.fire({ text: 'Please fill all required fields correctly.', icon: 'warning', buttonsStyling: false, confirmButtonText: 'Ok, got it!', customClass: { confirmButton: 'btn btn-primary' } });
+                        Swal.fire({
+                            text: 'Please fill all required fields correctly.',
+                            icon: 'warning',
+                            buttonsStyling: false,
+                            confirmButtonText: 'Ok, got it!',
+                            customClass: { confirmButton: 'btn btn-primary' }
+                        });
                     }
                 });
             }
@@ -1045,6 +1551,7 @@ var KTCreateInvoiceModal = function () {
         init: function () {
             element = document.getElementById('kt_modal_create_invoice');
             if (!element) return;
+
             form = element.querySelector('#kt_modal_add_invoice_form');
             modal = new bootstrap.Modal(element);
             studentSelect = element.querySelector('select[name="invoice_student"]');
@@ -1054,7 +1561,9 @@ var KTCreateInvoiceModal = function () {
             monthYearTypeRadios = element.querySelectorAll('input[name="month_year_type"]');
             monthYearTypeWrapper = document.getElementById('month_year_type_id');
             monthYearWrapper = document.getElementById('month_year_id');
+
             monthYearTypeRadios.forEach(function (radio) { radio.disabled = true; });
+
             handleStudentChange();
             handleMonthYearTypeChange();
             handleMonthYearChange();
@@ -1074,9 +1583,12 @@ var KTEditInvoiceModal = function () {
         if (!monthYear) return '-';
         var parts = monthYear.split('_');
         if (parts.length !== 2) return '-';
-        var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        
+        var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+            'July', 'August', 'September', 'October', 'November', 'December'];
         var monthIndex = parseInt(parts[0]) - 1;
         if (monthIndex < 0 || monthIndex > 11) return '-';
+        
         return monthNames[monthIndex] + ' ' + parts[1];
     };
 
@@ -1084,50 +1596,103 @@ var KTEditInvoiceModal = function () {
         $(document).on('click', "[data-bs-target='#kt_modal_edit_invoice']", function () {
             invoiceId = this.getAttribute('data-invoice-id');
             if (!invoiceId) return;
-            if (form) form.reset();
 
+            if (form) form.reset();
             document.getElementById('edit_student_display').innerHTML = '<span class="text-muted">Loading...</span>';
             document.getElementById('edit_invoice_type_display').innerHTML = '<span class="text-muted">Loading...</span>';
             document.getElementById('edit_month_year_display').innerHTML = '<span class="text-muted">Loading...</span>';
 
             $.get('/invoices/' + invoiceId + '/view-ajax', function (data) {
-                if (!data.success || !data.data) { toastr.error('Invalid response data'); modal.hide(); return; }
+                if (!data.success || !data.data) {
+                    toastr.error('Invalid response data');
+                    modal.hide();
+                    return;
+                }
 
                 var invoice = data.data;
                 var titleEl = document.getElementById('kt_modal_edit_invoice_title');
                 if (titleEl) titleEl.textContent = 'Update Invoice ' + invoice.invoice_number;
 
                 var studentDisplay = document.getElementById('edit_student_display');
-                if (studentDisplay) studentDisplay.innerHTML = '<span class="fw-semibold">' + (invoice.student_name || 'Unknown') + (invoice.student_unique_id ? ' (' + invoice.student_unique_id + ')' : '') + '</span>';
+                if (studentDisplay) {
+                    studentDisplay.innerHTML = '<span class="fw-semibold">' + 
+                        (invoice.student_name || 'Unknown') + 
+                        (invoice.student_unique_id ? ' (' + invoice.student_unique_id + ')' : '') + '</span>';
+                }
 
                 var typeDisplay = document.getElementById('edit_invoice_type_display');
-                if (typeDisplay) typeDisplay.innerHTML = '<span class="fw-semibold">' + (invoice.invoice_type_name || '-') + '</span>';
+                if (typeDisplay) {
+                    typeDisplay.innerHTML = '<span class="fw-semibold">' + (invoice.invoice_type_name || '-') + '</span>';
+                }
 
                 var monthYearWrapperEdit = document.getElementById('month_year_id_edit');
-                if (monthYearWrapperEdit) monthYearWrapperEdit.style.display = invoice.invoice_type_name === 'Tuition Fee' ? '' : 'none';
+                if (monthYearWrapperEdit) {
+                    monthYearWrapperEdit.style.display = invoice.invoice_type_name === 'Tuition Fee' ? '' : 'none';
+                }
 
                 var monthYearDisplay = document.getElementById('edit_month_year_display');
-                if (monthYearDisplay) monthYearDisplay.innerHTML = '<span class="fw-semibold">' + formatMonthYear(invoice.month_year) + '</span>';
+                if (monthYearDisplay) {
+                    monthYearDisplay.innerHTML = '<span class="fw-semibold">' + formatMonthYear(invoice.month_year) + '</span>';
+                }
 
                 var amountInput = element.querySelector("input[name='invoice_amount_edit']");
                 if (amountInput) amountInput.value = invoice.total_amount;
-            }).fail(function () { toastr.error('Failed to load invoice details'); modal.hide(); });
+            }).fail(function () {
+                toastr.error('Failed to load invoice details');
+                modal.hide();
+            });
         });
     };
 
     var handleModalClose = function () {
         var cancelButton = element.querySelector('[data-kt-edit-invoice-modal-action="cancel"]');
         var closeButton = element.querySelector('[data-kt-edit-invoice-modal-action="close"]');
-        if (cancelButton) cancelButton.addEventListener('click', function (e) { e.preventDefault(); if (form) form.reset(); if (validator) validator.resetForm(); modal.hide(); });
-        if (closeButton) closeButton.addEventListener('click', function (e) { e.preventDefault(); if (form) form.reset(); if (validator) validator.resetForm(); modal.hide(); });
-        element.addEventListener('hidden.bs.modal', function () { if (form) form.reset(); if (validator) validator.resetForm(); invoiceId = null; });
+
+        if (cancelButton) {
+            cancelButton.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (form) form.reset();
+                if (validator) validator.resetForm();
+                modal.hide();
+            });
+        }
+
+        if (closeButton) {
+            closeButton.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (form) form.reset();
+                if (validator) validator.resetForm();
+                modal.hide();
+            });
+        }
+
+        element.addEventListener('hidden.bs.modal', function () {
+            if (form) form.reset();
+            if (validator) validator.resetForm();
+            invoiceId = null;
+        });
     };
 
     var initValidation = function () {
         if (!form) return;
+
         validator = FormValidation.formValidation(form, {
-            fields: { 'invoice_amount_edit': { validators: { notEmpty: { message: 'Amount is required' }, greaterThan: { min: 50, message: 'Amount must be at least 50' } } } },
-            plugins: { trigger: new FormValidation.plugins.Trigger(), bootstrap: new FormValidation.plugins.Bootstrap5({ rowSelector: '.fv-row', eleInvalidClass: '', eleValidClass: '' }) }
+            fields: {
+                'invoice_amount_edit': {
+                    validators: {
+                        notEmpty: { message: 'Amount is required' },
+                        greaterThan: { min: 50, message: 'Amount must be at least 50' }
+                    }
+                }
+            },
+            plugins: {
+                trigger: new FormValidation.plugins.Trigger(),
+                bootstrap: new FormValidation.plugins.Bootstrap5({
+                    rowSelector: '.fv-row',
+                    eleInvalidClass: '',
+                    eleValidClass: ''
+                })
+            }
         });
     };
 
@@ -1137,6 +1702,7 @@ var KTEditInvoiceModal = function () {
 
         submitButton.addEventListener('click', function (e) {
             e.preventDefault();
+
             if (validator) {
                 validator.validate().then(function (status) {
                     if (status === 'Valid') {
@@ -1156,29 +1722,57 @@ var KTEditInvoiceModal = function () {
                             success: function (data) {
                                 submitButton.removeAttribute('data-kt-indicator');
                                 submitButton.disabled = false;
+
                                 if (data.success) {
-                                    Swal.fire({ text: data.message || 'Invoice updated successfully!', icon: 'success', buttonsStyling: false, confirmButtonText: 'Ok, got it!', customClass: { confirmButton: 'btn btn-primary' } }).then(function (result) {
+                                    Swal.fire({
+                                        text: data.message || 'Invoice updated successfully!',
+                                        icon: 'success',
+                                        buttonsStyling: false,
+                                        confirmButtonText: 'Ok, got it!',
+                                        customClass: { confirmButton: 'btn btn-primary' }
+                                    }).then(function (result) {
                                         if (result.isConfirmed) {
                                             modal.hide();
-                                            // Reload tables via AJAX and update badge counts
                                             InvoiceManager.reloadDueTables();
                                             InvoiceManager.updateBranchDueCounts();
                                         }
                                     });
                                 } else {
-                                    Swal.fire({ html: data.message || 'Failed to update invoice', icon: 'error', buttonsStyling: false, confirmButtonText: 'Ok, got it!', customClass: { confirmButton: 'btn btn-primary' } });
+                                    Swal.fire({
+                                        html: data.message || 'Failed to update invoice',
+                                        icon: 'error',
+                                        buttonsStyling: false,
+                                        confirmButtonText: 'Ok, got it!',
+                                        customClass: { confirmButton: 'btn btn-primary' }
+                                    });
                                 }
                             },
                             error: function (xhr) {
                                 submitButton.removeAttribute('data-kt-indicator');
                                 submitButton.disabled = false;
+                                
                                 var message = 'Something went wrong. Please try again.';
-                                if (xhr.responseJSON && xhr.responseJSON.message) message = xhr.responseJSON.message;
-                                Swal.fire({ html: message, icon: 'error', buttonsStyling: false, confirmButtonText: 'Ok, got it!', customClass: { confirmButton: 'btn btn-primary' } });
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    message = xhr.responseJSON.message;
+                                }
+
+                                Swal.fire({
+                                    html: message,
+                                    icon: 'error',
+                                    buttonsStyling: false,
+                                    confirmButtonText: 'Ok, got it!',
+                                    customClass: { confirmButton: 'btn btn-primary' }
+                                });
                             }
                         });
                     } else {
-                        Swal.fire({ text: 'Please fill all required fields correctly.', icon: 'warning', buttonsStyling: false, confirmButtonText: 'Ok, got it!', customClass: { confirmButton: 'btn btn-primary' } });
+                        Swal.fire({
+                            text: 'Please fill all required fields correctly.',
+                            icon: 'warning',
+                            buttonsStyling: false,
+                            confirmButtonText: 'Ok, got it!',
+                            customClass: { confirmButton: 'btn btn-primary' }
+                        });
                     }
                 });
             }
@@ -1189,8 +1783,10 @@ var KTEditInvoiceModal = function () {
         init: function () {
             element = document.getElementById('kt_modal_edit_invoice');
             if (!element) return;
+
             form = element.querySelector('#kt_modal_edit_invoice_form');
             modal = bootstrap.Modal.getOrCreateInstance(element);
+
             handleEditClick();
             handleModalClose();
             initValidation();
@@ -1222,6 +1818,7 @@ var KTAddCommentModal = function () {
 
         $.get(url, function (data) {
             commentsLoading.classList.add('d-none');
+
             if (data.success && data.comments && data.comments.length > 0) {
                 var html = '';
                 data.comments.forEach(function (comment) {
@@ -1250,6 +1847,7 @@ var KTAddCommentModal = function () {
             if (!invoiceId) return;
 
             document.getElementById('comment_invoice_id').value = invoiceId;
+            
             var titleEl = document.getElementById('kt_modal_add_comment_title');
             if (titleEl) titleEl.textContent = 'Comments - Invoice ' + (invoiceNumber || invoiceId);
 
@@ -1261,9 +1859,26 @@ var KTAddCommentModal = function () {
     var handleModalClose = function () {
         var cancelButton = element.querySelector('[data-kt-add-comment-modal-action="cancel"]');
         var closeButton = element.querySelector('[data-kt-add-comment-modal-action="close"]');
-        if (cancelButton) cancelButton.addEventListener('click', function (e) { e.preventDefault(); resetForm(); modal.hide(); });
-        if (closeButton) closeButton.addEventListener('click', function (e) { e.preventDefault(); resetForm(); modal.hide(); });
-        element.addEventListener('hidden.bs.modal', function () { resetForm(); });
+
+        if (cancelButton) {
+            cancelButton.addEventListener('click', function (e) {
+                e.preventDefault();
+                resetForm();
+                modal.hide();
+            });
+        }
+
+        if (closeButton) {
+            closeButton.addEventListener('click', function (e) {
+                e.preventDefault();
+                resetForm();
+                modal.hide();
+            });
+        }
+
+        element.addEventListener('hidden.bs.modal', function () {
+            resetForm();
+        });
     };
 
     var resetForm = function () {
@@ -1279,9 +1894,24 @@ var KTAddCommentModal = function () {
 
     var initValidation = function () {
         if (!form) return;
+
         validator = FormValidation.formValidation(form, {
-            fields: { 'comment': { validators: { notEmpty: { message: 'Comment is required' }, stringLength: { min: 3, max: 1000, message: 'Comment must be between 3 and 1000 characters' } } } },
-            plugins: { trigger: new FormValidation.plugins.Trigger(), bootstrap: new FormValidation.plugins.Bootstrap5({ rowSelector: '.fv-row', eleInvalidClass: '', eleValidClass: '' }) }
+            fields: {
+                'comment': {
+                    validators: {
+                        notEmpty: { message: 'Comment is required' },
+                        stringLength: { min: 3, max: 1000, message: 'Comment must be between 3 and 1000 characters' }
+                    }
+                }
+            },
+            plugins: {
+                trigger: new FormValidation.plugins.Trigger(),
+                bootstrap: new FormValidation.plugins.Bootstrap5({
+                    rowSelector: '.fv-row',
+                    eleInvalidClass: '',
+                    eleValidClass: ''
+                })
+            }
         });
     };
 
@@ -1291,6 +1921,7 @@ var KTAddCommentModal = function () {
 
         submitButton.addEventListener('click', function (e) {
             e.preventDefault();
+
             if (validator) {
                 validator.validate().then(function (status) {
                     if (status === 'Valid') {
@@ -1309,28 +1940,50 @@ var KTAddCommentModal = function () {
                             success: function (data) {
                                 submitButton.removeAttribute('data-kt-indicator');
                                 submitButton.disabled = false;
+
                                 if (data.success) {
                                     form.querySelector('textarea[name="comment"]').value = '';
                                     validator.resetForm();
                                     toastr.success(data.message || 'Comment added successfully!');
                                     loadComments(invoiceId);
-                                    // Reload tables via AJAX to update comment count
                                     InvoiceManager.reloadDueTables();
                                     InvoiceManager.reloadPaidTables();
                                 } else {
-                                    Swal.fire({ html: data.message || 'Failed to add comment', icon: 'error', buttonsStyling: false, confirmButtonText: 'Ok, got it!', customClass: { confirmButton: 'btn btn-primary' } });
+                                    Swal.fire({
+                                        html: data.message || 'Failed to add comment',
+                                        icon: 'error',
+                                        buttonsStyling: false,
+                                        confirmButtonText: 'Ok, got it!',
+                                        customClass: { confirmButton: 'btn btn-primary' }
+                                    });
                                 }
                             },
                             error: function (xhr) {
                                 submitButton.removeAttribute('data-kt-indicator');
                                 submitButton.disabled = false;
+                                
                                 var message = 'Something went wrong. Please try again.';
-                                if (xhr.responseJSON && xhr.responseJSON.message) message = xhr.responseJSON.message;
-                                Swal.fire({ html: message, icon: 'error', buttonsStyling: false, confirmButtonText: 'Ok, got it!', customClass: { confirmButton: 'btn btn-primary' } });
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    message = xhr.responseJSON.message;
+                                }
+
+                                Swal.fire({
+                                    html: message,
+                                    icon: 'error',
+                                    buttonsStyling: false,
+                                    confirmButtonText: 'Ok, got it!',
+                                    customClass: { confirmButton: 'btn btn-primary' }
+                                });
                             }
                         });
                     } else {
-                        Swal.fire({ text: 'Please enter a valid comment (3-1000 characters).', icon: 'warning', buttonsStyling: false, confirmButtonText: 'Ok, got it!', customClass: { confirmButton: 'btn btn-primary' } });
+                        Swal.fire({
+                            text: 'Please enter a valid comment (3-1000 characters).',
+                            icon: 'warning',
+                            buttonsStyling: false,
+                            confirmButtonText: 'Ok, got it!',
+                            customClass: { confirmButton: 'btn btn-primary' }
+                        });
                     }
                 });
             }
@@ -1341,8 +1994,10 @@ var KTAddCommentModal = function () {
         init: function () {
             element = document.getElementById('kt_modal_add_comment');
             if (!element) return;
+
             form = element.querySelector('#kt_modal_add_comment_form');
             modal = bootstrap.Modal.getOrCreateInstance(element);
+
             handleAddCommentClick();
             handleModalClose();
             initValidation();
@@ -1353,6 +2008,7 @@ var KTAddCommentModal = function () {
 
 // Initialize on document ready
 KTUtil.onDOMContentLoaded(function () {
+    KTColumnSelector.init();
     KTDueInvoicesList.init();
     KTPaidInvoicesList.init();
     KTExportManager.init();
