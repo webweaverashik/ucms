@@ -24,7 +24,7 @@
         <div class="card-toolbar">
             <!--begin::Toolbar-->
             <div class="d-flex justify-content-end flex-wrap gap-3" data-kt-subscription-table-toolbar="base">
-                
+
                 <!--begin::Column Selector Wrapper-->
                 <div>
                     <button type="button" class="btn btn-light-info" data-kt-menu-trigger="click"

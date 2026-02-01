@@ -7,14 +7,17 @@
             margin: 0;
             border-bottom: 1px solid #f1f1f1;
         }
+
         .column-checkbox-list .form-check:last-child {
             border-bottom: none;
         }
+
         .column-checkbox-list .form-check:hover {
             background-color: #f9f9f9;
             border-radius: 6px;
         }
-        .column-checkbox-list .form-check-input:disabled + .form-check-label {
+
+        .column-checkbox-list .form-check-input:disabled+.form-check-label {
             opacity: 0.7;
         }
     </style>
@@ -202,7 +205,8 @@
                                                 <option></option>
                                                 @foreach ($students as $student)
                                                     <option value="{{ $student->id }}">{{ $student->name }}
-                                                        ({{ $student->student_unique_id }}) -
+                                                        ({{ $student->student_unique_id }})
+                                                        -
                                                         {{ ucfirst($student->payments->payment_style) }} -
                                                         1/{{ $student->payments->due_date }}
                                                     </option>
@@ -221,8 +225,8 @@
                                             <select name="invoice_type"
                                                 class="form-select form-select-solid rounded-start-0 border-start"
                                                 data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
-                                                data-placeholder="Select a invoice type" data-hide-search="false"
-                                                required disabled>
+                                                data-placeholder="Select a invoice type" data-hide-search="false" required
+                                                disabled>
                                                 <option></option>
                                                 @foreach ($invoice_types->where('type_name', '!=', 'Special Class Fee') as $type)
                                                     <option value="{{ $type->id }}"
@@ -272,8 +276,8 @@
                                             <select name="invoice_month_year"
                                                 class="form-select form-select-solid rounded-start-0 border-start"
                                                 data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
-                                                data-placeholder="Select billing month" data-hide-search="true"
-                                                disabled required>
+                                                data-placeholder="Select billing month" data-hide-search="true" disabled
+                                                required>
                                                 <option></option>
                                             </select>
                                         </div>

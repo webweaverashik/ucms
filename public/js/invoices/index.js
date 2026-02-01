@@ -58,7 +58,7 @@ var InvoiceManager = {
     getColumnVisibility: function (tableId, type) {
         var storageKey = 'invoice_columns_' + tableId;
         var stored = localStorage.getItem(storageKey);
-        
+
         if (stored) {
             try {
                 return JSON.parse(stored);
@@ -66,7 +66,7 @@ var InvoiceManager = {
                 console.error('Error parsing stored column visibility:', e);
             }
         }
-        
+
         // Return default visibility from config
         var config = ColumnConfig[type] || ColumnConfig.due;
         var visibility = {};
@@ -201,7 +201,7 @@ var InvoiceUtils = {
 
 // Column Selector Manager
 var KTColumnSelector = function () {
-    
+
     // Initialize column selector for a table
     var initColumnSelector = function (tableId, type) {
         var container = document.querySelector('.column-checkbox-list[data-table-id="' + tableId + '"][data-type="' + type + '"]');
@@ -209,14 +209,14 @@ var KTColumnSelector = function () {
 
         var config = ColumnConfig[type] || ColumnConfig.due;
         var visibility = InvoiceManager.getColumnVisibility(tableId, type);
-        
+
         // Build checkboxes HTML
         var html = '';
         config.forEach(function (col, index) {
             var isVisible = visibility[index] !== undefined ? visibility[index] : col.visible;
             var isDisabled = col.required ? 'disabled' : '';
             var checkedAttr = isVisible ? 'checked' : '';
-            
+
             html += '<div class="form-check form-check-custom form-check-solid mb-3">' +
                 '<input class="form-check-input column-visibility-checkbox" type="checkbox" ' +
                 'id="col_' + tableId + '_' + index + '" ' +
@@ -229,7 +229,7 @@ var KTColumnSelector = function () {
                 '</label>' +
                 '</div>';
         });
-        
+
         container.innerHTML = html;
     };
 
@@ -243,22 +243,22 @@ var KTColumnSelector = function () {
 
         var visibility = {};
         var checkboxes = container.querySelectorAll('.column-visibility-checkbox');
-        
+
         checkboxes.forEach(function (checkbox) {
             var colIndex = parseInt(checkbox.getAttribute('data-column-index'));
             var isVisible = checkbox.checked;
             visibility[colIndex] = isVisible;
-            
+
             // Apply to DataTable column
             var column = dt.column(colIndex);
             if (column) {
                 column.visible(isVisible);
             }
         });
-        
+
         // Save to localStorage
         InvoiceManager.saveColumnVisibility(tableId, visibility);
-        
+
         // Adjust columns after visibility change
         dt.columns.adjust().draw(false);
     };
@@ -270,7 +270,7 @@ var KTColumnSelector = function () {
 
         var config = ColumnConfig[type] || ColumnConfig.due;
         var checkboxes = container.querySelectorAll('.column-visibility-checkbox');
-        
+
         checkboxes.forEach(function (checkbox) {
             var colIndex = parseInt(checkbox.getAttribute('data-column-index'));
             var colConfig = config[colIndex];
@@ -283,7 +283,7 @@ var KTColumnSelector = function () {
     // Apply initial column visibility when table is initialized
     var applyInitialVisibility = function (tableId, type, dt) {
         var visibility = InvoiceManager.getColumnVisibility(tableId, type);
-        
+
         Object.keys(visibility).forEach(function (index) {
             var colIndex = parseInt(index);
             var isVisible = visibility[colIndex];
@@ -325,7 +325,7 @@ var KTColumnSelector = function () {
             var visibility = InvoiceManager.getColumnVisibility(tableId, type);
             var config = ColumnConfig[type] || ColumnConfig.due;
             var visibleCols = [];
-            
+
             config.forEach(function (col, index) {
                 var isVisible = visibility[index] !== undefined ? visibility[index] : col.visible;
                 if (isVisible && col.key !== 'actions') {
@@ -336,7 +336,7 @@ var KTColumnSelector = function () {
                     });
                 }
             });
-            
+
             return visibleCols;
         }
     };
@@ -344,7 +344,7 @@ var KTColumnSelector = function () {
 
 // Due Invoices DataTable Manager
 var KTDueInvoicesList = function () {
-    
+
     var initTable = function (tableId, branchId) {
         var table = document.getElementById(tableId);
         if (!table || InvoiceManager.initialized.due[tableId]) return;
@@ -354,7 +354,7 @@ var KTDueInvoicesList = function () {
 
         // Load filter options
         loadFilterOptions(branchId, tableId);
-        
+
         // Initialize column selector
         KTColumnSelector.initForTable(tableId, 'due');
 
@@ -363,24 +363,24 @@ var KTDueInvoicesList = function () {
             // 0: SL
             { data: 'sl', orderable: false },
             // 1: Invoice No.
-            { 
-                data: null, 
+            {
+                data: null,
                 render: function (data) {
                     var url = routeInvoiceShow.replace(':id', data.id);
-                    var badge = data.comments_count > 0 
-                        ? '<span class="badge badge-circle badge-sm badge-primary ms-1">' + data.comments_count + '</span>' 
+                    var badge = data.comments_count > 0
+                        ? '<span class="badge badge-circle badge-sm badge-primary ms-1">' + data.comments_count + '</span>'
                         : '';
-                    return '<a href="' + url + '" target="_blank" class="text-gray-800 text-hover-primary">' + 
+                    return '<a href="' + url + '" target="_blank" class="text-gray-800 text-hover-primary">' +
                         InvoiceUtils.escapeHtml(data.invoice_number) + '</a>' + badge;
                 }
             },
             // 2: Student
-            { 
-                data: null, 
+            {
+                data: null,
                 render: function (data) {
                     var url = routeStudentShow.replace(':id', data.student_id);
-                    return '<a href="' + url + '" target="_blank" class="text-gray-800 text-hover-primary">' + 
-                        InvoiceUtils.escapeHtml(data.student_name) + 
+                    return '<a href="' + url + '" target="_blank" class="text-gray-800 text-hover-primary">' +
+                        InvoiceUtils.escapeHtml(data.student_name) +
                         '<br><small class="text-muted">' + InvoiceUtils.escapeHtml(data.student_unique_id) + '</small></a>';
                 }
             },
@@ -391,16 +391,16 @@ var KTDueInvoicesList = function () {
             // 5: Institution
             { data: 'institution', defaultContent: '-' },
             // 6: Tuition Fee
-            { 
-                data: 'tuition_fee', 
+            {
+                data: 'tuition_fee',
                 defaultContent: '-',
                 render: function (data) {
                     return data ? '৳' + data : '-';
                 }
             },
             // 7: Activation Status
-            { 
-                data: null, 
+            {
+                data: null,
                 orderable: false,
                 render: function (data) {
                     return data.activation_status_html || '-';
@@ -409,11 +409,11 @@ var KTDueInvoicesList = function () {
             // 8: Invoice Type
             { data: 'invoice_type', defaultContent: '-' },
             // 9: Billing Month
-            { 
-                data: null, 
+            {
+                data: null,
                 render: function (data) {
-                    return data.billing_month === 'One Time' 
-                        ? '<span class="badge badge-primary rounded-pill">One Time</span>' 
+                    return data.billing_month === 'One Time'
+                        ? '<span class="badge badge-primary rounded-pill">One Time</span>'
                         : InvoiceUtils.escapeHtml(data.billing_month);
                 }
             },
@@ -424,69 +424,69 @@ var KTDueInvoicesList = function () {
             // 12: Due Date
             { data: 'due_date', defaultContent: '-' },
             // 13: Status
-            { 
-                data: 'status_html', 
+            {
+                data: 'status_html',
                 orderable: false,
                 defaultContent: '-'
             },
             // 14: Last Comment
-            { 
-                data: null, 
-                orderable: false, 
+            {
+                data: null,
+                orderable: false,
                 render: function (data) {
                     if (!data.last_comment) return '-';
-                    var truncated = data.last_comment.length > 30 
-                        ? data.last_comment.substring(0, 30) + '...' 
+                    var truncated = data.last_comment.length > 30
+                        ? data.last_comment.substring(0, 30) + '...'
                         : data.last_comment;
-                    return '<div class="text-gray-700 fs-7" title="' + InvoiceUtils.escapeHtml(data.last_comment) + '">' + 
+                    return '<div class="text-gray-700 fs-7" title="' + InvoiceUtils.escapeHtml(data.last_comment) + '">' +
                         InvoiceUtils.escapeHtml(truncated) + '</div>';
                 }
             },
             // 15: Created At
-            { 
-                data: null, 
+            {
+                data: null,
                 render: function (data) {
                     return data.created_at + '<br><small class="text-muted">' + data.created_at_time + '</small>';
                 }
             },
             // 16: Actions
-            { 
-                data: null, 
-                orderable: false, 
+            {
+                data: null,
+                orderable: false,
                 className: 'text-end',
                 render: function (data) {
                     var actions = '';
-                    
+
                     if (data.status === 'due') {
                         if (canEditInvoice) {
-                            actions += '<div class="menu-item px-3"><a href="#" data-invoice-id="' + data.id + 
+                            actions += '<div class="menu-item px-3"><a href="#" data-invoice-id="' + data.id +
                                 '" data-bs-toggle="modal" data-bs-target="#kt_modal_edit_invoice" ' +
                                 'class="menu-link text-hover-primary px-3"><i class="ki-outline ki-pencil fs-3 me-2"></i> Edit</a></div>';
                         }
                         if (canViewInvoice) {
-                            actions += '<div class="menu-item px-3"><a href="#" data-invoice-id="' + data.id + 
-                                '" data-invoice-number="' + data.invoice_number + 
+                            actions += '<div class="menu-item px-3"><a href="#" data-invoice-id="' + data.id +
+                                '" data-invoice-number="' + data.invoice_number +
                                 '" data-bs-toggle="modal" data-bs-target="#kt_modal_add_comment" ' +
                                 'class="menu-link text-hover-primary px-3 add-comment-btn"><i class="ki-outline ki-messages fs-3 me-2"></i> Comment</a></div>';
                         }
                         if (canDeleteInvoice) {
-                            actions += '<div class="menu-item px-3"><a href="#" data-invoice-id="' + data.id + 
+                            actions += '<div class="menu-item px-3"><a href="#" data-invoice-id="' + data.id +
                                 '" class="menu-link text-hover-danger px-3 delete-invoice">' +
                                 '<i class="ki-outline ki-trash fs-3 me-2"></i> Delete</a></div>';
                         }
                     } else if (data.status === 'partially_paid') {
                         if (canViewInvoice) {
-                            actions += '<div class="menu-item px-3"><a href="#" data-invoice-id="' + data.id + 
-                                '" data-invoice-number="' + data.invoice_number + 
+                            actions += '<div class="menu-item px-3"><a href="#" data-invoice-id="' + data.id +
+                                '" data-invoice-number="' + data.invoice_number +
                                 '" data-bs-toggle="modal" data-bs-target="#kt_modal_add_comment" ' +
                                 'class="menu-link text-hover-primary px-3 add-comment-btn"><i class="ki-outline ki-messages fs-3 me-2"></i> Comment</a></div>';
                         }
                     }
-                    
+
                     if (!actions) {
                         return '<span class="text-muted">-</span>';
                     }
-                    
+
                     return '<a href="#" class="btn btn-light btn-active-light-primary btn-sm" ' +
                         'data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions ' +
                         '<i class="ki-outline ki-down fs-5 m-0"></i></a>' +
@@ -588,7 +588,7 @@ var KTDueInvoicesList = function () {
             if (monthSelect && monthSelect.value) filters.billing_month = monthSelect.value;
 
             InvoiceManager.filters.due[tableId] = filters;
-            
+
             if (InvoiceManager.tables.due[tableId]) {
                 InvoiceManager.tables.due[tableId].ajax.reload();
             }
@@ -609,7 +609,7 @@ var KTDueInvoicesList = function () {
             if (monthSelect) $(monthSelect).val(null).trigger('change');
 
             InvoiceManager.filters.due[tableId] = {};
-            
+
             if (InvoiceManager.tables.due[tableId]) {
                 InvoiceManager.tables.due[tableId].ajax.reload();
             }
@@ -660,7 +660,7 @@ var KTDueInvoicesList = function () {
         $(document).on('shown.bs.tab', '#branchTabsDue .nav-link', function () {
             var branchId = this.getAttribute('data-branch-id');
             var tableId = 'kt_due_invoices_table_' + branchId;
-            
+
             if (!InvoiceManager.initialized.due[tableId]) {
                 initTable(tableId, branchId);
             }
@@ -674,7 +674,7 @@ var KTDueInvoicesList = function () {
             } else if (!isAdmin) {
                 initTable('kt_due_invoices_table', null);
             }
-            
+
             handleFilter();
             handleDeletion();
             handleBranchTabs();
@@ -684,7 +684,7 @@ var KTDueInvoicesList = function () {
 
 // Paid Invoices DataTable Manager
 var KTPaidInvoicesList = function () {
-    
+
     var initTable = function (tableId, branchId) {
         var table = document.getElementById(tableId);
         if (!table || InvoiceManager.initialized.paid[tableId]) return;
@@ -693,7 +693,7 @@ var KTPaidInvoicesList = function () {
         InvoiceManager.filters.paid[tableId] = {};
 
         loadFilterOptions(branchId, tableId);
-        
+
         // Initialize column selector
         KTColumnSelector.initForTable(tableId, 'paid');
 
@@ -702,24 +702,24 @@ var KTPaidInvoicesList = function () {
             // 0: SL
             { data: 'sl', orderable: false },
             // 1: Invoice No.
-            { 
-                data: null, 
+            {
+                data: null,
                 render: function (data) {
                     var url = routeInvoiceShow.replace(':id', data.id);
-                    var badge = data.comments_count > 0 
-                        ? '<span class="badge badge-circle badge-sm badge-primary ms-1">' + data.comments_count + '</span>' 
+                    var badge = data.comments_count > 0
+                        ? '<span class="badge badge-circle badge-sm badge-primary ms-1">' + data.comments_count + '</span>'
                         : '';
-                    return '<a href="' + url + '" target="_blank" class="text-gray-600 text-hover-primary">' + 
+                    return '<a href="' + url + '" target="_blank" class="text-gray-600 text-hover-primary">' +
                         InvoiceUtils.escapeHtml(data.invoice_number) + '</a>' + badge;
                 }
             },
             // 2: Student
-            { 
-                data: null, 
+            {
+                data: null,
                 render: function (data) {
                     var url = routeStudentShow.replace(':id', data.student_id);
-                    return '<a href="' + url + '" target="_blank" class="text-gray-600 text-hover-primary">' + 
-                        InvoiceUtils.escapeHtml(data.student_name) + 
+                    return '<a href="' + url + '" target="_blank" class="text-gray-600 text-hover-primary">' +
+                        InvoiceUtils.escapeHtml(data.student_name) +
                         '<br><small class="text-muted">' + InvoiceUtils.escapeHtml(data.student_unique_id) + '</small></a>';
                 }
             },
@@ -730,16 +730,16 @@ var KTPaidInvoicesList = function () {
             // 5: Institution
             { data: 'institution', defaultContent: '-' },
             // 6: Tuition Fee
-            { 
-                data: 'tuition_fee', 
+            {
+                data: 'tuition_fee',
                 defaultContent: '-',
                 render: function (data) {
                     return data ? '৳' + data : '-';
                 }
             },
             // 7: Activation Status
-            { 
-                data: null, 
+            {
+                data: null,
                 orderable: false,
                 render: function (data) {
                     return data.activation_status_html || '-';
@@ -754,29 +754,29 @@ var KTPaidInvoicesList = function () {
             // 11: Due Date
             { data: 'due_date', defaultContent: '-' },
             // 12: Status
-            { 
-                data: null, 
+            {
+                data: null,
                 orderable: false,
                 render: function () {
                     return '<span class="badge badge-success rounded-pill">Paid</span>';
                 }
             },
             // 13: Last Comment
-            { 
-                data: null, 
-                orderable: false, 
+            {
+                data: null,
+                orderable: false,
                 render: function (data) {
                     if (!data.last_comment) return '-';
-                    var truncated = data.last_comment.length > 30 
-                        ? data.last_comment.substring(0, 30) + '...' 
+                    var truncated = data.last_comment.length > 30
+                        ? data.last_comment.substring(0, 30) + '...'
                         : data.last_comment;
-                    return '<div class="text-gray-700 fs-7" title="' + InvoiceUtils.escapeHtml(data.last_comment) + '">' + 
+                    return '<div class="text-gray-700 fs-7" title="' + InvoiceUtils.escapeHtml(data.last_comment) + '">' +
                         InvoiceUtils.escapeHtml(truncated) + '</div>';
                 }
             },
             // 14: Paid At
-            { 
-                data: null, 
+            {
+                data: null,
                 render: function (data) {
                     return data.updated_at + '<br><small class="text-muted">' + data.updated_at_time + '</small>';
                 }
@@ -868,7 +868,7 @@ var KTPaidInvoicesList = function () {
             if (monthSelect && monthSelect.value) filters.billing_month = monthSelect.value;
 
             InvoiceManager.filters.paid[tableId] = filters;
-            
+
             if (InvoiceManager.tables.paid[tableId]) {
                 InvoiceManager.tables.paid[tableId].ajax.reload();
             }
@@ -886,7 +886,7 @@ var KTPaidInvoicesList = function () {
             if (monthSelect) $(monthSelect).val(null).trigger('change');
 
             InvoiceManager.filters.paid[tableId] = {};
-            
+
             if (InvoiceManager.tables.paid[tableId]) {
                 InvoiceManager.tables.paid[tableId].ajax.reload();
             }
@@ -899,7 +899,7 @@ var KTPaidInvoicesList = function () {
         $(document).on('shown.bs.tab', '#branchTabsPaid .nav-link', function () {
             var branchId = this.getAttribute('data-branch-id');
             var tableId = 'kt_paid_invoices_table_' + branchId;
-            
+
             if (!InvoiceManager.initialized.paid[tableId]) {
                 initTable(tableId, branchId);
             }
@@ -932,7 +932,7 @@ var KTPaidInvoicesList = function () {
 
 // Export Manager
 var KTExportManager = function () {
-    
+
     var fetchExportData = function (tableId, type, callback) {
         var table = document.getElementById(tableId);
         var branchId = table ? table.getAttribute('data-branch-id') : null;
@@ -962,7 +962,7 @@ var KTExportManager = function () {
     var formatExportData = function (data, type, tableId) {
         // Get visible columns
         var visibleColumns = KTColumnSelector.getVisibleColumns(tableId, type);
-        
+
         // Create column key to label mapping
         var columnMap = {};
         visibleColumns.forEach(function (col) {
@@ -971,17 +971,17 @@ var KTExportManager = function () {
 
         return data.map(function (row, index) {
             var exportRow = {};
-            
+
             // Always include SL
             exportRow['SL'] = index + 1;
-            
+
             // Map data based on visible columns
             visibleColumns.forEach(function (col) {
                 if (col.key === 'sl') return; // Already added
-                
+
                 var label = col.label;
                 var value = '';
-                
+
                 switch (col.key) {
                     case 'invoice_number':
                         value = row.invoice_number || '';
@@ -1036,10 +1036,10 @@ var KTExportManager = function () {
                     default:
                         value = row[col.key] || '';
                 }
-                
+
                 exportRow[label] = value;
             });
-            
+
             return exportRow;
         });
     };
@@ -1141,9 +1141,9 @@ var KTExportManager = function () {
             margin: { left: 10, right: 10 },
             didDrawPage: function () {
                 doc.setFontSize(8);
-                doc.text('Page ' + doc.internal.getNumberOfPages(), 
-                    doc.internal.pageSize.width / 2, 
-                    doc.internal.pageSize.height - 10, 
+                doc.text('Page ' + doc.internal.getNumberOfPages(),
+                    doc.internal.pageSize.width / 2,
+                    doc.internal.pageSize.height - 10,
                     { align: 'center' });
             }
         });
@@ -1155,7 +1155,7 @@ var KTExportManager = function () {
     var handleExportButtons = function () {
         $(document).on('click', '.export-btn', function (e) {
             e.preventDefault();
-            
+
             var tableId = this.getAttribute('data-table-id');
             var type = this.getAttribute('data-type');
             var exportType = this.getAttribute('data-export');
@@ -1166,7 +1166,7 @@ var KTExportManager = function () {
 
             fetchExportData(tableId, type, function (rawData) {
                 var data = formatExportData(rawData, type, tableId);
-                
+
                 switch (exportType) {
                     case 'copy':
                         copyToClipboard(data);
@@ -1316,8 +1316,8 @@ var KTCreateInvoiceModal = function () {
             radio.addEventListener('change', function () {
                 if (!studentSelect.value) return;
 
-                var monthData = this.value === 'new_invoice' 
-                    ? calculateNewInvoiceMonth() 
+                var monthData = this.value === 'new_invoice'
+                    ? calculateNewInvoiceMonth()
                     : calculateOldInvoiceMonth();
                 setMonthYearOption(monthData.value, monthData.text);
 
@@ -1460,7 +1460,7 @@ var KTCreateInvoiceModal = function () {
 
     var handleFormSubmit = function () {
         submitButton = element.querySelector('[data-kt-add-invoice-modal-action="submit"]');
-        
+
         submitButton.addEventListener('click', function (e) {
             e.preventDefault();
 
@@ -1511,7 +1511,7 @@ var KTCreateInvoiceModal = function () {
                             error: function (xhr) {
                                 submitButton.removeAttribute('data-kt-indicator');
                                 submitButton.disabled = false;
-                                
+
                                 var message = 'Something went wrong. Please try again.';
                                 if (xhr.responseJSON && xhr.responseJSON.message) {
                                     message = xhr.responseJSON.message;
@@ -1583,12 +1583,12 @@ var KTEditInvoiceModal = function () {
         if (!monthYear) return '-';
         var parts = monthYear.split('_');
         if (parts.length !== 2) return '-';
-        
-        var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+
+        var monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
             'July', 'August', 'September', 'October', 'November', 'December'];
         var monthIndex = parseInt(parts[0]) - 1;
         if (monthIndex < 0 || monthIndex > 11) return '-';
-        
+
         return monthNames[monthIndex] + ' ' + parts[1];
     };
 
@@ -1615,8 +1615,8 @@ var KTEditInvoiceModal = function () {
 
                 var studentDisplay = document.getElementById('edit_student_display');
                 if (studentDisplay) {
-                    studentDisplay.innerHTML = '<span class="fw-semibold">' + 
-                        (invoice.student_name || 'Unknown') + 
+                    studentDisplay.innerHTML = '<span class="fw-semibold">' +
+                        (invoice.student_name || 'Unknown') +
                         (invoice.student_unique_id ? ' (' + invoice.student_unique_id + ')' : '') + '</span>';
                 }
 
@@ -1750,7 +1750,7 @@ var KTEditInvoiceModal = function () {
                             error: function (xhr) {
                                 submitButton.removeAttribute('data-kt-indicator');
                                 submitButton.disabled = false;
-                                
+
                                 var message = 'Something went wrong. Please try again.';
                                 if (xhr.responseJSON && xhr.responseJSON.message) {
                                     message = xhr.responseJSON.message;
@@ -1847,7 +1847,7 @@ var KTAddCommentModal = function () {
             if (!invoiceId) return;
 
             document.getElementById('comment_invoice_id').value = invoiceId;
-            
+
             var titleEl = document.getElementById('kt_modal_add_comment_title');
             if (titleEl) titleEl.textContent = 'Comments - Invoice ' + (invoiceNumber || invoiceId);
 
@@ -1961,7 +1961,7 @@ var KTAddCommentModal = function () {
                             error: function (xhr) {
                                 submitButton.removeAttribute('data-kt-indicator');
                                 submitButton.disabled = false;
-                                
+
                                 var message = 'Something went wrong. Please try again.';
                                 if (xhr.responseJSON && xhr.responseJSON.message) {
                                     message = xhr.responseJSON.message;
