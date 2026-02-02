@@ -174,7 +174,7 @@
                                 $transaction = $monthlyPayments->get($monthNumber)?->first();
                             @endphp
                             <td>
-                                {{ $transaction ? ashikBnNum($transaction->paymentInvoice?->invoice_number) : '' }}
+                                {{ $transaction ? $transaction->paymentInvoice?->invoice_number : '' }}
                             </td>
                         @endforeach
                     </tr>
@@ -294,7 +294,7 @@
                             $transactionsOfType = $groupedByType[$type] ?? collect();
                             $invoice = optional($transactionsOfType->first()?->paymentInvoice);
                         @endphp
-                        <td>{{ $invoice?->invoice_number ? ashikBnNum($invoice->invoice_number) : '' }}</td>
+                        <td>{{ $invoice?->invoice_number ? $invoice->invoice_number : '' }}</td>
                     @endforeach
                 </tr>
 
