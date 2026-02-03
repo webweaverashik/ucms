@@ -833,6 +833,8 @@ var KTStudentsTransactionsView = function () {
 
             const studentId = downloadBtn.getAttribute('data-student-id');
             const year = downloadBtn.getAttribute('data-year');
+            const invoiceId = downloadBtn.getAttribute('data-invoice-id');
+
 
             if (!studentId || !year) {
                 Swal.fire({
@@ -852,6 +854,7 @@ var KTStudentsTransactionsView = function () {
             const formData = new FormData();
             formData.append('student_id', studentId);
             formData.append('statement_year', year);
+            formData.append('invoice_id', invoiceId);
 
             fetch(routeDownloadStatement, {
                 method: "POST",

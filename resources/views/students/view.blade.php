@@ -1110,7 +1110,7 @@
                             <!--end::Title-->
                             <!--begin::Toolbar-->
                             <div class="card-toolbar flex-shrink-0" style="white-space: nowrap;">
-                                <form class="form d-flex align-items-center gap-2 flex-nowrap" id="statement_form">
+                                {{-- <form class="form d-flex align-items-center gap-2 flex-nowrap" id="statement_form">
                                     @csrf
                                     <input type="hidden" name="student_id" value="{{ $student->id }}">
                                     <label class="required fw-semibold fs-6 mb-0 me-2">Download statements</label>
@@ -1122,7 +1122,7 @@
                                         @endfor
                                     </select>
                                     <button type="submit" class="btn btn-sm btn-primary">Download</button>
-                                </form>
+                                </form> --}}
                             </div>
                             <!--end::Toolbar-->
                         </div>
@@ -1307,7 +1307,7 @@
                                                         @can('transactions.payslip.download')
                                                             <a href="#" data-bs-toggle="tooltip"
                                                                 title="Download Statement"
-                                                                class="btn btn-icon text-hover-primary w-30px h-30px download-statement"
+                                                                class="btn btn-icon text-hover-primary w-30px h-30px download-statement" data-invoice-id="{{ $transaction->paymentInvoice->id }}"
                                                                 data-student-id="{{ $student->id }}"
                                                                 data-year="{{ $transaction->paymentInvoice->created_at->format('Y') }}">
                                                                 <i class="bi bi-download fs-2"></i>
