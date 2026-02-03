@@ -58,6 +58,9 @@
 
         $numto = new NumberToBangla();
         $yearBn = ashikBnNum($year);
+
+        // Dynamic label based on secondary class payment type
+        $paymentTypeLabel = $secondaryClass->payment_type === 'monthly' ? 'মাসিক' : 'এককালীন';
     @endphp
 
     <div class="d-flex flex-column mx-auto">
@@ -102,7 +105,7 @@
 
         {{-- Special Class Name Header --}}
         <h6 class="text-center fw-bold mt-3" style="font-size: 12px;">
-            {{ $secondaryClass->name }} - মাসিক বেতন ({{ $yearBn }})
+            {{ $secondaryClass->name }} - {{ $paymentTypeLabel }} বেতন ({{ $yearBn }})
         </h6>
 
         {{-- 12-month grid - same format for both 'monthly' and 'one_time' payment types --}}
