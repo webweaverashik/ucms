@@ -621,6 +621,7 @@ var KTAllTransactionsList = (function () {
 
                   const studentId = downloadBtn.getAttribute("data-student-id");
                   const year = downloadBtn.getAttribute("data-year");
+                  const invoiceId = downloadBtn.getAttribute("data-invoice-id");
 
                   if (!studentId || !year) {
                         Swal.fire({
@@ -641,6 +642,7 @@ var KTAllTransactionsList = (function () {
                   const formData = new FormData();
                   formData.append("student_id", studentId);
                   formData.append("statement_year", year);
+                  formData.append("invoice_id", invoiceId);
 
                   fetch(routeDownloadStatement, {
                         method: "POST",
@@ -1077,7 +1079,8 @@ var KTAddTransaction = (function () {
                                                 if (result.isConfirmed) {
                                                       downloadStatementAndRefresh(
                                                             transactionData.student_id,
-                                                            transactionData.year
+                                                            transactionData.year,
+                                                            transactionData.invoice_id
                                                       );
                                                 } else {
                                                       KTAllTransactionsList.refreshTable();
@@ -1121,10 +1124,11 @@ var KTAddTransaction = (function () {
       };
 
       // Download statement and then refresh table (no page reload)
-      var downloadStatementAndRefresh = function (studentId, year) {
+      var downloadStatementAndRefresh = function (studentId, year, invoiceId) {
             const formData = new FormData();
             formData.append("student_id", studentId);
             formData.append("statement_year", year);
+            formData.append("invoice_id", invoiceId);
 
             fetch(routeDownloadStatement, {
                   method: "POST",

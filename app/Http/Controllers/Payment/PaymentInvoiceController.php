@@ -836,7 +836,7 @@ class PaymentInvoiceController extends Controller
             return redirect()->back()->with('warning', 'No permission to view invoices.');
         }
 
-        $invoice = PaymentInvoice::with(['student', 'invoiceType'])->find($id);
+        $invoice = PaymentInvoice::with(['student', 'invoiceType:id,type_name'])->find($id);
 
         if (! $invoice || $invoice->student === null || $invoice->student->trashed()) {
             return redirect()->route('invoices.index')->with('warning', 'Invoice not found');

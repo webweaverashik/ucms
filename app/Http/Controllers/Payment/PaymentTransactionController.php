@@ -234,7 +234,7 @@ class PaymentTransactionController extends Controller
             }
         } else {
             if ($canDownloadPayslip) {
-                $actions .= '<a href="#" data-bs-toggle="tooltip" title="Download Statement" class="btn btn-icon text-hover-primary w-30px h-30px download-statement" data-student-id="' . $transaction->student_id . '" data-year="' . $transaction->paymentInvoice->created_at->format('Y') . '"><i class="bi bi-download fs-2"></i></a>';
+                $actions .= '<a href="#" data-bs-toggle="tooltip" title="Download Statement" class="btn btn-icon text-hover-primary w-30px h-30px download-statement" data-student-id="' . $transaction->student_id . '" data-year="' . $transaction->paymentInvoice->created_at->format('Y') . '" data-invoice-id="' . $transaction->paymentInvoice->id . '"><i class="bi bi-download fs-2"></i></a>';
             }
         }
 

@@ -202,6 +202,7 @@ var KTInvoiceWithTransactionsList = function () {
 
                   const studentId = downloadBtn.getAttribute('data-student-id');
                   const year = downloadBtn.getAttribute('data-year');
+                  const invoiceId = downloadBtn.getAttribute('data-invoice-id');
 
                   if (!studentId || !year) {
                         Swal.fire({
@@ -221,6 +222,7 @@ var KTInvoiceWithTransactionsList = function () {
                   const formData = new FormData();
                   formData.append('student_id', studentId);
                   formData.append('statement_year', year);
+                  formData.append('invoice_id', invoiceId);
 
                   fetch(routeDownloadStatement, {
                         method: "POST",
@@ -904,10 +906,11 @@ var KTTransactionForm = function () {
       };
 
       // Download statement and then reload page
-      var downloadStatementAndReload = function (studentId, year) {
+      var downloadStatementAndReload = function (studentId, year, invoiceId) {  // ✅ ADD invoiceId
             var formData = new FormData();
             formData.append('student_id', studentId);
             formData.append('statement_year', year);
+            formData.append('invoice_id', invoiceId);
 
             fetch(routeDownloadStatement, {
                   method: 'POST',
@@ -1040,7 +1043,7 @@ var KTTransactionForm = function () {
                                           }).then(function (result) {
                                                 if (result.isConfirmed) {
                                                       // Download statement then reload
-                                                      downloadStatementAndReload(transactionData.student_id, transactionData.year);
+                                                      downloadStatementAndReload(transactionData.student_id, transactionData.year, transactionData.invoice_id);
                                                 } else {
                                                       // Just reload the page
                                                       location.reload();
