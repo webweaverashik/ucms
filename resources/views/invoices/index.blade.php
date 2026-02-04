@@ -469,6 +469,9 @@
         const canViewInvoice = {{ $canViewInvoice ? 'true' : 'false' }};
 
         // Invoice types for filters
+        const classNames = @json($classnames);
+
+        // Invoice types for filters
         const invoiceTypes = @json($invoice_types);
 
         // Is admin

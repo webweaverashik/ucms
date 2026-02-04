@@ -191,12 +191,24 @@ var InvoiceUtils = {
         });
     },
 
-    formatDateShort: function () {
-        var now = new Date();
-        return now.toLocaleDateString('en-GB', {
-            day: '2-digit', month: 'short', year: 'numeric'
-        }).replace(/[,:]/g, '-');
+    formatDateTimeForFile: function () {
+        const now = new Date();
+
+        const date = now.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        }).replace(/\s/g, '-');
+
+        const time = now.toLocaleTimeString('en-GB', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        }).replace(/:/g, '-');
+
+        return date + '_' + time;
     }
+
 };
 
 // Column Selector Manager
@@ -507,6 +519,7 @@ var KTDueInvoicesList = function () {
                 data: function (d) {
                     d.branch_id = branchId;
                     var filters = InvoiceManager.filters.due[tableId] || {};
+                    if (filters.class_id) d.class_id = filters.class_id;
                     if (filters.invoice_type) d.invoice_type = filters.invoice_type;
                     if (filters.due_date) d.due_date = filters.due_date;
                     if (filters.status) d.status = filters.status;
@@ -549,6 +562,17 @@ var KTDueInvoicesList = function () {
 
     var loadFilterOptions = function (branchId, tableId) {
         $.get(routeFilterOptions, { branch_id: branchId }, function (data) {
+            // Populate class filter
+            var classSelect = document.querySelector('.filter-class-name[data-table-id="' + tableId + '"]');
+            if (classSelect) {
+                classSelect.innerHTML = '<option></option>';
+                classNames.forEach(function (cls) {
+                    classSelect.innerHTML += `<option value="${cls.id}">${cls.name}</option>`;
+                });
+                $(classSelect).select2({ placeholder: 'Select class', allowClear: true });
+            }
+
+
             // Populate invoice type filter
             var typeSelect = document.querySelector('.filter-invoice-type[data-table-id="' + tableId + '"]');
             if (typeSelect) {
@@ -577,11 +601,13 @@ var KTDueInvoicesList = function () {
             var tableId = this.getAttribute('data-table-id');
             var filters = {};
 
+            var classSelect = document.querySelector('.filter-class-name[data-table-id="' + tableId + '"]');
             var typeSelect = document.querySelector('.filter-invoice-type[data-table-id="' + tableId + '"]');
             var dueDateSelect = document.querySelector('.filter-due-date[data-table-id="' + tableId + '"]');
             var statusSelect = document.querySelector('.filter-status[data-table-id="' + tableId + '"]');
             var monthSelect = document.querySelector('.filter-billing-month[data-table-id="' + tableId + '"]');
 
+            if (classSelect && classSelect.value) { filters.class_id = classSelect.value; }
             if (typeSelect && typeSelect.value) filters.invoice_type = typeSelect.value;
             if (dueDateSelect && dueDateSelect.value) filters.due_date = dueDateSelect.value;
             if (statusSelect && statusSelect.value) filters.status = statusSelect.value;
@@ -603,6 +629,7 @@ var KTDueInvoicesList = function () {
             var statusSelect = document.querySelector('.filter-status[data-table-id="' + tableId + '"]');
             var monthSelect = document.querySelector('.filter-billing-month[data-table-id="' + tableId + '"]');
 
+            if (classSelect) $(classSelect).val(null).trigger('change');
             if (typeSelect) $(typeSelect).val(null).trigger('change');
             if (dueDateSelect) $(dueDateSelect).val(null).trigger('change');
             if (statusSelect) $(statusSelect).val(null).trigger('change');
@@ -793,6 +820,7 @@ var KTPaidInvoicesList = function () {
                 data: function (d) {
                     d.branch_id = branchId;
                     var filters = InvoiceManager.filters.paid[tableId] || {};
+                    if (filters.class_id) d.class_id = filters.class_id;
                     if (filters.invoice_type) d.invoice_type = filters.invoice_type;
                     if (filters.due_date) d.due_date = filters.due_date;
                     if (filters.billing_month) d.billing_month = filters.billing_month;
@@ -834,6 +862,17 @@ var KTPaidInvoicesList = function () {
 
     var loadFilterOptions = function (branchId, tableId) {
         $.get(routeFilterOptions, { branch_id: branchId }, function (data) {
+            // Populate class filter
+            var classSelect = document.querySelector('.filter-class-name-paid[data-table-id="' + tableId + '"]');
+            if (classSelect) {
+                classSelect.innerHTML = '<option></option>';
+                classNames.forEach(function (cls) {
+                    classSelect.innerHTML += `<option value="${cls.id}">${cls.name}</option>`;
+                });
+                $(classSelect).select2({ placeholder: 'Select class', allowClear: true });
+            }
+
+
             var typeSelect = document.querySelector('.filter-invoice-type-paid[data-table-id="' + tableId + '"]');
             if (typeSelect) {
                 typeSelect.innerHTML = '<option></option>';
@@ -859,10 +898,12 @@ var KTPaidInvoicesList = function () {
             var tableId = this.getAttribute('data-table-id');
             var filters = {};
 
+            var classSelect = document.querySelector('.filter-class-name-paid[data-table-id="' + tableId + '"]');
             var typeSelect = document.querySelector('.filter-invoice-type-paid[data-table-id="' + tableId + '"]');
             var dueDateSelect = document.querySelector('.filter-due-date-paid[data-table-id="' + tableId + '"]');
             var monthSelect = document.querySelector('.filter-billing-month-paid[data-table-id="' + tableId + '"]');
 
+            if (classSelect && classSelect.value) { filters.class_id = classSelect.value; }
             if (typeSelect && typeSelect.value) filters.invoice_type = typeSelect.value;
             if (dueDateSelect && dueDateSelect.value) filters.due_date = dueDateSelect.value;
             if (monthSelect && monthSelect.value) filters.billing_month = monthSelect.value;
@@ -881,6 +922,7 @@ var KTPaidInvoicesList = function () {
             var dueDateSelect = document.querySelector('.filter-due-date-paid[data-table-id="' + tableId + '"]');
             var monthSelect = document.querySelector('.filter-billing-month-paid[data-table-id="' + tableId + '"]');
 
+            if (classSelect) $(classSelect).val(null).trigger('change');
             if (typeSelect) $(typeSelect).val(null).trigger('change');
             if (dueDateSelect) $(dueDateSelect).val(null).trigger('change');
             if (monthSelect) $(monthSelect).val(null).trigger('change');
@@ -940,6 +982,8 @@ var KTExportManager = function () {
         filters = filters || {};
 
         var params = { type: type, branch_id: branchId };
+
+        if (filters.class_id) params.class_id = filters.class_id;
         if (filters.invoice_type) params.invoice_type = filters.invoice_type;
         if (filters.due_date) params.due_date = filters.due_date;
         if (filters.status) params.status = filters.status;
@@ -1070,7 +1114,7 @@ var KTExportManager = function () {
         }
 
         var title = type === 'due' ? 'Due Invoices Report' : 'Paid Invoices Report';
-        var fileName = title + '_' + InvoiceUtils.formatDateShort();
+        var fileName = title + '_' + InvoiceUtils.formatDateTimeForFile();
 
         var ws = XLSX.utils.aoa_to_sheet([]);
         XLSX.utils.sheet_add_aoa(ws, [[title]], { origin: 'A1' });
@@ -1097,7 +1141,7 @@ var KTExportManager = function () {
         }
 
         var title = type === 'due' ? 'Due Invoices Report' : 'Paid Invoices Report';
-        var fileName = title + '_' + InvoiceUtils.formatDateShort();
+        var fileName = title + '_' + InvoiceUtils.formatDateTimeForFile();
 
         var ws = XLSX.utils.json_to_sheet(data);
         var csv = XLSX.utils.sheet_to_csv(ws);
@@ -1120,7 +1164,7 @@ var KTExportManager = function () {
         var doc = new jsPDF('l', 'mm', 'a4');
 
         var title = type === 'due' ? 'Due Invoices Report' : 'Paid Invoices Report';
-        var fileName = title + '_' + InvoiceUtils.formatDateShort();
+        var fileName = title + '_' + InvoiceUtils.formatDateTimeForFile();
 
         doc.setFontSize(16);
         doc.text(title, 14, 15);

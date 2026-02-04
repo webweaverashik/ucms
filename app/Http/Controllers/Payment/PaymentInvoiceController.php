@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Payment;
 
 use App\Http\Controllers\Controller;
+use App\Models\Academic\ClassName;
 use App\Models\Branch;
 use App\Models\Payment\PaymentInvoice;
 use App\Models\Payment\PaymentInvoiceType;
@@ -66,7 +67,10 @@ class PaymentInvoiceController extends Controller
             ->orderBy('type_name')
             ->get();
 
-        return view('invoices.index', compact('branches', 'students', 'invoice_types', 'isAdmin', 'branchDueCounts'));
+        // Get classnames for filter dropdown
+        $classnames = ClassName::select('id', 'name', 'class_numeral', 'is_active')->get();
+
+        return view('invoices.index', compact('classnames', 'branches', 'students', 'invoice_types', 'isAdmin', 'branchDueCounts'));
     }
 
     /**
@@ -186,6 +190,11 @@ class PaymentInvoiceController extends Controller
         }
 
         // Apply custom filters
+        if ($request->filled('class_id')) {
+            $classId = $request->class_id;
+            $query->whereHas('student', fn($q) => $q->where('class_id', $classId));
+        }
+
         if ($invoiceType = $request->get('invoice_type')) {
             $typeName = str_replace('ucms_', '', $invoiceType);
             $query->whereHas('invoiceType', fn($q) => $q->where('type_name', $typeName));
@@ -418,6 +427,11 @@ class PaymentInvoiceController extends Controller
         }
 
         // Apply custom filters
+        if ($request->filled('class_id')) {
+            $classId = $request->class_id;
+            $query->whereHas('student', fn($q) => $q->where('class_id', $classId));
+        }
+
         if ($invoiceType = $request->get('invoice_type')) {
             $typeName = str_replace('ucms_', '', $invoiceType);
             $query->whereHas('invoiceType', fn($q) => $q->where('type_name', $typeName));
@@ -562,6 +576,11 @@ class PaymentInvoiceController extends Controller
         }
 
         // Apply filters
+        if ($request->filled('class_id')) {
+            $classId = $request->class_id;
+            $query->whereHas('student', fn($q) => $q->where('class_id', $classId));
+        }
+
         if ($invoiceType = $request->get('invoice_type')) {
             $typeName = str_replace('ucms_', '', $invoiceType);
             $query->whereHas('invoiceType', fn($q) => $q->where('type_name', $typeName));

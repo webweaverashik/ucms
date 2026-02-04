@@ -80,6 +80,16 @@
                         <div class="px-7 py-5">
                             <!--begin::Input group-->
                             <div class="mb-10">
+                                <label class="form-label fs-6 fw-semibold">Class:</label>
+                                <select class="form-select form-select-solid fw-bold filter-class-name-paid"
+                                    data-kt-select2="true" data-placeholder="Select option" data-allow-clear="true"
+                                    data-hide-search="true" data-table-id="{{ $tableId }}">
+                                    <option></option>
+                                </select>
+                            </div>
+                            <!--end::Input group-->
+                            <!--begin::Input group-->
+                            <div class="mb-10">
                                 <label class="form-label fs-6 fw-semibold">Invoice Type:</label>
                                 <select class="form-select form-select-solid fw-bold filter-invoice-type-paid"
                                     data-kt-select2="true" data-placeholder="Select option" data-allow-clear="true"
