@@ -1,18 +1,18 @@
 <?php
 
-use App\Http\Controllers\BranchController;
-use App\Http\Controllers\Cost\CostTypeController;
-use App\Http\Controllers\Misc\MiscController;
-use App\Http\Controllers\User\ProfileController;
-use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BranchController;
+use App\Http\Controllers\Misc\MiscController;
+use App\Http\Controllers\User\UserController;
+use App\Http\Controllers\User\ProfileController;
+use App\Http\Controllers\Cost\CostTypeController;
+use App\Http\Controllers\Settings\BackupController;
 
 /*
 |--------------------------------------------------------------------------
 | Settings Routes
 |--------------------------------------------------------------------------
 | Users, branches, cost types, bulk operations
-| ⚠️ IMPORTANT: Route names are kept EXACTLY as original web.php
 */
 
 // Users
@@ -47,3 +47,12 @@ Route::post('settings/bulk-admission', [MiscController::class, 'bulkAdmission'])
 
 // User Resource - Note: 'settings/users' path with 'users' naming (original)
 Route::resource('settings/users', UserController::class)->names('users');
+
+// Backup Routes
+Route::prefix('settings')->group(function () {
+    Route::get('backup', [BackupController::class, 'index'])->name('backup');
+    Route::get('backup/files', [BackupController::class, 'getBackupFiles'])->name('backup.files');
+    Route::post('backup/create', [BackupController::class, 'create'])->name('backup.create');
+    Route::get('backup/download/{filename}', [BackupController::class, 'download'])->name('backup.download');
+    Route::delete('backup/{filename}', [BackupController::class, 'destroy'])->name('backup.destroy');
+});

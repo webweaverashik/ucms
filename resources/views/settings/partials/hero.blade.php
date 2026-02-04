@@ -128,6 +128,16 @@
                 </a>
             </li>
             <!--end::Nav item-->
+
+            <!--begin::Nav item-->
+            <li class="nav-item">
+                <a class="nav-link text-active-primary py-5" id="settings_backup_link"
+                    href="{{ route('backup') }}">
+                    <i class="ki-outline ki-data fs-4 me-2"></i>
+                    DB Backup
+                </a>
+            </li>
+            <!--end::Nav item-->
         </ul>
         <!--end::Navs-->
     </div>

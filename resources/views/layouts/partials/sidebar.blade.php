@@ -712,66 +712,6 @@
                             <!--end:Menu link-->
                         </div>
                     @endcanany
-
-                    {{-- @canany(['users.manage', 'settings.manage'])
-                        <!--begin:Settings Modules-->
-                        <div data-kt-menu-trigger="click" class="menu-item menu-accordion" id="settings_menu">
-                            <!--begin:Menu link-->
-                            <span class="menu-link">
-                                <span class="menu-icon">
-                                    <i class="ki-outline ki-setting-2 fs-2"></i>
-                                </span>
-                                <span class="menu-title">Settings</span>
-                                <span class="menu-arrow"></span>
-                            </span>
-                            <!--end:Menu link-->
-
-                            <!--begin:Menu sub-->
-                            <div class="menu-sub menu-sub-accordion">
-                                @can('users.manage')
-                                    <!--begin:Menu item-->
-                                    <div class="menu-item">
-                                        <!--begin:Menu link-->
-                                        <a class="menu-link" id="users_link" href="{{ route('users.index') }}"><span
-                                                class="menu-bullet"><span class="bullet bullet-dot"></span></span><span
-                                                class="menu-title">Users</span>
-                                        </a>
-                                        <!--end:Menu link-->
-                                    </div>
-                                    <!--end:Menu item-->
-                                @endcan
-
-                                <!--begin:Branch management item-->
-                                @can('branches.manage')
-                                    <div class="menu-item">
-                                        <!--begin:Menu link-->
-                                        <a class="menu-link" id="branch_link" href="{{ route('branch.index') }}">
-                                            <span class="menu-bullet">
-                                                <span class="bullet bullet-dot">
-                                                </span>
-                                            </span>
-                                            <span class="menu-title">Branch</span>
-                                        </a>
-                                        <!--end:Menu link-->
-                                    </div>
-                                @endcan
-                                <!--end:Branch management item-->
-
-                                <!--begin:Bulk Admission item-->
-                                {{-- <div class="menu-item">
-                                    <!--begin:Menu link-->
-                                    <a class="menu-link" id="bulk_admission_link"
-                                        href="{{ route('bulk.admission.index') }}">
-                                        <span class="menu-bullet">
-                                            <span class="bullet bullet-dot">
-                                            </span>
-                                        </span>
-                                        <span class="menu-title">Bulk Admission</span>
-                                    </a>
-                                    <!--end:Menu link-->
-                                </div> --}}
-                    <!--end:Settings Menu-->
-
                 </div>
                 <!--end::Menu-->
             </div>
