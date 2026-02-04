@@ -6,6 +6,7 @@
 /storage/*.key
 /storage/pail
 /storage/app/private/UCMS/*
+/storage/app/private/UCMS-Files/*
 /vendor
 run-scheduler.bat
 .env
