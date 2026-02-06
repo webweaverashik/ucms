@@ -8,6 +8,16 @@
         .comment-card:hover {
             background-color: #f9f9f9;
         }
+
+        /* Custom SweetAlert width for delete confirmation */
+        .swal-wide {
+            width: 500px !important;
+        }
+
+        .swal-wide .swal2-html-container {
+            white-space: pre-line;
+            text-align: left;
+        }
     </style>
 @endpush
 @extends('layouts.app')
@@ -370,15 +380,15 @@
                                         @can('transactions.approve')
                                             <a href="#" title="Approve Transaction"
                                                 class="btn btn-icon text-hover-success w-30px h-30px approve-txn me-2"
-                                                data-txn-id={{ $transaction->id }}>
+                                                data-txn-id="{{ $transaction->id }}">
                                                 <i class="bi bi-check-circle fs-2"></i>
                                             </a>
                                         @endcan
                                         @can('transactions.delete')
                                             <a href="#" title="Delete Transaction"
                                                 class="btn btn-icon text-hover-danger w-30px h-30px delete-txn"
-                                                data-txn-id={{ $transaction->id }}>
-                                                <i class="bi bi-trash fs-2"></i>
+                                                data-txn-id="{{ $transaction->id }}" data-is-approved="0">
+                                                <i class="ki-outline ki-trash fs-2"></i>
                                             </a>
                                         @endcan
                                         {{-- Showing a placeholder text for other users --}}
@@ -389,10 +399,21 @@
                                         @can('transactions.payslip.download')
                                             <a href="#" data-bs-toggle="tooltip" title="Download Statement"
                                                 class="btn btn-icon text-hover-primary w-30px h-30px download-statement"
-                                                data-student-id="{{ $transaction->student_id }}" data-invoice-id="{{ $transaction->paymentInvoice->id }}"
+                                                data-student-id="{{ $transaction->student_id }}"
+                                                data-invoice-id="{{ $transaction->paymentInvoice->id }}"
                                                 data-year="{{ $transaction->created_at->format('Y') }}">
                                                 <i class="bi bi-download fs-2"></i>
                                             </a>
+                                        @endcan
+
+                                        @can('transactions.delete')
+                                            @if ($transaction->created_at->greaterThan(now()->subDay()))
+                                                <a href="#" title="Delete Transaction"
+                                                    class="btn btn-icon text-hover-danger w-30px h-30px delete-txn"
+                                                    data-txn-id="{{ $transaction->id }}" data-is-approved="1">
+                                                    <i class="ki-outline ki-trash fs-2"></i>
+                                                </a>
+                                            @endif
                                         @endcan
                                     @endif
                                 </td>

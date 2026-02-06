@@ -37,7 +37,7 @@ class PaymentInvoice extends Model
 
     public function paymentTransactions()
     {
-        return $this->hasMany(PaymentTransaction::class);
+        return $this->hasMany(PaymentTransaction::class)->latest();
     }
 
     public function createdBy()

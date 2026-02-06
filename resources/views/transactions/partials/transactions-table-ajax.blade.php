@@ -16,7 +16,7 @@
                 @endif
                 <th>Payment Date</th>
                 <th>Received By</th>
-                <th class="not-export">Actions</th>
+                <th class="not-export text-end">Actions</th>
             </tr>
         </thead>
         <tbody class="text-gray-600 fw-semibold">

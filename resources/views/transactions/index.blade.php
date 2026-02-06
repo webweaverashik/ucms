@@ -26,6 +26,16 @@
             pointer-events: none;
             opacity: 0.6;
         }
+
+        /* Custom SweetAlert width for delete confirmation */
+        .swal-wide {
+            width: 500px !important;
+        }
+
+        .swal-wide .swal2-html-container {
+            white-space: pre-line;
+            text-align: left;
+        }
     </style>
 @endpush
 
@@ -50,7 +60,8 @@
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
                 <a href="#" class="text-muted text-hover-primary">
-                    Payments Info </a>
+                    Payments Info
+                </a>
             </li>
             <!--end::Item-->
             <!--begin::Item-->
@@ -60,7 +71,8 @@
             <!--end::Item-->
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                Transactions </li>
+                Transactions
+            </li>
             <!--end::Item-->
         </ul>
         <!--end::Breadcrumb-->
@@ -106,7 +118,6 @@
                 <!--end::Search-->
             </div>
             <!--begin::Card title-->
-
             <!--begin::Card toolbar-->
             <div class="card-toolbar">
                 <!--begin::Toolbar-->
@@ -140,27 +151,40 @@
                                 </select>
                             </div>
                             <!--end::Input group-->
-
+                            @can('transactions.delete')
+                            <!--begin::Show Deleted Toggle-->
+                            <div class="mb-10">
+                                <label class="form-check form-switch form-check-custom form-check-solid">
+                                    <input class="form-check-input" type="checkbox" id="show_deleted_filter" value="1" />
+                                    <span class="form-check-label fw-semibold text-gray-700">
+                                        Show Deleted Only
+                                    </span>
+                                </label>
+                                <div class="form-text text-muted mt-2">
+                                    View only deleted transactions
+                                </div>
+                            </div>
+                            <!--end::Show Deleted Toggle-->
+                            @endcan
                             <!--begin::Actions-->
                             <div class="d-flex justify-content-end">
-                                <button type="reset" class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
+                                <button type="reset"
+                                    class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
                                     data-kt-menu-dismiss="true" data-transaction-table-filter="reset">Reset</button>
-                                <button type="submit" class="btn btn-primary fw-semibold px-6" data-kt-menu-dismiss="true"
-                                    data-transaction-table-filter="filter">Apply</button>
+                                <button type="submit" class="btn btn-primary fw-semibold px-6"
+                                    data-kt-menu-dismiss="true" data-transaction-table-filter="filter">Apply</button>
                             </div>
                             <!--end::Actions-->
                         </div>
                         <!--end::Content-->
                     </div>
                     <!--end::Menu 1-->
-
                     <!--begin::Export dropdown-->
                     <div class="dropdown">
                         <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
                             data-kt-menu-placement="bottom-end" id="export_dropdown_btn">
                             <i class="ki-outline ki-exit-up fs-2"></i>Export
                         </button>
-
                         <!--begin::Menu-->
                         <div id="kt_table_report_dropdown_menu"
                             class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
@@ -183,7 +207,6 @@
                         <!--end::Menu-->
                     </div>
                     <!--end::Export dropdown-->
-
                     @can('transactions.create')
                         <!--begin::Add subscription-->
                         <a href="#" class="btn btn-primary" data-bs-toggle="modal"
@@ -197,12 +220,12 @@
             <!--end::Card toolbar-->
         </div>
         <!--end::Card header-->
-
         <!--begin::Card body-->
         <div class="card-body py-4">
             @if ($isAdmin)
                 <!--begin::Tabs for Admin-->
-                <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-5 fs-6" id="transactionBranchTabs" role="tablist">
+                <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-5 fs-6" id="transactionBranchTabs"
+                    role="tablist">
                     @foreach ($branches as $index => $branch)
                         @php
                             $branchTxnCount = $transactionCounts[$branch->id] ?? 0;
@@ -224,7 +247,6 @@
                     @endforeach
                 </ul>
                 <!--end::Tabs for Admin-->
-
                 <!--begin::Tab Content-->
                 <div class="tab-content" id="transactionBranchTabsContent">
                     @foreach ($branches as $index => $branch)
@@ -254,7 +276,6 @@
     </div>
     <!--end::Card-->
 
-
     <!--begin::Modal - Add Transaction-->
     <div class="modal fade" id="kt_modal_add_transaction" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
         data-bs-keyboard="false">
@@ -269,26 +290,22 @@
                     <!--end::Modal title-->
                     <!--begin::Close-->
                     <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-add-transaction-modal-action="close">
-                        <i class="ki-outline ki-cross fs-1">
-                        </i>
+                        <i class="ki-outline ki-cross fs-1"> </i>
                     </div>
                     <!--end::Close-->
                 </div>
                 <!--end::Modal header-->
-
                 <!--begin::Modal body-->
                 <div class="modal-body px-5 my-7">
                     <!--begin::Form-->
                     <form id="kt_modal_add_transaction_form" class="form" action="{{ route('transactions.store') }}"
                         method="POST">
                         @csrf
-
                         <!--begin::Scroll-->
                         <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_add_transaction_scroll"
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_transaction_header"
                             data-kt-scroll-wrappers="#kt_modal_add_transaction_scroll" data-kt-scroll-offset="300px">
-
                             @if ($isAdmin)
                                 <!--begin::Branch Select for Admin-->
                                 <div class="fv-row mb-7">
@@ -300,7 +317,8 @@
                                         <div class="overflow-hidden flex-grow-1">
                                             <select name="transaction_branch"
                                                 class="form-select form-select-solid rounded-start-0 border-start"
-                                                data-control="select2" data-dropdown-parent="#kt_modal_add_transaction"
+                                                data-control="select2"
+                                                data-dropdown-parent="#kt_modal_add_transaction"
                                                 data-placeholder="Select a branch" id="transaction_branch_select">
                                                 <option></option>
                                                 @foreach ($branches as $branch)
@@ -313,7 +331,6 @@
                                 </div>
                                 <!--end::Branch Select for Admin-->
                             @endif
-
                             <!--begin::Name Input group-->
                             <div class="fv-row mb-7">
                                 <!--begin::Label-->
@@ -343,7 +360,6 @@
                                 <!--end::Solid input group style-->
                             </div>
                             <!--end::Name Input group-->
-
                             <!--begin::Phone Input group-->
                             <div class="fv-row mb-7">
                                 <!--begin::Label-->
@@ -366,7 +382,6 @@
                                 <!--end::Solid input group style-->
                             </div>
                             <!--end::Phone Input group-->
-
                             <!--begin::Type Input group-->
                             <div class="fv-row mb-7">
                                 <!--begin::Label-->
@@ -433,7 +448,6 @@
                                 <!--end::Row-->
                             </div>
                             <!--end::Type Input group-->
-
                             <div class="row">
                                 <div class="col-lg-6">
                                     <!--begin::Name Input group-->
@@ -466,15 +480,14 @@
                                     <!--end::Name Input group-->
                                 </div>
                             </div>
-
                         </div>
                         <!--end::Scroll-->
-
                         <!--begin::Actions-->
                         <div class="text-center pt-10">
                             <button type="reset" class="btn btn-light me-3"
                                 data-kt-add-transaction-modal-action="cancel">Discard</button>
-                            <button type="submit" class="btn btn-primary" data-kt-add-transaction-modal-action="submit">
+                            <button type="submit" class="btn btn-primary"
+                                data-kt-add-transaction-modal-action="submit">
                                 <span class="indicator-label">Submit</span>
                                 <span class="indicator-progress">Please wait...
                                     <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
@@ -515,9 +528,7 @@
         const studentsByBranch = @json($isAdmin ? $studentsByBranch : []);
         const branchColors = @json($branchColors);
     </script>
-
     <script src="{{ asset('js/transactions/index.js') }}"></script>
-
     <script>
         document.getElementById("payments_menu").classList.add("here", "show");
         document.getElementById("transactions_link").classList.add("active");

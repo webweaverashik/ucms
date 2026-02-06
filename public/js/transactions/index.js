@@ -8,6 +8,7 @@ var KTAllTransactionsList = (function () {
       var initializedTabs = {};
       var currentSearchValue = "";
       var currentPaymentTypeFilter = "";
+      var currentShowDeleted = false;
       var searchDebounceTimer = null;
 
       // Get DataTable config for AJAX loading
@@ -21,6 +22,7 @@ var KTAllTransactionsList = (function () {
                         data: function (d) {
                               d.branch_id = branchId;
                               d.payment_type_filter = currentPaymentTypeFilter;
+                              d.show_deleted = currentShowDeleted ? '1' : '0';
                         },
                         error: function (xhr, error, thrown) {
                               console.error("DataTables AJAX error:", error, thrown);
@@ -170,6 +172,7 @@ var KTAllTransactionsList = (function () {
             const paymentTypeSelect = document.getElementById(
                   "payment_type_filter_select"
             );
+            const showDeletedCheckbox = document.getElementById("show_deleted_filter");
 
             // Filter datatable on submit
             if (filterButton) {
@@ -177,6 +180,12 @@ var KTAllTransactionsList = (function () {
                         currentPaymentTypeFilter = paymentTypeSelect
                               ? paymentTypeSelect.value
                               : "";
+                        currentShowDeleted = showDeletedCheckbox
+                              ? showDeletedCheckbox.checked
+                              : false;
+
+                        // Update UI to show deleted mode indicator
+                        updateDeletedModeIndicator();
 
                         if (activeDatatable) {
                               activeDatatable.ajax.reload();
@@ -190,12 +199,41 @@ var KTAllTransactionsList = (function () {
                         if (paymentTypeSelect) {
                               $(paymentTypeSelect).val(null).trigger("change");
                         }
+                        if (showDeletedCheckbox) {
+                              showDeletedCheckbox.checked = false;
+                        }
                         currentPaymentTypeFilter = "";
+                        currentShowDeleted = false;
+
+                        // Update UI to show deleted mode indicator
+                        updateDeletedModeIndicator();
 
                         if (activeDatatable) {
                               activeDatatable.ajax.reload();
                         }
                   });
+            }
+      };
+
+      // Update UI indicator when showing deleted transactions
+      var updateDeletedModeIndicator = function () {
+            const existingIndicator = document.getElementById("deleted_mode_indicator");
+
+            if (currentShowDeleted) {
+                  if (!existingIndicator) {
+                        const cardTitle = document.querySelector(".card-title");
+                        if (cardTitle) {
+                              const indicator = document.createElement("span");
+                              indicator.id = "deleted_mode_indicator";
+                              indicator.className = "badge badge-danger ms-3";
+                              indicator.innerHTML = '<i class="ki-outline ki-trash text-white me-1"></i>Showing Deleted Only';
+                              cardTitle.appendChild(indicator);
+                        }
+                  }
+            } else {
+                  if (existingIndicator) {
+                        existingIndicator.remove();
+                  }
             }
       };
 
@@ -221,19 +259,22 @@ var KTAllTransactionsList = (function () {
 
                         // Fetch all data for export
                         fetchExportData()
-                              .then((data) => {
+                              .then((result) => {
+                                    const data = result.data;
+                                    const showDeleted = result.showDeleted;
+
                                     switch (exportType) {
                                           case "copy":
-                                                copyToClipboard(data);
+                                                copyToClipboard(data, showDeleted);
                                                 break;
                                           case "excel":
-                                                exportToExcel(data);
+                                                exportToExcel(data, showDeleted);
                                                 break;
                                           case "csv":
-                                                exportToCSV(data);
+                                                exportToCSV(data, showDeleted);
                                                 break;
                                           case "pdf":
-                                                exportToPDF(data);
+                                                exportToPDF(data, showDeleted);
                                                 break;
                                     }
                               })
@@ -260,6 +301,7 @@ var KTAllTransactionsList = (function () {
                         branch_id: activeBranchId || "",
                         search: currentSearchValue,
                         payment_type_filter: currentPaymentTypeFilter,
+                        show_deleted: currentShowDeleted ? "1" : "0",
                   });
 
                   fetch(`${routeExportData}?${params.toString()}`, {
@@ -273,14 +315,14 @@ var KTAllTransactionsList = (function () {
                               if (!response.ok) throw new Error("Network response was not ok");
                               return response.json();
                         })
-                        .then((data) => resolve(data.data))
+                        .then((data) => resolve({ data: data.data, showDeleted: data.show_deleted }))
                         .catch((error) => reject(error));
             });
       };
 
       // Copy to clipboard
-      var copyToClipboard = function (data) {
-            const headers = [
+      var copyToClipboard = function (data, showDeleted) {
+            let headers = [
                   "SL",
                   "Invoice No.",
                   "Voucher No.",
@@ -291,20 +333,29 @@ var KTAllTransactionsList = (function () {
                   "Received By",
             ];
 
-            let text = headers.join("\t") + "\n";
+            // Add Deleted At column for deleted transactions export
+            if (showDeleted) {
+                  headers.push("Deleted At");
+            }
 
+            let text = headers.join("\t") + "\n";
             data.forEach((row) => {
-                  text +=
-                        [
-                              row.sl,
-                              row.invoice_no,
-                              row.voucher_no,
-                              row.amount_paid,
-                              row.payment_type,
-                              row.student,
-                              row.payment_date,
-                              row.received_by,
-                        ].join("\t") + "\n";
+                  let rowData = [
+                        row.sl,
+                        row.invoice_no,
+                        row.voucher_no,
+                        row.amount_paid,
+                        row.payment_type,
+                        row.student,
+                        row.payment_date,
+                        row.received_by,
+                  ];
+
+                  if (showDeleted) {
+                        rowData.push(row.deleted_at || "");
+                  }
+
+                  text += rowData.join("\t") + "\n";
             });
 
             navigator.clipboard
@@ -326,8 +377,8 @@ var KTAllTransactionsList = (function () {
       };
 
       // Export to Excel using SheetJS
-      var exportToExcel = function (data) {
-            const headers = [
+      var exportToExcel = function (data, showDeleted) {
+            let headers = [
                   "SL",
                   "Invoice No.",
                   "Voucher No.",
@@ -338,10 +389,14 @@ var KTAllTransactionsList = (function () {
                   "Received By",
             ];
 
+            if (showDeleted) {
+                  headers.push("Deleted At");
+            }
+
             const wsData = [headers];
 
             data.forEach((row) => {
-                  wsData.push([
+                  let rowData = [
                         row.sl,
                         row.invoice_no,
                         row.voucher_no,
@@ -350,15 +405,21 @@ var KTAllTransactionsList = (function () {
                         row.student,
                         row.payment_date,
                         row.received_by,
-                  ]);
+                  ];
+
+                  if (showDeleted) {
+                        rowData.push(row.deleted_at || "");
+                  }
+
+                  wsData.push(rowData);
             });
 
             const ws = XLSX.utils.aoa_to_sheet(wsData);
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Transactions");
+            XLSX.utils.book_append_sheet(wb, ws, showDeleted ? "Deleted Transactions" : "Transactions");
 
             // Set column widths
-            ws["!cols"] = [
+            let colWidths = [
                   { wch: 5 },
                   { wch: 15 },
                   { wch: 25 },
@@ -369,14 +430,22 @@ var KTAllTransactionsList = (function () {
                   { wch: 15 },
             ];
 
-            const fileName = `Transactions_Report_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            if (showDeleted) {
+                  colWidths.push({ wch: 22 });
+            }
+
+            ws["!cols"] = colWidths;
+
+            const fileName = showDeleted
+                  ? `Deleted_Transactions_Report_${new Date().toISOString().slice(0, 10)}.xlsx`
+                  : `Transactions_Report_${new Date().toISOString().slice(0, 10)}.xlsx`;
             XLSX.writeFile(wb, fileName);
             toastr.success("Excel file downloaded successfully!");
       };
 
       // Export to CSV using SheetJS
-      var exportToCSV = function (data) {
-            const headers = [
+      var exportToCSV = function (data, showDeleted) {
+            let headers = [
                   "SL",
                   "Invoice No.",
                   "Voucher No.",
@@ -387,10 +456,14 @@ var KTAllTransactionsList = (function () {
                   "Received By",
             ];
 
+            if (showDeleted) {
+                  headers.push("Deleted At");
+            }
+
             const wsData = [headers];
 
             data.forEach((row) => {
-                  wsData.push([
+                  let rowData = [
                         row.sl,
                         row.invoice_no,
                         row.voucher_no,
@@ -399,7 +472,13 @@ var KTAllTransactionsList = (function () {
                         row.student,
                         row.payment_date,
                         row.received_by,
-                  ]);
+                  ];
+
+                  if (showDeleted) {
+                        rowData.push(row.deleted_at || "");
+                  }
+
+                  wsData.push(rowData);
             });
 
             const ws = XLSX.utils.aoa_to_sheet(wsData);
@@ -407,42 +486,83 @@ var KTAllTransactionsList = (function () {
 
             const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
             const link = document.createElement("a");
-            const fileName = `Transactions_Report_${new Date().toISOString().slice(0, 10)}.csv`;
+            const fileName = showDeleted
+                  ? `Deleted_Transactions_Report_${new Date().toISOString().slice(0, 10)}.csv`
+                  : `Transactions_Report_${new Date().toISOString().slice(0, 10)}.csv`;
 
             link.href = URL.createObjectURL(blob);
             link.download = fileName;
             link.click();
             URL.revokeObjectURL(link.href);
+
             toastr.success("CSV file downloaded successfully!");
       };
 
       // Export to PDF using jsPDF
-      var exportToPDF = function (data) {
+      var exportToPDF = function (data, showDeleted) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF("l", "mm", "a4"); // Landscape orientation
 
-            const headers = [
-                  ["SL", "Invoice No.", "Voucher No.", "Amount", "Type", "Student", "Payment Date", "Received By"],
+            let headerRow = [
+                  "SL",
+                  "Invoice No.",
+                  "Voucher No.",
+                  "Amount",
+                  "Type",
+                  "Student",
+                  "Payment Date",
+                  "Received By",
             ];
 
-            const rows = data.map((row) => [
-                  row.sl,
-                  row.invoice_no,
-                  row.voucher_no,
-                  row.amount_paid,
-                  row.payment_type,
-                  row.student,
-                  row.payment_date,
-                  row.received_by,
-            ]);
+            if (showDeleted) {
+                  headerRow.push("Deleted At");
+            }
+
+            const headers = [headerRow];
+
+            const rows = data.map((row) => {
+                  let rowData = [
+                        row.sl,
+                        row.invoice_no,
+                        row.voucher_no,
+                        row.amount_paid,
+                        row.payment_type,
+                        row.student,
+                        row.payment_date,
+                        row.received_by,
+                  ];
+
+                  if (showDeleted) {
+                        rowData.push(row.deleted_at || "");
+                  }
+
+                  return rowData;
+            });
 
             // Title
             doc.setFontSize(16);
-            doc.text("Transactions Report", 14, 15);
+            const title = showDeleted ? "Deleted Transactions Report" : "Transactions Report";
+            doc.text(title, 14, 15);
 
             // Date
             doc.setFontSize(10);
             doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 22);
+
+            // Column styles
+            let columnStyles = {
+                  0: { cellWidth: 10 },
+                  1: { cellWidth: 25 },
+                  2: { cellWidth: 35 },
+                  3: { cellWidth: 18 },
+                  4: { cellWidth: 18 },
+                  5: { cellWidth: 45 },
+                  6: { cellWidth: 35 },
+                  7: { cellWidth: 22 },
+            };
+
+            if (showDeleted) {
+                  columnStyles[8] = { cellWidth: 35 };
+            }
 
             // Table
             doc.autoTable({
@@ -450,27 +570,18 @@ var KTAllTransactionsList = (function () {
                   body: rows,
                   startY: 28,
                   styles: {
-                        fontSize: 8,
+                        fontSize: 7,
                         cellPadding: 2,
                   },
                   headStyles: {
-                        fillColor: [41, 128, 185],
+                        fillColor: showDeleted ? [220, 53, 69] : [41, 128, 185],
                         textColor: 255,
                         fontStyle: "bold",
                   },
                   alternateRowStyles: {
-                        fillColor: [245, 245, 245],
+                        fillColor: showDeleted ? [255, 235, 238] : [245, 245, 245],
                   },
-                  columnStyles: {
-                        0: { cellWidth: 10 },
-                        1: { cellWidth: 25 },
-                        2: { cellWidth: 40 },
-                        3: { cellWidth: 20 },
-                        4: { cellWidth: 20 },
-                        5: { cellWidth: 50 },
-                        6: { cellWidth: 40 },
-                        7: { cellWidth: 25 },
-                  },
+                  columnStyles: columnStyles,
                   margin: { top: 28 },
                   didDrawPage: function (data) {
                         // Footer
@@ -483,12 +594,14 @@ var KTAllTransactionsList = (function () {
                   },
             });
 
-            const fileName = `Transactions_Report_${new Date().toISOString().slice(0, 10)}.pdf`;
+            const fileName = showDeleted
+                  ? `Deleted_Transactions_Report_${new Date().toISOString().slice(0, 10)}.pdf`
+                  : `Transactions_Report_${new Date().toISOString().slice(0, 10)}.pdf`;
             doc.save(fileName);
             toastr.success("PDF file downloaded successfully!");
       };
 
-      // Delete Transaction
+      // Delete Transaction - Updated with better confirmation for approved transactions
       var handleDeletion = function () {
             document.addEventListener("click", function (e) {
                   const deleteBtn = e.target.closest(".delete-txn");
@@ -497,19 +610,37 @@ var KTAllTransactionsList = (function () {
                   e.preventDefault();
 
                   let txnId = deleteBtn.getAttribute("data-txn-id");
+                  let isApproved = deleteBtn.getAttribute("data-is-approved") === "1";
                   let url = routeDeleteTxn.replace(":id", txnId);
 
+                  // Different warning message based on whether transaction is approved
+                  let warningTitle = "Are you sure you want to delete?";
+                  let warningText = "Once deleted, this unapproved transaction will be removed.";
+
+                  if (isApproved) {
+                        warningTitle = "Delete Approved Transaction?";
+                        warningText = "This transaction has been approved. Deleting it will:\n\n• Reverse the wallet collection\n• Restore the invoice amount due\n• Create an adjustment log\n• Decrease the collector's total collected amount\n\nNote: Approved transactions can only be deleted within 24 hours of creation.\n\nThis action cannot be undone.";
+                  }
+
                   Swal.fire({
-                        title: "Are you sure you want to delete?",
-                        text: "Once deleted, this transaction will be removed.",
+                        title: warningTitle,
+                        text: warningText,
                         icon: "warning",
                         showCancelButton: true,
-                        confirmButtonColor: "#3085d6",
-                        cancelButtonColor: "#d33",
-                        confirmButtonText: "Yes, delete it",
+                        confirmButtonColor: "#d33",
+                        cancelButtonColor: "#6c757d",
+                        confirmButtonText: isApproved ? "Yes, delete and reverse" : "Yes, delete it",
                         cancelButtonText: "Cancel",
+                        customClass: {
+                              popup: 'swal-wide'
+                        }
                   }).then((result) => {
                         if (result.isConfirmed) {
+                              // Show loading state on button
+                              const originalContent = deleteBtn.innerHTML;
+                              deleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+                              deleteBtn.style.pointerEvents = 'none';
+
                               fetch(url, {
                                     method: "DELETE",
                                     headers: {
@@ -521,8 +652,8 @@ var KTAllTransactionsList = (function () {
                                     .then((data) => {
                                           if (data.success) {
                                                 Swal.fire({
-                                                      title: "Success!",
-                                                      text: "Transaction deleted successfully.",
+                                                      title: "Deleted!",
+                                                      text: data.message || "Transaction deleted successfully.",
                                                       icon: "success",
                                                       confirmButtonText: "Okay",
                                                 }).then(() => {
@@ -531,20 +662,29 @@ var KTAllTransactionsList = (function () {
                                                       }
                                                 });
                                           } else {
-                                                Swal.fire(
-                                                      "Failed!",
-                                                      "Transaction could not be deleted.",
-                                                      "error"
-                                                );
+                                                // Restore button state
+                                                deleteBtn.innerHTML = originalContent;
+                                                deleteBtn.style.pointerEvents = 'auto';
+
+                                                Swal.fire({
+                                                      title: "Failed!",
+                                                      text: data.message || "Transaction could not be deleted.",
+                                                      icon: "error",
+                                                });
                                           }
                                     })
                                     .catch((error) => {
                                           console.error("Fetch Error:", error);
-                                          Swal.fire(
-                                                "Failed!",
-                                                "An error occurred. Please contact support.",
-                                                "error"
-                                          );
+
+                                          // Restore button state
+                                          deleteBtn.innerHTML = originalContent;
+                                          deleteBtn.style.pointerEvents = 'auto';
+
+                                          Swal.fire({
+                                                title: "Error!",
+                                                text: "An error occurred. Please try again or contact support.",
+                                                icon: "error",
+                                          });
                                     });
                         }
                   });
@@ -571,6 +711,11 @@ var KTAllTransactionsList = (function () {
                         confirmButtonText: "Yes, approve!",
                   }).then((result) => {
                         if (result.isConfirmed) {
+                              // Show loading state
+                              const originalContent = approveBtn.innerHTML;
+                              approveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+                              approveBtn.style.pointerEvents = 'none';
+
                               fetch(`/transactions/${txnId}/approve`, {
                                     method: "POST",
                                     headers: {
@@ -591,6 +736,10 @@ var KTAllTransactionsList = (function () {
                                                       }
                                                 });
                                           } else {
+                                                // Restore button state
+                                                approveBtn.innerHTML = originalContent;
+                                                approveBtn.style.pointerEvents = 'auto';
+
                                                 Swal.fire({
                                                       title: "Error!",
                                                       text: data.message,
@@ -600,6 +749,11 @@ var KTAllTransactionsList = (function () {
                                     })
                                     .catch((error) => {
                                           console.error("Fetch Error:", error);
+
+                                          // Restore button state
+                                          approveBtn.innerHTML = originalContent;
+                                          approveBtn.style.pointerEvents = 'auto';
+
                                           Swal.fire({
                                                 title: "Error!",
                                                 text: "Something went wrong. Please try again.",
@@ -666,6 +820,7 @@ var KTAllTransactionsList = (function () {
                                     "_blank",
                                     "width=900,height=700,scrollbars=yes,resizable=yes"
                               );
+
                               if (printWindow) {
                                     printWindow.document.open();
                                     printWindow.document.write(html);
@@ -731,9 +886,11 @@ var KTAllTransactionsList = (function () {
                   handleApproval();
                   handleStatementDownload();
             },
+
             getActiveDatatable: function () {
                   return activeDatatable;
             },
+
             refreshTable: refreshTable,
       };
 })();
@@ -765,7 +922,6 @@ var KTAddTransaction = (function () {
       // Format "07_2025" to "July 2025"
       var formatMonthYear = function (raw) {
             if (!raw) return "";
-
             const [monthStr, year] = raw.split("_");
             const month = parseInt(monthStr, 10);
             const monthNames = [
@@ -782,11 +938,9 @@ var KTAddTransaction = (function () {
                   "November",
                   "December",
             ];
-
             if (month >= 1 && month <= 12 && year) {
                   return `${monthNames[month - 1]} ${year}`;
             }
-
             return raw;
       };
 
@@ -831,7 +985,6 @@ var KTAddTransaction = (function () {
       var handleStudentSelect = function () {
             $(studentSelect).on("change", function () {
                   const studentId = $(this).val();
-
                   if (!studentId) return;
 
                   $.ajax({
@@ -839,8 +992,8 @@ var KTAddTransaction = (function () {
                         method: "GET",
                         success: function (response) {
                               invoices = response;
-
                               const $invoiceSelect = $(invoiceSelect);
+
                               $invoiceSelect
                                     .empty()
                                     .append(`<option value="">Select Due Invoice</option>`);
@@ -868,7 +1021,6 @@ var KTAddTransaction = (function () {
                               }
 
                               $(amountInput).val("").prop("disabled", true).removeClass("is-invalid");
-
                               $("#transaction_amount_error").remove();
                               $('input[name="transaction_type"]').prop("disabled", false);
                         },
@@ -887,7 +1039,6 @@ var KTAddTransaction = (function () {
 
                   if (invoice) {
                         const $amountInput = $(amountInput);
-
                         $amountInput
                               .val(invoice.amount_due)
                               .prop("disabled", false)
@@ -1061,7 +1212,6 @@ var KTAddTransaction = (function () {
                                     );
 
                                     const transactionData = data.transaction;
-
                                     resetForm();
                                     modal.hide();
 
@@ -1106,7 +1256,6 @@ var KTAddTransaction = (function () {
                               console.error("Transaction Error:", error);
 
                               let errorMessage = "An error occurred. Please try again.";
-
                               if (error.message) {
                                     errorMessage = error.message;
                               } else if (error.errors) {
@@ -1114,7 +1263,6 @@ var KTAddTransaction = (function () {
                               }
 
                               toastr.error(errorMessage);
-
                               submitBtn.removeAttribute("data-kt-indicator");
                               submitBtn.disabled = false;
                         });
@@ -1149,6 +1297,7 @@ var KTAddTransaction = (function () {
                               "_blank",
                               "width=900,height=700,scrollbars=yes,resizable=yes"
                         );
+
                         if (printWindow) {
                               printWindow.document.open();
                               printWindow.document.write(html);

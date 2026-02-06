@@ -37,10 +37,15 @@ Route::get('autoinvoice/current', [AutoInvoiceController::class, 'generateCurren
 Route::get('autoinvoice/due', [AutoInvoiceController::class, 'generateDue'])->name('auto.invoice.due');
 
 // Transactions
-Route::get('transactions/ajax-data', [PaymentTransactionController::class, 'getData'])->name('transactions.ajax-data');
-Route::get('transactions/export-data', [PaymentTransactionController::class, 'getExportData'])->name('transactions.export-data');
-Route::get('transactions/{id}/download-payslip', [PdfController::class, 'downloadPaySlip'])->name('transactions.download');
-Route::post('transactions/{id}/approve', [PaymentTransactionController::class, 'approve'])->name('transactions.approve');
+Route::prefix('transactions')
+    ->name('transactions.')
+    ->group(function () {
+        // Custom / non-REST actions
+        Route::get('ajax-data', [PaymentTransactionController::class, 'getData'])->name('ajax-data');
+        Route::get('export-data', [PaymentTransactionController::class, 'getExportData'])->name('export-data');
+        Route::post('{transaction}/approve', [PaymentTransactionController::class, 'approve'])->name('approve');
+        Route::get('{transaction}/download-payslip', [PdfController::class, 'downloadPaySlip'])->name('download');
+    });
 
 // Costs CRUD
 Route::prefix('costs')
@@ -72,7 +77,5 @@ Route::prefix('settlements')
     });
 
 // Resource controllers
-Route::resources([
-    'invoices'     => PaymentInvoiceController::class,
-    'transactions' => PaymentTransactionController::class,
-]);
+Route::resource('invoices', PaymentInvoiceController::class);
+Route::resource('transactions', PaymentTransactionController::class)->only(['index', 'store', 'destroy']);

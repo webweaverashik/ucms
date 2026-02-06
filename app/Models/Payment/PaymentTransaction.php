@@ -3,6 +3,7 @@ namespace App\Models\Payment;
 
 use App\Models\Student\Student;
 use App\Models\User;
+use App\Models\UserWalletLog;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -41,5 +42,15 @@ class PaymentTransaction extends Model
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by')->withTrashed();
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('is_approved', true);
+    }
+
+    public function walletLog()
+    {
+        return $this->hasOne(UserWalletLog::class, 'payment_transaction_id');
     }
 }

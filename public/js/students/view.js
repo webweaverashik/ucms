@@ -712,54 +712,88 @@ var KTStudentsTransactionsView = function () {
         });
     }
 
-    // Delete Transaction
-    const handleDeletion = function () {
-        document.addEventListener('click', function (e) {
-            const deleteBtn = e.target.closest('.delete-txn');
+    // Delete Transaction - Updated with better confirmation for approved transactions
+    var handleTransactionDeletion = function () {
+        document.addEventListener("click", function (e) {
+            const deleteBtn = e.target.closest(".delete-txn");
             if (!deleteBtn) return;
 
             e.preventDefault();
 
-            let txnId = deleteBtn.getAttribute('data-txn-id');
-            console.log('TXN ID:', txnId);
-            let url = routeDeleteTxn.replace(':id', txnId);
+            let txnId = deleteBtn.getAttribute("data-txn-id");
+            let isApproved = deleteBtn.getAttribute("data-is-approved") === "1";
+            let url = routeDeleteTxn.replace(":id", txnId);
+
+            // Different warning message based on whether transaction is approved
+            let warningTitle = "Are you sure you want to delete?";
+            let warningText = "Once deleted, this unapproved transaction will be removed.";
+
+            if (isApproved) {
+                warningTitle = "Delete Approved Transaction?";
+                warningText = "This transaction has been approved. Deleting it will:\n\n• Reverse the wallet collection\n• Restore the invoice amount due\n• Create an adjustment log\n• Decrease the collector's total collected amount\n\nNote: Approved transactions can only be deleted within 24 hours of creation.\n\nThis action cannot be undone.";
+            }
 
             Swal.fire({
-                title: 'Are you sure you want to delete?',
-                text: "Once deleted, this transaction will be removed.",
-                icon: 'warning',
+                title: warningTitle,
+                text: warningText,
+                icon: "warning",
                 showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete it',
-                cancelButtonText: 'Cancel',
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#6c757d",
+                confirmButtonText: isApproved ? "Yes, delete and reverse" : "Yes, delete it",
+                cancelButtonText: "Cancel",
+                customClass: {
+                    popup: 'swal-wide'
+                }
             }).then((result) => {
                 if (result.isConfirmed) {
+                    // Show loading state on button
+                    const originalContent = deleteBtn.innerHTML;
+                    deleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+                    deleteBtn.style.pointerEvents = 'none';
+
                     fetch(url, {
                         method: "DELETE",
                         headers: {
                             "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                            "X-CSRF-TOKEN": csrfToken,
                         },
                     })
-                        .then(response => response.json())
-                        .then(data => {
+                        .then((response) => response.json())
+                        .then((data) => {
                             if (data.success) {
                                 Swal.fire({
-                                    title: 'Success!',
-                                    text: 'Transaction deleted successfully.',
-                                    icon: 'success',
-                                    confirmButtonText: 'Okay',
+                                    title: "Deleted!",
+                                    text: data.message || "Transaction deleted successfully.",
+                                    icon: "success",
+                                    confirmButtonText: "Okay",
                                 }).then(() => {
-                                    location.reload();
+                                    window.location.reload();
                                 });
                             } else {
-                                Swal.fire('Failed!', 'Transaction could not be deleted.', 'error');
+                                // Restore button state
+                                deleteBtn.innerHTML = originalContent;
+                                deleteBtn.style.pointerEvents = 'auto';
+
+                                Swal.fire({
+                                    title: "Failed!",
+                                    text: data.message || "Transaction could not be deleted.",
+                                    icon: "error",
+                                });
                             }
                         })
-                        .catch(error => {
+                        .catch((error) => {
                             console.error("Fetch Error:", error);
-                            Swal.fire('Failed!', 'An error occurred. Please contact support.', 'error');
+
+                            // Restore button state
+                            deleteBtn.innerHTML = originalContent;
+                            deleteBtn.style.pointerEvents = 'auto';
+
+                            Swal.fire({
+                                title: "Error!",
+                                text: "An error occurred. Please try again or contact support.",
+                                icon: "error",
+                            });
                         });
                 }
             });
@@ -932,7 +966,7 @@ var KTStudentsTransactionsView = function () {
             }
 
             initDatatable();
-            handleDeletion();
+            handleTransactionDeletion();
             handleTransactionApproval();
             handleStatementDownload();
         }
