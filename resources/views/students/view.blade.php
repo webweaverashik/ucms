@@ -20,6 +20,16 @@
             border: 2px dashed #e4e6ef;
             background: #f9f9f9;
         }
+
+        /* Custom SweetAlert width for delete confirmation */
+        .swal-wide {
+            width: 500px !important;
+        }
+
+        .swal-wide .swal2-html-container {
+            white-space: pre-line;
+            text-align: left;
+        }
     </style>
 @endpush
 
