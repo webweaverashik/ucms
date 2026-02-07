@@ -619,7 +619,7 @@ var KTAllTransactionsList = (function () {
 
                   if (isApproved) {
                         warningTitle = "Delete Successful Transaction?";
-                        warningText = "This transaction has been successful. Deleting it will:\n\n• Reverse the wallet collection\n• Restore the invoice amount due\n• Create an adjustment log\n• Decrease the collector's total collected amount\n\nNote: Approved transactions can only be deleted within 24 hours of creation.\n\nThis action cannot be undone.";
+                        warningText = "This transaction has been successful. Deleting it will:\n\n• Reverse the wallet collection\n• Restore the invoice amount due\n• Create an adjustment log\n• Decrease the collector's total collected amount\n\nNote: Successful transactions can only be deleted within 24 hours of creation.\n\nThis action cannot be undone.";
                   }
 
                   Swal.fire({
