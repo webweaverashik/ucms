@@ -80,6 +80,18 @@
                 -webkit-overflow-scrolling: touch;
             }
         }
+
+        /* Image upload styles */
+        .image-input-wrapper {
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .image-input [data-kt-image-input-action="change"] {
+            left: auto;
+            right: -10px;
+        }
     </style>
 @endpush
 
@@ -105,12 +117,13 @@
                 <div class="me-0 me-sm-7 mb-4 text-center text-sm-start">
                     <div class="symbol symbol-100px symbol-lg-160px symbol-fixed position-relative d-inline-block">
                         <img src="{{ $user->photo_url ? asset($user->photo_url) : asset('img/male-placeholder.png') }}"
-                            alt="{{ $user->name }}" class="w-100" />
+                            alt="{{ $user->name }}" class="w-100" id="profile_avatar_display" />
                         <div
                             class="position-absolute translate-middle bottom-0 start-100 mb-6 bg-success rounded-circle border border-4 border-body h-20px w-20px">
                         </div>
                     </div>
                 </div>
+
                 {{-- User Info Section --}}
                 <div class="flex-grow-1">
                     {{-- Name, Status & Actions --}}
@@ -123,6 +136,7 @@
                                 <span
                                     class="text-gray-900 fs-2 fw-bold me-0 me-sm-2 mb-1 mb-sm-0">{{ $user->name }}</span>
                             </div>
+
                             {{-- User Meta Info --}}
                             <div
                                 class="d-flex flex-column flex-sm-row flex-wrap justify-content-center justify-content-md-start fw-semibold fs-6 mb-4 pe-2">
@@ -150,6 +164,7 @@
                                 </span>
                             </div>
                         </div>
+
                         {{-- Action Buttons --}}
                         <div class="d-flex flex-column flex-sm-row gap-2 my-2 my-md-4">
                             @if (auth()->user()->isAdmin())
@@ -162,6 +177,7 @@
                             </button>
                         </div>
                     </div>
+
                     {{-- Stats Section --}}
                     <div class="d-flex flex-wrap flex-stack">
                         <div class="d-flex flex-column flex-grow-1 pe-0 pe-md-8">
@@ -178,6 +194,7 @@
                                         <div class="fw-semibold fs-7 fs-md-6 text-gray-500">Lifetime Collection</div>
                                     </div>
                                 </div>
+
                                 {{-- Total Settled --}}
                                 <div class="col-6 col-sm-6 col-md-3">
                                     <div class="border border-gray-300 border-dashed rounded py-3 px-4 h-100">
@@ -190,6 +207,7 @@
                                         <div class="fw-semibold fs-7 fs-md-6 text-gray-500">Lifetime Settled</div>
                                     </div>
                                 </div>
+
                                 {{-- Current Balance --}}
                                 <div class="col-6 col-sm-6 col-md-3">
                                     <div class="border border-gray-300 border-dashed rounded py-3 px-4 h-100">
@@ -203,6 +221,7 @@
                                         <div class="fw-semibold fs-7 fs-md-6 text-gray-500">Current Balance</div>
                                     </div>
                                 </div>
+
                                 {{-- Member Since --}}
                                 <div class="col-6 col-sm-6 col-md-3">
                                     <div class="border border-gray-300 border-dashed rounded py-3 px-4 h-100">
@@ -220,6 +239,7 @@
                     </div>
                 </div>
             </div>
+
             {{-- Tabs Navigation --}}
             <ul class="nav nav-stretch nav-line-tabs nav-line-tabs-2x border-transparent fs-5 fw-bold mt-5">
                 <li class="nav-item mt-2">
@@ -459,7 +479,8 @@
                                     style="width: 0%;"></div>
                             </div>
                             <div class="text-muted fs-7 mt-2">
-                                At least 8 characters, one uppercase, one lowercase, one number, and one special character.
+                                At least 8 characters, one uppercase, one lowercase, one number, and one special
+                                character.
                             </div>
                         </div>
 
@@ -498,9 +519,51 @@
                         </div>
 
                         <form id="kt_modal_profile_form" class="form" action="{{ route('users.profile.update') }}"
-                            method="POST">
+                            method="POST" enctype="multipart/form-data">
                             @csrf
                             @method('PUT')
+
+                            {{-- Profile Photo Upload --}}
+                            <div class="fv-row mb-8">
+                                <label class="fw-semibold fs-6 mb-4 d-block">Profile Photo</label>
+                                <div class="image-input image-input-outline image-input-placeholder"
+                                    data-kt-image-input="true">
+                                    <div class="image-input-wrapper w-125px h-125px" id="profile_photo_preview"
+                                        style="background-image: url('{{ $user->photo_url ? asset($user->photo_url) : asset('img/male-placeholder.png') }}')">
+                                    </div>
+
+                                    {{-- Edit button --}}
+                                    <label
+                                        class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
+                                        data-kt-image-input-action="change" data-bs-toggle="tooltip"
+                                        title="Change photo">
+                                        <i class="ki-outline ki-pencil fs-7"></i>
+                                        <input type="file" name="photo" id="profile_photo_input"
+                                            accept=".png,.jpg,.jpeg" />
+                                        <input type="hidden" name="remove_photo" id="remove_photo_input"
+                                            value="0" />
+                                    </label>
+
+                                    {{-- Cancel button --}}
+                                    <span
+                                        class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
+                                        data-kt-image-input-action="cancel" data-bs-toggle="tooltip" title="Cancel">
+                                        <i class="ki-outline ki-cross fs-2"></i>
+                                    </span>
+
+                                    {{-- Remove button --}}
+                                    <span
+                                        class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
+                                        data-kt-image-input-action="remove" data-bs-toggle="tooltip"
+                                        title="Remove photo">
+                                        <i class="ki-outline ki-cross fs-2"></i>
+                                    </span>
+                                </div>
+                                <div class="form-text text-muted mt-3">
+                                    Allowed file types: jpg, png. Max size: 100KB
+                                </div>
+                                <div id="profile_photo_error" class="text-danger fs-7 mt-2" style="display: none;"></div>
+                            </div>
 
                             <div class="row g-9 mb-8">
                                 {{-- Name --}}
@@ -546,7 +609,6 @@
             </div>
         </div>
     @endif
-
 @endsection
 
 @push('vendor-js')
@@ -561,9 +623,13 @@
             userName: "{{ $user->name }}",
             userEmail: "{{ $user->email }}",
             userMobile: "{{ $user->mobile_number }}",
+            userPhotoUrl: "{{ $user->photo_url ? asset($user->photo_url) : asset('img/male-placeholder.png') }}",
+            defaultPhotoUrl: "{{ asset('img/male-placeholder.png') }}",
             passwordResetUrl: "{{ route('users.password.reset', $user->id) }}",
             profileUpdateUrl: "{{ route('users.profile.update') }}",
-            isAdmin: {{ auth()->user()->isAdmin() ? 'true' : 'false' }}
+            isAdmin: {{ auth()->user()->isAdmin() ? 'true' : 'false' }},
+            maxFileSize: 102400, // 100KB in bytes
+            allowedTypes: ['image/jpeg', 'image/png', 'image/jpg']
         };
     </script>
     <script src="{{ asset('js/settings/users/profile.js') }}"></script>

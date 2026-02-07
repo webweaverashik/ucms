@@ -1,7 +1,19 @@
 @push('page-css')
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
-@endpush
+    <style>
+        /* Image upload styles */
+        .image-input-wrapper {
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
 
+        .image-input [data-kt-image-input-action="change"] {
+            left: auto;
+            right: -10px;
+        }
+    </style>
+@endpush
 
 @extends('layouts.app')
 
@@ -24,7 +36,8 @@
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
                 <a href="#" class="text-muted text-hover-primary">
-                    Systems </a>
+                    Systems
+                </a>
             </li>
             <!--end::Item-->
             <!--begin::Item-->
@@ -34,13 +47,13 @@
             <!--end::Item-->
             <!--begin::Item-->
             <li class="breadcrumb-item text-muted">
-                All Users </li>
+                All Users
+            </li>
             <!--end::Item-->
         </ul>
         <!--end::Breadcrumb-->
     </div>
 @endsection
-
 
 @section('content')
     @include('settings.partials.hero')
@@ -95,7 +108,6 @@
                                 </select>
                             </div>
                             <!--end::Input group-->
-
                             <!--begin::Input group-->
                             <div class="mb-10">
                                 <label class="form-label fs-6 fw-semibold">Role:</label>
@@ -109,20 +121,19 @@
                                 </select>
                             </div>
                             <!--end::Input group-->
-
                             <!--begin::Actions-->
                             <div class="d-flex justify-content-end">
-                                <button type="reset" class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
+                                <button type="reset"
+                                    class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
                                     data-kt-menu-dismiss="true" data-users-table-filter="reset">Reset</button>
-                                <button type="submit" class="btn btn-primary fw-semibold px-6" data-kt-menu-dismiss="true"
-                                    data-users-table-filter="filter">Apply</button>
+                                <button type="submit" class="btn btn-primary fw-semibold px-6"
+                                    data-kt-menu-dismiss="true" data-users-table-filter="filter">Apply</button>
                             </div>
                             <!--end::Actions-->
                         </div>
                         <!--end::Content-->
                     </div>
                     <!--end::Menu 1-->
-
                     <!--begin::Add user-->
                     <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_add_user">
                         <i class="ki-outline ki-plus fs-2"></i>New User</a>
@@ -133,7 +144,6 @@
             <!--end::Card toolbar-->
         </div>
         <!--end::Card header-->
-
         <!--begin::Card body-->
         <div class="card-body py-4">
             <!--begin::Table-->
@@ -150,7 +160,6 @@
                         <th class="min-w-100px">Actions</th>
                     </tr>
                 </thead>
-
                 <tbody class="text-gray-600 fw-semibold fs-5">
                     @foreach ($users as $user)
                         <tr>
@@ -181,24 +190,18 @@
                                     <span class="text-muted">-</span>
                                 @endif
                             </td>
-
                             <td>
                                 @php
                                     $role = $user->roles->first()?->name; // Using eager loaded 'roles' relationship
-
                                     $badgeClasses = [
                                         'admin' => 'badge badge-light-danger rounded-pill fs-7 fw-bold',
                                         'manager' => 'badge badge-light-success rounded-pill fs-7 fw-bold',
                                         'accountant' => 'badge badge-light-info rounded-pill fs-7 fw-bold',
                                     ];
-
                                     $badgeClass = $badgeClasses[$role] ?? 'badge badge-light-secondary fw-bold';
                                 @endphp
-
                                 <div class="{{ $badgeClass }}">{{ ucfirst($role) ?? '-' }}</div>
                             </td>
-
-
                             <td>
                                 @if ($user->latestLoginActivity)
                                     {{ $user->latestLoginActivity->created_at->format('d-M-Y') }}<br>
@@ -207,13 +210,13 @@
                                     -
                                 @endif
                             </td>
-
                             <td>
                                 @if ($user->id != auth()->user()->id)
                                     <div
                                         class="form-check form-switch form-check-solid form-check-success d-flex justify-content-center">
                                         <input class="form-check-input toggle-active" type="checkbox"
-                                            value="{{ $user->id }}" @if ($user->is_active == 1) checked @endif>
+                                            value="{{ $user->id }}"
+                                            @if ($user->is_active == 1) checked @endif>
                                     </div>
                                 @endif
                             </td>
@@ -229,7 +232,6 @@
                                         class="btn btn-icon text-hover-primary w-30px h-30px">
                                         <i class="ki-outline ki-pencil fs-2"></i>
                                     </a>
-
                                     <a href="#" title="Reset Passsword" data-bs-toggle="modal"
                                         data-bs-target="#kt_modal_edit_password" data-user-id="{{ $user->id }}"
                                         data-user-name="{{ $user->name }}"
@@ -237,7 +239,6 @@
                                         <i class="ki-outline ki-key fs-2"></i>
                                     </a>
                                 @endif
-
                                 {{-- @if ($user->id != auth()->user()->id)
                                     <a href="#" title="Delete User" data-bs-toggle="tooltip"
                                         class="btn btn-icon text-hover-danger w-30px h-30px delete-user"
@@ -290,13 +291,12 @@
                                 <div class="col-lg-12">
                                     <div class="fv-row mb-7">
                                         <label class="required fw-semibold fs-6 mb-2">Role</label>
-
                                         <!--begin::Row-->
                                         <div class="row">
                                             <div class="col-lg-4">
                                                 <!--begin::Option-->
-                                                <input type="radio" class="btn-check" name="user_role" value="admin"
-                                                    id="role_admin_input" />
+                                                <input type="radio" class="btn-check" name="user_role"
+                                                    value="admin" id="role_admin_input" />
                                                 <label
                                                     class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                                     for="role_admin_input">
@@ -309,11 +309,10 @@
                                                 </label>
                                                 <!--end::Option-->
                                             </div>
-
                                             <div class="col-lg-4">
                                                 <!--begin::Option-->
-                                                <input type="radio" class="btn-check" name="user_role" value="manager"
-                                                    id="role_mananger_input" />
+                                                <input type="radio" class="btn-check" name="user_role"
+                                                    value="manager" id="role_mananger_input" />
                                                 <label
                                                     class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                                     for="role_mananger_input">
@@ -326,7 +325,6 @@
                                                 </label>
                                                 <!--end::Option-->
                                             </div>
-
                                             <div class="col-lg-4">
                                                 <!--begin::Option-->
                                                 <input type="radio" class="btn-check" name="user_role"
@@ -348,7 +346,6 @@
                                     </div>
                                 </div>
                                 <!--end::Role Input -->
-
                                 <!--begin::User name input-->
                                 <div class="col-lg-6" id="user_name_input_div">
                                     <div class="fv-row mb-7">
@@ -363,31 +360,26 @@
                                     </div>
                                 </div>
                                 <!--end::User name input-->
-
                                 <!--begin::User email input-->
                                 <div class="col-lg-6">
                                     <div class="fv-row mb-7">
                                         <label class="required fw-semibold fs-6 mb-2">Email</label>
-
                                         <input type="email" name="user_email"
                                             class="form-control form-control-solid mb-3 mb-lg-0"
                                             placeholder="test@mail.com" value="{{ old('user_email') }}" required />
                                     </div>
                                 </div>
                                 <!--end::User email input-->
-
                                 <!--begin::User mobile input-->
                                 <div class="col-lg-6">
                                     <div class="fv-row mb-7">
                                         <label class="required fw-semibold fs-6 mb-2">Mobile No.</label>
-
                                         <input type="text" name="user_mobile"
                                             class="form-control form-control-solid mb-3 mb-lg-0"
                                             placeholder="e.g. 01812345678" value="{{ old('user_mobile') }}" required />
                                     </div>
                                 </div>
                                 <!--end::User mobile input-->
-
                                 <!--begin::Branch Input-->
                                 <div class="col-lg-6" id="branch_input_div">
                                     <div class="fv-row mb-5">
@@ -402,7 +394,8 @@
                                                 data-placeholder="Select branch" required>
                                                 <option></option>
                                                 @foreach ($branches as $branch)
-                                                    <option value="{{ $branch->id }}">{{ $branch->branch_name }} Branch
+                                                    <option value="{{ $branch->id }}">{{ $branch->branch_name }}
+                                                        Branch
                                                     </option>
                                                 @endforeach
                                             </select>
@@ -413,13 +406,8 @@
                                 </div>
                                 <!--end::Branch Input-->
                             </div>
-
-
-
-
                         </div>
                         <!--end::Scroll-->
-
                         <!--begin::Actions-->
                         <div class="text-center pt-10">
                             <button type="reset" class="btn btn-light me-3"
@@ -465,19 +453,61 @@
                 <!--begin::Modal body-->
                 <div class="modal-body px-5 my-7">
                     <!--begin::Form-->
-                    <form id="kt_modal_edit_user_form" class="form" action="#" novalidate="novalidate">
+                    <form id="kt_modal_edit_user_form" class="form" action="#" novalidate="novalidate" enctype="multipart/form-data">
                         <!--begin::Scroll-->
                         <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_edit_user_scroll"
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_edit_user_header"
                             data-kt-scroll-wrappers="#kt_modal_edit_user_scroll" data-kt-scroll-offset="300px">
-
                             <div class="row">
+                                <!--begin::Photo Upload-->
+                                <div class="col-lg-12">
+                                    <div class="fv-row mb-7">
+                                        <label class="fw-semibold fs-6 mb-4 d-block">Profile Photo</label>
+                                        <div class="d-flex align-items-center">
+                                            <div class="image-input image-input-outline image-input-placeholder" data-kt-image-input="true" id="kt_edit_user_image_input">
+                                                <div class="image-input-wrapper w-100px h-100px"
+                                                    id="edit_user_photo_preview"
+                                                    style="background-image: url('{{ asset('img/male-placeholder.png') }}')">
+                                                </div>
+
+                                                {{-- Edit button --}}
+                                                <label
+                                                    class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
+                                                    data-kt-image-input-action="change" data-bs-toggle="tooltip" title="Change photo">
+                                                    <i class="ki-outline ki-pencil fs-7"></i>
+                                                    <input type="file" name="user_photo" id="edit_user_photo_input" accept=".png,.jpg,.jpeg" />
+                                                    <input type="hidden" name="remove_photo" id="edit_remove_photo_input" value="0" />
+                                                </label>
+
+                                                {{-- Cancel button --}}
+                                                <span
+                                                    class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
+                                                    data-kt-image-input-action="cancel" data-bs-toggle="tooltip" title="Cancel">
+                                                    <i class="ki-outline ki-cross fs-2"></i>
+                                                </span>
+
+                                                {{-- Remove button --}}
+                                                <span
+                                                    class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
+                                                    data-kt-image-input-action="remove" data-bs-toggle="tooltip" title="Remove photo">
+                                                    <i class="ki-outline ki-cross fs-2"></i>
+                                                </span>
+                                            </div>
+                                            <div class="ms-5">
+                                                <div class="fs-7 text-muted">Allowed: jpg, png</div>
+                                                <div class="fs-7 text-muted">Max size: 100KB</div>
+                                            </div>
+                                        </div>
+                                        <div id="edit_user_photo_error" class="text-danger fs-7 mt-2" style="display: none;"></div>
+                                    </div>
+                                </div>
+                                <!--end::Photo Upload-->
+
                                 <!--begin::Role Input-->
                                 <div class="col-lg-12">
                                     <div class="fv-row mb-7">
                                         <label class="required fw-semibold fs-6 mb-2">Role</label>
-
                                         <!--begin::Row-->
                                         <div class="row">
                                             <div class="col-lg-4">
@@ -496,7 +526,6 @@
                                                 </label>
                                                 <!--end::Option-->
                                             </div>
-
                                             <div class="col-lg-4">
                                                 <!--begin::Option-->
                                                 <input type="radio" class="btn-check" name="user_role_edit"
@@ -513,7 +542,6 @@
                                                 </label>
                                                 <!--end::Option-->
                                             </div>
-
                                             <div class="col-lg-4">
                                                 <!--begin::Option-->
                                                 <input type="radio" class="btn-check" name="user_role_edit"
@@ -535,7 +563,6 @@
                                     </div>
                                 </div>
                                 <!--end::Role Input -->
-
                                 <!--begin::User name input-->
                                 <div class="col-lg-6" id="user_name_edit_div">
                                     <div class="fv-row mb-7">
@@ -550,31 +577,26 @@
                                     </div>
                                 </div>
                                 <!--end::User name input-->
-
                                 <!--begin::User email input-->
                                 <div class="col-lg-6">
                                     <div class="fv-row mb-7">
                                         <label class="fw-semibold fs-6 mb-2 required">Email</label>
-
                                         <input type="email" name="user_email_edit"
                                             class="form-control form-control-solid mb-3 mb-lg-0"
                                             placeholder="test@mail.com" required />
                                     </div>
                                 </div>
                                 <!--end::User email input-->
-
                                 <!--begin::User mobile input-->
                                 <div class="col-lg-6">
                                     <div class="fv-row mb-7">
                                         <label class="required fw-semibold fs-6 mb-2">Mobile No.</label>
-
                                         <input type="text" name="user_mobile_edit"
                                             class="form-control form-control-solid mb-3 mb-lg-0"
                                             placeholder="e.g. 01812345678" required />
                                     </div>
                                 </div>
                                 <!--end::User mobile input-->
-
                                 <!--begin::Branch Input-->
                                 <div class="col-lg-6" id="branch_edit_div">
                                     <div class="fv-row mb-5">
@@ -589,7 +611,8 @@
                                                 data-placeholder="Select branch" required>
                                                 <option></option>
                                                 @foreach ($branches as $branch)
-                                                    <option value="{{ $branch->id }}">{{ $branch->branch_name }} Branch
+                                                    <option value="{{ $branch->id }}">{{ $branch->branch_name }}
+                                                        Branch
                                                     </option>
                                                 @endforeach
                                             </select>
@@ -602,7 +625,6 @@
                             </div>
                         </div>
                         <!--end::Scroll-->
-
                         <!--begin::Actions-->
                         <div class="text-center pt-10">
                             <button type="reset" class="btn btn-light me-3"
@@ -661,7 +683,6 @@
                                         <!--begin::Label-->
                                         <label class="required fw-semibold fs-6 mb-2">Write New Password</label>
                                         <!--end::Label-->
-
                                         <div class="input-group">
                                             <input type="password" name="new_password" id="userPasswordNew"
                                                 class="form-control mb-3 mb-lg-0" placeholder="Enter New Password"
@@ -671,7 +692,6 @@
                                                 <i class="ki-outline ki-eye fs-3"></i>
                                             </span>
                                         </div>
-
                                         <!-- Password strength meter -->
                                         <div id="password-strength-text" class="mt-1 fw-bold small text-muted"></div>
                                         <div class="progress mt-1" style="height: 5px;">
@@ -684,7 +704,6 @@
                             </div>
                         </div>
                         <!--end::Scroll-->
-
                         <!--begin::Actions-->
                         <div class="text-center pt-10">
                             <button type="reset" class="btn btn-light me-3"
@@ -708,7 +727,6 @@
     <!--end::Modal - Edit User Password-->
 @endsection
 
-
 @push('vendor-js')
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
 @endpush
@@ -716,13 +734,13 @@
 @push('page-js')
     <script>
         var storeUserRoute = "{{ route('users.store') }}";
-
         const routeDeleteUser = "{{ route('users.destroy', ':id') }}";
         const routeToggleActive = "{{ route('users.toggleActive', ':id') }}";
+        const defaultPhotoUrl = "{{ asset('img/male-placeholder.png') }}";
+        const maxFileSize = 102400; // 100KB in bytes
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
     </script>
-
     <script src="{{ asset('js/settings/users/index.js') }}"></script>
-
     <script>
         document.getElementById("settings_link").classList.add("active");
         document.getElementById("settings_users_link").classList.add("active");

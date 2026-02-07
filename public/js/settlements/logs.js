@@ -66,7 +66,7 @@ var KTWalletLogs = function () {
                         }
 
                         return '<div class="d-flex align-items-center">' +
-                            '<div class="symbol symbol-circle symbol-40px overflow-hidden me-3">' + photoHtml + '</div>' +
+                            // '<div class="symbol symbol-circle symbol-40px overflow-hidden me-3">' + photoHtml + '</div>' +
                             '<div class="d-flex flex-column">' +
                             '<a href="/settlements/' + row.user_id + '" class="text-gray-800 text-hover-primary mb-1">' + row.user_name + '</a>' +
                             '</div></div>';

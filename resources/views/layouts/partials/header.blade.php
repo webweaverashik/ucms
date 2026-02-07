@@ -600,8 +600,7 @@
                         data-kt-menu="true" data-kt-element="theme-mode-menu">
                         <!--begin::Menu item-->
                         <div class="menu-item px-3 my-0">
-                            <a href="#" class="menu-link px-3 py-2" data-kt-element="mode"
-                                data-kt-value="light">
+                            <a href="#" class="menu-link px-3 py-2" data-kt-element="mode" data-kt-value="light">
                                 <span class="menu-icon" data-kt-element="icon">
                                     <i class="ki-outline ki-night-day fs-2"></i> </span>
                                 <span class="menu-title">
@@ -612,8 +611,7 @@
                         <!--end::Menu item-->
                         <!--begin::Menu item-->
                         <div class="menu-item px-3 my-0">
-                            <a href="#" class="menu-link px-3 py-2" data-kt-element="mode"
-                                data-kt-value="dark">
+                            <a href="#" class="menu-link px-3 py-2" data-kt-element="mode" data-kt-value="dark">
                                 <span class="menu-icon" data-kt-element="icon">
                                     <i class="ki-outline ki-moon fs-2"></i> </span>
                                 <span class="menu-title">
@@ -624,8 +622,7 @@
                         <!--end::Menu item-->
                         <!--begin::Menu item-->
                         <div class="menu-item px-3 my-0">
-                            <a href="#" class="menu-link px-3 py-2" data-kt-element="mode"
-                                data-kt-value="system">
+                            <a href="#" class="menu-link px-3 py-2" data-kt-element="mode" data-kt-value="system">
                                 <span class="menu-icon" data-kt-element="icon">
                                     <i class="ki-outline ki-screen fs-2"></i> </span>
                                 <span class="menu-title">
@@ -645,8 +642,9 @@
                     <div class="cursor-pointer symbol symbol-35px"
                         data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-attach="parent"
                         data-kt-menu-placement="bottom-end">
-                        <img src="{{ auth()->user()->photo_url ?? asset('assets/img/dummy.png') }}" class="rounded-3"
-                            alt="user" />
+                        <img src="{{ auth()->user()?->photo_url ? asset(auth()->user()->photo_url) : asset('assets/img/dummy.png') }}"
+                            class="rounded-3" alt="user">
+
                     </div>
 
                     <!--begin::User account menu-->
@@ -658,7 +656,8 @@
                                 <!--begin::Avatar-->
                                 <div class="symbol symbol-50px me-5">
                                     <img alt="Logo"
-                                        src="{{ auth()->user()->photo_url ?? asset('assets/img/dummy.png') }}" />
+                                        src="{{ auth()->user()?->photo_url ? asset(auth()->user()->photo_url) : asset('assets/img/dummy.png') }}">
+
                                 </div>
                                 <!--end::Avatar-->
                                 <!--begin::Username-->

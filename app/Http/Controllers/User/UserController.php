@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
@@ -19,7 +20,6 @@ class UserController extends Controller
         }
 
         $users = User::with(['branch:id,branch_name', 'latestLoginActivity', 'roles:name'])->latest('id')->get();
-
         $branches = Branch::all();
 
         return view('settings.users.index', compact('users', 'branches'));
@@ -39,10 +39,10 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $commonRules = [
-            'user_name'   => 'required|string|max:255',
-            'user_email'  => 'required|string|email|max:255|unique:users,email',
+            'user_name' => 'required|string|max:255',
+            'user_email' => 'required|string|email|max:255|unique:users,email',
             'user_mobile' => 'required|string|size:11',
-            'user_role'   => 'required|string|in:admin,manager,accountant',
+            'user_role' => 'required|string|in:admin,manager,accountant',
         ];
 
         // Only validate branch if role is NOT admin
@@ -55,11 +55,11 @@ class UserController extends Controller
         $branch_id = $request->user_role === 'admin' ? 0 : $request->user_branch;
 
         $user = User::create([
-            'name'          => $request->user_name,
-            'email'         => $request->user_email,
+            'name' => $request->user_name,
+            'email' => $request->user_email,
             'mobile_number' => $request->user_mobile,
-            'password'      => Hash::make('ucms@123'),
-            'branch_id'     => $branch_id,
+            'password' => Hash::make('ucms@123'),
+            'branch_id' => $branch_id,
         ]);
 
         $user->assignRole($request->user_role);
@@ -77,13 +77,14 @@ class UserController extends Controller
     {
         return response()->json([
             'success' => true,
-            'data'    => [
-                'id'            => $user->id,
-                'name'          => $user->name,
-                'email'         => $user->email,
+            'data' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
                 'mobile_number' => $user->mobile_number,
-                'branch_id'     => $user->branch_id,
-                'role'          => $user->getRoleNames()->first(),
+                'branch_id' => $user->branch_id,
+                'role' => $user->getRoleNames()->first(),
+                'photo_url' => $user->photo_url ? asset($user->photo_url) : null,
             ],
         ]);
     }
@@ -104,10 +105,11 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         $commonRules = [
-            'user_name_edit'   => 'required|string|max:255',
-            'user_email_edit'  => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'user_name_edit' => 'required|string|max:255',
+            'user_email_edit' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'user_mobile_edit' => 'required|string|size:11',
-            'user_role_edit'   => 'required|string|in:admin,manager,accountant',
+            'user_role_edit' => 'required|string|in:admin,manager,accountant',
+            'user_photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:100'], // max 100KB
         ];
 
         // Only validate branch if role is NOT admin
@@ -119,19 +121,50 @@ class UserController extends Controller
 
         $branch_id = $request->user_role_edit === 'admin' ? 0 : $request->user_branch_edit;
 
-        // Update the user record
-        $user->update([
-            'name'          => $request->user_name_edit,
-            'email'         => $request->user_email_edit,
+        $updateData = [
+            'name' => $request->user_name_edit,
+            'email' => $request->user_email_edit,
             'mobile_number' => $request->user_mobile_edit,
-            'branch_id'     => $branch_id,
-        ]);
+            'branch_id' => $branch_id,
+        ];
+
+        // Handle photo upload
+        if ($request->hasFile('user_photo')) {
+            // Delete old photo if exists
+            if ($user->photo_url && file_exists(public_path($user->photo_url))) {
+                unlink(public_path($user->photo_url));
+            }
+
+            $photo = $request->file('user_photo');
+            $filename = 'user_' . $user->id . '_' . time() . '.' . $photo->getClientOriginalExtension();
+            $destinationPath = public_path('uploads/users');
+
+            // Create directory if it doesn't exist
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+
+            $photo->move($destinationPath, $filename);
+            $updateData['photo_url'] = 'uploads/users/' . $filename;
+        }
+
+        // Handle photo removal
+        if ($request->has('remove_photo') && $request->remove_photo == '1') {
+            if ($user->photo_url && file_exists(public_path($user->photo_url))) {
+                unlink(public_path($user->photo_url));
+            }
+            $updateData['photo_url'] = null;
+        }
+
+        // Update the user record
+        $user->update($updateData);
 
         $user->syncRoles($request->user_role_edit);
 
         return response()->json([
             'success' => true,
             'message' => 'User updated successfully',
+            'photo_url' => $user->photo_url ? asset($user->photo_url) : asset('img/male-placeholder.png'),
         ]);
     }
 
@@ -140,7 +173,13 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
+        // Delete photo if exists
+        if ($user->photo_url && file_exists(public_path($user->photo_url))) {
+            unlink(public_path($user->photo_url));
+        }
+        
         $user->delete();
+
         return response()->json(['success' => true]);
     }
 
@@ -179,5 +218,4 @@ class UserController extends Controller
 
         return response()->json(['success' => true]);
     }
-
 }

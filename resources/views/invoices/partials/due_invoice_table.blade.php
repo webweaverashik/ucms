@@ -143,6 +143,22 @@
                                 </select>
                             </div>
                             <!--end::Input group-->
+                            @can('transactions.delete')
+                                <!--begin::Show Deleted Toggle-->
+                                <div class="mb-10">
+                                    <label class="form-check form-switch form-check-custom form-check-solid">
+                                        <input class="form-check-input" type="checkbox" id="show_deleted_filter"
+                                            value="1" />
+                                        <span class="form-check-label fw-semibold text-gray-700">
+                                            Show Deleted Only
+                                        </span>
+                                    </label>
+                                    <div class="form-text text-muted mt-2">
+                                        View only deleted transactions
+                                    </div>
+                                </div>
+                                <!--end::Show Deleted Toggle-->
+                            @endcan
                             <!--begin::Actions-->
                             <div class="d-flex justify-content-end">
                                 <button type="reset"
