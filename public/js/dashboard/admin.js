@@ -286,7 +286,7 @@ const AdminDashboard = (function () {
             users.forEach(user => {
                   const initial = user.user_name.charAt(0).toUpperCase();
                   const userLink = isAdmin && user.user_id
-                        ? `<a href="/settlements/${user.user_id}" class="text-gray-800 text-hover-primary fw-semibold">${user.user_name}</a>`
+                        ? `<a href="/settlements/${user.user_id}" target="_blank" class="text-gray-800 text-hover-primary fw-semibold">${user.user_name}</a>`
                         : `<span class="text-gray-800 fw-semibold">${user.user_name}</span>`;
 
                   html += `
@@ -371,7 +371,7 @@ const AdminDashboard = (function () {
                     <td class="ps-4">${rankBadge}</td>
                     <td>
                         <div class="d-flex flex-column">
-                            <a href="/students/${s.student_id}" class="text-gray-800 text-hover-primary fw-bold">${s.name}</a>
+                            <a href="/students/${s.student_id}" target="_blank" class="text-gray-800 text-hover-primary fw-bold">${s.name}</a>
                             <span class="text-muted fs-7">${s.student_unique_id}</span>
                         </div>
                     </td>
@@ -449,7 +449,7 @@ const AdminDashboard = (function () {
                         </div>
                     </td>
                     <td class="text-end pe-4">
-                        <a href="/invoices/${txn.invoice_id}" class="btn btn-icon btn-sm btn-light-primary me-1" data-bs-toggle="tooltip" title="View Invoice">
+                        <a href="/invoices/${txn.invoice_id}" target="_blank" class="btn btn-icon btn-sm btn-light-primary me-1" data-bs-toggle="tooltip" title="View Invoice">
                             <i class="bi bi-eye fs-6"></i>
                         </a>
                         <button class="btn btn-icon btn-sm btn-light-success me-1 approve-btn" data-id="${txn.id}" data-voucher="${txn.voucher_no}" data-bs-toggle="tooltip" title="Approve">
@@ -888,13 +888,13 @@ const AdminDashboard = (function () {
                                 </span>
                             </div>
                             <div class="d-flex flex-column">
-                                <span class="text-gray-800 fw-bold">${txn.student_name}</span>
+                              <a href="/students/${txn.student_id}" target="_blank" class="text-gray-800 text-hover-primary fw-semibold">${txn.student_name}</a>
                                 <span class="text-muted fs-7">${txn.created_at_diff}</span>
                             </div>
                         </div>
                     </td>
                     <td>
-                        <a href="/invoices/${txn.invoice_id}" class="text-gray-800 text-hover-primary fw-semibold">${txn.invoice_number}</a>
+                        <a href="/invoices/${txn.invoice_id}" target="_blank" class="text-gray-800 text-hover-primary fw-semibold">${txn.invoice_number}</a>
                     </td>
                     <td class="text-center">
                         <span class="badge badge-light-${badgeClass}">${paymentTypeLabel}</span>

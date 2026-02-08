@@ -398,7 +398,7 @@ class DashboardController extends Controller
                 'amount_paid'     => (float) $txn->amount_paid,
                 'payment_type'    => $txn->payment_type,
                 'student_name'    => $txn->student?->name ?? 'Unknown',
-                'student_id'      => $txn->student?->student_unique_id ?? '',
+                'student_id'      => $txn->student_id,
                 'branch'          => $txn->student?->branch?->branch_name ?? '',
                 'invoice_id'      => $txn->paymentInvoice?->id,
                 'invoice_number'  => $txn->paymentInvoice?->invoice_number ?? '',

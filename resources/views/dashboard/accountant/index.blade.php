@@ -101,17 +101,19 @@
         {{-- Student Stats Row --}}
         <div class="row g-5 mb-5">
             <div class="col-xl-3 col-md-6">
-                <div class="card dashboard-card h-100 shadow-sm">
-                    <div class="card-body d-flex align-items-center">
-                        <div class="stat-icon bg-light-primary me-4">
-                            <i class="bi bi-people-fill fs-1 text-primary"></i>
-                        </div>
-                        <div>
-                            <div class="stat-label">Total Students</div>
-                            <div class="stat-value text-gray-900" id="statTotalStudents">-</div>
+                <a href="{{ route('students.index') }}" target="_blank" class="card dashboard-card h-100 shadow-sm text-decoration-none">
+                    <div class="card dashboard-card h-100 shadow-sm">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="stat-icon bg-light-primary me-4">
+                                <i class="bi bi-people-fill fs-1 text-primary"></i>
+                            </div>
+                            <div>
+                                <div class="stat-label">Total Students</div>
+                                <div class="stat-value text-gray-900" id="statTotalStudents">-</div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </a>
             </div>
             <div class="col-xl-3 col-md-6">
                 <div class="card dashboard-card h-100 shadow-sm">
@@ -127,7 +129,7 @@
                 </div>
             </div>
             <div class="col-xl-3 col-md-6">
-                <a href="{{ route('students.pending.index') }}"
+                <a href="{{ route('students.pending.index') }}" target="_blank"
                     class="card dashboard-card h-100 shadow-sm text-decoration-none">
                     <div class="card-body d-flex align-items-center">
                         <div class="stat-icon bg-light-warning me-4">
@@ -141,17 +143,19 @@
                 </a>
             </div>
             <div class="col-xl-3 col-md-6">
-                <div class="card dashboard-card h-100 shadow-sm">
-                    <div class="card-body d-flex align-items-center">
-                        <div class="stat-icon bg-light-info me-4">
-                            <i class="bi bi-file-earmark-text fs-1 text-info"></i>
-                        </div>
-                        <div>
-                            <div class="stat-label">Due Invoices</div>
-                            <div class="stat-value text-gray-900" id="statDueInvoices">-</div>
+                <a href="{{ route('invoices.index') }}" target="_blank" class="card dashboard-card h-100 shadow-sm text-decoration-none">
+                    <div class="card dashboard-card h-100 shadow-sm">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="stat-icon bg-light-info me-4">
+                                <i class="bi bi-file-earmark-text fs-1 text-info"></i>
+                            </div>
+                            <div>
+                                <div class="stat-label">Due Invoices</div>
+                                <div class="stat-value text-gray-900" id="statDueInvoices">-</div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </a>
             </div>
         </div>
 

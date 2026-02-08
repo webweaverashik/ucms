@@ -331,7 +331,7 @@ const ManagerDashboard = (function () {
                     <td class="ps-4">${rankBadge}</td>
                     <td>
                         <div class="d-flex flex-column">
-                            <a href="/students/${s.student_id}" class="text-gray-800 text-hover-primary fw-bold">${s.name}</a>
+                            <a href="/students/${s.student_id}" target="_blank" class="text-gray-800 text-hover-primary fw-bold">${s.name}</a>
                             <span class="text-muted fs-7">${s.student_unique_id}</span>
                         </div>
                     </td>
@@ -593,13 +593,13 @@ const ManagerDashboard = (function () {
                                 </span>
                             </div>
                             <div class="d-flex flex-column">
-                                <span class="text-gray-800 fw-bold">${txn.student_name}</span>
+                                <a href="/students/${txn.student_id}" target="_blank" class="text-gray-800 text-hover-primary fw-semibold">${txn.student_name}</a>
                                 <span class="text-muted fs-7">${txn.created_at_diff}</span>
                             </div>
                         </div>
                     </td>
                     <td>
-                        <a href="/invoices/${txn.invoice_id}" class="text-gray-800 text-hover-primary fw-semibold">${txn.invoice_number}</a>
+                        <a href="/invoices/${txn.invoice_id}" target="_blank" class="text-gray-800 text-hover-primary fw-semibold">${txn.invoice_number}</a>
                     </td>
                     <td class="text-center">
                         <span class="badge badge-light-${badgeClass}">${paymentTypeLabel}</span>
