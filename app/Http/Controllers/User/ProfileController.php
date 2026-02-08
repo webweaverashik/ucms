@@ -15,7 +15,10 @@ class ProfileController extends Controller
     {
         $user = User::find(auth()->id());
 
-        return view('settings.users.profile', compact('user'));
+        // Get today's collection for the user
+        $todayCollection = $user->getTodayCollection();
+
+        return view('settings.users.profile', compact('user', 'todayCollection'));
     }
 
     /**
