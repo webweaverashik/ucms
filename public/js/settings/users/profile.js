@@ -1,70 +1,188 @@
 "use strict";
 
 // ========================================
-// Wallet Logs DataTable
+// Wallet Logs DataTable (Server-side AJAX)
 // ========================================
 var KTWalletLogsTable = function () {
     var table;
     var datatable;
+    var filterForm;
+    var daterangepicker;
+
+    // Filter values
+    var filters = {
+        type: '',
+        start_date: '',
+        end_date: ''
+    };
+
+    var initDateRangePicker = function () {
+        var input = $('#wallet_daterangepicker');
+        var hiddenInput = $('#wallet_date_range_value');
+        var filterMenuEl = document.querySelector('#kt_wallet_filter_menu');
+
+        // Default: This Month
+        var defaultStart = moment().startOf('month');
+        var defaultEnd = moment().endOf('month');
+
+        function cb(start, end) {
+            var displayFormat = start.format('DD-MM-YYYY') + ' - ' + end.format('DD-MM-YYYY');
+            input.val(displayFormat);
+            hiddenInput.val(displayFormat);
+
+            // Update filter values
+            filters.start_date = start.format('YYYY-MM-DD');
+            filters.end_date = end.format('YYYY-MM-DD');
+        }
+
+        input.daterangepicker({
+            startDate: defaultStart,
+            endDate: defaultEnd,
+            parentEl: filterMenuEl ? $(filterMenuEl) : 'body',
+            opens: 'left',
+            drops: 'auto',
+            locale: {
+                format: 'DD-MM-YYYY'
+            },
+            ranges: {
+                'Today': [moment(), moment()],
+                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            }
+        }, cb);
+
+        // Prevent filter menu from closing when interacting with daterangepicker
+        input.on('show.daterangepicker', function () {
+            if (filterMenuEl) {
+                filterMenuEl.setAttribute('data-kt-menu-dismiss', 'false');
+            }
+        });
+
+        input.on('hide.daterangepicker', function () {
+            if (filterMenuEl) {
+                filterMenuEl.removeAttribute('data-kt-menu-dismiss');
+            }
+        });
+
+        // Set default
+        cb(defaultStart, defaultEnd);
+
+        // Store reference
+        daterangepicker = input.data('daterangepicker');
+    };
 
     var initDatatable = function () {
         datatable = $(table).DataTable({
-            info: true,
-            order: [],
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: ProfileConfig.walletLogsUrl,
+                type: 'GET',
+                data: function (d) {
+                    d.type = filters.type;
+                    d.start_date = filters.start_date;
+                    d.end_date = filters.end_date;
+                },
+                error: function (xhr, error, thrown) {
+                    console.error('DataTables AJAX error:', error, thrown);
+                    toastr.error('Failed to load wallet logs');
+                }
+            },
+            columns: [
+                { data: 'counter', name: 'counter', orderable: false, searchable: false },
+                { data: 'date', name: 'created_at' },
+                { data: 'type', name: 'type', orderable: false },
+                { data: 'description', name: 'description' },
+                { data: 'amount', name: 'amount', className: 'text-end' },
+                { data: 'old_balance', name: 'old_balance', className: 'text-end', orderable: false },
+                { data: 'new_balance', name: 'new_balance', className: 'text-end', orderable: false },
+                { data: 'created_by', name: 'created_by', orderable: false }
+            ],
+            order: [[1, 'desc']],
             pageLength: 10,
             lengthMenu: [10, 25, 50, 100],
-            columnDefs: [
-                // { orderable: false, targets: [0, 2] }
-            ],
             language: {
-                emptyTable: `<div class="d-flex flex-column align-items-center py-10">
-                    <i class="ki-outline ki-wallet fs-3x text-gray-400 mb-3"></i>
-                    <span class="text-gray-500 fs-5">No wallet logs found</span>
-                </div>`
+                processing: '<div class="d-flex justify-content-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>',
+                emptyTable: '<div class="d-flex flex-column align-items-center py-10"><i class="ki-outline ki-wallet fs-3x text-gray-400 mb-3"></i><span class="text-gray-500 fs-5">No wallet logs found</span></div>',
+                zeroRecords: '<div class="d-flex flex-column align-items-center py-10"><i class="ki-outline ki-wallet fs-3x text-gray-400 mb-3"></i><span class="text-gray-500 fs-5">No matching records found</span></div>'
             }
         });
     };
 
     var handleSearch = function () {
-        const filterSearch = document.querySelector('[data-kt-filter="wallet-search"]');
-        if (filterSearch) {
-            filterSearch.addEventListener('keyup', function (e) {
-                datatable.search(e.target.value).draw();
+        const searchInput = document.querySelector('[data-kt-wallet-table-filter="search"]');
+        if (searchInput) {
+            let debounceTimer;
+            searchInput.addEventListener('keyup', function (e) {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(function () {
+                    datatable.search(e.target.value).draw();
+                }, 300);
             });
         }
     };
 
-    var handleTypeFilter = function () {
-        const filterType = $('[data-kt-filter="wallet-type"]');
-        if (filterType.length) {
-            filterType.on('change', function () {
-                var val = $(this).val();
+    var handleFilter = function () {
+        filterForm = document.querySelector('[data-kt-wallet-table-filter="form"]');
+        if (!filterForm) return;
 
-                // Remove previous custom filter
-                $.fn.dataTable.ext.search = $.fn.dataTable.ext.search.filter(function (fn) {
-                    return fn.name !== 'walletTypeFilter';
-                });
+        const filterButton = filterForm.querySelector('[data-kt-wallet-table-filter="filter"]');
+        const resetButton = filterForm.querySelector('[data-kt-wallet-table-filter="reset"]');
+        const typeSelect = $('[data-kt-wallet-table-filter="type"]');
 
-                if (val) {
-                    var walletTypeFilter = function (settings, data, dataIndex) {
-                        if (settings.nTable.id !== 'kt_wallet_logs_table') return true;
-                        var row = datatable.row(dataIndex).node();
-                        var rowType = $(row).data('type');
-                        return rowType === val;
-                    };
-                    Object.defineProperty(walletTypeFilter, 'name', { value: 'walletTypeFilter' });
-                    $.fn.dataTable.ext.search.push(walletTypeFilter);
-                }
-
-                datatable.draw();
-            });
-        }
-    };
-
-    var initSelect2 = function () {
-        $('[data-kt-filter="wallet-type"]').select2({
+        // Initialize Select2
+        typeSelect.select2({
             minimumResultsForSearch: Infinity
         });
+
+        // Apply filter
+        if (filterButton) {
+            filterButton.addEventListener('click', function () {
+                filters.type = typeSelect.val() || '';
+                datatable.ajax.reload();
+
+                // Close the filter menu
+                var filterMenuEl = document.getElementById('kt_wallet_filter_menu');
+                if (filterMenuEl) {
+                    var menuInstance = KTMenu.getInstance(filterMenuEl);
+                    if (menuInstance) {
+                        menuInstance.hide(filterMenuEl);
+                    }
+                }
+            });
+        }
+
+        // Reset filter
+        if (resetButton) {
+            resetButton.addEventListener('click', function () {
+                // Reset type select
+                typeSelect.val(null).trigger('change');
+                filters.type = '';
+
+                // Reset date range to This Month
+                var defaultStart = moment().startOf('month');
+                var defaultEnd = moment().endOf('month');
+                daterangepicker.setStartDate(defaultStart);
+                daterangepicker.setEndDate(defaultEnd);
+                $('#wallet_daterangepicker').val(defaultStart.format('DD-MM-YYYY') + ' - ' + defaultEnd.format('DD-MM-YYYY'));
+                filters.start_date = defaultStart.format('YYYY-MM-DD');
+                filters.end_date = defaultEnd.format('YYYY-MM-DD');
+
+                datatable.ajax.reload();
+
+                // Close the filter menu
+                var filterMenuEl = document.getElementById('kt_wallet_filter_menu');
+                if (filterMenuEl) {
+                    var menuInstance = KTMenu.getInstance(filterMenuEl);
+                    if (menuInstance) {
+                        menuInstance.hide(filterMenuEl);
+                    }
+                }
+            });
+        }
     };
 
     return {
@@ -72,44 +190,197 @@ var KTWalletLogsTable = function () {
             table = document.getElementById('kt_wallet_logs_table');
             if (!table) return;
 
+            initDateRangePicker();
             initDatatable();
-            initSelect2();
             handleSearch();
-            handleTypeFilter();
+            handleFilter();
+        },
+        reload: function () {
+            if (datatable) {
+                datatable.ajax.reload();
+            }
         }
     };
 }();
 
 // ========================================
-// Login Activity DataTable
+// Login Activity DataTable (Server-side AJAX)
 // ========================================
 var KTLoginActivityTable = function () {
     var table;
     var datatable;
+    var filterForm;
+    var daterangepicker;
+
+    // Filter values
+    var filters = {
+        device: '',
+        start_date: '',
+        end_date: ''
+    };
+
+    var initDateRangePicker = function () {
+        var input = $('#login_daterangepicker');
+        var hiddenInput = $('#login_date_range_value');
+        var filterMenuEl = document.querySelector('#kt_login_filter_menu');
+
+        // Default: Last 7 Days
+        var defaultStart = moment().subtract(6, 'days');
+        var defaultEnd = moment();
+
+        function cb(start, end) {
+            var displayFormat = start.format('DD-MM-YYYY') + ' - ' + end.format('DD-MM-YYYY');
+            input.val(displayFormat);
+            hiddenInput.val(displayFormat);
+
+            // Update filter values
+            filters.start_date = start.format('YYYY-MM-DD');
+            filters.end_date = end.format('YYYY-MM-DD');
+        }
+
+        input.daterangepicker({
+            startDate: defaultStart,
+            endDate: defaultEnd,
+            parentEl: filterMenuEl ? $(filterMenuEl) : 'body',
+            opens: 'left',
+            drops: 'auto',
+            locale: {
+                format: 'DD-MM-YYYY'
+            },
+            ranges: {
+                'Today': [moment(), moment()],
+                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            }
+        }, cb);
+
+        // Prevent filter menu from closing when interacting with daterangepicker
+        input.on('show.daterangepicker', function () {
+            if (filterMenuEl) {
+                filterMenuEl.setAttribute('data-kt-menu-dismiss', 'false');
+            }
+        });
+
+        input.on('hide.daterangepicker', function () {
+            if (filterMenuEl) {
+                filterMenuEl.removeAttribute('data-kt-menu-dismiss');
+            }
+        });
+
+        // Set default
+        cb(defaultStart, defaultEnd);
+
+        // Store reference
+        daterangepicker = input.data('daterangepicker');
+    };
 
     var initDatatable = function () {
         datatable = $(table).DataTable({
-            info: true,
-            order: [],
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: ProfileConfig.loginActivitiesUrl,
+                type: 'GET',
+                data: function (d) {
+                    d.device = filters.device;
+                    d.start_date = filters.start_date;
+                    d.end_date = filters.end_date;
+                },
+                error: function (xhr, error, thrown) {
+                    console.error('DataTables AJAX error:', error, thrown);
+                    toastr.error('Failed to load login activities');
+                }
+            },
+            columns: [
+                { data: 'counter', name: 'counter', orderable: false, searchable: false },
+                { data: 'ip_address', name: 'ip_address' },
+                { data: 'user_agent', name: 'user_agent' },
+                { data: 'device', name: 'device', orderable: false },
+                { data: 'time', name: 'created_at' }
+            ],
+            order: [[4, 'desc']],
             pageLength: 10,
             lengthMenu: [10, 25, 50, 100],
-            columnDefs: [
-                { orderable: false, targets: [0] }
-            ],
             language: {
-                emptyTable: `<div class="d-flex flex-column align-items-center py-10">
-                    <i class="ki-outline ki-shield-tick fs-3x text-gray-400 mb-3"></i>
-                    <span class="text-gray-500 fs-5">No login activities found</span>
-                </div>`
+                processing: '<div class="d-flex justify-content-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>',
+                emptyTable: '<div class="d-flex flex-column align-items-center py-10"><i class="ki-outline ki-shield-tick fs-3x text-gray-400 mb-3"></i><span class="text-gray-500 fs-5">No login activities found</span></div>',
+                zeroRecords: '<div class="d-flex flex-column align-items-center py-10"><i class="ki-outline ki-shield-tick fs-3x text-gray-400 mb-3"></i><span class="text-gray-500 fs-5">No matching records found</span></div>'
             }
         });
     };
 
     var handleSearch = function () {
-        const filterSearch = document.querySelector('[data-kt-filter="login-search"]');
-        if (filterSearch) {
-            filterSearch.addEventListener('keyup', function (e) {
-                datatable.search(e.target.value).draw();
+        const searchInput = document.querySelector('[data-kt-login-table-filter="search"]');
+        if (searchInput) {
+            let debounceTimer;
+            searchInput.addEventListener('keyup', function (e) {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(function () {
+                    datatable.search(e.target.value).draw();
+                }, 300);
+            });
+        }
+    };
+
+    var handleFilter = function () {
+        filterForm = document.querySelector('[data-kt-login-table-filter="form"]');
+        if (!filterForm) return;
+
+        const filterButton = filterForm.querySelector('[data-kt-login-table-filter="filter"]');
+        const resetButton = filterForm.querySelector('[data-kt-login-table-filter="reset"]');
+        const deviceSelect = $('[data-kt-login-table-filter="device"]');
+
+        // Initialize Select2
+        deviceSelect.select2({
+            minimumResultsForSearch: Infinity
+        });
+
+        // Apply filter
+        if (filterButton) {
+            filterButton.addEventListener('click', function () {
+                filters.device = deviceSelect.val() || '';
+                datatable.ajax.reload();
+
+                // Close the filter menu
+                var filterMenuEl = document.getElementById('kt_login_filter_menu');
+                if (filterMenuEl) {
+                    var menuInstance = KTMenu.getInstance(filterMenuEl);
+                    if (menuInstance) {
+                        menuInstance.hide(filterMenuEl);
+                    }
+                }
+            });
+        }
+
+        // Reset filter
+        if (resetButton) {
+            resetButton.addEventListener('click', function () {
+                // Reset device select
+                deviceSelect.val(null).trigger('change');
+                filters.device = '';
+
+                // Reset date range to Last 7 Days
+                var defaultStart = moment().subtract(6, 'days');
+                var defaultEnd = moment();
+                daterangepicker.setStartDate(defaultStart);
+                daterangepicker.setEndDate(defaultEnd);
+                $('#login_daterangepicker').val(defaultStart.format('DD-MM-YYYY') + ' - ' + defaultEnd.format('DD-MM-YYYY'));
+                filters.start_date = defaultStart.format('YYYY-MM-DD');
+                filters.end_date = defaultEnd.format('YYYY-MM-DD');
+
+                datatable.ajax.reload();
+
+                // Close the filter menu
+                var filterMenuEl = document.getElementById('kt_login_filter_menu');
+                if (filterMenuEl) {
+                    var menuInstance = KTMenu.getInstance(filterMenuEl);
+                    if (menuInstance) {
+                        menuInstance.hide(filterMenuEl);
+                    }
+                }
             });
         }
     };
@@ -119,8 +390,15 @@ var KTLoginActivityTable = function () {
             table = document.getElementById('kt_login_activities_table');
             if (!table) return;
 
+            initDateRangePicker();
             initDatatable();
             handleSearch();
+            handleFilter();
+        },
+        reload: function () {
+            if (datatable) {
+                datatable.ajax.reload();
+            }
         }
     };
 }();
@@ -331,7 +609,194 @@ var KTPasswordModal = function () {
 }();
 
 // ========================================
-// Profile Update Modal with Photo Upload
+// Photo Upload Modal (Non-Admin)
+// ========================================
+var KTPhotoModal = function () {
+    var modal;
+    var modalElement;
+    var form;
+    var submitButton;
+    var photoInput;
+    var photoRemove;
+    var imageInputWrapper;
+    var originalPhotoUrl;
+
+    var initPhotoUpload = function () {
+        var imageInputElement = document.getElementById('kt_photo_upload');
+        if (!imageInputElement) return;
+
+        imageInputWrapper = imageInputElement.querySelector('.image-input-wrapper');
+        photoInput = document.getElementById('photo_input');
+        photoRemove = document.getElementById('photo_remove');
+        originalPhotoUrl = ProfileConfig.userPhotoUrl;
+
+        // Handle file selection
+        if (photoInput) {
+            photoInput.addEventListener('change', function (e) {
+                var file = e.target.files[0];
+                if (!file) return;
+
+                // Validate file type
+                var allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                if (!allowedTypes.includes(file.type)) {
+                    toastr.error('Only JPG and PNG files are allowed.');
+                    photoInput.value = '';
+                    return;
+                }
+
+                // Validate file size (100KB)
+                if (file.size > 100 * 1024) {
+                    toastr.error('File size must be less than 100KB.');
+                    photoInput.value = '';
+                    return;
+                }
+
+                // Preview image
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    imageInputWrapper.style.backgroundImage = 'url(' + e.target.result + ')';
+                    imageInputElement.classList.add('image-input-changed');
+                    imageInputElement.classList.remove('image-input-empty');
+                    photoRemove.value = '0';
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Handle remove button
+        var removeBtn = imageInputElement.querySelector('[data-kt-image-input-action="remove"]');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function () {
+                imageInputWrapper.style.backgroundImage = 'url(' + ProfileConfig.placeholderUrl + ')';
+                imageInputElement.classList.add('image-input-empty');
+                imageInputElement.classList.remove('image-input-changed');
+                photoInput.value = '';
+                photoRemove.value = '1';
+            });
+        }
+
+        // Handle cancel button
+        var cancelBtn = imageInputElement.querySelector('[data-kt-image-input-action="cancel"]');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function () {
+                imageInputWrapper.style.backgroundImage = 'url(' + originalPhotoUrl + ')';
+                imageInputElement.classList.remove('image-input-changed');
+                imageInputElement.classList.remove('image-input-empty');
+                photoInput.value = '';
+                photoRemove.value = '0';
+            });
+        }
+    };
+
+    var handleFormSubmit = function () {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Check if any changes
+            var hasPhoto = photoInput && photoInput.files.length > 0;
+            var isRemoved = photoRemove && photoRemove.value === '1';
+
+            if (!hasPhoto && !isRemoved) {
+                toastr.info('No changes detected.');
+                return;
+            }
+
+            // Show loading
+            submitButton.setAttribute('data-kt-indicator', 'on');
+            submitButton.disabled = true;
+
+            var formData = new FormData(form);
+
+            fetch(ProfileConfig.profileUpdateUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+                .then(function (response) {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw err; });
+                    }
+                    return response.json();
+                })
+                .then(function (data) {
+                    submitButton.removeAttribute('data-kt-indicator');
+                    submitButton.disabled = false;
+
+                    if (data.success) {
+                        modal.hide();
+                        Swal.fire({
+                            text: data.message || 'Photo updated successfully!',
+                            icon: 'success',
+                            buttonsStyling: false,
+                            confirmButtonText: 'Ok',
+                            customClass: {
+                                confirmButton: 'btn btn-primary'
+                            }
+                        }).then(function () {
+                            location.reload();
+                        });
+                    } else {
+                        toastr.error(data.message || 'Photo update failed.');
+                    }
+                })
+                .catch(function (error) {
+                    submitButton.removeAttribute('data-kt-indicator');
+                    submitButton.disabled = false;
+                    if (error.errors) {
+                        Object.keys(error.errors).forEach(function (field) {
+                            toastr.error(error.errors[field][0]);
+                        });
+                    } else {
+                        toastr.error(error.message || 'Something went wrong.');
+                    }
+                });
+        });
+    };
+
+    var handleModalReset = function () {
+        modalElement.addEventListener('hidden.bs.modal', function () {
+            var imageInputElement = document.getElementById('kt_photo_upload');
+            if (imageInputElement && imageInputWrapper) {
+                imageInputWrapper.style.backgroundImage = 'url(' + originalPhotoUrl + ')';
+                imageInputElement.classList.remove('image-input-changed');
+                imageInputElement.classList.remove('image-input-empty');
+            }
+            if (photoInput) photoInput.value = '';
+            if (photoRemove) photoRemove.value = '0';
+        });
+    };
+
+    var handleOpenButton = function () {
+        var btn = document.getElementById('btn_change_photo');
+        if (btn) {
+            btn.addEventListener('click', function () {
+                modal.show();
+            });
+        }
+    };
+
+    return {
+        init: function () {
+            modalElement = document.getElementById('kt_modal_photo');
+            if (!modalElement) return;
+
+            modal = new bootstrap.Modal(modalElement);
+            form = document.getElementById('kt_modal_photo_form');
+            submitButton = document.getElementById('btn_submit_photo');
+
+            initPhotoUpload();
+            handleFormSubmit();
+            handleModalReset();
+            handleOpenButton();
+        }
+    };
+}();
+
+// ========================================
+// Profile Update Modal (Admin)
 // ========================================
 var KTProfileModal = function () {
     var modal;
@@ -340,10 +805,8 @@ var KTProfileModal = function () {
     var submitButton;
     var originalValues = {};
     var photoInput;
-    var photoPreview;
-    var photoError;
-    var removePhotoInput;
-    var selectedFile = null;
+    var photoRemove;
+    var imageInputWrapper;
     var originalPhotoUrl;
 
     var storeOriginalValues = function () {
@@ -355,100 +818,82 @@ var KTProfileModal = function () {
         originalPhotoUrl = ProfileConfig.userPhotoUrl;
     };
 
+    var initPhotoUpload = function () {
+        var imageInputElement = document.getElementById('kt_profile_photo_upload');
+        if (!imageInputElement) return;
+
+        imageInputWrapper = imageInputElement.querySelector('.image-input-wrapper');
+        photoInput = document.getElementById('profile_photo_input');
+        photoRemove = document.getElementById('profile_photo_remove');
+
+        // Handle file selection
+        if (photoInput) {
+            photoInput.addEventListener('change', function (e) {
+                var file = e.target.files[0];
+                if (!file) return;
+
+                // Validate file type
+                var allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                if (!allowedTypes.includes(file.type)) {
+                    toastr.error('Only JPG and PNG files are allowed.');
+                    photoInput.value = '';
+                    return;
+                }
+
+                // Validate file size (100KB)
+                if (file.size > 100 * 1024) {
+                    toastr.error('File size must be less than 100KB.');
+                    photoInput.value = '';
+                    return;
+                }
+
+                // Preview image
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    imageInputWrapper.style.backgroundImage = 'url(' + e.target.result + ')';
+                    imageInputElement.classList.add('image-input-changed');
+                    imageInputElement.classList.remove('image-input-empty');
+                    photoRemove.value = '0';
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Handle remove button
+        var removeBtn = imageInputElement.querySelector('[data-kt-image-input-action="remove"]');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function () {
+                imageInputWrapper.style.backgroundImage = 'url(' + ProfileConfig.placeholderUrl + ')';
+                imageInputElement.classList.add('image-input-empty');
+                imageInputElement.classList.remove('image-input-changed');
+                photoInput.value = '';
+                photoRemove.value = '1';
+            });
+        }
+
+        // Handle cancel button
+        var cancelBtn = imageInputElement.querySelector('[data-kt-image-input-action="cancel"]');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function () {
+                imageInputWrapper.style.backgroundImage = 'url(' + originalPhotoUrl + ')';
+                imageInputElement.classList.remove('image-input-changed');
+                imageInputElement.classList.remove('image-input-empty');
+                photoInput.value = '';
+                photoRemove.value = '0';
+            });
+        }
+    };
+
     var hasChanges = function () {
-        return (
+        var hasFieldChanges = (
             document.getElementById('profile_name').value.trim() !== originalValues.name ||
             document.getElementById('profile_email').value.trim() !== originalValues.email ||
-            document.getElementById('profile_mobile').value.trim() !== originalValues.mobile_number ||
-            selectedFile !== null ||
-            removePhotoInput.value === '1'
+            document.getElementById('profile_mobile').value.trim() !== originalValues.mobile_number
         );
-    };
 
-    var validateFile = function (file) {
-        // Check file type
-        if (!ProfileConfig.allowedTypes.includes(file.type)) {
-            return 'Only JPG and PNG files are allowed.';
-        }
+        var hasPhotoChanges = (photoInput && photoInput.files.length > 0) || (photoRemove && photoRemove.value === '1');
 
-        // Check file size (100KB = 102400 bytes)
-        if (file.size > ProfileConfig.maxFileSize) {
-            return 'File size must be less than 100KB. Current size: ' + (file.size / 1024).toFixed(2) + 'KB';
-        }
-
-        return null;
-    };
-
-    var handlePhotoUpload = function () {
-        if (!photoInput) return;
-
-        photoInput.addEventListener('change', function (e) {
-            var file = e.target.files[0];
-
-            if (!file) return;
-
-            // Validate file
-            var error = validateFile(file);
-            if (error) {
-                photoError.textContent = error;
-                photoError.style.display = 'block';
-                photoInput.value = '';
-                selectedFile = null;
-                return;
-            }
-
-            // Clear error
-            photoError.style.display = 'none';
-            selectedFile = file;
-            removePhotoInput.value = '0';
-
-            // Preview image
-            var reader = new FileReader();
-            reader.onload = function (e) {
-                photoPreview.style.backgroundImage = 'url(' + e.target.result + ')';
-            };
-            reader.readAsDataURL(file);
-
-            // Add changed class to image input
-            photoPreview.closest('.image-input').classList.add('image-input-changed');
-            photoPreview.closest('.image-input').classList.remove('image-input-empty');
-        });
-    };
-
-    var handlePhotoRemove = function () {
-        var removeBtn = document.querySelector('[data-kt-image-input-action="remove"]');
-        if (removeBtn) {
-            removeBtn.addEventListener('click', function (e) {
-                e.preventDefault();
-                
-                photoInput.value = '';
-                selectedFile = null;
-                removePhotoInput.value = '1';
-                photoPreview.style.backgroundImage = 'url(' + ProfileConfig.defaultPhotoUrl + ')';
-                photoError.style.display = 'none';
-                
-                photoPreview.closest('.image-input').classList.remove('image-input-changed');
-                photoPreview.closest('.image-input').classList.add('image-input-empty');
-            });
-        }
-    };
-
-    var handlePhotoCancel = function () {
-        var cancelBtn = document.querySelector('[data-kt-image-input-action="cancel"]');
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', function (e) {
-                e.preventDefault();
-                
-                photoInput.value = '';
-                selectedFile = null;
-                removePhotoInput.value = '0';
-                photoPreview.style.backgroundImage = 'url(' + originalPhotoUrl + ')';
-                photoError.style.display = 'none';
-                
-                photoPreview.closest('.image-input').classList.remove('image-input-changed');
-                photoPreview.closest('.image-input').classList.remove('image-input-empty');
-            });
-        }
+        return hasFieldChanges || hasPhotoChanges;
     };
 
     var validateForm = function () {
@@ -516,11 +961,6 @@ var KTProfileModal = function () {
             submitButton.disabled = true;
 
             var formData = new FormData(form);
-            
-            // Add the photo file if selected
-            if (selectedFile) {
-                formData.set('photo', selectedFile);
-            }
 
             fetch(ProfileConfig.profileUpdateUrl, {
                 method: 'POST',
@@ -532,9 +972,7 @@ var KTProfileModal = function () {
             })
                 .then(function (response) {
                     if (!response.ok) {
-                        return response.json().then(err => {
-                            throw err;
-                        });
+                        return response.json().then(err => { throw err; });
                     }
                     return response.json();
                 })
@@ -568,15 +1006,9 @@ var KTProfileModal = function () {
                 .catch(function (error) {
                     submitButton.removeAttribute('data-kt-indicator');
                     submitButton.disabled = false;
-
                     if (error.errors) {
                         Object.keys(error.errors).forEach(function (field) {
-                            if (field === 'photo') {
-                                photoError.textContent = error.errors[field][0];
-                                photoError.style.display = 'block';
-                            } else {
-                                showError(field, error.errors[field][0]);
-                            }
+                            showError(field, error.errors[field][0]);
                         });
                     } else {
                         toastr.error(error.message || 'Something went wrong.');
@@ -593,14 +1025,14 @@ var KTProfileModal = function () {
             document.getElementById('profile_mobile').value = originalValues.mobile_number;
 
             // Reset photo
-            photoInput.value = '';
-            selectedFile = null;
-            removePhotoInput.value = '0';
-            photoPreview.style.backgroundImage = 'url(' + originalPhotoUrl + ')';
-            photoError.style.display = 'none';
-            
-            photoPreview.closest('.image-input').classList.remove('image-input-changed');
-            photoPreview.closest('.image-input').classList.remove('image-input-empty');
+            var imageInputElement = document.getElementById('kt_profile_photo_upload');
+            if (imageInputElement && imageInputWrapper) {
+                imageInputWrapper.style.backgroundImage = 'url(' + originalPhotoUrl + ')';
+                imageInputElement.classList.remove('image-input-changed');
+                imageInputElement.classList.remove('image-input-empty');
+            }
+            if (photoInput) photoInput.value = '';
+            if (photoRemove) photoRemove.value = '0';
 
             // Clear errors
             form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
@@ -626,15 +1058,9 @@ var KTProfileModal = function () {
             modal = new bootstrap.Modal(modalElement);
             form = document.getElementById('kt_modal_profile_form');
             submitButton = document.getElementById('btn_submit_profile');
-            photoInput = document.getElementById('profile_photo_input');
-            photoPreview = document.getElementById('profile_photo_preview');
-            photoError = document.getElementById('profile_photo_error');
-            removePhotoInput = document.getElementById('remove_photo_input');
 
             storeOriginalValues();
-            handlePhotoUpload();
-            handlePhotoRemove();
-            handlePhotoCancel();
+            initPhotoUpload();
             handleFormSubmit();
             handleModalReset();
             handleOpenButton();
@@ -688,9 +1114,20 @@ var KTTooltips = function () {
 // Metronic Standard Init
 // ========================================
 KTUtil.onDOMContentLoaded(function () {
+    // Prevent Metronic menu from closing when interacting with daterangepicker
+    $(document).on('click', '.daterangepicker', function (e) {
+        e.stopPropagation();
+    });
+
+    // Also prevent closing when clicking on daterangepicker ranges
+    $(document).on('mousedown', '.daterangepicker', function (e) {
+        e.stopPropagation();
+    });
+
     KTWalletLogsTable.init();
     KTLoginActivityTable.init();
     KTPasswordModal.init();
+    KTPhotoModal.init();
     KTProfileModal.init();
     KTProfileTabs.init();
     KTTooltips.init();

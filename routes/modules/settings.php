@@ -18,10 +18,14 @@ use App\Http\Controllers\Settings\BackupController;
 // Users
 Route::post('settings/users/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggleActive');
 Route::put('settings/users/{user}/password', [UserController::class, 'userPasswordReset'])->name('users.password.reset');
+Route::get('settings/users/ajax', [UserController::class, 'getUsers'])->name('users.ajax');
+Route::post('settings/users/recover', [UserController::class, 'recover'])->name('users.recover');
 
 // User Profile
 Route::get('profile', [ProfileController::class, 'profile'])->name('users.profile');
 Route::put('profile/update', [ProfileController::class, 'updateProfile'])->name('users.profile.update');
+Route::get('profile/wallet-logs', [ProfileController::class, 'getWalletLogs'])->name('users.profile.wallet-logs');
+Route::get('profile/login-activities', [ProfileController::class, 'getLoginActivities'])->name('users.profile.login-activities');
 
 // Cost Types
 Route::prefix('settings')->group(function () {

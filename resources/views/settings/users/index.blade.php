@@ -1,24 +1,9 @@
 @push('page-css')
-    <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
-    <style>
-        /* Image upload styles */
-        .image-input-wrapper {
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-
-        .image-input [data-kt-image-input-action="change"] {
-            left: auto;
-            right: -10px;
-        }
-    </style>
+    <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet"
+        type="text/css" />
 @endpush
-
 @extends('layouts.app')
-
 @section('title', 'User Settings')
-
 @section('header-title')
     <div data-kt-swapper="true" data-kt-swapper-mode="{default: 'prepend', lg: 'prepend'}"
         data-kt-swapper-parent="{default: '#kt_app_content_container', lg: '#kt_app_header_wrapper'}"
@@ -54,10 +39,8 @@
         <!--end::Breadcrumb-->
     </div>
 @endsection
-
 @section('content')
     @include('settings.partials.hero')
-
     <!--begin::Card-->
     <div class="card">
         <!--begin::Card header-->
@@ -78,6 +61,14 @@
             <div class="card-toolbar">
                 <!--begin::Toolbar-->
                 <div class="d-flex justify-content-end" data-kt-user-table-toolbar="base">
+                    <!--begin::Show Deleted Toggle-->
+                    <div class="form-check form-switch form-check-custom form-check-solid me-5">
+                        <input class="form-check-input" type="checkbox" id="show_deleted_only" />
+                        <label class="form-check-label fw-semibold text-gray-700" for="show_deleted_only">
+                            Show Deleted Only
+                        </label>
+                    </div>
+                    <!--end::Show Deleted Toggle-->
                     <!--begin::Filter-->
                     <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
                         data-kt-menu-placement="bottom-end">
@@ -99,7 +90,7 @@
                                 <label class="form-label fs-6 fw-semibold">Branch:</label>
                                 <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                     data-placeholder="Select option" data-allow-clear="true"
-                                    data-users-table-filter="status" data-hide-search="true">
+                                    data-users-table-filter="branch" data-hide-search="true">
                                     <option></option>
                                     @foreach ($branches as $branch)
                                         <option value="{{ $branch->branch_name }}">{{ $branch->branch_name }} Branch
@@ -113,7 +104,7 @@
                                 <label class="form-label fs-6 fw-semibold">Role:</label>
                                 <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
                                     data-placeholder="Select option" data-allow-clear="true"
-                                    data-kt-subscription-table-filter="product" data-hide-search="true">
+                                    data-users-table-filter="role" data-hide-search="true">
                                     <option></option>
                                     <option value="Admin">Admin</option>
                                     <option value="Manager">Manager</option>
@@ -161,94 +152,7 @@
                     </tr>
                 </thead>
                 <tbody class="text-gray-600 fw-semibold fs-5">
-                    @foreach ($users as $user)
-                        <tr>
-                            <td>{{ $loop->index + 1 }}</td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <!--begin:: Avatar -->
-                                    <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
-                                        <div class="symbol-label">
-                                            <img src="{{ $user->photo_url ? asset($user->photo_url) : asset('img/male-placeholder.png') }}"
-                                                alt="{{ $user->name }}" class="w-100" />
-                                        </div>
-                                    </div>
-                                    <!--end::Avatar-->
-                                    <!--begin::user details-->
-                                    <div class="d-flex flex-column text-start">
-                                        <p class="text-gray-800 mb-1">{{ $user->name }}</p>
-                                        <span class="fw-bold fs-base">{{ $user->email }}</span>
-                                    </div>
-                                    <!--begin::user details-->
-                                </div>
-                            </td>
-                            <td>{{ $user->mobile_number }}</td>
-                            <td>
-                                @if ($user->branch)
-                                    {{ $user->branch->branch_name }}
-                                @else
-                                    <span class="text-muted">-</span>
-                                @endif
-                            </td>
-                            <td>
-                                @php
-                                    $role = $user->roles->first()?->name; // Using eager loaded 'roles' relationship
-                                    $badgeClasses = [
-                                        'admin' => 'badge badge-light-danger rounded-pill fs-7 fw-bold',
-                                        'manager' => 'badge badge-light-success rounded-pill fs-7 fw-bold',
-                                        'accountant' => 'badge badge-light-info rounded-pill fs-7 fw-bold',
-                                    ];
-                                    $badgeClass = $badgeClasses[$role] ?? 'badge badge-light-secondary fw-bold';
-                                @endphp
-                                <div class="{{ $badgeClass }}">{{ ucfirst($role) ?? '-' }}</div>
-                            </td>
-                            <td>
-                                @if ($user->latestLoginActivity)
-                                    {{ $user->latestLoginActivity->created_at->format('d-M-Y') }}<br>
-                                    {{ $user->latestLoginActivity->created_at->format('h:i:s A') }}
-                                @else
-                                    -
-                                @endif
-                            </td>
-                            <td>
-                                @if ($user->id != auth()->user()->id)
-                                    <div
-                                        class="form-check form-switch form-check-solid form-check-success d-flex justify-content-center">
-                                        <input class="form-check-input toggle-active" type="checkbox"
-                                            value="{{ $user->id }}"
-                                            @if ($user->is_active == 1) checked @endif>
-                                    </div>
-                                @endif
-                            </td>
-                            <td>
-                                @if ($user->id == auth()->user()->id)
-                                    <a href="{{ route('users.profile') }}" title="My Profile" data-bs-toggle="tooltip"
-                                        class="btn btn-icon text-hover-success w-30px h-30px me-3">
-                                        <i class="ki-outline ki-eye fs-2"></i>
-                                    </a>
-                                @else
-                                    <a href="#" title="Edit User" data-bs-toggle="modal"
-                                        data-bs-target="#kt_modal_edit_user" data-user-id="{{ $user->id }}"
-                                        class="btn btn-icon text-hover-primary w-30px h-30px">
-                                        <i class="ki-outline ki-pencil fs-2"></i>
-                                    </a>
-                                    <a href="#" title="Reset Passsword" data-bs-toggle="modal"
-                                        data-bs-target="#kt_modal_edit_password" data-user-id="{{ $user->id }}"
-                                        data-user-name="{{ $user->name }}"
-                                        class="btn btn-icon text-hover-primary w-30px h-30px change-password-btn">
-                                        <i class="ki-outline ki-key fs-2"></i>
-                                    </a>
-                                @endif
-                                {{-- @if ($user->id != auth()->user()->id)
-                                    <a href="#" title="Delete User" data-bs-toggle="tooltip"
-                                        class="btn btn-icon text-hover-danger w-30px h-30px delete-user"
-                                        data-user-id="{{ $user->id }}">
-                                        <i class="ki-outline ki-trash fs-2"></i>
-                                    </a>
-                                @endif --}}
-                            </td>
-                        </tr>
-                    @endforeach
+                    {{-- Data loaded via AJAX --}}
                 </tbody>
             </table>
             <!--end::Table-->
@@ -286,6 +190,45 @@
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_add_user_header"
                             data-kt-scroll-wrappers="#kt_modal_add_user_scroll" data-kt-scroll-offset="300px">
+
+                            <!--begin::Photo Upload-->
+                            <div class="fv-row mb-7">
+                                <label class="d-block fw-semibold fs-6 mb-5">User Photo</label>
+                                <div class="image-input image-input-outline image-input-placeholder"
+                                    data-kt-image-input="true" id="kt_image_input_add">
+                                    <!--begin::Preview-->
+                                    <div class="image-input-wrapper w-125px h-125px"
+                                        style="background-image: url('{{ asset('img/male-placeholder.png') }}');">
+                                    </div>
+                                    <!--end::Preview-->
+                                    <!--begin::Edit-->
+                                    <label
+                                        class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
+                                        data-kt-image-input-action="change" data-bs-toggle="tooltip" title="Change photo">
+                                        <i class="ki-outline ki-pencil fs-7"></i>
+                                        <input type="file" name="user_photo" accept=".png, .jpg, .jpeg" />
+                                        <input type="hidden" name="photo_remove" />
+                                    </label>
+                                    <!--end::Edit-->
+                                    <!--begin::Cancel-->
+                                    <span
+                                        class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
+                                        data-kt-image-input-action="cancel" data-bs-toggle="tooltip" title="Cancel photo">
+                                        <i class="ki-outline ki-cross fs-2"></i>
+                                    </span>
+                                    <!--end::Cancel-->
+                                    <!--begin::Remove-->
+                                    <span
+                                        class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
+                                        data-kt-image-input-action="remove" data-bs-toggle="tooltip" title="Remove photo">
+                                        <i class="ki-outline ki-cross fs-2"></i>
+                                    </span>
+                                    <!--end::Remove-->
+                                </div>
+                                <div class="form-text">Allowed file types: png, jpg, jpeg. Max size: 100KB</div>
+                            </div>
+                            <!--end::Photo Upload-->
+
                             <div class="row">
                                 <!--begin::Role Input-->
                                 <div class="col-lg-12">
@@ -295,8 +238,8 @@
                                         <div class="row">
                                             <div class="col-lg-4">
                                                 <!--begin::Option-->
-                                                <input type="radio" class="btn-check" name="user_role"
-                                                    value="admin" id="role_admin_input" />
+                                                <input type="radio" class="btn-check" name="user_role" value="admin"
+                                                    id="role_admin_input" />
                                                 <label
                                                     class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                                     for="role_admin_input">
@@ -311,8 +254,8 @@
                                             </div>
                                             <div class="col-lg-4">
                                                 <!--begin::Option-->
-                                                <input type="radio" class="btn-check" name="user_role"
-                                                    value="manager" id="role_mananger_input" />
+                                                <input type="radio" class="btn-check" name="user_role" value="manager"
+                                                    id="role_mananger_input" />
                                                 <label
                                                     class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                                     for="role_mananger_input">
@@ -327,8 +270,8 @@
                                             </div>
                                             <div class="col-lg-4">
                                                 <!--begin::Option-->
-                                                <input type="radio" class="btn-check" name="user_role"
-                                                    value="accountant" id="role_accountant_input" checked="checked" />
+                                                <input type="radio" class="btn-check" name="user_role" value="accountant"
+                                                    id="role_accountant_input" checked="checked" />
                                                 <label
                                                     class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                                     for="role_accountant_input">
@@ -394,8 +337,7 @@
                                                 data-placeholder="Select branch" required>
                                                 <option></option>
                                                 @foreach ($branches as $branch)
-                                                    <option value="{{ $branch->id }}">{{ $branch->branch_name }}
-                                                        Branch
+                                                    <option value="{{ $branch->id }}">{{ $branch->branch_name }} Branch
                                                     </option>
                                                 @endforeach
                                             </select>
@@ -453,57 +395,52 @@
                 <!--begin::Modal body-->
                 <div class="modal-body px-5 my-7">
                     <!--begin::Form-->
-                    <form id="kt_modal_edit_user_form" class="form" action="#" novalidate="novalidate" enctype="multipart/form-data">
+                    <form id="kt_modal_edit_user_form" class="form" action="#" novalidate="novalidate">
                         <!--begin::Scroll-->
                         <div class="d-flex flex-column scroll-y px-5 px-lg-10" id="kt_modal_edit_user_scroll"
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_edit_user_header"
                             data-kt-scroll-wrappers="#kt_modal_edit_user_scroll" data-kt-scroll-offset="300px">
-                            <div class="row">
-                                <!--begin::Photo Upload-->
-                                <div class="col-lg-12">
-                                    <div class="fv-row mb-7">
-                                        <label class="fw-semibold fs-6 mb-4 d-block">Profile Photo</label>
-                                        <div class="d-flex align-items-center">
-                                            <div class="image-input image-input-outline image-input-placeholder" data-kt-image-input="true" id="kt_edit_user_image_input">
-                                                <div class="image-input-wrapper w-100px h-100px"
-                                                    id="edit_user_photo_preview"
-                                                    style="background-image: url('{{ asset('img/male-placeholder.png') }}')">
-                                                </div>
 
-                                                {{-- Edit button --}}
-                                                <label
-                                                    class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                                    data-kt-image-input-action="change" data-bs-toggle="tooltip" title="Change photo">
-                                                    <i class="ki-outline ki-pencil fs-7"></i>
-                                                    <input type="file" name="user_photo" id="edit_user_photo_input" accept=".png,.jpg,.jpeg" />
-                                                    <input type="hidden" name="remove_photo" id="edit_remove_photo_input" value="0" />
-                                                </label>
-
-                                                {{-- Cancel button --}}
-                                                <span
-                                                    class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                                    data-kt-image-input-action="cancel" data-bs-toggle="tooltip" title="Cancel">
-                                                    <i class="ki-outline ki-cross fs-2"></i>
-                                                </span>
-
-                                                {{-- Remove button --}}
-                                                <span
-                                                    class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                                    data-kt-image-input-action="remove" data-bs-toggle="tooltip" title="Remove photo">
-                                                    <i class="ki-outline ki-cross fs-2"></i>
-                                                </span>
-                                            </div>
-                                            <div class="ms-5">
-                                                <div class="fs-7 text-muted">Allowed: jpg, png</div>
-                                                <div class="fs-7 text-muted">Max size: 100KB</div>
-                                            </div>
-                                        </div>
-                                        <div id="edit_user_photo_error" class="text-danger fs-7 mt-2" style="display: none;"></div>
+                            <!--begin::Photo Upload-->
+                            <div class="fv-row mb-7">
+                                <label class="d-block fw-semibold fs-6 mb-5">User Photo</label>
+                                <div class="image-input image-input-outline image-input-placeholder"
+                                    data-kt-image-input="true" id="kt_image_input_edit">
+                                    <!--begin::Preview-->
+                                    <div class="image-input-wrapper w-125px h-125px" id="edit_user_photo_preview"
+                                        style="background-image: url('{{ asset('img/male-placeholder.png') }}');">
                                     </div>
+                                    <!--end::Preview-->
+                                    <!--begin::Edit-->
+                                    <label
+                                        class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
+                                        data-kt-image-input-action="change" data-bs-toggle="tooltip" title="Change photo">
+                                        <i class="ki-outline ki-pencil fs-7"></i>
+                                        <input type="file" name="user_photo_edit" accept=".png, .jpg, .jpeg" />
+                                        <input type="hidden" name="remove_photo" value="0" />
+                                    </label>
+                                    <!--end::Edit-->
+                                    <!--begin::Cancel-->
+                                    <span
+                                        class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
+                                        data-kt-image-input-action="cancel" data-bs-toggle="tooltip" title="Cancel photo">
+                                        <i class="ki-outline ki-cross fs-2"></i>
+                                    </span>
+                                    <!--end::Cancel-->
+                                    <!--begin::Remove-->
+                                    <span
+                                        class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
+                                        data-kt-image-input-action="remove" data-bs-toggle="tooltip" title="Remove photo">
+                                        <i class="ki-outline ki-cross fs-2"></i>
+                                    </span>
+                                    <!--end::Remove-->
                                 </div>
-                                <!--end::Photo Upload-->
+                                <div class="form-text">Allowed file types: png, jpg, jpeg. Max size: 100KB</div>
+                            </div>
+                            <!--end::Photo Upload-->
 
+                            <div class="row">
                                 <!--begin::Role Input-->
                                 <div class="col-lg-12">
                                     <div class="fv-row mb-7">
@@ -611,8 +548,7 @@
                                                 data-placeholder="Select branch" required>
                                                 <option></option>
                                                 @foreach ($branches as $branch)
-                                                    <option value="{{ $branch->id }}">{{ $branch->branch_name }}
-                                                        Branch
+                                                    <option value="{{ $branch->id }}">{{ $branch->branch_name }} Branch
                                                     </option>
                                                 @endforeach
                                             </select>
@@ -725,20 +661,197 @@
         <!--end::Modal dialog-->
     </div>
     <!--end::Modal - Edit User Password-->
+
+    <!--begin::Modal - Delete User Confirmation-->
+    <div class="modal fade" id="kt_modal_delete_user" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+        data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered mw-500px">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h2 class="fw-bold text-danger">
+                        <i class="ki-outline ki-shield fs-2 text-danger me-2"></i>
+                        Delete User Account
+                    </h2>
+                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
+                        <i class="ki-outline ki-cross fs-1"></i>
+                    </div>
+                </div>
+                <div class="modal-body pt-0">
+                    <!--begin::Step 1 - Warning-->
+                    <div id="delete_step_warning">
+                        <!--begin::User Info-->
+                        <div class="d-flex align-items-center bg-light-primary rounded p-4 mb-5">
+                            <div class="symbol symbol-50px me-4">
+                                <img id="delete_user_photo" src="{{ asset('img/male-placeholder.png') }}"
+                                    alt="User" />
+                            </div>
+                            <div>
+                                <div class="fw-bold text-gray-900 fs-5" id="delete_user_name">User Name</div>
+                                <div class="text-muted fs-7" id="delete_user_email">user@email.com</div>
+                            </div>
+                        </div>
+                        <!--end::User Info-->
+
+                        <!--begin::Warning Notice-->
+                        <div class="notice d-flex bg-light-warning rounded border-warning border border-dashed p-4 mb-5">
+                            <i class="ki-outline ki-information-5 fs-2tx text-warning me-4"></i>
+                            <div class="d-flex flex-stack flex-grow-1">
+                                <div class="fw-semibold">
+                                    <h4 class="text-gray-900 fw-bold">What happens when you delete this user?</h4>
+                                    <ul class="text-gray-700 fs-6 mb-0 ps-4">
+                                        <li>User's login access will be revoked immediately</li>
+                                        <li>Account will be hidden from active users list</li>
+                                        <li>User will not be able to log into the system</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <!--end::Warning Notice-->
+
+                        <!--begin::Recovery Notice-->
+                        <div class="notice d-flex bg-light-success rounded border-success border border-dashed p-4 mb-5">
+                            <i class="ki-outline ki-shield-tick fs-2tx text-success me-4"></i>
+                            <div class="d-flex flex-stack flex-grow-1">
+                                <div class="fw-semibold">
+                                    <h4 class="text-gray-900 fw-bold">Data is Safe!</h4>
+                                    <p class="text-gray-700 fs-6 mb-0">
+                                        All user data including transaction history, wallet logs, activity records,
+                                        and profile information will be <strong>safely preserved</strong> and can be
+                                        recovered by an administrator if needed.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--end::Recovery Notice-->
+
+                        <!--begin::Actions-->
+                        <div class="d-flex justify-content-end gap-3">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                                No, Keep User
+                            </button>
+                            <button type="button" class="btn btn-danger" id="btn_delete_proceed">
+                                <i class="ki-outline ki-trash fs-4 me-1"></i>
+                                Yes, Delete User
+                            </button>
+                        </div>
+                        <!--end::Actions-->
+                    </div>
+                    <!--end::Step 1 - Warning-->
+
+                    <!--begin::Step 2 - Confirm-->
+                    <div id="delete_step_confirm" style="display: none;">
+                        <!--begin::User Badge-->
+                        <div class="text-center mb-5">
+                            <span class="badge badge-light-danger fs-5 px-4 py-3" id="delete_user_name_confirm">
+                                User Name
+                            </span>
+                        </div>
+                        <!--end::User Badge-->
+
+                        <!--begin::Final Warning-->
+                        <div class="alert alert-danger d-flex align-items-center p-4 mb-5">
+                            <i class="ki-outline ki-shield-cross fs-2hx text-danger me-3"></i>
+                            <div class="d-flex flex-column">
+                                <span class="fw-bold fs-5">Final Confirmation Required</span>
+                                <span class="text-gray-700">Type <strong>DELETE</strong> below to confirm</span>
+                            </div>
+                        </div>
+                        <!--end::Final Warning-->
+
+                        <!--begin::Confirm Input-->
+                        <div class="fv-row mb-5">
+                            <input type="text" id="delete_confirm_input" class="form-control form-control-lg text-center"
+                                placeholder="Type DELETE to confirm" autocomplete="off" />
+                            <div class="form-text text-center mt-2">This action will hide the user from the system</div>
+                        </div>
+                        <!--end::Confirm Input-->
+
+                        <!--begin::Actions-->
+                        <div class="d-flex justify-content-end gap-3">
+                            <button type="button" class="btn btn-light" id="btn_delete_back">
+                                <i class="ki-outline ki-arrow-left fs-4 me-1"></i>
+                                Go Back
+                            </button>
+                            <button type="button" class="btn btn-danger" id="btn_delete_confirm" disabled>
+                                <span class="indicator-label">
+                                    <i class="ki-outline ki-trash fs-4 me-1"></i>
+                                    Delete User
+                                </span>
+                                <span class="indicator-progress">
+                                    Deleting... <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                </span>
+                            </button>
+                        </div>
+                        <!--end::Actions-->
+                    </div>
+                    <!--end::Step 2 - Confirm-->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--end::Modal - Delete User Confirmation-->
+
+    <!--begin::Modal - Recover User Confirmation-->
+    <div class="modal fade" id="kt_modal_recover_user" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered mw-400px">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h2 class="fw-bold text-success">
+                        <i class="ki-outline ki-arrow-circle-left fs-2 text-success me-2"></i>
+                        Recover User
+                    </h2>
+                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
+                        <i class="ki-outline ki-cross fs-1"></i>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-5">
+                        <span class="badge badge-light-success fs-5 px-4 py-3" id="recover_user_name">
+                            User Name
+                        </span>
+                    </div>
+
+                    <div class="notice d-flex bg-light-success rounded border-success border border-dashed p-4 mb-5">
+                        <i class="ki-outline ki-shield-tick fs-2tx text-success me-4"></i>
+                        <div class="d-flex flex-stack flex-grow-1">
+                            <div class="fw-semibold">
+                                <p class="text-gray-700 fs-6 mb-0">
+                                    This will restore the user account and allow them to log in again.
+                                    All their previous data will be accessible.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-3">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-success" id="btn_recover_confirm">
+                            <span class="indicator-label">
+                                <i class="ki-outline ki-arrow-circle-left fs-4 me-1"></i>
+                                Recover User
+                            </span>
+                            <span class="indicator-progress">
+                                Recovering... <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--end::Modal - Recover User Confirmation-->
 @endsection
 
 @push('vendor-js')
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
 @endpush
-
 @push('page-js')
     <script>
         var storeUserRoute = "{{ route('users.store') }}";
         const routeDeleteUser = "{{ route('users.destroy', ':id') }}";
-        const routeToggleActive = "{{ route('users.toggleActive', ':id') }}";
-        const defaultPhotoUrl = "{{ asset('img/male-placeholder.png') }}";
-        const maxFileSize = 102400; // 100KB in bytes
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+        const routeToggleActive = "{{ route('users.toggleActive') }}";
+        const routeGetUsers = "{{ route('users.ajax') }}";
+        const routeRecoverUser = "{{ route('users.recover') }}";
     </script>
     <script src="{{ asset('js/settings/users/index.js') }}"></script>
     <script>
