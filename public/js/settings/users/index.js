@@ -28,13 +28,13 @@ var KTUsersList = function () {
                 }
             },
             columns: [
-                { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+                { data: 'counter', name: 'counter', orderable: false, searchable: false },
                 { data: 'user_info', name: 'name' },
-                { data: 'mobile_number', name: 'mobile_number' },
+                { data: 'mobile', name: 'mobile_number' },
                 { data: 'branch', name: 'branch' },
                 { data: 'role', name: 'role', orderable: false },
                 { data: 'last_login', name: 'last_login', orderable: false },
-                { data: 'active_toggle', name: 'is_active', orderable: false, searchable: false },
+                { data: 'active', name: 'is_active', orderable: false, searchable: false },
                 { data: 'actions', name: 'actions', orderable: false, searchable: false }
             ],
             order: [],
