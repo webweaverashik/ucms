@@ -243,7 +243,7 @@ class PaymentTransactionController extends Controller
         // If transaction is deleted, show only the deleted info
         if ($isDeleted) {
             $deletedAt = $transaction->deleted_at ? $transaction->deleted_at->format('d M Y, h:i A') : 'Unknown';
-            $actions .= '<span class="text-muted small" title="Deleted at: ' . $deletedAt . '"><i class="bi bi-info-circle me-1"></i>Deleted</span>';
+            $actions .= '<span class="text-muted small" data-bs-toggle="tooltip" title="Deleted at: ' . $deletedAt . '"><i class="bi bi-info-circle me-1"></i>Deleted</span>';
             return $actions;
         }
 
