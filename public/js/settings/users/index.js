@@ -1158,15 +1158,16 @@ var KTUsersRecoverUser = function () {
 
     // Handle recover button clicks (event delegation for dynamic content)
     const handleRecoverClick = function () {
-        document.addEventListener('click', function (e) {
-            const recoverBtn = e.target.closest('.recover-user');
-            if (!recoverBtn) return;
-
+        $(document).on('click', '.recover-user-btn', function (e) {
             e.preventDefault();
             e.stopPropagation();
 
-            currentUserId = recoverBtn.getAttribute('data-user-id');
-            currentUserName = recoverBtn.getAttribute('data-user-name');
+            const recoverBtn = $(this);
+            
+            currentUserId = recoverBtn.attr('data-user-id');
+            currentUserName = recoverBtn.attr('data-user-name');
+
+            console.log('Recover button clicked - User ID:', currentUserId, 'Name:', currentUserName);
 
             if (!currentUserId || currentUserId === 'null' || currentUserId === 'undefined') {
                 toastr.error('Unable to identify user. Please refresh the page.');
