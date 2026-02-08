@@ -242,7 +242,7 @@
                             <span class="text-muted fw-semibold fs-7">Latest payment activities</span>
                         </h3>
                         <div class="card-toolbar">
-                            <a href="{{ route('transactions.index') }}" class="btn btn-sm btn-light-primary">View All</a>
+                            <a href="{{ route('transactions.index') }}" target="_blank" class="btn btn-sm btn-light-primary">View All</a>
                         </div>
                     </div>
                     <div class="card-body py-3">
