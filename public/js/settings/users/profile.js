@@ -1,13 +1,12 @@
 "use strict";
 
 // ========================================
-// Wallet Logs DataTable (Server-side AJAX)
+// Wallet Logs DataTable
 // ========================================
-var KTWalletLogsTable = function () {
+var KTWalletLogsTable = (function () {
     var table;
     var datatable;
-    var filterForm;
-    var daterangepicker;
+    var filterMenuEl;
 
     // Filter values
     var filters = {
@@ -16,66 +15,16 @@ var KTWalletLogsTable = function () {
         end_date: ''
     };
 
-    var initDateRangePicker = function () {
-        var input = $('#wallet_daterangepicker');
-        var hiddenInput = $('#wallet_date_range_value');
-        var filterMenuEl = document.querySelector('#kt_wallet_filter_menu');
-
-        // Default: This Month
-        var defaultStart = moment().startOf('month');
-        var defaultEnd = moment().endOf('month');
-
-        function cb(start, end) {
-            var displayFormat = start.format('DD-MM-YYYY') + ' - ' + end.format('DD-MM-YYYY');
-            input.val(displayFormat);
-            hiddenInput.val(displayFormat);
-
-            // Update filter values
-            filters.start_date = start.format('YYYY-MM-DD');
-            filters.end_date = end.format('YYYY-MM-DD');
-        }
-
-        input.daterangepicker({
-            startDate: defaultStart,
-            endDate: defaultEnd,
-            parentEl: filterMenuEl ? $(filterMenuEl) : 'body',
-            opens: 'left',
-            drops: 'auto',
-            locale: {
-                format: 'DD-MM-YYYY'
-            },
-            ranges: {
-                'Today': [moment(), moment()],
-                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-                'This Month': [moment().startOf('month'), moment().endOf('month')],
-                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-            }
-        }, cb);
-
-        // Prevent filter menu from closing when interacting with daterangepicker
-        input.on('show.daterangepicker', function () {
-            if (filterMenuEl) {
-                filterMenuEl.setAttribute('data-kt-menu-dismiss', 'false');
-            }
-        });
-
-        input.on('hide.daterangepicker', function () {
-            if (filterMenuEl) {
-                filterMenuEl.removeAttribute('data-kt-menu-dismiss');
-            }
-        });
-
-        // Set default
-        cb(defaultStart, defaultEnd);
-
-        // Store reference
-        daterangepicker = input.data('daterangepicker');
-    };
+    // Flatpickr instances
+    var dateFromPicker;
+    var dateToPicker;
 
     var initDatatable = function () {
         datatable = $(table).DataTable({
+            info: true,
+            order: [[1, 'desc']],
+            pageLength: 10,
+            lengthMenu: [10, 25, 50, 100],
             processing: true,
             serverSide: true,
             ajax: {
@@ -85,40 +34,70 @@ var KTWalletLogsTable = function () {
                     d.type = filters.type;
                     d.start_date = filters.start_date;
                     d.end_date = filters.end_date;
-                },
-                error: function (xhr, error, thrown) {
-                    console.error('DataTables AJAX error:', error, thrown);
-                    toastr.error('Failed to load wallet logs');
                 }
             },
             columns: [
                 { data: 'counter', name: 'counter', orderable: false, searchable: false },
                 { data: 'date', name: 'created_at' },
-                { data: 'type', name: 'type', orderable: false },
+                { data: 'type', name: 'type' },
                 { data: 'description', name: 'description' },
                 { data: 'amount', name: 'amount', className: 'text-end' },
-                { data: 'old_balance', name: 'old_balance', className: 'text-end', orderable: false },
-                { data: 'new_balance', name: 'new_balance', className: 'text-end', orderable: false },
-                { data: 'created_by', name: 'created_by', orderable: false }
+                { data: 'old_balance', name: 'old_balance', className: 'text-end' },
+                { data: 'new_balance', name: 'new_balance', className: 'text-end' },
+                { data: 'created_by', name: 'created_by' }
             ],
-            order: [[1, 'desc']],
-            pageLength: 10,
-            lengthMenu: [10, 25, 50, 100],
+            columnDefs: [
+                { orderable: false, targets: [0, 2, 3, 7] }
+            ],
             language: {
-                processing: '<div class="d-flex justify-content-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>',
+                processing: '<span class="spinner-border spinner-border-sm align-middle me-2"></span> Loading...',
                 emptyTable: '<div class="d-flex flex-column align-items-center py-10"><i class="ki-outline ki-wallet fs-3x text-gray-400 mb-3"></i><span class="text-gray-500 fs-5">No wallet logs found</span></div>',
                 zeroRecords: '<div class="d-flex flex-column align-items-center py-10"><i class="ki-outline ki-wallet fs-3x text-gray-400 mb-3"></i><span class="text-gray-500 fs-5">No matching records found</span></div>'
             }
         });
     };
 
+    var initFlatpickr = function () {
+        var dateFromEl = document.getElementById('wallet_date_from');
+        var dateToEl = document.getElementById('wallet_date_to');
+
+        if (dateFromEl) {
+            dateFromPicker = flatpickr(dateFromEl, {
+                dateFormat: 'd-m-Y',
+                allowInput: false,
+                onChange: function (selectedDates, dateStr) {
+                    filters.start_date = dateStr;
+                    // Set minDate for dateTo picker
+                    if (dateToPicker && selectedDates.length > 0) {
+                        dateToPicker.set('minDate', selectedDates[0]);
+                    }
+                }
+            });
+        }
+
+        if (dateToEl) {
+            dateToPicker = flatpickr(dateToEl, {
+                dateFormat: 'd-m-Y',
+                allowInput: false,
+                onChange: function (selectedDates, dateStr) {
+                    filters.end_date = dateStr;
+                    // Set maxDate for dateFrom picker
+                    if (dateFromPicker && selectedDates.length > 0) {
+                        dateFromPicker.set('maxDate', selectedDates[0]);
+                    }
+                }
+            });
+        }
+    };
+
     var handleSearch = function () {
-        const searchInput = document.querySelector('[data-kt-wallet-table-filter="search"]');
+        var searchInput = document.querySelector('[data-kt-wallet-table-filter="search"]');
+        var timeout;
+
         if (searchInput) {
-            let debounceTimer;
-            searchInput.addEventListener('keyup', function (e) {
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(function () {
+            searchInput.addEventListener('input', function (e) {
+                clearTimeout(timeout);
+                timeout = setTimeout(function () {
                     datatable.search(e.target.value).draw();
                 }, 300);
             });
@@ -126,17 +105,17 @@ var KTWalletLogsTable = function () {
     };
 
     var handleFilter = function () {
-        filterForm = document.querySelector('[data-kt-wallet-table-filter="form"]');
-        if (!filterForm) return;
-
-        const filterButton = filterForm.querySelector('[data-kt-wallet-table-filter="filter"]');
-        const resetButton = filterForm.querySelector('[data-kt-wallet-table-filter="reset"]');
-        const typeSelect = $('[data-kt-wallet-table-filter="type"]');
+        var typeSelect = $('[data-kt-wallet-table-filter="type"]');
+        var filterButton = document.querySelector('[data-kt-wallet-table-filter="filter"]');
+        var resetButton = document.querySelector('[data-kt-wallet-table-filter="reset"]');
 
         // Initialize Select2
-        typeSelect.select2({
-            minimumResultsForSearch: Infinity
-        });
+        if (typeSelect.length) {
+            typeSelect.select2({
+                dropdownParent: filterMenuEl,
+                minimumResultsForSearch: Infinity
+            });
+        }
 
         // Apply filter
         if (filterButton) {
@@ -145,7 +124,6 @@ var KTWalletLogsTable = function () {
                 datatable.ajax.reload();
 
                 // Close the filter menu
-                var filterMenuEl = document.getElementById('kt_wallet_filter_menu');
                 if (filterMenuEl) {
                     var menuInstance = KTMenu.getInstance(filterMenuEl);
                     if (menuInstance) {
@@ -158,23 +136,25 @@ var KTWalletLogsTable = function () {
         // Reset filter
         if (resetButton) {
             resetButton.addEventListener('click', function () {
-                // Reset type select
+                // Reset type
                 typeSelect.val(null).trigger('change');
                 filters.type = '';
 
-                // Reset date range to This Month
-                var defaultStart = moment().startOf('month');
-                var defaultEnd = moment().endOf('month');
-                daterangepicker.setStartDate(defaultStart);
-                daterangepicker.setEndDate(defaultEnd);
-                $('#wallet_daterangepicker').val(defaultStart.format('DD-MM-YYYY') + ' - ' + defaultEnd.format('DD-MM-YYYY'));
-                filters.start_date = defaultStart.format('YYYY-MM-DD');
-                filters.end_date = defaultEnd.format('YYYY-MM-DD');
+                // Reset dates
+                if (dateFromPicker) {
+                    dateFromPicker.clear();
+                    dateFromPicker.set('maxDate', null);
+                }
+                if (dateToPicker) {
+                    dateToPicker.clear();
+                    dateToPicker.set('minDate', null);
+                }
+                filters.start_date = '';
+                filters.end_date = '';
 
                 datatable.ajax.reload();
 
                 // Close the filter menu
-                var filterMenuEl = document.getElementById('kt_wallet_filter_menu');
                 if (filterMenuEl) {
                     var menuInstance = KTMenu.getInstance(filterMenuEl);
                     if (menuInstance) {
@@ -188,10 +168,12 @@ var KTWalletLogsTable = function () {
     return {
         init: function () {
             table = document.getElementById('kt_wallet_logs_table');
+            filterMenuEl = document.getElementById('kt_wallet_filter_menu');
+
             if (!table) return;
 
-            initDateRangePicker();
             initDatatable();
+            initFlatpickr();
             handleSearch();
             handleFilter();
         },
@@ -201,16 +183,15 @@ var KTWalletLogsTable = function () {
             }
         }
     };
-}();
+})();
 
 // ========================================
-// Login Activity DataTable (Server-side AJAX)
+// Login Activity DataTable
 // ========================================
-var KTLoginActivityTable = function () {
+var KTLoginActivityTable = (function () {
     var table;
     var datatable;
-    var filterForm;
-    var daterangepicker;
+    var filterMenuEl;
 
     // Filter values
     var filters = {
@@ -219,66 +200,16 @@ var KTLoginActivityTable = function () {
         end_date: ''
     };
 
-    var initDateRangePicker = function () {
-        var input = $('#login_daterangepicker');
-        var hiddenInput = $('#login_date_range_value');
-        var filterMenuEl = document.querySelector('#kt_login_filter_menu');
-
-        // Default: Last 7 Days
-        var defaultStart = moment().subtract(6, 'days');
-        var defaultEnd = moment();
-
-        function cb(start, end) {
-            var displayFormat = start.format('DD-MM-YYYY') + ' - ' + end.format('DD-MM-YYYY');
-            input.val(displayFormat);
-            hiddenInput.val(displayFormat);
-
-            // Update filter values
-            filters.start_date = start.format('YYYY-MM-DD');
-            filters.end_date = end.format('YYYY-MM-DD');
-        }
-
-        input.daterangepicker({
-            startDate: defaultStart,
-            endDate: defaultEnd,
-            parentEl: filterMenuEl ? $(filterMenuEl) : 'body',
-            opens: 'left',
-            drops: 'auto',
-            locale: {
-                format: 'DD-MM-YYYY'
-            },
-            ranges: {
-                'Today': [moment(), moment()],
-                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-                'This Month': [moment().startOf('month'), moment().endOf('month')],
-                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-            }
-        }, cb);
-
-        // Prevent filter menu from closing when interacting with daterangepicker
-        input.on('show.daterangepicker', function () {
-            if (filterMenuEl) {
-                filterMenuEl.setAttribute('data-kt-menu-dismiss', 'false');
-            }
-        });
-
-        input.on('hide.daterangepicker', function () {
-            if (filterMenuEl) {
-                filterMenuEl.removeAttribute('data-kt-menu-dismiss');
-            }
-        });
-
-        // Set default
-        cb(defaultStart, defaultEnd);
-
-        // Store reference
-        daterangepicker = input.data('daterangepicker');
-    };
+    // Flatpickr instances
+    var dateFromPicker;
+    var dateToPicker;
 
     var initDatatable = function () {
         datatable = $(table).DataTable({
+            info: true,
+            order: [[4, 'desc']],
+            pageLength: 10,
+            lengthMenu: [10, 25, 50, 100],
             processing: true,
             serverSide: true,
             ajax: {
@@ -288,37 +219,67 @@ var KTLoginActivityTable = function () {
                     d.device = filters.device;
                     d.start_date = filters.start_date;
                     d.end_date = filters.end_date;
-                },
-                error: function (xhr, error, thrown) {
-                    console.error('DataTables AJAX error:', error, thrown);
-                    toastr.error('Failed to load login activities');
                 }
             },
             columns: [
                 { data: 'counter', name: 'counter', orderable: false, searchable: false },
                 { data: 'ip_address', name: 'ip_address' },
                 { data: 'user_agent', name: 'user_agent' },
-                { data: 'device', name: 'device', orderable: false },
+                { data: 'device', name: 'device' },
                 { data: 'time', name: 'created_at' }
             ],
-            order: [[4, 'desc']],
-            pageLength: 10,
-            lengthMenu: [10, 25, 50, 100],
+            columnDefs: [
+                { orderable: false, targets: [0, 3] }
+            ],
             language: {
-                processing: '<div class="d-flex justify-content-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>',
+                processing: '<span class="spinner-border spinner-border-sm align-middle me-2"></span> Loading...',
                 emptyTable: '<div class="d-flex flex-column align-items-center py-10"><i class="ki-outline ki-shield-tick fs-3x text-gray-400 mb-3"></i><span class="text-gray-500 fs-5">No login activities found</span></div>',
                 zeroRecords: '<div class="d-flex flex-column align-items-center py-10"><i class="ki-outline ki-shield-tick fs-3x text-gray-400 mb-3"></i><span class="text-gray-500 fs-5">No matching records found</span></div>'
             }
         });
     };
 
+    var initFlatpickr = function () {
+        var dateFromEl = document.getElementById('login_date_from');
+        var dateToEl = document.getElementById('login_date_to');
+
+        if (dateFromEl) {
+            dateFromPicker = flatpickr(dateFromEl, {
+                dateFormat: 'd-m-Y',
+                allowInput: false,
+                onChange: function (selectedDates, dateStr) {
+                    filters.start_date = dateStr;
+                    // Set minDate for dateTo picker
+                    if (dateToPicker && selectedDates.length > 0) {
+                        dateToPicker.set('minDate', selectedDates[0]);
+                    }
+                }
+            });
+        }
+
+        if (dateToEl) {
+            dateToPicker = flatpickr(dateToEl, {
+                dateFormat: 'd-m-Y',
+                allowInput: false,
+                onChange: function (selectedDates, dateStr) {
+                    filters.end_date = dateStr;
+                    // Set maxDate for dateFrom picker
+                    if (dateFromPicker && selectedDates.length > 0) {
+                        dateFromPicker.set('maxDate', selectedDates[0]);
+                    }
+                }
+            });
+        }
+    };
+
     var handleSearch = function () {
-        const searchInput = document.querySelector('[data-kt-login-table-filter="search"]');
+        var searchInput = document.querySelector('[data-kt-login-table-filter="search"]');
+        var timeout;
+
         if (searchInput) {
-            let debounceTimer;
-            searchInput.addEventListener('keyup', function (e) {
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(function () {
+            searchInput.addEventListener('input', function (e) {
+                clearTimeout(timeout);
+                timeout = setTimeout(function () {
                     datatable.search(e.target.value).draw();
                 }, 300);
             });
@@ -326,17 +287,17 @@ var KTLoginActivityTable = function () {
     };
 
     var handleFilter = function () {
-        filterForm = document.querySelector('[data-kt-login-table-filter="form"]');
-        if (!filterForm) return;
-
-        const filterButton = filterForm.querySelector('[data-kt-login-table-filter="filter"]');
-        const resetButton = filterForm.querySelector('[data-kt-login-table-filter="reset"]');
-        const deviceSelect = $('[data-kt-login-table-filter="device"]');
+        var deviceSelect = $('[data-kt-login-table-filter="device"]');
+        var filterButton = document.querySelector('[data-kt-login-table-filter="filter"]');
+        var resetButton = document.querySelector('[data-kt-login-table-filter="reset"]');
 
         // Initialize Select2
-        deviceSelect.select2({
-            minimumResultsForSearch: Infinity
-        });
+        if (deviceSelect.length) {
+            deviceSelect.select2({
+                dropdownParent: filterMenuEl,
+                minimumResultsForSearch: Infinity
+            });
+        }
 
         // Apply filter
         if (filterButton) {
@@ -345,7 +306,6 @@ var KTLoginActivityTable = function () {
                 datatable.ajax.reload();
 
                 // Close the filter menu
-                var filterMenuEl = document.getElementById('kt_login_filter_menu');
                 if (filterMenuEl) {
                     var menuInstance = KTMenu.getInstance(filterMenuEl);
                     if (menuInstance) {
@@ -358,23 +318,25 @@ var KTLoginActivityTable = function () {
         // Reset filter
         if (resetButton) {
             resetButton.addEventListener('click', function () {
-                // Reset device select
+                // Reset device
                 deviceSelect.val(null).trigger('change');
                 filters.device = '';
 
-                // Reset date range to Last 7 Days
-                var defaultStart = moment().subtract(6, 'days');
-                var defaultEnd = moment();
-                daterangepicker.setStartDate(defaultStart);
-                daterangepicker.setEndDate(defaultEnd);
-                $('#login_daterangepicker').val(defaultStart.format('DD-MM-YYYY') + ' - ' + defaultEnd.format('DD-MM-YYYY'));
-                filters.start_date = defaultStart.format('YYYY-MM-DD');
-                filters.end_date = defaultEnd.format('YYYY-MM-DD');
+                // Reset dates
+                if (dateFromPicker) {
+                    dateFromPicker.clear();
+                    dateFromPicker.set('maxDate', null);
+                }
+                if (dateToPicker) {
+                    dateToPicker.clear();
+                    dateToPicker.set('minDate', null);
+                }
+                filters.start_date = '';
+                filters.end_date = '';
 
                 datatable.ajax.reload();
 
                 // Close the filter menu
-                var filterMenuEl = document.getElementById('kt_login_filter_menu');
                 if (filterMenuEl) {
                     var menuInstance = KTMenu.getInstance(filterMenuEl);
                     if (menuInstance) {
@@ -388,10 +350,12 @@ var KTLoginActivityTable = function () {
     return {
         init: function () {
             table = document.getElementById('kt_login_activities_table');
+            filterMenuEl = document.getElementById('kt_login_filter_menu');
+
             if (!table) return;
 
-            initDateRangePicker();
             initDatatable();
+            initFlatpickr();
             handleSearch();
             handleFilter();
         },
@@ -401,12 +365,12 @@ var KTLoginActivityTable = function () {
             }
         }
     };
-}();
+})();
 
 // ========================================
 // Password Update Modal
 // ========================================
-var KTPasswordModal = function () {
+var KTPasswordModal = (function () {
     var modal;
     var modalElement;
     var form;
@@ -542,9 +506,7 @@ var KTPasswordModal = function () {
                             icon: 'success',
                             buttonsStyling: false,
                             confirmButtonText: 'Ok',
-                            customClass: {
-                                confirmButton: 'btn btn-primary'
-                            }
+                            customClass: { confirmButton: 'btn btn-primary' }
                         });
                     } else {
                         toastr.error(data.message || 'Password update failed.');
@@ -606,26 +568,26 @@ var KTPasswordModal = function () {
             handleOpenButton();
         }
     };
-}();
+})();
 
 // ========================================
 // Photo Upload Modal (Non-Admin)
 // ========================================
-var KTPhotoModal = function () {
+var KTPhotoModal = (function () {
     var modal;
     var modalElement;
     var form;
     var submitButton;
     var photoInput;
     var photoRemove;
-    var imageInputWrapper;
+    var imageWrapper;
     var originalPhotoUrl;
 
     var initPhotoUpload = function () {
-        var imageInputElement = document.getElementById('kt_photo_upload');
-        if (!imageInputElement) return;
+        var photoUploadEl = document.getElementById('kt_photo_upload');
+        if (!photoUploadEl) return;
 
-        imageInputWrapper = imageInputElement.querySelector('.image-input-wrapper');
+        imageWrapper = photoUploadEl.querySelector('.image-input-wrapper');
         photoInput = document.getElementById('photo_input');
         photoRemove = document.getElementById('photo_remove');
         originalPhotoUrl = ProfileConfig.userPhotoUrl;
@@ -637,16 +599,16 @@ var KTPhotoModal = function () {
                 if (!file) return;
 
                 // Validate file type
-                var allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-                if (!allowedTypes.includes(file.type)) {
-                    toastr.error('Only JPG and PNG files are allowed.');
+                var validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                if (!validTypes.includes(file.type)) {
+                    toastr.error('Please select a valid image file (JPG, PNG)');
                     photoInput.value = '';
                     return;
                 }
 
-                // Validate file size (100KB)
+                // Validate file size (100KB max)
                 if (file.size > 100 * 1024) {
-                    toastr.error('File size must be less than 100KB.');
+                    toastr.error('Image size must be less than 100KB');
                     photoInput.value = '';
                     return;
                 }
@@ -654,36 +616,35 @@ var KTPhotoModal = function () {
                 // Preview image
                 var reader = new FileReader();
                 reader.onload = function (e) {
-                    imageInputWrapper.style.backgroundImage = 'url(' + e.target.result + ')';
-                    imageInputElement.classList.add('image-input-changed');
-                    imageInputElement.classList.remove('image-input-empty');
+                    imageWrapper.style.backgroundImage = 'url(' + e.target.result + ')';
+                    photoUploadEl.classList.add('image-input-changed');
+                    photoUploadEl.classList.remove('image-input-empty');
                     photoRemove.value = '0';
                 };
                 reader.readAsDataURL(file);
             });
         }
 
-        // Handle remove button
-        var removeBtn = imageInputElement.querySelector('[data-kt-image-input-action="remove"]');
-        if (removeBtn) {
-            removeBtn.addEventListener('click', function () {
-                imageInputWrapper.style.backgroundImage = 'url(' + ProfileConfig.placeholderUrl + ')';
-                imageInputElement.classList.add('image-input-empty');
-                imageInputElement.classList.remove('image-input-changed');
+        // Handle cancel button
+        var cancelBtn = photoUploadEl.querySelector('[data-kt-image-input-action="cancel"]');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function () {
                 photoInput.value = '';
-                photoRemove.value = '1';
+                imageWrapper.style.backgroundImage = 'url(' + originalPhotoUrl + ')';
+                photoUploadEl.classList.remove('image-input-changed');
+                photoRemove.value = '0';
             });
         }
 
-        // Handle cancel button
-        var cancelBtn = imageInputElement.querySelector('[data-kt-image-input-action="cancel"]');
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', function () {
-                imageInputWrapper.style.backgroundImage = 'url(' + originalPhotoUrl + ')';
-                imageInputElement.classList.remove('image-input-changed');
-                imageInputElement.classList.remove('image-input-empty');
+        // Handle remove button
+        var removeBtn = photoUploadEl.querySelector('[data-kt-image-input-action="remove"]');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function () {
                 photoInput.value = '';
-                photoRemove.value = '0';
+                imageWrapper.style.backgroundImage = 'url(' + ProfileConfig.placeholderUrl + ')';
+                photoUploadEl.classList.remove('image-input-changed');
+                photoUploadEl.classList.add('image-input-empty');
+                photoRemove.value = '1';
             });
         }
     };
@@ -691,15 +652,6 @@ var KTPhotoModal = function () {
     var handleFormSubmit = function () {
         form.addEventListener('submit', function (e) {
             e.preventDefault();
-
-            // Check if any changes
-            var hasPhoto = photoInput && photoInput.files.length > 0;
-            var isRemoved = photoRemove && photoRemove.value === '1';
-
-            if (!hasPhoto && !isRemoved) {
-                toastr.info('No changes detected.');
-                return;
-            }
 
             // Show loading
             submitButton.setAttribute('data-kt-indicator', 'on');
@@ -716,9 +668,6 @@ var KTPhotoModal = function () {
                 body: formData
             })
                 .then(function (response) {
-                    if (!response.ok) {
-                        return response.json().then(err => { throw err; });
-                    }
                     return response.json();
                 })
                 .then(function (data) {
@@ -732,9 +681,7 @@ var KTPhotoModal = function () {
                             icon: 'success',
                             buttonsStyling: false,
                             confirmButtonText: 'Ok',
-                            customClass: {
-                                confirmButton: 'btn btn-primary'
-                            }
+                            customClass: { confirmButton: 'btn btn-primary' }
                         }).then(function () {
                             location.reload();
                         });
@@ -745,27 +692,20 @@ var KTPhotoModal = function () {
                 .catch(function (error) {
                     submitButton.removeAttribute('data-kt-indicator');
                     submitButton.disabled = false;
-                    if (error.errors) {
-                        Object.keys(error.errors).forEach(function (field) {
-                            toastr.error(error.errors[field][0]);
-                        });
-                    } else {
-                        toastr.error(error.message || 'Something went wrong.');
-                    }
+                    toastr.error('Something went wrong. Please try again.');
                 });
         });
     };
 
     var handleModalReset = function () {
         modalElement.addEventListener('hidden.bs.modal', function () {
-            var imageInputElement = document.getElementById('kt_photo_upload');
-            if (imageInputElement && imageInputWrapper) {
-                imageInputWrapper.style.backgroundImage = 'url(' + originalPhotoUrl + ')';
-                imageInputElement.classList.remove('image-input-changed');
-                imageInputElement.classList.remove('image-input-empty');
+            var photoUploadEl = document.getElementById('kt_photo_upload');
+            if (photoUploadEl) {
+                photoInput.value = '';
+                imageWrapper.style.backgroundImage = 'url(' + originalPhotoUrl + ')';
+                photoUploadEl.classList.remove('image-input-changed', 'image-input-empty');
+                photoRemove.value = '0';
             }
-            if (photoInput) photoInput.value = '';
-            if (photoRemove) photoRemove.value = '0';
         });
     };
 
@@ -793,12 +733,12 @@ var KTPhotoModal = function () {
             handleOpenButton();
         }
     };
-}();
+})();
 
 // ========================================
 // Profile Update Modal (Admin)
 // ========================================
-var KTProfileModal = function () {
+var KTProfileModal = (function () {
     var modal;
     var modalElement;
     var form;
@@ -806,7 +746,7 @@ var KTProfileModal = function () {
     var originalValues = {};
     var photoInput;
     var photoRemove;
-    var imageInputWrapper;
+    var imageWrapper;
     var originalPhotoUrl;
 
     var storeOriginalValues = function () {
@@ -815,16 +755,16 @@ var KTProfileModal = function () {
             email: document.getElementById('profile_email').value.trim(),
             mobile_number: document.getElementById('profile_mobile').value.trim()
         };
-        originalPhotoUrl = ProfileConfig.userPhotoUrl;
     };
 
     var initPhotoUpload = function () {
-        var imageInputElement = document.getElementById('kt_profile_photo_upload');
-        if (!imageInputElement) return;
+        var photoUploadEl = document.getElementById('kt_profile_photo_upload');
+        if (!photoUploadEl) return;
 
-        imageInputWrapper = imageInputElement.querySelector('.image-input-wrapper');
+        imageWrapper = photoUploadEl.querySelector('.image-input-wrapper');
         photoInput = document.getElementById('profile_photo_input');
         photoRemove = document.getElementById('profile_photo_remove');
+        originalPhotoUrl = ProfileConfig.userPhotoUrl;
 
         // Handle file selection
         if (photoInput) {
@@ -833,16 +773,16 @@ var KTProfileModal = function () {
                 if (!file) return;
 
                 // Validate file type
-                var allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-                if (!allowedTypes.includes(file.type)) {
-                    toastr.error('Only JPG and PNG files are allowed.');
+                var validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                if (!validTypes.includes(file.type)) {
+                    toastr.error('Please select a valid image file (JPG, PNG)');
                     photoInput.value = '';
                     return;
                 }
 
-                // Validate file size (100KB)
+                // Validate file size (100KB max)
                 if (file.size > 100 * 1024) {
-                    toastr.error('File size must be less than 100KB.');
+                    toastr.error('Image size must be less than 100KB');
                     photoInput.value = '';
                     return;
                 }
@@ -850,58 +790,58 @@ var KTProfileModal = function () {
                 // Preview image
                 var reader = new FileReader();
                 reader.onload = function (e) {
-                    imageInputWrapper.style.backgroundImage = 'url(' + e.target.result + ')';
-                    imageInputElement.classList.add('image-input-changed');
-                    imageInputElement.classList.remove('image-input-empty');
+                    imageWrapper.style.backgroundImage = 'url(' + e.target.result + ')';
+                    photoUploadEl.classList.add('image-input-changed');
+                    photoUploadEl.classList.remove('image-input-empty');
                     photoRemove.value = '0';
                 };
                 reader.readAsDataURL(file);
             });
         }
 
-        // Handle remove button
-        var removeBtn = imageInputElement.querySelector('[data-kt-image-input-action="remove"]');
-        if (removeBtn) {
-            removeBtn.addEventListener('click', function () {
-                imageInputWrapper.style.backgroundImage = 'url(' + ProfileConfig.placeholderUrl + ')';
-                imageInputElement.classList.add('image-input-empty');
-                imageInputElement.classList.remove('image-input-changed');
+        // Handle cancel button
+        var cancelBtn = photoUploadEl.querySelector('[data-kt-image-input-action="cancel"]');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function () {
                 photoInput.value = '';
-                photoRemove.value = '1';
+                imageWrapper.style.backgroundImage = 'url(' + originalPhotoUrl + ')';
+                photoUploadEl.classList.remove('image-input-changed');
+                photoRemove.value = '0';
             });
         }
 
-        // Handle cancel button
-        var cancelBtn = imageInputElement.querySelector('[data-kt-image-input-action="cancel"]');
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', function () {
-                imageInputWrapper.style.backgroundImage = 'url(' + originalPhotoUrl + ')';
-                imageInputElement.classList.remove('image-input-changed');
-                imageInputElement.classList.remove('image-input-empty');
+        // Handle remove button
+        var removeBtn = photoUploadEl.querySelector('[data-kt-image-input-action="remove"]');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function () {
                 photoInput.value = '';
-                photoRemove.value = '0';
+                imageWrapper.style.backgroundImage = 'url(' + ProfileConfig.placeholderUrl + ')';
+                photoUploadEl.classList.remove('image-input-changed');
+                photoUploadEl.classList.add('image-input-empty');
+                photoRemove.value = '1';
             });
         }
     };
 
     var hasChanges = function () {
-        var hasFieldChanges = (
-            document.getElementById('profile_name').value.trim() !== originalValues.name ||
-            document.getElementById('profile_email').value.trim() !== originalValues.email ||
-            document.getElementById('profile_mobile').value.trim() !== originalValues.mobile_number
-        );
+        var nameChanged = document.getElementById('profile_name').value.trim() !== originalValues.name;
+        var emailChanged = document.getElementById('profile_email').value.trim() !== originalValues.email;
+        var mobileChanged = document.getElementById('profile_mobile').value.trim() !== originalValues.mobile_number;
+        var photoChanged = (photoInput && photoInput.files.length > 0) || (photoRemove && photoRemove.value === '1');
 
-        var hasPhotoChanges = (photoInput && photoInput.files.length > 0) || (photoRemove && photoRemove.value === '1');
-
-        return hasFieldChanges || hasPhotoChanges;
+        return nameChanged || emailChanged || mobileChanged || photoChanged;
     };
 
     var validateForm = function () {
         var isValid = true;
 
         // Clear previous errors
-        form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-        form.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+        form.querySelectorAll('.is-invalid').forEach(function (el) {
+            el.classList.remove('is-invalid');
+        });
+        form.querySelectorAll('.invalid-feedback').forEach(function (el) {
+            el.textContent = '';
+        });
 
         // Name validation
         var name = document.getElementById('profile_name').value.trim();
@@ -934,7 +874,7 @@ var KTProfileModal = function () {
     };
 
     var showError = function (fieldName, message) {
-        var input = form.querySelector(`[name="${fieldName}"]`);
+        var input = form.querySelector('[name="' + fieldName + '"]');
         if (input) {
             input.classList.add('is-invalid');
             var feedback = input.parentElement.querySelector('.invalid-feedback');
@@ -972,7 +912,9 @@ var KTProfileModal = function () {
             })
                 .then(function (response) {
                     if (!response.ok) {
-                        return response.json().then(err => { throw err; });
+                        return response.json().then(function (err) {
+                            throw err;
+                        });
                     }
                     return response.json();
                 })
@@ -987,9 +929,7 @@ var KTProfileModal = function () {
                             icon: 'success',
                             buttonsStyling: false,
                             confirmButtonText: 'Ok',
-                            customClass: {
-                                confirmButton: 'btn btn-primary'
-                            }
+                            customClass: { confirmButton: 'btn btn-primary' }
                         }).then(function () {
                             location.reload();
                         });
@@ -1025,18 +965,21 @@ var KTProfileModal = function () {
             document.getElementById('profile_mobile').value = originalValues.mobile_number;
 
             // Reset photo
-            var imageInputElement = document.getElementById('kt_profile_photo_upload');
-            if (imageInputElement && imageInputWrapper) {
-                imageInputWrapper.style.backgroundImage = 'url(' + originalPhotoUrl + ')';
-                imageInputElement.classList.remove('image-input-changed');
-                imageInputElement.classList.remove('image-input-empty');
+            var photoUploadEl = document.getElementById('kt_profile_photo_upload');
+            if (photoUploadEl && photoInput && imageWrapper) {
+                photoInput.value = '';
+                imageWrapper.style.backgroundImage = 'url(' + originalPhotoUrl + ')';
+                photoUploadEl.classList.remove('image-input-changed', 'image-input-empty');
+                if (photoRemove) photoRemove.value = '0';
             }
-            if (photoInput) photoInput.value = '';
-            if (photoRemove) photoRemove.value = '0';
 
             // Clear errors
-            form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-            form.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+            form.querySelectorAll('.is-invalid').forEach(function (el) {
+                el.classList.remove('is-invalid');
+            });
+            form.querySelectorAll('.invalid-feedback').forEach(function (el) {
+                el.textContent = '';
+            });
         });
     };
 
@@ -1066,22 +1009,30 @@ var KTProfileModal = function () {
             handleOpenButton();
         }
     };
-}();
+})();
 
 // ========================================
 // Tab Handling
 // ========================================
-var KTProfileTabs = function () {
+var KTProfileTabs = (function () {
     var handleTabPersistence = function () {
         // Store active tab in localStorage
         $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
             localStorage.setItem('profileActiveTab', $(e.target).attr('href'));
+
+            // Reload datatable when switching tabs
+            var tabId = $(e.target).attr('href');
+            if (tabId === '#kt_tab_wallet_logs') {
+                KTWalletLogsTable.reload();
+            } else if (tabId === '#kt_tab_login_activity') {
+                KTLoginActivityTable.reload();
+            }
         });
 
         // Restore active tab on page load
         var activeTab = localStorage.getItem('profileActiveTab');
         if (activeTab) {
-            var tabTrigger = document.querySelector(`a[href="${activeTab}"]`);
+            var tabTrigger = document.querySelector('a[href="' + activeTab + '"]');
             if (tabTrigger) {
                 var tab = new bootstrap.Tab(tabTrigger);
                 tab.show();
@@ -1094,12 +1045,12 @@ var KTProfileTabs = function () {
             handleTabPersistence();
         }
     };
-}();
+})();
 
 // ========================================
 // Initialize Tooltips
 // ========================================
-var KTTooltips = function () {
+var KTTooltips = (function () {
     return {
         init: function () {
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
@@ -1108,22 +1059,12 @@ var KTTooltips = function () {
             });
         }
     };
-}();
+})();
 
 // ========================================
 // Metronic Standard Init
 // ========================================
 KTUtil.onDOMContentLoaded(function () {
-    // Prevent Metronic menu from closing when interacting with daterangepicker
-    $(document).on('click', '.daterangepicker', function (e) {
-        e.stopPropagation();
-    });
-
-    // Also prevent closing when clicking on daterangepicker ranges
-    $(document).on('mousedown', '.daterangepicker', function (e) {
-        e.stopPropagation();
-    });
-
     KTWalletLogsTable.init();
     KTLoginActivityTable.init();
     KTPasswordModal.init();

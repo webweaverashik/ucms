@@ -103,20 +103,37 @@ class UserController extends Controller
             $photoUrl = $user->photo_url ? asset($user->photo_url) : asset('img/male-placeholder.png');
             $isDeleted = $request->deleted_only === 'true';
 
-            // User info column with link to settlements
-            $settlementsUrl = route('settlements.show', $user->id);
-            $userInfoHtml = '
-                <div class="d-flex align-items-center">
-                    <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
-                        <div class="symbol-label">
-                            <img src="' . $photoUrl . '" alt="' . e($user->name) . '" class="w-100" />
+            // User info column - link to settlements only for non-deleted users
+            if ($user->trashed()) {
+                // Deleted user - no link
+                $userInfoHtml = '
+                    <div class="d-flex align-items-center">
+                        <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
+                            <div class="symbol-label">
+                                <img src="' . $photoUrl . '" alt="' . e($user->name) . '" class="w-100" />
+                            </div>
                         </div>
-                    </div>
-                    <div class="d-flex flex-column text-start">
-                        <a href="' . $settlementsUrl . '" class="text-gray-800 text-hover-primary mb-1">' . e($user->name) . '</a>
-                        <span class="fw-bold fs-base">' . e($user->email) . '</span>
-                    </div>
-                </div>';
+                        <div class="d-flex flex-column text-start">
+                            <span class="text-gray-600 mb-1">' . e($user->name) . '</span>
+                            <span class="fw-bold fs-base text-gray-500">' . e($user->email) . '</span>
+                        </div>
+                    </div>';
+            } else {
+                // Active user - with settlements link
+                $settlementsUrl = route('settlements.show', $user->id);
+                $userInfoHtml = '
+                    <div class="d-flex align-items-center">
+                        <div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
+                            <div class="symbol-label">
+                                <img src="' . $photoUrl . '" alt="' . e($user->name) . '" class="w-100" />
+                            </div>
+                        </div>
+                        <div class="d-flex flex-column text-start">
+                            <a href="' . $settlementsUrl . '" class="text-gray-800 text-hover-primary mb-1">' . e($user->name) . '</a>
+                            <span class="fw-bold fs-base">' . e($user->email) . '</span>
+                        </div>
+                    </div>';
+            }
 
             // Branch column
             $branchHtml = $user->branch ? e($user->branch->branch_name) : '<span class="text-muted">-</span>';

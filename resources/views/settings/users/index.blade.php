@@ -1,5 +1,6 @@
 @push('page-css')
-    <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet"
+        type="text/css" />
 @endpush
 @extends('layouts.app')
 @section('title', 'User Settings')
@@ -102,8 +103,8 @@
                             <div class="mb-10">
                                 <label class="form-label fs-6 fw-semibold">Role:</label>
                                 <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
-                                    data-placeholder="Select option" data-allow-clear="true" data-users-table-filter="role"
-                                    data-hide-search="true">
+                                    data-placeholder="Select option" data-allow-clear="true"
+                                    data-users-table-filter="role" data-hide-search="true">
                                     <option></option>
                                     <option value="Admin">Admin</option>
                                     <option value="Manager">Manager</option>
@@ -113,10 +114,11 @@
                             <!--end::Input group-->
                             <!--begin::Actions-->
                             <div class="d-flex justify-content-end">
-                                <button type="reset" class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
+                                <button type="reset"
+                                    class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
                                     data-kt-menu-dismiss="true" data-users-table-filter="reset">Reset</button>
-                                <button type="submit" class="btn btn-primary fw-semibold px-6" data-kt-menu-dismiss="true"
-                                    data-users-table-filter="filter">Apply</button>
+                                <button type="submit" class="btn btn-primary fw-semibold px-6"
+                                    data-kt-menu-dismiss="true" data-users-table-filter="filter">Apply</button>
                             </div>
                             <!--end::Actions-->
                         </div>
@@ -202,8 +204,7 @@
                                     <!--begin::Edit-->
                                     <label
                                         class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                        data-kt-image-input-action="change" data-bs-toggle="tooltip"
-                                        title="Change photo">
+                                        data-kt-image-input-action="change" data-bs-toggle="tooltip" title="Change photo">
                                         <i class="ki-outline ki-pencil fs-7"></i>
                                         <input type="file" name="user_photo" accept=".png, .jpg, .jpeg" />
                                         <input type="hidden" name="photo_remove" />
@@ -212,16 +213,14 @@
                                     <!--begin::Cancel-->
                                     <span
                                         class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                        data-kt-image-input-action="cancel" data-bs-toggle="tooltip"
-                                        title="Cancel photo">
+                                        data-kt-image-input-action="cancel" data-bs-toggle="tooltip" title="Cancel photo">
                                         <i class="ki-outline ki-cross fs-2"></i>
                                     </span>
                                     <!--end::Cancel-->
                                     <!--begin::Remove-->
                                     <span
                                         class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                        data-kt-image-input-action="remove" data-bs-toggle="tooltip"
-                                        title="Remove photo">
+                                        data-kt-image-input-action="remove" data-bs-toggle="tooltip" title="Remove photo">
                                         <i class="ki-outline ki-cross fs-2"></i>
                                     </span>
                                     <!--end::Remove-->
@@ -271,8 +270,8 @@
                                             </div>
                                             <div class="col-lg-4">
                                                 <!--begin::Option-->
-                                                <input type="radio" class="btn-check" name="user_role"
-                                                    value="accountant" id="role_accountant_input" checked="checked" />
+                                                <input type="radio" class="btn-check" name="user_role" value="accountant"
+                                                    id="role_accountant_input" checked="checked" />
                                                 <label
                                                     class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                                     for="role_accountant_input">
@@ -416,8 +415,7 @@
                                     <!--begin::Edit-->
                                     <label
                                         class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                        data-kt-image-input-action="change" data-bs-toggle="tooltip"
-                                        title="Change photo">
+                                        data-kt-image-input-action="change" data-bs-toggle="tooltip" title="Change photo">
                                         <i class="ki-outline ki-pencil fs-7"></i>
                                         <input type="file" name="user_photo_edit" accept=".png, .jpg, .jpeg" />
                                         <input type="hidden" name="remove_photo" value="0" />
@@ -426,16 +424,14 @@
                                     <!--begin::Cancel-->
                                     <span
                                         class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                        data-kt-image-input-action="cancel" data-bs-toggle="tooltip"
-                                        title="Cancel photo">
+                                        data-kt-image-input-action="cancel" data-bs-toggle="tooltip" title="Cancel photo">
                                         <i class="ki-outline ki-cross fs-2"></i>
                                     </span>
                                     <!--end::Cancel-->
                                     <!--begin::Remove-->
                                     <span
                                         class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow"
-                                        data-kt-image-input-action="remove" data-bs-toggle="tooltip"
-                                        title="Remove photo">
+                                        data-kt-image-input-action="remove" data-bs-toggle="tooltip" title="Remove photo">
                                         <i class="ki-outline ki-cross fs-2"></i>
                                     </span>
                                     <!--end::Remove-->
@@ -764,9 +760,8 @@
 
                         <!--begin::Confirm Input-->
                         <div class="fv-row mb-5">
-                            <input type="text" id="delete_confirm_input"
-                                class="form-control form-control-lg text-center" placeholder="Type DELETE to confirm"
-                                autocomplete="off" />
+                            <input type="text" id="delete_confirm_input" class="form-control form-control-lg text-center"
+                                placeholder="Type DELETE to confirm" autocomplete="off" />
                             <div class="form-text text-center mt-2">This action will hide the user from the system</div>
                         </div>
                         <!--end::Confirm Input-->

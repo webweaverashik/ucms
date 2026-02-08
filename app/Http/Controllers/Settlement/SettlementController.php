@@ -198,10 +198,16 @@ class SettlementController extends Controller
     /**
      * Show wallet logs for a specific user.
      */
-    public function show(User $user)
+    public function show(string $id)
     {
         if (! auth()->user()->isAdmin()) {
             return back()->with('error', 'Access to this page is restricted.');
+        }
+
+        $user = User::find($id);
+
+        if (! $user) {
+            return back()->with('error', 'User not found.');
         }
 
         $summary = $this->walletService->getSummary($user);

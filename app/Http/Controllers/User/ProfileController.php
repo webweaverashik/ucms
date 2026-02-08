@@ -39,14 +39,14 @@ class ProfileController extends Controller
             $query->where('type', $request->type);
         }
 
-        // Date range filter
+        // Date range filter (format: d-m-Y from Flatpickr)
         if ($request->filled('start_date') && $request->start_date !== '') {
-            $startDate = Carbon::parse($request->start_date)->startOfDay();
+            $startDate = Carbon::createFromFormat('d-m-Y', $request->start_date)->startOfDay();
             $query->where('created_at', '>=', $startDate);
         }
 
         if ($request->filled('end_date') && $request->end_date !== '') {
-            $endDate = Carbon::parse($request->end_date)->endOfDay();
+            $endDate = Carbon::createFromFormat('d-m-Y', $request->end_date)->endOfDay();
             $query->where('created_at', '<=', $endDate);
         }
 
@@ -142,14 +142,14 @@ class ProfileController extends Controller
             $query->where('device', $request->device);
         }
 
-        // Date range filter
+        // Date range filter (format: d-m-Y from Flatpickr)
         if ($request->filled('start_date') && $request->start_date !== '') {
-            $startDate = Carbon::parse($request->start_date)->startOfDay();
+            $startDate = Carbon::createFromFormat('d-m-Y', $request->start_date)->startOfDay();
             $query->where('created_at', '>=', $startDate);
         }
 
         if ($request->filled('end_date') && $request->end_date !== '') {
-            $endDate = Carbon::parse($request->end_date)->endOfDay();
+            $endDate = Carbon::createFromFormat('d-m-Y', $request->end_date)->endOfDay();
             $query->where('created_at', '<=', $endDate);
         }
 
