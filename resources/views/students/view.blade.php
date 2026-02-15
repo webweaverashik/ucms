@@ -377,6 +377,14 @@
                                 </td>
                             </tr>
                             <!--end::Row-->
+                            <!--begin::Row-->
+                            <tr class="">
+                                <td class="text-gray-500">Admitted By:</td>
+                                <td class="text-gray-800">
+                                    {{ $student->createdBy->name ?? 'N/A' }}
+                                </td>
+                            </tr>
+                            <!--end::Row-->
                         </table>
                         <!--end::Details-->
                     </div>
