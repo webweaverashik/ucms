@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Academic\Batch;
@@ -49,9 +50,9 @@ class ReportController extends Controller
         // Validate required inputs
         $request->validate([
             'date_range' => 'required|string',
-            'branch_id'  => 'required|integer|exists:branches,id',
-            'class_id'   => 'required|integer|exists:class_names,id',
-            'batch_id'   => 'required|integer|exists:batches,id',
+            'branch_id' => 'required|integer|exists:branches,id',
+            'class_id' => 'required|integer|exists:class_names,id',
+            'batch_id' => 'required|integer|exists:batches,id',
         ]);
 
         // Parse the date range string "start_date - end_date"
@@ -62,30 +63,30 @@ class ReportController extends Controller
             return response()->json(
                 [
                     'message' => 'Invalid date range format. Expected "start_date - end_date".',
-                    'data'    => [],
+                    'data' => [],
                 ],
                 400,
             );
         }
 
         $startDate = Carbon::parse(trim($dateRange[0]))->startOfDay();
-        $endDate   = Carbon::parse(trim($dateRange[1]))->endOfDay();
+        $endDate = Carbon::parse(trim($dateRange[1]))->endOfDay();
 
         // --- 2. Build the Query ---
         $attendances = StudentAttendance::with([
-            'student'   => function ($q) {
+            'student' => function ($q) {
                 $q->select('id', 'name', 'student_unique_id');
             },
-            'batch'     => function ($q) {
+            'batch' => function ($q) {
                 $q->select('id', 'name', 'branch_id');
             },
-            'branch'    => function ($q) {
+            'branch' => function ($q) {
                 $q->select('id', 'branch_name');
             },
             'classname' => function ($q) {
                 $q->select('id', 'name', 'class_numeral');
             },
-            'recorder'  => function ($q) {
+            'recorder' => function ($q) {
                 $q->select('id', 'name');
             },
         ])
@@ -98,7 +99,7 @@ class ReportController extends Controller
         // --- 3. Return as JSON ---
         return response()->json([
             'message' => 'Attendance data retrieved successfully.',
-            'data'    => $attendances,
+            'data' => $attendances,
         ]);
     }
 
@@ -129,7 +130,7 @@ class ReportController extends Controller
      */
     public function costRecordsIndex()
     {
-        $user    = Auth::user();
+        $user = Auth::user();
         $isAdmin = $user->isAdmin();
 
         $branches = Branch::when(! $isAdmin, function ($q) use ($user) {
@@ -148,13 +149,13 @@ class ReportController extends Controller
     {
         $request->validate([
             'date_range' => 'required|string',
-            'branch_id'  => 'nullable|integer|exists:branches,id',
+            'branch_id' => 'nullable|integer|exists:branches,id',
         ]);
 
         try {
             [$start, $end] = explode(' - ', $request->date_range);
-            $startDate     = Carbon::createFromFormat('d-m-Y', trim($start))->startOfDay();
-            $endDate       = Carbon::createFromFormat('d-m-Y', trim($end))->endOfDay();
+            $startDate = Carbon::createFromFormat('d-m-Y', trim($start))->startOfDay();
+            $endDate = Carbon::createFromFormat('d-m-Y', trim($end))->endOfDay();
         } catch (\Exception $e) {
             return response()->json(
                 [
@@ -165,7 +166,7 @@ class ReportController extends Controller
             );
         }
 
-        $user     = Auth::user();
+        $user = Auth::user();
         $branchId = $user->branch_id ?: $request->branch_id;
 
         // Get transactions with relationships
@@ -189,12 +190,13 @@ class ReportController extends Controller
             ->select('id', 'name', 'is_active')
             ->get();
 
-        $classes     = $classesData->pluck('name', 'id');
+        $classes = $classesData->pluck('name', 'id');
+
         $classesInfo = $classesData
             ->map(
                 fn($class) => [
-                    'id'        => $class->id,
-                    'name'      => $class->name,
+                    'id' => $class->id,
+                    'name' => $class->name,
                     'is_active' => $class->is_active,
                 ],
             )
@@ -209,7 +211,7 @@ class ReportController extends Controller
         $transactionsByDate = $transactions->groupBy(fn($t) => $t->created_at->format('d-m-Y'));
 
         // Get dates with data
-        $dates  = collect();
+        $dates = collect();
         $cursor = $startDate->copy();
         while ($cursor <= $endDate) {
             $d = $cursor->format('d-m-Y');
@@ -219,16 +221,24 @@ class ReportController extends Controller
             $cursor->addDay();
         }
 
-        $report          = [];
-        $costReport      = [];
+        $report = [];
+        $costReport = [];
         $collectorReport = [];
+
+        // Initialize class totals
+        $classTotals = [];
+        foreach ($classes as $id => $name) {
+            $classTotals[$name] = 0;
+        }
 
         foreach ($dates as $date) {
             $dailyTx = $transactionsByDate->get($date, collect());
 
             // Class-wise revenue
             foreach ($classes as $id => $name) {
-                $report[$date][$name] = (float) $dailyTx->where('student.class_id', $id)->sum('amount_paid');
+                $amount = (float) $dailyTx->where('student.class_id', $id)->sum('amount_paid');
+                $report[$date][$name] = $amount;
+                $classTotals[$name] += $amount;
             }
 
             // Collector-wise collection
@@ -237,17 +247,18 @@ class ReportController extends Controller
             }
 
             // Cost total from entries
-            $cost              = $costs->get($date);
+            $cost = $costs->get($date);
             $costReport[$date] = $cost ? (float) $cost->totalAmount() : 0;
         }
 
         return response()->json([
-            'success'         => true,
-            'report'          => $report,
-            'costs'           => $costReport,
-            'classes'         => $classes->values(),
-            'classesInfo'     => $classesInfo,
-            'collectors'      => $collectors,
+            'success' => true,
+            'report' => $report,
+            'costs' => $costReport,
+            'classes' => $classes->values(),
+            'classesInfo' => $classesInfo,
+            'classTotals' => $classTotals,
+            'collectors' => $collectors,
             'collectorReport' => $collectorReport,
         ]);
     }
@@ -259,8 +270,8 @@ class ReportController extends Controller
     {
         $request->validate([
             'start_date' => 'nullable|date_format:d-m-Y',
-            'end_date'   => 'nullable|date_format:d-m-Y',
-            'branch_id'  => 'nullable|exists:branches,id',
+            'end_date' => 'nullable|date_format:d-m-Y',
+            'branch_id' => 'nullable|exists:branches,id',
         ]);
 
         $user = Auth::user();
@@ -301,7 +312,7 @@ class ReportController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $costs,
+            'data' => $costs,
         ]);
     }
 }

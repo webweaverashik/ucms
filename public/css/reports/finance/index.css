@@ -60,8 +60,210 @@
 }
 
 /* ============================================
+   FOOTER ROW - GRAND TOTAL STYLING
+   High specificity rules to override Metronic defaults
+   ============================================ */
+
+/* Grand Total Row - Base styles with high specificity */
+.table-responsive .table tfoot tr.finance-table-footer-row,
+.table tfoot tr.finance-table-footer-row,
+tfoot tr.finance-table-footer-row {
+    background-color: #1e1e2d !important;
+    background: #1e1e2d !important;
+}
+
+.table-responsive .table tfoot tr.finance-table-footer-row td,
+.table tfoot tr.finance-table-footer-row td,
+tfoot tr.finance-table-footer-row td {
+    background-color: #1e1e2d !important;
+    background: #1e1e2d !important;
+    border-color: #3f4254 !important;
+    padding: 14px 10px !important;
+    vertical-align: middle !important;
+    font-weight: 700 !important;
+}
+
+/* Grand Total Label - First cell */
+.table tfoot tr.finance-table-footer-row td.finance-table-footer-label,
+td.finance-table-footer-label {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+    background-color: #1e1e2d !important;
+    text-align: left !important;
+}
+
+/* Class total cells in footer (Cyan) */
+.table tfoot tr.finance-table-footer-row td.finance-table-footer-class-cell,
+td.finance-table-footer-class-cell {
+    color: #00d9ff !important;
+    font-weight: 700 !important;
+    background-color: #1e1e2d !important;
+}
+
+/* Revenue total in footer (Gold/Yellow) */
+.table tfoot tr.finance-table-footer-row td.finance-table-footer-revenue,
+td.finance-table-footer-revenue {
+    color: #ffc700 !important;
+    font-weight: 700 !important;
+    background-color: #1e1e2d !important;
+}
+
+/* Cost total in footer (Pink/Red) */
+.table tfoot tr.finance-table-footer-row td.finance-table-footer-cost,
+td.finance-table-footer-cost {
+    color: #ff6b8a !important;
+    font-weight: 700 !important;
+    background-color: #1e1e2d !important;
+}
+
+/* Collector totals in footer (Light gray/white) */
+.table tfoot tr.finance-table-footer-row td.finance-table-footer-collector,
+td.finance-table-footer-collector {
+    color: #e4e6ef !important;
+    font-weight: 600 !important;
+    background-color: #1e1e2d !important;
+}
+
+/* Net profit in footer - Positive (Green) */
+.table tfoot tr.finance-table-footer-row td.finance-table-footer-profit-positive,
+td.finance-table-footer-profit-positive {
+    color: #50cd89 !important;
+    font-weight: 700 !important;
+    background-color: #1e1e2d !important;
+}
+
+/* Net profit in footer - Negative (Red) */
+.table tfoot tr.finance-table-footer-row td.finance-table-footer-profit-negative,
+td.finance-table-footer-profit-negative {
+    color: #f1416c !important;
+    font-weight: 700 !important;
+    background-color: #1e1e2d !important;
+}
+
+/* Muted text in footer for zero/hyphen values */
+.table tfoot tr.finance-table-footer-row td .finance-table-footer-muted,
+.finance-table-footer-muted {
+    color: #7e8299 !important;
+    font-weight: 400 !important;
+}
+
+/* ============================================
+   LIGHT MODE - Footer Overrides (additional specificity)
+   ============================================ */
+
+[data-bs-theme="light"] .table tfoot tr.finance-table-footer-row,
+[data-bs-theme="light"] tfoot tr.finance-table-footer-row {
+    background-color: #1e1e2d !important;
+    background: #1e1e2d !important;
+}
+
+[data-bs-theme="light"] .table tfoot tr.finance-table-footer-row td,
+[data-bs-theme="light"] tfoot tr.finance-table-footer-row td {
+    background-color: #1e1e2d !important;
+    background: #1e1e2d !important;
+    border-color: #3f4254 !important;
+}
+
+[data-bs-theme="light"] td.finance-table-footer-label,
+[data-bs-theme="light"] .finance-table-footer-label {
+    color: #ffffff !important;
+}
+
+[data-bs-theme="light"] td.finance-table-footer-class-cell,
+[data-bs-theme="light"] .finance-table-footer-class-cell {
+    color: #00d9ff !important;
+}
+
+[data-bs-theme="light"] td.finance-table-footer-revenue,
+[data-bs-theme="light"] .finance-table-footer-revenue {
+    color: #ffc700 !important;
+}
+
+[data-bs-theme="light"] td.finance-table-footer-cost,
+[data-bs-theme="light"] .finance-table-footer-cost {
+    color: #ff6b8a !important;
+}
+
+[data-bs-theme="light"] td.finance-table-footer-collector,
+[data-bs-theme="light"] .finance-table-footer-collector {
+    color: #e4e6ef !important;
+}
+
+[data-bs-theme="light"] td.finance-table-footer-profit-positive,
+[data-bs-theme="light"] .finance-table-footer-profit-positive {
+    color: #50cd89 !important;
+}
+
+[data-bs-theme="light"] td.finance-table-footer-profit-negative,
+[data-bs-theme="light"] .finance-table-footer-profit-negative {
+    color: #f1416c !important;
+}
+
+[data-bs-theme="light"] .finance-table-footer-muted {
+    color: #7e8299 !important;
+}
+
+/* ============================================
+   DARK MODE - Footer Overrides (additional specificity)
+   ============================================ */
+
+[data-bs-theme="dark"] .table tfoot tr.finance-table-footer-row,
+[data-bs-theme="dark"] tfoot tr.finance-table-footer-row {
+    background-color: #1b1b29 !important;
+    background: #1b1b29 !important;
+}
+
+[data-bs-theme="dark"] .table tfoot tr.finance-table-footer-row td,
+[data-bs-theme="dark"] tfoot tr.finance-table-footer-row td {
+    background-color: #1b1b29 !important;
+    background: #1b1b29 !important;
+    border-color: #2d2d3a !important;
+}
+
+[data-bs-theme="dark"] td.finance-table-footer-label,
+[data-bs-theme="dark"] .finance-table-footer-label {
+    color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] td.finance-table-footer-class-cell,
+[data-bs-theme="dark"] .finance-table-footer-class-cell {
+    color: #00d9ff !important;
+}
+
+[data-bs-theme="dark"] td.finance-table-footer-revenue,
+[data-bs-theme="dark"] .finance-table-footer-revenue {
+    color: #ffc700 !important;
+}
+
+[data-bs-theme="dark"] td.finance-table-footer-cost,
+[data-bs-theme="dark"] .finance-table-footer-cost {
+    color: #ff6b8a !important;
+}
+
+[data-bs-theme="dark"] td.finance-table-footer-collector,
+[data-bs-theme="dark"] .finance-table-footer-collector {
+    color: #e4e6ef !important;
+}
+
+[data-bs-theme="dark"] td.finance-table-footer-profit-positive,
+[data-bs-theme="dark"] .finance-table-footer-profit-positive {
+    color: #50cd89 !important;
+}
+
+[data-bs-theme="dark"] td.finance-table-footer-profit-negative,
+[data-bs-theme="dark"] .finance-table-footer-profit-negative {
+    color: #f1416c !important;
+}
+
+[data-bs-theme="dark"] .finance-table-footer-muted {
+    color: #565674 !important;
+}
+
+/* ============================================
    COLLECTOR SUMMARY SECTION
    ============================================ */
+
 #collector_summary_section {
     animation: fadeInUp 0.4s ease-out;
 }
@@ -71,7 +273,6 @@
         opacity: 0;
         transform: translateY(20px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
@@ -254,6 +455,7 @@
 /* ============================================
    TAGIFY STYLES
    ============================================ */
+
 .tagify {
     --tag-bg: var(--bs-primary);
     --tag-text-color: #fff;
@@ -299,6 +501,7 @@
 /* ============================================
    COST ENTRY ROWS - ADD MODAL
    ============================================ */
+
 .cost-entry-row {
     display: flex;
     align-items: center;
@@ -316,7 +519,6 @@
         opacity: 0;
         transform: translateY(-10px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
@@ -346,6 +548,7 @@
 /* ============================================
    TOTAL SECTION
    ============================================ */
+
 .cost-total-section {
     background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 100%);
     color: #fff;
@@ -367,6 +570,7 @@
 /* ============================================
    MODAL SCROLLING FIX
    ============================================ */
+
 #cost_modal .modal-body {
     overflow-y: auto;
     max-height: 70vh;
@@ -375,6 +579,7 @@
 /* ============================================
    LOADING STATE
    ============================================ */
+
 #finance_report_loader {
     min-height: 200px;
     display: flex;
@@ -386,6 +591,7 @@
 /* ============================================
    MOBILE RESPONSIVE
    ============================================ */
+
 @media (max-width: 768px) {
     #cost_modal .modal-body {
         max-height: 60vh;
