@@ -213,7 +213,7 @@
                             }
                         @endphp
                         <!--begin::Row-->
-                        <tr class="">
+                        <tr>
                             <td class="text-gray-500">Status:</td>
                             <td>
                                 @if ($status === 'due')
@@ -235,10 +235,23 @@
                                     <span class="badge badge-success">Paid</span>
                                 @endif
                             </td>
+                        </tr>
                         <tr>
                             <td class="text-gray-500">Created At:</td>
                             <td class="text-gray-800">
                                 {{ $invoice->created_at->format('h:i:s A, d-M-Y') }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-gray-500">Created By:</td>
+                            <td class="text-gray-800">
+                                @if ($invoice->created_by && $invoice->createdBy)
+                                    <a href="{{ route('settlements.show', $invoice->created_by) }}" target="_blank" class="text-gray-800 text-hover-primary">
+                                        {{ $invoice->createdBy->name }}
+                                    </a>
+                                @else
+                                    <span>System</span>
+                                @endif
                             </td>
                         </tr>
                         <!--end::Row-->
