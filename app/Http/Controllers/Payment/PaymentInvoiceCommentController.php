@@ -30,7 +30,7 @@ class PaymentInvoiceCommentController extends Controller
             );
         }
 
-        // // Check if user has permission
+        // Check if user has permission
         // if (! auth()->user()->can('invoices.edit')) {
         //     return response()->json(
         //         [
