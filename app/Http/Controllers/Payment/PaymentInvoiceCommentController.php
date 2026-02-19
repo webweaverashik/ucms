@@ -30,16 +30,16 @@ class PaymentInvoiceCommentController extends Controller
             );
         }
 
-        // Check if user has permission
-        if (! auth()->user()->can('invoices.edit')) {
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => 'No permission to add comments.',
-                ],
-                403,
-            );
-        }
+        // // Check if user has permission
+        // if (! auth()->user()->can('invoices.edit')) {
+        //     return response()->json(
+        //         [
+        //             'success' => false,
+        //             'message' => 'No permission to add comments.',
+        //         ],
+        //         403,
+        //     );
+        // }
 
         $invoice = PaymentInvoice::with('student')->findOrFail($request->payment_invoice_id);
 
