@@ -150,7 +150,7 @@ class PendingStudentController extends Controller
             }
 
             if ($filterDueDate) {
-                $query->where('payments_info.due_date', $filterDueDate);
+                $query->where('payments_info.due_date', '<=', $filterDueDate);
             }
         }
 

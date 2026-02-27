@@ -203,7 +203,7 @@ class PaymentInvoiceController extends Controller
         if ($dueDate = $request->get('due_date')) {
             $parts = explode('/', $dueDate);
             if (count($parts) === 2) {
-                $query->whereHas('student.payments', fn($q) => $q->where('due_date', $parts[1]));
+                $query->whereHas('student.payments', fn($q) => $q->where('due_date', '<=', $parts[1]));
             }
         }
 
@@ -440,7 +440,7 @@ class PaymentInvoiceController extends Controller
         if ($dueDate = $request->get('due_date')) {
             $parts = explode('/', $dueDate);
             if (count($parts) === 2) {
-                $query->whereHas('student.payments', fn($q) => $q->where('due_date', $parts[1]));
+                $query->whereHas('student.payments', fn($q) => $q->where('due_date', '<=', $parts[1]));
             }
         }
 
@@ -589,7 +589,7 @@ class PaymentInvoiceController extends Controller
         if ($dueDate = $request->get('due_date')) {
             $parts = explode('/', $dueDate);
             if (count($parts) === 2) {
-                $query->whereHas('student.payments', fn($q) => $q->where('due_date', $parts[1]));
+                $query->whereHas('student.payments', fn($q) => $q->where('due_date', '<=', $parts[1]));
             }
         }
 
