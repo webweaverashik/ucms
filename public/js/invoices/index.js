@@ -563,14 +563,14 @@ var KTDueInvoicesList = function () {
     var loadFilterOptions = function (branchId, tableId) {
         $.get(routeFilterOptions, { branch_id: branchId }, function (data) {
             // Populate class filter
-            var classSelect = document.querySelector('.filter-class-name[data-table-id="' + tableId + '"]');
-            if (classSelect) {
-                classSelect.innerHTML = '<option></option>';
-                classNames.forEach(function (cls) {
-                    classSelect.innerHTML += `<option value="${cls.id}">${cls.name}</option>`;
-                });
-                $(classSelect).select2({ placeholder: 'Select class', allowClear: true });
-            }
+            // var classSelect = document.querySelector('.filter-class-name[data-table-id="' + tableId + '"]');
+            // if (classSelect) {
+            //     classSelect.innerHTML = '<option></option>';
+            //     classNames.forEach(function (cls) {
+            //         classSelect.innerHTML += `<option value="${cls.id}">${cls.name}</option>`;
+            //     });
+            //     $(classSelect).select2({ placeholder: 'Select class', allowClear: true });
+            // }
 
 
             // Populate invoice type filter
@@ -601,13 +601,13 @@ var KTDueInvoicesList = function () {
             var tableId = this.getAttribute('data-table-id');
             var filters = {};
 
-            var classSelect = document.querySelector('.filter-class-name[data-table-id="' + tableId + '"]');
+            // var classSelect = document.querySelector('.filter-class-name[data-table-id="' + tableId + '"]');
             var typeSelect = document.querySelector('.filter-invoice-type[data-table-id="' + tableId + '"]');
             var dueDateSelect = document.querySelector('.filter-due-date[data-table-id="' + tableId + '"]');
             var statusSelect = document.querySelector('.filter-status[data-table-id="' + tableId + '"]');
             var monthSelect = document.querySelector('.filter-billing-month[data-table-id="' + tableId + '"]');
 
-            if (classSelect && classSelect.value) { filters.class_id = classSelect.value; }
+            // if (classSelect && classSelect.value) { filters.class_id = classSelect.value; }
             if (typeSelect && typeSelect.value) filters.invoice_type = typeSelect.value;
             if (dueDateSelect && dueDateSelect.value) filters.due_date = dueDateSelect.value;
             if (statusSelect && statusSelect.value) filters.status = statusSelect.value;
@@ -629,7 +629,7 @@ var KTDueInvoicesList = function () {
             var statusSelect = document.querySelector('.filter-status[data-table-id="' + tableId + '"]');
             var monthSelect = document.querySelector('.filter-billing-month[data-table-id="' + tableId + '"]');
 
-            if (classSelect) $(classSelect).val(null).trigger('change');
+            // if (classSelect) $(classSelect).val(null).trigger('change');
             if (typeSelect) $(typeSelect).val(null).trigger('change');
             if (dueDateSelect) $(dueDateSelect).val(null).trigger('change');
             if (statusSelect) $(statusSelect).val(null).trigger('change');
@@ -863,14 +863,14 @@ var KTPaidInvoicesList = function () {
     var loadFilterOptions = function (branchId, tableId) {
         $.get(routeFilterOptions, { branch_id: branchId }, function (data) {
             // Populate class filter
-            var classSelect = document.querySelector('.filter-class-name-paid[data-table-id="' + tableId + '"]');
-            if (classSelect) {
-                classSelect.innerHTML = '<option></option>';
-                classNames.forEach(function (cls) {
-                    classSelect.innerHTML += `<option value="${cls.id}">${cls.name}</option>`;
-                });
-                $(classSelect).select2({ placeholder: 'Select class', allowClear: true });
-            }
+            // var classSelect = document.querySelector('.filter-class-name-paid[data-table-id="' + tableId + '"]');
+            // if (classSelect) {
+            //     classSelect.innerHTML = '<option></option>';
+            //     classNames.forEach(function (cls) {
+            //         classSelect.innerHTML += `<option value="${cls.id}">${cls.name}</option>`;
+            //     });
+            //     $(classSelect).select2({ placeholder: 'Select class', allowClear: true });
+            // }
 
 
             var typeSelect = document.querySelector('.filter-invoice-type-paid[data-table-id="' + tableId + '"]');
@@ -898,12 +898,12 @@ var KTPaidInvoicesList = function () {
             var tableId = this.getAttribute('data-table-id');
             var filters = {};
 
-            var classSelect = document.querySelector('.filter-class-name-paid[data-table-id="' + tableId + '"]');
+            // var classSelect = document.querySelector('.filter-class-name-paid[data-table-id="' + tableId + '"]');
             var typeSelect = document.querySelector('.filter-invoice-type-paid[data-table-id="' + tableId + '"]');
             var dueDateSelect = document.querySelector('.filter-due-date-paid[data-table-id="' + tableId + '"]');
             var monthSelect = document.querySelector('.filter-billing-month-paid[data-table-id="' + tableId + '"]');
 
-            if (classSelect && classSelect.value) { filters.class_id = classSelect.value; }
+            // if (classSelect && classSelect.value) { filters.class_id = classSelect.value; }
             if (typeSelect && typeSelect.value) filters.invoice_type = typeSelect.value;
             if (dueDateSelect && dueDateSelect.value) filters.due_date = dueDateSelect.value;
             if (monthSelect && monthSelect.value) filters.billing_month = monthSelect.value;
@@ -922,7 +922,7 @@ var KTPaidInvoicesList = function () {
             var dueDateSelect = document.querySelector('.filter-due-date-paid[data-table-id="' + tableId + '"]');
             var monthSelect = document.querySelector('.filter-billing-month-paid[data-table-id="' + tableId + '"]');
 
-            if (classSelect) $(classSelect).val(null).trigger('change');
+            // if (classSelect) $(classSelect).val(null).trigger('change');
             if (typeSelect) $(typeSelect).val(null).trigger('change');
             if (dueDateSelect) $(dueDateSelect).val(null).trigger('change');
             if (monthSelect) $(monthSelect).val(null).trigger('change');
