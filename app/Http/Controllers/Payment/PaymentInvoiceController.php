@@ -116,14 +116,36 @@ class PaymentInvoiceController extends Controller
             'dueMonths'  => $dueMonths->map(function ($month) {
                 $parts = explode('_', $month);
                 $date  = Carbon::create($parts[1], $parts[0], 1);
+
                 return ['value' => 'D_' . $month, 'label' => $date->format('F Y')];
             }),
             'paidMonths' => $paidMonths->map(function ($month) {
                 $parts = explode('_', $month);
                 $date  = Carbon::create($parts[1], $parts[0], 1);
+
                 return ['value' => 'P_' . $month, 'label' => $date->format('F Y')];
             }),
         ]);
+    }
+
+    /**
+     * Helper method to extract guardian data from student
+     */
+    private function extractGuardianData($student)
+    {
+        $guardians = $student->guardians ?? collect();
+
+        $guardian1 = $guardians->first();
+        $guardian2 = $guardians->skip(1)->first();
+
+        return [
+            'guardian_1_name'         => $guardian1?->name ?? '',
+            'guardian_1_mobile'       => $guardian1?->mobile_number ?? '',
+            'guardian_1_relationship' => $guardian1?->relationship ?? '',
+            'guardian_2_name'         => $guardian2?->name ?? '',
+            'guardian_2_mobile'       => $guardian2?->mobile_number ?? '',
+            'guardian_2_relationship' => $guardian2?->relationship ?? '',
+        ];
     }
 
     /**
@@ -151,7 +173,7 @@ class PaymentInvoiceController extends Controller
         $orderDir    = $request->get('order')[0]['dir'] ?? 'desc';
 
         // Column mapping for ordering
-        $columns = ['id', 'invoice_number', 'student_name', 'mobile', 'class_name', 'institution', 'activation_status', 'invoice_type', 'billing_month', 'total_amount', 'amount_due', 'tuition_fee', 'due_date', 'status', 'last_comment', 'created_at', 'actions'];
+        $columns = ['id', 'invoice_number', 'student_name', 'mobile', 'guardian_1', 'guardian_2', 'class_name', 'institution', 'tuition_fee', 'activation_status', 'invoice_type', 'billing_month', 'total_amount', 'amount_due', 'due_date', 'status', 'last_comment', 'created_at', 'actions'];
         $orderBy = $columns[$orderColumn] ?? 'id';
 
         $studentQuery = function ($query) use ($filterBranchId, $branchId) {
@@ -163,7 +185,7 @@ class PaymentInvoiceController extends Controller
             }
         };
 
-        // Base query with additional relations
+        // Base query with additional relations including guardians
         $query = PaymentInvoice::with([
             'student:id,name,student_unique_id,branch_id,class_id,institution_id,student_activation_id',
             'student.payments:id,student_id,payment_style,due_date,tuition_fee',
@@ -171,6 +193,7 @@ class PaymentInvoiceController extends Controller
             'student.class:id,name',
             'student.institution:id,name',
             'student.studentActivation:id,active_status',
+            'student.guardians:id,student_id,name,mobile_number,relationship',
             'invoiceType:id,type_name',
             'comments' => fn($q) => $q->with('commentedBy:id,name')->latest()->limit(1),
         ])
@@ -185,7 +208,8 @@ class PaymentInvoiceController extends Controller
                     ->orWhereHas('student', fn($sq) => $sq->where('name', 'like', "%{$search}%")->orWhere('student_unique_id', 'like', "%{$search}%"))
                     ->orWhereHas('student.mobileNumbers', fn($mq) => $mq->where('mobile_number', 'like', "%{$search}%"))
                     ->orWhereHas('student.class', fn($cq) => $cq->where('name', 'like', "%{$search}%"))
-                    ->orWhereHas('student.institution', fn($iq) => $iq->where('name', 'like', "%{$search}%"));
+                    ->orWhereHas('student.institution', fn($iq) => $iq->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('student.guardians', fn($gq) => $gq->where('name', 'like', "%{$search}%")->orWhere('mobile_number', 'like', "%{$search}%"));
             });
         }
 
@@ -225,12 +249,12 @@ class PaymentInvoiceController extends Controller
 
         $recordsFiltered = (clone $query)->count();
 
-        // Order and paginate
-        if (in_array($orderBy, ['id', 'invoice_number', 'total_amount', 'amount_due', 'created_at'])) {
-            $query->orderBy($orderBy, $orderDir);
-        } else {
-            $query->orderBy('id', 'desc');
-        }
+        // Order by student_unique_id DESC, then created_at DESC
+        // Join students table for ordering by student_unique_id
+        $query->join('students', 'payment_invoices.student_id', '=', 'students.id')
+            ->select('payment_invoices.*')
+            ->orderBy('students.student_unique_id', 'desc')
+            ->orderBy('payment_invoices.created_at', 'desc');
 
         $invoices = $query->skip($start)->take($length)->get();
 
@@ -244,6 +268,7 @@ class PaymentInvoiceController extends Controller
                 'student.class:id,name',
                 'student.institution:id,name',
                 'student.studentActivation:id,active_status',
+                'student.guardians:id,student_id,name,mobile_number,relationship',
                 'invoiceType:id,type_name',
                 'comments' => fn($q) => $q->with('commentedBy:id,name')->latest()->limit(1),
             ])
@@ -263,8 +288,10 @@ class PaymentInvoiceController extends Controller
                 if ($payment && $payment->due_date && $invoice->month_year && preg_match('/^\d{2}_\d{4}$/', $invoice->month_year)) {
                     $monthYear = Carbon::createFromFormat('m_Y', $invoice->month_year);
                     $dueDate   = $monthYear->copy()->day((int) $payment->due_date);
+
                     return in_array($invoice->status, ['due', 'partially_paid']) && now()->toDateString() > $dueDate->toDateString();
                 }
+
                 return false;
             });
 
@@ -317,6 +344,9 @@ class PaymentInvoiceController extends Controller
             $activationStatus = $invoice->student->studentActivation?->active_status ?? 'pending';
             $tuitionFee       = $payment?->tuition_fee ?? 0;
 
+            // Extract guardian data
+            $guardianData = $this->extractGuardianData($invoice->student);
+
             // Activation status badge
             $activationStatusHtml = match ($activationStatus) {
                 'active'   => '<span class="badge badge-success rounded-pill">Active</span>',
@@ -325,35 +355,41 @@ class PaymentInvoiceController extends Controller
             };
 
             return [
-                'id'                     => $invoice->id,
-                'sl'                     => $start + $index + 1,
-                'invoice_number'         => $invoice->invoice_number,
-                'comments_count'         => $invoice->comments_count ?? 0,
-                'student_id'             => $invoice->student->id,
-                'student_name'           => $invoice->student->name,
-                'student_unique_id'      => $invoice->student->student_unique_id,
-                'mobile'                 => $homeMobile,
-                'class_name'             => $className,
-                'institution'            => $institutionName,
-                'activation_status'      => $activationStatus,
-                'activation_status_html' => $activationStatusHtml,
-                'invoice_type'           => $invoice->invoiceType?->type_name ?? '-',
-                'billing_month'          => $billingMonth,
-                'billing_month_raw'      => $invoice->month_year,
-                'total_amount'           => $invoice->total_amount,
-                'amount_due'             => $invoice->amount_due,
-                'tuition_fee'            => $tuitionFee,
-                'due_date'               => $dueDateStr,
-                'due_date_raw'           => $payment ? '1/' . $payment->due_date : '-',
-                'status'                 => $status,
-                'status_html'            => $statusHtml,
-                'status_text'            => ucfirst($status) . ($isOverdue ? ' (Overdue)' : ''),
-                'is_overdue'             => $isOverdue,
-                'created_at'             => $invoice->created_at->format('d-m-Y'),
-                'created_at_time'        => $invoice->created_at->format('h:i:s A'),
-                'last_comment'           => $lastComment ? $lastComment->comment : '',
-                'last_comment_by'        => $lastComment && $lastComment->commentedBy ? $lastComment->commentedBy->name : '',
-                'last_comment_at'        => $lastComment ? $lastComment->created_at->format('d M Y, h:i A') : '',
+                'id'                      => $invoice->id,
+                'sl'                      => $start + $index + 1,
+                'invoice_number'          => $invoice->invoice_number,
+                'comments_count'          => $invoice->comments_count ?? 0,
+                'student_id'              => $invoice->student->id,
+                'student_name'            => $invoice->student->name,
+                'student_unique_id'       => $invoice->student->student_unique_id,
+                'mobile'                  => $homeMobile,
+                'guardian_1_name'         => $guardianData['guardian_1_name'],
+                'guardian_1_mobile'       => $guardianData['guardian_1_mobile'],
+                'guardian_1_relationship' => $guardianData['guardian_1_relationship'],
+                'guardian_2_name'         => $guardianData['guardian_2_name'],
+                'guardian_2_mobile'       => $guardianData['guardian_2_mobile'],
+                'guardian_2_relationship' => $guardianData['guardian_2_relationship'],
+                'class_name'              => $className,
+                'institution'             => $institutionName,
+                'activation_status'       => $activationStatus,
+                'activation_status_html'  => $activationStatusHtml,
+                'invoice_type'            => $invoice->invoiceType?->type_name ?? '-',
+                'billing_month'           => $billingMonth,
+                'billing_month_raw'       => $invoice->month_year,
+                'total_amount'            => $invoice->total_amount,
+                'amount_due'              => $invoice->amount_due,
+                'tuition_fee'             => $tuitionFee,
+                'due_date'                => $dueDateStr,
+                'due_date_raw'            => $payment ? '1/' . $payment->due_date : '-',
+                'status'                  => $status,
+                'status_html'             => $statusHtml,
+                'status_text'             => ucfirst($status) . ($isOverdue ? ' (Overdue)' : ''),
+                'is_overdue'              => $isOverdue,
+                'created_at'              => $invoice->created_at->format('d-m-Y'),
+                'created_at_time'         => $invoice->created_at->format('h:i:s A'),
+                'last_comment'            => $lastComment ? $lastComment->comment : '',
+                'last_comment_by'         => $lastComment && $lastComment->commentedBy ? $lastComment->commentedBy->name : '',
+                'last_comment_at'         => $lastComment ? $lastComment->created_at->format('d M Y, h:i A') : '',
             ];
         });
 
@@ -389,7 +425,7 @@ class PaymentInvoiceController extends Controller
         $orderColumn = $request->get('order')[0]['column'] ?? 0;
         $orderDir    = $request->get('order')[0]['dir'] ?? 'desc';
 
-        $columns = ['id', 'invoice_number', 'student_name', 'mobile', 'class_name', 'institution', 'activation_status', 'invoice_type', 'total_amount', 'tuition_fee', 'billing_month', 'due_date', 'status', 'last_comment', 'updated_at'];
+        $columns = ['id', 'invoice_number', 'student_name', 'mobile', 'guardian_1', 'guardian_2', 'class_name', 'institution', 'tuition_fee', 'activation_status', 'invoice_type', 'total_amount', 'billing_month', 'due_date', 'status', 'last_comment', 'updated_at'];
         $orderBy = $columns[$orderColumn] ?? 'id';
 
         $studentQuery = function ($query) use ($filterBranchId, $branchId) {
@@ -408,6 +444,7 @@ class PaymentInvoiceController extends Controller
             'student.class:id,name',
             'student.institution:id,name',
             'student.studentActivation:id,active_status',
+            'student.guardians:id,student_id,name,mobile_number,relationship',
             'invoiceType:id,type_name',
             'comments' => fn($q) => $q->with('commentedBy:id,name')->latest()->limit(1),
         ])
@@ -422,7 +459,8 @@ class PaymentInvoiceController extends Controller
                     ->orWhereHas('student', fn($sq) => $sq->where('name', 'like', "%{$search}%")->orWhere('student_unique_id', 'like', "%{$search}%"))
                     ->orWhereHas('student.mobileNumbers', fn($mq) => $mq->where('mobile_number', 'like', "%{$search}%"))
                     ->orWhereHas('student.class', fn($cq) => $cq->where('name', 'like', "%{$search}%"))
-                    ->orWhereHas('student.institution', fn($iq) => $iq->where('name', 'like', "%{$search}%"));
+                    ->orWhereHas('student.institution', fn($iq) => $iq->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('student.guardians', fn($gq) => $gq->where('name', 'like', "%{$search}%")->orWhere('mobile_number', 'like', "%{$search}%"));
             });
         }
 
@@ -452,12 +490,11 @@ class PaymentInvoiceController extends Controller
         $recordsTotal    = (clone $query)->count();
         $recordsFiltered = $recordsTotal;
 
-        // Order and paginate
-        if (in_array($orderBy, ['id', 'invoice_number', 'total_amount', 'updated_at'])) {
-            $query->orderBy($orderBy, $orderDir);
-        } else {
-            $query->orderBy('updated_at', 'desc');
-        }
+        // Order by student_unique_id DESC, then updated_at DESC
+        $query->join('students', 'payment_invoices.student_id', '=', 'students.id')
+            ->select('payment_invoices.*')
+            ->orderBy('students.student_unique_id', 'desc')
+            ->orderBy('payment_invoices.updated_at', 'desc');
 
         $invoices = $query->skip($start)->take($length)->get();
 
@@ -483,6 +520,9 @@ class PaymentInvoiceController extends Controller
             $activationStatus = $invoice->student->studentActivation?->active_status ?? 'pending';
             $tuitionFee       = $payment?->tuition_fee ?? 0;
 
+            // Extract guardian data
+            $guardianData = $this->extractGuardianData($invoice->student);
+
             // Activation status badge
             $activationStatusHtml = match ($activationStatus) {
                 'active'    => '<span class="badge badge-success rounded-pill">Active</span>',
@@ -492,33 +532,39 @@ class PaymentInvoiceController extends Controller
             };
 
             return [
-                'id'                     => $invoice->id,
-                'sl'                     => $start + $index + 1,
-                'invoice_number'         => $invoice->invoice_number,
-                'comments_count'         => $invoice->comments_count ?? 0,
-                'student_id'             => $invoice->student->id,
-                'student_name'           => $invoice->student->name,
-                'student_unique_id'      => $invoice->student->student_unique_id,
-                'mobile'                 => $homeMobile,
-                'class_name'             => $className,
-                'institution'            => $institutionName,
-                'activation_status'      => $activationStatus,
-                'activation_status_html' => $activationStatusHtml,
-                'invoice_type'           => $invoice->invoiceType?->type_name ?? '-',
-                'billing_month'          => $billingMonth,
-                'billing_month_raw'      => $invoice->month_year,
-                'total_amount'           => $invoice->total_amount,
-                'tuition_fee'            => $tuitionFee,
-                'due_date'               => $dueDateStr,
-                'due_date_raw'           => $payment ? '1/' . $payment->due_date : '-',
-                'status'                 => 'Paid',
-                'created_at'             => $invoice->created_at->format('d-m-Y'),
-                'created_at_time'        => $invoice->created_at->format('h:i:s A'),
-                'updated_at'             => $invoice->updated_at->format('d-m-Y'),
-                'updated_at_time'        => $invoice->updated_at->format('h:i:s A'),
-                'last_comment'           => $lastComment ? $lastComment->comment : '',
-                'last_comment_by'        => $lastComment && $lastComment->commentedBy ? $lastComment->commentedBy->name : '',
-                'last_comment_at'        => $lastComment ? $lastComment->created_at->format('d M Y, h:i A') : '',
+                'id'                      => $invoice->id,
+                'sl'                      => $start + $index + 1,
+                'invoice_number'          => $invoice->invoice_number,
+                'comments_count'          => $invoice->comments_count ?? 0,
+                'student_id'              => $invoice->student->id,
+                'student_name'            => $invoice->student->name,
+                'student_unique_id'       => $invoice->student->student_unique_id,
+                'mobile'                  => $homeMobile,
+                'guardian_1_name'         => $guardianData['guardian_1_name'],
+                'guardian_1_mobile'       => $guardianData['guardian_1_mobile'],
+                'guardian_1_relationship' => $guardianData['guardian_1_relationship'],
+                'guardian_2_name'         => $guardianData['guardian_2_name'],
+                'guardian_2_mobile'       => $guardianData['guardian_2_mobile'],
+                'guardian_2_relationship' => $guardianData['guardian_2_relationship'],
+                'class_name'              => $className,
+                'institution'             => $institutionName,
+                'activation_status'       => $activationStatus,
+                'activation_status_html'  => $activationStatusHtml,
+                'invoice_type'            => $invoice->invoiceType?->type_name ?? '-',
+                'billing_month'           => $billingMonth,
+                'billing_month_raw'       => $invoice->month_year,
+                'total_amount'            => $invoice->total_amount,
+                'tuition_fee'             => $tuitionFee,
+                'due_date'                => $dueDateStr,
+                'due_date_raw'            => $payment ? '1/' . $payment->due_date : '-',
+                'status'                  => 'Paid',
+                'created_at'              => $invoice->created_at->format('d-m-Y'),
+                'created_at_time'         => $invoice->created_at->format('h:i:s A'),
+                'updated_at'              => $invoice->updated_at->format('d-m-Y'),
+                'updated_at_time'         => $invoice->updated_at->format('h:i:s A'),
+                'last_comment'            => $lastComment ? $lastComment->comment : '',
+                'last_comment_by'         => $lastComment && $lastComment->commentedBy ? $lastComment->commentedBy->name : '',
+                'last_comment_at'         => $lastComment ? $lastComment->created_at->format('d M Y, h:i A') : '',
             ];
         });
 
@@ -564,6 +610,7 @@ class PaymentInvoiceController extends Controller
             'student.class:id,name',
             'student.institution:id,name',
             'student.studentActivation:id,active_status',
+            'student.guardians:id,student_id,name,mobile_number,relationship',
             'invoiceType:id,type_name',
             'comments' => fn($q) => $q->with('commentedBy:id,name')->latest()->limit(1),
         ])
@@ -607,7 +654,18 @@ class PaymentInvoiceController extends Controller
             }
         }
 
-        $invoices = $query->orderBy('id', 'desc')->get();
+        // Order by student_unique_id DESC, then created_at/updated_at DESC
+        $query->join('students', 'payment_invoices.student_id', '=', 'students.id')
+            ->select('payment_invoices.*')
+            ->orderBy('students.student_unique_id', 'desc');
+
+        if ($type === 'paid') {
+            $query->orderBy('payment_invoices.updated_at', 'desc');
+        } else {
+            $query->orderBy('payment_invoices.created_at', 'desc');
+        }
+
+        $invoices = $query->get();
 
         // Filter overdue if needed
         if ($request->get('status') === 'I_overdue') {
@@ -616,8 +674,10 @@ class PaymentInvoiceController extends Controller
                 if ($payment && $payment->due_date && $invoice->month_year && preg_match('/^\d{2}_\d{4}$/', $invoice->month_year)) {
                     $monthYear = Carbon::createFromFormat('m_Y', $invoice->month_year);
                     $dueDate   = $monthYear->copy()->day((int) $payment->due_date);
+
                     return in_array($invoice->status, ['due', 'partially_paid']) && now()->toDateString() > $dueDate->toDateString();
                 }
+
                 return false;
             })->values();
         }
@@ -654,6 +714,9 @@ class PaymentInvoiceController extends Controller
             $activationStatus = $invoice->student->studentActivation?->active_status ?? 'pending';
             $tuitionFee       = $payment?->tuition_fee ?? 0;
 
+            // Extract guardian data
+            $guardianData = $this->extractGuardianData($invoice->student);
+
             $lastCommentExport = '';
             if ($lastComment) {
                 $lastCommentExport = $lastComment->comment;
@@ -663,13 +726,38 @@ class PaymentInvoiceController extends Controller
                 $lastCommentExport .= ' [At: ' . $lastComment->created_at->format('d M Y, h:i A') . ']';
             }
 
+            // Build guardian display strings for export
+            $guardian1Export  = '';
+            if ($guardianData['guardian_1_name']) {
+                $guardian1Export = $guardianData['guardian_1_name'];
+                if ($guardianData['guardian_1_relationship']) {
+                    $guardian1Export .= ' (' . ucfirst($guardianData['guardian_1_relationship']) . ')';
+                }
+                if ($guardianData['guardian_1_mobile']) {
+                    $guardian1Export .= ' - ' . $guardianData['guardian_1_mobile'];
+                }
+            }
+
+            $guardian2Export = '';
+            if ($guardianData['guardian_2_name']) {
+                $guardian2Export = $guardianData['guardian_2_name'];
+                if ($guardianData['guardian_2_relationship']) {
+                    $guardian2Export .= ' (' . ucfirst($guardianData['guardian_2_relationship']) . ')';
+                }
+                if ($guardianData['guardian_2_mobile']) {
+                    $guardian2Export .= ' - ' . $guardianData['guardian_2_mobile'];
+                }
+            }
+
             // Build full data array
-            $fullData  = [
+            $fullData = [
                 'sl'                => $index + 1,
                 'invoice_number'    => $invoice->invoice_number,
                 'student_name'      => $invoice->student->name,
                 'student_unique_id' => $invoice->student->student_unique_id,
                 'mobile'            => $homeMobile,
+                'guardian_1'        => $guardian1Export,
+                'guardian_2'        => $guardian2Export,
                 'class_name'        => $className,
                 'institution'       => $institutionName,
                 'activation_status' => ucfirst($activationStatus),
@@ -846,6 +934,7 @@ class PaymentInvoiceController extends Controller
                 case 3:return $number . 'rd';
             }
         }
+
         return $number . 'th';
     }
 

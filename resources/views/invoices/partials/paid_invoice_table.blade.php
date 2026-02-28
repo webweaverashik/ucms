@@ -167,7 +167,6 @@
                     <!--end::Menu-->
                 </div>
                 <!--end::Export Wrapper-->
-
             </div>
             <!--end::Toolbar-->
         </div>
@@ -178,12 +177,10 @@
     <!--begin::Card body-->
     <div class="card-body py-4">
         <!--begin::Table-->
-        {{-- 
-            IMPORTANT: Column order must match exactly with JavaScript DataTable columns array
-            Index: 0=sl, 1=invoice_number, 2=student_name, 3=mobile, 4=class_name, 5=institution,
-                   6=tuition_fee, 7=activation_status, 8=invoice_type, 9=total_amount, 10=billing_month,
-                   11=due_date, 12=status, 13=last_comment, 14=paid_at
-        --}}
+        {{-- IMPORTANT: Column order must match exactly with JavaScript DataTable columns array
+             Index: 0=sl, 1=invoice_number, 2=student_name, 3=mobile, 4=guardian_1, 5=guardian_2,
+             6=class_name, 7=institution, 8=tuition_fee, 9=activation_status, 10=invoice_type,
+             11=total_amount, 12=billing_month, 13=due_date, 14=status, 15=last_comment, 16=paid_at --}}
         <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table paid-invoices-table"
             id="{{ $tableId }}" data-branch-id="{{ $branchId }}" data-table-type="paid">
             <thead>
@@ -192,6 +189,8 @@
                     <th class="min-w-100px">Invoice No.</th>
                     <th class="min-w-150px">Student</th>
                     <th class="min-w-100px">Mobile</th>
+                    <th class="min-w-120px">Guardian 1</th>
+                    <th class="min-w-120px">Guardian 2</th>
                     <th class="min-w-80px">Class</th>
                     <th class="min-w-100px">Institution</th>
                     <th class="min-w-80px">Tuition Fee</th>

@@ -94,7 +94,6 @@
                                 </select>
                             </div>
                             <!--end::Input group-->
-
                             <!--begin::Input group-->
                             <div class="col-sm-6 mb-10">
                                 <label class="form-label fs-6 fw-semibold">Invoice Type:</label>
@@ -105,7 +104,6 @@
                                 </select>
                             </div>
                             <!--end::Input group-->
-
                             <!--begin::Input group-->
                             <div class="col-sm-6 mb-10">
                                 <label class="form-label fs-6 fw-semibold">Due Date:</label>
@@ -204,7 +202,6 @@
                     <!--end::Export Menu-->
                 </div>
                 <!--end::Export Wrapper-->
-
             </div>
             <!--end::Toolbar-->
         </div>
@@ -215,12 +212,11 @@
     <!--begin::Card body-->
     <div class="card-body py-4">
         <!--begin::Table-->
-        {{-- 
-            IMPORTANT: Column order must match exactly with JavaScript DataTable columns array
-            Index: 0=sl, 1=invoice_number, 2=student_name, 3=mobile, 4=class_name, 5=institution,
-                   6=tuition_fee, 7=activation_status, 8=invoice_type, 9=billing_month, 10=total_amount,
-                   11=amount_due, 12=due_date, 13=status, 14=last_comment, 15=created_at, 16=actions
-        --}}
+        {{-- IMPORTANT: Column order must match exactly with JavaScript DataTable columns array
+             Index: 0=sl, 1=invoice_number, 2=student_name, 3=mobile, 4=guardian_1, 5=guardian_2,
+             6=class_name, 7=institution, 8=tuition_fee, 9=activation_status, 10=invoice_type,
+             11=billing_month, 12=total_amount, 13=amount_due, 14=due_date, 15=status,
+             16=last_comment, 17=created_at, 18=actions --}}
         <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table due-invoices-table"
             id="{{ $tableId }}" data-branch-id="{{ $branchId }}" data-table-type="due">
             <thead>
@@ -229,6 +225,8 @@
                     <th class="min-w-100px">Invoice No.</th>
                     <th class="min-w-150px">Student</th>
                     <th class="min-w-100px">Mobile</th>
+                    <th class="min-w-120px">Guardian 1</th>
+                    <th class="min-w-120px">Guardian 2</th>
                     <th class="min-w-80px">Class</th>
                     <th class="min-w-100px">Institution</th>
                     <th class="min-w-80px">Tuition Fee</th>
