@@ -29,6 +29,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('students')->name('students.')->group(function () {
     Route::get('branch-counts', [StudentDataController::class, 'getBranchCounts'])->name('branch-counts');
     Route::get('data', [StudentDataController::class, 'getStudentsData'])->name('data');
+    Route::get('export', [StudentDataController::class, 'exportStudentsData'])->name('export');
 });
 
 // =========================================================================
@@ -79,6 +80,7 @@ Route::prefix('students')->name('students.transfer.')->group(function () {
     Route::get('{student}/available-branches', [StudentTransferController::class, 'availableBranches'])->name('availableBranches');
     Route::post('transfer/store', [StudentTransferController::class, 'store'])->name('store');
 });
+
 Route::get('branches/{branch}/batches', [StudentTransferController::class, 'batchesByBranch'])->name('students.transfer.batchesByBranch');
 
 // =========================================================================
@@ -103,9 +105,9 @@ Route::prefix('admin')->group(function () {
 // Resource Controllers
 // =========================================================================
 Route::resources([
-    'students'  => StudentController::class,
+    'students' => StudentController::class,
     'guardians' => GuardianController::class,
-    'siblings'  => SiblingController::class,
+    'siblings' => SiblingController::class,
 ]);
 
 // =========================================================================

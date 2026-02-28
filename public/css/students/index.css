@@ -2,20 +2,20 @@
  * Students Index Page Styles
  * =============================================================================
  * This file contains all styles specific to the students listing page
- * including DataTable styling and tab interactions.
+ * including DataTable styling, column selector, and tab interactions.
  */
 
 /* ============================================================================
    Loading Animation for Branch Count Badges
    ============================================================================ */
 .branch-count-badge.badge-loading {
-      min-width: 30px;
+    min-width: 30px;
 }
 
 .branch-count-badge .spinner-border {
-      width: 12px;
-      height: 12px;
-      border-width: 2px;
+    width: 12px;
+    height: 12px;
+    border-width: 2px;
 }
 
 /* ============================================================================
@@ -25,94 +25,207 @@
 /* Ensure proper alignment for all cells */
 .students-datatable td,
 .students-datatable th {
-      vertical-align: middle !important;
+    vertical-align: middle !important;
+}
+
+/* Horizontal scroll for tables with many columns */
+.students-datatable {
+    width: 100% !important;
 }
 
 /* ============================================================================
-   Student Status Indicators
+   Column Selector Styles
    ============================================================================ */
 
-/* Inactive student name styling - red text only */
-.students-datatable .text-danger {
-      /* Red color is applied via Bootstrap's text-danger class */
+/* Column selector dropdown */
+#kt_students_column_selector {
+    min-width: 280px;
+}
+
+/* Scrollable checkbox list */
+.column-checkbox-list {
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+/* Custom scrollbar for column list */
+.column-checkbox-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.column-checkbox-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.column-checkbox-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.column-checkbox-list::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+
+/* Column checkbox styling */
+.column-checkbox-list .form-check {
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.column-checkbox-list .form-check:last-child {
+    border-bottom: none;
+}
+
+.column-checkbox-list .form-check-label {
+    cursor: pointer;
+    user-select: none;
+}
+
+.column-checkbox-list .form-check-input:disabled + .form-check-label {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Reset button rotation animation */
+.column-reset-btn .rotating {
+    animation: rotate360 0.5s ease-in-out;
+}
+
+@keyframes rotate360 {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* ============================================================================
    Export Menu Styles
    ============================================================================ */
 #kt_table_report_dropdown_menu .menu-link {
-      transition: all 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 #kt_table_report_dropdown_menu .menu-link:hover {
-      padding-left: 1.25rem;
+    padding-left: 1.25rem;
 }
 
 /* ============================================================================
    Filter Form Styles
    ============================================================================ */
 [data-kt-students-list-table-filter="form"] .form-select {
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 [data-kt-students-list-table-filter="form"] .form-select:focus {
-      border-color: var(--bs-primary);
-      box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.1);
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.1);
 }
 
 /* ============================================================================
    Tab Badge Styles
    ============================================================================ */
 #branchTabs .nav-link .branch-count-badge {
-      transition: all 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 #branchTabs .nav-link.active .branch-count-badge {
-      transform: scale(1.05);
+    transform: scale(1.05);
 }
 
 #branchTabs .nav-link:hover .branch-count-badge {
-      opacity: 0.9;
+    opacity: 0.9;
+}
+
+/* ============================================================================
+   Guardian & Sibling Column Styles
+   ============================================================================ */
+.students-datatable td small.text-muted {
+    display: block;
+    margin-top: 2px;
+}
+
+/* ============================================================================
+   Status Badge Styles
+   ============================================================================ */
+.badge-light-success {
+    color: #50cd89 !important;
+    background-color: #e8fff3 !important;
+}
+
+.badge-light-danger {
+    color: #f1416c !important;
+    background-color: #fff5f8 !important;
 }
 
 /* ============================================================================
    Responsive Adjustments
    ============================================================================ */
 @media (max-width: 768px) {
-      .students-datatable {
-            font-size: 0.875rem;
-      }
+    .students-datatable {
+        font-size: 0.875rem;
+    }
+
+    .column-checkbox-list {
+        max-height: 250px;
+    }
+
+    #kt_students_column_selector {
+        min-width: 250px;
+    }
 }
 
 @media (max-width: 576px) {
-      #branchTabs .nav-link {
-            font-size: 0.875rem;
-            padding: 0.5rem 0.75rem;
-      }
+    #branchTabs .nav-link {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+    }
 
-      #branchTabs .nav-link .branch-count-badge {
-            font-size: 0.7rem;
-      }
+    #branchTabs .nav-link .branch-count-badge {
+        font-size: 0.7rem;
+    }
+
+    .card-toolbar .btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+    }
 }
 
 /* ============================================================================
    Actions Menu Styles
    ============================================================================ */
 .students-datatable .menu-link {
-      transition: all 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .students-datatable .menu-link:hover {
-      transform: translateX(3px);
+    transform: translateX(3px);
 }
 
 /* ============================================================================
    Table Row Hover Effects
    ============================================================================ */
 .students-datatable tbody tr {
-      transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease;
 }
 
 .students-datatable tbody tr:hover {
-      background-color: rgba(var(--bs-primary-rgb), 0.03);
+    background-color: rgba(var(--bs-primary-rgb), 0.03);
+}
+
+/* ============================================================================
+   Print Styles
+   ============================================================================ */
+@media print {
+    .not-export,
+    .card-toolbar,
+    .card-header {
+        display: none !important;
+    }
+
+    .students-datatable {
+        font-size: 10px;
+    }
 }

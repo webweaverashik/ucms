@@ -82,14 +82,61 @@
                 <!--end::Search-->
             </div>
             <!--begin::Card title-->
+
             <!--begin::Card toolbar-->
             <div class="card-toolbar">
                 <!--begin::Toolbar-->
-                <div class="d-flex justify-content-end" data-kt-subscription-table-toolbar="base">
+                <div class="d-flex justify-content-end flex-wrap gap-3" data-kt-subscription-table-toolbar="base">
+
+                    <!--begin::Column Selector-->
+                    <div>
+                        <button type="button" class="btn btn-light-info" data-kt-menu-trigger="click"
+                            data-kt-menu-placement="bottom-end">
+                            <i class="ki-outline ki-setting-2 fs-2"></i>Columns
+                        </button>
+                        <!--begin::Column Selector Menu-->
+                        <div class="menu menu-sub menu-sub-dropdown w-300px" data-kt-menu="true"
+                            id="kt_students_column_selector">
+                            <!--begin::Header-->
+                            <div class="px-7 py-5 d-flex justify-content-between align-items-center">
+                                <div class="fs-5 text-gray-900 fw-bold">Select Columns</div>
+                                <button type="button" class="btn btn-sm btn-icon btn-light-primary column-reset-btn"
+                                    data-table-id="{{ $isAdmin ? 'kt_students_table_branch_' . $branches->first()->id : 'kt_students_table' }}"
+                                    title="Reset to Default">
+                                    <i class="ki-outline ki-arrows-circle fs-4"></i>
+                                </button>
+                            </div>
+                            <!--end::Header-->
+                            <!--begin::Separator-->
+                            <div class="separator border-gray-200"></div>
+                            <!--end::Separator-->
+                            <!--begin::Content-->
+                            <div class="px-7 py-5 column-checkbox-list"
+                                data-table-id="{{ $isAdmin ? 'kt_students_table_branch_' . $branches->first()->id : 'kt_students_table' }}"
+                                style="max-height: 350px; overflow-y: auto;">
+                                <!-- Checkboxes will be populated by JavaScript -->
+                            </div>
+                            <!--end::Content-->
+                            <!--begin::Footer-->
+                            <div class="separator border-gray-200"></div>
+                            <div class="px-7 py-4">
+                                <button type="button" class="btn btn-sm btn-primary w-100 column-apply-btn"
+                                    data-kt-menu-dismiss="true"
+                                    data-table-id="{{ $isAdmin ? 'kt_students_table_branch_' . $branches->first()->id : 'kt_students_table' }}">
+                                    Apply Changes
+                                </button>
+                            </div>
+                            <!--end::Footer-->
+                        </div>
+                        <!--end::Column Selector Menu-->
+                    </div>
+                    <!--end::Column Selector-->
+
                     <!--begin::Filter-->
-                    <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
+                    <button type="button" class="btn btn-light-primary" data-kt-menu-trigger="click"
                         data-kt-menu-placement="bottom-end">
-                        <i class="ki-outline ki-filter fs-2"></i>Filter</button>
+                        <i class="ki-outline ki-filter fs-2"></i>Filter
+                    </button>
                     <!--begin::Menu 1-->
                     <div class="menu menu-sub menu-sub-dropdown w-350px w-md-500px" data-kt-menu="true">
                         <!--begin::Header-->
@@ -213,18 +260,21 @@
                             <div class="d-flex justify-content-end">
                                 <button type="reset"
                                     class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
-                                    data-kt-menu-dismiss="true" data-kt-students-list-table-filter="reset">Reset</button>
+                                    data-kt-menu-dismiss="true"
+                                    data-kt-students-list-table-filter="reset">Reset</button>
                                 <button type="submit" class="btn btn-primary fw-semibold px-6"
-                                    data-kt-menu-dismiss="true" data-kt-students-list-table-filter="filter">Apply</button>
+                                    data-kt-menu-dismiss="true"
+                                    data-kt-students-list-table-filter="filter">Apply</button>
                             </div>
                             <!--end::Actions-->
                         </div>
                         <!--end::Content-->
                     </div>
                     <!--end::Menu 1-->
+
                     <!--begin::Export dropdown-->
                     <div class="dropdown">
-                        <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
+                        <button type="button" class="btn btn-light-primary" data-kt-menu-trigger="click"
                             data-kt-menu-placement="bottom-end">
                             <i class="ki-outline ki-exit-up fs-2"></i>Export
                         </button>
@@ -250,10 +300,12 @@
                         <!--end::Menu-->
                     </div>
                     <!--end::Export dropdown-->
+
                     @can('students.create')
                         <!--begin::Add Student-->
                         <a href="{{ route('students.create') }}" class="btn btn-primary">
-                            <i class="ki-outline ki-plus fs-2"></i>New Admission</a>
+                            <i class="ki-outline ki-plus fs-2"></i>New Admission
+                        </a>
                         <!--end::Add Student-->
                     @endcan
                 </div>
@@ -262,6 +314,7 @@
             <!--end::Card toolbar-->
         </div>
         <!--end::Card header-->
+
         <!--begin::Card body-->
         <div class="card-body py-4">
             @if ($isAdmin)
@@ -347,6 +400,7 @@
                             <div class="d-flex flex-column">
                                 <input type="hidden" name="student_id" id="student_id" />
                                 <input type="hidden" name="active_status" id="activation_status" />
+
                                 <div class="row">
                                     <div class="col-lg-12">
                                         <!--begin::Input group-->
@@ -359,12 +413,14 @@
                                             <textarea class="form-control" rows="3" name="reason" id="activation_reason"
                                                 placeholder="Write the reason for this update" required minlength="3"></textarea>
                                             <!--end::Input-->
-                                            <div class="fv-plugins-message-container invalid-feedback" id="reason_error">
+                                            <div class="fv-plugins-message-container invalid-feedback"
+                                                id="reason_error">
                                             </div>
                                         </div>
                                         <!--end::Input group-->
                                     </div>
                                 </div>
+
                                 <div class="d-flex justify-content-end">
                                     <!--begin::Button-->
                                     <button type="button" class="btn btn-secondary me-5"
@@ -392,7 +448,6 @@
         <!--end::Modal dialog-->
     </div>
     <!--end::Modal - Toggle Activation Student-->
-
 @endsection
 
 @push('vendor-js')
@@ -409,6 +464,7 @@
         const routeDeleteStudent = "{{ route('students.destroy', ':id') }}";
         const routeToggleActive = "{{ route('students.toggleActive') }}";
         const routeStudentsData = "{{ route('students.data') }}";
+        const routeStudentsExport = "{{ route('students.export') }}";
         const routeStudentShow = "{{ route('students.show', ':id') }}";
         const routeBranchCounts = "{{ route('students.branch-counts') }}";
         const routeClassShow = "{{ route('classnames.show', ':id') }}";
