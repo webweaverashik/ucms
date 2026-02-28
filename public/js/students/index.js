@@ -3,20 +3,14 @@
 /**
  * Student Column Configuration
  * IMPORTANT: The order here must match EXACTLY with:
- * 1. The <th> elements in the students-table.blade.php
+ * 1. The <th> elements in students-table.blade.php
  * 2. The DataTable columns array
- *
- * Total: 17 columns (display columns)
- * Note: In export, "Student" column splits into "Student Name" and "Student ID" as separate columns
  * 
- * Index: 0=counter, 1=student (combo), 2=class, 3=group, 4=batch,
- *        5=institution, 6=mobile_home, 7=mobile_sms, 8=mobile_whatsapp,
- *        9=guardian_1, 10=guardian_2, 11=sibling_1, 12=sibling_2,
- *        13=tuition_fee, 14=payment_type, 15=status, 16=actions
+ * Total: 19 columns (including combined Student column which splits to 2 in export)
  */
 var StudentColumnConfig = [
     { key: 'counter', label: '#', visible: true, required: true },
-    { key: 'student', label: 'Student', visible: true, required: true },  // Combined display: name + student_unique_id
+    { key: 'student', label: 'Student', visible: true, required: true },  // Combined in display, split in export
     { key: 'class', label: 'Class', visible: true, required: false },
     { key: 'group', label: 'Group', visible: true, required: false },
     { key: 'batch', label: 'Batch', visible: true, required: false },
@@ -31,121 +25,123 @@ var StudentColumnConfig = [
     { key: 'tuition_fee', label: 'Tuition Fee', visible: true, required: false },
     { key: 'payment_type', label: 'Payment Type', visible: true, required: false },
     { key: 'status', label: 'Status', visible: false, required: false },
+    { key: 'admission_date', label: 'Admission Date', visible: false, required: false },
+    { key: 'admitted_by', label: 'Admitted By', visible: false, required: false },
     { key: 'actions', label: 'Actions', visible: true, required: true }
 ];
 
-var TOTAL_COLUMNS = StudentColumnConfig.length; // 17
+// Total number of columns
+var TOTAL_COLUMNS = StudentColumnConfig.length;  // 19
 
 /**
- * Student Column Selector Manager
+ * Column Selector Manager for Students
  */
-var KTStudentColumnSelector = function () {
-    var STORAGE_KEY_PREFIX = 'students_column_visibility_v4_';
-
-    // Get storage key based on user type
+var KTStudentColumnSelector = (function () {
+    // Storage key version - increment when column structure changes
+    var STORAGE_VERSION = 'v4';
+    
+    // Get storage key based on user role
     var getStorageKey = function () {
-        return STORAGE_KEY_PREFIX + (typeof isAdmin !== 'undefined' && isAdmin ? 'admin' : 'user');
+        return 'students_column_visibility_' + STORAGE_VERSION + '_' + (typeof isAdmin !== 'undefined' && isAdmin ? 'admin' : 'user');
     };
-
-    // Clear old storage keys (migration)
+    
+    // Clear old storage keys to prevent conflicts
     var clearOldStorageKeys = function () {
-        var oldKeys = [
-            'students_column_visibility_admin',
-            'students_column_visibility_user',
-            'students_column_visibility_v2_admin',
-            'students_column_visibility_v2_user',
-            'students_column_visibility_v3_admin',
-            'students_column_visibility_v3_user'
-        ];
-        oldKeys.forEach(function (key) {
-            try {
-                localStorage.removeItem(key);
-            } catch (e) {
-                // Ignore errors
+        var keysToRemove = [];
+        for (var i = 0; i < localStorage.length; i++) {
+            var key = localStorage.key(i);
+            if (key && key.startsWith('students_column_visibility_') && key.indexOf(STORAGE_VERSION) === -1) {
+                keysToRemove.push(key);
             }
+        }
+        keysToRemove.forEach(function (key) {
+            localStorage.removeItem(key);
         });
     };
-
+    
     // Get saved column visibility from localStorage
-    var getColumnVisibility = function () {
+    var getSavedVisibility = function () {
         try {
             var saved = localStorage.getItem(getStorageKey());
             if (saved) {
                 var parsed = JSON.parse(saved);
-                // Validate that saved data has correct number of columns
-                if (Object.keys(parsed).length !== TOTAL_COLUMNS) {
-                    localStorage.removeItem(getStorageKey());
-                    return getDefaultVisibility();
+                // Validate that the saved data has the correct number of columns
+                if (Object.keys(parsed).length === TOTAL_COLUMNS) {
+                    return parsed;
                 }
-                return parsed;
             }
         } catch (e) {
-            console.warn('Failed to load column visibility:', e);
+            console.warn('Failed to parse saved column visibility:', e);
         }
-        return getDefaultVisibility();
+        return null;
     };
-
-    // Get default visibility from config
-    var getDefaultVisibility = function () {
-        var visibility = {};
-        StudentColumnConfig.forEach(function (col, index) {
-            visibility[index] = col.visible;
-        });
-        return visibility;
-    };
-
+    
     // Save column visibility to localStorage
-    var saveColumnVisibility = function (visibility) {
+    var saveVisibility = function (visibility) {
         try {
             localStorage.setItem(getStorageKey(), JSON.stringify(visibility));
         } catch (e) {
             console.warn('Failed to save column visibility:', e);
         }
     };
-
+    
+    // Get current visibility settings (saved or default)
+    var getVisibility = function () {
+        var saved = getSavedVisibility();
+        if (saved) {
+            return saved;
+        }
+        
+        // Return defaults
+        var defaults = {};
+        for (var i = 0; i < TOTAL_COLUMNS; i++) {
+            defaults[i] = StudentColumnConfig[i].visible;
+        }
+        return defaults;
+    };
+    
     // Initialize column selector checkboxes
-    var initColumnSelector = function (tableId) {
-        var container = document.querySelector('.column-checkbox-list[data-table-id="' + tableId + '"]');
+    var initColumnSelector = function (container) {
         if (!container) return;
-
-        var visibility = getColumnVisibility();
-
+        
+        var visibility = getVisibility();
         var html = '';
-        StudentColumnConfig.forEach(function (col, index) {
-            var isVisible = visibility[index] !== undefined ? visibility[index] : col.visible;
+        
+        for (var i = 0; i < TOTAL_COLUMNS; i++) {
+            var col = StudentColumnConfig[i];
+            var isVisible = visibility[i] !== undefined ? visibility[i] : col.visible;
             var isDisabled = col.required ? 'disabled' : '';
             var checkedAttr = isVisible ? 'checked' : '';
-
+            
             html += '<div class="form-check form-check-custom form-check-solid mb-3">' +
                 '<input class="form-check-input column-visibility-checkbox" type="checkbox" ' +
-                'id="col_' + tableId + '_' + index + '" ' +
-                'data-column-index="' + index + '" ' +
+                'id="col_student_' + i + '" ' +
+                'data-column-index="' + i + '" ' +
                 'data-column-key="' + col.key + '" ' +
                 checkedAttr + ' ' + isDisabled + '>' +
-                '<label class="form-check-label fw-semibold text-gray-700" for="col_' + tableId + '_' + index + '">' +
+                '<label class="form-check-label fw-semibold text-gray-700" for="col_student_' + i + '">' +
                 col.label +
                 (col.required ? ' <span class="badge badge-sm badge-light-primary ms-1">Required</span>' : '') +
                 '</label>' +
                 '</div>';
-        });
-
+        }
+        
         container.innerHTML = html;
     };
-
+    
     // Apply column visibility to DataTable
-    var applyColumnVisibility = function (tableId, dt) {
-        var container = document.querySelector('.column-checkbox-list[data-table-id="' + tableId + '"]');
-        if (!container || !dt) return;
-
+    var applyColumnVisibility = function (dt, container) {
+        if (!dt || !container) return;
+        
         var visibility = {};
         var checkboxes = container.querySelectorAll('.column-visibility-checkbox');
-
+        
         checkboxes.forEach(function (checkbox) {
             var colIndex = parseInt(checkbox.getAttribute('data-column-index'));
             var isVisible = checkbox.checked;
             visibility[colIndex] = isVisible;
-
-            // Apply to DataTable column with bounds check
+            
+            // Apply to DataTable column with safety check
             try {
                 if (colIndex >= 0 && colIndex < TOTAL_COLUMNS) {
                     var column = dt.column(colIndex);
@@ -154,13 +150,13 @@ var KTStudentColumnSelector = function () {
                     }
                 }
             } catch (e) {
-                console.warn('Failed to set column visibility for index ' + colIndex, e);
+                console.warn('Failed to set column visibility for index ' + colIndex + ':', e);
             }
         });
-
+        
         // Save to localStorage
-        saveColumnVisibility(visibility);
-
+        saveVisibility(visibility);
+        
         // Adjust columns after visibility change
         try {
             dt.columns.adjust().draw(false);
@@ -168,13 +164,13 @@ var KTStudentColumnSelector = function () {
             console.warn('Failed to adjust columns:', e);
         }
     };
-
-    // Apply initial visibility when DataTable is ready
+    
+    // Apply initial column visibility when DataTable is first loaded
     var applyInitialVisibility = function (dt) {
         if (!dt) return;
-
-        var visibility = getColumnVisibility();
-
+        
+        var visibility = getVisibility();
+        
         // Use setTimeout to ensure DataTable is fully initialized
         setTimeout(function () {
             try {
@@ -185,72 +181,73 @@ var KTStudentColumnSelector = function () {
                         column.visible(isVisible);
                     }
                 }
-                dt.columns.adjust();
+                dt.columns.adjust().draw(false);
             } catch (e) {
-                console.warn('Failed to apply initial visibility:', e);
+                console.warn('Failed to apply initial column visibility:', e);
             }
-        }, 50);
+        }, 10);
     };
-
+    
     // Reset to default visibility
-    var resetToDefaults = function (tableId) {
-        var container = document.querySelector('.column-checkbox-list[data-table-id="' + tableId + '"]');
+    var resetToDefaults = function (container) {
         if (!container) return;
-
+        
         var checkboxes = container.querySelectorAll('.column-visibility-checkbox');
         checkboxes.forEach(function (checkbox) {
             var colIndex = parseInt(checkbox.getAttribute('data-column-index'));
-            var colConfig = StudentColumnConfig[colIndex];
-            if (colConfig && !colConfig.required) {
-                checkbox.checked = colConfig.visible;
-            }
-        });
-    };
-
-    // Get visible columns for export
-    // Note: When 'student' column is visible, we return both 'student_name' and 'student_unique_id' for export
-    var getVisibleColumnsForExport = function () {
-        var visibility = getColumnVisibility();
-        var visibleCols = [];
-
-        StudentColumnConfig.forEach(function (col, index) {
-            var isVisible = visibility[index] !== undefined ? visibility[index] : col.visible;
-            if (isVisible && col.key !== 'actions' && col.key !== 'counter') {
-                // Special handling: 'student' column splits into two export columns
-                if (col.key === 'student') {
-                    visibleCols.push({ key: 'student_name', label: 'Student Name', index: index });
-                    visibleCols.push({ key: 'student_unique_id', label: 'Student ID', index: index });
-                } else {
-                    visibleCols.push({
-                        key: col.key,
-                        label: col.label,
-                        index: index
-                    });
+            if (colIndex >= 0 && colIndex < TOTAL_COLUMNS) {
+                var colConfig = StudentColumnConfig[colIndex];
+                if (colConfig && !colConfig.required) {
+                    checkbox.checked = colConfig.visible;
                 }
             }
         });
-
+    };
+    
+    // Get visible columns for export (splits 'student' into 'student_name' and 'student_unique_id')
+    var getVisibleColumnsForExport = function () {
+        var visibility = getVisibility();
+        var visibleCols = [];
+        
+        for (var i = 0; i < TOTAL_COLUMNS; i++) {
+            var col = StudentColumnConfig[i];
+            var isVisible = visibility[i] !== undefined ? visibility[i] : col.visible;
+            
+            if (isVisible && col.key !== 'actions') {
+                // Split 'student' column into separate name and ID columns for export
+                if (col.key === 'student') {
+                    visibleCols.push({ key: 'student_name', label: 'Student Name', index: i });
+                    visibleCols.push({ key: 'student_unique_id', label: 'Student ID', index: i });
+                } else {
+                    visibleCols.push({ key: col.key, label: col.label, index: i });
+                }
+            }
+        }
+        
         return visibleCols;
     };
-
+    
     return {
         init: function () {
-            // Clear old storage keys on init
+            // Clear old storage keys
             clearOldStorageKeys();
         },
-        initForTable: initColumnSelector,
+        initColumnSelector: initColumnSelector,
         applyColumnVisibility: applyColumnVisibility,
         applyInitialVisibility: applyInitialVisibility,
         resetToDefaults: resetToDefaults,
-        getVisibleColumnsForExport: getVisibleColumnsForExport,
-        getColumnVisibility: getColumnVisibility
+        getVisibility: getVisibility,
+        saveVisibility: saveVisibility,
+        getVisibleColumnsForExport: getVisibleColumnsForExport
     };
-}();
+})();
+
 
 /**
- * Students List Manager
+ * Students List DataTable Manager
  */
-var KTStudentsList = function () {
+var KTStudentsList = (function () {
+    // Define shared variables
     var datatables = {};
     var activeDatatable = null;
     var initializedTabs = {};
@@ -303,6 +300,7 @@ var KTStudentsList = function () {
             dataType: 'json',
             success: function (response) {
                 if (response.success && response.counts) {
+                    // Update all branch badges with their counts
                     Object.keys(response.counts).forEach(function (branchId) {
                         var badge = document.querySelector('.branch-count-badge[data-branch-id="' + branchId + '"]');
                         if (badge) {
@@ -311,6 +309,7 @@ var KTStudentsList = function () {
                         }
                     });
 
+                    // Set 0 for branches with no students
                     var allBadges = document.querySelectorAll('.branch-count-badge');
                     allBadges.forEach(function (badge) {
                         var branchId = badge.getAttribute('data-branch-id');
@@ -323,6 +322,7 @@ var KTStudentsList = function () {
             },
             error: function (xhr, status, error) {
                 console.error('Failed to fetch branch counts:', error);
+                // On error, show 0 or dash for all badges
                 var allBadges = document.querySelectorAll('.branch-count-badge');
                 allBadges.forEach(function (badge) {
                     badge.innerHTML = '-';
@@ -332,152 +332,263 @@ var KTStudentsList = function () {
         });
     };
 
-    // Build columns array - Must match exactly with table headers (17 columns)
+    // Build columns array (19 columns)
     var buildColumns = function () {
-        return [
-            // 0: Counter
-            {
-                data: 'counter',
-                orderable: false,
-                searchable: false
-            },
-            // 1: Student (combined: name + student_unique_id)
-            {
-                data: 'student_name',
-                orderable: true,
-                render: function (data, type, row) {
-                    if (type === 'export') {
-                        return data + ' (' + row.student_unique_id + ')';
-                    }
-                    var showUrl = routeStudentShow.replace(':id', row.student_id);
-                    return '<div class="d-flex flex-column">' +
-                        '<a href="' + showUrl + '" class="text-gray-800 text-hover-primary fw-bold">' +
-                        escapeHtml(data) + '</a>' +
-                        '<span class="text-muted fs-7">' + escapeHtml(row.student_unique_id) + '</span>' +
-                        '</div>';
-                }
-            },
-            // 2: Class
-            {
-                data: 'class_name',
-                orderable: true,
-                searchable: false,
-                render: function (data, type, row) {
-                    if (type === 'export' || !data || data === '-') {
-                        return data || '-';
-                    }
-                    var classId = row.class_id;
-                    if (classId && typeof routeClassShow !== 'undefined') {
-                        var classUrl = routeClassShow.replace(':id', classId);
-                        return '<a href="' + classUrl + '" class="text-gray-800 text-hover-primary">' +
-                            escapeHtml(data) + '</a>';
-                    }
-                    return escapeHtml(data);
-                }
-            },
-            // 3: Group
-            {
-                data: 'group_badge',
-                orderable: false,
-                searchable: false,
-                render: function (data, type, row) {
-                    if (type === 'export') {
-                        return row.academic_group || '-';
-                    }
+        var columns = [];
+
+        // 0: Counter column
+        columns.push({
+            data: 'counter',
+            orderable: false,
+            searchable: false
+        });
+
+        // 1: Student column (combined name + ID in display)
+        columns.push({
+            data: 'student_name',
+            orderable: true,
+            render: function (data, type, row) {
+                if (type === 'export') {
                     return data;
                 }
-            },
-            // 4: Batch
-            {
-                data: 'batch_name',
-                orderable: true,
-                searchable: false
-            },
-            // 5: Institution
-            {
-                data: 'institution_name',
-                orderable: true,
-                searchable: false
-            },
-            // 6: Mobile (Home)
-            {
-                data: 'mobile_home',
-                orderable: false,
-                searchable: false
-            },
-            // 7: Mobile (SMS)
-            {
-                data: 'mobile_sms',
-                orderable: false,
-                searchable: false
-            },
-            // 8: Mobile (WhatsApp)
-            {
-                data: 'mobile_whatsapp',
-                orderable: false,
-                searchable: false
-            },
-            // 9: Guardian 1
-            {
-                data: 'guardian_1',
-                orderable: false,
-                searchable: false
-            },
-            // 10: Guardian 2
-            {
-                data: 'guardian_2',
-                orderable: false,
-                searchable: false
-            },
-            // 11: Sibling 1
-            {
-                data: 'sibling_1',
-                orderable: false,
-                searchable: false
-            },
-            // 12: Sibling 2
-            {
-                data: 'sibling_2',
-                orderable: false,
-                searchable: false
-            },
-            // 13: Tuition Fee
-            {
-                data: 'tuition_fee',
-                orderable: true,
-                searchable: false
-            },
-            // 14: Payment Type
-            {
-                data: 'payment_info',
-                orderable: false,
-                searchable: false
-            },
-            // 15: Status
-            {
-                data: 'status_badge',
-                orderable: false,
-                searchable: false,
-                render: function (data, type, row) {
-                    if (type === 'export') {
-                        return row.activation_status || '-';
-                    }
-                    return data;
-                }
-            },
-            // 16: Actions
-            {
-                data: 'actions',
-                orderable: false,
-                searchable: false,
-                className: 'text-end not-export'
+
+                var showUrl = routeStudentShow.replace(':id', row.student_id);
+
+                return '<div class="d-flex flex-column">' +
+                    '<a href="' + showUrl + '" class="text-gray-800 text-hover-primary fw-bold">' +
+                    escapeHtml(data) + '</a>' +
+                    '<span class="text-muted fs-7">' + escapeHtml(row.student_unique_id) + '</span>' +
+                    '</div>';
             }
-        ];
+        });
+
+        // 2: Class name column
+        columns.push({
+            data: 'class_name',
+            orderable: true,
+            searchable: false,
+            render: function (data, type, row) {
+                if (type === 'export' || !data || data === '-') {
+                    return data || '-';
+                }
+                var classId = row.class_id;
+                if (classId && typeof routeClassShow !== 'undefined') {
+                    var classUrl = routeClassShow.replace(':id', classId);
+                    return '<a href="' + classUrl + '" class="text-gray-800 text-hover-primary">' + escapeHtml(data) + '</a>';
+                }
+                return escapeHtml(data);
+            }
+        });
+
+        // 3: Group badge column
+        columns.push({
+            data: 'group_badge',
+            orderable: false,
+            searchable: false,
+            render: function (data, type) {
+                if (type === 'export') {
+                    var temp = document.createElement('div');
+                    temp.innerHTML = data;
+                    return temp.textContent || temp.innerText || '-';
+                }
+                return data;
+            }
+        });
+
+        // 4: Batch name column
+        columns.push({
+            data: 'batch_name',
+            orderable: true,
+            searchable: false
+        });
+
+        // 5: Institution column
+        columns.push({
+            data: 'institution_name',
+            orderable: true,
+            searchable: false
+        });
+
+        // 6: Mobile home column
+        columns.push({
+            data: 'mobile_home',
+            orderable: false,
+            searchable: false
+        });
+
+        // 7: Mobile SMS column
+        columns.push({
+            data: 'mobile_sms',
+            orderable: false,
+            searchable: false
+        });
+
+        // 8: Mobile WhatsApp column
+        columns.push({
+            data: 'mobile_whatsapp',
+            orderable: false,
+            searchable: false
+        });
+
+        // 9: Guardian 1 column
+        columns.push({
+            data: 'guardian_1',
+            orderable: false,
+            searchable: false,
+            render: function (data, type, row) {
+                if (type === 'export') {
+                    // Build export string
+                    var guardian = row.guardian_1_name || '';
+                    if (guardian && row.guardian_1_relationship) {
+                        guardian += ' (' + row.guardian_1_relationship + ')';
+                    }
+                    if (guardian && row.guardian_1_mobile) {
+                        guardian += ' - ' + row.guardian_1_mobile;
+                    }
+                    return guardian || '-';
+                }
+                return data;
+            }
+        });
+
+        // 10: Guardian 2 column
+        columns.push({
+            data: 'guardian_2',
+            orderable: false,
+            searchable: false,
+            render: function (data, type, row) {
+                if (type === 'export') {
+                    var guardian = row.guardian_2_name || '';
+                    if (guardian && row.guardian_2_relationship) {
+                        guardian += ' (' + row.guardian_2_relationship + ')';
+                    }
+                    if (guardian && row.guardian_2_mobile) {
+                        guardian += ' - ' + row.guardian_2_mobile;
+                    }
+                    return guardian || '-';
+                }
+                return data;
+            }
+        });
+
+        // 11: Sibling 1 column
+        columns.push({
+            data: 'sibling_1',
+            orderable: false,
+            searchable: false,
+            render: function (data, type, row) {
+                if (type === 'export') {
+                    var sibling = row.sibling_1_name || '';
+                    if (sibling && row.sibling_1_relationship) {
+                        sibling += ' (' + row.sibling_1_relationship + ')';
+                    }
+                    if (sibling && row.sibling_1_class) {
+                        sibling += ' - Class: ' + row.sibling_1_class;
+                    }
+                    if (sibling && row.sibling_1_institution) {
+                        sibling += ' - ' + row.sibling_1_institution;
+                    }
+                    return sibling || '-';
+                }
+                return data;
+            }
+        });
+
+        // 12: Sibling 2 column
+        columns.push({
+            data: 'sibling_2',
+            orderable: false,
+            searchable: false,
+            render: function (data, type, row) {
+                if (type === 'export') {
+                    var sibling = row.sibling_2_name || '';
+                    if (sibling && row.sibling_2_relationship) {
+                        sibling += ' (' + row.sibling_2_relationship + ')';
+                    }
+                    if (sibling && row.sibling_2_class) {
+                        sibling += ' - Class: ' + row.sibling_2_class;
+                    }
+                    if (sibling && row.sibling_2_institution) {
+                        sibling += ' - ' + row.sibling_2_institution;
+                    }
+                    return sibling || '-';
+                }
+                return data;
+            }
+        });
+
+        // 13: Tuition fee column
+        columns.push({
+            data: 'tuition_fee',
+            orderable: true,
+            searchable: false
+        });
+
+        // 14: Payment info column
+        columns.push({
+            data: 'payment_info',
+            orderable: false,
+            searchable: false
+        });
+
+        // 15: Status column
+        columns.push({
+            data: 'status_badge',
+            orderable: false,
+            searchable: false,
+            render: function (data, type, row) {
+                if (type === 'export') {
+                    return row.activation_status || '-';
+                }
+                return data;
+            }
+        });
+
+        // 16: Admission Date column
+        columns.push({
+            data: 'admission_date',
+            orderable: true,
+            searchable: false,
+            render: function (data, type, row) {
+                if (type === 'export') {
+                    return data + (row.admission_date_time ? ' ' + row.admission_date_time : '');
+                }
+                if (!data || data === '-') return '<span class="text-muted">-</span>';
+                return '<div class="d-flex flex-column">' +
+                    '<span class="fw-semibold">' + escapeHtml(data) + '</span>' +
+                    (row.admission_date_time ? '<span class="text-muted fs-7">' + escapeHtml(row.admission_date_time) + '</span>' : '') +
+                    '</div>';
+            }
+        });
+
+        // 17: Admitted By column
+        columns.push({
+            data: 'admitted_by',
+            orderable: false,
+            searchable: false,
+            render: function (data, type) {
+                if (type === 'export') {
+                    return data || '-';
+                }
+                if (!data || data === '-') return '<span class="text-muted">-</span>';
+                return '<span class="badge badge-light-info">' + escapeHtml(data) + '</span>';
+            }
+        });
+
+        // 18: Actions column
+        columns.push({
+            data: 'actions',
+            orderable: false,
+            searchable: false,
+            className: 'not-export'
+        });
+
+        return columns;
     };
 
-    // Get DataTable configuration
+    // Get DataTable AJAX config
     var getDataTableConfig = function (tableId, branchId) {
-        return {
+        var config = {
             processing: true,
             serverSide: true,
             deferRender: true,
@@ -485,16 +596,21 @@ var KTStudentsList = function () {
                 url: routeStudentsData,
                 type: 'GET',
                 data: function (d) {
+                    // Add branch_id for admin tabs
                     if (branchId) {
                         d.branch_id = branchId;
                     }
+
+                    // Add custom filters
                     var filters = getFilters();
                     Object.keys(filters).forEach(function (key) {
                         d[key] = filters[key];
                     });
+
                     return d;
                 },
                 dataSrc: function (json) {
+                    // Update badge count if admin (as fallback/refresh)
                     if (isAdmin && branchId) {
                         var badge = document.querySelector('.branch-count-badge[data-branch-id="' + branchId + '"]');
                         if (badge) {
@@ -513,23 +629,23 @@ var KTStudentsList = function () {
             lengthMenu: [10, 25, 50, 100],
             lengthChange: true,
             autoWidth: false,
-            scrollX: true,
             language: {
                 processing: '<div class="d-flex justify-content-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>',
                 emptyTable: 'No students found',
                 zeroRecords: 'No matching students found'
             },
             initComplete: function (settings, json) {
+                // Get the DataTable API instance
                 var api = this.api();
-
-                // Initialize column selector for this table
-                KTStudentColumnSelector.initForTable(tableId);
-
-                // Apply initial column visibility
+                
+                // Apply initial column visibility after table is ready
                 KTStudentColumnSelector.applyInitialVisibility(api);
-
-                // Initialize menus
-                KTMenu.init();
+                
+                // Initialize column selector checkboxes
+                var container = document.querySelector('.column-checkbox-list');
+                if (container) {
+                    KTStudentColumnSelector.initColumnSelector(container);
+                }
             },
             drawCallback: function () {
                 KTMenu.init();
@@ -539,6 +655,8 @@ var KTStudentsList = function () {
                 });
             }
         };
+
+        return config;
     };
 
     // Initialize a single datatable
@@ -556,11 +674,13 @@ var KTStudentsList = function () {
 
     // Initialize datatables for admin (multiple tabs)
     var initAdminDatatables = function () {
+        // First, fetch all branch counts immediately
         fetchBranchCounts();
 
         if (branchIds && branchIds.length > 0) {
             var firstBranchId = branchIds[0];
             var firstTableId = 'kt_students_table_branch_' + firstBranchId;
+
             datatables[firstBranchId] = initSingleDatatable(firstTableId, firstBranchId);
             activeDatatable = datatables[firstBranchId];
             initializedTabs[firstBranchId] = true;
@@ -619,6 +739,7 @@ var KTStudentsList = function () {
             String(now.getDate()).padStart(2, '0') + '_' +
             String(now.getHours()).padStart(2, '0') +
             String(now.getMinutes()).padStart(2, '0');
+
         return 'Students_Report_' + timestamp + '.' + extension;
     };
 
@@ -634,7 +755,7 @@ var KTStudentsList = function () {
         toastr.success(messages[type] + ' (' + rowCount + ' rows)', 'Export Complete');
     };
 
-    // Fetch all data for export
+    // Fetch all data for export using dedicated export endpoint
     var fetchAllDataForExport = function (callback) {
         var params = {
             search: getSearchValue()
@@ -644,6 +765,7 @@ var KTStudentsList = function () {
             params.branch_id = currentBranchId;
         }
 
+        // Add filters
         var filters = getFilters();
         Object.keys(filters).forEach(function (key) {
             params[key] = filters[key];
@@ -687,23 +809,22 @@ var KTStudentsList = function () {
     };
 
     // Prepare export data based on visible columns
-    // Note: 'student' column is split into 'student_name' and 'student_unique_id' in export
     var prepareExportData = function (data) {
-        var visibleColumns = KTStudentColumnSelector.getVisibleColumnsForExport();
-
-        // Build headers from visible columns (add # at start)
-        var headers = ['#'];
-        visibleColumns.forEach(function (col) {
-            headers.push(col.label);
+        var visibleCols = KTStudentColumnSelector.getVisibleColumnsForExport();
+        var headers = visibleCols.map(function (col) {
+            return col.label;
         });
 
         var rows = [];
         data.forEach(function (row, index) {
-            var rowData = [index + 1];
-
-            visibleColumns.forEach(function (col) {
+            var rowData = [];
+            visibleCols.forEach(function (col) {
                 var value = '-';
+                
                 switch (col.key) {
+                    case 'counter':
+                        value = index + 1;
+                        break;
                     case 'student_name':
                         value = row.student_name || '-';
                         break;
@@ -752,12 +873,18 @@ var KTStudentsList = function () {
                     case 'status':
                         value = row.activation_status || '-';
                         break;
+                    case 'admission_date':
+                        value = row.admission_date || '-';
+                        break;
+                    case 'admitted_by':
+                        value = row.admitted_by || '-';
+                        break;
                     default:
                         value = row[col.key] || '-';
                 }
+                
                 rowData.push(value);
             });
-
             rows.push(rowData);
         });
 
@@ -769,9 +896,11 @@ var KTStudentsList = function () {
         var exportData = prepareExportData(data);
         var exportDateTime = getExportDateTime();
 
+        // Add title and timestamp
         var text = 'Students Report\n';
         text += 'Exported on: ' + exportDateTime + '\n\n';
         text += exportData.headers.join('\t') + '\n';
+
         exportData.rows.forEach(function (row) {
             text += row.join('\t') + '\n';
         });
@@ -795,28 +924,37 @@ var KTStudentsList = function () {
 
         var wb = XLSX.utils.book_new();
 
+        // Create worksheet data with title and timestamp
         var wsData = [
             ['Students Report'],
             ['Exported on: ' + exportDateTime],
-            [],
+            [],  // Empty row for spacing
             exportData.headers
         ].concat(exportData.rows);
 
         var ws = XLSX.utils.aoa_to_sheet(wsData);
 
+        // Merge cells for title row
         ws['!merges'] = [
-            { s: { r: 0, c: 0 }, e: { r: 0, c: exportData.headers.length - 1 } },
-            { s: { r: 1, c: 0 }, e: { r: 1, c: exportData.headers.length - 1 } }
+            { s: { r: 0, c: 0 }, e: { r: 0, c: exportData.headers.length - 1 } },  // Title row
+            { s: { r: 1, c: 0 }, e: { r: 1, c: exportData.headers.length - 1 } }   // Timestamp row
         ];
 
-        var colWidths = exportData.headers.map(function (header) {
-            return { wch: Math.max(header.length + 5, 15) };
+        // Auto-size columns
+        var colWidths = exportData.headers.map(function (header, index) {
+            var maxWidth = header.length;
+            exportData.rows.forEach(function (row) {
+                var cellValue = String(row[index] || '');
+                if (cellValue.length > maxWidth) {
+                    maxWidth = cellValue.length;
+                }
+            });
+            return { wch: Math.min(maxWidth + 2, 50) };
         });
         ws['!cols'] = colWidths;
 
         XLSX.utils.book_append_sheet(wb, ws, 'Students');
         XLSX.writeFile(wb, getExportFilename('xlsx'));
-
         showExportSuccess('excel', exportData.rows.length);
     };
 
@@ -826,9 +964,10 @@ var KTStudentsList = function () {
 
         var csvContent = '';
 
+        // Add title and timestamp
         csvContent += '"Students Report"\n';
         csvContent += '"Exported on: ' + exportDateTime + '"\n';
-        csvContent += '\n';
+        csvContent += '\n';  // Empty row for spacing
 
         csvContent += exportData.headers.map(function (h) {
             return '"' + h.replace(/"/g, '""') + '"';
@@ -858,7 +997,6 @@ var KTStudentsList = function () {
 
         doc.setFontSize(16);
         doc.text('Students Report', 14, 15);
-
         doc.setFontSize(10);
         doc.text('Exported on: ' + exportDateTime, 14, 22);
 
@@ -878,7 +1016,7 @@ var KTStudentsList = function () {
             alternateRowStyles: {
                 fillColor: [245, 245, 245]
             },
-            didDrawPage: function (data) {
+            didDrawPage: function (pageData) {
                 doc.setFontSize(8);
                 doc.text(
                     'Page ' + doc.internal.getNumberOfPages(),
@@ -890,7 +1028,6 @@ var KTStudentsList = function () {
         });
 
         doc.save(getExportFilename('pdf'));
-
         showExportSuccess('pdf', exportData.rows.length);
     };
 
@@ -923,39 +1060,31 @@ var KTStudentsList = function () {
         });
     };
 
-    // Handle column selector events
-    var handleColumnSelector = function () {
+    // Setup column selector event handlers
+    var setupColumnSelector = function () {
         // Apply button click
-        $(document).on('click', '.column-apply-btn', function () {
-            var tableId = this.getAttribute('data-table-id');
-            var dt = null;
-
-            if (isAdmin && currentBranchId) {
-                dt = datatables[currentBranchId];
-            } else {
-                dt = datatables['single'];
-            }
-
-            KTStudentColumnSelector.applyColumnVisibility(tableId, dt);
-            toastr.success('Column visibility updated');
-        });
+        var applyBtn = document.querySelector('.column-apply-btn');
+        if (applyBtn) {
+            applyBtn.addEventListener('click', function () {
+                var container = document.querySelector('.column-checkbox-list');
+                if (activeDatatable && container) {
+                    KTStudentColumnSelector.applyColumnVisibility(activeDatatable, container);
+                    toastr.success('Column visibility updated');
+                }
+            });
+        }
 
         // Reset button click
-        $(document).on('click', '.column-reset-btn', function () {
-            var tableId = this.getAttribute('data-table-id');
-
-            // Add rotation animation
-            var icon = this.querySelector('i');
-            if (icon) {
-                icon.classList.add('rotating');
-                setTimeout(function () {
-                    icon.classList.remove('rotating');
-                }, 500);
-            }
-
-            KTStudentColumnSelector.resetToDefaults(tableId);
-            toastr.info('Column selection reset to defaults. Click Apply to save.');
-        });
+        var resetBtn = document.querySelector('.column-reset-btn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function () {
+                var container = document.querySelector('.column-checkbox-list');
+                if (container) {
+                    KTStudentColumnSelector.resetToDefaults(container);
+                    toastr.info('Column selection reset to defaults. Click Apply to save.');
+                }
+            });
+        }
     };
 
     // Search with debouncing
@@ -986,6 +1115,7 @@ var KTStudentsList = function () {
                     Object.keys(datatables).forEach(function (key) {
                         if (datatables[key]) datatables[key].ajax.reload();
                     });
+                    // Also refresh counts after filter
                     fetchBranchCounts();
                 } else if (activeDatatable) {
                     activeDatatable.ajax.reload();
@@ -1007,6 +1137,7 @@ var KTStudentsList = function () {
                     Object.keys(datatables).forEach(function (key) {
                         if (datatables[key]) datatables[key].search('').ajax.reload();
                     });
+                    // Also refresh counts after reset
                     fetchBranchCounts();
                 } else if (activeDatatable) {
                     activeDatatable.search('').ajax.reload();
@@ -1043,37 +1174,36 @@ var KTStudentsList = function () {
                             "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
                         }
                     })
-                        .then(function (response) {
-                            return response.json();
-                        })
-                        .then(function (data) {
-                            if (data.success) {
-                                Swal.fire({
-                                    title: "Deleted!",
-                                    text: "The student has been removed.",
-                                    icon: "success",
-                                    timer: 2000,
-                                    showConfirmButton: false
-                                })
-                                    .then(function () {
-                                        if (activeDatatable) activeDatatable.ajax.reload();
-                                        if (isAdmin) fetchBranchCounts();
-                                    });
-                            } else {
-                                Swal.fire({
-                                    title: "Error!",
-                                    text: data.message,
-                                    icon: "error"
-                                });
-                            }
-                        })
-                        .catch(function () {
+                    .then(function (response) { return response.json(); })
+                    .then(function (data) {
+                        if (data.success) {
+                            Swal.fire({
+                                title: "Deleted!",
+                                text: "The student has been removed.",
+                                icon: "success",
+                                timer: 2000,
+                                showConfirmButton: false
+                            })
+                            .then(function () {
+                                if (activeDatatable) activeDatatable.ajax.reload();
+                                // Refresh counts after deletion
+                                if (isAdmin) fetchBranchCounts();
+                            });
+                        } else {
                             Swal.fire({
                                 title: "Error!",
-                                text: "Something went wrong.",
+                                text: data.message,
                                 icon: "error"
                             });
+                        }
+                    })
+                    .catch(function () {
+                        Swal.fire({
+                            title: "Error!",
+                            text: "Something went wrong.",
+                            icon: "error"
                         });
+                    });
                 }
             });
         });
@@ -1087,7 +1217,7 @@ var KTStudentsList = function () {
         }
     };
 
-    // Handle toggle activation modal trigger
+    // Handle toggle activation modal trigger from action dropdown
     var handleToggleActivationTrigger = function () {
         document.addEventListener('click', function (e) {
             var toggleButton = e.target.closest('[data-bs-target="#kt_toggle_activation_student_modal"]');
@@ -1100,9 +1230,13 @@ var KTStudentsList = function () {
             var studentUniqueId = toggleButton.getAttribute('data-student-unique-id');
             var activeStatus = toggleButton.getAttribute('data-active-status');
 
+            // Populate hidden fields
             document.getElementById('student_id').value = studentId;
+
+            // Set the NEW status (opposite of current)
             document.getElementById('activation_status').value = (activeStatus === 'active') ? 'inactive' : 'active';
 
+            // Update modal title and label based on current status
             var modalTitle = document.getElementById('toggle-activation-modal-title');
             var reasonLabel = document.getElementById('reason_label');
             var reasonTextarea = document.getElementById('activation_reason');
@@ -1121,6 +1255,7 @@ var KTStudentsList = function () {
                 }
             }
 
+            // Clear previous reason and error
             if (reasonTextarea) {
                 reasonTextarea.value = '';
             }
@@ -1131,7 +1266,7 @@ var KTStudentsList = function () {
         });
     };
 
-    // Handle toggle activation form submission
+    // Handle toggle activation form submission via AJAX
     var handleToggleActivationSubmit = function () {
         var toggleForm = document.getElementById('kt_toggle_activation_form');
         if (!toggleForm) return;
@@ -1143,17 +1278,21 @@ var KTStudentsList = function () {
             var reasonField = document.getElementById('activation_reason');
             var reasonError = document.getElementById('reason_error');
 
+            // Validate reason field
             if (!reasonField.value.trim() || reasonField.value.trim().length < 3) {
                 reasonError.textContent = 'Please provide a valid reason (at least 3 characters).';
                 reasonField.focus();
                 return;
             }
 
+            // Clear error
             reasonError.textContent = '';
 
+            // Show loading
             submitBtn.setAttribute('data-kt-indicator', 'on');
             submitBtn.disabled = true;
 
+            // Prepare form data
             var formData = new FormData(toggleForm);
 
             fetch(routeToggleActive, {
@@ -1165,65 +1304,73 @@ var KTStudentsList = function () {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             })
-                .then(function (response) {
-                    return response.json().then(function (data) {
-                        return { status: response.status, data: data };
-                    });
-                })
-                .then(function (result) {
-                    var response = result.data;
+            .then(function (response) {
+                return response.json().then(function (data) {
+                    return { status: response.status, data: data };
+                });
+            })
+            .then(function (result) {
+                var response = result.data;
 
-                    submitBtn.removeAttribute('data-kt-indicator');
-                    submitBtn.disabled = false;
+                // Re-enable button
+                submitBtn.removeAttribute('data-kt-indicator');
+                submitBtn.disabled = false;
 
-                    if (response.success) {
-                        if (toggleActivationModal) {
-                            toggleActivationModal.hide();
-                        }
-
-                        toggleForm.reset();
-
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success!',
-                            text: response.message || 'Student status updated successfully.',
-                            timer: 2000,
-                            showConfirmButton: false
-                        }).then(function () {
-                            if (activeDatatable) {
-                                activeDatatable.ajax.reload(null, false);
-                            }
-                            if (isAdmin) fetchBranchCounts();
-                        });
-                    } else {
-                        var errorMessage = response.message || 'Something went wrong.';
-                        if (response.errors) {
-                            var errorList = [];
-                            Object.keys(response.errors).forEach(function (key) {
-                                errorList.push(response.errors[key].join(', '));
-                            });
-                            errorMessage = errorList.join('\n');
-                        }
-
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: errorMessage
-                        });
+                if (response.success) {
+                    // Close modal
+                    if (toggleActivationModal) {
+                        toggleActivationModal.hide();
                     }
-                })
-                .catch(function (error) {
-                    console.error('Toggle activation error:', error);
 
-                    submitBtn.removeAttribute('data-kt-indicator');
-                    submitBtn.disabled = false;
+                    // Reset form
+                    toggleForm.reset();
+
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: response.message || 'Student status updated successfully.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(function () {
+                        // Reload datatable
+                        if (activeDatatable) {
+                            activeDatatable.ajax.reload(null, false);
+                        }
+                        // Refresh counts after status change
+                        if (isAdmin) fetchBranchCounts();
+                    });
+                } else {
+                    // Show error message
+                    var errorMessage = response.message || 'Something went wrong.';
+                    if (response.errors) {
+                        var errorList = [];
+                        Object.keys(response.errors).forEach(function (key) {
+                            errorList.push(response.errors[key].join(', '));
+                        });
+                        errorMessage = errorList.join('\n');
+                    }
 
                     Swal.fire({
                         icon: 'error',
                         title: 'Error!',
-                        text: 'An unexpected error occurred. Please try again.'
+                        text: errorMessage
                     });
+                }
+            })
+            .catch(function (error) {
+                console.error('Toggle activation error:', error);
+
+                // Re-enable button
+                submitBtn.removeAttribute('data-kt-indicator');
+                submitBtn.disabled = false;
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'An unexpected error occurred. Please try again.'
                 });
+            });
         });
     };
 
@@ -1260,8 +1407,8 @@ var KTStudentsList = function () {
             initToggleActivationModal();
 
             // Setup handlers
+            setupColumnSelector();
             exportButtons();
-            handleColumnSelector();
             handleSearch();
             handleDeletion();
             handleFilter();
@@ -1269,24 +1416,24 @@ var KTStudentsList = function () {
             handleToggleActivationSubmit();
             handleModalReset();
         },
-
         reload: function () {
             if (activeDatatable) activeDatatable.ajax.reload();
             if (isAdmin) fetchBranchCounts();
         },
-
         reloadAll: function () {
             Object.keys(datatables).forEach(function (key) {
                 if (datatables[key]) datatables[key].ajax.reload();
             });
             if (isAdmin) fetchBranchCounts();
         },
-
         refreshCounts: function () {
             if (isAdmin) fetchBranchCounts();
+        },
+        getActiveDatatable: function () {
+            return activeDatatable;
         }
     };
-}();
+})();
 
 // Initialize on DOM ready
 KTUtil.onDOMContentLoaded(function () {
