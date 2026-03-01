@@ -1,4 +1,5 @@
 <?php
+
 namespace Database\Seeders;
 
 use App\Models\ColumnSetting;
@@ -11,7 +12,11 @@ class ColumnSettingsSeeder extends Seeder
      */
     public function run(): void
     {
-        // Default settings for students_index page
+        /*
+        |--------------------------------------------------------------------------
+        | students_index Page Settings
+        |--------------------------------------------------------------------------
+        */
         $defaultStudentsSettings = [
             0  => true,  // counter (required)
             1  => true,  // student (required)
@@ -42,6 +47,74 @@ class ColumnSettingsSeeder extends Seeder
             ]
         );
 
-        $this->command->info('Column settings seeded successfully for students_index page.');
+        /*
+        |--------------------------------------------------------------------------
+        | invoices_due Page Settings
+        |--------------------------------------------------------------------------
+        */
+        $defaultDueSettings = [
+            0 => true,   // sl (required)
+            1 => true,   // invoice_number (required)
+            2 => true,   // student_name
+            3 => true,   // mobile
+            4 => false,  // guardian_1
+            5 => false,  // guardian_2
+            6 => false,  // class_name
+            7 => false,  // institution
+            8 => false,  // tuition_fee
+            9 => false,  // activation_status
+            10 => true,  // invoice_type
+            11 => true,  // billing_month
+            12 => true,  // total_amount
+            13 => true,  // amount_due
+            14 => true,  // due_date
+            15 => true,  // status
+            16 => true,  // last_comment
+            17 => true,  // created_at
+            18 => true,  // actions (required)
+        ];
+
+        ColumnSetting::updateOrCreate(
+            ['page' => 'invoices_due'],
+            [
+                'settings'   => $defaultDueSettings,
+                'updated_by' => null,
+            ]
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | invoices_paid Page Settings
+        |--------------------------------------------------------------------------
+        */
+        $defaultPaidSettings = [
+            0 => true,   // sl (required)
+            1 => true,   // invoice_number (required)
+            2 => true,   // student_name
+            3 => true,   // mobile
+            4 => false,  // guardian_1
+            5 => false,  // guardian_2
+            6 => false,  // class_name
+            7 => false,  // institution
+            8 => false,  // tuition_fee
+            9 => false,  // activation_status
+            10 => true,  // invoice_type
+            11 => true,  // total_amount
+            12 => true,  // billing_month
+            13 => true,  // due_date
+            14 => true,  // status
+            15 => true,  // last_comment
+            16 => true,  // paid_at
+        ];
+
+        ColumnSetting::updateOrCreate(
+            ['page' => 'invoices_paid'],
+            [
+                'settings'   => $defaultPaidSettings,
+                'updated_by' => null,
+            ]
+        );
+
+        $this->command->info('Column settings seeded successfully for students_index, invoices_due and invoices_paid pages.');
     }
 }

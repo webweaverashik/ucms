@@ -60,6 +60,8 @@ class DatabaseSeeder extends Seeder
             SmsTemplatesTableSeeder::class,
             // SmsCampaignsTableSeeder::class,
             // SmsLogsTableSeeder::class,
+
+            ColumnSettingsSeeder::class,
         ]);
     }
 }
