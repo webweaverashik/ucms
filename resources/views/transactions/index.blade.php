@@ -152,27 +152,27 @@
                             </div>
                             <!--end::Input group-->
                             @can('transactions.delete')
-                            <!--begin::Show Deleted Toggle-->
-                            <div class="mb-10">
-                                <label class="form-check form-switch form-check-custom form-check-solid">
-                                    <input class="form-check-input" type="checkbox" id="show_deleted_filter" value="1" />
-                                    <span class="form-check-label fw-semibold text-gray-700">
-                                        Show Deleted Only
-                                    </span>
-                                </label>
-                                <div class="form-text text-muted mt-2">
-                                    View only deleted transactions
+                                <!--begin::Show Deleted Toggle-->
+                                <div class="mb-10">
+                                    <label class="form-check form-switch form-check-custom form-check-solid">
+                                        <input class="form-check-input" type="checkbox" id="show_deleted_filter"
+                                            value="1" />
+                                        <span class="form-check-label fw-semibold text-gray-700">
+                                            Show Deleted Only
+                                        </span>
+                                    </label>
+                                    <div class="form-text text-muted mt-2">
+                                        View only deleted transactions
+                                    </div>
                                 </div>
-                            </div>
-                            <!--end::Show Deleted Toggle-->
+                                <!--end::Show Deleted Toggle-->
                             @endcan
                             <!--begin::Actions-->
                             <div class="d-flex justify-content-end">
-                                <button type="reset"
-                                    class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
+                                <button type="reset" class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6"
                                     data-kt-menu-dismiss="true" data-transaction-table-filter="reset">Reset</button>
-                                <button type="submit" class="btn btn-primary fw-semibold px-6"
-                                    data-kt-menu-dismiss="true" data-transaction-table-filter="filter">Apply</button>
+                                <button type="submit" class="btn btn-primary fw-semibold px-6" data-kt-menu-dismiss="true"
+                                    data-transaction-table-filter="filter">Apply</button>
                             </div>
                             <!--end::Actions-->
                         </div>
@@ -180,32 +180,34 @@
                     </div>
                     <!--end::Menu 1-->
                     <!--begin::Export dropdown-->
-                    <div class="dropdown">
-                        <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
-                            data-kt-menu-placement="bottom-end" id="export_dropdown_btn">
-                            <i class="ki-outline ki-exit-up fs-2"></i>Export
-                        </button>
-                        <!--begin::Menu-->
-                        <div id="kt_table_report_dropdown_menu"
-                            class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
-                            data-kt-menu="true">
-                            <!--begin::Menu item-->
-                            <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3" data-row-export="copy">Copy to clipboard</a>
+                    @if (auth()->user()->isAdmin())
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
+                                data-kt-menu-placement="bottom-end" id="export_dropdown_btn">
+                                <i class="ki-outline ki-exit-up fs-2"></i>Export
+                            </button>
+                            <!--begin::Menu-->
+                            <div id="kt_table_report_dropdown_menu"
+                                class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
+                                data-kt-menu="true">
+                                <!--begin::Menu item-->
+                                <div class="menu-item px-3">
+                                    <a href="#" class="menu-link px-3" data-row-export="copy">Copy to clipboard</a>
+                                </div>
+                                <div class="menu-item px-3">
+                                    <a href="#" class="menu-link px-3" data-row-export="excel">Export as Excel</a>
+                                </div>
+                                <div class="menu-item px-3">
+                                    <a href="#" class="menu-link px-3" data-row-export="csv">Export as CSV</a>
+                                </div>
+                                <div class="menu-item px-3">
+                                    <a href="#" class="menu-link px-3" data-row-export="pdf">Export as PDF</a>
+                                </div>
+                                <!--end::Menu item-->
                             </div>
-                            <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3" data-row-export="excel">Export as Excel</a>
-                            </div>
-                            <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3" data-row-export="csv">Export as CSV</a>
-                            </div>
-                            <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3" data-row-export="pdf">Export as PDF</a>
-                            </div>
-                            <!--end::Menu item-->
+                            <!--end::Menu-->
                         </div>
-                        <!--end::Menu-->
-                    </div>
+                    @endif
                     <!--end::Export dropdown-->
                     @can('transactions.create')
                         <!--begin::Add subscription-->
@@ -317,8 +319,7 @@
                                         <div class="overflow-hidden flex-grow-1">
                                             <select name="transaction_branch"
                                                 class="form-select form-select-solid rounded-start-0 border-start"
-                                                data-control="select2"
-                                                data-dropdown-parent="#kt_modal_add_transaction"
+                                                data-control="select2" data-dropdown-parent="#kt_modal_add_transaction"
                                                 data-placeholder="Select a branch" id="transaction_branch_select">
                                                 <option></option>
                                                 @foreach ($branches as $branch)
@@ -486,8 +487,7 @@
                         <div class="text-center pt-10">
                             <button type="reset" class="btn btn-light me-3"
                                 data-kt-add-transaction-modal-action="cancel">Discard</button>
-                            <button type="submit" class="btn btn-primary"
-                                data-kt-add-transaction-modal-action="submit">
+                            <button type="submit" class="btn btn-primary" data-kt-add-transaction-modal-action="submit">
                                 <span class="indicator-label">Submit</span>
                                 <span class="indicator-progress">Please wait...
                                     <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>

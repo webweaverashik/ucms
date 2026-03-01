@@ -191,32 +191,34 @@
                     <!--end::Filter-->
 
                     <!--begin::Export dropdown-->
-                    <div class="dropdown">
-                        <button type="button" class="btn btn-light-primary" data-kt-menu-trigger="click"
-                            data-kt-menu-placement="bottom-end" id="export_dropdown_btn">
-                            <i class="ki-outline ki-exit-up fs-2"></i>Export
-                        </button>
-                        <!--begin::Menu-->
-                        <div id="kt_notes_export_dropdown_menu"
-                            class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
-                            data-kt-menu="true">
-                            <!--begin::Menu item-->
-                            <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3" data-row-export="copy">Copy to clipboard</a>
+                    @if (auth()->user()->isAdmin())
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-light-primary" data-kt-menu-trigger="click"
+                                data-kt-menu-placement="bottom-end" id="export_dropdown_btn">
+                                <i class="ki-outline ki-exit-up fs-2"></i>Export
+                            </button>
+                            <!--begin::Menu-->
+                            <div id="kt_notes_export_dropdown_menu"
+                                class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
+                                data-kt-menu="true">
+                                <!--begin::Menu item-->
+                                <div class="menu-item px-3">
+                                    <a href="#" class="menu-link px-3" data-row-export="copy">Copy to clipboard</a>
+                                </div>
+                                <div class="menu-item px-3">
+                                    <a href="#" class="menu-link px-3" data-row-export="excel">Export as Excel</a>
+                                </div>
+                                <div class="menu-item px-3">
+                                    <a href="#" class="menu-link px-3" data-row-export="csv">Export as CSV</a>
+                                </div>
+                                <div class="menu-item px-3">
+                                    <a href="#" class="menu-link px-3" data-row-export="pdf">Export as PDF</a>
+                                </div>
+                                <!--end::Menu item-->
                             </div>
-                            <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3" data-row-export="excel">Export as Excel</a>
-                            </div>
-                            <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3" data-row-export="csv">Export as CSV</a>
-                            </div>
-                            <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3" data-row-export="pdf">Export as PDF</a>
-                            </div>
-                            <!--end::Menu item-->
+                            <!--end::Menu-->
                         </div>
-                        <!--end::Menu-->
-                    </div>
+                    @endif
                     <!--end::Export dropdown-->
                 </div>
                 <!--end::Toolbar-->
