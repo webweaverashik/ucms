@@ -27,6 +27,10 @@ Route::get('invoices/export-ajax', [PaymentInvoiceController::class, 'exportInvo
 Route::get('invoices/filter-options', [PaymentInvoiceController::class, 'getFilterOptions'])->name('invoices.filter.options');
 Route::get('invoices/branch-due-counts', [PaymentInvoiceController::class, 'getBranchDueCounts'])->name('invoices.branch.due.counts');
 
+// Column Settings (Admin only)
+Route::get('invoices/column-settings', [PaymentInvoiceController::class, 'getColumnSettings'])->name('invoices.column.settings');
+Route::post('invoices/column-settings', [PaymentInvoiceController::class, 'saveColumnSettings'])->name('invoices.column.settings.save');
+
 // Invoice Comments
 Route::post('invoice-comments', [PaymentInvoiceCommentController::class, 'store'])->name('invoice.comments.store');
 Route::get('invoices/{invoice}/comments', [PaymentInvoiceCommentController::class, 'getComments'])->name('invoice.comments.index');

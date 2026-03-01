@@ -1,3 +1,7 @@
+@php
+    $isUserAdmin = auth()->user()->isAdmin();
+@endphp
+
 <!--begin::Card-->
 <div class="card">
     <!--begin::Card header-->
@@ -19,46 +23,51 @@
             <!--begin::Toolbar-->
             <div class="d-flex justify-content-end flex-wrap gap-3" data-kt-paid-invoice-table-toolbar="base">
 
-                <!--begin::Column Selector Wrapper-->
-                <div>
-                    <button type="button" class="btn btn-light-info" data-kt-menu-trigger="click"
-                        data-kt-menu-placement="bottom-end">
-                        <i class="ki-outline ki-setting-2 fs-2"></i>Columns
-                    </button>
-                    <!--begin::Column Selector Menu-->
-                    <div class="menu menu-sub menu-sub-dropdown w-300px" data-kt-menu="true"
-                        id="column_selector_paid_{{ $tableId }}">
-                        <!--begin::Header-->
-                        <div class="px-7 py-5 d-flex justify-content-between align-items-center">
-                            <div class="fs-5 text-gray-900 fw-bold">Select Columns</div>
-                            <button type="button" class="btn btn-sm btn-icon btn-light-primary column-reset-btn"
-                                data-table-id="{{ $tableId }}" data-type="paid" title="Reset to Default">
-                                <i class="ki-outline ki-arrows-circle fs-4"></i>
-                            </button>
+                @if ($isUserAdmin)
+                    <!--begin::Column Selector Wrapper-->
+                    <div>
+                        <button type="button" class="btn btn-light-info" data-kt-menu-trigger="click"
+                            data-kt-menu-placement="bottom-end">
+                            <i class="ki-outline ki-setting-2 fs-2"></i>Columns
+                        </button>
+                        <!--begin::Column Selector Menu-->
+                        <div class="menu menu-sub menu-sub-dropdown w-300px" data-kt-menu="true"
+                            id="column_selector_paid_{{ $tableId }}">
+                            <!--begin::Header-->
+                            <div class="px-7 py-5 d-flex justify-content-between align-items-center">
+                                <div class="fs-5 text-gray-900 fw-bold">Select Columns</div>
+                                <button type="button" class="btn btn-sm btn-icon btn-light-primary column-reset-btn"
+                                    data-table-id="{{ $tableId }}" data-type="paid" title="Reset to Default">
+                                    <i class="ki-outline ki-arrows-circle fs-4"></i>
+                                </button>
+                            </div>
+                            <!--end::Header-->
+                            <!--begin::Separator-->
+                            <div class="separator border-gray-200"></div>
+                            <!--end::Separator-->
+                            <!--begin::Content-->
+                            <div class="px-7 py-5 column-checkbox-list" data-table-id="{{ $tableId }}" data-type="paid"
+                                style="max-height: 300px; overflow-y: auto;">
+                                <!-- Checkboxes will be populated by JavaScript -->
+                            </div>
+                            <!--end::Content-->
+                            <!--begin::Footer-->
+                            <div class="separator border-gray-200"></div>
+                            <div class="px-7 py-4">
+                                <button type="button" class="btn btn-sm btn-primary w-100 column-apply-btn"
+                                    data-table-id="{{ $tableId }}" data-type="paid">
+                                    <span class="indicator-label"><i class="ki-outline ki-check fs-4 me-1"></i>Apply & Save for All Users</span>
+                                    <span class="indicator-progress">Please wait...
+                                        <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                    </span>
+                                </button>
+                            </div>
+                            <!--end::Footer-->
                         </div>
-                        <!--end::Header-->
-                        <!--begin::Separator-->
-                        <div class="separator border-gray-200"></div>
-                        <!--end::Separator-->
-                        <!--begin::Content-->
-                        <div class="px-7 py-5 column-checkbox-list" data-table-id="{{ $tableId }}" data-type="paid"
-                            style="max-height: 300px; overflow-y: auto;">
-                            <!-- Checkboxes will be populated by JavaScript -->
-                        </div>
-                        <!--end::Content-->
-                        <!--begin::Footer-->
-                        <div class="separator border-gray-200"></div>
-                        <div class="px-7 py-4">
-                            <button type="button" class="btn btn-sm btn-primary w-100 column-apply-btn"
-                                data-kt-menu-dismiss="true" data-table-id="{{ $tableId }}" data-type="paid">
-                                Apply Changes
-                            </button>
-                        </div>
-                        <!--end::Footer-->
+                        <!--end::Column Selector Menu-->
                     </div>
-                    <!--end::Column Selector Menu-->
-                </div>
-                <!--end::Column Selector Wrapper-->
+                    <!--end::Column Selector Wrapper-->
+                @endif
 
                 <!--begin::Filter Wrapper-->
                 <div>
@@ -138,35 +147,38 @@
                 </div>
                 <!--end::Filter Wrapper-->
 
-                <!--begin::Export Wrapper-->
-                <div>
-                    <button type="button" class="btn btn-light-primary" data-kt-menu-trigger="click"
-                        data-kt-menu-placement="bottom-end">
-                        <i class="ki-outline ki-exit-up fs-2"></i>Export
-                    </button>
-                    <!--begin::Menu-->
-                    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
-                        data-kt-menu="true">
-                        <div class="menu-item px-3">
-                            <a href="#" class="menu-link px-3 export-btn" data-table-id="{{ $tableId }}"
-                                data-type="paid" data-export="copy">Copy to clipboard</a>
+                @if ($isUserAdmin)
+                    <!--begin::Export Wrapper-->
+                    <div>
+                        <button type="button" class="btn btn-light-primary" data-kt-menu-trigger="click"
+                            data-kt-menu-placement="bottom-end">
+                            <i class="ki-outline ki-exit-up fs-2"></i>Export
+                        </button>
+                        <!--begin::Menu-->
+                        <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
+                            data-kt-menu="true">
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3 export-btn" data-table-id="{{ $tableId }}"
+                                    data-type="paid" data-export="copy">Copy to clipboard</a>
+                            </div>
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3 export-btn" data-table-id="{{ $tableId }}"
+                                    data-type="paid" data-export="excel">Export as Excel</a>
+                            </div>
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3 export-btn" data-table-id="{{ $tableId }}"
+                                    data-type="paid" data-export="csv">Export as CSV</a>
+                            </div>
+                            <div class="menu-item px-3">
+                                <a href="#" class="menu-link px-3 export-btn" data-table-id="{{ $tableId }}"
+                                    data-type="paid" data-export="pdf">Export as PDF</a>
+                            </div>
                         </div>
-                        <div class="menu-item px-3">
-                            <a href="#" class="menu-link px-3 export-btn" data-table-id="{{ $tableId }}"
-                                data-type="paid" data-export="excel">Export as Excel</a>
-                        </div>
-                        <div class="menu-item px-3">
-                            <a href="#" class="menu-link px-3 export-btn" data-table-id="{{ $tableId }}"
-                                data-type="paid" data-export="csv">Export as CSV</a>
-                        </div>
-                        <div class="menu-item px-3">
-                            <a href="#" class="menu-link px-3 export-btn" data-table-id="{{ $tableId }}"
-                                data-type="paid" data-export="pdf">Export as PDF</a>
-                        </div>
+                        <!--end::Menu-->
                     </div>
-                    <!--end::Menu-->
-                </div>
-                <!--end::Export Wrapper-->
+                    <!--end::Export Wrapper-->
+                @endif
+
             </div>
             <!--end::Toolbar-->
         </div>
@@ -176,39 +188,82 @@
 
     <!--begin::Card body-->
     <div class="card-body py-4">
-        <!--begin::Table-->
-        {{-- IMPORTANT: Column order must match exactly with JavaScript DataTable columns array
-             Index: 0=sl, 1=invoice_number, 2=student_name, 3=mobile, 4=guardian_1, 5=guardian_2,
-             6=class_name, 7=institution, 8=tuition_fee, 9=activation_status, 10=invoice_type,
-             11=total_amount, 12=billing_month, 13=due_date, 14=status, 15=last_comment, 16=paid_at --}}
-        <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table paid-invoices-table"
-            id="{{ $tableId }}" data-branch-id="{{ $branchId }}" data-table-type="paid">
-            <thead>
-                <tr class="fw-bold fs-7 text-uppercase gs-0">
-                    <th class="w-25px">SL</th>
-                    <th class="min-w-100px">Invoice No.</th>
-                    <th class="min-w-150px">Student</th>
-                    <th class="min-w-100px">Mobile</th>
-                    <th class="min-w-120px">Guardian 1</th>
-                    <th class="min-w-120px">Guardian 2</th>
-                    <th class="min-w-80px">Class</th>
-                    <th class="min-w-100px">Institution</th>
-                    <th class="min-w-80px">Tuition Fee</th>
-                    <th class="min-w-80px">Activation</th>
-                    <th class="min-w-100px">Invoice Type</th>
-                    <th class="min-w-80px">Amount (Tk)</th>
-                    <th class="min-w-100px">Billing Month</th>
-                    <th class="min-w-80px">Due Date</th>
-                    <th class="min-w-70px">Status</th>
-                    <th class="min-w-120px">Last Comment</th>
-                    <th class="min-w-100px">Paid At</th>
-                </tr>
-            </thead>
-            <tbody class="text-gray-600 fw-semibold">
-                <!-- Data will be loaded via AJAX -->
-            </tbody>
-        </table>
-        <!--end::Table-->
+        <!--begin::Table Wrapper-->
+        <div class="invoice-table-wrapper" id="wrapper_{{ $tableId }}">
+            
+            <!--begin::Skeleton Loader-->
+            <div class="invoice-skeleton" id="skeleton_{{ $tableId }}">
+                <div class="skeleton-header">
+                    <div class="skeleton-bar" style="width: 3%;"></div>
+                    <div class="skeleton-bar" style="width: 10%;"></div>
+                    <div class="skeleton-bar" style="width: 12%;"></div>
+                    <div class="skeleton-bar" style="width: 8%;"></div>
+                    <div class="skeleton-bar" style="width: 10%;"></div>
+                    <div class="skeleton-bar" style="width: 10%;"></div>
+                    <div class="skeleton-bar" style="width: 8%;"></div>
+                    <div class="skeleton-bar" style="width: 8%;"></div>
+                    <div class="skeleton-bar" style="width: 8%;"></div>
+                    <div class="skeleton-bar" style="width: 8%;"></div>
+                    <div class="skeleton-bar" style="width: 6%;"></div>
+                </div>
+                @for ($i = 0; $i < 8; $i++)
+                    <div class="skeleton-row">
+                        <div class="skeleton-cell" style="width: 3%;"></div>
+                        <div class="skeleton-cell" style="width: 10%;"></div>
+                        <div class="skeleton-cell" style="width: 12%;"></div>
+                        <div class="skeleton-cell" style="width: 8%;"></div>
+                        <div class="skeleton-cell" style="width: 10%;"></div>
+                        <div class="skeleton-cell" style="width: 10%;"></div>
+                        <div class="skeleton-cell" style="width: 8%;"></div>
+                        <div class="skeleton-cell" style="width: 8%;"></div>
+                        <div class="skeleton-cell" style="width: 8%;"></div>
+                        <div class="skeleton-cell" style="width: 8%;"></div>
+                        <div class="skeleton-cell" style="width: 6%;"></div>
+                    </div>
+                @endfor
+            </div>
+            <!--end::Skeleton Loader-->
+
+            <!--begin::Table Container-->
+            <div class="invoice-table-container">
+                {{-- 
+                    IMPORTANT: Column order must match exactly with JavaScript DataTable columns array
+                    Index: 0=sl, 1=invoice_number, 2=student_name, 3=mobile, 4=guardian_1, 5=guardian_2,
+                           6=class_name, 7=institution, 8=tuition_fee, 9=activation_status, 10=invoice_type,
+                           11=total_amount, 12=billing_month, 13=due_date, 14=status, 15=last_comment, 16=paid_at
+                --}}
+                <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table paid-invoices-table"
+                    id="{{ $tableId }}" data-branch-id="{{ $branchId }}" data-table-type="paid">
+                    <thead>
+                        <tr class="fw-bold fs-7 text-uppercase gs-0">
+                            <th class="w-25px">SL</th>
+                            <th class="min-w-100px">Invoice No.</th>
+                            <th class="min-w-150px">Student</th>
+                            <th class="min-w-100px">Mobile</th>
+                            <th class="min-w-120px">Guardian 1</th>
+                            <th class="min-w-120px">Guardian 2</th>
+                            <th class="min-w-80px">Class</th>
+                            <th class="min-w-100px">Institution</th>
+                            <th class="min-w-80px">Tuition Fee</th>
+                            <th class="min-w-80px">Activation</th>
+                            <th class="min-w-100px">Invoice Type</th>
+                            <th class="min-w-80px">Amount (Tk)</th>
+                            <th class="min-w-100px">Billing Month</th>
+                            <th class="min-w-80px">Due Date</th>
+                            <th class="min-w-70px">Status</th>
+                            <th class="min-w-120px">Last Comment</th>
+                            <th class="min-w-100px">Paid At</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-600 fw-semibold">
+                        <!-- Data will be loaded via AJAX -->
+                    </tbody>
+                </table>
+            </div>
+            <!--end::Table Container-->
+
+        </div>
+        <!--end::Table Wrapper-->
     </div>
     <!--end::Card body-->
 </div>

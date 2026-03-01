@@ -1,29 +1,10 @@
 @push('page-css')
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
-    <style>
-        /* Column checkbox list styling */
-        .column-checkbox-list .form-check {
-            padding: 8px 0;
-            margin: 0;
-            border-bottom: 1px solid #f1f1f1;
-        }
-
-        .column-checkbox-list .form-check:last-child {
-            border-bottom: none;
-        }
-
-        .column-checkbox-list .form-check:hover {
-            background-color: #f9f9f9;
-            border-radius: 6px;
-        }
-
-        .column-checkbox-list .form-check-input:disabled+.form-check-label {
-            opacity: 0.7;
-        }
-    </style>
+    <link href="{{ asset('css/invoices/index.css') }}" rel="stylesheet" type="text/css" />
 @endpush
 
 @extends('layouts.app')
+
 @section('title', 'All Invoices')
 
 @section('header-title')
@@ -51,6 +32,7 @@
         $canEditInvoice = auth()->user()->can('invoices.edit');
         $canDeleteInvoice = auth()->user()->can('invoices.delete');
         $canViewInvoice = auth()->user()->can('invoices.view');
+        $isUserAdmin = auth()->user()->isAdmin();
     @endphp
 
     <!--begin:::Tabs-->
@@ -110,7 +92,6 @@
                     @endforeach
                 </ul>
                 <!--end::Branch Tabs-->
-
                 <!--begin::Branch Tab Content-->
                 <div class="tab-content" id="branchTabsDueContent">
                     @foreach ($branches as $index => $branch)
@@ -148,7 +129,6 @@
                     @endforeach
                 </ul>
                 <!--end::Branch Tabs-->
-
                 <!--begin::Branch Tab Content-->
                 <div class="tab-content" id="branchTabsPaidContent">
                     @foreach ($branches as $index => $branch)
@@ -205,8 +185,7 @@
                                                 <option></option>
                                                 @foreach ($students as $student)
                                                     <option value="{{ $student->id }}">{{ $student->name }}
-                                                        ({{ $student->student_unique_id }})
-                                                        -
+                                                        ({{ $student->student_unique_id }}) -
                                                         {{ ucfirst($student->payments->payment_style) }} -
                                                         1/{{ $student->payments->due_date }}
                                                     </option>
@@ -225,8 +204,8 @@
                                             <select name="invoice_type"
                                                 class="form-select form-select-solid rounded-start-0 border-start"
                                                 data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
-                                                data-placeholder="Select a invoice type" data-hide-search="false" required
-                                                disabled>
+                                                data-placeholder="Select a invoice type" data-hide-search="false"
+                                                required disabled>
                                                 <option></option>
                                                 @foreach ($invoice_types->where('type_name', '!=', 'Special Class Fee') as $type)
                                                     <option value="{{ $type->id }}"
@@ -276,8 +255,8 @@
                                             <select name="invoice_month_year"
                                                 class="form-select form-select-solid rounded-start-0 border-start"
                                                 data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
-                                                data-placeholder="Select billing month" data-hide-search="true" disabled
-                                                required>
+                                                data-placeholder="Select billing month" data-hide-search="true"
+                                                disabled required>
                                                 <option></option>
                                             </select>
                                         </div>
@@ -301,7 +280,8 @@
                         <div class="text-center pt-10">
                             <button type="reset" class="btn btn-light me-3"
                                 data-kt-add-invoice-modal-action="cancel">Discard</button>
-                            <button type="button" class="btn btn-primary" data-kt-add-invoice-modal-action="submit">
+                            <button type="button" class="btn btn-primary"
+                                data-kt-add-invoice-modal-action="submit">
                                 <span class="indicator-label">Submit</span>
                                 <span class="indicator-progress">Please wait...
                                     <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
@@ -321,7 +301,8 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h2 class="fw-bold" id="kt_modal_edit_invoice_title">Update Invoice</h2>
-                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-edit-invoice-modal-action="close">
+                    <div class="btn btn-icon btn-sm btn-active-icon-primary"
+                        data-kt-edit-invoice-modal-action="close">
                         <i class="ki-outline ki-cross fs-1"></i>
                     </div>
                 </div>
@@ -333,7 +314,8 @@
                             data-kt-scroll-wrappers="#kt_modal_edit_invoice_scroll" data-kt-scroll-offset="300px">
                             <div class="fv-row mb-7">
                                 <label class="fw-semibold fs-6 mb-2">Corresponding Student</label>
-                                <div class="form-control form-control-solid bg-light-secondary" id="edit_student_display">
+                                <div class="form-control form-control-solid bg-light-secondary"
+                                    id="edit_student_display">
                                     <span class="text-muted">Loading...</span>
                                 </div>
                             </div>
@@ -368,7 +350,8 @@
                         <div class="text-center pt-10">
                             <button type="reset" class="btn btn-light me-3"
                                 data-kt-edit-invoice-modal-action="cancel">Discard</button>
-                            <button type="button" class="btn btn-primary" data-kt-edit-invoice-modal-action="submit">
+                            <button type="button" class="btn btn-primary"
+                                data-kt-edit-invoice-modal-action="submit">
                                 <span class="indicator-label">Update</span>
                                 <span class="indicator-progress">Please wait...
                                     <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
@@ -388,7 +371,8 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h2 class="fw-bold" id="kt_modal_add_comment_title">Add Comment</h2>
-                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-add-comment-modal-action="close">
+                    <div class="btn btn-icon btn-sm btn-active-icon-primary"
+                        data-kt-add-comment-modal-action="close">
                         <i class="ki-outline ki-cross fs-1"></i>
                     </div>
                 </div>
@@ -399,13 +383,13 @@
                             data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-max-height="auto"
                             data-kt-scroll-dependencies="#kt_modal_add_comment_header"
                             data-kt-scroll-wrappers="#kt_modal_add_comment_scroll" data-kt-scroll-offset="300px">
-
                             <div class="mb-7" id="previous_comments_section">
                                 <label class="fw-semibold fs-6 mb-3">Previous Comments</label>
                                 <div id="previous_comments_container" class="border rounded p-4 bg-light-secondary"
                                     style="max-height: 200px; overflow-y: auto;">
                                     <div class="text-center text-muted py-3" id="comments_loading">
-                                        <span class="spinner-border spinner-border-sm me-2"></span>Loading comments...
+                                        <span class="spinner-border spinner-border-sm me-2"></span>Loading
+                                        comments...
                                     </div>
                                     <div id="comments_list"></div>
                                     <div class="text-center text-muted py-3 d-none" id="no_comments">
@@ -414,18 +398,19 @@
                                     </div>
                                 </div>
                             </div>
-
                             <div class="fv-row mb-7">
                                 <label class="required fw-semibold fs-6 mb-2">New Comment</label>
                                 <textarea name="comment" class="form-control form-control-solid" rows="4"
                                     placeholder="Enter your comment here..." required></textarea>
-                                <div class="form-text text-muted">Minimum 3 characters, maximum 1000 characters.</div>
+                                <div class="form-text text-muted">Minimum 3 characters, maximum 1000 characters.
+                                </div>
                             </div>
                         </div>
                         <div class="text-center pt-10">
                             <button type="reset" class="btn btn-light me-3"
                                 data-kt-add-comment-modal-action="cancel">Discard</button>
-                            <button type="button" class="btn btn-primary" data-kt-add-comment-modal-action="submit">
+                            <button type="button" class="btn btn-primary"
+                                data-kt-add-comment-modal-action="submit">
                                 <span class="indicator-label">Add Comment</span>
                                 <span class="indicator-progress">Please wait...
                                     <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
@@ -449,6 +434,11 @@
 @endpush
 
 @push('page-js')
+    @php
+        // Get column settings from database
+        $dueColumnSettings = \App\Models\ColumnSetting::getForPage('invoices_due');
+        $paidColumnSettings = \App\Models\ColumnSetting::getForPage('invoices_paid');
+    @endphp
     <script>
         // Routes
         const routeDeleteInvoice = "{{ route('invoices.destroy', ':id') }}";
@@ -462,11 +452,15 @@
         const routeInvoiceShow = "{{ route('invoices.show', ':id') }}";
         const routeStudentShow = "{{ route('students.show', ':id') }}";
         const routeBranchDueCounts = "{{ route('invoices.branch.due.counts') }}";
+        const routeSaveColumnSettings = "{{ route('invoices.column.settings.save') }}";
 
         // Permissions
         const canEditInvoice = {{ $canEditInvoice ? 'true' : 'false' }};
         const canDeleteInvoice = {{ $canDeleteInvoice ? 'true' : 'false' }};
         const canViewInvoice = {{ $canViewInvoice ? 'true' : 'false' }};
+
+        // Is user admin (for column settings and export)
+        const isUserAdmin = {{ $isUserAdmin ? 'true' : 'false' }};
 
         // Invoice types for filters
         const classNames = @json($classnames);
@@ -474,11 +468,17 @@
         // Invoice types for filters
         const invoiceTypes = @json($invoice_types);
 
-        // Is admin
+        // Is admin (for branch tabs)
         const isAdmin = {{ $isAdmin ? 'true' : 'false' }};
 
         // First branch ID for admin
         const firstBranchId = {{ $isAdmin && $branches->count() > 0 ? $branches->first()->id : 'null' }};
+
+        // Server column settings (applies to all users)
+        const serverColumnSettings = {
+            due: @json($dueColumnSettings ?? new stdClass()),
+            paid: @json($paidColumnSettings ?? new stdClass())
+        };
     </script>
     <script src="{{ asset('js/invoices/index.js') }}"></script>
     <script>

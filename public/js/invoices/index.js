@@ -8,10 +8,6 @@
  */
 var ColumnConfig = {
     // Due invoices columns - matching exact order in due_invoice_table.blade.php
-    // Index: 0=sl, 1=invoice_number, 2=student_name, 3=mobile, 4=guardian_1, 5=guardian_2,
-    // 6=class_name, 7=institution, 8=tuition_fee, 9=activation_status, 10=invoice_type,
-    // 11=billing_month, 12=total_amount, 13=amount_due, 14=due_date, 15=status,
-    // 16=last_comment, 17=created_at, 18=actions
     due: [
         { key: 'sl', label: 'SL', visible: true, required: true },
         { key: 'invoice_number', label: 'Invoice No.', visible: true, required: true },
@@ -35,9 +31,6 @@ var ColumnConfig = {
     ],
 
     // Paid invoices columns - matching exact order in paid_invoice_table.blade.php
-    // Index: 0=sl, 1=invoice_number, 2=student_name, 3=mobile, 4=guardian_1, 5=guardian_2,
-    // 6=class_name, 7=institution, 8=tuition_fee, 9=activation_status, 10=invoice_type,
-    // 11=total_amount, 12=billing_month, 13=due_date, 14=status, 15=last_comment, 16=paid_at
     paid: [
         { key: 'sl', label: 'SL', visible: true, required: true },
         { key: 'invoice_number', label: 'Invoice No.', visible: true, required: true },
@@ -66,17 +59,13 @@ var InvoiceManager = {
     initialized: { due: {}, paid: {} },
     columnVisibility: { due: {}, paid: {} },
 
-    // Get column visibility for a table
+    // Get column visibility - uses server settings (same for all users)
     getColumnVisibility: function (tableId, type) {
-        var storageKey = 'invoice_columns_' + tableId;
-        var stored = localStorage.getItem(storageKey);
-
-        if (stored) {
-            try {
-                return JSON.parse(stored);
-            } catch (e) {
-                console.error('Error parsing stored column visibility:', e);
-            }
+        // Use server settings (database) - these apply to all users
+        if (typeof serverColumnSettings !== 'undefined' &&
+            serverColumnSettings[type] &&
+            Object.keys(serverColumnSettings[type]).length > 0) {
+            return serverColumnSettings[type];
         }
 
         // Return default visibility from config
@@ -85,14 +74,7 @@ var InvoiceManager = {
         config.forEach(function (col, index) {
             visibility[index] = col.visible;
         });
-
         return visibility;
-    },
-
-    // Save column visibility for a table
-    saveColumnVisibility: function (tableId, visibility) {
-        var storageKey = 'invoice_columns_' + tableId;
-        localStorage.setItem(storageKey, JSON.stringify(visibility));
     },
 
     // Reload all initialized due tables
@@ -140,15 +122,12 @@ var InvoiceManager = {
                 Object.keys(response.counts).forEach(function (branchId) {
                     var count = response.counts[branchId];
                     var tabLink = document.querySelector('#branchTabsDue .nav-link[data-branch-id="' + branchId + '"]');
-
                     if (tabLink) {
                         var badgeColor = tabLink.getAttribute('data-badge-color') || 'badge-light-primary';
                         var existingBadge = tabLink.querySelector('.badge');
-
                         if (existingBadge) {
                             existingBadge.remove();
                         }
-
                         if (count > 0) {
                             var badge = document.createElement('span');
                             badge.className = 'badge ' + badgeColor + ' badge-sm ms-2';
@@ -223,13 +202,28 @@ var InvoiceUtils = {
             second: '2-digit'
         }).replace(/:/g, '-');
         return date + '_' + time;
+    },
+
+    // Show table and hide skeleton
+    showTable: function (tableId) {
+        var wrapper = document.getElementById('wrapper_' + tableId);
+        if (wrapper) {
+            wrapper.classList.add('table-loaded');
+        }
     }
 };
 
-// Column Selector Manager
+// Column Selector Manager (Admin only)
 var KTColumnSelector = function () {
-    // Initialize column selector for a table
+    // Check if user is admin
+    var checkAdminAccess = function () {
+        return typeof isUserAdmin !== 'undefined' && isUserAdmin === true;
+    };
+
+    // Initialize column selector for a table (admin only)
     var initColumnSelector = function (tableId, type) {
+        if (!checkAdminAccess()) return;
+
         var container = document.querySelector('.column-checkbox-list[data-table-id="' + tableId + '"][data-type="' + type + '"]');
         if (!container) return;
 
@@ -243,7 +237,7 @@ var KTColumnSelector = function () {
             var isDisabled = col.required ? 'disabled' : '';
             var checkedAttr = isVisible ? 'checked' : '';
 
-            html += '<div class="form-check form-check-custom form-check-solid mb-3">' +
+            html += '<div class="form-check form-check-custom form-check-solid">' +
                 '<input class="form-check-input column-visibility-checkbox" type="checkbox" ' +
                 'id="col_' + tableId + '_' + index + '" ' +
                 'data-column-index="' + index + '" ' +
@@ -259,36 +253,6 @@ var KTColumnSelector = function () {
         container.innerHTML = html;
     };
 
-    // Apply column visibility to DataTable
-    var applyColumnVisibility = function (tableId, type) {
-        var container = document.querySelector('.column-checkbox-list[data-table-id="' + tableId + '"][data-type="' + type + '"]');
-        if (!container) return;
-
-        var dt = type === 'due' ? InvoiceManager.tables.due[tableId] : InvoiceManager.tables.paid[tableId];
-        if (!dt) return;
-
-        var visibility = {};
-        var checkboxes = container.querySelectorAll('.column-visibility-checkbox');
-
-        checkboxes.forEach(function (checkbox) {
-            var colIndex = parseInt(checkbox.getAttribute('data-column-index'));
-            var isVisible = checkbox.checked;
-            visibility[colIndex] = isVisible;
-
-            // Apply to DataTable column
-            var column = dt.column(colIndex);
-            if (column) {
-                column.visible(isVisible);
-            }
-        });
-
-        // Save to localStorage
-        InvoiceManager.saveColumnVisibility(tableId, visibility);
-
-        // Adjust columns after visibility change
-        dt.columns.adjust().draw(false);
-    };
-
     // Reset to default visibility
     var resetToDefaults = function (tableId, type) {
         var container = document.querySelector('.column-checkbox-list[data-table-id="' + tableId + '"][data-type="' + type + '"]');
@@ -300,10 +264,29 @@ var KTColumnSelector = function () {
         checkboxes.forEach(function (checkbox) {
             var colIndex = parseInt(checkbox.getAttribute('data-column-index'));
             var colConfig = config[colIndex];
+
             if (colConfig && !colConfig.required) {
                 checkbox.checked = colConfig.visible;
             }
         });
+    };
+
+    // Apply column visibility to DataTable
+    var applyColumnVisibility = function (tableId, type, visibility) {
+        var dt = type === 'due' ? InvoiceManager.tables.due[tableId] : InvoiceManager.tables.paid[tableId];
+        if (!dt) return;
+
+        Object.keys(visibility).forEach(function (index) {
+            var colIndex = parseInt(index);
+            var isVisible = visibility[colIndex];
+            var column = dt.column(colIndex);
+            if (column) {
+                column.visible(isVisible);
+            }
+        });
+
+        // Adjust columns after visibility change
+        dt.columns.adjust().draw(false);
     };
 
     // Apply initial column visibility when table is initialized
@@ -322,16 +305,98 @@ var KTColumnSelector = function () {
 
     // Handle events
     var handleEvents = function () {
-        // Apply button click
-        $(document).on('click', '.column-apply-btn', function () {
-            var tableId = this.getAttribute('data-table-id');
-            var type = this.getAttribute('data-type');
-            applyColumnVisibility(tableId, type);
-            toastr.success('Column visibility updated');
+        // Apply button click - using native event listener
+        document.addEventListener('click', function (e) {
+            var btn = e.target.closest('.column-apply-btn');
+            if (!btn) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (!checkAdminAccess()) {
+                toastr.error('Only admin can change column settings');
+                return;
+            }
+
+            var tableId = btn.getAttribute('data-table-id');
+            var type = btn.getAttribute('data-type');
+
+            // Show loading
+            btn.querySelector('.indicator-label').style.display = 'none';
+            btn.querySelector('.indicator-progress').style.display = 'inline-block';
+            btn.disabled = true;
+
+            var container = document.querySelector('.column-checkbox-list[data-table-id="' + tableId + '"][data-type="' + type + '"]');
+            if (!container) {
+                toastr.error('Column container not found');
+                btn.querySelector('.indicator-label').style.display = 'inline-block';
+                btn.querySelector('.indicator-progress').style.display = 'none';
+                btn.disabled = false;
+                return;
+            }
+
+            var visibility = {};
+            var checkboxes = container.querySelectorAll('.column-visibility-checkbox');
+
+            checkboxes.forEach(function (checkbox) {
+                var colIndex = parseInt(checkbox.getAttribute('data-column-index'));
+                visibility[colIndex] = checkbox.checked;
+            });
+
+            // Save to server (applies to all users)
+            $.ajax({
+                url: routeSaveColumnSettings,
+                type: 'POST',
+                headers: { 'X-CSRF-TOKEN': InvoiceUtils.getCsrfToken() },
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    page: 'invoices_' + type,
+                    settings: visibility
+                }),
+                success: function (response) {
+                    if (response.success) {
+                        // Update server settings in memory
+                        serverColumnSettings[type] = visibility;
+
+                        // Apply to all tables of this type
+                        var tables = type === 'due' ? InvoiceManager.tables.due : InvoiceManager.tables.paid;
+                        Object.keys(tables).forEach(function (tid) {
+                            applyColumnVisibility(tid, type, visibility);
+                        });
+
+                        toastr.success('Column settings saved for all users');
+
+                        // Close the menu manually
+                        var menuElement = document.getElementById('column_selector_' + type + '_' + tableId);
+                        if (menuElement) {
+                            var menuInstance = KTMenu.getInstance(menuElement);
+                            if (menuInstance) {
+                                menuInstance.hide();
+                            }
+                        }
+                    } else {
+                        toastr.error(response.message || 'Failed to save settings');
+                    }
+                },
+                error: function (xhr) {
+                    var message = 'Failed to save column settings';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                    }
+                    toastr.error(message);
+                },
+                complete: function () {
+                    btn.querySelector('.indicator-label').style.display = 'inline-block';
+                    btn.querySelector('.indicator-progress').style.display = 'none';
+                    btn.disabled = false;
+                }
+            });
         });
 
         // Reset button click
         $(document).on('click', '.column-reset-btn', function () {
+            if (!checkAdminAccess()) return;
+
             var tableId = this.getAttribute('data-table-id');
             var type = this.getAttribute('data-type');
             resetToDefaults(tableId, type);
@@ -345,7 +410,9 @@ var KTColumnSelector = function () {
         },
 
         initForTable: function (tableId, type) {
-            initColumnSelector(tableId, type);
+            if (checkAdminAccess()) {
+                initColumnSelector(tableId, type);
+            }
         },
 
         applyInitialVisibility: applyInitialVisibility,
@@ -383,14 +450,10 @@ var KTDueInvoicesList = function () {
         // Load filter options
         loadFilterOptions(branchId, tableId);
 
-        // Initialize column selector
+        // Initialize column selector (admin only)
         KTColumnSelector.initForTable(tableId, 'due');
 
         // Column definitions - MUST match exact order of <th> elements in blade template
-        // Index: 0=sl, 1=invoice_number, 2=student_name, 3=mobile, 4=guardian_1, 5=guardian_2,
-        // 6=class_name, 7=institution, 8=tuition_fee, 9=activation_status, 10=invoice_type,
-        // 11=billing_month, 12=total_amount, 13=amount_due, 14=due_date, 15=status,
-        // 16=last_comment, 17=created_at, 18=actions
         var columns = [
             // 0: SL
             { data: 'sl', orderable: false },
@@ -427,10 +490,18 @@ var KTDueInvoicesList = function () {
                 data: null,
                 orderable: false,
                 render: function (data) {
-                    if (!data.guardian_1_name) return '-';
-                    var relationship = data.guardian_1_relationship ? ' (' + data.guardian_1_relationship.charAt(0).toUpperCase() + data.guardian_1_relationship.slice(1) + ')' : '';
-                    return InvoiceUtils.escapeHtml(data.guardian_1_name) + relationship +
-                        (data.guardian_1_mobile ? '<br><small class="text-muted">' + InvoiceUtils.escapeHtml(data.guardian_1_mobile) + '</small>' : '');
+                    if (!data.guardian_1_name) return '<span class="text-muted">-</span>';
+                    var html = '<div class="guardian-info">';
+                    html += '<span class="guardian-name">' + InvoiceUtils.escapeHtml(data.guardian_1_name);
+                    if (data.guardian_1_relationship) {
+                        html += ' <small class="text-gray-600">(' + data.guardian_1_relationship + ')</small>';
+                    }
+                    html += '</span>';
+                    if (data.guardian_1_mobile) {
+                        html += '<br><span class="guardian-mobile text-gray-600">' + InvoiceUtils.escapeHtml(data.guardian_1_mobile) + '</span>';
+                    }
+                    html += '</div>';
+                    return html;
                 }
             },
 
@@ -439,10 +510,18 @@ var KTDueInvoicesList = function () {
                 data: null,
                 orderable: false,
                 render: function (data) {
-                    if (!data.guardian_2_name) return '-';
-                    var relationship = data.guardian_2_relationship ? ' (' + data.guardian_2_relationship.charAt(0).toUpperCase() + data.guardian_2_relationship.slice(1) + ')' : '';
-                    return InvoiceUtils.escapeHtml(data.guardian_2_name) + relationship +
-                        (data.guardian_2_mobile ? '<br><small class="text-muted">' + InvoiceUtils.escapeHtml(data.guardian_2_mobile) + '</small>' : '');
+                    if (!data.guardian_2_name) return '<span class="text-muted">-</span>';
+                    var html = '<div class="guardian-info">';
+                    html += '<span class="guardian-name">' + InvoiceUtils.escapeHtml(data.guardian_2_name);
+                    if (data.guardian_2_relationship) {
+                        html += ' <small class="text-gray-600">(' + data.guardian_2_relationship + ')</small>';
+                    }
+                    html += '</span>';
+                    if (data.guardian_2_mobile) {
+                        html += '<br><span class="guardian-mobile text-gray-600">' + InvoiceUtils.escapeHtml(data.guardian_2_mobile) + '</span>';
+                    }
+                    html += '</div>';
+                    return html;
                 }
             },
 
@@ -504,7 +583,7 @@ var KTDueInvoicesList = function () {
                     var truncated = data.last_comment.length > 30
                         ? data.last_comment.substring(0, 30) + '...'
                         : data.last_comment;
-                    return '<div class="text-gray-700 fs-7" title="' + InvoiceUtils.escapeHtml(data.last_comment) + '">' +
+                    return '<div class="text-gray-700 fs-7 comment-preview" title="' + InvoiceUtils.escapeHtml(data.last_comment) + '">' +
                         InvoiceUtils.escapeHtml(truncated) + '</div>';
                 }
             },
@@ -581,16 +660,25 @@ var KTDueInvoicesList = function () {
                 }
             },
             columns: columns,
-            order: [[17, 'desc']], // Sort by created_at descending (server handles student_unique_id grouping)
+            order: [[17, 'desc']], // Sort by created_at descending
             lengthMenu: [10, 25, 50, 100],
             pageLength: 10,
             scrollX: true,
+            autoWidth: false,
             drawCallback: function () {
                 KTMenu.createInstances();
             },
             initComplete: function () {
+                var api = this.api();
+
                 // Apply saved column visibility
-                KTColumnSelector.applyInitialVisibility(tableId, 'due', this.api());
+                KTColumnSelector.applyInitialVisibility(tableId, 'due', api);
+
+                // Adjust columns
+                api.columns.adjust();
+
+                // Show table and hide skeleton
+                InvoiceUtils.showTable(tableId);
             }
         });
 
@@ -696,7 +784,6 @@ var KTDueInvoicesList = function () {
     var handleDeletion = function () {
         $(document).on('click', '.delete-invoice', function (e) {
             e.preventDefault();
-
             var invoiceId = this.getAttribute('data-invoice-id');
             var url = routeDeleteInvoice.replace(':id', invoiceId);
 
@@ -771,13 +858,10 @@ var KTPaidInvoicesList = function () {
 
         loadFilterOptions(branchId, tableId);
 
-        // Initialize column selector
+        // Initialize column selector (admin only)
         KTColumnSelector.initForTable(tableId, 'paid');
 
         // Column definitions - MUST match exact order of <th> elements in blade template
-        // Index: 0=sl, 1=invoice_number, 2=student_name, 3=mobile, 4=guardian_1, 5=guardian_2,
-        // 6=class_name, 7=institution, 8=tuition_fee, 9=activation_status, 10=invoice_type,
-        // 11=total_amount, 12=billing_month, 13=due_date, 14=status, 15=last_comment, 16=paid_at
         var columns = [
             // 0: SL
             { data: 'sl', orderable: false },
@@ -814,10 +898,18 @@ var KTPaidInvoicesList = function () {
                 data: null,
                 orderable: false,
                 render: function (data) {
-                    if (!data.guardian_1_name) return '-';
-                    var relationship = data.guardian_1_relationship ? ' (' + data.guardian_1_relationship.charAt(0).toUpperCase() + data.guardian_1_relationship.slice(1) + ')' : '';
-                    return InvoiceUtils.escapeHtml(data.guardian_1_name) + relationship +
-                        (data.guardian_1_mobile ? '<br><small class="text-muted">' + InvoiceUtils.escapeHtml(data.guardian_1_mobile) + '</small>' : '');
+                    if (!data.guardian_1_name) return '<span class="text-muted">-</span>';
+                    var html = '<div class="guardian-info">';
+                    html += '<span class="guardian-name">' + InvoiceUtils.escapeHtml(data.guardian_1_name);
+                    if (data.guardian_1_relationship) {
+                        html += ' <small class="text-muted">(' + data.guardian_1_relationship + ')</small>';
+                    }
+                    html += '</span>';
+                    if (data.guardian_1_mobile) {
+                        html += '<br><span class="guardian-mobile text-muted">' + InvoiceUtils.escapeHtml(data.guardian_1_mobile) + '</span>';
+                    }
+                    html += '</div>';
+                    return html;
                 }
             },
 
@@ -826,10 +918,18 @@ var KTPaidInvoicesList = function () {
                 data: null,
                 orderable: false,
                 render: function (data) {
-                    if (!data.guardian_2_name) return '-';
-                    var relationship = data.guardian_2_relationship ? ' (' + data.guardian_2_relationship.charAt(0).toUpperCase() + data.guardian_2_relationship.slice(1) + ')' : '';
-                    return InvoiceUtils.escapeHtml(data.guardian_2_name) + relationship +
-                        (data.guardian_2_mobile ? '<br><small class="text-muted">' + InvoiceUtils.escapeHtml(data.guardian_2_mobile) + '</small>' : '');
+                    if (!data.guardian_2_name) return '<span class="text-muted">-</span>';
+                    var html = '<div class="guardian-info">';
+                    html += '<span class="guardian-name">' + InvoiceUtils.escapeHtml(data.guardian_2_name);
+                    if (data.guardian_2_relationship) {
+                        html += ' <small class="text-muted">(' + data.guardian_2_relationship + ')</small>';
+                    }
+                    html += '</span>';
+                    if (data.guardian_2_mobile) {
+                        html += '<br><span class="guardian-mobile text-muted">' + InvoiceUtils.escapeHtml(data.guardian_2_mobile) + '</span>';
+                    }
+                    html += '</div>';
+                    return html;
                 }
             },
 
@@ -887,7 +987,7 @@ var KTPaidInvoicesList = function () {
                     var truncated = data.last_comment.length > 30
                         ? data.last_comment.substring(0, 30) + '...'
                         : data.last_comment;
-                    return '<div class="text-gray-700 fs-7" title="' + InvoiceUtils.escapeHtml(data.last_comment) + '">' +
+                    return '<div class="text-gray-700 fs-7 comment-preview" title="' + InvoiceUtils.escapeHtml(data.last_comment) + '">' +
                         InvoiceUtils.escapeHtml(truncated) + '</div>';
                 }
             },
@@ -922,16 +1022,25 @@ var KTPaidInvoicesList = function () {
                 }
             },
             columns: columns,
-            order: [[16, 'desc']], // Sort by paid_at descending (server handles student_unique_id grouping)
+            order: [[16, 'desc']], // Sort by paid_at descending
             lengthMenu: [10, 25, 50, 100],
             pageLength: 10,
             scrollX: true,
+            autoWidth: false,
             drawCallback: function () {
                 KTMenu.createInstances();
             },
             initComplete: function () {
+                var api = this.api();
+
                 // Apply saved column visibility
-                KTColumnSelector.applyInitialVisibility(tableId, 'paid', this.api());
+                KTColumnSelector.applyInitialVisibility(tableId, 'paid', api);
+
+                // Adjust columns
+                api.columns.adjust();
+
+                // Show table and hide skeleton
+                InvoiceUtils.showTable(tableId);
             }
         });
 
@@ -1063,15 +1172,23 @@ var KTPaidInvoicesList = function () {
     };
 }();
 
-// Export Manager
+// Export Manager (Admin only)
 var KTExportManager = function () {
+    // Check if user is admin
+    var checkAdminAccess = function () {
+        return typeof isUserAdmin !== 'undefined' && isUserAdmin === true;
+    };
+
     var fetchExportData = function (tableId, type, callback) {
+        if (!checkAdminAccess()) {
+            toastr.error('Only admin can export data');
+            callback([]);
+            return;
+        }
+
         var table = document.getElementById(tableId);
         var branchId = table ? table.getAttribute('data-branch-id') : null;
-
-        var filters = type === 'due'
-            ? InvoiceManager.filters.due[tableId]
-            : InvoiceManager.filters.paid[tableId];
+        var filters = type === 'due' ? InvoiceManager.filters.due[tableId] : InvoiceManager.filters.paid[tableId];
         filters = filters || {};
 
         var params = {
@@ -1085,10 +1202,7 @@ var KTExportManager = function () {
         if (filters.status) params.status = filters.status;
         if (filters.billing_month) params.billing_month = filters.billing_month;
 
-        var dt = type === 'due'
-            ? InvoiceManager.tables.due[tableId]
-            : InvoiceManager.tables.paid[tableId];
-
+        var dt = type === 'due' ? InvoiceManager.tables.due[tableId] : InvoiceManager.tables.paid[tableId];
         if (dt) {
             var searchValue = dt.search();
             if (searchValue) params.search = searchValue;
@@ -1133,10 +1247,14 @@ var KTExportManager = function () {
                         value = row.mobile || '';
                         break;
                     case 'guardian_1':
-                        value = row.guardian_1 || '';
+                        value = row.guardian_1_name || '';
+                        if (row.guardian_1_relationship) value += ' (' + row.guardian_1_relationship + ')';
+                        if (row.guardian_1_mobile) value += ' - ' + row.guardian_1_mobile;
                         break;
                     case 'guardian_2':
-                        value = row.guardian_2 || '';
+                        value = row.guardian_2_name || '';
+                        if (row.guardian_2_relationship) value += ' (' + row.guardian_2_relationship + ')';
+                        if (row.guardian_2_mobile) value += ' - ' + row.guardian_2_mobile;
                         break;
                     case 'class_name':
                         value = row.class_name || '';
@@ -1170,12 +1288,14 @@ var KTExportManager = function () {
                         break;
                     case 'last_comment':
                         value = row.last_comment || '';
+                        if (row.last_comment_by) value += ' [By: ' + row.last_comment_by + ']';
+                        if (row.last_comment_at) value += ' [At: ' + row.last_comment_at + ']';
                         break;
                     case 'created_at':
                         value = (row.created_at || '') + ' ' + (row.created_at_time || '');
                         break;
                     case 'paid_at':
-                        value = (row.paid_at || '') + ' ' + (row.paid_at_time || '');
+                        value = (row.paid_at || row.updated_at || '') + ' ' + (row.paid_at_time || row.updated_at_time || '');
                         break;
                     default:
                         value = row[col.key] || '';
@@ -1184,18 +1304,17 @@ var KTExportManager = function () {
                 exportRow[label] = value;
             });
 
-            // Always add Student ID after Student Name if student_name is visible
-            var hasStudentName = visibleColumns.some(function (col) { return col.key === 'student_name'; });
-            if (hasStudentName && row.student_unique_id) {
-                // Reorder to put Student ID after Student Name
-                var reorderedRow = {};
+            // Always add Student ID after Student Name if not already there
+            if (!exportRow['Student ID'] && row.student_unique_id) {
+                // Insert after Student column
+                var newRow = {};
                 Object.keys(exportRow).forEach(function (key) {
-                    reorderedRow[key] = exportRow[key];
+                    newRow[key] = exportRow[key];
                     if (key === 'Student') {
-                        reorderedRow['Student ID'] = row.student_unique_id || '';
+                        newRow['Student ID'] = row.student_unique_id || '';
                     }
                 });
-                return reorderedRow;
+                return newRow;
             }
 
             return exportRow;
@@ -1241,13 +1360,11 @@ var KTExportManager = function () {
             return { wch: Math.max(key.length, 15) };
         });
         ws['!cols'] = colWidths;
-
         ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: Object.keys(data[0]).length - 1 } }];
 
         var wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Invoices');
         XLSX.writeFile(wb, fileName + '.xlsx');
-
         toastr.success('Excel file downloaded');
     };
 
@@ -1268,7 +1385,6 @@ var KTExportManager = function () {
         link.href = URL.createObjectURL(blob);
         link.download = fileName + '.csv';
         link.click();
-
         toastr.success('CSV file downloaded');
     };
 
@@ -1286,6 +1402,7 @@ var KTExportManager = function () {
 
         doc.setFontSize(16);
         doc.text(title, 14, 15);
+
         doc.setFontSize(10);
         doc.text('Generated: ' + InvoiceUtils.formatDate(), 14, 22);
 
@@ -1303,12 +1420,10 @@ var KTExportManager = function () {
             margin: { left: 10, right: 10 },
             didDrawPage: function () {
                 doc.setFontSize(8);
-                doc.text(
-                    'Page ' + doc.internal.getNumberOfPages(),
+                doc.text('Page ' + doc.internal.getNumberOfPages(),
                     doc.internal.pageSize.width / 2,
                     doc.internal.pageSize.height - 10,
-                    { align: 'center' }
-                );
+                    { align: 'center' });
             }
         });
 
@@ -1319,6 +1434,11 @@ var KTExportManager = function () {
     var handleExportButtons = function () {
         $(document).on('click', '.export-btn', function (e) {
             e.preventDefault();
+
+            if (!checkAdminAccess()) {
+                toastr.error('Only admin can export data');
+                return;
+            }
 
             var tableId = this.getAttribute('data-table-id');
             var type = this.getAttribute('data-type');
