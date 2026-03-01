@@ -1,9 +1,59 @@
 /**
  * Students Index Page Styles
  * =============================================================================
- * This file contains all styles specific to the students listing page
- * including DataTable styling, column selector, and tab interactions.
  */
+
+/* ============================================================================
+   Skeleton Preloader
+   ============================================================================ */
+.students-skeleton {
+    padding: 0;
+}
+
+.skeleton-header {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 2px solid #eff2f5;
+    margin-bottom: 4px;
+}
+
+.skeleton-header .skeleton-bar {
+    height: 14px;
+    background: #e4e6ef;
+    border-radius: 4px;
+}
+
+.skeleton-row {
+    display: flex;
+    gap: 12px;
+    padding: 16px 0;
+    border-bottom: 1px dashed #eff2f5;
+}
+
+.skeleton-row .skeleton-cell {
+    height: 12px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #f1f3f8 25%, #e8ebf1 50%, #f1f3f8 75%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Table wrapper transition */
+.students-table-wrapper {
+    transition: opacity 0.3s ease;
+}
+
+.students-table-wrapper.visible {
+    opacity: 1 !important;
+    height: auto !important;
+    overflow: visible !important;
+}
 
 /* ============================================================================
    Loading Animation for Branch Count Badges
@@ -21,14 +71,11 @@
 /* ============================================================================
    DataTable Specific Styles
    ============================================================================ */
-
-/* Ensure proper alignment for all cells */
 .students-datatable td,
 .students-datatable th {
     vertical-align: middle !important;
 }
 
-/* Horizontal scroll for tables with many columns */
 .students-datatable {
     width: 100% !important;
 }
@@ -36,69 +83,61 @@
 /* ============================================================================
    Column Selector Styles
    ============================================================================ */
-
-/* Column selector dropdown */
-#kt_students_column_selector {
+#column_selector_menu {
     min-width: 280px;
 }
 
-/* Scrollable checkbox list */
-.column-checkbox-list {
+#column_checkbox_list {
     max-height: 350px;
     overflow-y: auto;
 }
 
-/* Custom scrollbar for column list */
-.column-checkbox-list::-webkit-scrollbar {
+#column_checkbox_list::-webkit-scrollbar {
     width: 6px;
 }
 
-.column-checkbox-list::-webkit-scrollbar-track {
+#column_checkbox_list::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 3px;
 }
 
-.column-checkbox-list::-webkit-scrollbar-thumb {
+#column_checkbox_list::-webkit-scrollbar-thumb {
     background: #c1c1c1;
     border-radius: 3px;
 }
 
-.column-checkbox-list::-webkit-scrollbar-thumb:hover {
+#column_checkbox_list::-webkit-scrollbar-thumb:hover {
     background: #a1a1a1;
 }
 
-/* Column checkbox styling */
-.column-checkbox-list .form-check {
+#column_checkbox_list .form-check {
     padding: 8px 0;
     border-bottom: 1px solid #f1f1f1;
 }
 
-.column-checkbox-list .form-check:last-child {
+#column_checkbox_list .form-check:last-child {
     border-bottom: none;
 }
 
-.column-checkbox-list .form-check-label {
+#column_checkbox_list .form-check-label {
     cursor: pointer;
     user-select: none;
 }
 
-.column-checkbox-list .form-check-input:disabled + .form-check-label {
+#column_checkbox_list .form-check-input:disabled + .form-check-label {
     opacity: 0.7;
     cursor: not-allowed;
 }
 
-/* Reset button rotation animation */
-.column-reset-btn .rotating {
+/* Reset button rotation */
+.column-reset-btn .rotating,
+#column_reset_btn .rotating {
     animation: rotate360 0.5s ease-in-out;
 }
 
 @keyframes rotate360 {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 /* ============================================================================
@@ -140,14 +179,6 @@
 }
 
 /* ============================================================================
-   Guardian & Sibling Column Styles
-   ============================================================================ */
-.students-datatable td small.text-muted {
-    display: block;
-    margin-top: 2px;
-}
-
-/* ============================================================================
    Status Badge Styles
    ============================================================================ */
 .badge-light-success {
@@ -168,11 +199,11 @@
         font-size: 0.875rem;
     }
 
-    .column-checkbox-list {
+    #column_checkbox_list {
         max-height: 250px;
     }
 
-    #kt_students_column_selector {
+    #column_selector_menu {
         min-width: 250px;
     }
 }

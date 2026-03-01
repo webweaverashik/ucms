@@ -30,6 +30,8 @@ Route::prefix('students')->name('students.')->group(function () {
     Route::get('branch-counts', [StudentDataController::class, 'getBranchCounts'])->name('branch-counts');
     Route::get('data', [StudentDataController::class, 'getStudentsData'])->name('data');
     Route::get('export', [StudentDataController::class, 'exportStudentsData'])->name('export');
+    Route::get('column-settings', [StudentDataController::class, 'getColumnSettings'])->name('column-settings.get');
+    Route::post('column-settings', [StudentDataController::class, 'saveColumnSettings'])->name('column-settings.save');
 });
 
 // =========================================================================
@@ -80,7 +82,6 @@ Route::prefix('students')->name('students.transfer.')->group(function () {
     Route::get('{student}/available-branches', [StudentTransferController::class, 'availableBranches'])->name('availableBranches');
     Route::post('transfer/store', [StudentTransferController::class, 'store'])->name('store');
 });
-
 Route::get('branches/{branch}/batches', [StudentTransferController::class, 'batchesByBranch'])->name('students.transfer.batchesByBranch');
 
 // =========================================================================

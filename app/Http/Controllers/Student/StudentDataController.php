@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\ColumnSetting;
 use App\Models\Student\Student;
 use App\Services\StudentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class StudentDataController extends Controller
 {
@@ -20,18 +22,15 @@ class StudentDataController extends Controller
 
     /**
      * Get student counts for all branches (for admin tabs)
-     * This endpoint is called on page load to show counts without loading full data
      */
     public function getBranchCounts(): JsonResponse
     {
         $user = auth()->user();
 
-        // Only admin can access this endpoint
         if (! $user->hasRole('admin')) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        // Get counts grouped by branch - uses same query logic as main listing
         $counts = Student::query()
             ->select('students.branch_id', DB::raw('COUNT(students.id) as count'))
             ->join('class_names', function ($join) {
@@ -49,118 +48,6 @@ class StudentDataController extends Controller
     }
 
     /**
-     * Helper method to extract guardian data from student
-     */
-    private function extractGuardianData($student): array
-    {
-        $guardians = $student->guardians ?? collect();
-        $guardian1 = $guardians->first();
-        $guardian2 = $guardians->skip(1)->first();
-
-        return [
-            'guardian_1_name' => $guardian1?->name ?? '',
-            'guardian_1_mobile' => $guardian1?->mobile_number ?? '',
-            'guardian_1_relationship' => $guardian1?->relationship ?? '',
-            'guardian_2_name' => $guardian2?->name ?? '',
-            'guardian_2_mobile' => $guardian2?->mobile_number ?? '',
-            'guardian_2_relationship' => $guardian2?->relationship ?? '',
-        ];
-    }
-
-    /**
-     * Helper method to extract mobile numbers from student
-     */
-    private function extractMobileNumbers($student): array
-    {
-        $mobileNumbers = $student->mobileNumbers ?? collect();
-
-        return [
-            'mobile_home' => $mobileNumbers->where('number_type', 'home')->first()?->mobile_number ?? '-',
-            'mobile_sms' => $mobileNumbers->where('number_type', 'sms')->first()?->mobile_number ?? '-',
-            'mobile_whatsapp' => $mobileNumbers->where('number_type', 'whatsapp')->first()?->mobile_number ?? '-',
-        ];
-    }
-
-    /**
-     * Helper method to extract sibling data from student
-     */
-    private function extractSiblingData($student): array
-    {
-        $siblings = $student->siblings ?? collect();
-        $sibling1 = $siblings->first();
-        $sibling2 = $siblings->skip(1)->first();
-
-        return [
-            'sibling_1_name' => $sibling1?->name ?? '',
-            'sibling_1_relationship' => $sibling1?->relationship ?? '',
-            'sibling_1_class' => $sibling1?->class ?? '',
-            'sibling_1_institution' => $sibling1?->institution_name ?? '',
-            'sibling_2_name' => $sibling2?->name ?? '',
-            'sibling_2_relationship' => $sibling2?->relationship ?? '',
-            'sibling_2_class' => $sibling2?->class ?? '',
-            'sibling_2_institution' => $sibling2?->institution_name ?? '',
-        ];
-    }
-
-    /**
-     * Build formatted guardian display HTML
-     */
-    private function buildGuardianHtml(string $name, string $relationship, string $mobile): string
-    {
-        if (empty($name)) {
-            return '<span class="text-muted">-</span>';
-        }
-
-        $html = '<div class="d-flex flex-column">';
-        $html .= '<span class="fw-bold">' . e($name) . '</span>';
-
-        if ($relationship) {
-            $html .= '<span class="text-muted fs-7">' . ucfirst($relationship) . '</span>';
-        }
-
-        if ($mobile) {
-            $html .= '<span class="text-muted fs-7">' . e($mobile) . '</span>';
-        }
-
-        $html .= '</div>';
-
-        return $html;
-    }
-
-    /**
-     * Build formatted sibling display HTML
-     */
-    private function buildSiblingHtml(string $name, string $relationship, string $class, string $institution): string
-    {
-        if (empty($name)) {
-            return '<span class="text-muted">-</span>';
-        }
-
-        $html = '<div class="d-flex flex-column">';
-        $html .= '<span class="fw-bold">' . e($name) . '</span>';
-
-        $details = [];
-        if ($relationship) {
-            $details[] = ucfirst($relationship);
-        }
-        if ($class) {
-            $details[] = 'Class: ' . $class;
-        }
-
-        if (! empty($details)) {
-            $html .= '<span class="text-muted fs-7">' . implode(' | ', $details) . '</span>';
-        }
-
-        if ($institution) {
-            $html .= '<span class="text-gray-600 fs-8">' . e($institution) . '</span>';
-        }
-
-        $html .= '</div>';
-
-        return $html;
-    }
-
-    /**
      * Get students data for DataTable AJAX
      */
     public function getStudentsData(Request $request): JsonResponse
@@ -169,7 +56,6 @@ class StudentDataController extends Controller
         $branchId = $user->branch_id;
         $isAdmin = $user->hasRole('admin');
 
-        // Get DataTable parameters
         $draw = $request->input('draw', 1);
         $start = $request->input('start', 0);
         $length = $request->input('length', 10);
@@ -188,325 +74,18 @@ class StudentDataController extends Controller
         $filterClassId = $request->input('class_id');
         $filterInstitution = $request->input('institution');
 
-        // Column mapping for ordering (19 columns)
+        // Column mapping
         $columns = [
             0 => 'students.id',
-            1 => 'students.name',           // Student (combined)
-            2 => 'students.class_id',       // Class
-            4 => 'students.batch_id',       // Batch
-            5 => 'students.institution_id', // Institution
-            13 => 'tuition_fee',            // Tuition Fee
-            17 => 'students.created_at',    // Admission Date
+            1 => 'students.name',
+            2 => 'students.class_id',
+            4 => 'students.batch_id',
+            5 => 'students.institution_id',
+            13 => 'tuition_fee',
         ];
-
         $orderColumn = $columns[$orderColumnIndex] ?? 'students.updated_at';
 
-        // Determine effective branch filter
-        $effectiveBranchId = null;
-        if ($isAdmin && $filterBranchId) {
-            $effectiveBranchId = $filterBranchId;
-        } elseif (! $isAdmin && $branchId != 0) {
-            $effectiveBranchId = $branchId;
-        }
-
-        // Build base query with JOIN instead of whereHas for better performance
-        $query = Student::query()
-            ->select('students.*')
-            ->join('class_names', function ($join) {
-                $join->on('students.class_id', '=', 'class_names.id')
-                    ->where('class_names.is_active', '=', true);
-            })
-            ->whereNotNull('students.student_activation_id');
-
-        // Apply branch filter early
-        if ($effectiveBranchId) {
-            $query->where('students.branch_id', $effectiveBranchId);
-        }
-
-        // Gender filter
-        if ($filterGender) {
-            $query->where('students.gender', $filterGender);
-        }
-
-        // Status filter - use JOIN instead of whereHas
-        if ($filterStatus) {
-            $query->join('student_activations', function ($join) use ($filterStatus) {
-                $join->on('students.student_activation_id', '=', 'student_activations.id')
-                    ->where('student_activations.active_status', '=', $filterStatus);
-            });
-        }
-
-        // Payment filters - use JOIN instead of whereHas
-        if ($filterPaymentType || $filterDueDate) {
-            $query->join('payments_info', 'students.id', '=', 'payments_info.student_id');
-
-            if ($filterPaymentType) {
-                $query->where('payments_info.payment_style', $filterPaymentType);
-            }
-
-            if ($filterDueDate) {
-                $query->where('payments_info.due_date', '<=', $filterDueDate);
-            }
-        }
-
-        // Batch filter
-        if ($filterBatchId) {
-            $query->where('students.batch_id', $filterBatchId);
-        }
-
-        // Academic group filter
-        if ($filterGroup) {
-            $query->where('students.academic_group', $filterGroup);
-        }
-
-        // Class filter
-        if ($filterClassId) {
-            $query->where('students.class_id', $filterClassId);
-        }
-
-        // Institution filter - use JOIN instead of whereHas
-        if ($filterInstitution) {
-            $query->join('institutions', 'students.institution_id', '=', 'institutions.id')
-                ->where('institutions.name', 'like', "%{$filterInstitution}%");
-        }
-
-        // Global search - optimized with direct column searches where possible
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('students.name', 'like', "%{$search}%")
-                    ->orWhere('students.student_unique_id', 'like', "%{$search}%")
-                    ->orWhere('class_names.name', 'like', "%{$search}%")
-                    ->orWhereExists(function ($subquery) use ($search) {
-                        $subquery
-                            ->selectRaw('1')
-                            ->from('batches')
-                            ->whereColumn('batches.id', 'students.batch_id')
-                            ->where('batches.name', 'like', "%{$search}%");
-                    })
-                    ->orWhereExists(function ($subquery) use ($search) {
-                        $subquery
-                            ->selectRaw('1')
-                            ->from('institutions')
-                            ->whereColumn('institutions.id', 'students.institution_id')
-                            ->where('institutions.name', 'like', "%{$search}%");
-                    })
-                    ->orWhereExists(function ($subquery) use ($search) {
-                        $subquery
-                            ->selectRaw('1')
-                            ->from('mobile_numbers')
-                            ->whereColumn('mobile_numbers.student_id', 'students.id')
-                            ->where('mobile_numbers.mobile_number', 'like', "%{$search}%");
-                    })
-                    ->orWhereExists(function ($subquery) use ($search) {
-                        $subquery
-                            ->selectRaw('1')
-                            ->from('guardians')
-                            ->whereColumn('guardians.student_id', 'students.id')
-                            ->where(function ($gq) use ($search) {
-                                $gq->where('guardians.name', 'like', "%{$search}%")
-                                    ->orWhere('guardians.mobile_number', 'like', "%{$search}%");
-                            });
-                    });
-            });
-        }
-
-        // Get total count for this branch (cached calculation)
-        $totalQuery = Student::query()
-            ->join('class_names', function ($join) {
-                $join->on('students.class_id', '=', 'class_names.id')
-                    ->where('class_names.is_active', '=', true);
-            })
-            ->whereNotNull('students.student_activation_id');
-
-        if ($effectiveBranchId) {
-            $totalQuery->where('students.branch_id', $effectiveBranchId);
-        }
-
-        $totalRecords = $totalQuery->count();
-
-        // Get filtered count
-        $filteredRecords = $query->count('students.id');
-
-        // Apply ordering
-        if ($orderColumn === 'students.updated_at') {
-            $query->latest('students.updated_at');
-        } else {
-            $query->orderBy($orderColumn, $orderDir);
-        }
-
-        // Apply pagination
-        if ($length > 0) {
-            $query->skip($start)->take($length);
-        }
-
-        // Eager load relationships for the final result set only
-        $students = $query->with([
-            'class:id,name,class_numeral',
-            'branch:id,branch_name,branch_prefix',
-            'batch:id,name',
-            'institution:id,name',
-            'studentActivation:id,active_status',
-            'mobileNumbers:id,mobile_number,number_type,student_id',
-            'guardians:id,name,mobile_number,relationship,student_id',
-            'siblings:id,name,relationship,class,institution_name,student_id',
-            'payments:id,payment_style,due_date,tuition_fee,student_id',
-            'createdBy:id,name',
-        ])->get();
-
-        // Format data for DataTable
-        $data = [];
-        $counter = $start + 1;
-
-        foreach ($students as $student) {
-            $isActive = optional($student->studentActivation)->active_status === 'active';
-
-            // Extract mobile numbers
-            $mobileData = $this->extractMobileNumbers($student);
-
-            // Extract guardian data
-            $guardianData = $this->extractGuardianData($student);
-
-            // Extract sibling data
-            $siblingData = $this->extractSiblingData($student);
-
-            // Payment info
-            $tuitionFee = optional($student->payments)->tuition_fee ?? '';
-            $paymentInfo = $this->studentService->getPaymentInfo($student->payments);
-
-            // Academic group badge
-            $groupBadge = $this->studentService->buildGroupBadge($student->academic_group);
-
-            // Activation status badge
-            $statusBadge = $isActive
-                ? '<span class="badge badge-light-success">Active</span>'
-                : '<span class="badge badge-light-danger">Inactive</span>';
-
-            // Build actions dropdown
-            $actions = $this->buildActionsDropdown($student, $isActive);
-
-            // Build guardian HTML
-            $guardian1Html = $this->buildGuardianHtml(
-                $guardianData['guardian_1_name'],
-                $guardianData['guardian_1_relationship'],
-                $guardianData['guardian_1_mobile']
-            );
-
-            $guardian2Html = $this->buildGuardianHtml(
-                $guardianData['guardian_2_name'],
-                $guardianData['guardian_2_relationship'],
-                $guardianData['guardian_2_mobile']
-            );
-
-            // Build sibling HTML
-            $sibling1Html = $this->buildSiblingHtml(
-                $siblingData['sibling_1_name'],
-                $siblingData['sibling_1_relationship'],
-                $siblingData['sibling_1_class'],
-                $siblingData['sibling_1_institution']
-            );
-
-            $sibling2Html = $this->buildSiblingHtml(
-                $siblingData['sibling_2_name'],
-                $siblingData['sibling_2_relationship'],
-                $siblingData['sibling_2_class'],
-                $siblingData['sibling_2_institution']
-            );
-
-            // Admission date and admitted by
-            $admissionDate = $student->created_at ? $student->created_at->format('d-m-Y') : '-';
-            $admissionDateTime = $student->created_at ? $student->created_at->format('h:i A') : '';
-            $admittedBy = optional($student->createdBy)->name ?? '-';
-
-            $data[] = [
-                'DT_RowId' => 'row_' . $student->id,
-
-                // Basic info
-                'counter' => $counter++,
-                'student_id' => $student->id,
-                'student_name' => $student->name,
-                'student_unique_id' => $student->student_unique_id,
-
-                // Academic info
-                'class_id' => $student->class_id,
-                'class_name' => optional($student->class)->name ?? '-',
-                'academic_group' => $student->academic_group,
-                'group_badge' => $groupBadge,
-                'batch_name' => optional($student->batch)->name ?? '-',
-                'institution_name' => optional($student->institution)->name ?? '-',
-
-                // Mobile numbers
-                'mobile_home' => $mobileData['mobile_home'],
-                'mobile_sms' => $mobileData['mobile_sms'],
-                'mobile_whatsapp' => $mobileData['mobile_whatsapp'],
-
-                // Guardian info (for display)
-                'guardian_1' => $guardian1Html,
-                'guardian_2' => $guardian2Html,
-
-                // Guardian info (raw data for export)
-                'guardian_1_name' => $guardianData['guardian_1_name'],
-                'guardian_1_mobile' => $guardianData['guardian_1_mobile'],
-                'guardian_1_relationship' => $guardianData['guardian_1_relationship'],
-                'guardian_2_name' => $guardianData['guardian_2_name'],
-                'guardian_2_mobile' => $guardianData['guardian_2_mobile'],
-                'guardian_2_relationship' => $guardianData['guardian_2_relationship'],
-
-                // Sibling info (for display)
-                'sibling_1' => $sibling1Html,
-                'sibling_2' => $sibling2Html,
-
-                // Sibling info (raw data for export)
-                'sibling_1_name' => $siblingData['sibling_1_name'],
-                'sibling_1_relationship' => $siblingData['sibling_1_relationship'],
-                'sibling_1_class' => $siblingData['sibling_1_class'],
-                'sibling_1_institution' => $siblingData['sibling_1_institution'],
-                'sibling_2_name' => $siblingData['sibling_2_name'],
-                'sibling_2_relationship' => $siblingData['sibling_2_relationship'],
-                'sibling_2_class' => $siblingData['sibling_2_class'],
-                'sibling_2_institution' => $siblingData['sibling_2_institution'],
-
-                // Payment info
-                'tuition_fee' => $tuitionFee,
-                'payment_info' => $paymentInfo,
-
-                // Status
-                'is_active' => $isActive,
-                'activation_status' => $isActive ? 'Active' : 'Inactive',
-                'status_badge' => $statusBadge,
-
-                // Admission info
-                'admission_date' => $admissionDate,
-                'admission_date_time' => $admissionDateTime,
-                'admitted_by' => $admittedBy,
-
-                // Actions
-                'actions' => $actions,
-            ];
-        }
-
-        return response()->json([
-            'draw' => intval($draw),
-            'recordsTotal' => $totalRecords,
-            'recordsFiltered' => $filteredRecords,
-            'data' => $data,
-        ]);
-    }
-
-    /**
-     * Export students data - bypasses pagination
-     * Similar to PaymentInvoiceController@exportInvoicesAjax
-     */
-    public function exportStudentsData(Request $request): JsonResponse
-    {
-        $user = auth()->user();
-        $branchId = $user->branch_id;
-        $isAdmin = $user->hasRole('admin');
-
-        // Custom filters
-        $filterBranchId = $request->input('branch_id');
-        $search = $request->input('search', '');
-
-        // Determine effective branch filter
+        // Effective branch filter
         $effectiveBranchId = null;
         if ($isAdmin && $filterBranchId) {
             $effectiveBranchId = $filterBranchId;
@@ -523,12 +102,229 @@ class StudentDataController extends Controller
             })
             ->whereNotNull('students.student_activation_id');
 
-        // Apply branch filter
         if ($effectiveBranchId) {
             $query->where('students.branch_id', $effectiveBranchId);
         }
 
-        // Apply filters from request
+        // Apply filters
+        if ($filterGender) {
+            $query->where('students.gender', $filterGender);
+        }
+
+        if ($filterStatus) {
+            $query->join('student_activations', function ($join) use ($filterStatus) {
+                $join->on('students.student_activation_id', '=', 'student_activations.id')
+                    ->where('student_activations.active_status', '=', $filterStatus);
+            });
+        }
+
+        if ($filterPaymentType || $filterDueDate) {
+            $query->join('payments_info', 'students.id', '=', 'payments_info.student_id');
+            if ($filterPaymentType) {
+                $query->where('payments_info.payment_style', $filterPaymentType);
+            }
+            if ($filterDueDate) {
+                $query->where('payments_info.due_date', '<=', $filterDueDate);
+            }
+        }
+
+        if ($filterBatchId) {
+            $query->where('students.batch_id', $filterBatchId);
+        }
+
+        if ($filterGroup) {
+            $query->where('students.academic_group', $filterGroup);
+        }
+
+        if ($filterClassId) {
+            $query->where('students.class_id', $filterClassId);
+        }
+
+        if ($filterInstitution) {
+            $query->join('institutions', 'students.institution_id', '=', 'institutions.id')
+                ->where('institutions.name', 'like', "%{$filterInstitution}%");
+        }
+
+        // Global search
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('students.name', 'like', "%{$search}%")
+                    ->orWhere('students.student_unique_id', 'like', "%{$search}%")
+                    ->orWhere('class_names.name', 'like', "%{$search}%")
+                    ->orWhereExists(function ($subquery) use ($search) {
+                        $subquery->selectRaw('1')
+                            ->from('batches')
+                            ->whereColumn('batches.id', 'students.batch_id')
+                            ->where('batches.name', 'like', "%{$search}%");
+                    })
+                    ->orWhereExists(function ($subquery) use ($search) {
+                        $subquery->selectRaw('1')
+                            ->from('institutions')
+                            ->whereColumn('institutions.id', 'students.institution_id')
+                            ->where('institutions.name', 'like', "%{$search}%");
+                    })
+                    ->orWhereExists(function ($subquery) use ($search) {
+                        $subquery->selectRaw('1')
+                            ->from('mobile_numbers')
+                            ->whereColumn('mobile_numbers.student_id', 'students.id')
+                            ->where('mobile_numbers.mobile_number', 'like', "%{$search}%");
+                    })
+                    ->orWhereExists(function ($subquery) use ($search) {
+                        $subquery->selectRaw('1')
+                            ->from('guardians')
+                            ->whereColumn('guardians.student_id', 'students.id')
+                            ->where(function ($gq) use ($search) {
+                                $gq->where('guardians.name', 'like', "%{$search}%")
+                                    ->orWhere('guardians.mobile_number', 'like', "%{$search}%");
+                            });
+                    });
+            });
+        }
+
+        // Total count
+        $totalQuery = Student::query()
+            ->join('class_names', function ($join) {
+                $join->on('students.class_id', '=', 'class_names.id')
+                    ->where('class_names.is_active', '=', true);
+            })
+            ->whereNotNull('students.student_activation_id');
+
+        if ($effectiveBranchId) {
+            $totalQuery->where('students.branch_id', $effectiveBranchId);
+        }
+
+        $totalRecords = $totalQuery->count();
+        $filteredRecords = $query->count('students.id');
+
+        // Ordering
+        if ($orderColumn === 'students.updated_at') {
+            $query->latest('students.updated_at');
+        } else {
+            $query->orderBy($orderColumn, $orderDir);
+        }
+
+        // Pagination
+        $query->skip($start)->take($length);
+
+        // Eager load
+        $students = $query->with([
+            'class:id,name,class_numeral',
+            'branch:id,branch_name,branch_prefix',
+            'batch:id,name',
+            'institution:id,name',
+            'studentActivation:id,active_status',
+            'mobileNumbers:id,mobile_number,number_type,student_id',
+            'payments:id,payment_style,due_date,tuition_fee,student_id',
+            'guardians:id,name,mobile_number,relationship,student_id',
+            'siblings:id,name,relationship,class,institution_name,student_id',
+            'createdBy:id,name',
+        ])->get();
+
+        // Format data
+        $data = [];
+        $counter = $start + 1;
+
+        foreach ($students as $student) {
+            $isActive = optional($student->studentActivation)->active_status === 'active';
+            $mobileNumbers = $this->extractMobileNumbers($student);
+            $guardianData = $this->extractGuardianData($student);
+            $siblingData = $this->extractSiblingData($student);
+
+            // Payment info
+            $payment = $student->payments;
+            $paymentStyle = optional($payment)->payment_style;
+            $dueDate = optional($payment)->due_date;
+            $tuitionFee = optional($payment)->tuition_fee ?? '';
+
+            $paymentType = '';
+            if ($paymentStyle && $dueDate) {
+                $paymentType = ucfirst($paymentStyle) . ' - 1/' . $dueDate;
+            }
+
+            // Group badge
+            $groupBadge = $this->studentService->buildGroupBadge($student->academic_group);
+
+            // Actions
+            $actions = $this->buildActionsDropdown($student, $isActive);
+
+            $data[] = [
+                'DT_RowId' => 'row_' . $student->id,
+                'counter' => $counter++,
+                'student_id' => $student->id,
+                'student_name' => $student->name,
+                'student_unique_id' => $student->student_unique_id,
+                'is_active' => $isActive,
+                'class_id' => $student->class_id,
+                'class_name' => optional($student->class)->name ?? '-',
+                'academic_group' => $student->academic_group ?? '-',
+                'group_badge' => $groupBadge,
+                'batch_name' => optional($student->batch)->name ?? '-',
+                'institution_name' => optional($student->institution)->name ?? '-',
+                'mobile_home' => $mobileNumbers['home'],
+                'mobile_sms' => $mobileNumbers['sms'],
+                'mobile_whatsapp' => $mobileNumbers['whatsapp'],
+                'guardian_1_name' => $guardianData['guardian_1_name'],
+                'guardian_1_mobile' => $guardianData['guardian_1_mobile'],
+                'guardian_1_relationship' => $guardianData['guardian_1_relationship'],
+                'guardian_2_name' => $guardianData['guardian_2_name'],
+                'guardian_2_mobile' => $guardianData['guardian_2_mobile'],
+                'guardian_2_relationship' => $guardianData['guardian_2_relationship'],
+                'sibling_1_name' => $siblingData['sibling_1_name'],
+                'sibling_1_relationship' => $siblingData['sibling_1_relationship'],
+                'sibling_1_class' => $siblingData['sibling_1_class'],
+                'sibling_1_institution' => $siblingData['sibling_1_institution'],
+                'sibling_2_name' => $siblingData['sibling_2_name'],
+                'sibling_2_relationship' => $siblingData['sibling_2_relationship'],
+                'sibling_2_class' => $siblingData['sibling_2_class'],
+                'sibling_2_institution' => $siblingData['sibling_2_institution'],
+                'tuition_fee' => $tuitionFee,
+                'payment_type' => $paymentType,
+                'activation_status' => $isActive ? 'active' : 'inactive',
+                'admission_date' => $student->created_at ? $student->created_at->format('d-m-Y') : '-',
+                'admitted_by' => optional($student->createdBy)->name ?? '-',
+                'actions' => $actions,
+            ];
+        }
+
+        return response()->json([
+            'draw' => intval($draw),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $filteredRecords,
+            'data' => $data,
+        ]);
+    }
+
+    /**
+     * Export students data (bypasses pagination)
+     */
+    public function exportStudentsData(Request $request): JsonResponse
+    {
+        $user = auth()->user();
+        $branchId = $user->branch_id;
+        $isAdmin = $user->hasRole('admin');
+
+        $filterBranchId = $request->input('branch_id');
+
+        $effectiveBranchId = null;
+        if ($isAdmin && $filterBranchId) {
+            $effectiveBranchId = $filterBranchId;
+        } elseif (! $isAdmin && $branchId != 0) {
+            $effectiveBranchId = $branchId;
+        }
+
+        $query = Student::query()
+            ->select('students.*')
+            ->join('class_names', function ($join) {
+                $join->on('students.class_id', '=', 'class_names.id')
+                    ->where('class_names.is_active', '=', true);
+            })
+            ->whereNotNull('students.student_activation_id');
+
+        if ($effectiveBranchId) {
+            $query->where('students.branch_id', $effectiveBranchId);
+        }
+
+        // Apply filters
         if ($request->filled('gender')) {
             $query->where('students.gender', $request->input('gender'));
         }
@@ -552,46 +348,39 @@ class StudentDataController extends Controller
             $query->where('students.class_id', $request->input('class_id'));
         }
 
-        // Search
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('students.name', 'like', "%{$search}%")
-                    ->orWhere('students.student_unique_id', 'like', "%{$search}%");
-            });
-        }
+        $query->latest('students.updated_at');
 
-        // Order by student_unique_id DESC
-        $query->orderBy('students.student_unique_id', 'desc');
-
-        // Eager load relationships
         $students = $query->with([
             'class:id,name,class_numeral',
             'batch:id,name',
             'institution:id,name',
             'studentActivation:id,active_status',
             'mobileNumbers:id,mobile_number,number_type,student_id',
+            'payments:id,payment_style,due_date,tuition_fee,student_id',
             'guardians:id,name,mobile_number,relationship,student_id',
             'siblings:id,name,relationship,class,institution_name,student_id',
-            'payments:id,payment_style,due_date,tuition_fee,student_id',
             'createdBy:id,name',
         ])->get();
 
-        // Format data for export
-        $data = $students->map(function ($student, $index) {
-            $isActive = optional($student->studentActivation)->active_status === 'active';
+        $data = [];
 
-            // Extract data
-            $mobileData = $this->extractMobileNumbers($student);
+        foreach ($students as $student) {
+            $isActive = optional($student->studentActivation)->active_status === 'active';
+            $mobileNumbers = $this->extractMobileNumbers($student);
             $guardianData = $this->extractGuardianData($student);
             $siblingData = $this->extractSiblingData($student);
 
             $payment = $student->payments;
-            $paymentType = '-';
-            if ($payment) {
-                $paymentType = ucfirst($payment->payment_style) . ' - 1/' . $payment->due_date;
+            $paymentStyle = optional($payment)->payment_style;
+            $dueDate = optional($payment)->due_date;
+            $tuitionFee = optional($payment)->tuition_fee ?? '';
+
+            $paymentType = '';
+            if ($paymentStyle && $dueDate) {
+                $paymentType = ucfirst($paymentStyle) . ' - 1/' . $dueDate;
             }
 
-            // Build guardian export strings (following PaymentInvoiceController pattern)
+            // Build guardian export strings
             $guardian1Export = '';
             if ($guardianData['guardian_1_name']) {
                 $guardian1Export = $guardianData['guardian_1_name'];
@@ -624,9 +413,6 @@ class StudentDataController extends Controller
                 if ($siblingData['sibling_1_class']) {
                     $sibling1Export .= ' - Class: ' . $siblingData['sibling_1_class'];
                 }
-                if ($siblingData['sibling_1_institution']) {
-                    $sibling1Export .= ' - ' . $siblingData['sibling_1_institution'];
-                }
             }
 
             $sibling2Export = '';
@@ -638,45 +424,179 @@ class StudentDataController extends Controller
                 if ($siblingData['sibling_2_class']) {
                     $sibling2Export .= ' - Class: ' . $siblingData['sibling_2_class'];
                 }
-                if ($siblingData['sibling_2_institution']) {
-                    $sibling2Export .= ' - ' . $siblingData['sibling_2_institution'];
-                }
             }
 
-            // Admission info
-            $admissionDate = $student->created_at ? $student->created_at->format('d-m-Y h:i A') : '-';
-            $admittedBy = optional($student->createdBy)->name ?? '-';
-
-            return [
-                'sl' => $index + 1,
+            $data[] = [
                 'student_name' => $student->name,
                 'student_unique_id' => $student->student_unique_id,
                 'class_name' => optional($student->class)->name ?? '-',
                 'academic_group' => $student->academic_group ?? '-',
                 'batch_name' => optional($student->batch)->name ?? '-',
                 'institution_name' => optional($student->institution)->name ?? '-',
-                'mobile_home' => $mobileData['mobile_home'],
-                'mobile_sms' => $mobileData['mobile_sms'],
-                'mobile_whatsapp' => $mobileData['mobile_whatsapp'],
+                'mobile_home' => $mobileNumbers['home'],
+                'mobile_sms' => $mobileNumbers['sms'],
+                'mobile_whatsapp' => $mobileNumbers['whatsapp'],
                 'guardian_1' => $guardian1Export ?: '-',
                 'guardian_2' => $guardian2Export ?: '-',
                 'sibling_1' => $sibling1Export ?: '-',
                 'sibling_2' => $sibling2Export ?: '-',
-                'tuition_fee' => optional($payment)->tuition_fee ?? '-',
-                'payment_type' => $paymentType,
+                'tuition_fee' => $tuitionFee ?: '-',
+                'payment_type' => $paymentType ?: '-',
                 'activation_status' => $isActive ? 'Active' : 'Inactive',
-                'admission_date' => $admissionDate,
-                'admitted_by' => $admittedBy,
+                'admission_date' => $student->created_at ? $student->created_at->format('d-m-Y') : '-',
+                'admitted_by' => optional($student->createdBy)->name ?? '-',
             ];
-        });
+        }
+
+        return response()->json(['data' => $data]);
+    }
+
+    /**
+     * Get column settings
+     */
+    public function getColumnSettings(): JsonResponse
+    {
+        $settings = ColumnSetting::getForPage('students_index');
+
+        if (! $settings) {
+            // Return default settings
+            $settings = $this->getDefaultColumnSettings();
+        }
 
         return response()->json([
-            'data' => $data,
+            'success' => true,
+            'settings' => $settings,
         ]);
     }
 
     /**
-     * Build actions dropdown HTML for a student
+     * Save column settings
+     */
+    public function saveColumnSettings(Request $request): JsonResponse
+    {
+        $user = auth()->user();
+
+        if (! $user->hasRole('admin')) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $visibility = $request->input('visibility');
+
+        // Handle JSON string
+        if (is_string($visibility)) {
+            $visibility = json_decode($visibility, true);
+        }
+
+        if (! is_array($visibility)) {
+            Log::error('Invalid visibility data', ['data' => $request->all()]);
+            return response()->json(['success' => false, 'message' => 'Invalid data format'], 422);
+        }
+
+        // Clean and validate
+        $cleanSettings = [];
+        for ($i = 0; $i < 19; $i++) {
+            $cleanSettings[$i] = isset($visibility[$i]) ? (bool) $visibility[$i] : true;
+        }
+
+        // Ensure required columns are visible
+        $cleanSettings[0] = true;  // counter
+        $cleanSettings[1] = true;  // student
+        $cleanSettings[18] = true; // actions
+
+        ColumnSetting::saveForPage('students_index', $cleanSettings, $user->id);
+
+        Log::info('Column settings saved', ['settings' => $cleanSettings, 'user' => $user->id]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Column settings saved for all users',
+        ]);
+    }
+
+    /**
+     * Get default column settings
+     */
+    private function getDefaultColumnSettings(): array
+    {
+        return [
+            0 => true,   // counter
+            1 => true,   // student
+            2 => true,   // class
+            3 => true,   // group
+            4 => true,   // batch
+            5 => true,   // institution
+            6 => true,   // mobile_home
+            7 => false,  // mobile_sms
+            8 => false,  // mobile_whatsapp
+            9 => false,  // guardian_1
+            10 => false, // guardian_2
+            11 => false, // sibling_1
+            12 => false, // sibling_2
+            13 => true,  // tuition_fee
+            14 => true,  // payment_type
+            15 => false, // status
+            16 => false, // admission_date
+            17 => false, // admitted_by
+            18 => true,  // actions
+        ];
+    }
+
+    /**
+     * Extract mobile numbers from student
+     */
+    private function extractMobileNumbers($student): array
+    {
+        $mobileNumbers = $student->mobileNumbers ?? collect();
+
+        return [
+            'home' => $mobileNumbers->where('number_type', 'home')->first()?->mobile_number ?? '-',
+            'sms' => $mobileNumbers->where('number_type', 'sms')->first()?->mobile_number ?? '-',
+            'whatsapp' => $mobileNumbers->where('number_type', 'whatsapp')->first()?->mobile_number ?? '-',
+        ];
+    }
+
+    /**
+     * Extract guardian data from student
+     */
+    private function extractGuardianData($student): array
+    {
+        $guardians = $student->guardians ?? collect();
+        $guardian1 = $guardians->first();
+        $guardian2 = $guardians->skip(1)->first();
+
+        return [
+            'guardian_1_name' => $guardian1?->name ?? '',
+            'guardian_1_mobile' => $guardian1?->mobile_number ?? '',
+            'guardian_1_relationship' => $guardian1?->relationship ?? '',
+            'guardian_2_name' => $guardian2?->name ?? '',
+            'guardian_2_mobile' => $guardian2?->mobile_number ?? '',
+            'guardian_2_relationship' => $guardian2?->relationship ?? '',
+        ];
+    }
+
+    /**
+     * Extract sibling data from student
+     */
+    private function extractSiblingData($student): array
+    {
+        $siblings = $student->siblings ?? collect();
+        $sibling1 = $siblings->first();
+        $sibling2 = $siblings->skip(1)->first();
+
+        return [
+            'sibling_1_name' => $sibling1?->name ?? '',
+            'sibling_1_relationship' => $sibling1?->relationship ?? '',
+            'sibling_1_class' => $sibling1?->class ?? '',
+            'sibling_1_institution' => $sibling1?->institution_name ?? '',
+            'sibling_2_name' => $sibling2?->name ?? '',
+            'sibling_2_relationship' => $sibling2?->relationship ?? '',
+            'sibling_2_class' => $sibling2?->class ?? '',
+            'sibling_2_institution' => $sibling2?->institution_name ?? '',
+        ];
+    }
+
+    /**
+     * Build actions dropdown HTML
      */
     private function buildActionsDropdown(Student $student, bool $isActive): string
     {
