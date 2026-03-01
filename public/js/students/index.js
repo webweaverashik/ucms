@@ -360,8 +360,8 @@ var KTStudentsList = function () {
                     var tip = isActive ? '' : 'title="Inactive Student" data-bs-toggle="tooltip" data-bs-placement="top"';
                     var showUrl = routeStudentShow.replace(':id', row.student_id);
                     return '<div class="d-flex flex-column">'
-                         + '<a href="' + showUrl + '" class="' + cls + ' fw-bold mb-1" ' + tip + '>' + escapeHtml(data) + '</a>'
-                         + '<span class="text-primary fs-7">' + escapeHtml(row.student_unique_id) + '</span></div>';
+                         + '<a href="' + showUrl + '" class="' + cls + ' fw-semibold mb-1" ' + tip + '>' + escapeHtml(data) + '</a>'
+                         + '<span class="text-gray-600 fs-7">' + escapeHtml(row.student_unique_id) + '</span></div>';
                 }
             },
             // 2 - class
@@ -410,7 +410,7 @@ var KTStudentsList = function () {
                     if (row.guardian_1_relationship) details.push(capitalize(escapeHtml(row.guardian_1_relationship)));
                     if (row.guardian_1_mobile) details.push(escapeHtml(row.guardian_1_mobile));
                     if (details.length > 0) {
-                        html += '<span class="text-muted fs-7">' + details.join(', ') + '</span>';
+                        html += '<span class="text-gray-600 fs-7">' + details.join(', ') + '</span>';
                     }
                     html += '</div>';
                     return html;
@@ -433,7 +433,7 @@ var KTStudentsList = function () {
                     if (row.guardian_2_relationship) details.push(capitalize(escapeHtml(row.guardian_2_relationship)));
                     if (row.guardian_2_mobile) details.push(escapeHtml(row.guardian_2_mobile));
                     if (details.length > 0) {
-                        html += '<span class="text-muted fs-7">' + details.join(', ') + '</span>';
+                        html += '<span class="text-gray-600 fs-7">' + details.join(', ') + '</span>';
                     }
                     html += '</div>';
                     return html;
@@ -458,7 +458,7 @@ var KTStudentsList = function () {
                     if (row.sibling_1_class) details.push(escapeHtml(row.sibling_1_class));
                     if (row.sibling_1_institution) details.push(escapeHtml(row.sibling_1_institution));
                     if (details.length > 0) {
-                        html += '<span class="text-muted fs-7">' + details.join(', ') + '</span>';
+                        html += '<span class="text-gray-600 fs-7">' + details.join(', ') + '</span>';
                     }
                     html += '</div>';
                     return html;
@@ -483,7 +483,7 @@ var KTStudentsList = function () {
                     if (row.sibling_2_class) details.push(escapeHtml(row.sibling_2_class));
                     if (row.sibling_2_institution) details.push(escapeHtml(row.sibling_2_institution));
                     if (details.length > 0) {
-                        html += '<span class="text-muted fs-7">' + details.join(', ') + '</span>';
+                        html += '<span class="text-gray-600 fs-7">' + details.join(', ') + '</span>';
                     }
                     html += '</div>';
                     return html;
