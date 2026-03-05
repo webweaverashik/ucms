@@ -213,17 +213,152 @@ class ClassNameController extends Controller
             return redirect()->route('classnames.index')->with('warning', 'Class not found.');
         }
 
-        // Get branch-wise student counts for admin tabs
+        // Get branch-wise student counts and receivable amounts for admin tabs
         $branchStudentCounts = [];
+        $branchStats         = [];
+
         if ($isAdmin) {
             foreach ($branches as $branch) {
-                $branchStudentCounts[$branch->id] = $classname->students()
+                $activeStudentIds = $classname->students()
                     ->where('branch_id', $branch->id)
-                    ->count();
+                    ->whereHas('studentActivation', fn($q) => $q->where('active_status', 'active'))
+                    ->pluck('id');
+
+                $inactiveStudentIds = $classname->students()
+                    ->where('branch_id', $branch->id)
+                    ->whereHas('studentActivation', fn($q) => $q->where('active_status', 'inactive'))
+                    ->pluck('id');
+
+                $activeCount   = $activeStudentIds->count();
+                $inactiveCount = $inactiveStudentIds->count();
+
+                // Calculate total receivable for active students in this branch
+                $totalReceivable = $this->calculateTotalReceivable($activeStudentIds);
+
+                $branchStudentCounts[$branch->id] = $activeCount + $inactiveCount;
+                $branchStats[$branch->id]         = [
+                    'active'     => $activeCount,
+                    'inactive'   => $inactiveCount,
+                    'total'      => $activeCount + $inactiveCount,
+                    'receivable' => $totalReceivable,
+                ];
             }
+
+            // Calculate "All Branches" totals
+            $allActiveStudentIds = $classname->students()
+                ->whereHas('studentActivation', fn($q) => $q->where('active_status', 'active'))
+                ->pluck('id');
+
+            $allInactiveCount = $classname->students()
+                ->whereHas('studentActivation', fn($q) => $q->where('active_status', 'inactive'))
+                ->count();
+
+            $branchStats['all'] = [
+                'active'     => $allActiveStudentIds->count(),
+                'inactive'   => $allInactiveCount,
+                'total'      => $allActiveStudentIds->count() + $allInactiveCount,
+                'receivable' => $this->calculateTotalReceivable($allActiveStudentIds),
+            ];
+        } else {
+            // For non-admin, calculate stats for their branch only
+            $activeStudentIds = $classname->students()
+                ->where('branch_id', $branchId)
+                ->whereHas('studentActivation', fn($q) => $q->where('active_status', 'active'))
+                ->pluck('id');
+
+            $inactiveCount = $classname->students()
+                ->where('branch_id', $branchId)
+                ->whereHas('studentActivation', fn($q) => $q->where('active_status', 'inactive'))
+                ->count();
+
+            $branchStats['current'] = [
+                'active'     => $activeStudentIds->count(),
+                'inactive'   => $inactiveCount,
+                'total'      => $activeStudentIds->count() + $inactiveCount,
+                'receivable' => $this->calculateTotalReceivable($activeStudentIds),
+            ];
         }
 
-        return view('classnames.view', compact('classname', 'branches', 'isAdmin', 'branchStudentCounts'));
+        return view('classnames.view', compact('classname', 'branches', 'isAdmin', 'branchStudentCounts', 'branchStats'));
+    }
+
+    /**
+     * Calculate total receivable amount for given student IDs
+     *
+     * Receivable = sum of amount_due where status is 'due' or 'partially_paid'
+     *
+     * @param \Illuminate\Support\Collection|array $studentIds
+     * @return int
+     */
+    private function calculateTotalReceivable($studentIds): int
+    {
+        // Handle both Collection and array
+        if ($studentIds instanceof \Illuminate\Support\Collection) {
+            if ($studentIds->isEmpty()) {
+                return 0;
+            }
+            $studentIds = $studentIds->toArray();
+        }
+
+        if (empty($studentIds)) {
+            return 0;
+        }
+
+        // Get total amount_due from due/partially_paid invoices for these students
+        return (int) \App\Models\Payment\PaymentInvoice::whereIn('student_id', $studentIds)
+            ->whereIn('status', ['due', 'partially_paid'])
+            ->sum('amount_due');
+    }
+
+    /**
+     * Get branch-wise stats via AJAX (for dynamic loading)
+     */
+    public function getBranchStatsAjax(Request $request, ClassName $classname)
+    {
+        if (! auth()->user()->can('classes.view')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No permission to view classes.',
+            ], 403);
+        }
+
+        $user     = auth()->user();
+        $isAdmin  = $user->isAdmin();
+        $branchId = $request->input('branch_id');
+
+        if (! $isAdmin) {
+            $branchId = $user->branch_id;
+        }
+
+        // Get active student IDs for the branch (or all branches if no filter)
+        $activeStudentIdsQuery = $classname->students()
+            ->whereHas('studentActivation', fn($q) => $q->where('active_status', 'active'));
+
+        $inactiveStudentIdsQuery = $classname->students()
+            ->whereHas('studentActivation', fn($q) => $q->where('active_status', 'inactive'));
+
+        if ($branchId && $branchId !== 'all') {
+            $activeStudentIdsQuery->where('branch_id', $branchId);
+            $inactiveStudentIdsQuery->where('branch_id', $branchId);
+        }
+
+        $activeStudentIds = $activeStudentIdsQuery->pluck('id');
+        $activeCount      = $activeStudentIds->count();
+        $inactiveCount    = $inactiveStudentIdsQuery->count();
+
+        // Calculate receivable
+        $totalReceivable = $this->calculateTotalReceivable($activeStudentIds);
+
+        return response()->json([
+            'success' => true,
+            'stats'   => [
+                'active'               => $activeCount,
+                'inactive'             => $inactiveCount,
+                'total'                => $activeCount + $inactiveCount,
+                'receivable'           => $totalReceivable,
+                'receivable_formatted' => number_format($totalReceivable, 2),
+            ],
+        ]);
     }
 
     /**
@@ -441,7 +576,7 @@ class ClassNameController extends Controller
     {
         $badges = [
             'Science'  => 'info',
-            'Commerce' => 'primary',
+            'Commerce' => 'success',
             'Arts'     => 'warning',
         ];
 
@@ -516,7 +651,8 @@ class ClassNameController extends Controller
 
         return '
             <a href="#" class="btn btn-light btn-active-light-primary btn-sm" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
-                Actions <i class="ki-outline ki-down fs-5 m-0"></i>
+                Actions
+                <i class="ki-outline ki-down fs-5 m-0"></i>
             </a>
             <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-175px py-4" data-kt-menu="true">
                 ' . $menuItems . '
@@ -709,24 +845,42 @@ class ClassNameController extends Controller
         $branches = Branch::select('id', 'branch_name', 'branch_prefix')->orderBy('branch_name')->get();
 
         $branchCounts = [];
+
         foreach ($branches as $branch) {
+            $activeStudentIds = $class->students()
+                ->where('branch_id', $branch->id)
+                ->whereHas('studentActivation', fn($q) => $q->where('active_status', 'active'))
+                ->pluck('id');
+
+            $inactiveCount   = $class->inactiveStudents()->where('branch_id', $branch->id)->count();
+            $totalReceivable = $this->calculateTotalReceivable($activeStudentIds);
+
             $branchCounts[$branch->id] = [
-                'name'     => $branch->branch_name,
-                'prefix'   => $branch->branch_prefix,
-                'active'   => $class->activeStudents()->where('branch_id', $branch->id)->count(),
-                'inactive' => $class->inactiveStudents()->where('branch_id', $branch->id)->count(),
-                'total'    => $class->students()->where('branch_id', $branch->id)->count(),
+                'name'                 => $branch->branch_name,
+                'prefix'               => $branch->branch_prefix,
+                'active'               => $activeStudentIds->count(),
+                'inactive'             => $inactiveCount,
+                'total'                => $activeStudentIds->count() + $inactiveCount,
+                'receivable'           => $totalReceivable,
+                'receivable_formatted' => number_format($totalReceivable, 2),
             ];
         }
+
+        // Calculate totals for "All"
+        $allActiveStudentIds = $class->activeStudents()->pluck('students.id');
+        $allInactiveCount    = $class->inactiveStudents()->count();
+        $allReceivable       = $this->calculateTotalReceivable($allActiveStudentIds);
 
         return response()->json([
             'success' => true,
             'data'    => [
                 'class_id' => $class->id,
                 'all'      => [
-                    'active'   => $class->activeStudents()->count(),
-                    'inactive' => $class->inactiveStudents()->count(),
-                    'total'    => $class->students()->count(),
+                    'active'               => $allActiveStudentIds->count(),
+                    'inactive'             => $allInactiveCount,
+                    'total'                => $allActiveStudentIds->count() + $allInactiveCount,
+                    'receivable'           => $allReceivable,
+                    'receivable_formatted' => number_format($allReceivable, 2),
                 ],
                 'branches' => $branchCounts,
             ],
@@ -749,21 +903,30 @@ class ClassNameController extends Controller
         $branchId = $user->branch_id;
         $isAdmin  = $user->isAdmin();
 
-        $activeCount = $classname->activeStudents()
+        $activeStudentIds = $classname->activeStudents()
             ->when(! $isAdmin, fn($q) => $q->where('branch_id', $branchId))
-            ->count();
+            ->pluck('students.id');
+
+        $activeCount = $activeStudentIds->count();
+
         $inactiveCount = $classname->inactiveStudents()
             ->when(! $isAdmin, fn($q) => $q->where('branch_id', $branchId))
             ->count();
+
         $subjectsCount = $classname->subjects()->count();
+
+        // Calculate total receivable for active students
+        $totalReceivable = $this->calculateTotalReceivable($activeStudentIds);
 
         return response()->json([
             'success' => true,
             'stats'   => [
-                'total'    => $activeCount + $inactiveCount,
-                'active'   => $activeCount,
-                'inactive' => $inactiveCount,
-                'subjects' => $subjectsCount,
+                'total'                => $activeCount + $inactiveCount,
+                'active'               => $activeCount,
+                'inactive'             => $inactiveCount,
+                'subjects'             => $subjectsCount,
+                'receivable'           => $totalReceivable,
+                'receivable_formatted' => number_format($totalReceivable, 2),
             ],
         ]);
     }
@@ -836,23 +999,23 @@ class ClassNameController extends Controller
         }
 
         return '
-        <div class="academic-group-section">
-            <div class="group-header d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center">
-                    <i class="ki-outline ' . $groupIcon . ' fs-3 me-2 text-white"></i>
-                    <h5 class="mb-0 fw-bold">' . e($group ?? 'General') . ' Group</h5>
+            <div class="academic-group-section">
+                <div class="group-header d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <i class="ki-outline ' . $groupIcon . ' fs-3 me-2 text-white"></i>
+                        <h5 class="mb-0 fw-bold">' . e($group ?? 'General') . ' Group</h5>
+                    </div>
+                    <span class="subjects-count fs-7 fw-semibold">
+                        <i class="ki-outline ki-book-open fs-6 me-1"></i>
+                        ' . $subjects->count() . ' subjects
+                    </span>
                 </div>
-                <span class="subjects-count fs-7 fw-semibold">
-                    <i class="ki-outline ki-book-open fs-6 me-1"></i>
-                    ' . $subjects->count() . ' subjects
-                </span>
-            </div>
-            <div class="p-4">
-                <div class="row g-4">
-                    ' . $subjectsHtml . '
+                <div class="p-4">
+                    <div class="row g-4">
+                        ' . $subjectsHtml . '
+                    </div>
                 </div>
-            </div>
-        </div>';
+            </div>';
     }
 
     /**
@@ -861,6 +1024,7 @@ class ClassNameController extends Controller
     private function buildSubjectCardHtml($subject, $iconClass, $subjectIcon, $manageSubjects, $classIsActive)
     {
         $actionsHtml = '';
+
         if ($manageSubjects && $classIsActive) {
             $deleteButton = '';
             if ($subject->students_count == 0) {
@@ -891,29 +1055,29 @@ class ClassNameController extends Controller
         }
 
         return '
-        <div class="col-md-6 col-xl-4">
-            <div class="subject-card subject-editable" data-id="' . $subject->id . '">
-                <div class="d-flex align-items-start justify-content-between">
-                    <div class="d-flex align-items-center flex-grow-1 me-2">
-                        <div class="subject-icon ' . $iconClass . ' me-3">
-                            <i class="ki-outline ' . $subjectIcon . '"></i>
+            <div class="col-md-6 col-xl-4">
+                <div class="subject-card subject-editable" data-id="' . $subject->id . '">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div class="d-flex align-items-center flex-grow-1 me-2">
+                            <div class="subject-icon ' . $iconClass . ' me-3">
+                                <i class="ki-outline ' . $subjectIcon . '"></i>
+                            </div>
+                            <div class="flex-grow-1 min-w-0">
+                                <span class="subject-title subject-text fs-6 d-block text-truncate">
+                                    ' . e($subject->name) . '
+                                </span>
+                                <input type="text" class="subject-input form-control form-control-sm d-none fs-6"
+                                    value="' . e($subject->name) . '" />
+                                <span class="text-muted fs-8">
+                                    <i class="ki-outline ki-people fs-8 me-1"></i>
+                                    ' . $subject->students_count . ' students enrolled
+                                </span>
+                            </div>
                         </div>
-                        <div class="flex-grow-1 min-w-0">
-                            <span class="subject-title subject-text fs-6 d-block text-truncate">
-                                ' . e($subject->name) . '
-                            </span>
-                            <input type="text" class="subject-input form-control form-control-sm d-none fs-6"
-                                value="' . e($subject->name) . '" />
-                            <span class="text-muted fs-8">
-                                <i class="ki-outline ki-people fs-8 me-1"></i>
-                                ' . $subject->students_count . ' students enrolled
-                            </span>
-                        </div>
+                        ' . $actionsHtml . '
                     </div>
-                    ' . $actionsHtml . '
                 </div>
-            </div>
-        </div>';
+            </div>';
     }
 
     /**
@@ -930,15 +1094,15 @@ class ClassNameController extends Controller
         }
 
         return '
-        <div class="text-center py-15">
-            <div class="empty-state-icon">
-                <i class="ki-outline ki-book-open"></i>
-            </div>
-            <h4 class="text-gray-800 fw-bold mb-3">No Subjects Added Yet</h4>
-            <p class="text-muted fs-6 mb-6 mw-400px mx-auto">
-                Start by adding your first subject for this class. Subjects help organize the curriculum for students.
-            </p>
-            ' . $addButton . '
-        </div>';
+            <div class="text-center py-15">
+                <div class="empty-state-icon">
+                    <i class="ki-outline ki-book-open"></i>
+                </div>
+                <h4 class="text-gray-800 fw-bold mb-3">No Subjects Added Yet</h4>
+                <p class="text-muted fs-6 mb-6 mw-400px mx-auto">
+                    Start by adding your first subject for this class. Subjects help organize the curriculum for students.
+                </p>
+                ' . $addButton . '
+            </div>';
     }
 }

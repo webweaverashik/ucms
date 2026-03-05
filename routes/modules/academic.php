@@ -27,6 +27,9 @@ Route::prefix('classnames')
         // AJAX endpoint for class stats
         Route::get('{classname}/stats', [ClassNameController::class, 'getStats'])->name('stats');
 
+        // AJAX endpoint for branch-wise stats (NEW)
+        Route::get('{classname}/branch-stats-ajax', [ClassNameController::class, 'getBranchStatsAjax'])->name('branch-stats-ajax');
+
         // AJAX endpoint for subjects
         Route::get('{classname}/subjects-ajax', [ClassNameController::class, 'getSubjectsAjax'])->name('subjects-ajax');
 
@@ -46,6 +49,7 @@ Route::prefix('classnames')
                 Route::delete('{secondaryClass}/students/{student}', [SecondaryClassController::class, 'withdrawStudent'])->name('withdraw');
                 Route::get('{secondaryClass}/check-unpaid/{student}', [SecondaryClassController::class, 'checkUnpaidInvoices'])->name('check-unpaid');
                 Route::get('{secondaryClass}/available-students', [SecondaryClassController::class, 'getAvailableStudents'])->name('available-students');
+
                 Route::post('{secondaryClass}/students/{student}/toggle-activation', [SecondaryClassController::class, 'toggleStudentActivation'])->name('toggle-activation');
             });
     });
@@ -71,6 +75,6 @@ Route::get('institutions/by-type/{type}', [InstitutionController::class, 'getByT
 // Resource controllers
 Route::resources([
     'institutions' => InstitutionController::class,
-    'batches'      => BatchController::class,
-    'subjects'     => SubjectController::class,
+    'batches' => BatchController::class,
+    'subjects' => SubjectController::class,
 ]);

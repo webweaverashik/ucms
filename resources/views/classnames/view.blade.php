@@ -20,7 +20,6 @@
         $canDelete = $user->can('students.delete');
         $manageSubjects = $user->can('subjects.manage');
         $createClass = $user->can('classes.create');
-
         $groupedSubjects = $classname->subjects->groupBy('academic_group');
         $totalSubjects = $classname->subjects->count();
 
@@ -108,11 +107,18 @@
         const routeUpdateSubject = "{{ route('subjects.update', ':id') }}";
         const firstBranchId = {{ $isAdmin && $branches->count() > 0 ? $branches->first()->id : 'null' }};
 
+        // Branch stats route for AJAX refresh
+        const routeBranchStats = "{{ route('classnames.branch-stats-ajax', $classname->id) }}";
+        const routeBranchCounts = "{{ route('classnames.branch-counts', $classname->id) }}";
+
         // Class and permission configuration
         const classIsActive = {{ $classname->isActive() ? 'true' : 'false' }};
         const canDeactivateStudents = {{ $canDeactivate ? 'true' : 'false' }};
         const showCheckboxColumn = {{ $canDeactivate && $classname->isActive() ? 'true' : 'false' }};
         const manageSubjects = {{ $manageSubjects ? 'true' : 'false' }};
+
+        // Branch stats data for JS access
+        const branchStatsData = @json($branchStats ?? []);
     </script>
     <script src="{{ asset('js/classnames/view.js') }}"></script>
     <script>
@@ -124,4 +130,65 @@
         document.getElementById("academic_menu").classList.add("here", "show");
         document.getElementById("class_link").classList.add("active");
     </script>
+    
+    <!--begin::Branch Stats Refresh Script-->
+    <script>
+        // Function to refresh branch statistics via AJAX
+        function refreshBranchStats(branchId = null) {
+            if (typeof routeBranchCounts === 'undefined') return;
+            
+            $.ajax({
+                url: routeBranchCounts,
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success && response.data) {
+                        // Update "All" tab stats
+                        if (response.data.all) {
+                            updateBranchStatsUI('all', response.data.all);
+                            $('#badge-all').text(response.data.all.total);
+                        }
+                        
+                        // Update individual branch stats
+                        if (response.data.branches) {
+                            $.each(response.data.branches, function(branchId, stats) {
+                                updateBranchStatsUI('branch-' + branchId, stats);
+                                $('#badge-' + branchId).text(stats.total);
+                            });
+                        }
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Failed to refresh branch stats:', xhr);
+                }
+            });
+        }
+
+        // Function to update UI elements for a branch
+        function updateBranchStatsUI(prefix, stats) {
+            $('#stats-total-' + prefix).text(stats.total || 0);
+            $('#stats-active-' + prefix).text(stats.active || 0);
+            $('#stats-inactive-' + prefix).text(stats.inactive || 0);
+            
+            // Update receivable with currency symbol
+            const receivableFormatted = stats.receivable_formatted || '0.00';
+            $('#stats-receivable-' + prefix).html(
+                '<span class="fs-7 fw-semibold">৳</span> ' + receivableFormatted
+            );
+        }
+
+        // Refresh stats when student activation changes
+        $(document).on('studentActivationChanged', function() {
+            refreshBranchStats();
+        });
+
+        // Refresh stats when bulk activation changes
+        $(document).on('bulkActivationChanged', function() {
+            refreshBranchStats();
+        });
+
+        // Optional: Auto-refresh every 5 minutes
+        // setInterval(refreshBranchStats, 300000);
+    </script>
+    <!--end::Branch Stats Refresh Script-->
 @endpush

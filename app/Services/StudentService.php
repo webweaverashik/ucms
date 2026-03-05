@@ -297,7 +297,7 @@ class StudentService
             $badgeClass =
             [
                 'Science'  => 'info',
-                'Commerce' => 'primary',
+                'Commerce' => 'success',
                 'Arts'     => 'warning',
             ][$academicGroup] ?? 'secondary';
 

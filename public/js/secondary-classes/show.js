@@ -104,11 +104,11 @@ var initSingleDataTable = function (tableId, branchId, statusType) {
             orderable: true,
             render: function (data) {
                 if (data === 'Science') {
-                    return '<span class="badge badge-light-info">Science</span>';
+                    return '<span class="badge badge-info">Science</span>';
                 } else if (data === 'Commerce') {
-                    return '<span class="badge badge-light-success">Commerce</span>';
+                    return '<span class="badge badge-success">Commerce</span>';
                 } else if (data === 'Arts') {
-                    return '<span class="badge badge-light-warning">Arts</span>';
+                    return '<span class="badge badge-warning">Arts</span>';
                 }
                 return '<span class="text-muted">-</span>';
             }

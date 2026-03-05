@@ -18,8 +18,7 @@
                         <!--begin::More options-->
                         <a href="#" class="btn btn-sm btn-light btn-icon" data-kt-menu-trigger="click"
                             data-kt-menu-placement="bottom-end">
-                            <i class="ki-outline ki-dots-horizontal fs-3">
-                            </i>
+                            <i class="ki-outline ki-dots-horizontal fs-3"> </i>
                         </a>
                         <!--begin::Menu-->
                         <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-6 w-175px py-4"
@@ -28,8 +27,8 @@
                             <div class="menu-item px-3">
                                 <a href="#" data-bs-toggle="modal" data-bs-target="#kt_modal_edit_class"
                                     data-class-id="{{ $classname->id }}" class="menu-link text-hover-primary px-3 "><i
-                                        class="las la-pen fs-3 me-2"></i>
-                                    Edit Class</a>
+                                        class="las la-pen fs-3 me-2"></i> Edit
+                                    Class</a>
                             </div>
                             <!--end::Menu item-->
                         </div>
@@ -41,6 +40,7 @@
             @endcan
         </div>
         <!--end::Card header-->
+
         <!--begin::Card body-->
         <div class="card-body pt-0 fs-6">
             <!--begin::Section-->
@@ -67,50 +67,113 @@
                 <!--end::Details-->
             </div>
             <!--end::Section-->
+
             <!--begin::Seperator-->
             <div class="separator separator-dashed mb-7"></div>
             <!--end::Seperator-->
-            <!--begin::Section-->
-            <div class="mb-7">
-                <!--begin::Title-->
-                <h5 class="mb-4">Statistics</h5>
-                <!--end::Title-->
-                <!--begin::Stats Grid-->
-                <div class="row g-3">
-                    <div class="col-6">
-                        <div class="stats-mini-card">
-                            <div class="stats-value text-primary" id="stats-total-students">
-                                {{ $classname->active_students_count + $classname->inactive_students_count }}</div>
-                            <div class="stats-label">Total Students</div>
+
+            <!--begin::Branch Tabs Section (Admin Only)-->
+            @if ($isAdmin && $branches->count() > 0)
+                <div class="mb-7">
+                    <!--begin::Title-->
+                    <h5 class="mb-4">
+                        <i class="ki-outline ki-bank fs-4 me-2 text-primary"></i>
+                        Branch Statistics
+                    </h5>
+                    <!--end::Title-->
+
+                    <!--begin::Branch Tabs-->
+                    <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-4 fs-7" id="branchStatsTabs"
+                        role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link active py-2 px-3" id="all-branches-tab" data-bs-toggle="tab"
+                                href="#all-branches-pane" role="tab" data-branch-id="all">
+                                <span class="d-flex align-items-center">
+                                    <i class="ki-outline ki-abstract-26 fs-6 me-1"></i>
+                                    All
+                                    <span class="badge badge-light-primary ms-2" id="badge-all">
+                                        {{ $branchStats['all']['total'] ?? 0 }}
+                                    </span>
+                                </span>
+                            </a>
+                        </li>
+                        @foreach ($branches as $branch)
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link py-2 px-3" id="branch-{{ $branch->id }}-tab" data-bs-toggle="tab"
+                                    href="#branch-{{ $branch->id }}-pane" role="tab"
+                                    data-branch-id="{{ $branch->id }}">
+                                    <span class="d-flex align-items-center">
+                                        {{ $branch->branch_prefix ?? $branch->branch_name }}
+                                        <span class="badge badge-light-primary ms-2" id="badge-{{ $branch->id }}">
+                                            {{ $branchStats[$branch->id]['total'] ?? 0 }}
+                                        </span>
+                                    </span>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                    <!--end::Branch Tabs-->
+
+                    <!--begin::Tab Content-->
+                    <div class="tab-content" id="branchStatsTabContent">
+                        <!--begin::All Branches Pane-->
+                        <div class="tab-pane fade show active" id="all-branches-pane" role="tabpanel">
+                            @include('classnames.partials.view.branch-stats-card', [
+                                'stats' => $branchStats['all'] ?? [
+                                    'active' => 0,
+                                    'inactive' => 0,
+                                    'total' => 0,
+                                    'receivable' => 0,
+                                ],
+                                'branchId' => 'all',
+                            ])
                         </div>
+                        <!--end::All Branches Pane-->
+
+                        <!--begin::Individual Branch Panes-->
+                        @foreach ($branches as $branch)
+                            <div class="tab-pane fade" id="branch-{{ $branch->id }}-pane" role="tabpanel">
+                                @include('classnames.partials.view.branch-stats-card', [
+                                    'stats' => $branchStats[$branch->id] ?? [
+                                        'active' => 0,
+                                        'inactive' => 0,
+                                        'total' => 0,
+                                        'receivable' => 0,
+                                    ],
+                                    'branchId' => $branch->id,
+                                    'branchName' => $branch->branch_name,
+                                ])
+                            </div>
+                        @endforeach
+                        <!--end::Individual Branch Panes-->
                     </div>
-                    <div class="col-6">
-                        <div class="stats-mini-card">
-                            <div class="stats-value text-success" id="stats-active-students">
-                                {{ $classname->active_students_count }}</div>
-                            <div class="stats-label">Active Students</div>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="stats-mini-card">
-                            <div class="stats-value text-danger" id="stats-inactive-students">
-                                {{ $classname->inactive_students_count }}</div>
-                            <div class="stats-label">Inactive Students</div>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="stats-mini-card">
-                            <div class="stats-value text-info" id="stats-total-subjects">{{ $totalSubjects }}</div>
-                            <div class="stats-label">Total Subjects</div>
-                        </div>
-                    </div>
+                    <!--end::Tab Content-->
                 </div>
-                <!--end::Stats Grid-->
-            </div>
-            <!--end::Section-->
+            @else
+                <!--begin::Non-Admin Stats Section-->
+                <div class="mb-7">
+                    <!--begin::Title-->
+                    <h5 class="mb-4">Statistics</h5>
+                    <!--end::Title-->
+
+                    @include('classnames.partials.view.branch-stats-card', [
+                        'stats' => $branchStats['current'] ?? [
+                            'active' => $classname->active_students_count,
+                            'inactive' => $classname->inactive_students_count,
+                            'total' => $classname->active_students_count + $classname->inactive_students_count,
+                            'receivable' => 0,
+                        ],
+                        'branchId' => 'current',
+                    ])
+                </div>
+                <!--end::Non-Admin Stats Section-->
+            @endif
+            <!--end::Branch Tabs Section-->
+
             <!--begin::Seperator-->
             <div class="separator separator-dashed mb-7"></div>
             <!--end::Seperator-->
+
             <!--begin::Section-->
             <div class="mb-0">
                 <!--begin::Title-->
