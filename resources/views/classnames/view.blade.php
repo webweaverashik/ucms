@@ -131,64 +131,8 @@
         document.getElementById("class_link").classList.add("active");
     </script>
     
-    <!--begin::Branch Stats Refresh Script-->
-    <script>
-        // Function to refresh branch statistics via AJAX
-        function refreshBranchStats(branchId = null) {
-            if (typeof routeBranchCounts === 'undefined') return;
-            
-            $.ajax({
-                url: routeBranchCounts,
-                type: 'GET',
-                dataType: 'json',
-                success: function(response) {
-                    if (response.success && response.data) {
-                        // Update "All" tab stats
-                        if (response.data.all) {
-                            updateBranchStatsUI('all', response.data.all);
-                            $('#badge-all').text(response.data.all.total);
-                        }
-                        
-                        // Update individual branch stats
-                        if (response.data.branches) {
-                            $.each(response.data.branches, function(branchId, stats) {
-                                updateBranchStatsUI('branch-' + branchId, stats);
-                                $('#badge-' + branchId).text(stats.total);
-                            });
-                        }
-                    }
-                },
-                error: function(xhr) {
-                    console.error('Failed to refresh branch stats:', xhr);
-                }
-            });
-        }
-
-        // Function to update UI elements for a branch
-        function updateBranchStatsUI(prefix, stats) {
-            $('#stats-total-' + prefix).text(stats.total || 0);
-            $('#stats-active-' + prefix).text(stats.active || 0);
-            $('#stats-inactive-' + prefix).text(stats.inactive || 0);
-            
-            // Update receivable with currency symbol
-            const receivableFormatted = stats.receivable_formatted || '0.00';
-            $('#stats-receivable-' + prefix).html(
-                '<span class="fs-7 fw-semibold">৳</span> ' + receivableFormatted
-            );
-        }
-
-        // Refresh stats when student activation changes
-        $(document).on('studentActivationChanged', function() {
-            refreshBranchStats();
-        });
-
-        // Refresh stats when bulk activation changes
-        $(document).on('bulkActivationChanged', function() {
-            refreshBranchStats();
-        });
-
-        // Optional: Auto-refresh every 5 minutes
-        // setInterval(refreshBranchStats, 300000);
-    </script>
-    <!--end::Branch Stats Refresh Script-->
+    <!--begin::Branch Stats Refresh Note-->
+    {{-- Branch stats refresh is handled in view.js (refreshBranchStats function) --}}
+    {{-- It's called automatically after single/bulk activation changes --}}
+    <!--end::Branch Stats Refresh Note-->
 @endpush

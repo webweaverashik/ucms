@@ -9,8 +9,7 @@
                 <div class="d-flex align-items-center position-relative my-1">
                     <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
                     <input type="text" data-enrolled-regular-students-table-filter="search"
-                        class="form-control form-control-solid w-350px ps-12"
-                        placeholder="Search in students">
+                        class="form-control form-control-solid w-350px ps-12" placeholder="Search in students">
                 </div>
                 <!--end::Search-->
             </div>
@@ -38,9 +37,8 @@
                             <!--begin::Input group-->
                             <div class="mb-10">
                                 <label class="form-label fs-6 fw-semibold">Group:</label>
-                                <select class="form-select form-select-solid fw-bold"
-                                    data-kt-select2="true" data-placeholder="Select group"
-                                    data-allow-clear="true" data-hide-search="true"
+                                <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
+                                    data-placeholder="Select group" data-allow-clear="true" data-hide-search="true"
                                     id="filter_academic_group">
                                     <option></option>
                                     <option value="Science">Science</option>
@@ -50,9 +48,9 @@
                             <!--end::Input group-->
                             <div class="mb-10">
                                 <label class="form-label fs-6 fw-semibold">Student Status:</label>
-                                <select class="form-select form-select-solid fw-bold"
-                                    data-kt-select2="true" data-placeholder="Select option"
-                                    data-allow-clear="true" data-hide-search="true" id="filter_status">
+                                <select class="form-select form-select-solid fw-bold" data-kt-select2="true"
+                                    data-placeholder="Select option" data-allow-clear="true" data-hide-search="true"
+                                    id="filter_status">
                                     <option></option>
                                     <option value="active">Active</option>
                                     <option value="suspended">Inactive</option>
@@ -84,14 +82,13 @@
         <div class="card-body pb-5">
             @if ($isAdmin && $branches->count() > 0)
                 <!--begin::Branch Tabs for Admin-->
-                <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-5 fs-6" id="branchTabs"
-                    role="tablist">
+                <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-5 fs-6" id="branchTabs" role="tablist">
                     @foreach ($branches as $index => $branch)
                         <li class="nav-item" role="presentation">
                             <button class="nav-link @if ($index === 0) active @endif"
                                 id="branch-{{ $branch->id }}-tab" data-bs-toggle="tab"
-                                data-bs-target="#branch_{{ $branch->id }}_content" type="button"
-                                role="tab" data-branch-filter="{{ $branch->id }}">
+                                data-bs-target="#branch_{{ $branch->id }}_content" type="button" role="tab"
+                                data-branch-filter="{{ $branch->id }}">
                                 <i class="ki-outline ki-home fs-4 me-2"></i>
                                 {{ $branch->branch_name }}
                                 <span
@@ -108,7 +105,8 @@
 
             @if ($canDeactivate && $classname->isActive())
                 <!--begin::Bulk Actions Toolbar-->
-                <div class="d-flex justify-content-between align-items-center mb-4" id="bulk_actions_toolbar" style="display: none !important;">
+                <div class="d-flex justify-content-between align-items-center mb-4" id="bulk_actions_toolbar"
+                    style="display: none !important;">
                     <div class="d-flex align-items-center">
                         <span class="fw-bold text-gray-700 me-3">
                             <span id="selected_count">0</span> student(s) selected
@@ -140,14 +138,18 @@
                         @if ($canDeactivate && $classname->isActive())
                             <th class="w-10px pe-2 checkbox-column">
                                 <div class="form-check form-check-sm form-check-custom form-check-solid">
-                                    <input class="form-check-input" type="checkbox" id="select_all_checkbox" data-kt-check="true" data-kt-check-target="#kt_enrolled_regular_students_table .student-checkbox" />
+                                    <input class="form-check-input" type="checkbox" id="select_all_checkbox"
+                                        data-kt-check="true"
+                                        data-kt-check-target="#kt_enrolled_regular_students_table .student-checkbox" />
                                 </div>
                             </th>
                         @endif
                         <th class="w-20px">#</th>
-                        <th class="w-150px">Student Name</th>
-                        <th>Group</th>
-                        <th>Batch</th>
+                        <th class="min-w-150px">Student Name</th>
+                        <th class="w-80px">Group</th>
+                        <th class="w-100px">Batch</th>
+                        <th class="w-100px">Tuition Fee</th>
+                        <th class="w-100px">Last Paid</th>
                         <th class="w-100px">Admitted By</th>
                         <th class="w-100px">Admission Date</th>
                         <th class="w-100px">Actions</th>

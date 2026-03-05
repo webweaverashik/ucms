@@ -311,7 +311,7 @@ class ClassNameController extends Controller
     }
 
     /**
-     * Get branch-wise stats via AJAX (for dynamic loading)
+     * Get branch-wise stats via AJAX (for dynamic loading after activation changes)
      */
     public function getBranchStatsAjax(Request $request, ClassName $classname)
     {
@@ -324,40 +324,93 @@ class ClassNameController extends Controller
 
         $user     = auth()->user();
         $isAdmin  = $user->isAdmin();
-        $branchId = $request->input('branch_id');
+        $branchId = $user->branch_id;
 
-        if (! $isAdmin) {
-            $branchId = $user->branch_id;
+        $responseData = [];
+
+        if ($isAdmin) {
+            // Get all branches
+            $branches = Branch::select('id', 'branch_name', 'branch_prefix')->orderBy('branch_name')->get();
+
+            // Calculate stats for each branch
+            $branchStats = [];
+            foreach ($branches as $branch) {
+                $activeStudentIds = $classname->students()
+                    ->where('branch_id', $branch->id)
+                    ->whereHas('studentActivation', fn($q) => $q->where('active_status', 'active'))
+                    ->pluck('id');
+
+                $inactiveCount = $classname->students()
+                    ->where('branch_id', $branch->id)
+                    ->whereHas('studentActivation', fn($q) => $q->where('active_status', 'inactive'))
+                    ->count();
+
+                $activeCount     = $activeStudentIds->count();
+                $totalReceivable = $this->calculateTotalReceivable($activeStudentIds);
+                $avgReceivable   = $activeCount > 0 ? round($totalReceivable / $activeCount) : 0;
+
+                $branchStats[$branch->id] = [
+                    'active'         => $activeCount,
+                    'inactive'       => $inactiveCount,
+                    'total'          => $activeCount + $inactiveCount,
+                    'receivable'     => $totalReceivable,
+                    'avg_receivable' => $avgReceivable,
+                ];
+            }
+
+            // Calculate "All" totals
+            $allActiveStudentIds = $classname->students()
+                ->whereHas('studentActivation', fn($q) => $q->where('active_status', 'active'))
+                ->pluck('id');
+
+            $allInactiveCount = $classname->students()
+                ->whereHas('studentActivation', fn($q) => $q->where('active_status', 'inactive'))
+                ->count();
+
+            $allActiveCount   = $allActiveStudentIds->count();
+            $allReceivable    = $this->calculateTotalReceivable($allActiveStudentIds);
+            $allAvgReceivable = $allActiveCount > 0 ? round($allReceivable / $allActiveCount) : 0;
+
+            $responseData = [
+                'all'      => [
+                    'active'         => $allActiveCount,
+                    'inactive'       => $allInactiveCount,
+                    'total'          => $allActiveCount + $allInactiveCount,
+                    'receivable'     => $allReceivable,
+                    'avg_receivable' => $allAvgReceivable,
+                ],
+                'branches' => $branchStats,
+            ];
+        } else {
+            // Non-admin: calculate stats for their branch only
+            $activeStudentIds = $classname->students()
+                ->where('branch_id', $branchId)
+                ->whereHas('studentActivation', fn($q) => $q->where('active_status', 'active'))
+                ->pluck('id');
+
+            $inactiveCount = $classname->students()
+                ->where('branch_id', $branchId)
+                ->whereHas('studentActivation', fn($q) => $q->where('active_status', 'inactive'))
+                ->count();
+
+            $activeCount     = $activeStudentIds->count();
+            $totalReceivable = $this->calculateTotalReceivable($activeStudentIds);
+            $avgReceivable   = $activeCount > 0 ? round($totalReceivable / $activeCount) : 0;
+
+            $responseData = [
+                'current' => [
+                    'active'         => $activeCount,
+                    'inactive'       => $inactiveCount,
+                    'total'          => $activeCount + $inactiveCount,
+                    'receivable'     => $totalReceivable,
+                    'avg_receivable' => $avgReceivable,
+                ],
+            ];
         }
-
-        // Get active student IDs for the branch (or all branches if no filter)
-        $activeStudentIdsQuery = $classname->students()
-            ->whereHas('studentActivation', fn($q) => $q->where('active_status', 'active'));
-
-        $inactiveStudentIdsQuery = $classname->students()
-            ->whereHas('studentActivation', fn($q) => $q->where('active_status', 'inactive'));
-
-        if ($branchId && $branchId !== 'all') {
-            $activeStudentIdsQuery->where('branch_id', $branchId);
-            $inactiveStudentIdsQuery->where('branch_id', $branchId);
-        }
-
-        $activeStudentIds = $activeStudentIdsQuery->pluck('id');
-        $activeCount      = $activeStudentIds->count();
-        $inactiveCount    = $inactiveStudentIdsQuery->count();
-
-        // Calculate receivable
-        $totalReceivable = $this->calculateTotalReceivable($activeStudentIds);
 
         return response()->json([
             'success' => true,
-            'stats'   => [
-                'active'               => $activeCount,
-                'inactive'             => $inactiveCount,
-                'total'                => $activeCount + $inactiveCount,
-                'receivable'           => $totalReceivable,
-                'receivable_formatted' => number_format($totalReceivable, 2),
-            ],
+            'data'    => $responseData,
         ]);
     }
 
@@ -399,6 +452,7 @@ class ClassNameController extends Controller
 
         // Column mapping for ordering (without hidden filter columns - all filtering is server-side)
         // Adjust column indices based on whether checkbox column is present
+        // Columns: [Checkbox], #, Student Name, Group, Batch, Tuition Fee, Last Paid, Admitted By, Admission Date, Actions
         if ($hasCheckboxColumn) {
             $columns = [
                 0 => 'id',                // Checkbox column - default to id (not orderable)
@@ -406,8 +460,10 @@ class ClassNameController extends Controller
                 2 => 'student_unique_id', // Student name column - order by student_unique_id
                 3 => 'academic_group',
                 4 => 'batch_id',
-                5 => 'created_by',
-                6 => 'created_at',
+                5 => 'id', // Tuition Fee - not directly orderable
+                6 => 'id', // Last Paid - not directly orderable
+                7 => 'created_by',
+                8 => 'created_at',
             ];
         } else {
             $columns = [
@@ -415,8 +471,10 @@ class ClassNameController extends Controller
                 1 => 'student_unique_id', // Student name column - order by student_unique_id
                 2 => 'academic_group',
                 3 => 'batch_id',
-                4 => 'created_by',
-                5 => 'created_at',
+                4 => 'id', // Tuition Fee - not directly orderable
+                5 => 'id', // Last Paid - not directly orderable
+                6 => 'created_by',
+                7 => 'created_at',
             ];
         }
 
@@ -442,6 +500,8 @@ class ClassNameController extends Controller
                 'createdBy:id,name',
                 'studentActivation:id,active_status',
                 'batch:id,name',
+                // Eager load payment profile for tuition fee
+                'payments:id,student_id,tuition_fee',
             ]);
 
         // Apply branch filter
@@ -498,6 +558,12 @@ class ClassNameController extends Controller
             ->take($length)
             ->get();
 
+        // Get student IDs for batch fetching last paid month
+        $studentIds = $students->pluck('id')->toArray();
+
+        // Batch fetch last paid tuition fee month for all students
+        $lastPaidMonths = $this->getLastPaidTuitionMonths($studentIds);
+
         // Format data for DataTables
         $data = [];
         foreach ($students as $index => $student) {
@@ -520,6 +586,14 @@ class ClassNameController extends Controller
                     data-is-active="' . ($isActive ? '1' : '0') . '" />
             </div>';
 
+            // Get tuition fee from payment profile
+            $tuitionFee     = $student->payments->tuition_fee ?? 0;
+            $tuitionFeeHtml = $this->buildTuitionFeeHtml($tuitionFee);
+
+            // Get last paid month for tuition fee
+            $lastPaidMonth     = $lastPaidMonths[$student->id] ?? null;
+            $lastPaidMonthHtml = $this->buildLastPaidMonthHtml($lastPaidMonth);
+
             $data[] = [
                 'DT_RowId'          => 'student_row_' . $student->id,
                 'DT_RowAttr'        => [
@@ -531,6 +605,8 @@ class ClassNameController extends Controller
                 'student_name'      => $studentNameHtml,
                 'academic_group'    => $groupBadge,
                 'batch'             => $student->batch->name ?? '-',
+                'tuition_fee'       => $tuitionFeeHtml,
+                'last_paid_month'   => $lastPaidMonthHtml,
                 'created_by'        => $student->createdBy->name ?? '-',
                 'created_at'        => $student->created_at->format('d-M-Y'),
                 'actions'           => $actionHtml,
@@ -548,6 +624,101 @@ class ClassNameController extends Controller
             'data'            => $data,
             'class_is_active' => $class->is_active,
         ]);
+    }
+
+    /**
+     * Get last paid tuition fee month for multiple students (batch query)
+     *
+     * @param array $studentIds
+     * @return array [student_id => month_year]
+     */
+    private function getLastPaidTuitionMonths(array $studentIds): array
+    {
+        if (empty($studentIds)) {
+            return [];
+        }
+
+        // Get the Tuition Fee invoice type ID
+        $tuitionFeeTypeId = \App\Models\Payment\PaymentInvoiceType::where('type_name', 'Tuition Fee')->value('id');
+
+        if (! $tuitionFeeTypeId) {
+            return [];
+        }
+
+        // Get the last paid invoice for each student (status = 'paid')
+        $lastPaidInvoices = \App\Models\Payment\PaymentInvoice::whereIn('student_id', $studentIds)
+            ->where('invoice_type_id', $tuitionFeeTypeId)
+            ->where('status', 'paid')
+            ->select('student_id', 'month_year')
+            ->orderBy('month_year', 'desc')
+            ->get()
+            ->groupBy('student_id')
+            ->map(fn($invoices) => $invoices->first()->month_year);
+
+        return $lastPaidInvoices->toArray();
+    }
+
+    /**
+     * Build tuition fee HTML for DataTable
+     */
+    private function buildTuitionFeeHtml($tuitionFee)
+    {
+        if ($tuitionFee > 0) {
+            return '<span class="fw-semibold text-gray-800">৳ ' . number_format($tuitionFee) . '</span>';
+        }
+        return '<span class="text-muted">-</span>';
+    }
+
+    /**
+     * Build last paid month HTML for DataTable
+     */
+    private function buildLastPaidMonthHtml($monthYear)
+    {
+        if (! $monthYear) {
+            return '-';
+        }
+
+        // Parse month_year (supports multiple formats)
+        try {
+            // Handle different possible formats
+            if (preg_match('/^(\d{4})-(\d{2})$/', $monthYear, $matches)) {
+                // Format: 2024-01 (YYYY-MM)
+                $date      = \Carbon\Carbon::createFromFormat('Y-m', $monthYear);
+                $formatted = $date->format('F Y'); // January 2024
+            } elseif (preg_match('/^(\d{2})-(\d{4})$/', $monthYear, $matches)) {
+                // Format: 01-2024 (MM-YYYY)
+                $date      = \Carbon\Carbon::createFromFormat('m-Y', $monthYear);
+                $formatted = $date->format('F Y'); // January 2024
+            } elseif (preg_match('/^(\d{2})_(\d{4})$/', $monthYear, $matches)) {
+                // Format: 01_2024 (MM_YYYY)
+                $date      = \Carbon\Carbon::createFromFormat('m_Y', $monthYear);
+                $formatted = $date->format('F Y'); // January 2024
+            } elseif (preg_match('/^(\d{4})_(\d{2})$/', $monthYear, $matches)) {
+                // Format: 2024_01 (YYYY_MM)
+                $date      = \Carbon\Carbon::createFromFormat('Y_m', $monthYear);
+                $formatted = $date->format('F Y'); // January 2024
+            } elseif (preg_match('/^(\d{2})\/(\d{4})$/', $monthYear, $matches)) {
+                // Format: 01/2024 (MM/YYYY)
+                $date      = \Carbon\Carbon::createFromFormat('m/Y', $monthYear);
+                $formatted = $date->format('F Y'); // January 2024
+            } elseif (preg_match('/^(\d{4})\/(\d{2})$/', $monthYear, $matches)) {
+                // Format: 2024/01 (YYYY/MM)
+                $date      = \Carbon\Carbon::createFromFormat('Y/m', $monthYear);
+                $formatted = $date->format('F Y'); // January 2024
+            } elseif (preg_match('/^([A-Za-z]+)\s*(\d{4})$/', $monthYear, $matches)) {
+                // Format: January 2024 or Jan 2024
+                $date      = \Carbon\Carbon::parse($monthYear);
+                $formatted = $date->format('F Y'); // January 2024
+            } else {
+                // Fallback: display as-is
+                $formatted = $monthYear;
+            }
+
+            return e($formatted);
+        } catch (\Exception $e) {
+            // If parsing fails, display as-is
+            return e($monthYear);
+        }
     }
 
     /**
@@ -576,7 +747,7 @@ class ClassNameController extends Controller
     {
         $badges = [
             'Science'  => 'info',
-            'Commerce' => 'success',
+            'Commerce' => 'primary',
             'Arts'     => 'warning',
         ];
 

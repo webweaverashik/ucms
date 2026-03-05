@@ -88,7 +88,7 @@
                         <li class="nav-item" role="presentation">
                             <a class="nav-link active py-2 px-3" id="all-branches-tab" data-bs-toggle="tab"
                                 href="#all-branches-pane" role="tab" data-branch-id="all">
-                                <span class="d-flex align-items-center">
+                                <span class="d-flex align-items-center fw-semibold">
                                     <i class="ki-outline ki-abstract-26 fs-6 me-1"></i>
                                     All
                                     <span class="badge badge-light-primary ms-2" id="badge-all">
@@ -102,7 +102,7 @@
                                 <a class="nav-link py-2 px-3" id="branch-{{ $branch->id }}-tab" data-bs-toggle="tab"
                                     href="#branch-{{ $branch->id }}-pane" role="tab"
                                     data-branch-id="{{ $branch->id }}">
-                                    <span class="d-flex align-items-center">
+                                    <span class="d-flex align-items-center fw-semibold">
                                         {{ $branch->branch_prefix ?? $branch->branch_name }}
                                         <span class="badge badge-light-primary ms-2" id="badge-{{ $branch->id }}">
                                             {{ $branchStats[$branch->id]['total'] ?? 0 }}

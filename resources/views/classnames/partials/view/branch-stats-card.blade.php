@@ -4,10 +4,11 @@
     $inactiveCount = $stats['inactive'] ?? 0;
     $totalCount = $stats['total'] ?? 0;
     $receivable = $stats['receivable'] ?? 0;
-    $prefix = is_numeric($branchId) ? "branch-{$branchId}" : $branchId;
+    // Use consistent ID format: stats-{type}-{branchId}
+    $statsId = $branchId ?? ($isAdmin ? 'all' : 'current');
 @endphp
 
-<div class="branch-stats-card" data-branch-id="{{ $branchId }}">
+<div class="branch-stats-card" data-branch-id="{{ $statsId }}">
     <!--begin::Branch Name Badge (for individual branches)-->
     @if (isset($branchName) && $branchId !== 'all' && $branchId !== 'current')
         <div class="text-center mb-3">
@@ -23,7 +24,7 @@
         <!--begin::Total Students-->
         <div class="col-6">
             <div class="stats-mini-card h-100">
-                <div class="stats-value text-primary" id="stats-total-{{ $prefix }}">{{ $totalCount }}</div>
+                <div class="stats-value text-primary" id="stats-total-students-{{ $statsId }}">{{ number_format($totalCount) }}</div>
                 <div class="stats-label">Total Students</div>
             </div>
         </div>
@@ -32,7 +33,7 @@
         <!--begin::Active Students-->
         <div class="col-6">
             <div class="stats-mini-card h-100">
-                <div class="stats-value text-success" id="stats-active-{{ $prefix }}">{{ $activeCount }}</div>
+                <div class="stats-value text-success" id="stats-active-students-{{ $statsId }}">{{ number_format($activeCount) }}</div>
                 <div class="stats-label">Active Students</div>
             </div>
         </div>
@@ -41,7 +42,7 @@
         <!--begin::Inactive Students-->
         <div class="col-6">
             <div class="stats-mini-card h-100">
-                <div class="stats-value text-danger" id="stats-inactive-{{ $prefix }}">{{ $inactiveCount }}</div>
+                <div class="stats-value text-danger" id="stats-inactive-students-{{ $statsId }}">{{ number_format($inactiveCount) }}</div>
                 <div class="stats-label">Inactive Students</div>
             </div>
         </div>
@@ -51,14 +52,18 @@
         @if ($isAdmin)
             <div class="col-6">
                 <div class="stats-mini-card receivable-card h-100">
-                    <div class="stats-value text-warning" id="stats-receivable-{{ $prefix }}">
+                    <div class="stats-value text-warning" id="stats-receivable-{{ $statsId }}">
                         <span class="fs-7 fw-semibold">৳</span>
                         {{ number_format($receivable, 0) }}
                     </div>
                     <div class="stats-label">Total Receivable</div>
                     @if ($activeCount > 0)
-                        <div class="fs-9 text-muted mt-1">
-                            Avg: ৳{{ number_format($receivable / max($activeCount, 1), 0) }}/student
+                        <div class="fs-9 text-muted mt-1" id="stats-avg-receivable-container-{{ $statsId }}">
+                            Avg: <span id="stats-avg-receivable-{{ $statsId }}">৳{{ number_format($receivable / max($activeCount, 1), 0) }}</span>/student
+                        </div>
+                    @else
+                        <div class="fs-9 text-muted mt-1" id="stats-avg-receivable-container-{{ $statsId }}">
+                            Avg: <span id="stats-avg-receivable-{{ $statsId }}">৳0</span>/student
                         </div>
                     @endif
                 </div>
@@ -66,7 +71,7 @@
         @else
             <div class="col-6">
                 <div class="stats-mini-card subjects-stat h-100">
-                    <div class="stats-value text-info" id="stats-subjects-{{ $prefix }}">
+                    <div class="stats-value text-info" id="stats-subjects-{{ $statsId }}">
                         {{ $classname->subjects->count() ?? 0 }}
                     </div>
                     <div class="stats-label">Total Subjects</div>
@@ -83,7 +88,7 @@
             <div class="col-12">
                 <div class="stats-mini-card subjects-stat">
                     <div class="d-flex flex-column align-items-center justify-content-center">
-                        <span class="stats-value text-info fs-4" id="stats-subjects-{{ $prefix }}">
+                        <span class="stats-value text-info fs-4" id="stats-subjects-count-{{ $statsId }}">
                             {{ $classname->subjects->count() ?? 0 }}
                         </span>
                         <span class="stats-label">Total Subjects</span>
