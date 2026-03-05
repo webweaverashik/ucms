@@ -412,7 +412,7 @@ var KTStudentAttendance = (function () {
                 '<div class="d-flex flex-column">' +
                 '<span class="text-gray-800 fw-bold fs-6">' + escapeHtml(student.name) + '</span>' +
                 '<span class="text-muted fw-semibold fs-7">ID: ' + escapeHtml(student.student_unique_id) + '</span>' +
-                (homeMobile ? '<span class="text-primary fw-semibold fs-8"><i class="ki-outline ki-phone fs-8 me-1"></i>' + escapeHtml(homeMobile) + '</span>' : '') +
+                (homeMobile ? '<span class="text-muted fw-semibold fs-7"><i class="ki-outline ki-phone fs-7 me-1"></i>' + escapeHtml(homeMobile) + '</span>' : '') +
                 '</div>' +
                 '</div>' +
                 '</td>' +

@@ -17,6 +17,7 @@
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -484,9 +485,12 @@
    ============================================ */
 
 @keyframes pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 1;
     }
+
     50% {
         opacity: 0.5;
     }
@@ -594,6 +598,7 @@
 
 /* Small tablets and large phones */
 @media (max-width: 767.98px) {
+
     /* Increase row gap for mobile forms */
     #student_list_filter_form.row.g-3,
     #student_list_filter_form.row.g-md-4 {
@@ -601,7 +606,7 @@
     }
 
     /* Ensure proper spacing between all form columns */
-    #student_list_filter_form > [class*="col-"] {
+    #student_list_filter_form>[class*="col-"] {
         padding-top: 0;
         padding-bottom: 0;
     }
@@ -614,15 +619,16 @@
 
 /* Mobile Portrait */
 @media (max-width: 575.98px) {
+
     /* Full width columns on mobile */
-    #student_list_filter_form > [class*="col-"] {
+    #student_list_filter_form>[class*="col-"] {
         flex: 0 0 100%;
         max-width: 100%;
         margin-bottom: 0.75rem;
     }
 
     /* Remove bottom margin from last element */
-    #student_list_filter_form > [class*="col-"]:last-child {
+    #student_list_filter_form>[class*="col-"]:last-child {
         margin-bottom: 0;
     }
 
@@ -669,7 +675,7 @@
         padding: 0.75rem !important;
     }
 
-    #bulk_buttons > span {
+    #bulk_buttons>span {
         font-size: 0.8rem;
         margin-bottom: 0.5rem;
     }
@@ -756,6 +762,7 @@
    ============================================ */
 
 @media print {
+
     .quick-action-btn,
     #bulk_buttons,
     #save_attendance_section,

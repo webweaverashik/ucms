@@ -67,7 +67,8 @@
                                 data-hide-search="false">
                                 <option value="">Select class</option>
                                 @foreach ($classnames as $classname)
-                                    <option value="{{ $classname->id }}" data-class-numeral="{{ $classname->class_numeral }}">
+                                    <option value="{{ $classname->id }}"
+                                        data-class-numeral="{{ $classname->class_numeral }}">
                                         {{ $classname->name }} ({{ $classname->class_numeral }})
                                     </option>
                                 @endforeach
@@ -119,7 +120,8 @@
                                 <span class="d-none d-sm-inline">Load Students</span>
                                 <span class="d-inline d-sm-none">Load</span>
                             </button>
-                            <button type="button" class="btn btn-light-secondary flex-grow-1 flex-lg-grow-0" id="reset_button">
+                            <button type="button" class="btn btn-light-secondary flex-grow-1 flex-lg-grow-0"
+                                id="reset_button">
                                 <i class="ki-outline ki-arrows-circle fs-3"></i>
                                 <span class="d-none d-sm-inline ms-1">Reset</span>
                             </button>
