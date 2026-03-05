@@ -47,27 +47,38 @@
         </div>
         <!--end::Inactive Students-->
 
-        <!--begin::Total Receivable-->
-        <div class="col-6">
-            <div class="stats-mini-card receivable-card h-100">
-                <div class="stats-value text-warning" id="stats-receivable-{{ $prefix }}">
-                    <span class="fs-7 fw-semibold">৳</span>
-                    {{ number_format($receivable, 0) }}
-                </div>
-                <div class="stats-label">Total Receivable</div>
-                @if ($activeCount > 0)
-                    <div class="fs-9 text-muted mt-1">
-                        Avg: ৳{{ number_format($receivable / max($activeCount, 1), 0) }}/student
+        <!--begin::Total Receivable (Admin Only) / Subjects (Non-Admin)-->
+        @if ($isAdmin)
+            <div class="col-6">
+                <div class="stats-mini-card receivable-card h-100">
+                    <div class="stats-value text-warning" id="stats-receivable-{{ $prefix }}">
+                        <span class="fs-7 fw-semibold">৳</span>
+                        {{ number_format($receivable, 0) }}
                     </div>
-                @endif
+                    <div class="stats-label">Total Receivable</div>
+                    @if ($activeCount > 0)
+                        <div class="fs-9 text-muted mt-1">
+                            Avg: ৳{{ number_format($receivable / max($activeCount, 1), 0) }}/student
+                        </div>
+                    @endif
+                </div>
             </div>
-        </div>
-        <!--end::Total Receivable-->
+        @else
+            <div class="col-6">
+                <div class="stats-mini-card subjects-stat h-100">
+                    <div class="stats-value text-info" id="stats-subjects-{{ $prefix }}">
+                        {{ $classname->subjects->count() ?? 0 }}
+                    </div>
+                    <div class="stats-label">Total Subjects</div>
+                </div>
+            </div>
+        @endif
+        <!--end::Total Receivable (Admin Only) / Subjects (Non-Admin)-->
     </div>
     <!--end::Stats Grid-->
 
-    <!--begin::Subjects Count (only in All tab)-->
-    @if ($branchId === 'all' || $branchId === 'current')
+    <!--begin::Subjects Count (Admin only - shown in All tab)-->
+    @if ($isAdmin && ($branchId === 'all' || $branchId === 'current'))
         <div class="row g-3 mt-1">
             <div class="col-12">
                 <div class="stats-mini-card subjects-stat">
@@ -82,6 +93,4 @@
         </div>
     @endif
     <!--end::Subjects Count-->
-
-
 </div>
