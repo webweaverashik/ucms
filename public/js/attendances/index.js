@@ -268,18 +268,12 @@ var KTStudentAttendance = (function () {
         var classId = classSelect.value;
         var batchId = batchSelect.value;
         var attendanceDate = document.getElementById('attendance_date').value;
-        var classNumeral = getSelectedClassNumeral();
         var academicGroup = getSelectedAcademicGroup();
 
-        // Validation
+        // Validation - Only branch, class, and batch are required
+        // Academic group is optional - if not selected, all students of the class will be loaded
         if (!branchId || !classId || !batchId) {
             showAlert('warning', 'Validation Error', 'Please select Branch, Class, and Batch.');
-            return;
-        }
-
-        // Validate academic group for required classes
-        if (classRequiresGroup(classNumeral) && !academicGroup) {
-            showAlert('warning', 'Validation Error', 'Please select an Academic Group for this class.');
             return;
         }
 
@@ -316,7 +310,8 @@ var KTStudentAttendance = (function () {
 
                 // Handle Student List
                 if (response.count > 0) {
-                    renderStudentTable(response.students);
+                    // Pass is_all_groups flag to render function
+                    renderStudentTable(response.students, response.is_all_groups || false);
                     toggleElement(bulkButtons, true);
                     toggleElement(saveSection, true);
                     studentCountEl.textContent = response.count;
@@ -372,9 +367,36 @@ var KTStudentAttendance = (function () {
     };
 
     /**
+     * Get academic group badge HTML
+     */
+    var getGroupBadge = function (groupName) {
+        if (!groupName) return '';
+
+        var badgeClass = 'badge-light-secondary';
+        var shortName = groupName;
+
+        switch (groupName.toLowerCase()) {
+            case 'science':
+                badgeClass = 'badge-light-info';
+                shortName = 'Science';
+                break;
+            case 'commerce':
+                badgeClass = 'badge-light-success';
+                shortName = 'Commerce';
+                break;
+            case 'arts':
+                badgeClass = 'badge-light-warning';
+                shortName = 'Arts';
+                break;
+        }
+
+        return '<span class="badge ' + badgeClass + ' fs-9 ms-2">' + escapeHtml(shortName) + '</span>';
+    };
+
+    /**
      * Render Student Table (Mobile Optimized with Cards)
      */
-    var renderStudentTable = function (students) {
+    var renderStudentTable = function (students, isAllGroups) {
         // Desktop Table View
         var desktopHtml = '<div class="d-none d-lg-block table-responsive fade-in">' +
             '<table class="table table-row-bordered table-row-gray-300 align-middle gs-0 gy-4" id="attendance_table">' +
@@ -401,6 +423,10 @@ var KTStudentAttendance = (function () {
             var attendanceTaker = student.attendance_taker || '-';
             var hasAttendance = student.has_attendance;
             var homeMobile = student.home_mobile || '';
+            var academicGroup = student.academic_group || '';
+
+            // Build group badge HTML (only show when isAllGroups is true)
+            var groupBadgeHtml = isAllGroups ? getGroupBadge(academicGroup) : '';
 
             desktopHtml += '<tr data-student-id="' + student.id + '" class="attendance-row" data-has-attendance="' + (hasAttendance ? 'true' : 'false') + '">' +
                 '<td class="ps-4 fw-bold text-gray-600">' + (index + 1) + '</td>' +
@@ -410,7 +436,10 @@ var KTStudentAttendance = (function () {
                 '<span class="symbol-label bg-light-primary text-primary fw-bold">' + escapeHtml(initials) + '</span>' +
                 '</div>' +
                 '<div class="d-flex flex-column">' +
+                '<div class="d-flex align-items-center">' +
                 '<span class="text-gray-800 fw-bold fs-6">' + escapeHtml(student.name) + '</span>' +
+                groupBadgeHtml +
+                '</div>' +
                 '<span class="text-muted fw-semibold fs-7">ID: ' + escapeHtml(student.student_unique_id) + '</span>' +
                 (homeMobile ? '<span class="text-muted fw-semibold fs-7"><i class="ki-outline ki-phone fs-7 me-1"></i>' + escapeHtml(homeMobile) + '</span>' : '') +
                 '</div>' +
@@ -473,6 +502,10 @@ var KTStudentAttendance = (function () {
             var attendanceTaker = student.attendance_taker || '-';
             var hasAttendance = student.has_attendance;
             var homeMobile = student.home_mobile || '';
+            var academicGroup = student.academic_group || '';
+
+            // Build group badge HTML (only show when isAllGroups is true)
+            var groupBadgeHtml = isAllGroups ? getGroupBadge(academicGroup) : '';
 
             mobileHtml += '<div class="card card-bordered mb-3 attendance-card ' + (hasAttendance ? 'has-attendance' : '') + '" data-student-id="' + student.id + '" data-has-attendance="' + (hasAttendance ? 'true' : 'false') + '">' +
                 '<div class="card-body p-4">' +
@@ -483,9 +516,12 @@ var KTStudentAttendance = (function () {
                 '<span class="symbol-label bg-light-primary text-primary fw-bold fs-6">' + escapeHtml(initials) + '</span>' +
                 '</div>' +
                 '<div>' +
-                '<div class="fw-bold text-gray-800 fs-6">' + escapeHtml(student.name) + '</div>' +
+                '<div class="d-flex align-items-center">' +
+                '<span class="fw-bold text-gray-800 fs-6">' + escapeHtml(student.name) + '</span>' +
+                groupBadgeHtml +
+                '</div>' +
                 '<div class="text-muted fs-8">ID: ' + escapeHtml(student.student_unique_id) + '</div>' +
-                (homeMobile ? '<div class="text-primary fs-8 mt-1"><i class="ki-outline ki-phone fs-9 me-1"></i><a href="tel:' + escapeHtml(homeMobile) + '" class="text-primary">' + escapeHtml(homeMobile) + '</a></div>' : '') +
+                (homeMobile ? '<div class="text-muted fs-7 mt-1"><i class="ki-outline ki-phone fs-7 me-1"></i><a href="tel:' + escapeHtml(homeMobile) + '" class="text-primary">' + escapeHtml(homeMobile) + '</a></div>' : '') +
                 '</div>' +
                 '</div>' +
                 '<span class="badge badge-light-secondary fs-8">#' + (index + 1) + '</span>' +
@@ -553,7 +589,8 @@ var KTStudentAttendance = (function () {
         })
             .then(function (response) {
                 if (response.count > 0) {
-                    renderStudentTable(response.students);
+                    // Pass is_all_groups flag to render function
+                    renderStudentTable(response.students, response.is_all_groups || false);
                     studentCountEl.textContent = response.count;
                     // Reset bulk action buttons after refresh
                     resetBulkActionButtons();

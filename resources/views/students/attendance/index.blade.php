@@ -76,17 +76,18 @@
                         </div>
                     </div>
 
-                    {{-- Academic Group Selection - Shown only for Class 09-12 --}}
+                    {{-- Academic Group Selection - Shown only for Class 09-12 (Optional) --}}
                     <div class="col-12 col-sm-6 col-md-4 col-lg-2 d-none" id="academic_group_wrapper">
-                        <label for="academic_group" class="form-label fw-semibold required mb-2">Group</label>
+                        <label for="academic_group" class="form-label fw-semibold mb-2">Group <span
+                                class="text-muted fw-normal fs-8">(Optional)</span></label>
                         <div class="input-group input-group-solid flex-nowrap">
                             <span class="input-group-text">
                                 <i class="ki-outline ki-abstract-26 fs-3"></i>
                             </span>
                             <select id="academic_group" class="form-select form-select-solid rounded-start-0 border-start"
-                                name="academic_group" data-control="select2" data-placeholder="Select group"
-                                data-hide-search="true">
-                                <option value="">Select group</option>
+                                name="academic_group" data-control="select2" data-placeholder="All Groups"
+                                data-allow-clear="true" data-hide-search="true">
+                                <option value="">All Groups</option>
                                 @foreach ($academicGroups as $group)
                                     <option value="{{ $group }}">{{ $group }}</option>
                                 @endforeach

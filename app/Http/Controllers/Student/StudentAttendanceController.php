@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
@@ -21,7 +22,7 @@ class StudentAttendanceController extends Controller
     /**
      * Available academic groups
      */
-    private const ACADEMIC_GROUPS = ['Science', 'Commerce'];
+    private const ACADEMIC_GROUPS = ['Science', 'Commerce', 'Arts'];
 
     public function index()
     {
@@ -36,7 +37,7 @@ class StudentAttendanceController extends Controller
         $classnames = ClassName::select('id', 'name', 'class_numeral')->get();
 
         // Pass academic groups and group-required class numerals to view
-        $academicGroups       = self::ACADEMIC_GROUPS;
+        $academicGroups = self::ACADEMIC_GROUPS;
         $groupRequiredClasses = self::GROUP_REQUIRED_CLASSES;
 
         return view('students.attendance.index', compact(
@@ -68,16 +69,16 @@ class StudentAttendanceController extends Controller
                 ->get()
                 ->map(function ($batch) {
                     return [
-                        'id'          => $batch->id,
-                        'name'        => $batch->name,
-                        'day_off'     => $batch->day_off,
+                        'id' => $batch->id,
+                        'name' => $batch->name,
+                        'day_off' => $batch->day_off,
                         'branch_name' => $batch->branch->branch_name ?? '',
                     ];
                 });
 
             return response()->json([
                 'batches' => $batches,
-                'count'   => $batches->count(),
+                'count' => $batches->count(),
             ]);
         } catch (\Exception $e) {
             return response()->json(
@@ -93,27 +94,30 @@ class StudentAttendanceController extends Controller
     public function getStudents(Request $request)
     {
         $request->validate([
-            'branch_id'       => 'required',
-            'class_id'        => 'required',
-            'batch_id'        => 'required',
+            'branch_id' => 'required',
+            'class_id' => 'required',
+            'batch_id' => 'required',
             'attendance_date' => 'required',
-            'academic_group'  => 'nullable|in:Science,Commerce,Arts',
+            'academic_group' => 'nullable|in:Science,Commerce,Arts',
         ]);
 
         $dateCarbon = Carbon::createFromFormat('d-m-Y', $request->attendance_date);
-        $dbDate     = $dateCarbon->format('Y-m-d');
-        $dayName    = $dateCarbon->format('l');
+        $dbDate = $dateCarbon->format('Y-m-d');
+        $dayName = $dateCarbon->format('l');
 
-        $batch    = Batch::find($request->batch_id);
+        $batch = Batch::find($request->batch_id);
         $isOffDay = false;
 
         if ($batch && strcasecmp($batch->day_off, $dayName) === 0) {
             $isOffDay = true;
         }
 
-        // Check if class requires academic group
-        $classModel    = ClassName::find($request->class_id);
-        $requiresGroup = $classModel && in_array($classModel->class_numeral, self::GROUP_REQUIRED_CLASSES);
+        // Check if class supports academic group filtering
+        $classModel = ClassName::find($request->class_id);
+        $supportsGroup = $classModel && in_array($classModel->class_numeral, self::GROUP_REQUIRED_CLASSES);
+
+        // Check if "All Groups" is selected (no specific group filter)
+        $isAllGroups = $supportsGroup && !$request->filled('academic_group');
 
         // Build student query
         $studentsQuery = Student::active()
@@ -122,14 +126,15 @@ class StudentAttendanceController extends Controller
             ->where('batch_id', $request->batch_id)
             ->select('id', 'name', 'student_unique_id', 'academic_group');
 
-        // Filter by academic group if provided and class requires it
-        if ($requiresGroup && $request->filled('academic_group')) {
+        // Filter by academic group only if provided (optional filter)
+        // When not provided, all students of the class will be loaded regardless of group
+        if ($request->filled('academic_group')) {
             $studentsQuery->where('academic_group', $request->academic_group);
         }
 
         $students = $studentsQuery
             ->with([
-                'attendances'   => function ($query) use ($dbDate) {
+                'attendances' => function ($query) use ($dbDate) {
                     $query->whereDate('attendance_date', $dbDate)
                         ->with('recorder:id,name');
                 },
@@ -147,38 +152,39 @@ class StudentAttendanceController extends Controller
             $homeMobile = $student->mobileNumbers->first();
 
             return [
-                'id'                => $student->id,
-                'name'              => $student->name,
+                'id' => $student->id,
+                'name' => $student->name,
                 'student_unique_id' => $student->student_unique_id,
-                'academic_group'    => $student->academic_group,
-                'home_mobile'       => $homeMobile ? $homeMobile->mobile_number : null,
-                'status'            => $attendance ? $attendance->status : null,
-                'remarks'           => $attendance ? $attendance->remarks : '',
-                'updated_at'        => $attendance ? Carbon::parse($attendance->updated_at)->format('h:i A') : null,
-                'attendance_taker'  => $attendance && $attendance->recorder ? $attendance->recorder->name : null,
-                'has_attendance'    => $attendance ? true : false,
+                'academic_group' => $student->academic_group,
+                'home_mobile' => $homeMobile ? $homeMobile->mobile_number : null,
+                'status' => $attendance ? $attendance->status : null,
+                'remarks' => $attendance ? $attendance->remarks : '',
+                'updated_at' => $attendance ? Carbon::parse($attendance->updated_at)->format('h:i A') : null,
+                'attendance_taker' => $attendance && $attendance->recorder ? $attendance->recorder->name : null,
+                'has_attendance' => $attendance ? true : false,
             ];
         });
 
         return response()->json([
-            'students'       => $data,
-            'count'          => $data->count(),
-            'is_off_day'     => $isOffDay,
-            'off_day_name'   => $dayName,
-            'requires_group' => $requiresGroup,
+            'students' => $data,
+            'count' => $data->count(),
+            'is_off_day' => $isOffDay,
+            'off_day_name' => $dayName,
+            'supports_group' => $supportsGroup,
+            'is_all_groups' => $isAllGroups,
         ]);
     }
 
     public function storeBulk(Request $request)
     {
         $request->validate([
-            'attendance_date'          => 'required',
-            'branch_id'                => 'required',
-            'class_id'                 => 'required',
-            'batch_id'                 => 'required',
-            'attendances'              => 'required|array',
+            'attendance_date' => 'required',
+            'branch_id' => 'required',
+            'class_id' => 'required',
+            'batch_id' => 'required',
+            'attendances' => 'required|array',
             'attendances.*.student_id' => 'required',
-            'attendances.*.status'     => 'required|in:present,late,absent',
+            'attendances.*.status' => 'required|in:present,late,absent',
         ]);
 
         $date = Carbon::createFromFormat('d-m-Y', $request->attendance_date)->format('Y-m-d');
@@ -189,15 +195,15 @@ class StudentAttendanceController extends Controller
             foreach ($request->attendances as $att) {
                 StudentAttendance::updateOrCreate(
                     [
-                        'student_id'      => $att['student_id'],
+                        'student_id' => $att['student_id'],
                         'attendance_date' => $date,
                     ],
                     [
-                        'branch_id'  => $request->branch_id,
-                        'class_id'   => $request->class_id,
-                        'batch_id'   => $request->batch_id,
-                        'status'     => $att['status'],
-                        'remarks'    => $att['remarks'] ?? null,
+                        'branch_id' => $request->branch_id,
+                        'class_id' => $request->class_id,
+                        'batch_id' => $request->batch_id,
+                        'status' => $att['status'],
+                        'remarks' => $att['remarks'] ?? null,
                         'created_by' => auth()->id(),
                     ],
                 );
@@ -206,9 +212,9 @@ class StudentAttendanceController extends Controller
             DB::commit();
 
             return response()->json([
-                'message'          => 'Attendance saved successfully!',
-                'status'           => 'success',
-                'updated_at'       => Carbon::now()->format('h:i A'),
+                'message' => 'Attendance saved successfully!',
+                'status' => 'success',
+                'updated_at' => Carbon::now()->format('h:i A'),
                 'attendance_taker' => auth()->user()->name,
             ]);
         } catch (\Exception $e) {
