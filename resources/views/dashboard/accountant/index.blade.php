@@ -30,7 +30,7 @@
     <div class="d-flex flex-column flex-column-fluid">
 
         {{-- Financial Stats Row --}}
-        <div class="row g-5 mb-5">
+        <div class="row g-5 mb-5 d-none">
             <div class="col-xl-3 col-md-6">
                 <div class="card dashboard-card h-100 bg-success shadow-sm">
                     <div class="card-body">
@@ -101,7 +101,8 @@
         {{-- Student Stats Row --}}
         <div class="row g-5 mb-5">
             <div class="col-xl-3 col-md-6">
-                <a href="{{ route('students.index') }}" target="_blank" class="card dashboard-card h-100 shadow-sm text-decoration-none">
+                <a href="{{ route('students.index') }}" target="_blank"
+                    class="card dashboard-card h-100 shadow-sm text-decoration-none">
                     <div class="card dashboard-card h-100 shadow-sm">
                         <div class="card-body d-flex align-items-center">
                             <div class="stat-icon bg-light-primary me-4">
@@ -143,7 +144,8 @@
                 </a>
             </div>
             <div class="col-xl-3 col-md-6">
-                <a href="{{ route('invoices.index') }}" target="_blank" class="card dashboard-card h-100 shadow-sm text-decoration-none">
+                <a href="{{ route('invoices.index') }}" target="_blank"
+                    class="card dashboard-card h-100 shadow-sm text-decoration-none">
                     <div class="card dashboard-card h-100 shadow-sm">
                         <div class="card-body d-flex align-items-center">
                             <div class="stat-icon bg-light-info me-4">
@@ -161,7 +163,7 @@
 
         {{-- Charts Row --}}
         <div class="row g-5 mb-5">
-            <div class="col-xl-12">
+            <div class="col-xl-8">
                 <div class="card shadow-sm h-100">
                     <div class="card-header border-0 pt-5">
                         <h3 class="card-title align-items-start flex-column">
@@ -209,105 +211,9 @@
                     </div>
                 </div>
             </div> --}}
-        </div>
 
-        {{-- Main Content Row --}}
-        <div class="row g-5 mb-5">
-            <div class="col-xl-6">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header border-0 pt-5">
-                        <h3 class="card-title align-items-start flex-column">
-                            <span class="card-label fw-bold fs-4 mb-1">Top Due Students</span>
-                            <span class="text-muted fw-semibold fs-7">Students with highest dues</span>
-                        </h3>
-                        <div class="card-toolbar">
-                            <a href="{{ route('invoices.index') }}" class="btn btn-sm btn-light-primary">View Invoices</a>
-                        </div>
-                    </div>
-                    <div class="card-body py-3">
-                        <div id="topDueStudentsList" class="table-scrollable">
-                            <div class="d-flex justify-content-center py-10">
-                                <span class="spinner-border spinner-border-sm text-primary me-2"></span>
-                                <span class="text-muted">Loading...</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-6">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header border-0 pt-5">
-                        <h3 class="card-title align-items-start flex-column">
-                            <span class="card-label fw-bold fs-4 mb-1">Recent Transactions</span>
-                            <span class="text-muted fw-semibold fs-7">Latest payment activities</span>
-                        </h3>
-                        <div class="card-toolbar">
-                            <a href="{{ route('transactions.index') }}" target="_blank" class="btn btn-sm btn-light-primary">View All</a>
-                        </div>
-                    </div>
-                    <div class="card-body py-3">
-                        <div id="recentTransactionsList" class="table-scrollable">
-                            <div class="d-flex justify-content-center py-10">
-                                <span class="spinner-border spinner-border-sm text-primary me-2"></span>
-                                <span class="text-muted">Loading...</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Cost Analysis Row --}}
-        <div class="row g-5 mb-5">
-            <div class="col-xl-6">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header border-0 pt-5">
-                        <h3 class="card-title align-items-start flex-column">
-                            <span class="card-label fw-bold fs-4 mb-1">Cost Distribution</span>
-                            <span class="text-muted fw-semibold fs-7" id="costPeriodLabel">This Month</span>
-                        </h3>
-                        <div class="card-toolbar">
-                            <ul class="nav nav-pills nav-pills-sm">
-                                <li class="nav-item">
-                                    <a class="nav-link btn btn-sm btn-active-light-primary fw-semibold px-3 active"
-                                        data-period="month" href="#">Month</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link btn btn-sm btn-active-light-primary fw-semibold px-3"
-                                        data-period="week" href="#">Week</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link btn btn-sm btn-active-light-primary fw-semibold px-3"
-                                        data-period="today" href="#">Today</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="card-body pt-0">
-                        <div id="costPieChart" class="chart-container" style="min-height: 320px;"></div>
-                    </div>
-                </div>
-            </div>
-            {{-- <div class="col-xl-7">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header border-0 pt-5">
-                        <h3 class="card-title align-items-start flex-column">
-                            <span class="card-label fw-bold fs-4 mb-1">Cost Details</span>
-                            <span class="text-muted fw-semibold fs-7">Type-wise expense breakdown</span>
-                        </h3>
-                    </div>
-                    <div class="card-body py-3">
-                        <div id="costTypeTable" class="table-scrollable">
-                            <div class="d-flex justify-content-center py-10">
-                                <span class="spinner-border spinner-border-sm text-primary me-2"></span>
-                                <span class="text-muted">Loading...</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div> --}}
-
-            <div class="col-xl-6">
+            {{-- Attendance Overview Row --}}
+            <div class="col-xl-4">
                 <div class="card shadow-sm h-100">
                     <div class="card-header border-0 pt-5">
                         <h3 class="card-title align-items-start flex-column">
@@ -370,9 +276,108 @@
             </div>
         </div>
 
-        {{-- Attendance Overview Row --}}
+        {{-- Main Content Row --}}
+        <div class="row g-5 mb-5">
+            <div class="col-xl-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header border-0 pt-5">
+                        <h3 class="card-title align-items-start flex-column">
+                            <span class="card-label fw-bold fs-4 mb-1">Top Due Students</span>
+                            <span class="text-muted fw-semibold fs-7">Students with highest dues</span>
+                        </h3>
+                        <div class="card-toolbar">
+                            <a href="{{ route('invoices.index') }}" class="btn btn-sm btn-light-primary">View Invoices</a>
+                        </div>
+                    </div>
+                    <div class="card-body py-3">
+                        <div id="topDueStudentsList" class="table-scrollable">
+                            <div class="d-flex justify-content-center py-10">
+                                <span class="spinner-border spinner-border-sm text-primary me-2"></span>
+                                <span class="text-muted">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Recent Transactions Row --}}
+            <div class="col-xl-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header border-0 pt-5">
+                        <h3 class="card-title align-items-start flex-column">
+                            <span class="card-label fw-bold fs-4 mb-1">Recent Transactions</span>
+                            <span class="text-muted fw-semibold fs-7">Latest payment activities</span>
+                        </h3>
+                        <div class="card-toolbar">
+                            <a href="{{ route('transactions.index') }}" target="_blank"
+                                class="btn btn-sm btn-light-primary">View All</a>
+                        </div>
+                    </div>
+                    <div class="card-body py-3">
+                        <div id="recentTransactionsList" class="table-scrollable">
+                            <div class="d-flex justify-content-center py-10">
+                                <span class="spinner-border spinner-border-sm text-primary me-2"></span>
+                                <span class="text-muted">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Cost Analysis Row --}}
         {{-- <div class="row g-5 mb-5">
-            <div class="col-xl-12">
+            <div class="col-xl-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header border-0 pt-5">
+                        <h3 class="card-title align-items-start flex-column">
+                            <span class="card-label fw-bold fs-4 mb-1">Cost Distribution</span>
+                            <span class="text-muted fw-semibold fs-7" id="costPeriodLabel">This Month</span>
+                        </h3>
+                        <div class="card-toolbar">
+                            <ul class="nav nav-pills nav-pills-sm">
+                                <li class="nav-item">
+                                    <a class="nav-link btn btn-sm btn-active-light-primary fw-semibold px-3 active"
+                                        data-period="month" href="#">Month</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link btn btn-sm btn-active-light-primary fw-semibold px-3"
+                                        data-period="week" href="#">Week</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link btn btn-sm btn-active-light-primary fw-semibold px-3"
+                                        data-period="today" href="#">Today</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-body pt-0">
+                        <div id="costPieChart" class="chart-container" style="min-height: 320px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header border-0 pt-5">
+                        <h3 class="card-title align-items-start flex-column">
+                            <span class="card-label fw-bold fs-4 mb-1">Cost Details</span>
+                            <span class="text-muted fw-semibold fs-7">Type-wise expense breakdown</span>
+                        </h3>
+                    </div>
+                    <div class="card-body py-3">
+                        <div id="costTypeTable" class="table-scrollable">
+                            <div class="d-flex justify-content-center py-10">
+                                <span class="spinner-border spinner-border-sm text-primary me-2"></span>
+                                <span class="text-muted">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Overview column -->
+            <div class="col-xl-6">
                 <div class="card shadow-sm h-100">
                     <div class="card-header border-0 pt-5">
                         <h3 class="card-title align-items-start flex-column">
@@ -434,7 +439,6 @@
                 </div>
             </div>
         </div> --}}
-
     </div>
 @endsection
 
