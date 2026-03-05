@@ -190,7 +190,7 @@
 
         {{-- Charts Row --}}
         <div class="row g-5 mb-5">
-            <div class="col-xl-8">
+            <div class="col-xl-9">
                 <div class="card shadow-sm h-100">
                     <div class="card-header border-0 pt-5">
                         <h3 class="card-title align-items-start flex-column">
@@ -219,7 +219,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-xl-4">
+            <div class="col-xl-3">
                 <div class="card shadow-sm h-100">
                     <div class="card-header border-0 pt-5">
                         <h3 class="card-title align-items-start flex-column">
