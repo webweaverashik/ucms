@@ -3,26 +3,29 @@
 /**
  * KTStudentAttendance
  * Metronic 8 Style Module for Student Attendance Management
+ * Mobile-Friendly Version with Academic Group Support
  *
  * @package App/Student/Attendance
- * @author Your Name
  */
 
-var KTStudentAttendance = function () {
+var KTStudentAttendance = (function () {
     // ============================================
     // Private Variables
     // ============================================
+
     var config = window.AttendanceConfig || {};
     var routes = config.routes || {};
     var csrfToken = config.csrfToken || document.querySelector('meta[name="csrf-token"]')?.content;
     var isAdmin = config.isAdmin ?? true;
     var userBranchId = config.userBranchId;
+    var groupRequiredClasses = config.groupRequiredClasses || ['09', '10', '11', '12'];
 
     // DOM Elements
     var form;
     var branchSelect;
     var classSelect;
     var batchSelect;
+    var academicGroupSelect;
     var batchLoader;
     var studentListLoader;
     var studentListContainer;
@@ -32,6 +35,7 @@ var KTStudentAttendance = function () {
     var saveButton;
     var resetButton;
     var studentCountEl;
+    var academicGroupWrapper;
 
     // ============================================
     // Private Functions
@@ -40,7 +44,9 @@ var KTStudentAttendance = function () {
     /**
      * Make AJAX Request using Fetch API
      */
-    var makeRequest = function (url, options = {}) {
+    var makeRequest = function (url, options) {
+        options = options || {};
+
         var defaultOptions = {
             method: 'GET',
             headers: {
@@ -101,9 +107,11 @@ var KTStudentAttendance = function () {
 
         if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
             var $el = jQuery(element);
+
             if ($el.data('select2')) {
                 $el.select2('destroy');
             }
+
             $el.select2({
                 placeholder: element.dataset.placeholder || 'Select an option',
                 allowClear: true,
@@ -150,6 +158,51 @@ var KTStudentAttendance = function () {
         var div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    };
+
+    /**
+     * Check if class requires academic group selection
+     */
+    var classRequiresGroup = function (classNumeral) {
+        return groupRequiredClasses.indexOf(classNumeral) !== -1;
+    };
+
+    /**
+     * Get selected class numeral
+     */
+    var getSelectedClassNumeral = function () {
+        var selectedOption = classSelect.options[classSelect.selectedIndex];
+        return selectedOption ? selectedOption.dataset.classNumeral : null;
+    };
+
+    /**
+     * Get selected academic group
+     */
+    var getSelectedAcademicGroup = function () {
+        return academicGroupSelect ? academicGroupSelect.value : null;
+    };
+
+    /**
+     * Handle Academic Group Visibility
+     */
+    var handleAcademicGroupVisibility = function () {
+        var classNumeral = getSelectedClassNumeral();
+
+        if (classNumeral && classRequiresGroup(classNumeral)) {
+            toggleElement(academicGroupWrapper, true);
+            // Reinitialize Select2 when shown
+            reinitSelect2(academicGroupSelect);
+        } else {
+            toggleElement(academicGroupWrapper, false);
+            // Clear selection when hidden
+            if (academicGroupSelect) {
+                academicGroupSelect.value = '';
+                reinitSelect2(academicGroupSelect);
+            }
+        }
+
+        // Clear student list when class changes
+        clearStudentList();
     };
 
     // ============================================
@@ -215,10 +268,18 @@ var KTStudentAttendance = function () {
         var classId = classSelect.value;
         var batchId = batchSelect.value;
         var attendanceDate = document.getElementById('attendance_date').value;
+        var classNumeral = getSelectedClassNumeral();
+        var academicGroup = getSelectedAcademicGroup();
 
         // Validation
         if (!branchId || !classId || !batchId) {
             showAlert('warning', 'Validation Error', 'Please select Branch, Class, and Batch.');
+            return;
+        }
+
+        // Validate academic group for required classes
+        if (classRequiresGroup(classNumeral) && !academicGroup) {
+            showAlert('warning', 'Validation Error', 'Please select an Academic Group for this class.');
             return;
         }
 
@@ -235,6 +296,11 @@ var KTStudentAttendance = function () {
             batch_id: batchId,
             attendance_date: attendanceDate
         };
+
+        // Add academic group if applicable
+        if (academicGroup) {
+            payload.academic_group = academicGroup;
+        }
 
         makeRequest(routes.getStudents, {
             method: 'POST',
@@ -279,11 +345,11 @@ var KTStudentAttendance = function () {
      */
     var renderOffDayWarning = function (dayName) {
         offDayWarning.innerHTML =
-            '<div class="alert alert-dismissible alert-warning d-flex align-items-center p-5 mb-5 border border-warning border-dashed fade-in">' +
-            '<i class="ki-outline ki-information-5 fs-2hx text-warning me-4"></i>' +
+            '<div class="alert alert-dismissible alert-warning d-flex align-items-center p-4 p-md-5 mb-4 mb-md-5 border border-warning border-dashed fade-in">' +
+            '<i class="ki-outline ki-information-5 fs-2hx text-warning me-3 me-md-4"></i>' +
             '<div class="d-flex flex-column">' +
-            '<h4 class="mb-1 text-warning">Off Day Warning</h4>' +
-            '<span class="fs-7">' +
+            '<h4 class="mb-1 text-warning fs-6 fs-md-5">Off Day Warning</h4>' +
+            '<span class="fs-8 fs-md-7">' +
             'Today (<strong>' + escapeHtml(dayName) + '</strong>) is the official off-day for this batch. ' +
             'However, you may still proceed to take attendance.' +
             '</span>' +
@@ -295,20 +361,20 @@ var KTStudentAttendance = function () {
     };
 
     /**
-     * Render Student Table
+     * Render Student Table (Mobile Optimized with Cards)
      */
     var renderStudentTable = function (students) {
-        var html =
-            '<div class="table-responsive fade-in">' +
+        // Desktop Table View
+        var desktopHtml = '<div class="d-none d-lg-block table-responsive fade-in">' +
             '<table class="table table-row-bordered table-row-gray-300 align-middle gs-0 gy-4" id="attendance_table">' +
             '<thead>' +
             '<tr class="fw-bold text-muted bg-light">' +
             '<th class="ps-4 w-50px rounded-start">#</th>' +
-            '<th class="min-w-200px">Student Info</th>' +
-            '<th class="text-center min-w-300px">Attendance Status</th>' +
-            '<th class="min-w-150px">Remarks</th>' +
-            '<th class="text-center min-w-100px">Updated At</th>' +
-            '<th class="min-w-150px pe-4 rounded-end">Attendance Taker</th>' +
+            '<th class="min-w-250px">Student Info</th>' +
+            '<th class="text-center min-w-280px">Attendance Status</th>' +
+            '<th class="min-w-120px">Remarks</th>' +
+            '<th class="text-center min-w-90px">Updated</th>' +
+            '<th class="min-w-120px pe-4 rounded-end">Taken By</th>' +
             '</tr>' +
             '</thead>' +
             '<tbody>';
@@ -317,14 +383,15 @@ var KTStudentAttendance = function () {
             var presentChecked = student.status === 'present' ? 'checked' : '';
             var lateChecked = student.status === 'late' ? 'checked' : '';
             var absentChecked = student.status === 'absent' ? 'checked' : '';
+
             var initials = student.name.charAt(0).toUpperCase();
             var remarks = escapeHtml(student.remarks || '');
             var updatedAt = student.updated_at || '-';
             var attendanceTaker = student.attendance_taker || '-';
             var hasAttendance = student.has_attendance;
+            var homeMobile = student.home_mobile || '';
 
-            html +=
-                '<tr data-student-id="' + student.id + '" class="attendance-row" data-has-attendance="' + (hasAttendance ? 'true' : 'false') + '">' +
+            desktopHtml += '<tr data-student-id="' + student.id + '" class="attendance-row" data-has-attendance="' + (hasAttendance ? 'true' : 'false') + '">' +
                 '<td class="ps-4 fw-bold text-gray-600">' + (index + 1) + '</td>' +
                 '<td>' +
                 '<div class="d-flex align-items-center">' +
@@ -334,6 +401,7 @@ var KTStudentAttendance = function () {
                 '<div class="d-flex flex-column">' +
                 '<span class="text-gray-800 fw-bold fs-6">' + escapeHtml(student.name) + '</span>' +
                 '<span class="text-muted fw-semibold fs-7">ID: ' + escapeHtml(student.student_unique_id) + '</span>' +
+                (homeMobile ? '<span class="text-muted fw-semibold fs-7"><i class="ki-outline ki-phone fs-7 me-1"></i>' + escapeHtml(homeMobile) + '</span>' : '') +
                 '</div>' +
                 '</div>' +
                 '</td>' +
@@ -358,29 +426,93 @@ var KTStudentAttendance = function () {
                 '</td>' +
                 '<td>' +
                 '<input type="text" class="form-control form-control-solid form-control-sm remarks-input" ' +
-                'placeholder="Add remarks" value="' + remarks + '">' +
+                'placeholder="Remarks" value="' + remarks + '">' +
                 '</td>' +
                 '<td class="text-center">' +
-                '<span class="updated-at-display badge badge-light-primary fs-7">' +
-                '<i class="ki-outline ki-time fs-7 me-1"></i>' + escapeHtml(updatedAt) +
+                '<span class="updated-at-display badge badge-light-primary fs-8">' +
+                '<i class="ki-outline ki-time fs-8 me-1"></i>' + escapeHtml(updatedAt) +
                 '</span>' +
                 '</td>' +
                 '<td class="pe-4">' +
                 '<div class="attendance-taker-display d-flex align-items-center">' +
-                '<div class="symbol symbol-30px me-2">' +
-                '<span class="symbol-label bg-light-info text-info fs-8 fw-bold">' +
+                '<div class="symbol symbol-25px me-2">' +
+                '<span class="symbol-label bg-light-info text-info fs-9 fw-bold">' +
                 (attendanceTaker !== '-' ? escapeHtml(attendanceTaker.charAt(0).toUpperCase()) : '-') +
                 '</span>' +
                 '</div>' +
-                '<span class="text-gray-700 fs-7 fw-semibold attendance-taker-name">' + escapeHtml(attendanceTaker) + '</span>' +
+                '<span class="text-gray-700 fs-8 fw-semibold attendance-taker-name">' + escapeHtml(attendanceTaker) + '</span>' +
                 '</div>' +
                 '</td>' +
                 '</tr>';
         });
 
-        html += '</tbody></table></div>';
+        desktopHtml += '</tbody></table></div>';
 
-        studentListContainer.innerHTML = html;
+        // Mobile Card View
+        var mobileHtml = '<div class="d-lg-none fade-in" id="attendance_cards">';
+
+        students.forEach(function (student, index) {
+            var presentChecked = student.status === 'present' ? 'checked' : '';
+            var lateChecked = student.status === 'late' ? 'checked' : '';
+            var absentChecked = student.status === 'absent' ? 'checked' : '';
+
+            var initials = student.name.charAt(0).toUpperCase();
+            var remarks = escapeHtml(student.remarks || '');
+            var updatedAt = student.updated_at || '-';
+            var attendanceTaker = student.attendance_taker || '-';
+            var hasAttendance = student.has_attendance;
+            var homeMobile = student.home_mobile || '';
+
+            mobileHtml += '<div class="card card-bordered mb-3 attendance-card ' + (hasAttendance ? 'has-attendance' : '') + '" data-student-id="' + student.id + '" data-has-attendance="' + (hasAttendance ? 'true' : 'false') + '">' +
+                '<div class="card-body p-4">' +
+                // Header with student info
+                '<div class="d-flex align-items-start justify-content-between mb-3">' +
+                '<div class="d-flex align-items-center">' +
+                '<div class="symbol symbol-40px me-3">' +
+                '<span class="symbol-label bg-light-primary text-primary fw-bold fs-6">' + escapeHtml(initials) + '</span>' +
+                '</div>' +
+                '<div>' +
+                '<div class="fw-bold text-gray-800 fs-6">' + escapeHtml(student.name) + '</div>' +
+                '<div class="text-muted fs-8">ID: ' + escapeHtml(student.student_unique_id) + '</div>' +
+                (homeMobile ? '<div class="text-primary fs-8 mt-1"><i class="ki-outline ki-phone fs-9 me-1"></i><a href="tel:' + escapeHtml(homeMobile) + '" class="text-primary">' + escapeHtml(homeMobile) + '</a></div>' : '') +
+                '</div>' +
+                '</div>' +
+                '<span class="badge badge-light-secondary fs-8">#' + (index + 1) + '</span>' +
+                '</div>' +
+
+                // Status buttons (larger for mobile touch)
+                '<div class="d-flex gap-2 mb-3">' +
+                '<label class="status-option-mobile present-option flex-fill">' +
+                '<input class="status-radio" type="radio" value="present" name="status_' + student.id + '" ' + presentChecked + '>' +
+                '<span class="status-label"><i class="ki-outline ki-check-circle fs-6"></i> Present</span>' +
+                '</label>' +
+                '<label class="status-option-mobile late-option flex-fill">' +
+                '<input class="status-radio" type="radio" value="late" name="status_' + student.id + '" ' + lateChecked + '>' +
+                '<span class="status-label"><i class="ki-outline ki-time fs-6"></i> Late</span>' +
+                '</label>' +
+                '<label class="status-option-mobile absent-option flex-fill">' +
+                '<input class="status-radio" type="radio" value="absent" name="status_' + student.id + '" ' + absentChecked + '>' +
+                '<span class="status-label"><i class="ki-outline ki-cross-circle fs-6"></i> Absent</span>' +
+                '</label>' +
+                '</div>' +
+
+                // Remarks input
+                '<div class="mb-2">' +
+                '<input type="text" class="form-control form-control-solid form-control-sm remarks-input" placeholder="Add remarks (optional)" value="' + remarks + '">' +
+                '</div>' +
+
+                // Footer info
+                '<div class="d-flex justify-content-between align-items-center text-muted fs-9">' +
+                '<span><i class="ki-outline ki-time fs-9 me-1"></i>Updated: ' + escapeHtml(updatedAt) + '</span>' +
+                '<span><i class="ki-outline ki-user fs-9 me-1"></i>' + escapeHtml(attendanceTaker) + '</span>' +
+                '</div>' +
+                '</div>' +
+                '</div>';
+        });
+
+        mobileHtml += '</div>';
+
+        studentListContainer.innerHTML = desktopHtml + mobileHtml;
     };
 
     /**
@@ -391,6 +523,7 @@ var KTStudentAttendance = function () {
         var classId = classSelect.value;
         var batchId = batchSelect.value;
         var attendanceDate = document.getElementById('attendance_date').value;
+        var academicGroup = getSelectedAcademicGroup();
 
         var payload = {
             branch_id: branchId,
@@ -398,6 +531,10 @@ var KTStudentAttendance = function () {
             batch_id: batchId,
             attendance_date: attendanceDate
         };
+
+        if (academicGroup) {
+            payload.academic_group = academicGroup;
+        }
 
         return makeRequest(routes.getStudents, {
             method: 'POST',
@@ -415,16 +552,15 @@ var KTStudentAttendance = function () {
     };
 
     /**
-     * Save Attendance
+     * Collect attendance data from both desktop and mobile views
      */
-    var saveAttendance = function () {
+    var collectAttendanceData = function () {
         var attendanceData = [];
         var hasValidationError = false;
 
-        var rows = document.querySelectorAll('#attendance_table tbody tr');
-
-        // Collect and validate data
-        rows.forEach(function (row) {
+        // Collect from desktop table
+        var tableRows = document.querySelectorAll('#attendance_table tbody tr');
+        tableRows.forEach(function (row) {
             var studentId = row.dataset.studentId;
             var statusInput = row.querySelector('input[name="status_' + studentId + '"]:checked');
             var remarksInput = row.querySelector('.remarks-input');
@@ -442,7 +578,46 @@ var KTStudentAttendance = function () {
             }
         });
 
-        if (hasValidationError) {
+        // Collect from mobile cards
+        var mobileCards = document.querySelectorAll('#attendance_cards .attendance-card');
+        mobileCards.forEach(function (card) {
+            var studentId = card.dataset.studentId;
+            var statusInput = card.querySelector('input[name="status_' + studentId + '"]:checked');
+            var remarksInput = card.querySelector('.remarks-input');
+
+            // Only add if not already collected from table
+            var alreadyCollected = attendanceData.some(function (item) {
+                return item.student_id === studentId;
+            });
+
+            if (!alreadyCollected) {
+                if (!statusInput) {
+                    hasValidationError = true;
+                    card.classList.add('border-danger');
+                } else {
+                    card.classList.remove('border-danger');
+                    attendanceData.push({
+                        student_id: studentId,
+                        status: statusInput.value,
+                        remarks: remarksInput ? remarksInput.value : ''
+                    });
+                }
+            }
+        });
+
+        return {
+            data: attendanceData,
+            hasError: hasValidationError
+        };
+    };
+
+    /**
+     * Save Attendance
+     */
+    var saveAttendance = function () {
+        var result = collectAttendanceData();
+
+        if (result.hasError) {
             showAlert('error', 'Incomplete Attendance', 'Please select a status (Present, Late, or Absent) for all students highlighted in red.');
             return;
         }
@@ -453,7 +628,7 @@ var KTStudentAttendance = function () {
             branch_id: branchSelect.value,
             class_id: classSelect.value,
             batch_id: batchSelect.value,
-            attendances: attendanceData
+            attendances: result.data
         };
 
         // Set loading state
@@ -498,10 +673,16 @@ var KTStudentAttendance = function () {
         reinitSelect2(classSelect);
         reinitSelect2(batchSelect);
 
+        // Hide and reset academic group dropdown
+        toggleElement(academicGroupWrapper, false);
+        if (academicGroupSelect) {
+            academicGroupSelect.value = '';
+            reinitSelect2(academicGroupSelect);
+        }
+
         // Clear containers
         studentListContainer.innerHTML = '';
         offDayWarning.innerHTML = '';
-
         toggleElement(saveSection, false);
         toggleElement(bulkButtons, false);
 
@@ -522,6 +703,10 @@ var KTStudentAttendance = function () {
         // Clear any error highlighting
         document.querySelectorAll('.attendance-row').forEach(function (row) {
             row.classList.remove('bg-light-danger');
+        });
+
+        document.querySelectorAll('.attendance-card').forEach(function (card) {
+            card.classList.remove('border-danger');
         });
     };
 
@@ -546,6 +731,13 @@ var KTStudentAttendance = function () {
         var branchId = branchSelect.value;
         loadBatches(branchId);
         clearStudentList();
+    };
+
+    /**
+     * Handle Class Change
+     */
+    var handleClassChange = function () {
+        handleAcademicGroupVisibility();
     };
 
     /**
@@ -584,6 +776,8 @@ var KTStudentAttendance = function () {
         saveButton = document.getElementById('save_attendance_button');
         resetButton = document.getElementById('reset_button');
         studentCountEl = document.getElementById('student_count');
+        academicGroupWrapper = document.getElementById('academic_group_wrapper');
+        academicGroupSelect = document.getElementById('academic_group');
     };
 
     /**
@@ -598,6 +792,16 @@ var KTStudentAttendance = function () {
             }
             // Native fallback
             branchSelect.addEventListener('change', handleBranchChange);
+        }
+
+        // Class change - Handle academic group visibility
+        if (classSelect) {
+            // For Select2
+            if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
+                jQuery(classSelect).on('select2:select select2:clear', handleClassChange);
+            }
+            // Native fallback
+            classSelect.addEventListener('change', handleClassChange);
         }
 
         // Form submit
@@ -659,11 +863,12 @@ var KTStudentAttendance = function () {
             resetForm();
         }
     };
-}();
+}());
 
 // ============================================
 // DOM Ready Initialization
 // ============================================
+
 KTUtil.onDOMContentLoaded(function () {
     KTStudentAttendance.init();
 });

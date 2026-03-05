@@ -30,13 +30,13 @@
     <div class="card">
         <div class="card-header border-0 pt-6">
             <div class="card-title w-100">
-                <form id="student_list_filter_form" class="row g-3 align-items-end w-100">
+                <form id="student_list_filter_form" class="row g-3 g-md-4 align-items-end w-100">
                     <input type="hidden" value="{{ date('d-m-Y') }}" name="attendance_date" id="attendance_date">
 
                     {{-- Branch Selection - Hidden for non-admin users --}}
-                    <div class="col-md-3 {{ !auth()->user()->hasRole('admin') ? 'd-none' : '' }}"
+                    <div class="col-12 col-md-6 col-lg-3 {{ !auth()->user()->hasRole('admin') ? 'd-none' : '' }}"
                         id="branch_selection_wrapper">
-                        <label for="branch_id" class="form-label fw-semibold required">Branch</label>
+                        <label for="branch_id" class="form-label fw-semibold required mb-2">Branch</label>
                         <div class="input-group input-group-solid flex-nowrap">
                             <span class="input-group-text">
                                 <i class="ki-outline ki-parcel fs-3"></i>
@@ -56,8 +56,8 @@
                     </div>
 
                     {{-- Class Selection --}}
-                    <div class="col-md-3">
-                        <label for="class_id" class="form-label fw-semibold required">Class</label>
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                        <label for="class_id" class="form-label fw-semibold required mb-2">Class</label>
                         <div class="input-group input-group-solid flex-nowrap">
                             <span class="input-group-text">
                                 <i class="ki-outline ki-book fs-3"></i>
@@ -67,7 +67,7 @@
                                 data-hide-search="false">
                                 <option value="">Select class</option>
                                 @foreach ($classnames as $classname)
-                                    <option value="{{ $classname->id }}">
+                                    <option value="{{ $classname->id }}" data-class-numeral="{{ $classname->class_numeral }}">
                                         {{ $classname->name }} ({{ $classname->class_numeral }})
                                     </option>
                                 @endforeach
@@ -75,9 +75,27 @@
                         </div>
                     </div>
 
+                    {{-- Academic Group Selection - Shown only for Class 09-12 --}}
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-2 d-none" id="academic_group_wrapper">
+                        <label for="academic_group" class="form-label fw-semibold required mb-2">Group</label>
+                        <div class="input-group input-group-solid flex-nowrap">
+                            <span class="input-group-text">
+                                <i class="ki-outline ki-abstract-26 fs-3"></i>
+                            </span>
+                            <select id="academic_group" class="form-select form-select-solid rounded-start-0 border-start"
+                                name="academic_group" data-control="select2" data-placeholder="Select group"
+                                data-hide-search="true">
+                                <option value="">Select group</option>
+                                @foreach ($academicGroups as $group)
+                                    <option value="{{ $group }}">{{ $group }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
                     {{-- Batch Selection (Loaded via AJAX) --}}
-                    <div class="col-md-3">
-                        <label for="batch_id" class="form-label fw-semibold required">Batch</label>
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-2">
+                        <label for="batch_id" class="form-label fw-semibold required mb-2">Batch</label>
                         <div class="input-group input-group-solid flex-nowrap position-relative">
                             <span class="input-group-text">
                                 <i class="ki-outline ki-people fs-3"></i>
@@ -94,21 +112,24 @@
                     </div>
 
                     {{-- Submit Button --}}
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-primary" id="submit_button">
-                            <i class="ki-outline ki-magnifier fs-3 me-1"></i>
-                            Load Students
-                        </button>
-                        <button type="button" class="btn btn-light-secondary ms-2" id="reset_button">
-                            <i class="ki-outline ki-arrows-circle fs-3 me-1"></i>
-                            Reset
-                        </button>
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1 flex-lg-grow-0" id="submit_button">
+                                <i class="ki-outline ki-magnifier fs-3 me-1"></i>
+                                <span class="d-none d-sm-inline">Load Students</span>
+                                <span class="d-inline d-sm-none">Load</span>
+                            </button>
+                            <button type="button" class="btn btn-light-secondary flex-grow-1 flex-lg-grow-0" id="reset_button">
+                                <i class="ki-outline ki-arrows-circle fs-3"></i>
+                                <span class="d-none d-sm-inline ms-1">Reset</span>
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
         </div>
 
-        <div class="card-body py-10">
+        <div class="card-body py-6 py-md-10">
             {{-- Loader --}}
             <div id="student_list_loader" class="text-center my-5 d-none">
                 <span class="spinner-border text-primary" role="status"></span>
@@ -119,46 +140,44 @@
             <div id="off_day_warning"></div>
 
             {{-- Bulk Action Buttons --}}
-            <div class="d-flex align-items-center flex-wrap gap-3 mb-5 p-4 bg-light rounded border border-dashed border-gray-300 d-none"
+            <div class="d-flex align-items-center flex-wrap gap-2 gap-md-3 mb-4 mb-md-5 p-3 p-md-4 bg-light rounded border border-dashed border-gray-300 d-none"
                 id="bulk_buttons">
-                <span class="fw-bold text-gray-700 me-2">
+                <span class="fw-bold text-gray-700 me-2 w-100 w-sm-auto mb-2 mb-sm-0">
                     <i class="ki-outline ki-abstract-26 fs-4 me-1"></i>
                     Quick Actions:
                 </span>
-
-                <label class="quick-action-btn present-btn">
-                    <input type="radio" name="mark_all" id="mark_all_present" value="present">
-                    <i class="ki-outline ki-check-circle fs-5"></i>
-                    <span>Mark All Present</span>
-                </label>
-
-                <label class="quick-action-btn late-btn">
-                    <input type="radio" name="mark_all" id="mark_all_late" value="late">
-                    <i class="ki-outline ki-time fs-5"></i>
-                    <span>Mark All Late</span>
-                </label>
-
-                <label class="quick-action-btn absent-btn">
-                    <input type="radio" name="mark_all" id="mark_all_absent" value="absent">
-                    <i class="ki-outline ki-cross-circle fs-5"></i>
-                    <span>Mark All Absent</span>
-                </label>
+                <div class="d-flex gap-2 flex-wrap">
+                    <label class="quick-action-btn present-btn">
+                        <input type="radio" name="mark_all" id="mark_all_present" value="present">
+                        <i class="ki-outline ki-check-circle fs-5"></i>
+                        <span>All Present</span>
+                    </label>
+                    <label class="quick-action-btn late-btn">
+                        <input type="radio" name="mark_all" id="mark_all_late" value="late">
+                        <i class="ki-outline ki-time fs-5"></i>
+                        <span>All Late</span>
+                    </label>
+                    <label class="quick-action-btn absent-btn">
+                        <input type="radio" name="mark_all" id="mark_all_absent" value="absent">
+                        <i class="ki-outline ki-cross-circle fs-5"></i>
+                        <span>All Absent</span>
+                    </label>
+                </div>
             </div>
 
             {{-- Student List Container --}}
             <div id="student_list_container"></div>
 
             {{-- Save Attendance Section --}}
-            <div class="mt-5 d-none d-flex align-items-center justify-content-between p-4 bg-light-info rounded"
+            <div class="mt-4 mt-md-5 d-none d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 p-3 p-md-4 bg-light-info rounded"
                 id="save_attendance_section">
                 <div class="d-flex align-items-center">
                     <i class="ki-outline ki-information-5 fs-2 text-info me-3"></i>
-                    <span class="text-gray-700">
-                        <strong id="student_count">0</strong> students loaded. Please mark attendance for all students
-                        before saving.
+                    <span class="text-gray-700 fs-7 fs-md-6">
+                        <strong id="student_count">0</strong> students loaded. Mark attendance for all before saving.
                     </span>
                 </div>
-                <button class="btn btn-primary" id="save_attendance_button">
+                <button class="btn btn-primary w-100 w-md-auto" id="save_attendance_button">
                     <i class="ki-outline ki-check-circle fs-3 me-1"></i>
                     Save Attendance
                 </button>
@@ -178,7 +197,8 @@
             },
             csrfToken: "{{ csrf_token() }}",
             isAdmin: {{ auth()->user()->hasRole('admin') ? 'true' : 'false' }},
-            userBranchId: {{ auth()->user()->branch_id ?? 'null' }}
+            userBranchId: {{ auth()->user()->branch_id ?? 'null' }},
+            groupRequiredClasses: @json($groupRequiredClasses)
         };
     </script>
     <script src="{{ asset('js/attendances/index.js') }}"></script>

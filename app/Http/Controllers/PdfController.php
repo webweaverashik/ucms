@@ -1,16 +1,16 @@
 <?php
 namespace App\Http\Controllers;
 
-use Mpdf\Mpdf;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
-use App\Models\Student\Student;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
-use App\Models\Payment\PaymentInvoice;
 use App\Models\Academic\SecondaryClass;
+use App\Models\Payment\PaymentInvoice;
 use App\Models\Payment\PaymentTransaction;
 use App\Models\Payment\SecondaryClassPayment;
+use App\Models\Student\Student;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
+use Mpdf\Mpdf;
 
 class PdfController extends Controller
 {
@@ -72,32 +72,32 @@ class PdfController extends Controller
     }
 
 /**
-     * Download statement - auto-detects statement type from invoice
-     * 
-     * If invoice_id is provided and it's a 'Special Class Fee' invoice,
-     * the controller auto-finds the secondary_class_id and generates special class statement.
-     * Otherwise, generates regular statement.
-     * 
-     * @param Request $request
-     * - student_id (required)
-     * - statement_year (required)
-     * - invoice_id (optional) - used to auto-detect Special Class Fee
-     */
+ * Download statement - auto-detects statement type from invoice
+ *
+ * If invoice_id is provided and it's a 'Special Class Fee' invoice,
+ * the controller auto-finds the secondary_class_id and generates special class statement.
+ * Otherwise, generates regular statement.
+ *
+ * @param Request $request
+ * - student_id (required)
+ * - statement_year (required)
+ * - invoice_id (optional) - used to auto-detect Special Class Fee
+ */
     public function downloadStatement(Request $request)
     {
         $request->validate([
-            'student_id' => 'required|exists:students,id',
+            'student_id'     => 'required|exists:students,id',
             'statement_year' => 'required|integer',
-            'invoice_id' => 'nullable|exists:payment_invoices,id',
+            'invoice_id'     => 'nullable|exists:payment_invoices,id',
         ]);
 
         $student = Student::with(['class', 'batch'])->findOrFail($request->student_id);
-        $year = $request->statement_year;
+        $year    = $request->statement_year;
 
         // Debug: Log all request data (check storage/logs/laravel.log)
         Log::info('=== Statement Download Request ===', [
-            'all_input' => $request->all(),
-            'invoice_id_raw' => $request->input('invoice_id'),
+            'all_input'         => $request->all(),
+            'invoice_id_raw'    => $request->input('invoice_id'),
             'invoice_id_filled' => $request->filled('invoice_id'),
         ]);
 
@@ -106,11 +106,11 @@ class PdfController extends Controller
             $invoice = PaymentInvoice::with('invoiceType')->find($request->invoice_id);
 
             Log::info('Invoice Lookup Result', [
-                'searched_id' => $request->invoice_id,
-                'invoice_found' => $invoice ? 'YES' : 'NO',
-                'invoice_type_id' => $invoice?->invoice_type_id,
+                'searched_id'       => $request->invoice_id,
+                'invoice_found'     => $invoice ? 'YES' : 'NO',
+                'invoice_type_id'   => $invoice?->invoice_type_id,
                 'invoice_type_name' => $invoice?->invoiceType?->type_name,
-                'is_special_class' => $invoice?->invoiceType?->type_name === 'Special Class Fee',
+                'is_special_class'  => $invoice?->invoiceType?->type_name === 'Special Class Fee',
             ]);
 
             if ($invoice && $invoice->invoiceType?->type_name === 'Special Class Fee') {
@@ -118,10 +118,10 @@ class PdfController extends Controller
                 $secondaryClassPayment = SecondaryClassPayment::where('invoice_id', $invoice->id)->first();
 
                 Log::info('SecondaryClassPayment Lookup', [
-                    'invoice_id' => $invoice->id,
-                    'found' => $secondaryClassPayment ? 'YES' : 'NO',
+                    'invoice_id'         => $invoice->id,
+                    'found'              => $secondaryClassPayment ? 'YES' : 'NO',
                     'secondary_class_id' => $secondaryClassPayment?->secondary_class_id,
-                    'record' => $secondaryClassPayment?->toArray(),
+                    'record'             => $secondaryClassPayment?->toArray(),
                 ]);
 
                 if ($secondaryClassPayment) {
@@ -206,8 +206,8 @@ class PdfController extends Controller
                 return $monthGroup
                     ->groupBy('payment_invoice_id')
                     ->map(function (Collection $invoiceGroup) {
-                        $first = $invoiceGroup->first();
-                        $sumPaid = $invoiceGroup->sum('amount_paid');
+                        $first              = $invoiceGroup->first();
+                        $sumPaid            = $invoiceGroup->sum('amount_paid');
                         $first->amount_paid = $sumPaid;
                         return $first;
                     });
@@ -224,7 +224,7 @@ class PdfController extends Controller
 
     /**
      * Generate special class statement
-     * 
+     *
      * Simply sums all 'Special Class Fee' payments by month for the selected secondary class.
      * Works for both 'monthly' and 'one_time' payment types - just sums amounts per month.
      */
@@ -249,16 +249,16 @@ class PdfController extends Controller
                     $q->where('type_name', 'Special Class Fee');
                 })
                 // Match year from month_year field OR created_at
-                ->where(function ($q) use ($year) {
-                    $q->where('month_year', 'LIKE', '%_' . $year)
-                      ->orWhereYear('created_at', $year);
-                });
+                    ->where(function ($q) use ($year) {
+                        $q->where('month_year', 'LIKE', '%_' . $year)
+                            ->orWhereYear('created_at', $year);
+                    });
             })
             ->get();
 
         if ($payments->isEmpty()) {
             return response()->json([
-                'error' => "No special class payments found for {$year}."
+                'error' => "No special class payments found for {$year}.",
             ], 404);
         }
 
@@ -282,10 +282,10 @@ class PdfController extends Controller
 
                 // Sum all amounts for the month (regardless of payment_type)
                 $totalPaid = $allTransactions->sum('amount_paid');
-                
+
                 // Sum all dues for the month
                 $totalDue = $monthGroup->sum(fn($p) => $p->invoice->amount_due ?? 0);
-                
+
                 // Count number of payments (transactions)
                 $paymentCount = $allTransactions->count();
 
@@ -293,17 +293,17 @@ class PdfController extends Controller
                 $lastTransaction = $allTransactions->sortByDesc('created_at')->first();
 
                 return (object) [
-                    'total_paid' => $totalPaid,
-                    'total_due' => $totalDue,
-                    'payment_count' => $paymentCount,
-                    'receiver_name' => $lastTransaction?->createdBy?->name,
+                    'total_paid'        => $totalPaid,
+                    'total_due'         => $totalDue,
+                    'payment_count'     => $paymentCount,
+                    'receiver_name'     => $lastTransaction?->createdBy?->name,
                     'last_payment_date' => $lastTransaction?->created_at,
                 ];
             });
 
         // Calculate overall totals
         $totalPaid = $monthlyPayments->sum('total_paid');
-        $totalDue = $monthlyPayments->sum('total_due');
+        $totalDue  = $monthlyPayments->sum('total_due');
 
         return view('pdf.special_class_statement', compact(
             'student',

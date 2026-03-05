@@ -1,11 +1,13 @@
 /**
  * Student Attendance Styles
  * Path: public/css/attendances/index.css
+ * Mobile-Friendly Version with Academic Group Support
  */
 
 /* ============================================
    Animations
    ============================================ */
+
 .fade-in {
     animation: fadeIn 0.3s ease-in;
 }
@@ -22,8 +24,31 @@
 }
 
 /* ============================================
+   Academic Group Dropdown Styling
+   ============================================ */
+
+/* Group dropdown icon colors based on selection */
+#academic_group_wrapper .input-group-text {
+    transition: all 0.2s ease;
+}
+
+/* Optional: Style Select2 dropdown items by group */
+.select2-results__option[data-value="Science"] {
+    color: #009ef7;
+}
+
+.select2-results__option[data-value="Commerce"] {
+    color: #ffc700;
+}
+
+.select2-results__option[data-value="Arts"] {
+    color: #50cd89;
+}
+
+/* ============================================
    Attendance Row States
    ============================================ */
+
 .attendance-row.bg-light-danger {
     background-color: #fff5f8 !important;
 }
@@ -39,17 +64,18 @@
 /* ============================================
    Quick Action Buttons (Bulk Actions)
    ============================================ */
+
 .quick-action-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.6rem 1.25rem;
+    padding: 0.5rem 1rem;
     border-radius: 0.475rem;
     border: 1px solid transparent;
     cursor: pointer;
     transition: all 0.2s ease;
     font-weight: 500;
-    font-size: 0.925rem;
+    font-size: 0.85rem;
 }
 
 .quick-action-btn input[type="radio"] {
@@ -129,18 +155,19 @@
 }
 
 /* ============================================
-   Status Options (Per-Student Radio Buttons)
+   Status Options (Per-Student Radio Buttons) - Desktop
    ============================================ */
+
 .status-option {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.5rem 1rem;
+    gap: 0.35rem;
+    padding: 0.4rem 0.75rem;
     border-radius: 0.475rem;
     cursor: pointer;
     transition: all 0.15s ease;
     font-weight: 500;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     border: 1px dashed transparent;
     background-color: #f9f9f9;
 }
@@ -150,8 +177,8 @@
 }
 
 .status-option .status-dot {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     transition: all 0.15s ease;
 }
@@ -235,12 +262,146 @@
 }
 
 /* ============================================
+   Status Options - Mobile (Larger Touch Targets)
+   Plain by default, colored only when selected
+   ============================================ */
+
+.status-option-mobile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 0.5rem;
+    border-radius: 0.625rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-weight: 600;
+    font-size: 0.75rem;
+    border: 2px solid #e4e6ef;
+    background-color: #f9f9f9;
+    color: #5e6278;
+    text-align: center;
+    min-height: 48px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.status-option-mobile input[type="radio"] {
+    display: none;
+}
+
+.status-option-mobile .status-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+}
+
+.status-option-mobile .status-label i {
+    font-size: 1rem;
+    color: #a1a5b7;
+    transition: color 0.15s ease;
+}
+
+/* Present Option Mobile - Plain by default */
+.status-option-mobile.present-option {
+    color: #5e6278;
+    border-color: #e4e6ef;
+    background-color: #f9f9f9;
+}
+
+.status-option-mobile.present-option .status-label i {
+    color: #a1a5b7;
+}
+
+/* Present Option Mobile - Active/Selected state */
+.status-option-mobile.present-option:has(input:checked) {
+    background-color: #50cd89;
+    color: #fff;
+    border-color: #50cd89;
+    box-shadow: 0 3px 8px rgba(80, 205, 137, 0.35);
+}
+
+.status-option-mobile.present-option:has(input:checked) .status-label i {
+    color: #fff;
+}
+
+/* Late Option Mobile - Plain by default */
+.status-option-mobile.late-option {
+    color: #5e6278;
+    border-color: #e4e6ef;
+    background-color: #f9f9f9;
+}
+
+.status-option-mobile.late-option .status-label i {
+    color: #a1a5b7;
+}
+
+/* Late Option Mobile - Active/Selected state */
+.status-option-mobile.late-option:has(input:checked) {
+    background-color: #ffc700;
+    color: #fff;
+    border-color: #ffc700;
+    box-shadow: 0 3px 8px rgba(255, 199, 0, 0.35);
+}
+
+.status-option-mobile.late-option:has(input:checked) .status-label i {
+    color: #fff;
+}
+
+/* Absent Option Mobile - Plain by default */
+.status-option-mobile.absent-option {
+    color: #5e6278;
+    border-color: #e4e6ef;
+    background-color: #f9f9f9;
+}
+
+.status-option-mobile.absent-option .status-label i {
+    color: #a1a5b7;
+}
+
+/* Absent Option Mobile - Active/Selected state */
+.status-option-mobile.absent-option:has(input:checked) {
+    background-color: #f1416c;
+    color: #fff;
+    border-color: #f1416c;
+    box-shadow: 0 3px 8px rgba(241, 65, 108, 0.35);
+}
+
+.status-option-mobile.absent-option:has(input:checked) .status-label i {
+    color: #fff;
+}
+
+/* ============================================
+   Mobile Attendance Cards
+   ============================================ */
+
+.attendance-card {
+    border-radius: 0.75rem;
+    transition: all 0.2s ease;
+    border-width: 2px;
+}
+
+.attendance-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.attendance-card.has-attendance {
+    border-color: #c8f1db;
+    background-color: #fcfffe;
+}
+
+.attendance-card.border-danger {
+    border-color: #f1416c !important;
+    background-color: #fff5f8 !important;
+}
+
+/* ============================================
    Updated At & Attendance Taker Display
    ============================================ */
+
 .updated-at-display {
     display: inline-flex;
     align-items: center;
-    padding: 0.4rem 0.75rem;
+    padding: 0.35rem 0.6rem;
     font-weight: 500;
 }
 
@@ -249,15 +410,15 @@
 }
 
 .attendance-taker-display {
-    min-width: 120px;
+    min-width: 100px;
 }
 
 .attendance-taker-display .symbol-label {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
 }
 
 .attendance-taker-name {
-    max-width: 120px;
+    max-width: 100px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -266,73 +427,37 @@
 /* ============================================
    Table Responsive Improvements
    ============================================ */
+
 #attendance_table {
-    min-width: 900px;
+    min-width: 850px;
 }
 
 #attendance_table thead th {
     white-space: nowrap;
     vertical-align: middle;
-    padding: 1rem 0.75rem;
+    padding: 0.875rem 0.5rem;
 }
 
 #attendance_table tbody td {
     vertical-align: middle;
-    padding: 0.75rem;
+    padding: 0.625rem 0.5rem;
 }
 
 /* Remarks Input */
 .remarks-input {
-    min-width: 120px;
-    font-size: 0.85rem;
+    min-width: 100px;
+    font-size: 0.8rem;
 }
 
 .remarks-input::placeholder {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     opacity: 0.6;
-}
-
-/* ============================================
-   Responsive Adjustments
-   ============================================ */
-@media (max-width: 1400px) {
-    .status-option {
-        padding: 0.4rem 0.6rem;
-        font-size: 0.8rem;
-    }
-
-    .status-option .status-dot {
-        width: 8px;
-        height: 8px;
-    }
-
-    .remarks-input {
-        min-width: 100px;
-    }
-
-    .attendance-taker-name {
-        max-width: 100px;
-    }
-}
-
-@media (max-width: 992px) {
-    .quick-action-btn {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.85rem;
-    }
-
-    .quick-action-btn span {
-        display: none;
-    }
-
-    .quick-action-btn i {
-        margin: 0;
-    }
 }
 
 /* ============================================
    Badge Variations for Status
    ============================================ */
+
 .badge-attendance-present {
     background-color: #e8fff3;
     color: #50cd89;
@@ -351,6 +476,7 @@
 /* ============================================
    Loading State Animations
    ============================================ */
+
 @keyframes pulse {
     0%, 100% {
         opacity: 1;
@@ -367,6 +493,7 @@
 /* ============================================
    Save Section Styling
    ============================================ */
+
 #save_attendance_section {
     border: 1px dashed #7239ea;
     transition: all 0.2s ease;
@@ -380,6 +507,7 @@
 /* ============================================
    Empty State
    ============================================ */
+
 .empty-state {
     text-align: center;
     padding: 3rem 1rem;
@@ -399,4 +527,243 @@
 .empty-state p {
     color: #a1a5b7;
     font-size: 0.9rem;
+}
+
+/* ============================================
+   Responsive Adjustments
+   ============================================ */
+
+/* Tablets and Small Laptops */
+@media (max-width: 1200px) {
+    .status-option {
+        padding: 0.35rem 0.6rem;
+        font-size: 0.75rem;
+    }
+
+    .status-option .status-dot {
+        width: 7px;
+        height: 7px;
+    }
+
+    .remarks-input {
+        min-width: 90px;
+    }
+
+    .attendance-taker-name {
+        max-width: 80px;
+    }
+}
+
+/* Tablets */
+@media (max-width: 992px) {
+    .quick-action-btn {
+        padding: 0.45rem 0.75rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* Mobile Landscape & Large Phones */
+@media (max-width: 768px) {
+    .card-header {
+        padding: 1rem !important;
+    }
+
+    .card-body {
+        padding: 1rem !important;
+    }
+
+    .quick-action-btn span {
+        display: inline;
+    }
+
+    .quick-action-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+    }
+}
+
+/* ============================================
+   Mobile Form Layout Fixes
+   ============================================ */
+
+/* Small tablets and large phones */
+@media (max-width: 767.98px) {
+    /* Increase row gap for mobile forms */
+    #student_list_filter_form.row.g-3,
+    #student_list_filter_form.row.g-md-4 {
+        --bs-gutter-y: 1rem;
+    }
+
+    /* Ensure proper spacing between all form columns */
+    #student_list_filter_form > [class*="col-"] {
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    /* Academic group wrapper needs extra top margin when visible */
+    #academic_group_wrapper:not(.d-none) {
+        margin-top: 0;
+    }
+}
+
+/* Mobile Portrait */
+@media (max-width: 575.98px) {
+    /* Full width columns on mobile */
+    #student_list_filter_form > [class*="col-"] {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Remove bottom margin from last element */
+    #student_list_filter_form > [class*="col-"]:last-child {
+        margin-bottom: 0;
+    }
+
+    /* Ensure buttons take full width and have proper spacing */
+    #student_list_filter_form .d-flex.gap-2 {
+        width: 100%;
+    }
+
+    #student_list_filter_form .d-flex.gap-2 .btn {
+        flex: 1;
+        padding: 0.75rem 1rem;
+    }
+}
+
+/* Mobile Portrait */
+@media (max-width: 576px) {
+    .page-title {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+
+    .page-title .border-start {
+        display: none !important;
+    }
+
+    .page-title .breadcrumb {
+        margin-top: 0.5rem;
+    }
+
+    .quick-action-btn {
+        padding: 0.4rem 0.5rem;
+        gap: 0.25rem;
+    }
+
+    .quick-action-btn i {
+        font-size: 1rem;
+    }
+
+    .quick-action-btn span {
+        font-size: 0.7rem;
+    }
+
+    #bulk_buttons {
+        padding: 0.75rem !important;
+    }
+
+    #bulk_buttons > span {
+        font-size: 0.8rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .status-option-mobile {
+        padding: 0.65rem 0.35rem;
+        font-size: 0.7rem;
+        min-height: 44px;
+    }
+
+    .status-option-mobile .status-label i {
+        font-size: 0.875rem;
+    }
+
+    .attendance-card .card-body {
+        padding: 0.875rem !important;
+    }
+
+    #save_attendance_section {
+        padding: 0.875rem !important;
+    }
+
+    #save_attendance_section .btn {
+        font-size: 0.85rem;
+        padding: 0.65rem 1rem;
+    }
+}
+
+/* Very Small Phones */
+@media (max-width: 375px) {
+    .quick-action-btn span {
+        display: none;
+    }
+
+    .quick-action-btn {
+        padding: 0.5rem;
+    }
+
+    .status-option-mobile {
+        font-size: 0.65rem;
+        padding: 0.5rem 0.25rem;
+    }
+
+    .status-option-mobile .status-label i {
+        display: none;
+    }
+}
+
+/* ============================================
+   Touch Device Optimizations
+   ============================================ */
+
+@media (hover: none) and (pointer: coarse) {
+    .status-option-mobile {
+        min-height: 48px;
+    }
+
+    .quick-action-btn {
+        min-height: 40px;
+    }
+
+    /* Remove hover effects on touch devices */
+    .attendance-card:hover {
+        box-shadow: none;
+    }
+
+    .attendance-row:hover {
+        background-color: transparent;
+    }
+}
+
+/* ============================================
+   Safe Area (iPhone X and newer)
+   ============================================ */
+
+@supports (padding: max(0px)) {
+    #save_attendance_section {
+        padding-bottom: max(1rem, env(safe-area-inset-bottom)) !important;
+    }
+}
+
+/* ============================================
+   Print Styles
+   ============================================ */
+
+@media print {
+    .quick-action-btn,
+    #bulk_buttons,
+    #save_attendance_section,
+    .remarks-input,
+    .btn {
+        display: none !important;
+    }
+
+    .attendance-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    #attendance_table {
+        font-size: 10pt;
+    }
 }
