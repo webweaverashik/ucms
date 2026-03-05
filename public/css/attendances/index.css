@@ -94,6 +94,7 @@
 }
 
 .quick-action-btn.present-btn:hover,
+.quick-action-btn.present-btn.active,
 .quick-action-btn.present-btn:has(input:checked) {
     background-color: #50cd89;
     color: #fff;
@@ -102,6 +103,7 @@
 }
 
 .quick-action-btn.present-btn:hover i,
+.quick-action-btn.present-btn.active i,
 .quick-action-btn.present-btn:has(input:checked) i {
     color: #fff;
 }
@@ -118,6 +120,7 @@
 }
 
 .quick-action-btn.late-btn:hover,
+.quick-action-btn.late-btn.active,
 .quick-action-btn.late-btn:has(input:checked) {
     background-color: #ffc700;
     color: #fff;
@@ -126,6 +129,7 @@
 }
 
 .quick-action-btn.late-btn:hover i,
+.quick-action-btn.late-btn.active i,
 .quick-action-btn.late-btn:has(input:checked) i {
     color: #fff;
 }
@@ -142,6 +146,7 @@
 }
 
 .quick-action-btn.absent-btn:hover,
+.quick-action-btn.absent-btn.active,
 .quick-action-btn.absent-btn:has(input:checked) {
     background-color: #f1416c;
     color: #fff;
@@ -150,6 +155,7 @@
 }
 
 .quick-action-btn.absent-btn:hover i,
+.quick-action-btn.absent-btn.active i,
 .quick-action-btn.absent-btn:has(input:checked) i {
     color: #fff;
 }

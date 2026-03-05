@@ -322,9 +322,7 @@ var KTStudentAttendance = (function () {
                     studentCountEl.textContent = response.count;
 
                     // Reset bulk action radios
-                    document.querySelectorAll('input[name="mark_all"]').forEach(function (radio) {
-                        radio.checked = false;
-                    });
+                    resetBulkActionButtons();
                 } else {
                     studentListContainer.innerHTML =
                         '<div class="alert alert-info d-flex align-items-center">' +
@@ -338,6 +336,19 @@ var KTStudentAttendance = (function () {
                 console.error('Error fetching students:', error);
                 showAlert('error', 'Error', error.message || 'Something went wrong fetching students.');
             });
+    };
+
+    /**
+     * Reset bulk action buttons
+     */
+    var resetBulkActionButtons = function () {
+        document.querySelectorAll('input[name="mark_all"]').forEach(function (radio) {
+            radio.checked = false;
+        });
+        // Also remove active classes from labels
+        document.querySelectorAll('.quick-action-btn').forEach(function (btn) {
+            btn.classList.remove('active');
+        });
     };
 
     /**
@@ -401,7 +412,7 @@ var KTStudentAttendance = (function () {
                 '<div class="d-flex flex-column">' +
                 '<span class="text-gray-800 fw-bold fs-6">' + escapeHtml(student.name) + '</span>' +
                 '<span class="text-muted fw-semibold fs-7">ID: ' + escapeHtml(student.student_unique_id) + '</span>' +
-                (homeMobile ? '<span class="text-muted fw-semibold fs-7"><i class="ki-outline ki-phone fs-7 me-1"></i>' + escapeHtml(homeMobile) + '</span>' : '') +
+                (homeMobile ? '<span class="text-primary fw-semibold fs-8"><i class="ki-outline ki-phone fs-8 me-1"></i>' + escapeHtml(homeMobile) + '</span>' : '') +
                 '</div>' +
                 '</div>' +
                 '</td>' +
@@ -483,15 +494,15 @@ var KTStudentAttendance = (function () {
                 // Status buttons (larger for mobile touch)
                 '<div class="d-flex gap-2 mb-3">' +
                 '<label class="status-option-mobile present-option flex-fill">' +
-                '<input class="status-radio" type="radio" value="present" name="status_' + student.id + '" ' + presentChecked + '>' +
+                '<input class="status-radio" type="radio" value="present" name="status_mobile_' + student.id + '" ' + presentChecked + '>' +
                 '<span class="status-label"><i class="ki-outline ki-check-circle fs-6"></i> Present</span>' +
                 '</label>' +
                 '<label class="status-option-mobile late-option flex-fill">' +
-                '<input class="status-radio" type="radio" value="late" name="status_' + student.id + '" ' + lateChecked + '>' +
+                '<input class="status-radio" type="radio" value="late" name="status_mobile_' + student.id + '" ' + lateChecked + '>' +
                 '<span class="status-label"><i class="ki-outline ki-time fs-6"></i> Late</span>' +
                 '</label>' +
                 '<label class="status-option-mobile absent-option flex-fill">' +
-                '<input class="status-radio" type="radio" value="absent" name="status_' + student.id + '" ' + absentChecked + '>' +
+                '<input class="status-radio" type="radio" value="absent" name="status_mobile_' + student.id + '" ' + absentChecked + '>' +
                 '<span class="status-label"><i class="ki-outline ki-cross-circle fs-6"></i> Absent</span>' +
                 '</label>' +
                 '</div>' +
@@ -544,6 +555,8 @@ var KTStudentAttendance = (function () {
                 if (response.count > 0) {
                     renderStudentTable(response.students);
                     studentCountEl.textContent = response.count;
+                    // Reset bulk action buttons after refresh
+                    resetBulkActionButtons();
                 }
             })
             .catch(function (error) {
@@ -552,58 +565,67 @@ var KTStudentAttendance = (function () {
     };
 
     /**
-     * Collect attendance data from both desktop and mobile views
+     * Collect attendance data from the visible view
+     * This function reads the CURRENT state of radio buttons, not cached values
      */
     var collectAttendanceData = function () {
         var attendanceData = [];
         var hasValidationError = false;
 
-        // Collect from desktop table
-        var tableRows = document.querySelectorAll('#attendance_table tbody tr');
-        tableRows.forEach(function (row) {
-            var studentId = row.dataset.studentId;
-            var statusInput = row.querySelector('input[name="status_' + studentId + '"]:checked');
-            var remarksInput = row.querySelector('.remarks-input');
+        // Determine which view is currently visible
+        var isDesktop = window.innerWidth >= 992; // lg breakpoint
 
-            if (!statusInput) {
-                hasValidationError = true;
-                row.classList.add('bg-light-danger');
-            } else {
-                row.classList.remove('bg-light-danger');
-                attendanceData.push({
-                    student_id: studentId,
-                    status: statusInput.value,
-                    remarks: remarksInput ? remarksInput.value : ''
+        if (isDesktop) {
+            // Collect from desktop table
+            var desktopTable = document.getElementById('attendance_table');
+            if (desktopTable) {
+                var rows = desktopTable.querySelectorAll('tbody tr.attendance-row');
+                rows.forEach(function (row) {
+                    var studentId = row.getAttribute('data-student-id');
+
+                    // Find the CURRENTLY checked radio for this student
+                    var checkedRadio = row.querySelector('input.status-radio:checked');
+                    var remarksInput = row.querySelector('.remarks-input');
+
+                    if (!checkedRadio) {
+                        hasValidationError = true;
+                        row.classList.add('bg-light-danger');
+                    } else {
+                        row.classList.remove('bg-light-danger');
+                        attendanceData.push({
+                            student_id: studentId,
+                            status: checkedRadio.value,
+                            remarks: remarksInput ? remarksInput.value : ''
+                        });
+                    }
                 });
             }
-        });
+        } else {
+            // Collect from mobile cards
+            var mobileCards = document.getElementById('attendance_cards');
+            if (mobileCards) {
+                var cards = mobileCards.querySelectorAll('.attendance-card');
+                cards.forEach(function (card) {
+                    var studentId = card.getAttribute('data-student-id');
 
-        // Collect from mobile cards
-        var mobileCards = document.querySelectorAll('#attendance_cards .attendance-card');
-        mobileCards.forEach(function (card) {
-            var studentId = card.dataset.studentId;
-            var statusInput = card.querySelector('input[name="status_' + studentId + '"]:checked');
-            var remarksInput = card.querySelector('.remarks-input');
+                    // Find the CURRENTLY checked radio for this student
+                    var checkedRadio = card.querySelector('input.status-radio:checked');
+                    var remarksInput = card.querySelector('.remarks-input');
 
-            // Only add if not already collected from table
-            var alreadyCollected = attendanceData.some(function (item) {
-                return item.student_id === studentId;
-            });
-
-            if (!alreadyCollected) {
-                if (!statusInput) {
-                    hasValidationError = true;
-                    card.classList.add('border-danger');
-                } else {
-                    card.classList.remove('border-danger');
-                    attendanceData.push({
-                        student_id: studentId,
-                        status: statusInput.value,
-                        remarks: remarksInput ? remarksInput.value : ''
-                    });
-                }
+                    if (!checkedRadio) {
+                        hasValidationError = true;
+                        card.classList.add('border-danger');
+                    } else {
+                        card.classList.remove('border-danger');
+                        attendanceData.push({
+                            student_id: studentId,
+                            status: checkedRadio.value,
+                            remarks: remarksInput ? remarksInput.value : ''
+                        });
+                    }
+                });
             }
-        });
+        }
 
         return {
             data: attendanceData,
@@ -619,6 +641,11 @@ var KTStudentAttendance = (function () {
 
         if (result.hasError) {
             showAlert('error', 'Incomplete Attendance', 'Please select a status (Present, Late, or Absent) for all students highlighted in red.');
+            return;
+        }
+
+        if (result.data.length === 0) {
+            showAlert('warning', 'No Data', 'No attendance data to save. Please load students first.');
             return;
         }
 
@@ -687,27 +714,46 @@ var KTStudentAttendance = (function () {
         toggleElement(bulkButtons, false);
 
         // Reset bulk action radios
-        document.querySelectorAll('input[name="mark_all"]').forEach(function (radio) {
-            radio.checked = false;
-        });
+        resetBulkActionButtons();
     };
 
     /**
-     * Handle Bulk Action
+     * Handle Bulk Action - Mark all students with specified status
+     * This directly manipulates the radio button checked state
      */
     var handleBulkAction = function (status) {
-        document.querySelectorAll('.status-radio[value="' + status + '"]').forEach(function (radio) {
-            radio.checked = true;
-        });
+        // Determine which view is currently visible
+        var isDesktop = window.innerWidth >= 992; // lg breakpoint
 
-        // Clear any error highlighting
-        document.querySelectorAll('.attendance-row').forEach(function (row) {
-            row.classList.remove('bg-light-danger');
-        });
-
-        document.querySelectorAll('.attendance-card').forEach(function (card) {
-            card.classList.remove('border-danger');
-        });
+        if (isDesktop) {
+            // Update desktop table radios
+            var desktopTable = document.getElementById('attendance_table');
+            if (desktopTable) {
+                var rows = desktopTable.querySelectorAll('tbody tr.attendance-row');
+                rows.forEach(function (row) {
+                    var targetRadio = row.querySelector('input.status-radio[value="' + status + '"]');
+                    if (targetRadio) {
+                        targetRadio.checked = true;
+                    }
+                    // Clear error highlighting
+                    row.classList.remove('bg-light-danger');
+                });
+            }
+        } else {
+            // Update mobile card radios
+            var mobileCards = document.getElementById('attendance_cards');
+            if (mobileCards) {
+                var cards = mobileCards.querySelectorAll('.attendance-card');
+                cards.forEach(function (card) {
+                    var targetRadio = card.querySelector('input.status-radio[value="' + status + '"]');
+                    if (targetRadio) {
+                        targetRadio.checked = true;
+                    }
+                    // Clear error highlighting
+                    card.classList.remove('border-danger');
+                });
+            }
+        }
     };
 
     /**
@@ -749,10 +795,36 @@ var KTStudentAttendance = (function () {
     };
 
     /**
-     * Handle Bulk Action Change
+     * Handle Bulk Action Click - Event delegation on the container
      */
-    var handleBulkActionChange = function (e) {
-        handleBulkAction(e.target.value);
+    var handleBulkActionClick = function (e) {
+        // Find the clicked quick-action-btn label
+        var label = e.target.closest('.quick-action-btn');
+        if (!label) return;
+
+        // Prevent default to avoid double-firing
+        e.preventDefault();
+
+        // Get the radio input inside the label
+        var radio = label.querySelector('input[type="radio"]');
+        if (!radio) return;
+
+        // Get the status value
+        var status = radio.value;
+
+        // Check the radio manually
+        radio.checked = true;
+
+        // Remove active class from all quick action buttons
+        document.querySelectorAll('.quick-action-btn').forEach(function (btn) {
+            btn.classList.remove('active');
+        });
+
+        // Add active class to the clicked button
+        label.classList.add('active');
+
+        // Apply the bulk action to all student attendance radios
+        handleBulkAction(status);
     };
 
     // ============================================
@@ -814,10 +886,10 @@ var KTStudentAttendance = (function () {
             resetButton.addEventListener('click', resetForm);
         }
 
-        // Bulk action buttons
-        document.querySelectorAll('input[name="mark_all"]').forEach(function (radio) {
-            radio.addEventListener('change', handleBulkActionChange);
-        });
+        // Bulk action buttons - Use click delegation on the container
+        if (bulkButtons) {
+            bulkButtons.addEventListener('click', handleBulkActionClick);
+        }
 
         // Save attendance button
         if (saveButton) {
@@ -861,6 +933,11 @@ var KTStudentAttendance = (function () {
         // Public method to reset form
         reset: function () {
             resetForm();
+        },
+
+        // Public method to apply bulk action
+        markAll: function (status) {
+            handleBulkAction(status);
         }
     };
 }());
