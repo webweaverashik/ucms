@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Academic\SecondaryClass;
@@ -34,6 +33,7 @@ class PdfController extends Controller
         return view('pdf.admission_form_layout', ['student' => $student]);
     }
 
+    // This method is not using currently and made for thermal printer, so we are keeping it simple without using the PDF template and mPDF features like headers/footers, custom fonts, etc.
     public function downloadPaySlip(string $id)
     {
         $transaction = PaymentTransaction::find($id);
@@ -130,7 +130,7 @@ class PdfController extends Controller
 
     /**
      * Generate regular student statement
-     * 
+     *
      * FIXED: Now fetches INVOICES first (not just transactions) to show all months
      * including those with dues but no payments yet.
      */
@@ -272,9 +272,9 @@ class PdfController extends Controller
                     fn($p) => $p->invoice->paymentTransactions
                 );
 
-                $totalPaid = $allTransactions->sum('amount_paid');
-                $totalDue = $monthGroup->sum(fn($p) => $p->invoice->amount_due ?? 0);
-                $paymentCount = $allTransactions->count();
+                $totalPaid       = $allTransactions->sum('amount_paid');
+                $totalDue        = $monthGroup->sum(fn($p) => $p->invoice->amount_due ?? 0);
+                $paymentCount    = $allTransactions->count();
                 $lastTransaction = $allTransactions->sortByDesc('created_at')->first();
 
                 return (object) [
