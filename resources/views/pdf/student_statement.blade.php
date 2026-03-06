@@ -120,7 +120,9 @@
                 'ডিসেম্বর',
             ];
             $chunks = array_chunk($months, 6);
-            $tuitionFeeDue = $monthlyPayments->flatten(1)->sum(fn($t) => optional($t->paymentInvoice)->amount_due ?? 0);
+            
+            // Calculate tuition fee due from monthly payments
+            $tuitionFeeDue = $monthlyPayments->sum(fn($m) => $m->total_due ?? 0);
         @endphp
 
         @foreach ($chunks as $chunkIndex => $chunk)
@@ -140,10 +142,16 @@
                         @foreach ($chunk as $i => $month)
                             @php
                                 $monthNumber = $chunkIndex * 6 + ($i + 1);
-                                $transaction = $monthlyPayments->get($monthNumber)?->first();
+                                $monthData = $monthlyPayments->get($monthNumber);
                             @endphp
                             <td>
-                                {{ $transaction?->amount_paid ? $numto->bnCommaLakh($transaction->amount_paid) : '' }}
+                                @if (!$monthData)
+                                    {{-- No invoice exists - keep empty --}}
+                                @elseif ($monthData->total_paid > 0)
+                                    {{ $numto->bnCommaLakh($monthData->total_paid) }}
+                                @else
+                                    -
+                                @endif
                             </td>
                         @endforeach
                     </tr>
@@ -152,14 +160,16 @@
                         @foreach ($chunk as $i => $month)
                             @php
                                 $monthNumber = $chunkIndex * 6 + ($i + 1);
-                                $transaction = $monthlyPayments->get($monthNumber)?->first();
+                                $monthData = $monthlyPayments->get($monthNumber);
                             @endphp
                             <td>
-                                {{ $transaction
-                                    ? ($transaction->paymentInvoice?->amount_due
-                                        ? $numto->bnCommaLakh($transaction->paymentInvoice->amount_due)
-                                        : '-')
-                                    : '' }}
+                                @if (!$monthData)
+                                    {{-- No invoice exists - keep empty --}}
+                                @elseif ($monthData->total_due > 0)
+                                    {{ $numto->bnCommaLakh($monthData->total_due) }}
+                                @else
+                                    -
+                                @endif
                             </td>
                         @endforeach
                     </tr>
@@ -168,10 +178,16 @@
                         @foreach ($chunk as $i => $month)
                             @php
                                 $monthNumber = $chunkIndex * 6 + ($i + 1);
-                                $transaction = $monthlyPayments->get($monthNumber)?->first();
+                                $monthData = $monthlyPayments->get($monthNumber);
                             @endphp
                             <td>
-                                {{ $transaction ? $transaction->paymentInvoice?->invoice_number : '' }}
+                                @if (!$monthData)
+                                    {{-- No invoice exists - keep empty --}}
+                                @elseif ($monthData->invoice_number)
+                                    {{ $monthData->invoice_number }}
+                                @else
+                                    -
+                                @endif
                             </td>
                         @endforeach
                     </tr>
@@ -180,10 +196,16 @@
                         @foreach ($chunk as $i => $month)
                             @php
                                 $monthNumber = $chunkIndex * 6 + ($i + 1);
-                                $transaction = $monthlyPayments->get($monthNumber)?->first();
+                                $monthData = $monthlyPayments->get($monthNumber);
                             @endphp
                             <td>
-                                {{ $transaction && $transaction->createdBy ? explode(' ', $transaction->createdBy->name)[0] : '' }}
+                                @if (!$monthData)
+                                    {{-- No invoice exists - keep empty --}}
+                                @elseif ($monthData->receiver_name)
+                                    {{ explode(' ', $monthData->receiver_name)[0] }}
+                                @else
+                                    -
+                                @endif
                             </td>
                         @endforeach
                     </tr>
@@ -192,9 +214,16 @@
                         @foreach ($chunk as $i => $month)
                             @php
                                 $monthNumber = $chunkIndex * 6 + ($i + 1);
-                                $transaction = $monthlyPayments->get($monthNumber)?->first();
+                                $monthData = $monthlyPayments->get($monthNumber);
                             @endphp
-                            <td>{{ $transaction?->created_at ? ashikBnNumericDate($transaction->created_at) : '' }}
+                            <td>
+                                @if (!$monthData)
+                                    {{-- No invoice exists - keep empty --}}
+                                @elseif ($monthData->last_payment_date)
+                                    {{ ashikBnNumericDate($monthData->last_payment_date) }}
+                                @else
+                                    -
+                                @endif
                             </td>
                         @endforeach
                     </tr>
@@ -212,12 +241,8 @@
         <h6 class="text-center fw-bold mb-1 mt-0" style="font-size: 10px;">অন্যান্য ফি সমূহ ({{ $yearBn }})</h6>
 
         @php
-            // Filter excluding BOTH Tuition Fee AND Special Class Fee
-            $otherPayments = $transactions->filter(
-                fn($t) => !in_array($t->paymentInvoice->invoiceType->type_name, ['Tuition Fee', 'Special Class Fee']),
-            );
-
-            $groupedByType = $otherPayments->groupBy(fn($t) => $t->paymentInvoice->invoiceType->type_name);
+            // Group other fee invoices by type
+            $groupedByType = $otherFeeInvoices->groupBy(fn($invoice) => $invoice->invoiceType->type_name);
 
             $typeLabels = [
                 'Model Test Fee' => 'মডেল টেস্ট ফি',
@@ -231,10 +256,8 @@
 
             $feeTypes = collect(array_keys($typeLabels));
 
-            $otherFeeDue = $otherPayments
-                ->groupBy('payment_invoice_id')
-                ->map(fn($group) => optional($group->first()->paymentInvoice)->amount_due ?? 0)
-                ->sum();
+            // Calculate total other fee due
+            $otherFeeDue = $otherFeeInvoices->sum('amount_due');
         @endphp
 
         <table class="table table-sm table-bordered border-dark text-center w-100 mb-2 table-tight"
@@ -254,53 +277,91 @@
                     <th>পরিমাণ</th>
                     @foreach ($feeTypes as $type)
                         @php
-                            $transactionsOfType = $groupedByType[$type] ?? collect();
-                            $totalAmount = $transactionsOfType->sum('amount_paid');
+                            $invoicesOfType = $groupedByType[$type] ?? collect();
+                            $hasInvoice = $invoicesOfType->isNotEmpty();
+                            $totalAmount = $invoicesOfType->sum(function ($invoice) {
+                                return $invoice->paymentTransactions->sum('amount_paid');
+                            });
                         @endphp
-                        <td>{{ $totalAmount > 0 ? $numto->bnCommaLakh($totalAmount) : '' }}</td>
+                        <td>
+                            @if (!$hasInvoice)
+                                {{-- No invoice exists - keep empty --}}
+                            @elseif ($totalAmount > 0)
+                                {{ $numto->bnCommaLakh($totalAmount) }}
+                            @else
+                                -
+                            @endif
+                        </td>
                     @endforeach
                 </tr>
                 <tr>
                     <th>বকেয়া</th>
                     @foreach ($feeTypes as $type)
                         @php
-                            $transactionsOfType = $groupedByType[$type] ?? collect();
-                            $totalDue = $transactionsOfType
-                                ->groupBy('payment_invoice_id')
-                                ->map(fn($group) => optional($group->first()->paymentInvoice)->amount_due ?? 0)
-                                ->sum();
+                            $invoicesOfType = $groupedByType[$type] ?? collect();
+                            $totalDue = $invoicesOfType->sum('amount_due');
                         @endphp
-                        <td>{{ $totalDue > 0 ? $numto->bnCommaLakh($totalDue) : '-' }}</td>
+                        <td>
+                            @if ($invoicesOfType->isNotEmpty())
+                                {{ $totalDue > 0 ? $numto->bnCommaLakh($totalDue) : '-' }}
+                            @endif
+                        </td>
                     @endforeach
                 </tr>
                 <tr>
                     <th>রশিদ নং</th>
                     @foreach ($feeTypes as $type)
                         @php
-                            $transactionsOfType = $groupedByType[$type] ?? collect();
-                            $invoice = optional($transactionsOfType->first()?->paymentInvoice);
+                            $invoicesOfType = $groupedByType[$type] ?? collect();
+                            $firstInvoice = $invoicesOfType->first();
                         @endphp
-                        <td>{{ $invoice?->invoice_number ? $invoice->invoice_number : '' }}</td>
+                        <td>{{ $firstInvoice?->invoice_number ?? '' }}</td>
                     @endforeach
                 </tr>
                 <tr>
                     <th>গ্রহীতার নাম</th>
                     @foreach ($feeTypes as $type)
                         @php
-                            $transactionsOfType = $groupedByType[$type] ?? collect();
-                            $receiver = optional($transactionsOfType->first()?->createdBy)->name;
+                            $invoicesOfType = $groupedByType[$type] ?? collect();
+                            $hasInvoice = $invoicesOfType->isNotEmpty();
+                            $lastTransaction = $invoicesOfType
+                                ->flatMap(fn($i) => $i->paymentTransactions)
+                                ->sortByDesc('created_at')
+                                ->first();
+                            $receiverName = $lastTransaction?->createdBy?->name;
                         @endphp
-                        <td>{{ $receiver ? explode(' ', $receiver)[0] : '' }}</td>
+                        <td>
+                            @if (!$hasInvoice)
+                                {{-- No invoice exists - keep empty --}}
+                            @elseif ($receiverName)
+                                {{ explode(' ', $receiverName)[0] }}
+                            @else
+                                -
+                            @endif
+                        </td>
                     @endforeach
                 </tr>
                 <tr>
                     <th>তারিখ</th>
                     @foreach ($feeTypes as $type)
                         @php
-                            $transactionsOfType = $groupedByType[$type] ?? collect();
-                            $date = $transactionsOfType->first()?->created_at;
+                            $invoicesOfType = $groupedByType[$type] ?? collect();
+                            $hasInvoice = $invoicesOfType->isNotEmpty();
+                            $lastTransaction = $invoicesOfType
+                                ->flatMap(fn($i) => $i->paymentTransactions)
+                                ->sortByDesc('created_at')
+                                ->first();
+                            $paymentDate = $lastTransaction?->created_at;
                         @endphp
-                        <td>{{ $date ? ashikBnNumericDate($date) : '' }}</td>
+                        <td>
+                            @if (!$hasInvoice)
+                                {{-- No invoice exists - keep empty --}}
+                            @elseif ($paymentDate)
+                                {{ ashikBnNumericDate($paymentDate) }}
+                            @else
+                                -
+                            @endif
+                        </td>
                     @endforeach
                 </tr>
             </tbody>
