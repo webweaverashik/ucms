@@ -46,8 +46,8 @@
                             <div class="separator border-gray-200"></div>
                             <!--end::Separator-->
                             <!--begin::Content-->
-                            <div class="px-7 py-5 column-checkbox-list" data-table-id="{{ $tableId }}"
-                                data-type="paid" style="max-height: 300px; overflow-y: auto;">
+                            <div class="px-7 py-5 column-checkbox-list" data-table-id="{{ $tableId }}" data-type="paid"
+                                style="max-height: 300px; overflow-y: auto;">
                                 <!-- Checkboxes will be populated by JavaScript -->
                             </div>
                             <!--end::Content-->
@@ -56,8 +56,7 @@
                             <div class="px-7 py-4">
                                 <button type="button" class="btn btn-sm btn-primary w-100 column-apply-btn"
                                     data-table-id="{{ $tableId }}" data-type="paid">
-                                    <span class="indicator-label"><i class="ki-outline ki-check fs-4 me-1"></i>Apply &
-                                        Save for All Users</span>
+                                    <span class="indicator-label"><i class="ki-outline ki-check fs-4 me-1"></i>Apply & Save for All Users</span>
                                     <span class="indicator-progress">Please wait...
                                         <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
                                     </span>
@@ -137,8 +136,7 @@
                                 <button type="reset"
                                     class="btn btn-light btn-active-light-primary fw-semibold me-2 px-6 filter-reset-btn-paid"
                                     data-kt-menu-dismiss="true" data-table-id="{{ $tableId }}">Reset</button>
-                                <button type="submit"
-                                    class="btn btn-primary fw-semibold px-6 filter-apply-btn-paid"
+                                <button type="submit" class="btn btn-primary fw-semibold px-6 filter-apply-btn-paid"
                                     data-kt-menu-dismiss="true" data-table-id="{{ $tableId }}">Apply</button>
                             </div>
                             <!--end::Actions-->
@@ -160,24 +158,20 @@
                         <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
                             data-kt-menu="true">
                             <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3 export-btn"
-                                    data-table-id="{{ $tableId }}" data-type="paid" data-export="copy">Copy
-                                    to clipboard</a>
+                                <a href="#" class="menu-link px-3 export-btn" data-table-id="{{ $tableId }}"
+                                    data-type="paid" data-export="copy">Copy to clipboard</a>
                             </div>
                             <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3 export-btn"
-                                    data-table-id="{{ $tableId }}" data-type="paid" data-export="excel">Export
-                                    as Excel</a>
+                                <a href="#" class="menu-link px-3 export-btn" data-table-id="{{ $tableId }}"
+                                    data-type="paid" data-export="excel">Export as Excel</a>
                             </div>
                             <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3 export-btn"
-                                    data-table-id="{{ $tableId }}" data-type="paid" data-export="csv">Export
-                                    as CSV</a>
+                                <a href="#" class="menu-link px-3 export-btn" data-table-id="{{ $tableId }}"
+                                    data-type="paid" data-export="csv">Export as CSV</a>
                             </div>
                             <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3 export-btn"
-                                    data-table-id="{{ $tableId }}" data-type="paid" data-export="pdf">Export
-                                    as PDF</a>
+                                <a href="#" class="menu-link px-3 export-btn" data-table-id="{{ $tableId }}"
+                                    data-type="paid" data-export="pdf">Export as PDF</a>
                             </div>
                         </div>
                         <!--end::Menu-->
@@ -196,6 +190,7 @@
     <div class="card-body py-4">
         <!--begin::Table Wrapper-->
         <div class="invoice-table-wrapper" id="wrapper_{{ $tableId }}">
+            
             <!--begin::Skeleton Loader-->
             <div class="invoice-skeleton" id="skeleton_{{ $tableId }}">
                 <div class="skeleton-header">
@@ -231,12 +226,13 @@
 
             <!--begin::Table Container-->
             <div class="invoice-table-container">
-                {{-- IMPORTANT: Column order must match exactly with JavaScript DataTable columns array
+                {{-- 
+                    IMPORTANT: Column order must match exactly with JavaScript DataTable columns array
                     Index: 0=sl, 1=invoice_number, 2=student_name, 3=mobile, 4=guardian_1, 5=guardian_2,
-                    6=class_name, 7=institution, 8=tuition_fee, 9=activation_status, 10=invoice_type,
-                    11=total_amount, 12=billing_month, 13=due_date, 14=status, 15=last_comment, 16=paid_at --}}
-                <table
-                    class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table paid-invoices-table"
+                           6=class_name, 7=institution, 8=tuition_fee, 9=activation_status, 10=invoice_type,
+                           11=total_amount, 12=billing_month, 13=due_date, 14=status, 15=last_comment, 16=paid_at
+                --}}
+                <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table paid-invoices-table"
                     id="{{ $tableId }}" data-branch-id="{{ $branchId }}" data-table-type="paid">
                     <thead>
                         <tr class="fw-bold fs-7 text-uppercase gs-0">
@@ -265,6 +261,7 @@
                 </table>
             </div>
             <!--end::Table Container-->
+
         </div>
         <!--end::Table Wrapper-->
     </div>
