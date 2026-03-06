@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\AutoInvoiceController;
 use App\Http\Controllers\Cost\CostController;
 use App\Http\Controllers\Payment\PaymentInvoiceCommentController;
 use App\Http\Controllers\Payment\PaymentInvoiceController;
@@ -34,11 +33,6 @@ Route::post('invoices/column-settings', [PaymentInvoiceController::class, 'saveC
 // Invoice Comments
 Route::post('invoice-comments', [PaymentInvoiceCommentController::class, 'store'])->name('invoice.comments.store');
 Route::get('invoices/{invoice}/comments', [PaymentInvoiceCommentController::class, 'getComments'])->name('invoice.comments.index');
-
-// Auto-invoice
-Route::get('autoinvoice', [AutoInvoiceController::class, 'index'])->name('auto.invoice.index');
-Route::get('autoinvoice/current', [AutoInvoiceController::class, 'generateCurrent'])->name('auto.invoice.current');
-Route::get('autoinvoice/due', [AutoInvoiceController::class, 'generateDue'])->name('auto.invoice.due');
 
 // Transactions
 Route::prefix('transactions')

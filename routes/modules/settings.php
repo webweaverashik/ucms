@@ -1,12 +1,13 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AutoInvoiceController;
 use App\Http\Controllers\BranchController;
-use App\Http\Controllers\Misc\MiscController;
-use App\Http\Controllers\User\UserController;
-use App\Http\Controllers\User\ProfileController;
 use App\Http\Controllers\Cost\CostTypeController;
+use App\Http\Controllers\Misc\MiscController;
 use App\Http\Controllers\Settings\BackupController;
+use App\Http\Controllers\User\ProfileController;
+use App\Http\Controllers\User\UserController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,6 +52,12 @@ Route::post('settings/bulk-admission', [MiscController::class, 'bulkAdmission'])
 
 // User Resource - Note: 'settings/users' path with 'users' naming (original)
 Route::resource('settings/users', UserController::class)->names('users');
+
+// Auto-invoice
+Route::get('settings/autoinvoice', [AutoInvoiceController::class, 'index'])->name('auto.invoice.index');
+Route::get('settings/autoinvoice/current', [AutoInvoiceController::class, 'generateCurrent'])->name('auto.invoice.current');
+Route::get('settings/autoinvoice/due', [AutoInvoiceController::class, 'generateDue'])->name('auto.invoice.due');
+
 
 // Backup Routes
 Route::prefix('settings')->group(function () {

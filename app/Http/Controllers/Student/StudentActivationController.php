@@ -1,14 +1,19 @@
 <?php
+
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Models\Academic\ClassName;
+use App\Models\Payment\PaymentInvoice;
+use App\Models\Payment\PaymentInvoiceType;
 use App\Models\Student\Student;
 use App\Models\Student\StudentActivation;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class StudentActivationController extends Controller
@@ -120,7 +125,7 @@ class StudentActivationController extends Controller
             );
         }
 
-        $student = Student::findOrFail($request->student_id);
+        $student = Student::with(['studentActivation', 'payments', 'branch', 'mobileNumbers', 'guardians'])->findOrFail($request->student_id);
 
         // Authorization check: Non-admin users can only toggle students from their own branch
         $user = auth()->user();
@@ -134,8 +139,13 @@ class StudentActivationController extends Controller
             );
         }
 
+        // Check if student is being activated from inactive status
+        $isBeingActivated = $request->active_status === 'active' 
+            && $student->studentActivation 
+            && $student->studentActivation->active_status === 'inactive';
+
         try {
-            return DB::transaction(function () use ($request, $student, $user) {
+            return DB::transaction(function () use ($request, $student, $user, $isBeingActivated) {
                 // Create Activation Entry
                 $activation = StudentActivation::create([
                     'student_id'    => $student->id,
@@ -147,6 +157,16 @@ class StudentActivationController extends Controller
                 // Update Student's Activation ID
                 $student->update(['student_activation_id' => $activation->id]);
 
+                // Create current month tuition fee invoice if student is being activated from inactive
+                $invoiceCreated = false;
+                $invoiceMessage = null;
+
+                if ($isBeingActivated) {
+                    $invoiceResult  = $this->createCurrentMonthTuitionFeeInvoice($student);
+                    $invoiceCreated = $invoiceResult['created'];
+                    $invoiceMessage = $invoiceResult['message'];
+                }
+
                 // Clear the cache
                 clearServerCache();
 
@@ -155,14 +175,22 @@ class StudentActivationController extends Controller
                 // Calculate stats only if class_id is provided (for classnames view page)
                 $stats = $this->calculateClassStats($request->class_id, $user);
 
+                $responseMessage = "Student has been {$statusText} successfully.";
+                if ($invoiceMessage) {
+                    $responseMessage .= ' ' . $invoiceMessage;
+                }
+
                 return response()->json([
-                    'success' => true,
-                    'message' => "Student has been {$statusText} successfully.",
-                    'new_status' => $request->active_status,
-                    'stats'      => $stats,
+                    'success'         => true,
+                    'message'         => $responseMessage,
+                    'new_status'      => $request->active_status,
+                    'stats'           => $stats,
+                    'invoice_created' => $invoiceCreated,
                 ]);
             });
         } catch (\Exception $e) {
+            Log::error('Error toggling student status: ' . $e->getMessage());
+
             return response()->json(
                 [
                     'success' => false,
@@ -206,8 +234,10 @@ class StudentActivationController extends Controller
         $reason       = $request->reason;
         $classId      = $request->class_id; // May be null for students index page
 
-        // Get all students
-        $students = Student::whereIn('id', $studentIds)->get();
+        // Get all students with necessary relationships
+        $students = Student::with(['studentActivation', 'payments', 'branch', 'mobileNumbers', 'guardians'])
+            ->whereIn('id', $studentIds)
+            ->get();
 
         // Authorization check for non-admin users
         if ($user->branch_id != 0) {
@@ -225,11 +255,19 @@ class StudentActivationController extends Controller
 
         try {
             return DB::transaction(function () use ($students, $activeStatus, $reason, $classId, $user) {
-                $successCount = 0;
-                $failedCount  = 0;
+                $successCount        = 0;
+                $failedCount         = 0;
+                $invoicesCreated     = 0;
+                $invoicesSkipped     = 0;
+                $freeStudentsSkipped = 0;
 
                 foreach ($students as $student) {
                     try {
+                        // Check if student is being activated from inactive status
+                        $isBeingActivated = $activeStatus === 'active'
+                            && $student->studentActivation
+                            && $student->studentActivation->active_status === 'inactive';
+
                         // Create Activation Entry
                         $activation = StudentActivation::create([
                             'student_id'    => $student->id,
@@ -241,8 +279,21 @@ class StudentActivationController extends Controller
                         // Update Student's Activation ID
                         $student->update(['student_activation_id' => $activation->id]);
 
+                        // Create current month tuition fee invoice if student is being activated from inactive
+                        if ($isBeingActivated) {
+                            $invoiceResult = $this->createCurrentMonthTuitionFeeInvoice($student);
+                            if ($invoiceResult['created']) {
+                                $invoicesCreated++;
+                            } elseif ($invoiceResult['reason'] === 'free_student') {
+                                $freeStudentsSkipped++;
+                            } else {
+                                $invoicesSkipped++;
+                            }
+                        }
+
                         $successCount++;
                     } catch (\Exception $e) {
+                        Log::error('Error activating student ID ' . $student->id . ': ' . $e->getMessage());
                         $failedCount++;
                     }
                 }
@@ -255,27 +306,40 @@ class StudentActivationController extends Controller
                 // Clear server cache after bulk update
                 clearServerCache();
 
+                // Build response message
+                $message = "{$successCount} student(s) have been {$statusText} successfully.";
+
                 if ($failedCount > 0) {
-                    return response()->json([
-                        'success' => true,
-                        'message' => "{$successCount} student(s) {$statusText} successfully. {$failedCount} failed.",
-                        'new_status'    => $activeStatus,
-                        'success_count' => $successCount,
-                        'failed_count'  => $failedCount,
-                        'stats'         => $stats,
-                    ]);
+                    $message = "{$successCount} student(s) {$statusText} successfully. {$failedCount} failed.";
+                }
+
+                if ($invoicesCreated > 0) {
+                    $message .= " {$invoicesCreated} tuition fee invoice(s) created.";
+                }
+
+                if ($freeStudentsSkipped > 0) {
+                    $message .= " {$freeStudentsSkipped} free student(s) skipped (no invoice).";
+                }
+
+                if ($invoicesSkipped > 0) {
+                    $message .= " {$invoicesSkipped} invoice(s) skipped (already exists).";
                 }
 
                 return response()->json([
-                    'success' => true,
-                    'message' => "{$successCount} student(s) have been {$statusText} successfully.",
-                    'new_status'    => $activeStatus,
-                    'success_count' => $successCount,
-                    'failed_count'  => 0,
-                    'stats'         => $stats,
+                    'success'              => true,
+                    'message'              => $message,
+                    'new_status'           => $activeStatus,
+                    'success_count'        => $successCount,
+                    'failed_count'         => $failedCount,
+                    'invoices_created'     => $invoicesCreated,
+                    'invoices_skipped'     => $invoicesSkipped,
+                    'free_students_skipped' => $freeStudentsSkipped,
+                    'stats'                => $stats,
                 ]);
             });
         } catch (\Exception $e) {
+            Log::error('Error in bulk toggle activation: ' . $e->getMessage());
+
             return response()->json(
                 [
                     'success' => false,
@@ -284,6 +348,145 @@ class StudentActivationController extends Controller
                 500,
             );
         }
+    }
+
+    /**
+     * Create current month tuition fee invoice for a student
+     *
+     * @param Student $student
+     * @return array ['created' => bool, 'message' => string|null, 'reason' => string|null]
+     */
+    private function createCurrentMonthTuitionFeeInvoice(Student $student): array
+    {
+        try {
+            // Get tuition fee invoice type
+            $tuitionFeeType = PaymentInvoiceType::where('type_name', 'Tuition Fee')->first();
+
+            if (! $tuitionFeeType) {
+                Log::warning('Tuition Fee invoice type not found');
+                return ['created' => false, 'message' => null, 'reason' => 'type_not_found'];
+            }
+
+            // Get current month year in format MM_YYYY
+            $currentMonthYear = now()->format('m_Y');
+
+            // Check if invoice already exists for current month
+            $existingInvoice = PaymentInvoice::where('student_id', $student->id)
+                ->where('invoice_type_id', $tuitionFeeType->id)
+                ->where('month_year', $currentMonthYear)
+                ->exists();
+
+            if ($existingInvoice) {
+                return ['created' => false, 'message' => 'Current month invoice already exists.', 'reason' => 'already_exists'];
+            }
+
+            // Get tuition fee amount from student's payment profile
+            $tuitionFee = $student->payments->tuition_fee ?? 0;
+
+            // Skip invoice creation for free students (tuition fee is 0)
+            if ($tuitionFee <= 0) {
+                return ['created' => false, 'message' => null, 'reason' => 'free_student'];
+            }
+
+            // Generate invoice number
+            $yearSuffix = now()->format('y');
+            $month      = now()->format('m');
+            $prefix     = $student->branch->branch_prefix ?? 'INV';
+
+            $lastInvoice = PaymentInvoice::withTrashed()
+                ->where('invoice_number', 'like', "{$prefix}{$yearSuffix}{$month}_%")
+                ->latest('invoice_number')
+                ->first();
+
+            $nextSequence = $lastInvoice
+                ? ((int) substr($lastInvoice->invoice_number, strrpos($lastInvoice->invoice_number, '_') + 1)) + 1
+                : 1001;
+
+            $invoiceNumber = "{$prefix}{$yearSuffix}{$month}_{$nextSequence}";
+
+            // Create the invoice
+            $invoice = PaymentInvoice::create([
+                'invoice_number'  => $invoiceNumber,
+                'student_id'      => $student->id,
+                'invoice_type_id' => $tuitionFeeType->id,
+                'total_amount'    => $tuitionFee,
+                'amount_due'      => $tuitionFee,
+                'month_year'      => $currentMonthYear,
+                'created_by'      => auth()->id(),
+            ]);
+
+            // Send SMS notifications
+            $this->sendTuitionFeeInvoiceSms($student, $invoice);
+
+            return ['created' => true, 'message' => 'Tuition fee invoice created.', 'reason' => null];
+
+        } catch (\Exception $e) {
+            Log::error('Error creating tuition fee invoice for student ID ' . $student->id . ': ' . $e->getMessage());
+            return ['created' => false, 'message' => 'Failed to create invoice.', 'reason' => 'error'];
+        }
+    }
+
+    /**
+     * Send SMS notifications for tuition fee invoice
+     *
+     * @param Student $student
+     * @param PaymentInvoice $invoice
+     * @return void
+     */
+    private function sendTuitionFeeInvoiceSms(Student $student, PaymentInvoice $invoice): void
+    {
+        try {
+            $monthYear = $invoice->month_year;
+            $monthName = $monthYear
+                ? Carbon::createFromDate(explode('_', $monthYear)[1], explode('_', $monthYear)[0])->format('F')
+                : now()->format('F');
+
+            $dueDate = $this->ordinal($student->payments->due_date ?? 1) . ' ' . now()->format('F');
+
+            // Send SMS to student
+            $mobileNumber = $student->mobileNumbers->where('number_type', 'sms')->first();
+            if ($mobileNumber) {
+                send_auto_sms('tuition_fee_invoice_created', $mobileNumber->mobile_number, [
+                    'student_name' => $student->name,
+                    'month_year'   => $monthName,
+                    'amount'       => $invoice->total_amount,
+                    'invoice_no'   => $invoice->invoice_number,
+                    'due_date'     => $dueDate,
+                ]);
+            }
+
+            // Send SMS to father/guardian
+            $father = $student->guardians->where('relationship', 'father')->first();
+            if ($father && $father->mobile_number) {
+                send_auto_sms('guardian_tuition_fee_invoice_created', $father->mobile_number, [
+                    'student_name' => $student->name,
+                    'month_year'   => $monthName,
+                    'amount'       => $invoice->total_amount,
+                    'invoice_no'   => $invoice->invoice_number,
+                    'due_date'     => $dueDate,
+                ]);
+            }
+        } catch (\Exception $e) {
+            // Log error but don't stop the activation process
+            Log::warning('Failed to send tuition fee invoice SMS for student ID ' . $student->id . ': ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Convert number to ordinal (1st, 2nd, 3rd, etc.)
+     *
+     * @param int $number
+     * @return string
+     */
+    private function ordinal(int $number): string
+    {
+        $suffixes = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th'];
+
+        if ((($number % 100) >= 11) && (($number % 100) <= 13)) {
+            return $number . 'th';
+        }
+
+        return $number . $suffixes[$number % 10];
     }
 
     /**
