@@ -261,24 +261,18 @@
                     @endforeach
                 </tr>
                 <tr>
-    <th>বকেয়া</th>
-    @foreach ($feeTypes as $type)
-        @php
-            $transactionsOfType = $groupedByType[$type] ?? collect();
-
-            $totalDue = $transactionsOfType
-                ->groupBy('payment_invoice_id')
-                ->map(fn($group) => optional($group->first()->paymentInvoice)->amount_due ?? 0)
-                ->sum();
-        @endphp
-
-        <td>
-            @if ($transactionsOfType->isNotEmpty())
-                {{ $totalDue > 0 ? $numto->bnCommaLakh($totalDue) : '-' }}
-            @endif
-        </td>
-    @endforeach
-</tr>
+                    <th>বকেয়া</th>
+                    @foreach ($feeTypes as $type)
+                        @php
+                            $transactionsOfType = $groupedByType[$type] ?? collect();
+                            $totalDue = $transactionsOfType
+                                ->groupBy('payment_invoice_id')
+                                ->map(fn($group) => optional($group->first()->paymentInvoice)->amount_due ?? 0)
+                                ->sum();
+                        @endphp
+                        <td>{{ $totalDue > 0 ? $numto->bnCommaLakh($totalDue) : '-' }}</td>
+                    @endforeach
+                </tr>
                 <tr>
                     <th>রশিদ নং</th>
                     @foreach ($feeTypes as $type)
