@@ -36,6 +36,7 @@ class PdfController extends Controller
         return view('pdf.admission_form_layout', ['student' => $student]);
     }
 
+    // This method is not using currently and made for thermal printer, so we are keeping it simple without using the PDF template and mPDF features like headers/footers, custom fonts, etc.
     public function downloadPaySlip(string $id)
     {
         $transaction = PaymentTransaction::find($id);
@@ -71,18 +72,18 @@ class PdfController extends Controller
         return $pdf->Output($transaction->voucher_no . '.pdf', 'I'); // I = Inline view, D = Download
     }
 
-/**
- * Download statement - auto-detects statement type from invoice
- *
- * If invoice_id is provided and it's a 'Special Class Fee' invoice,
- * the controller auto-finds the secondary_class_id and generates special class statement.
- * Otherwise, generates regular statement.
- *
- * @param Request $request
- * - student_id (required)
- * - statement_year (required)
- * - invoice_id (optional) - used to auto-detect Special Class Fee
- */
+    /**
+     * Download statement - auto-detects statement type from invoice
+     *
+     * If invoice_id is provided and it's a 'Special Class Fee' invoice,
+     * the controller auto-finds the secondary_class_id and generates special class statement.
+     * Otherwise, generates regular statement.
+     *
+     * @param Request $request
+     * - student_id (required)
+     * - statement_year (required)
+     * - invoice_id (optional) - used to auto-detect Special Class Fee
+     */
     public function downloadStatement(Request $request)
     {
         $request->validate([

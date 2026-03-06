@@ -14,6 +14,7 @@
         }
 
         @media print {
+
             html,
             body {
                 width: 148mm;
@@ -105,8 +106,18 @@
 
         @php
             $months = [
-                'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
-                'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর',
+                'জানুয়ারি',
+                'ফেব্রুয়ারি',
+                'মার্চ',
+                'এপ্রিল',
+                'মে',
+                'জুন',
+                'জুলাই',
+                'আগস্ট',
+                'সেপ্টেম্বর',
+                'অক্টোবর',
+                'নভেম্বর',
+                'ডিসেম্বর',
             ];
             $chunks = array_chunk($months, 6);
             $tuitionFeeDue = $monthlyPayments->flatten(1)->sum(fn($t) => optional($t->paymentInvoice)->amount_due ?? 0);
@@ -144,7 +155,11 @@
                                 $transaction = $monthlyPayments->get($monthNumber)?->first();
                             @endphp
                             <td>
-                                {{ $transaction?->paymentInvoice->amount_due ? $numto->bnCommaLakh($transaction->paymentInvoice->amount_due) : '' }}
+                                {{ $transaction
+                                    ? ($transaction->paymentInvoice?->amount_due
+                                        ? $numto->bnCommaLakh($transaction->paymentInvoice->amount_due)
+                                        : '-')
+                                    : '' }}
                             </td>
                         @endforeach
                     </tr>
@@ -246,18 +261,24 @@
                     @endforeach
                 </tr>
                 <tr>
-                    <th>বকেয়া</th>
-                    @foreach ($feeTypes as $type)
-                        @php
-                            $transactionsOfType = $groupedByType[$type] ?? collect();
-                            $totalDue = $transactionsOfType
-                                ->groupBy('payment_invoice_id')
-                                ->map(fn($group) => optional($group->first()->paymentInvoice)->amount_due ?? 0)
-                                ->sum();
-                        @endphp
-                        <td>{{ $totalDue > 0 ? $numto->bnCommaLakh($totalDue) : '' }}</td>
-                    @endforeach
-                </tr>
+    <th>বকেয়া</th>
+    @foreach ($feeTypes as $type)
+        @php
+            $transactionsOfType = $groupedByType[$type] ?? collect();
+
+            $totalDue = $transactionsOfType
+                ->groupBy('payment_invoice_id')
+                ->map(fn($group) => optional($group->first()->paymentInvoice)->amount_due ?? 0)
+                ->sum();
+        @endphp
+
+        <td>
+            @if ($transactionsOfType->isNotEmpty())
+                {{ $totalDue > 0 ? $numto->bnCommaLakh($totalDue) : '-' }}
+            @endif
+        </td>
+    @endforeach
+</tr>
                 <tr>
                     <th>রশিদ নং</th>
                     @foreach ($feeTypes as $type)
