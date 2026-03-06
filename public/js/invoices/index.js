@@ -1240,7 +1240,7 @@ var KTExportManager = function () {
         }
 
         // Show loading toast
-        toastr.info('Fetching export data' + (params.search ? ' for "' + params.search + '"' : '') + '...');
+        // toastr.info('Fetching export data' + (params.search ? ' for "' + params.search + '"' : '') + '...');
 
         $.get(routeExportAjax, params, function (response) {
             callback(response.data || []);
