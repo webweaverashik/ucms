@@ -158,7 +158,7 @@
                     </tr>
 
                     {{-- পরিশোধ সংখ্যা (Payment Count) - Instead of রশিদ নং --}}
-                    <tr>
+                    {{-- <tr>
                         <th>পরিশোধ সংখ্যা</th>
                         @foreach ($chunk as $i => $month)
                             @php
@@ -169,7 +169,7 @@
                                 {{ $monthData && $monthData->payment_count > 0 ? $numto->bnNum($monthData->payment_count) : '' }}
                             </td>
                         @endforeach
-                    </tr>
+                    </tr> --}}
 
                     {{-- গ্রহীতার নাম --}}
                     <tr>
