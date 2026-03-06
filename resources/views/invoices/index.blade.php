@@ -92,6 +92,7 @@
                     @endforeach
                 </ul>
                 <!--end::Branch Tabs-->
+
                 <!--begin::Branch Tab Content-->
                 <div class="tab-content" id="branchTabsDueContent">
                     @foreach ($branches as $index => $branch)
@@ -129,6 +130,7 @@
                     @endforeach
                 </ul>
                 <!--end::Branch Tabs-->
+
                 <!--begin::Branch Tab Content-->
                 <div class="tab-content" id="branchTabsPaidContent">
                     @foreach ($branches as $index => $branch)
@@ -204,8 +206,8 @@
                                             <select name="invoice_type"
                                                 class="form-select form-select-solid rounded-start-0 border-start"
                                                 data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
-                                                data-placeholder="Select a invoice type" data-hide-search="false"
-                                                required disabled>
+                                                data-placeholder="Select a invoice type" data-hide-search="false" required
+                                                disabled>
                                                 <option></option>
                                                 @foreach ($invoice_types->where('type_name', '!=', 'Special Class Fee') as $type)
                                                     <option value="{{ $type->id }}"
@@ -216,12 +218,12 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="fv-row mb-7 col-6" id="month_year_type_id">
+                                <div class="fv-row mb-7 col-6" id="month_year_type_id" style="display: none;">
                                     <label class="required fw-semibold fs-6 mb-2">Billing Type</label>
                                     <div class="row">
                                         <div class="col-lg-6">
-                                            <input type="radio" class="btn-check" name="month_year_type"
-                                                checked="checked" value="new_invoice" id="new_invoice_input" />
+                                            <input type="radio" class="btn-check" name="month_year_type" checked="checked"
+                                                value="new_invoice" id="new_invoice_input" />
                                             <label
                                                 class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
                                                 for="new_invoice_input">
@@ -245,7 +247,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="fv-row mb-7 col-6" id="month_year_id">
+                                <div class="fv-row mb-7 col-6" id="month_year_id" style="display: none;">
                                     <label class="required fw-semibold fs-6 mb-2">Billing Month</label>
                                     <div class="input-group input-group-solid flex-nowrap">
                                         <span class="input-group-text">
@@ -255,8 +257,8 @@
                                             <select name="invoice_month_year"
                                                 class="form-select form-select-solid rounded-start-0 border-start"
                                                 data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
-                                                data-placeholder="Select billing month" data-hide-search="true"
-                                                disabled required>
+                                                data-placeholder="Select billing month" data-hide-search="true" disabled
+                                                required>
                                                 <option></option>
                                             </select>
                                         </div>
@@ -280,8 +282,7 @@
                         <div class="text-center pt-10">
                             <button type="reset" class="btn btn-light me-3"
                                 data-kt-add-invoice-modal-action="cancel">Discard</button>
-                            <button type="button" class="btn btn-primary"
-                                data-kt-add-invoice-modal-action="submit">
+                            <button type="button" class="btn btn-primary" data-kt-add-invoice-modal-action="submit">
                                 <span class="indicator-label">Submit</span>
                                 <span class="indicator-progress">Please wait...
                                     <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
@@ -301,8 +302,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h2 class="fw-bold" id="kt_modal_edit_invoice_title">Update Invoice</h2>
-                    <div class="btn btn-icon btn-sm btn-active-icon-primary"
-                        data-kt-edit-invoice-modal-action="close">
+                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-edit-invoice-modal-action="close">
                         <i class="ki-outline ki-cross fs-1"></i>
                     </div>
                 </div>
@@ -314,8 +314,7 @@
                             data-kt-scroll-wrappers="#kt_modal_edit_invoice_scroll" data-kt-scroll-offset="300px">
                             <div class="fv-row mb-7">
                                 <label class="fw-semibold fs-6 mb-2">Corresponding Student</label>
-                                <div class="form-control form-control-solid bg-light-secondary"
-                                    id="edit_student_display">
+                                <div class="form-control form-control-solid bg-light-secondary" id="edit_student_display">
                                     <span class="text-muted">Loading...</span>
                                 </div>
                             </div>
@@ -350,8 +349,7 @@
                         <div class="text-center pt-10">
                             <button type="reset" class="btn btn-light me-3"
                                 data-kt-edit-invoice-modal-action="cancel">Discard</button>
-                            <button type="button" class="btn btn-primary"
-                                data-kt-edit-invoice-modal-action="submit">
+                            <button type="button" class="btn btn-primary" data-kt-edit-invoice-modal-action="submit">
                                 <span class="indicator-label">Update</span>
                                 <span class="indicator-progress">Please wait...
                                     <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
@@ -371,8 +369,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h2 class="fw-bold" id="kt_modal_add_comment_title">Add Comment</h2>
-                    <div class="btn btn-icon btn-sm btn-active-icon-primary"
-                        data-kt-add-comment-modal-action="close">
+                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-add-comment-modal-action="close">
                         <i class="ki-outline ki-cross fs-1"></i>
                     </div>
                 </div>
@@ -388,8 +385,7 @@
                                 <div id="previous_comments_container" class="border rounded p-4 bg-light-secondary"
                                     style="max-height: 200px; overflow-y: auto;">
                                     <div class="text-center text-muted py-3" id="comments_loading">
-                                        <span class="spinner-border spinner-border-sm me-2"></span>Loading
-                                        comments...
+                                        <span class="spinner-border spinner-border-sm me-2"></span>Loading comments...
                                     </div>
                                     <div id="comments_list"></div>
                                     <div class="text-center text-muted py-3 d-none" id="no_comments">
@@ -409,8 +405,7 @@
                         <div class="text-center pt-10">
                             <button type="reset" class="btn btn-light me-3"
                                 data-kt-add-comment-modal-action="cancel">Discard</button>
-                            <button type="button" class="btn btn-primary"
-                                data-kt-add-comment-modal-action="submit">
+                            <button type="button" class="btn btn-primary" data-kt-add-comment-modal-action="submit">
                                 <span class="indicator-label">Add Comment</span>
                                 <span class="indicator-progress">Please wait...
                                     <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>

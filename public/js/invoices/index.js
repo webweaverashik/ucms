@@ -457,20 +457,20 @@ var KTDueInvoicesList = function () {
         var columns = [
             // 0: SL
             { data: 'sl', orderable: false },
-
             // 1: Invoice No.
             {
                 data: null,
                 render: function (data) {
                     var url = routeInvoiceShow.replace(':id', data.id);
-                    var badge = data.comments_count > 0
-                        ? '<span class="badge badge-circle badge-sm badge-primary ms-1">' + data.comments_count + '</span>'
-                        : '';
+                    var badge = '';
+                    // Check if comments_count exists and is greater than 0
+                    if (data.comments_count && parseInt(data.comments_count) > 0) {
+                        badge = '<span class="badge badge-circle badge-sm badge-primary ms-1" title="' + data.comments_count + ' comment(s)" data-bs-toggle="tooltip">' + data.comments_count + '</span>';
+                    }
                     return '<a href="' + url + '" target="_blank" class="text-gray-800 text-hover-primary">' +
                         InvoiceUtils.escapeHtml(data.invoice_number) + '</a>' + badge;
                 }
             },
-
             // 2: Student
             {
                 data: null,
@@ -481,10 +481,8 @@ var KTDueInvoicesList = function () {
                         '<br><small class="text-muted">' + InvoiceUtils.escapeHtml(data.student_unique_id) + '</small></a>';
                 }
             },
-
             // 3: Mobile
             { data: 'mobile', orderable: false, defaultContent: '-' },
-
             // 4: Guardian 1
             {
                 data: null,
@@ -504,7 +502,6 @@ var KTDueInvoicesList = function () {
                     return html;
                 }
             },
-
             // 5: Guardian 2
             {
                 data: null,
@@ -524,13 +521,10 @@ var KTDueInvoicesList = function () {
                     return html;
                 }
             },
-
             // 6: Class
             { data: 'class_name', defaultContent: '-' },
-
             // 7: Institution
             { data: 'institution', defaultContent: '-' },
-
             // 8: Tuition Fee
             {
                 data: 'tuition_fee',
@@ -539,7 +533,6 @@ var KTDueInvoicesList = function () {
                     return data ? '৳' + data : '-';
                 }
             },
-
             // 9: Activation Status
             {
                 data: null,
@@ -548,10 +541,8 @@ var KTDueInvoicesList = function () {
                     return data.activation_status_html || '-';
                 }
             },
-
             // 10: Invoice Type
             { data: 'invoice_type', defaultContent: '-' },
-
             // 11: Billing Month
             {
                 data: null,
@@ -561,19 +552,14 @@ var KTDueInvoicesList = function () {
                         : InvoiceUtils.escapeHtml(data.billing_month);
                 }
             },
-
             // 12: Total Amount
             { data: 'total_amount', defaultContent: '0' },
-
             // 13: Amount Due (Remaining)
             { data: 'amount_due', defaultContent: '0' },
-
             // 14: Due Date
             { data: 'due_date', defaultContent: '-' },
-
             // 15: Status
             { data: 'status_html', orderable: false, defaultContent: '-' },
-
             // 16: Last Comment
             {
                 data: null,
@@ -587,7 +573,6 @@ var KTDueInvoicesList = function () {
                         InvoiceUtils.escapeHtml(truncated) + '</div>';
                 }
             },
-
             // 17: Created At
             {
                 data: null,
@@ -595,7 +580,6 @@ var KTDueInvoicesList = function () {
                     return data.created_at + '<br><small class="text-muted">' + data.created_at_time + '</small>';
                 }
             },
-
             // 18: Actions
             {
                 data: null,
@@ -707,7 +691,10 @@ var KTDueInvoicesList = function () {
                 classNames.forEach(function (cls) {
                     classSelect.innerHTML += '<option value="' + cls.id + '">' + cls.name + '</option>';
                 });
-                $(classSelect).select2({ placeholder: 'Select class', allowClear: true });
+                $(classSelect).select2({
+                    placeholder: 'Select class',
+                    allowClear: true
+                });
             }
 
             // Populate invoice type filter
@@ -717,7 +704,10 @@ var KTDueInvoicesList = function () {
                 invoiceTypes.forEach(function (type) {
                     typeSelect.innerHTML += '<option value="ucms_' + type.type_name + '">' + type.type_name + '</option>';
                 });
-                $(typeSelect).select2({ placeholder: 'Select option', allowClear: true });
+                $(typeSelect).select2({
+                    placeholder: 'Select option',
+                    allowClear: true
+                });
             }
 
             // Populate billing month filter
@@ -727,7 +717,10 @@ var KTDueInvoicesList = function () {
                 data.dueMonths.forEach(function (month) {
                     monthSelect.innerHTML += '<option value="' + month.value + '">' + month.label + '</option>';
                 });
-                $(monthSelect).select2({ placeholder: 'Select option', allowClear: true });
+                $(monthSelect).select2({
+                    placeholder: 'Select option',
+                    allowClear: true
+                });
             }
         });
     };

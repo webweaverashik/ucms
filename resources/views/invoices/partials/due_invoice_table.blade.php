@@ -49,8 +49,8 @@
                             <div class="separator border-gray-200"></div>
                             <!--end::Separator-->
                             <!--begin::Content-->
-                            <div class="px-7 py-5 column-checkbox-list" data-table-id="{{ $tableId }}" data-type="due"
-                                style="max-height: 300px; overflow-y: auto;">
+                            <div class="px-7 py-5 column-checkbox-list" data-table-id="{{ $tableId }}"
+                                data-type="due" style="max-height: 300px; overflow-y: auto;">
                                 <!-- Checkboxes will be populated by JavaScript -->
                             </div>
                             <!--end::Content-->
@@ -59,7 +59,8 @@
                             <div class="px-7 py-4">
                                 <button type="button" class="btn btn-sm btn-primary w-100 column-apply-btn"
                                     data-table-id="{{ $tableId }}" data-type="due">
-                                    <span class="indicator-label"><i class="ki-outline ki-check fs-4 me-1"></i>Apply & Save for All Users</span>
+                                    <span class="indicator-label"><i class="ki-outline ki-check fs-4 me-1"></i>Apply &
+                                        Save for All Users</span>
                                     <span class="indicator-progress">Please wait...
                                         <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
                                     </span>
@@ -190,20 +191,24 @@
                         <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
                             data-kt-menu="true">
                             <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3 export-btn" data-table-id="{{ $tableId }}"
-                                    data-type="due" data-export="copy">Copy to clipboard</a>
+                                <a href="#" class="menu-link px-3 export-btn"
+                                    data-table-id="{{ $tableId }}" data-type="due" data-export="copy">Copy to
+                                    clipboard</a>
                             </div>
                             <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3 export-btn" data-table-id="{{ $tableId }}"
-                                    data-type="due" data-export="excel">Export as Excel</a>
+                                <a href="#" class="menu-link px-3 export-btn"
+                                    data-table-id="{{ $tableId }}" data-type="due" data-export="excel">Export
+                                    as Excel</a>
                             </div>
                             <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3 export-btn" data-table-id="{{ $tableId }}"
-                                    data-type="due" data-export="csv">Export as CSV</a>
+                                <a href="#" class="menu-link px-3 export-btn"
+                                    data-table-id="{{ $tableId }}" data-type="due" data-export="csv">Export as
+                                    CSV</a>
                             </div>
                             <div class="menu-item px-3">
-                                <a href="#" class="menu-link px-3 export-btn" data-table-id="{{ $tableId }}"
-                                    data-type="due" data-export="pdf">Export as PDF</a>
+                                <a href="#" class="menu-link px-3 export-btn"
+                                    data-table-id="{{ $tableId }}" data-type="due" data-export="pdf">Export as
+                                    PDF</a>
                             </div>
                         </div>
                         <!--end::Export Menu-->
@@ -222,7 +227,6 @@
     <div class="card-body py-4">
         <!--begin::Table Wrapper-->
         <div class="invoice-table-wrapper" id="wrapper_{{ $tableId }}">
-            
             <!--begin::Skeleton Loader-->
             <div class="invoice-skeleton" id="skeleton_{{ $tableId }}">
                 <div class="skeleton-header">
@@ -258,14 +262,13 @@
 
             <!--begin::Table Container-->
             <div class="invoice-table-container">
-                {{-- 
-                    IMPORTANT: Column order must match exactly with JavaScript DataTable columns array
+                {{-- IMPORTANT: Column order must match exactly with JavaScript DataTable columns array
                     Index: 0=sl, 1=invoice_number, 2=student_name, 3=mobile, 4=guardian_1, 5=guardian_2,
-                           6=class_name, 7=institution, 8=tuition_fee, 9=activation_status, 10=invoice_type,
-                           11=billing_month, 12=total_amount, 13=amount_due, 14=due_date, 15=status,
-                           16=last_comment, 17=created_at, 18=actions
-                --}}
-                <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table due-invoices-table"
+                    6=class_name, 7=institution, 8=tuition_fee, 9=activation_status, 10=invoice_type,
+                    11=billing_month, 12=total_amount, 13=amount_due, 14=due_date, 15=status,
+                    16=last_comment, 17=created_at, 18=actions --}}
+                <table
+                    class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table due-invoices-table"
                     id="{{ $tableId }}" data-branch-id="{{ $branchId }}" data-table-type="due">
                     <thead>
                         <tr class="fw-bold fs-7 text-uppercase gs-0">
@@ -296,7 +299,6 @@
                 </table>
             </div>
             <!--end::Table Container-->
-
         </div>
         <!--end::Table Wrapper-->
     </div>
