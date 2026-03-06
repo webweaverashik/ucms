@@ -5,69 +5,79 @@
  * IMPORTANT: The order here must match EXACTLY with:
  * 1. The <th> elements in the blade templates
  * 2. The DataTable columns array
+ * 
+ * 'sortable' indicates if the column can be sorted on the server
  */
 var ColumnConfig = {
     // Due invoices columns - matching exact order in due_invoice_table.blade.php
     due: [
-        { key: 'sl', label: 'SL', visible: true, required: true },
-        { key: 'invoice_number', label: 'Invoice No.', visible: true, required: true },
-        { key: 'student_name', label: 'Student', visible: true, required: false },
-        { key: 'mobile', label: 'Mobile', visible: true, required: false },
-        { key: 'guardian_1', label: 'Guardian 1', visible: false, required: false },
-        { key: 'guardian_2', label: 'Guardian 2', visible: false, required: false },
-        { key: 'class_name', label: 'Class', visible: false, required: false },
-        { key: 'institution', label: 'Institution', visible: false, required: false },
-        { key: 'tuition_fee', label: 'Tuition Fee', visible: false, required: false },
-        { key: 'activation_status', label: 'Activation', visible: false, required: false },
-        { key: 'invoice_type', label: 'Invoice Type', visible: true, required: false },
-        { key: 'billing_month', label: 'Billing Month', visible: true, required: false },
-        { key: 'total_amount', label: 'Total (Tk)', visible: true, required: false },
-        { key: 'amount_due', label: 'Remaining (Tk)', visible: true, required: false },
-        { key: 'due_date', label: 'Due Date', visible: true, required: false },
-        { key: 'status', label: 'Status', visible: true, required: false },
-        { key: 'last_comment', label: 'Last Comment', visible: true, required: false },
-        { key: 'created_at', label: 'Created At', visible: true, required: false },
-        { key: 'actions', label: 'Actions', visible: true, required: true }
+        { key: 'sl', label: 'SL', visible: true, required: true, sortable: false },
+        { key: 'invoice_number', label: 'Invoice No.', visible: true, required: true, sortable: true },
+        { key: 'student_name', label: 'Student', visible: true, required: false, sortable: true },
+        { key: 'mobile', label: 'Mobile', visible: true, required: false, sortable: false },
+        { key: 'guardian_1', label: 'Guardian 1', visible: false, required: false, sortable: false },
+        { key: 'guardian_2', label: 'Guardian 2', visible: false, required: false, sortable: false },
+        { key: 'class_name', label: 'Class', visible: false, required: false, sortable: false },
+        { key: 'institution', label: 'Institution', visible: false, required: false, sortable: false },
+        { key: 'tuition_fee', label: 'Tuition Fee', visible: false, required: false, sortable: false },
+        { key: 'activation_status', label: 'Activation', visible: false, required: false, sortable: false },
+        { key: 'invoice_type', label: 'Invoice Type', visible: true, required: false, sortable: false },
+        { key: 'billing_month', label: 'Billing Month', visible: true, required: false, sortable: true },
+        { key: 'total_amount', label: 'Total (Tk)', visible: true, required: false, sortable: true },
+        { key: 'amount_due', label: 'Remaining (Tk)', visible: true, required: false, sortable: true },
+        { key: 'due_date', label: 'Due Date', visible: true, required: false, sortable: false },
+        { key: 'status', label: 'Status', visible: true, required: false, sortable: true },
+        { key: 'last_comment', label: 'Last Comment', visible: true, required: false, sortable: false },
+        { key: 'created_at', label: 'Created At', visible: true, required: false, sortable: true },
+        { key: 'actions', label: 'Actions', visible: true, required: true, sortable: false }
     ],
-
     // Paid invoices columns - matching exact order in paid_invoice_table.blade.php
     paid: [
-        { key: 'sl', label: 'SL', visible: true, required: true },
-        { key: 'invoice_number', label: 'Invoice No.', visible: true, required: true },
-        { key: 'student_name', label: 'Student', visible: true, required: false },
-        { key: 'mobile', label: 'Mobile', visible: true, required: false },
-        { key: 'guardian_1', label: 'Guardian 1', visible: false, required: false },
-        { key: 'guardian_2', label: 'Guardian 2', visible: false, required: false },
-        { key: 'class_name', label: 'Class', visible: false, required: false },
-        { key: 'institution', label: 'Institution', visible: false, required: false },
-        { key: 'tuition_fee', label: 'Tuition Fee', visible: false, required: false },
-        { key: 'activation_status', label: 'Activation', visible: false, required: false },
-        { key: 'invoice_type', label: 'Invoice Type', visible: true, required: false },
-        { key: 'total_amount', label: 'Amount (Tk)', visible: true, required: false },
-        { key: 'billing_month', label: 'Billing Month', visible: true, required: false },
-        { key: 'due_date', label: 'Due Date', visible: true, required: false },
-        { key: 'status', label: 'Status', visible: true, required: false },
-        { key: 'last_comment', label: 'Last Comment', visible: true, required: false },
-        { key: 'paid_at', label: 'Paid At', visible: true, required: false }
+        { key: 'sl', label: 'SL', visible: true, required: true, sortable: false },
+        { key: 'invoice_number', label: 'Invoice No.', visible: true, required: true, sortable: true },
+        { key: 'student_name', label: 'Student', visible: true, required: false, sortable: true },
+        { key: 'mobile', label: 'Mobile', visible: true, required: false, sortable: false },
+        { key: 'guardian_1', label: 'Guardian 1', visible: false, required: false, sortable: false },
+        { key: 'guardian_2', label: 'Guardian 2', visible: false, required: false, sortable: false },
+        { key: 'class_name', label: 'Class', visible: false, required: false, sortable: false },
+        { key: 'institution', label: 'Institution', visible: false, required: false, sortable: false },
+        { key: 'tuition_fee', label: 'Tuition Fee', visible: false, required: false, sortable: false },
+        { key: 'activation_status', label: 'Activation', visible: false, required: false, sortable: false },
+        { key: 'invoice_type', label: 'Invoice Type', visible: true, required: false, sortable: false },
+        { key: 'total_amount', label: 'Amount (Tk)', visible: true, required: false, sortable: true },
+        { key: 'billing_month', label: 'Billing Month', visible: true, required: false, sortable: true },
+        { key: 'due_date', label: 'Due Date', visible: true, required: false, sortable: false },
+        { key: 'status', label: 'Status', visible: true, required: false, sortable: false },
+        { key: 'last_comment', label: 'Last Comment', visible: true, required: false, sortable: false },
+        { key: 'paid_at', label: 'Paid At', visible: true, required: false, sortable: true }
     ]
 };
 
 // Store DataTables instances and filters
 var InvoiceManager = {
-    tables: { due: {}, paid: {} },
-    filters: { due: {}, paid: {} },
-    initialized: { due: {}, paid: {} },
-    columnVisibility: { due: {}, paid: {} },
+    tables: {
+        due: {},
+        paid: {}
+    },
+    filters: {
+        due: {},
+        paid: {}
+    },
+    initialized: {
+        due: {},
+        paid: {}
+    },
+    columnVisibility: {
+        due: {},
+        paid: {}
+    },
 
     // Get column visibility - uses server settings (same for all users)
     getColumnVisibility: function (tableId, type) {
         // Use server settings (database) - these apply to all users
-        if (typeof serverColumnSettings !== 'undefined' &&
-            serverColumnSettings[type] &&
-            Object.keys(serverColumnSettings[type]).length > 0) {
+        if (typeof serverColumnSettings !== 'undefined' && serverColumnSettings[type] && Object.keys(serverColumnSettings[type]).length > 0) {
             return serverColumnSettings[type];
         }
-
         // Return default visibility from config
         var config = ColumnConfig[type] || ColumnConfig.due;
         var visibility = {};
@@ -215,6 +225,7 @@ var InvoiceUtils = {
 
 // Column Selector Manager (Admin only)
 var KTColumnSelector = function () {
+
     // Check if user is admin
     var checkAdminAccess = function () {
         return typeof isUserAdmin !== 'undefined' && isUserAdmin === true;
@@ -249,7 +260,6 @@ var KTColumnSelector = function () {
                 '</label>' +
                 '</div>';
         });
-
         container.innerHTML = html;
     };
 
@@ -264,7 +274,6 @@ var KTColumnSelector = function () {
         checkboxes.forEach(function (checkbox) {
             var colIndex = parseInt(checkbox.getAttribute('data-column-index'));
             var colConfig = config[colIndex];
-
             if (colConfig && !colConfig.required) {
                 checkbox.checked = colConfig.visible;
             }
@@ -337,7 +346,6 @@ var KTColumnSelector = function () {
 
             var visibility = {};
             var checkboxes = container.querySelectorAll('.column-visibility-checkbox');
-
             checkboxes.forEach(function (checkbox) {
                 var colIndex = parseInt(checkbox.getAttribute('data-column-index'));
                 visibility[colIndex] = checkbox.checked;
@@ -347,7 +355,9 @@ var KTColumnSelector = function () {
             $.ajax({
                 url: routeSaveColumnSettings,
                 type: 'POST',
-                headers: { 'X-CSRF-TOKEN': InvoiceUtils.getCsrfToken() },
+                headers: {
+                    'X-CSRF-TOKEN': InvoiceUtils.getCsrfToken()
+                },
                 contentType: 'application/json',
                 data: JSON.stringify({
                     page: 'invoices_' + type,
@@ -399,6 +409,7 @@ var KTColumnSelector = function () {
 
             var tableId = this.getAttribute('data-table-id');
             var type = this.getAttribute('data-type');
+
             resetToDefaults(tableId, type);
             toastr.info('Column selection reset to defaults. Click Apply to save.');
         });
@@ -408,15 +419,12 @@ var KTColumnSelector = function () {
         init: function () {
             handleEvents();
         },
-
         initForTable: function (tableId, type) {
             if (checkAdminAccess()) {
                 initColumnSelector(tableId, type);
             }
         },
-
         applyInitialVisibility: applyInitialVisibility,
-
         getVisibleColumns: function (tableId, type) {
             var visibility = InvoiceManager.getColumnVisibility(tableId, type);
             var config = ColumnConfig[type] || ColumnConfig.due;
@@ -432,7 +440,6 @@ var KTColumnSelector = function () {
                     });
                 }
             });
-
             return visibleCols;
         }
     };
@@ -440,6 +447,7 @@ var KTColumnSelector = function () {
 
 // Due Invoices DataTable Manager
 var KTDueInvoicesList = function () {
+
     var initTable = function (tableId, branchId) {
         var table = document.getElementById(tableId);
         if (!table || InvoiceManager.initialized.due[tableId]) return;
@@ -453,27 +461,31 @@ var KTDueInvoicesList = function () {
         // Initialize column selector (admin only)
         KTColumnSelector.initForTable(tableId, 'due');
 
+        // Get column config for sortable property
+        var columnConfig = ColumnConfig.due;
+
         // Column definitions - MUST match exact order of <th> elements in blade template
         var columns = [
             // 0: SL
-            { data: 'sl', orderable: false },
-
+            { data: 'sl', orderable: columnConfig[0].sortable },
             // 1: Invoice No.
             {
                 data: null,
+                orderable: columnConfig[1].sortable,
                 render: function (data) {
                     var url = routeInvoiceShow.replace(':id', data.id);
-                    var badge = data.comments_count > 0
-                        ? '<span class="badge badge-circle badge-sm badge-primary ms-1">' + data.comments_count + '</span>'
-                        : '';
+                    var badge = '';
+                    if (data.comments_count && data.comments_count > 0) {
+                        badge = '<span class="badge badge-circle badge-sm badge-primary ms-1">' + data.comments_count + '</span>';
+                    }
                     return '<a href="' + url + '" target="_blank" class="text-gray-800 text-hover-primary">' +
                         InvoiceUtils.escapeHtml(data.invoice_number) + '</a>' + badge;
                 }
             },
-
             // 2: Student
             {
                 data: null,
+                orderable: columnConfig[2].sortable,
                 render: function (data) {
                     var url = routeStudentShow.replace(':id', data.student_id);
                     return '<a href="' + url + '" target="_blank" class="text-gray-800 text-hover-primary">' +
@@ -481,14 +493,12 @@ var KTDueInvoicesList = function () {
                         '<br><small class="text-muted">' + InvoiceUtils.escapeHtml(data.student_unique_id) + '</small></a>';
                 }
             },
-
             // 3: Mobile
-            { data: 'mobile', orderable: false, defaultContent: '-' },
-
+            { data: 'mobile', orderable: columnConfig[3].sortable, defaultContent: '-' },
             // 4: Guardian 1
             {
                 data: null,
-                orderable: false,
+                orderable: columnConfig[4].sortable,
                 render: function (data) {
                     if (!data.guardian_1_name) return '<span class="text-muted">-</span>';
                     var html = '<div class="guardian-info">';
@@ -504,11 +514,10 @@ var KTDueInvoicesList = function () {
                     return html;
                 }
             },
-
             // 5: Guardian 2
             {
                 data: null,
-                orderable: false,
+                orderable: columnConfig[5].sortable,
                 render: function (data) {
                     if (!data.guardian_2_name) return '<span class="text-muted">-</span>';
                     var html = '<div class="guardian-info">';
@@ -524,60 +533,51 @@ var KTDueInvoicesList = function () {
                     return html;
                 }
             },
-
             // 6: Class
-            { data: 'class_name', defaultContent: '-' },
-
+            { data: 'class_name', orderable: columnConfig[6].sortable, defaultContent: '-' },
             // 7: Institution
-            { data: 'institution', defaultContent: '-' },
-
+            { data: 'institution', orderable: columnConfig[7].sortable, defaultContent: '-' },
             // 8: Tuition Fee
             {
                 data: 'tuition_fee',
+                orderable: columnConfig[8].sortable,
                 defaultContent: '-',
                 render: function (data) {
                     return data ? '৳' + data : '-';
                 }
             },
-
             // 9: Activation Status
             {
                 data: null,
-                orderable: false,
+                orderable: columnConfig[9].sortable,
                 render: function (data) {
                     return data.activation_status_html || '-';
                 }
             },
-
             // 10: Invoice Type
-            { data: 'invoice_type', defaultContent: '-' },
-
+            { data: 'invoice_type', orderable: columnConfig[10].sortable, defaultContent: '-' },
             // 11: Billing Month
             {
                 data: null,
+                orderable: columnConfig[11].sortable,
                 render: function (data) {
                     return data.billing_month === 'One Time'
                         ? '<span class="badge badge-primary rounded-pill">One Time</span>'
                         : InvoiceUtils.escapeHtml(data.billing_month);
                 }
             },
-
             // 12: Total Amount
-            { data: 'total_amount', defaultContent: '0' },
-
+            { data: 'total_amount', orderable: columnConfig[12].sortable, defaultContent: '0' },
             // 13: Amount Due (Remaining)
-            { data: 'amount_due', defaultContent: '0' },
-
+            { data: 'amount_due', orderable: columnConfig[13].sortable, defaultContent: '0' },
             // 14: Due Date
-            { data: 'due_date', defaultContent: '-' },
-
+            { data: 'due_date', orderable: columnConfig[14].sortable, defaultContent: '-' },
             // 15: Status
-            { data: 'status_html', orderable: false, defaultContent: '-' },
-
+            { data: 'status_html', orderable: columnConfig[15].sortable, defaultContent: '-' },
             // 16: Last Comment
             {
                 data: null,
-                orderable: false,
+                orderable: columnConfig[16].sortable,
                 render: function (data) {
                     if (!data.last_comment) return '-';
                     var truncated = data.last_comment.length > 30
@@ -587,19 +587,18 @@ var KTDueInvoicesList = function () {
                         InvoiceUtils.escapeHtml(truncated) + '</div>';
                 }
             },
-
             // 17: Created At
             {
                 data: null,
+                orderable: columnConfig[17].sortable,
                 render: function (data) {
                     return data.created_at + '<br><small class="text-muted">' + data.created_at_time + '</small>';
                 }
             },
-
             // 18: Actions
             {
                 data: null,
-                orderable: false,
+                orderable: columnConfig[18].sortable,
                 className: 'text-end',
                 render: function (data) {
                     var actions = '';
@@ -639,6 +638,7 @@ var KTDueInvoicesList = function () {
         ];
 
         // Initialize DataTable
+        // Note: order is empty [] to use server's default sorting (student_unique_id + created_at)
         var dt = $(table).DataTable({
             processing: true,
             serverSide: true,
@@ -647,12 +647,14 @@ var KTDueInvoicesList = function () {
                 type: 'GET',
                 data: function (d) {
                     d.branch_id = branchId;
+
                     var filters = InvoiceManager.filters.due[tableId] || {};
                     if (filters.class_id) d.class_id = filters.class_id;
                     if (filters.invoice_type) d.invoice_type = filters.invoice_type;
                     if (filters.due_date) d.due_date = filters.due_date;
                     if (filters.status) d.status = filters.status;
                     if (filters.billing_month) d.billing_month = filters.billing_month;
+
                     return d;
                 },
                 dataSrc: function (json) {
@@ -660,7 +662,7 @@ var KTDueInvoicesList = function () {
                 }
             },
             columns: columns,
-            order: [[17, 'desc']], // Sort by created_at descending
+            order: [], // Empty order - let server handle default sorting
             lengthMenu: [10, 25, 50, 100],
             pageLength: 10,
             scrollX: true,
@@ -707,7 +709,10 @@ var KTDueInvoicesList = function () {
                 classNames.forEach(function (cls) {
                     classSelect.innerHTML += '<option value="' + cls.id + '">' + cls.name + '</option>';
                 });
-                $(classSelect).select2({ placeholder: 'Select class', allowClear: true });
+                $(classSelect).select2({
+                    placeholder: 'Select class',
+                    allowClear: true
+                });
             }
 
             // Populate invoice type filter
@@ -717,7 +722,10 @@ var KTDueInvoicesList = function () {
                 invoiceTypes.forEach(function (type) {
                     typeSelect.innerHTML += '<option value="ucms_' + type.type_name + '">' + type.type_name + '</option>';
                 });
-                $(typeSelect).select2({ placeholder: 'Select option', allowClear: true });
+                $(typeSelect).select2({
+                    placeholder: 'Select option',
+                    allowClear: true
+                });
             }
 
             // Populate billing month filter
@@ -727,7 +735,10 @@ var KTDueInvoicesList = function () {
                 data.dueMonths.forEach(function (month) {
                     monthSelect.innerHTML += '<option value="' + month.value + '">' + month.label + '</option>';
                 });
-                $(monthSelect).select2({ placeholder: 'Select option', allowClear: true });
+                $(monthSelect).select2({
+                    placeholder: 'Select option',
+                    allowClear: true
+                });
             }
         });
     };
@@ -751,7 +762,6 @@ var KTDueInvoicesList = function () {
             if (monthSelect && monthSelect.value) filters.billing_month = monthSelect.value;
 
             InvoiceManager.filters.due[tableId] = filters;
-
             if (InvoiceManager.tables.due[tableId]) {
                 InvoiceManager.tables.due[tableId].ajax.reload();
             }
@@ -774,7 +784,6 @@ var KTDueInvoicesList = function () {
             if (monthSelect) $(monthSelect).val(null).trigger('change');
 
             InvoiceManager.filters.due[tableId] = {};
-
             if (InvoiceManager.tables.due[tableId]) {
                 InvoiceManager.tables.due[tableId].ajax.reload();
             }
@@ -800,7 +809,9 @@ var KTDueInvoicesList = function () {
                     $.ajax({
                         url: url,
                         type: 'DELETE',
-                        headers: { 'X-CSRF-TOKEN': InvoiceUtils.getCsrfToken() },
+                        headers: {
+                            'X-CSRF-TOKEN': InvoiceUtils.getCsrfToken()
+                        },
                         success: function (data) {
                             if (data.success) {
                                 Swal.fire("Deleted!", "The invoice has been deleted successfully.", "success");
@@ -849,6 +860,7 @@ var KTDueInvoicesList = function () {
 
 // Paid Invoices DataTable Manager
 var KTPaidInvoicesList = function () {
+
     var initTable = function (tableId, branchId) {
         var table = document.getElementById(tableId);
         if (!table || InvoiceManager.initialized.paid[tableId]) return;
@@ -861,27 +873,31 @@ var KTPaidInvoicesList = function () {
         // Initialize column selector (admin only)
         KTColumnSelector.initForTable(tableId, 'paid');
 
+        // Get column config for sortable property
+        var columnConfig = ColumnConfig.paid;
+
         // Column definitions - MUST match exact order of <th> elements in blade template
         var columns = [
             // 0: SL
-            { data: 'sl', orderable: false },
-
+            { data: 'sl', orderable: columnConfig[0].sortable },
             // 1: Invoice No.
             {
                 data: null,
+                orderable: columnConfig[1].sortable,
                 render: function (data) {
                     var url = routeInvoiceShow.replace(':id', data.id);
-                    var badge = data.comments_count > 0
-                        ? '<span class="badge badge-circle badge-sm badge-primary ms-1">' + data.comments_count + '</span>'
-                        : '';
+                    var badge = '';
+                    if (data.comments_count && data.comments_count > 0) {
+                        badge = '<span class="badge badge-circle badge-sm badge-primary ms-1">' + data.comments_count + '</span>';
+                    }
                     return '<a href="' + url + '" target="_blank" class="text-gray-600 text-hover-primary">' +
                         InvoiceUtils.escapeHtml(data.invoice_number) + '</a>' + badge;
                 }
             },
-
             // 2: Student
             {
                 data: null,
+                orderable: columnConfig[2].sortable,
                 render: function (data) {
                     var url = routeStudentShow.replace(':id', data.student_id);
                     return '<a href="' + url + '" target="_blank" class="text-gray-600 text-hover-primary">' +
@@ -889,14 +905,12 @@ var KTPaidInvoicesList = function () {
                         '<br><small class="text-muted">' + InvoiceUtils.escapeHtml(data.student_unique_id) + '</small></a>';
                 }
             },
-
             // 3: Mobile
-            { data: 'mobile', orderable: false, defaultContent: '-' },
-
+            { data: 'mobile', orderable: columnConfig[3].sortable, defaultContent: '-' },
             // 4: Guardian 1
             {
                 data: null,
-                orderable: false,
+                orderable: columnConfig[4].sortable,
                 render: function (data) {
                     if (!data.guardian_1_name) return '<span class="text-muted">-</span>';
                     var html = '<div class="guardian-info">';
@@ -912,11 +926,10 @@ var KTPaidInvoicesList = function () {
                     return html;
                 }
             },
-
             // 5: Guardian 2
             {
                 data: null,
-                orderable: false,
+                orderable: columnConfig[5].sortable,
                 render: function (data) {
                     if (!data.guardian_2_name) return '<span class="text-muted">-</span>';
                     var html = '<div class="guardian-info">';
@@ -932,56 +945,47 @@ var KTPaidInvoicesList = function () {
                     return html;
                 }
             },
-
             // 6: Class
-            { data: 'class_name', defaultContent: '-' },
-
+            { data: 'class_name', orderable: columnConfig[6].sortable, defaultContent: '-' },
             // 7: Institution
-            { data: 'institution', defaultContent: '-' },
-
+            { data: 'institution', orderable: columnConfig[7].sortable, defaultContent: '-' },
             // 8: Tuition Fee
             {
                 data: 'tuition_fee',
+                orderable: columnConfig[8].sortable,
                 defaultContent: '-',
                 render: function (data) {
                     return data ? '৳' + data : '-';
                 }
             },
-
             // 9: Activation Status
             {
                 data: null,
-                orderable: false,
+                orderable: columnConfig[9].sortable,
                 render: function (data) {
                     return data.activation_status_html || '-';
                 }
             },
-
             // 10: Invoice Type
-            { data: 'invoice_type', defaultContent: '-' },
-
+            { data: 'invoice_type', orderable: columnConfig[10].sortable, defaultContent: '-' },
             // 11: Amount (Total)
-            { data: 'total_amount', defaultContent: '0' },
-
+            { data: 'total_amount', orderable: columnConfig[11].sortable, defaultContent: '0' },
             // 12: Billing Month
-            { data: 'billing_month', defaultContent: '-' },
-
+            { data: 'billing_month', orderable: columnConfig[12].sortable, defaultContent: '-' },
             // 13: Due Date
-            { data: 'due_date', defaultContent: '-' },
-
+            { data: 'due_date', orderable: columnConfig[13].sortable, defaultContent: '-' },
             // 14: Status
             {
                 data: null,
-                orderable: false,
+                orderable: columnConfig[14].sortable,
                 render: function () {
                     return '<span class="badge badge-success rounded-pill">Paid</span>';
                 }
             },
-
             // 15: Last Comment
             {
                 data: null,
-                orderable: false,
+                orderable: columnConfig[15].sortable,
                 render: function (data) {
                     if (!data.last_comment) return '-';
                     var truncated = data.last_comment.length > 30
@@ -991,10 +995,10 @@ var KTPaidInvoicesList = function () {
                         InvoiceUtils.escapeHtml(truncated) + '</div>';
                 }
             },
-
             // 16: Paid At
             {
                 data: null,
+                orderable: columnConfig[16].sortable,
                 render: function (data) {
                     return data.updated_at + '<br><small class="text-muted">' + data.updated_at_time + '</small>';
                 }
@@ -1002,6 +1006,7 @@ var KTPaidInvoicesList = function () {
         ];
 
         // Initialize DataTable
+        // Note: order is empty [] to use server's default sorting (student_unique_id + updated_at)
         var dt = $(table).DataTable({
             processing: true,
             serverSide: true,
@@ -1010,11 +1015,13 @@ var KTPaidInvoicesList = function () {
                 type: 'GET',
                 data: function (d) {
                     d.branch_id = branchId;
+
                     var filters = InvoiceManager.filters.paid[tableId] || {};
                     if (filters.class_id) d.class_id = filters.class_id;
                     if (filters.invoice_type) d.invoice_type = filters.invoice_type;
                     if (filters.due_date) d.due_date = filters.due_date;
                     if (filters.billing_month) d.billing_month = filters.billing_month;
+
                     return d;
                 },
                 dataSrc: function (json) {
@@ -1022,7 +1029,7 @@ var KTPaidInvoicesList = function () {
                 }
             },
             columns: columns,
-            order: [[16, 'desc']], // Sort by paid_at descending
+            order: [], // Empty order - let server handle default sorting
             lengthMenu: [10, 25, 50, 100],
             pageLength: 10,
             scrollX: true,
@@ -1069,7 +1076,10 @@ var KTPaidInvoicesList = function () {
                 classNames.forEach(function (cls) {
                     classSelect.innerHTML += '<option value="' + cls.id + '">' + cls.name + '</option>';
                 });
-                $(classSelect).select2({ placeholder: 'Select class', allowClear: true });
+                $(classSelect).select2({
+                    placeholder: 'Select class',
+                    allowClear: true
+                });
             }
 
             var typeSelect = document.querySelector('.filter-invoice-type-paid[data-table-id="' + tableId + '"]');
@@ -1078,7 +1088,10 @@ var KTPaidInvoicesList = function () {
                 invoiceTypes.forEach(function (type) {
                     typeSelect.innerHTML += '<option value="ucms_' + type.type_name + '">' + type.type_name + '</option>';
                 });
-                $(typeSelect).select2({ placeholder: 'Select option', allowClear: true });
+                $(typeSelect).select2({
+                    placeholder: 'Select option',
+                    allowClear: true
+                });
             }
 
             var monthSelect = document.querySelector('.filter-billing-month-paid[data-table-id="' + tableId + '"]');
@@ -1087,7 +1100,10 @@ var KTPaidInvoicesList = function () {
                 data.paidMonths.forEach(function (month) {
                     monthSelect.innerHTML += '<option value="' + month.value + '">' + month.label + '</option>';
                 });
-                $(monthSelect).select2({ placeholder: 'Select option', allowClear: true });
+                $(monthSelect).select2({
+                    placeholder: 'Select option',
+                    allowClear: true
+                });
             }
         });
     };
@@ -1108,7 +1124,6 @@ var KTPaidInvoicesList = function () {
             if (monthSelect && monthSelect.value) filters.billing_month = monthSelect.value;
 
             InvoiceManager.filters.paid[tableId] = filters;
-
             if (InvoiceManager.tables.paid[tableId]) {
                 InvoiceManager.tables.paid[tableId].ajax.reload();
             }
@@ -1128,7 +1143,6 @@ var KTPaidInvoicesList = function () {
             if (monthSelect) $(monthSelect).val(null).trigger('change');
 
             InvoiceManager.filters.paid[tableId] = {};
-
             if (InvoiceManager.tables.paid[tableId]) {
                 InvoiceManager.tables.paid[tableId].ajax.reload();
             }
@@ -1196,17 +1210,37 @@ var KTExportManager = function () {
             branch_id: branchId
         };
 
+        // Apply all filters
         if (filters.class_id) params.class_id = filters.class_id;
         if (filters.invoice_type) params.invoice_type = filters.invoice_type;
         if (filters.due_date) params.due_date = filters.due_date;
         if (filters.status) params.status = filters.status;
         if (filters.billing_month) params.billing_month = filters.billing_month;
 
+        // Get search value from DataTable
         var dt = type === 'due' ? InvoiceManager.tables.due[tableId] : InvoiceManager.tables.paid[tableId];
+        var searchValue = '';
+        
         if (dt) {
-            var searchValue = dt.search();
-            if (searchValue) params.search = searchValue;
+            searchValue = dt.search();
         }
+        
+        // Fallback: get search value from the search input directly
+        if (!searchValue || searchValue.trim() === '') {
+            var searchInputClass = type === 'due' ? '.due-invoice-search' : '.paid-invoice-search';
+            var searchInput = document.querySelector(searchInputClass + '[data-table-id="' + tableId + '"]');
+            if (searchInput && searchInput.value) {
+                searchValue = searchInput.value;
+            }
+        }
+
+        // Add search to params if exists
+        if (searchValue && searchValue.trim() !== '') {
+            params.search = searchValue.trim();
+        }
+
+        // Show loading toast
+        toastr.info('Fetching export data' + (params.search ? ' for "' + params.search + '"' : '') + '...');
 
         $.get(routeExportAjax, params, function (response) {
             callback(response.data || []);
@@ -1304,7 +1338,7 @@ var KTExportManager = function () {
                 exportRow[label] = value;
             });
 
-            // Always add Student ID after Student Name if not already there
+            // Always add Student ID after Student column if not already there
             if (!exportRow['Student ID'] && row.student_unique_id) {
                 // Insert after Student column
                 var newRow = {};
@@ -1331,11 +1365,13 @@ var KTExportManager = function () {
         var text = headers.join('\t') + '\n';
 
         data.forEach(function (row) {
-            text += headers.map(function (h) { return row[h] || ''; }).join('\t') + '\n';
+            text += headers.map(function (h) {
+                return row[h] || '';
+            }).join('\t') + '\n';
         });
 
         navigator.clipboard.writeText(text).then(function () {
-            toastr.success('Data copied to clipboard');
+            toastr.success('Data copied to clipboard (' + data.length + ' rows)');
         }).catch(function () {
             toastr.error('Failed to copy to clipboard');
         });
@@ -1352,7 +1388,7 @@ var KTExportManager = function () {
 
         var ws = XLSX.utils.aoa_to_sheet([]);
         XLSX.utils.sheet_add_aoa(ws, [[title]], { origin: 'A1' });
-        XLSX.utils.sheet_add_aoa(ws, [['Generated: ' + InvoiceUtils.formatDate()]], { origin: 'A2' });
+        XLSX.utils.sheet_add_aoa(ws, [['Generated: ' + InvoiceUtils.formatDate() + ' | Total Records: ' + data.length]], { origin: 'A2' });
         XLSX.utils.sheet_add_aoa(ws, [['']], { origin: 'A3' });
         XLSX.utils.sheet_add_json(ws, data, { origin: 'A4' });
 
@@ -1364,8 +1400,9 @@ var KTExportManager = function () {
 
         var wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Invoices');
+
         XLSX.writeFile(wb, fileName + '.xlsx');
-        toastr.success('Excel file downloaded');
+        toastr.success('Excel file downloaded (' + data.length + ' rows)');
     };
 
     var exportCSV = function (data, type) {
@@ -1385,7 +1422,8 @@ var KTExportManager = function () {
         link.href = URL.createObjectURL(blob);
         link.download = fileName + '.csv';
         link.click();
-        toastr.success('CSV file downloaded');
+
+        toastr.success('CSV file downloaded (' + data.length + ' rows)');
     };
 
     var exportPDF = function (data, type) {
@@ -1404,11 +1442,13 @@ var KTExportManager = function () {
         doc.text(title, 14, 15);
 
         doc.setFontSize(10);
-        doc.text('Generated: ' + InvoiceUtils.formatDate(), 14, 22);
+        doc.text('Generated: ' + InvoiceUtils.formatDate() + ' | Total Records: ' + data.length, 14, 22);
 
         var headers = Object.keys(data[0]);
         var rows = data.map(function (row) {
-            return headers.map(function (h) { return row[h] || ''; });
+            return headers.map(function (h) {
+                return row[h] || '';
+            });
         });
 
         doc.autoTable({
@@ -1420,15 +1460,12 @@ var KTExportManager = function () {
             margin: { left: 10, right: 10 },
             didDrawPage: function () {
                 doc.setFontSize(8);
-                doc.text('Page ' + doc.internal.getNumberOfPages(),
-                    doc.internal.pageSize.width / 2,
-                    doc.internal.pageSize.height - 10,
-                    { align: 'center' });
+                doc.text('Page ' + doc.internal.getNumberOfPages(), doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: 'center' });
             }
         });
 
         doc.save(fileName + '.pdf');
-        toastr.success('PDF file downloaded');
+        toastr.success('PDF file downloaded (' + data.length + ' rows)');
     };
 
     var handleExportButtons = function () {
@@ -1443,9 +1480,9 @@ var KTExportManager = function () {
             var tableId = this.getAttribute('data-table-id');
             var type = this.getAttribute('data-type');
             var exportType = this.getAttribute('data-export');
-
             var btn = this;
             var originalText = btn.textContent;
+
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Exporting...';
 
             fetchExportData(tableId, type, function (rawData) {
