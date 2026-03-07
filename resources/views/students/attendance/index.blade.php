@@ -194,9 +194,10 @@
     <script>
         window.AttendanceConfig = {
             routes: {
-                getBatches: "{{ route('attendances.get_batches', ':branchId') }}",
-                getStudents: "{{ route('attendances.get_students') }}",
-                storeBulk: "{{ route('attendances.store_bulk') }}"
+                getBatches: @json(route('attendances.get_batches', ':branchId')),
+                getStudents: @json(route('attendances.get_students')),
+                storeBulk: @json(route('attendances.store_bulk')),
+                studentShow: @json(route('students.show', ['student' => '__STUDENT_ID__']))
             },
             csrfToken: "{{ csrf_token() }}",
             isAdmin: {{ auth()->user()->hasRole('admin') ? 'true' : 'false' }},
