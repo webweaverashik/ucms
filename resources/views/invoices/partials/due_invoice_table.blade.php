@@ -287,7 +287,7 @@
                             <th class="min-w-70px">Status</th>
                             <th class="min-w-120px">Last Comment</th>
                             <th class="min-w-100px">Created At</th>
-                            <th class="min-w-80px text-end">Actions</th>
+                            <th class="min-w-100px">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="text-gray-600 fw-semibold">
