@@ -240,7 +240,7 @@
                                     <button type="submit" class="btn btn-primary flex-grow-1" id="submit_button"
                                         data-kt-indicator="off">
                                         <span class="indicator-label">
-                                            <i class="ki-outline ki-magnifier fs-3 me-1"></i>Generate
+                                            <i class="ki-outline ki-magnifier fs-4 me-1"></i>Generate
                                         </span>
                                         <span class="indicator-progress">Please wait...
                                             <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
