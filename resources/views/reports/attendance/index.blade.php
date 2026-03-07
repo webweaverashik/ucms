@@ -2,9 +2,50 @@
 
 @push('page-css')
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <style>
+        /* Academic Group Badge Styles */
+        .group-badge-science {
+            background-color: #f1faff !important;
+            color: #009ef7 !important;
+        }
+        .group-badge-commerce {
+            background-color: #e8fff3 !important;
+            color: #50cd89 !important;
+        }
+        .group-badge-arts {
+            background-color: #fff8dd !important;
+            color: #ffc700 !important;
+        }
+
+        /* Summary Cards Styles */
+        .summary-card {
+            transition: all 0.2s ease;
+        }
+        .summary-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0.5rem 1.5rem 0.5rem rgba(0, 0, 0, 0.08);
+        }
+        .summary-card.border-success {
+            border-left: 4px solid #50cd89 !important;
+        }
+        .summary-card.border-warning {
+            border-left: 4px solid #ffc700 !important;
+        }
+        .summary-card.border-danger {
+            border-left: 4px solid #f1416c !important;
+        }
+        .summary-icon {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.625rem;
+        }
+    </style>
 @endpush
 
-@section('title', 'Student Attendance')
+@section('title', 'Attendance Report')
 
 @section('header-title')
     <div data-kt-swapper="true" data-kt-swapper-mode="{default: 'prepend', lg: 'prepend'}"
@@ -38,9 +79,8 @@
     </div>
 @endsection
 
-
 @section('content')
-    <!--begin::Card-->
+    <!--begin::Filter Card-->
     <div class="card mb-6 mb-xl-9">
         <!--begin::Card header-->
         <div class="card-header border-0 py-6">
@@ -56,8 +96,8 @@
                         <div class="col-lg-3">
                             <div class="fv-row">
                                 <!--begin::Label-->
-                                <label for="attendance_daterangepicker" class="required fw-semibold fs-6 mb-2">Select
-                                    Date</label>
+                                <label for="attendance_daterangepicker"
+                                    class="required fw-semibold fs-6 mb-2">Select Date</label>
                                 <!--end::Label-->
                                 <!--begin::Input-->
                                 <div class="input-group input-group-solid">
@@ -77,7 +117,8 @@
                             <div class="col-lg-2">
                                 <div class="fv-row">
                                     <!--begin::Label-->
-                                    <label for="student_branch_group" class="required fw-semibold fs-6 mb-2">Branch</label>
+                                    <label for="student_branch_group"
+                                        class="required fw-semibold fs-6 mb-2">Branch</label>
                                     <!--end::Label-->
                                     <!--begin::Input-->
                                     <div class="input-group input-group-solid">
@@ -101,11 +142,12 @@
                             </div>
                         @else
                             <!-- Hidden branch input for non-admin users -->
-                            <input type="hidden" id="student_branch_group" name="branch_id" value="{{ $userBranchId }}">
+                            <input type="hidden" id="student_branch_group" name="branch_id"
+                                value="{{ $userBranchId }}">
                         @endif
 
                         <!-- Class Selection -->
-                        <div class="{{ $isAdmin ? 'col-lg-3' : 'col-lg-3' }}">
+                        <div class="col-lg-2">
                             <div class="fv-row">
                                 <!--begin::Label-->
                                 <label for="student_class_group" class="required fw-semibold fs-6 mb-2">Class</label>
@@ -121,7 +163,8 @@
                                         data-hide-search="false" data-dropdown-parent="#student_list_filter_form">
                                         <option value="">Select class</option>
                                         @foreach ($classnames as $classname)
-                                            <option value="{{ $classname->id }}">
+                                            <option value="{{ $classname->id }}"
+                                                data-class-numeral="{{ $classname->class_numeral }}">
                                                 {{ $classname->name }} ({{ $classname->class_numeral }})
                                             </option>
                                         @endforeach
@@ -131,8 +174,36 @@
                             </div>
                         </div>
 
+                        <!-- Academic Group Selection - Shown only for Class 09-12 (Optional) -->
+                        <div class="col-lg-2 d-none" id="academic_group_wrapper">
+                            <div class="fv-row">
+                                <!--begin::Label-->
+                                <label for="student_academic_group" class="fw-semibold fs-6 mb-2">
+                                    Group <span class="text-muted fw-normal fs-8">(Optional)</span>
+                                </label>
+                                <!--end::Label-->
+                                <!--begin::Input-->
+                                <div class="input-group input-group-solid">
+                                    <span class="input-group-text">
+                                        <i class="ki-outline ki-abstract-26 fs-3"></i>
+                                    </span>
+                                    <select id="student_academic_group"
+                                        class="form-select form-select-solid rounded-start-0 border-start flex-grow-1 min-w-0"
+                                        name="academic_group" data-control="select2" data-placeholder="All Groups"
+                                        data-allow-clear="true" data-hide-search="true"
+                                        data-dropdown-parent="#student_list_filter_form">
+                                        <option value="" selected>All Groups</option>
+                                        @foreach ($academicGroups as $group)
+                                            <option value="{{ $group }}">{{ $group }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <!--end::Input-->
+                            </div>
+                        </div>
+
                         <!-- Batch Selection -->
-                        <div class="{{ $isAdmin ? 'col-lg-2' : 'col-lg-3' }}">
+                        <div class="col-lg-2">
                             <div class="fv-row">
                                 <!--begin::Label-->
                                 <label for="student_batch_group" class="required fw-semibold fs-6 mb-2">Batch</label>
@@ -160,11 +231,10 @@
                         </div>
 
                         <!-- Action Buttons -->
-                        <div class="{{ $isAdmin ? 'col-lg-2' : 'col-lg-3' }}">
+                        <div class="col-lg-1">
                             <div class="fv-row">
                                 <!-- Invisible label to match height spacing -->
                                 <label class="fw-semibold fs-6 mb-2 invisible">Actions</label>
-
                                 <div class="d-flex gap-2">
                                     <!--begin::Submit Button-->
                                     <button type="submit" class="btn btn-primary flex-grow-1" id="submit_button"
@@ -180,16 +250,125 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </form>
             </div>
         </div>
         <!--end::Card header-->
     </div>
-    <!--end::Card-->
+    <!--end::Filter Card-->
 
-    <!--begin::Card-->
+    <!--begin::Chart Card (Hidden by default)-->
+    <div class="card mb-6 mb-xl-9 d-none" id="attendance_chart_card">
+        <div class="card-header border-0 pt-6">
+            <div class="card-title">
+                <h3 class="card-label fw-bold text-gray-800">
+                    <i class="ki-outline ki-chart-simple fs-2 me-2 text-primary"></i>
+                    Attendance Overview
+                </h3>
+            </div>
+        </div>
+        <div class="card-body pt-0">
+            <!-- Report Info Display -->
+            <div id="report_info_display" class="mb-5">
+                <div class="d-flex flex-wrap gap-3 p-4 bg-light-primary rounded">
+                    <div class="d-flex align-items-center">
+                        <i class="ki-outline ki-calendar fs-4 text-primary me-2"></i>
+                        <span class="fw-semibold text-gray-700">Date Range:</span>
+                        <span class="ms-2 fw-bold text-gray-900" id="display_date_range">-</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="ki-outline ki-abstract-26 fs-4 text-primary me-2"></i>
+                        <span class="fw-semibold text-gray-700">Group:</span>
+                        <span class="ms-2 fw-bold text-gray-900" id="display_group">All</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <i class="ki-outline ki-people fs-4 text-primary me-2"></i>
+                        <span class="fw-semibold text-gray-700">Total Students:</span>
+                        <span class="ms-2 fw-bold text-gray-900" id="display_total_students">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Cards - Percentage Focused -->
+            <div class="row g-4 mb-6" id="summary_cards">
+                <!-- Total Present Card -->
+                <div class="col-md-4">
+                    <div class="card card-bordered summary-card h-100 border-success">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="summary-icon bg-light-success me-4">
+                                <i class="ki-outline ki-check-circle fs-1 text-success"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-baseline">
+                                    <span class="fs-2x fw-bolder text-success" id="summary_present_percent">0%</span>
+                                </div>
+                                <div class="fs-6 fw-semibold text-gray-700">Total Present</div>
+                                <div class="fs-8 text-muted mt-1">
+                                    <span id="summary_present">0</span> attendance records
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Total Late Card -->
+                <div class="col-md-4">
+                    <div class="card card-bordered summary-card h-100 border-warning">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="summary-icon bg-light-warning me-4">
+                                <i class="ki-outline ki-time fs-1 text-warning"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-baseline">
+                                    <span class="fs-2x fw-bolder text-warning" id="summary_late_percent">0%</span>
+                                </div>
+                                <div class="fs-6 fw-semibold text-gray-700">Total Late</div>
+                                <div class="fs-8 text-muted mt-1">
+                                    <span id="summary_late">0</span> attendance records
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Total Absent Card -->
+                <div class="col-md-4">
+                    <div class="card card-bordered summary-card h-100 border-danger">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="summary-icon bg-light-danger me-4">
+                                <i class="ki-outline ki-cross-circle fs-1 text-danger"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-baseline">
+                                    <span class="fs-2x fw-bolder text-danger" id="summary_absent_percent">0%</span>
+                                </div>
+                                <div class="fs-6 fw-semibold text-gray-700">Total Absent</div>
+                                <div class="fs-8 text-muted mt-1">
+                                    <span id="summary_absent">0</span> attendance records
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Container -->
+            <div class="chart-container">
+                <div class="row">
+                    <!-- Pie/Donut Chart -->
+                    <div class="col-lg-5">
+                        <div id="attendance_pie_chart" style="min-height: 350px;"></div>
+                    </div>
+                    <!-- Bar Chart (Daily Breakdown) -->
+                    <div class="col-lg-7">
+                        <div id="attendance_bar_chart" style="min-height: 350px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--end::Chart Card-->
+
+    <!--begin::Table Card-->
     <div class="card" id="attendance_report_panel">
         <div class="card-header border-0 pt-6">
             <!--begin::Card title-->
@@ -201,7 +380,6 @@
                         class="form-control form-control-solid w-350px ps-12" placeholder="Search Students">
                 </div>
                 <!--end::Search-->
-
                 <!--begin::Export hidden buttons-->
                 <div id="kt_hidden_export_buttons" class="d-none"></div>
                 <!--end::Export buttons-->
@@ -216,9 +394,8 @@
                     <div class="dropdown">
                         <button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click"
                             data-kt-menu-placement="bottom-end">
-                            <i class="ki-outline ki-exit-up fs-2"></i>Export
+                            <i class="ki-outline ki-exit-up fs-2"></i>Export Table
                         </button>
-
                         <!--begin::Menu-->
                         <div id="kt_table_report_dropdown_menu"
                             class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-200px py-4"
@@ -246,6 +423,7 @@
             </div>
             <!--end::Card toolbar-->
         </div>
+
         <div class="card-body py-4">
             <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table"
                 id="kt_attendance_report_table">
@@ -253,12 +431,12 @@
                     <tr class="fw-bold fs-7 text-uppercase gs-0">
                         <th class="w-25px">#</th>
                         <th class="">Student Name & Unique ID</th>
-                        <th>ClassName</th>
+                        <th>Class</th>
+                        <th id="th_academic_group">Group</th>
                         <th>Batch</th>
                         <th class="">Total Present</th>
                         <th class="">Total Absent</th>
                         <th class="">Total Late</th>
-                        <th class="not-export">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="text-gray-600 fw-semibold" id="kt_attendance_report_table_body">
@@ -266,14 +444,13 @@
             </table>
         </div>
     </div>
-    <!--end::Card-->
+    <!--end::Table Card-->
 @endsection
-
 
 @push('vendor-js')
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
+    {{-- ApexCharts is included in Metronic, no additional library needed for chart export --}}
 @endpush
-
 
 @push('page-js')
     <script>
@@ -281,12 +458,13 @@
         window.AttendanceReportConfig = {
             isAdmin: @json($isAdmin),
             userBranchId: @json($userBranchId),
-            getBatchesUrl: "{{ route('attendances.get_batches', ':branchId') }}"
+            getBatchesUrl: "{{ route('attendances.get_batches', ':branchId') }}",
+            studentShowUrl: "{{ route('students.show', ['student' => '__STUDENT_ID__']) }}",
+            groupRequiredClasses: @json($groupRequiredClasses),
+            academicGroups: @json($academicGroups)
         };
     </script>
-
     <script src="{{ asset('js/reports/attendance/index.js') }}"></script>
-
     <script>
         document.getElementById("reports_menu").classList.add("here", "show");
         document.getElementById("attendance_report_link").classList.add("active");

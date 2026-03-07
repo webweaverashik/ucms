@@ -16,6 +16,16 @@ use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
+    /**
+     * Classes that require academic group selection (09, 10, 11, 12)
+     */
+    private const GROUP_REQUIRED_CLASSES = ['09', '10', '11', '12'];
+
+    /**
+     * Available academic groups
+     */
+    private const ACADEMIC_GROUPS = ['Science', 'Commerce', 'Arts'];
+
     /*
      * Attendance Report
      */
@@ -38,7 +48,17 @@ class ReportController extends Controller
             ->select('id', 'name', 'day_off', 'branch_id')
             ->get();
 
-        return view('reports.attendance.index', compact('branches', 'classnames', 'batches'));
+        // Pass academic groups and group-required class numerals to view
+        $academicGroups = self::ACADEMIC_GROUPS;
+        $groupRequiredClasses = self::GROUP_REQUIRED_CLASSES;
+
+        return view('reports.attendance.index', compact(
+            'branches',
+            'classnames',
+            'batches',
+            'academicGroups',
+            'groupRequiredClasses'
+        ));
     }
 
     /*
@@ -53,6 +73,7 @@ class ReportController extends Controller
             'branch_id' => 'required|integer|exists:branches,id',
             'class_id' => 'required|integer|exists:class_names,id',
             'batch_id' => 'required|integer|exists:batches,id',
+            'academic_group' => 'nullable|in:Science,Commerce,Arts',
         ]);
 
         // Parse the date range string "start_date - end_date"
@@ -72,10 +93,22 @@ class ReportController extends Controller
         $startDate = Carbon::parse(trim($dateRange[0]))->startOfDay();
         $endDate = Carbon::parse(trim($dateRange[1]))->endOfDay();
 
+        // Get the class to check if it requires academic group
+        $classModel = ClassName::find($request->class_id);
+        $supportsGroup = $classModel && in_array($classModel->class_numeral, self::GROUP_REQUIRED_CLASSES);
+
+        // Check if "All Groups" is selected (no specific group filter)
+        $isAllGroups = $supportsGroup && !$request->filled('academic_group');
+
         // --- 2. Build the Query ---
         $attendances = StudentAttendance::with([
-            'student' => function ($q) {
-                $q->select('id', 'name', 'student_unique_id');
+            'student' => function ($q) use ($request, $supportsGroup) {
+                $q->select('id', 'name', 'student_unique_id', 'academic_group', 'class_id');
+
+                // Filter by academic group if provided and class supports it
+                if ($supportsGroup && $request->filled('academic_group')) {
+                    $q->where('academic_group', $request->academic_group);
+                }
             },
             'batch' => function ($q) {
                 $q->select('id', 'name', 'branch_id');
@@ -93,13 +126,24 @@ class ReportController extends Controller
             ->where('batch_id', $request->batch_id)
             ->whereBetween('attendance_date', [$startDate, $endDate])
             ->where('branch_id', $request->branch_id)
-            ->where('class_id', $request->class_id)
-            ->get();
+            ->where('class_id', $request->class_id);
+
+        // Filter attendances by student's academic group if provided
+        if ($supportsGroup && $request->filled('academic_group')) {
+            $attendances->whereHas('student', function ($q) use ($request) {
+                $q->where('academic_group', $request->academic_group);
+            });
+        }
+
+        $attendances = $attendances->get();
 
         // --- 3. Return as JSON ---
         return response()->json([
             'message' => 'Attendance data retrieved successfully.',
             'data' => $attendances,
+            'supports_group' => $supportsGroup,
+            'is_all_groups' => $isAllGroups,
+            'date_range' => $request->date_range,
         ]);
     }
 
@@ -191,7 +235,6 @@ class ReportController extends Controller
             ->get();
 
         $classes = $classesData->pluck('name', 'id');
-
         $classesInfo = $classesData
             ->map(
                 fn($class) => [
