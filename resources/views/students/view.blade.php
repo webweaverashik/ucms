@@ -381,7 +381,14 @@
                             <tr class="">
                                 <td class="text-gray-500">Admitted By:</td>
                                 <td class="text-gray-800">
-                                    {{ $student->createdBy->name ?? 'N/A' }}
+                                    @if ($student->createdBy)
+                                        <a href="{{ route('settlements.show', $student->created_by) }}" target="_blank"
+                                            class="text-gray-800 text-hover-primary">
+                                            {{ $student->createdBy->name }}
+                                        </a>
+                                    @else
+                                        System
+                                    @endif
                                 </td>
                             </tr>
                             <!--end::Row-->
