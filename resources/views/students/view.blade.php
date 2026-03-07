@@ -191,7 +191,7 @@
                                 <tr class="">
                                     <td class="text-gray-500">Class:</td>
                                     <td class="text-gray-800">
-                                        <a href="{{ route('classnames.show', $student->class_id) }}"
+                                        <a href="{{ route('classnames.show', $student->class_id) }}" target="_blank"
                                             class="text-gray-800 text-hover-primary">
                                             {{ $student->class->name }} ({{ $student->class->class_numeral }})</a>
                                     </td>
