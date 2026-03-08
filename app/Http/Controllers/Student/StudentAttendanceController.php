@@ -96,7 +96,7 @@ class StudentAttendanceController extends Controller
         $request->validate([
             'branch_id' => 'required',
             'class_id' => 'required',
-            'batch_id' => 'required',
+            'batch_id' => 'nullable', // Optional - if not provided, all batches will be loaded
             'attendance_date' => 'required',
             'academic_group' => 'nullable|in:Science,Commerce,Arts',
         ]);
@@ -105,11 +105,13 @@ class StudentAttendanceController extends Controller
         $dbDate = $dateCarbon->format('Y-m-d');
         $dayName = $dateCarbon->format('l');
 
-        $batch = Batch::find($request->batch_id);
+        // Check for off-day only if specific batch is selected
         $isOffDay = false;
-
-        if ($batch && strcasecmp($batch->day_off, $dayName) === 0) {
-            $isOffDay = true;
+        if ($request->filled('batch_id')) {
+            $batch = Batch::find($request->batch_id);
+            if ($batch && strcasecmp($batch->day_off, $dayName) === 0) {
+                $isOffDay = true;
+            }
         }
 
         // Check if class supports academic group filtering
@@ -119,12 +121,20 @@ class StudentAttendanceController extends Controller
         // Check if "All Groups" is selected (no specific group filter)
         $isAllGroups = $supportsGroup && !$request->filled('academic_group');
 
+        // Check if "All Batches" is selected (no specific batch filter)
+        $isAllBatches = !$request->filled('batch_id');
+
         // Build student query
         $studentsQuery = Student::active()
             ->where('branch_id', $request->branch_id)
             ->where('class_id', $request->class_id)
-            ->where('batch_id', $request->batch_id)
-            ->select('id', 'name', 'student_unique_id', 'academic_group');
+            ->select('id', 'name', 'student_unique_id', 'academic_group', 'batch_id');
+
+        // Filter by batch only if provided (optional filter)
+        // When not provided, all students of the class will be loaded regardless of batch
+        if ($request->filled('batch_id')) {
+            $studentsQuery->where('batch_id', $request->batch_id);
+        }
 
         // Filter by academic group only if provided (optional filter)
         // When not provided, all students of the class will be loaded regardless of group
@@ -143,6 +153,8 @@ class StudentAttendanceController extends Controller
                     $query->where('number_type', 'home')
                         ->select('id', 'student_id', 'mobile_number', 'number_type');
                 },
+                // Load batch information
+                'batch:id,name',
             ])
             ->orderBy('name', 'asc')
             ->get();
@@ -156,6 +168,8 @@ class StudentAttendanceController extends Controller
                 'name' => $student->name,
                 'student_unique_id' => $student->student_unique_id,
                 'academic_group' => $student->academic_group,
+                'batch_id' => $student->batch_id,
+                'batch_name' => $student->batch ? $student->batch->name : null,
                 'home_mobile' => $homeMobile ? $homeMobile->mobile_number : null,
                 'status' => $attendance ? $attendance->status : null,
                 'remarks' => $attendance ? $attendance->remarks : '',
@@ -172,6 +186,7 @@ class StudentAttendanceController extends Controller
             'off_day_name' => $dayName,
             'supports_group' => $supportsGroup,
             'is_all_groups' => $isAllGroups,
+            'is_all_batches' => $isAllBatches,
         ]);
     }
 
@@ -181,10 +196,11 @@ class StudentAttendanceController extends Controller
             'attendance_date' => 'required',
             'branch_id' => 'required',
             'class_id' => 'required',
-            'batch_id' => 'required',
+            'batch_id' => 'nullable', // Optional - each student's batch_id will be used
             'attendances' => 'required|array',
             'attendances.*.student_id' => 'required',
             'attendances.*.status' => 'required|in:present,late,absent',
+            'attendances.*.batch_id' => 'nullable', // Each attendance can have its own batch_id
         ]);
 
         $date = Carbon::createFromFormat('d-m-Y', $request->attendance_date)->format('Y-m-d');
@@ -193,6 +209,16 @@ class StudentAttendanceController extends Controller
 
         try {
             foreach ($request->attendances as $att) {
+                // Use individual batch_id if provided (for "All Batches" mode),
+                // otherwise fall back to the request batch_id
+                $batchId = $att['batch_id'] ?? $request->batch_id;
+
+                // If still no batch_id, get it from the student record
+                if (!$batchId) {
+                    $student = Student::find($att['student_id']);
+                    $batchId = $student ? $student->batch_id : null;
+                }
+
                 StudentAttendance::updateOrCreate(
                     [
                         'student_id' => $att['student_id'],
@@ -201,7 +227,7 @@ class StudentAttendanceController extends Controller
                     [
                         'branch_id' => $request->branch_id,
                         'class_id' => $request->class_id,
-                        'batch_id' => $request->batch_id,
+                        'batch_id' => $batchId,
                         'status' => $att['status'],
                         'remarks' => $att['remarks'] ?? null,
                         'created_by' => auth()->id(),

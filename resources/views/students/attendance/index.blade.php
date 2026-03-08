@@ -1,5 +1,5 @@
 @push('page-css')
-    <link href="{{ asset('css/attendances/index.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('css/students/attendances/index.css') }}" rel="stylesheet" type="text/css" />
 @endpush
 
 @extends('layouts.app')
@@ -95,16 +95,17 @@
                         </div>
                     </div>
 
-                    {{-- Batch Selection (Loaded via AJAX) --}}
+                    {{-- Batch Selection (Loaded via AJAX) - Optional --}}
                     <div class="col-12 col-sm-6 col-md-4 col-lg-2">
-                        <label for="batch_id" class="form-label fw-semibold required mb-2">Batch</label>
+                        <label for="batch_id" class="form-label fw-semibold mb-2">Batch <span
+                                class="text-muted fw-normal fs-8">(Optional)</span></label>
                         <div class="input-group input-group-solid flex-nowrap position-relative">
                             <span class="input-group-text">
                                 <i class="ki-outline ki-people fs-3"></i>
                             </span>
                             <select id="batch_id" class="form-select form-select-solid rounded-start-0 border-start"
-                                name="batch_id" data-control="select2" data-placeholder="Select batch"
-                                data-hide-search="true">
+                                name="batch_id" data-control="select2" data-placeholder="All Batches"
+                                data-allow-clear="true" data-hide-search="true">
                                 <option value="">Select branch first</option>
                             </select>
                             <div id="batch_loader" class="position-absolute end-0 top-50 translate-middle-y me-10 d-none">
@@ -194,10 +195,10 @@
     <script>
         window.AttendanceConfig = {
             routes: {
-                getBatches: @json(route('attendances.get_batches', ':branchId')),
-                getStudents: @json(route('attendances.get_students')),
-                storeBulk: @json(route('attendances.store_bulk')),
-                studentShow: @json(route('students.show', ['student' => '__STUDENT_ID__']))
+                getBatches: "{{ route('attendances.get_batches', ':branchId') }}",
+                getStudents: "{{ route('attendances.get_students') }}",
+                storeBulk: "{{ route('attendances.store_bulk') }}",
+                studentProfile: "{{ route('students.show', ':studentId') }}"
             },
             csrfToken: "{{ csrf_token() }}",
             isAdmin: {{ auth()->user()->hasRole('admin') ? 'true' : 'false' }},

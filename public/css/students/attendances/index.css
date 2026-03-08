@@ -63,6 +63,50 @@
 }
 
 /* ============================================
+   Student Profile Link Styles
+   ============================================ */
+
+/* Symbol/Avatar hover effect */
+a.symbol-label {
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+a.symbol-label.bg-hover-primary:hover {
+    background-color: #009ef7 !important;
+    color: #fff !important;
+}
+
+/* Student name link */
+a.text-gray-800.text-hover-primary {
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a.text-gray-800.text-hover-primary:hover {
+    color: #009ef7 !important;
+}
+
+a.fw-bold.text-gray-800.text-hover-primary {
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a.fw-bold.text-gray-800.text-hover-primary:hover {
+    color: #009ef7 !important;
+}
+
+/* Phone number link hover */
+a.text-primary.text-hover-dark {
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a.text-primary.text-hover-dark:hover {
+    color: #181c32 !important;
+}
+
+/* ============================================
    Quick Action Buttons (Bulk Actions)
    ============================================ */
 
@@ -478,6 +522,91 @@
 .badge-attendance-absent {
     background-color: #fff5f8;
     color: #f1416c;
+}
+
+/* ============================================
+   Custom Pill Badge Colors for Batches
+   (Solid vibrant backgrounds with matching light text)
+   ============================================ */
+
+/* Purple Pill Badge */
+.badge-pill-purple {
+    background-color: #8b5cf6;
+    color: #f5f3ff !important;
+    border-radius: 50rem;
+    font-weight: 600;
+}
+
+/* Teal Pill Badge */
+.badge-pill-teal {
+    background-color: #14b8a6;
+    color: #f0fdfa !important;
+    border-radius: 50rem;
+    font-weight: 600;
+}
+
+/* Orange Pill Badge */
+.badge-pill-orange {
+    background-color: #f97316;
+    color: #fff7ed !important;
+    border-radius: 50rem;
+    font-weight: 600;
+}
+
+/* Pink Pill Badge */
+.badge-pill-pink {
+    background-color: #ec4899;
+    color: #fdf2f8 !important;
+    border-radius: 50rem;
+    font-weight: 600;
+}
+
+/* Indigo Pill Badge */
+.badge-pill-indigo {
+    background-color: #6366f1;
+    color: #eef2ff !important;
+    border-radius: 50rem;
+    font-weight: 600;
+}
+
+/* Rose Pill Badge */
+.badge-pill-rose {
+    background-color: #f43f5e;
+    color: #fff1f2 !important;
+    border-radius: 50rem;
+    font-weight: 600;
+}
+
+/* Cyan Pill Badge */
+.badge-pill-cyan {
+    background-color: #06b6d4;
+    color: #ecfeff !important;
+    border-radius: 50rem;
+    font-weight: 600;
+}
+
+/* Lime Pill Badge */
+.badge-pill-lime {
+    background-color: #84cc16;
+    color: #f7fee7 !important;
+    border-radius: 50rem;
+    font-weight: 600;
+}
+
+/* Amber Pill Badge */
+.badge-pill-amber {
+    background-color: #f59e0b;
+    color: #fffbeb !important;
+    border-radius: 50rem;
+    font-weight: 600;
+}
+
+/* Slate Pill Badge */
+.badge-pill-slate {
+    background-color: #64748b;
+    color: #f8fafc !important;
+    border-radius: 50rem;
+    font-weight: 600;
 }
 
 /* ============================================

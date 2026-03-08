@@ -161,14 +161,11 @@ var KTStudentAttendance = (function () {
     };
 
     /**
-     * Build student show URL from dynamic Laravel route template
+     * Get Student Profile URL
      */
-    var getStudentShowUrl = function (studentId) {
-        if (!routes.studentShow) {
-            return '#';
-        }
-
-        return routes.studentShow.replace('__STUDENT_ID__', encodeURIComponent(studentId));
+    var getStudentProfileUrl = function (studentId) {
+        if (!routes.studentProfile) return '#';
+        return routes.studentProfile.replace(':studentId', studentId);
     };
 
     /**
@@ -241,7 +238,8 @@ var KTStudentAttendance = (function () {
 
         return makeRequest(url)
             .then(function (response) {
-                batchSelect.innerHTML = '<option value="">Select batch</option>';
+                // First option is "All Batches" (optional selection)
+                batchSelect.innerHTML = '<option value="">All Batches</option>';
 
                 if (response.batches && response.batches.length > 0) {
                     response.batches.forEach(function (batch) {
@@ -251,8 +249,6 @@ var KTStudentAttendance = (function () {
                         option.dataset.dayOff = batch.day_off || '';
                         batchSelect.appendChild(option);
                     });
-                } else {
-                    batchSelect.innerHTML = '<option value="">No batches available</option>';
                 }
             })
             .catch(function (error) {
@@ -281,10 +277,10 @@ var KTStudentAttendance = (function () {
         var attendanceDate = document.getElementById('attendance_date').value;
         var academicGroup = getSelectedAcademicGroup();
 
-        // Validation - Only branch, class, and batch are required
-        // Academic group is optional - if not selected, all students of the class will be loaded
-        if (!branchId || !classId || !batchId) {
-            showAlert('warning', 'Validation Error', 'Please select Branch, Class, and Batch.');
+        // Validation - Only branch and class are required
+        // Batch and Academic group are optional - if not selected, all students will be loaded
+        if (!branchId || !classId) {
+            showAlert('warning', 'Validation Error', 'Please select Branch and Class.');
             return;
         }
 
@@ -298,9 +294,13 @@ var KTStudentAttendance = (function () {
         var payload = {
             branch_id: branchId,
             class_id: classId,
-            batch_id: batchId,
             attendance_date: attendanceDate
         };
+
+        // Add batch_id if a specific batch is selected (optional filter)
+        if (batchId) {
+            payload.batch_id = batchId;
+        }
 
         // Add academic group if applicable
         if (academicGroup) {
@@ -321,8 +321,8 @@ var KTStudentAttendance = (function () {
 
                 // Handle Student List
                 if (response.count > 0) {
-                    // Pass is_all_groups flag to render function
-                    renderStudentTable(response.students, response.is_all_groups || false);
+                    // Pass is_all_groups and is_all_batches flags to render function
+                    renderStudentTable(response.students, response.is_all_groups || false, response.is_all_batches || false);
                     toggleElement(bulkButtons, true);
                     toggleElement(saveSection, true);
                     studentCountEl.textContent = response.count;
@@ -388,15 +388,15 @@ var KTStudentAttendance = (function () {
 
         switch (groupName.toLowerCase()) {
             case 'science':
-                badgeClass = 'badge-light-info';
+                badgeClass = 'badge-info';
                 shortName = 'Science';
                 break;
             case 'commerce':
-                badgeClass = 'badge-light-success';
+                badgeClass = 'badge-success';
                 shortName = 'Commerce';
                 break;
             case 'arts':
-                badgeClass = 'badge-light-warning';
+                badgeClass = 'badge-warning';
                 shortName = 'Arts';
                 break;
         }
@@ -405,9 +405,59 @@ var KTStudentAttendance = (function () {
     };
 
     /**
+     * Batch color palette - Custom pill badge colors (distinct from Bootstrap defaults used by groups)
+     * Groups use: badge-light-success (green), badge-light-info (cyan), badge-light-warning (yellow)
+     * Batches use custom pill colors defined below
+     */
+    var batchColorPalette = [
+        'badge-pill-teal',       // Teal
+        'badge-pill-lime',       // Lime
+        'badge-pill-amber',      // Amber
+        'badge-pill-cyan',       // Cyan
+        'badge-pill-slate',       // Slate
+        'badge-pill-purple',     // Purple
+        'badge-pill-orange',     // Orange
+        'badge-pill-pink',       // Pink
+        'badge-pill-rose',       // Rose
+        'badge-pill-indigo',     // Indigo
+    ];
+
+    /**
+     * Cache for batch color assignments
+     */
+    var batchColorCache = {};
+
+    /**
+     * Get consistent color for a batch based on batch ID
+     */
+    var getBatchColorClass = function (batchId) {
+        if (!batchId) return batchColorPalette[0];
+
+        // Check cache first for consistent colors
+        if (batchColorCache[batchId]) {
+            return batchColorCache[batchId];
+        }
+
+        // Assign color based on batch ID (mod palette length)
+        var colorIndex = parseInt(batchId) % batchColorPalette.length;
+        batchColorCache[batchId] = batchColorPalette[colorIndex];
+
+        return batchColorCache[batchId];
+    };
+
+    /**
+     * Get batch badge HTML with dynamic color based on batch ID
+     */
+    var getBatchBadge = function (batchId, batchName) {
+        if (!batchName) return '';
+        var colorClass = getBatchColorClass(batchId);
+        return '<span class="badge ' + colorClass + ' fs-9 ms-1">' + escapeHtml(batchName) + '</span>';
+    };
+
+    /**
      * Render Student Table (Mobile Optimized with Cards)
      */
-    var renderStudentTable = function (students, isAllGroups) {
+    var renderStudentTable = function (students, isAllGroups, isAllBatches) {
         // Desktop Table View
         var desktopHtml = '<div class="d-none d-lg-block table-responsive fade-in">' +
             '<table class="table table-row-bordered table-row-gray-300 align-middle gs-0 gy-4" id="attendance_table">' +
@@ -435,25 +485,30 @@ var KTStudentAttendance = (function () {
             var hasAttendance = student.has_attendance;
             var homeMobile = student.home_mobile || '';
             var academicGroup = student.academic_group || '';
-            var studentShowUrl = getStudentShowUrl(student.id);
+            var batchId = student.batch_id || '';
+            var batchName = student.batch_name || '';
 
             // Build group badge HTML (only show when isAllGroups is true)
             var groupBadgeHtml = isAllGroups ? getGroupBadge(academicGroup) : '';
 
-            desktopHtml += '<tr data-student-id="' + student.id + '" class="attendance-row" data-has-attendance="' + (hasAttendance ? 'true' : 'false') + '">' +
+            // Build batch badge HTML (only show when isAllBatches is true)
+            var batchBadgeHtml = isAllBatches ? getBatchBadge(batchId, batchName) : '';
+
+            desktopHtml += '<tr data-student-id="' + student.id + '" data-batch-id="' + batchId + '" class="attendance-row" data-has-attendance="' + (hasAttendance ? 'true' : 'false') + '">' +
                 '<td class="ps-4 fw-bold text-gray-600">' + (index + 1) + '</td>' +
                 '<td>' +
                 '<div class="d-flex align-items-center">' +
                 '<div class="symbol symbol-45px me-3">' +
-                '<span class="symbol-label bg-light-primary text-primary fw-bold">' + escapeHtml(initials) + '</span>' +
+                '<a href="' + getStudentProfileUrl(student.id) + '" target="_blank" class="symbol-label bg-light-primary text-primary fw-bold text-hover-white bg-hover-primary">' + escapeHtml(initials) + '</a>' +
                 '</div>' +
                 '<div class="d-flex flex-column">' +
                 '<div class="d-flex align-items-center flex-wrap">' +
-                '<a href="' + studentShowUrl + '" target="_blank" rel="noopener noreferrer" class="text-gray-800 text-hover-primary fw-bold fs-6">' + escapeHtml(student.name) + '</a>' +
+                '<a href="' + getStudentProfileUrl(student.id) + '" target="_blank" class="text-gray-800 text-hover-primary fw-bold fs-6">' + escapeHtml(student.name) + '</a>' +
                 groupBadgeHtml +
+                batchBadgeHtml +
                 '</div>' +
                 '<span class="text-muted fw-semibold fs-7">ID: ' + escapeHtml(student.student_unique_id) + '</span>' +
-                (homeMobile ? '<span class="text-muted fw-semibold fs-7"><i class="ki-outline ki-phone fs-7 me-1"></i>' + escapeHtml(homeMobile) + '</span>' : '') +
+                (homeMobile ? '<a href="tel:' + escapeHtml(homeMobile) + '" class="text-muted text-hover-primary fw-semibold fs-7"><i class="ki-outline ki-phone fs-7 me-1"></i>' + escapeHtml(homeMobile) + '</a>' : '') +
                 '</div>' +
                 '</div>' +
                 '</td>' +
@@ -515,26 +570,31 @@ var KTStudentAttendance = (function () {
             var hasAttendance = student.has_attendance;
             var homeMobile = student.home_mobile || '';
             var academicGroup = student.academic_group || '';
-            var studentShowUrl = getStudentShowUrl(student.id);
+            var batchId = student.batch_id || '';
+            var batchName = student.batch_name || '';
 
             // Build group badge HTML (only show when isAllGroups is true)
             var groupBadgeHtml = isAllGroups ? getGroupBadge(academicGroup) : '';
 
-            mobileHtml += '<div class="card card-bordered mb-3 attendance-card ' + (hasAttendance ? 'has-attendance' : '') + '" data-student-id="' + student.id + '" data-has-attendance="' + (hasAttendance ? 'true' : 'false') + '">' +
+            // Build batch badge HTML (only show when isAllBatches is true)
+            var batchBadgeHtml = isAllBatches ? getBatchBadge(batchId, batchName) : '';
+
+            mobileHtml += '<div class="card card-bordered mb-3 attendance-card ' + (hasAttendance ? 'has-attendance' : '') + '" data-student-id="' + student.id + '" data-batch-id="' + batchId + '" data-has-attendance="' + (hasAttendance ? 'true' : 'false') + '">' +
                 '<div class="card-body p-4">' +
                 // Header with student info
                 '<div class="d-flex align-items-start justify-content-between mb-3">' +
                 '<div class="d-flex align-items-center">' +
                 '<div class="symbol symbol-40px me-3">' +
-                '<span class="symbol-label bg-light-primary text-primary fw-bold fs-6">' + escapeHtml(initials) + '</span>' +
+                '<a href="' + getStudentProfileUrl(student.id) + '" target="_blank" class="symbol-label bg-light-primary text-primary fw-bold fs-6 text-hover-white bg-hover-primary">' + escapeHtml(initials) + '</a>' +
                 '</div>' +
                 '<div>' +
                 '<div class="d-flex align-items-center flex-wrap">' +
-                '<a href="' + studentShowUrl + '" target="_blank" rel="noopener noreferrer" class="fw-bold text-gray-800 text-hover-primary fs-6">' + escapeHtml(student.name) + '</a>' +
+                '<a href="' + getStudentProfileUrl(student.id) + '" target="_blank" class="fw-bold text-gray-800 text-hover-primary fs-6">' + escapeHtml(student.name) + '</a>' +
                 groupBadgeHtml +
+                batchBadgeHtml +
                 '</div>' +
                 '<div class="text-muted fs-8">ID: ' + escapeHtml(student.student_unique_id) + '</div>' +
-                (homeMobile ? '<div class="text-muted fs-7 mt-1"><i class="ki-outline ki-phone fs-7 me-1"></i><a href="tel:' + escapeHtml(homeMobile) + '" class="text-muted">' + escapeHtml(homeMobile) + '</a></div>' : '') +
+                (homeMobile ? '<div class="text-muted fs-8 mt-1"><i class="ki-outline ki-phone fs-8 me-1"></i><a href="tel:' + escapeHtml(homeMobile) + '" class="text-primary text-hover-dark">' + escapeHtml(homeMobile) + '</a></div>' : '') +
                 '</div>' +
                 '</div>' +
                 '<span class="badge badge-light-secondary fs-8">#' + (index + 1) + '</span>' +
@@ -588,9 +648,13 @@ var KTStudentAttendance = (function () {
         var payload = {
             branch_id: branchId,
             class_id: classId,
-            batch_id: batchId,
             attendance_date: attendanceDate
         };
+
+        // Add batch_id if a specific batch is selected (optional filter)
+        if (batchId) {
+            payload.batch_id = batchId;
+        }
 
         if (academicGroup) {
             payload.academic_group = academicGroup;
@@ -602,8 +666,8 @@ var KTStudentAttendance = (function () {
         })
             .then(function (response) {
                 if (response.count > 0) {
-                    // Pass is_all_groups flag to render function
-                    renderStudentTable(response.students, response.is_all_groups || false);
+                    // Pass is_all_groups and is_all_batches flags to render function
+                    renderStudentTable(response.students, response.is_all_groups || false, response.is_all_batches || false);
                     studentCountEl.textContent = response.count;
                     // Reset bulk action buttons after refresh
                     resetBulkActionButtons();
@@ -617,6 +681,7 @@ var KTStudentAttendance = (function () {
     /**
      * Collect attendance data from the visible view
      * This function reads the CURRENT state of radio buttons, not cached values
+     * Also includes batch_id for each student (needed when "All Batches" is selected)
      */
     var collectAttendanceData = function () {
         var attendanceData = [];
@@ -632,6 +697,7 @@ var KTStudentAttendance = (function () {
                 var rows = desktopTable.querySelectorAll('tbody tr.attendance-row');
                 rows.forEach(function (row) {
                     var studentId = row.getAttribute('data-student-id');
+                    var batchId = row.getAttribute('data-batch-id');
 
                     // Find the CURRENTLY checked radio for this student
                     var checkedRadio = row.querySelector('input.status-radio:checked');
@@ -642,11 +708,16 @@ var KTStudentAttendance = (function () {
                         row.classList.add('bg-light-danger');
                     } else {
                         row.classList.remove('bg-light-danger');
-                        attendanceData.push({
+                        var attendanceItem = {
                             student_id: studentId,
                             status: checkedRadio.value,
                             remarks: remarksInput ? remarksInput.value : ''
-                        });
+                        };
+                        // Include batch_id for each student (needed for "All Batches" mode)
+                        if (batchId) {
+                            attendanceItem.batch_id = batchId;
+                        }
+                        attendanceData.push(attendanceItem);
                     }
                 });
             }
@@ -657,6 +728,7 @@ var KTStudentAttendance = (function () {
                 var cards = mobileCards.querySelectorAll('.attendance-card');
                 cards.forEach(function (card) {
                     var studentId = card.getAttribute('data-student-id');
+                    var batchId = card.getAttribute('data-batch-id');
 
                     // Find the CURRENTLY checked radio for this student
                     var checkedRadio = card.querySelector('input.status-radio:checked');
@@ -667,11 +739,16 @@ var KTStudentAttendance = (function () {
                         card.classList.add('border-danger');
                     } else {
                         card.classList.remove('border-danger');
-                        attendanceData.push({
+                        var attendanceItem = {
                             student_id: studentId,
                             status: checkedRadio.value,
                             remarks: remarksInput ? remarksInput.value : ''
-                        });
+                        };
+                        // Include batch_id for each student (needed for "All Batches" mode)
+                        if (batchId) {
+                            attendanceItem.batch_id = batchId;
+                        }
+                        attendanceData.push(attendanceItem);
                     }
                 });
             }
@@ -704,9 +781,15 @@ var KTStudentAttendance = (function () {
             attendance_date: document.getElementById('attendance_date').value,
             branch_id: branchSelect.value,
             class_id: classSelect.value,
-            batch_id: batchSelect.value,
             attendances: result.data
         };
+
+        // Add batch_id only if a specific batch is selected
+        // Otherwise, each attendance record will have its own batch_id
+        var batchId = batchSelect.value;
+        if (batchId) {
+            payload.batch_id = batchId;
+        }
 
         // Set loading state
         var originalHtml = saveButton.innerHTML;
