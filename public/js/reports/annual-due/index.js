@@ -8,14 +8,20 @@
  *   2. Tuition Detailed — Sortable / filterable table
  *   3. Invoice Type-wise Due — Summary + Detailed for non-tuition fees (uses created_at)
  *
- * Features: AJAX data loading, stats cards, SheetJS Excel export.
+ * Features:
+ *   - AJAX data loading, stats cards, SheetJS Excel export.
+ *   - Clickable student count badges open a modal with individual invoice details.
+ *   - Invoice numbers link to invoices.show, student names link to students.show.
  */
 var KTAnnualDueReport = (function () {
 
     // ─── DOM References ───
-    var _form, _reportContainer, _loader, _emptyState, _statsContainer, _exportBtn;
+    var _form, _reportContainer, _loader, _emptyState, _statsContainer;
     var _tuitionSumContainer, _tuitionDetContainer;
     var _otherSumContainer, _otherDetContainer;
+
+    // Modal DOM
+    var _invoicesModal, _invoicesModalTitle, _invoicesModalBody, _invoicesModalLoader;
 
     // ─── State ───
     var _data = null;                       // Full AJAX response
@@ -95,6 +101,14 @@ var KTAnnualDueReport = (function () {
         });
     };
 
+    /** Escape HTML to prevent XSS */
+    var _esc = function (str) {
+        if (!str) return "";
+        var div = document.createElement("div");
+        div.appendChild(document.createTextNode(str));
+        return div.innerHTML;
+    };
+
     // ═══════════════════════════════════════════
     //  INITIALIZATION
     // ═══════════════════════════════════════════
@@ -105,12 +119,17 @@ var KTAnnualDueReport = (function () {
         _loader             = document.getElementById("report_loader");
         _emptyState         = document.getElementById("empty_state");
         _statsContainer     = document.getElementById("stats_container");
-        _exportBtn          = document.getElementById("export_btn");
 
         _tuitionSumContainer = document.getElementById("tuition_summary_container");
         _tuitionDetContainer = document.getElementById("tuition_detailed_container");
         _otherSumContainer   = document.getElementById("other_summary_container");
         _otherDetContainer   = document.getElementById("other_detailed_container");
+
+        // Modal
+        _invoicesModal       = document.getElementById("kt_modal_invoices");
+        _invoicesModalTitle  = document.getElementById("invoices_modal_title");
+        _invoicesModalBody   = document.getElementById("invoices_modal_body");
+        _invoicesModalLoader = document.getElementById("invoices_modal_loader");
     };
 
     var _initEvents = function () {
@@ -144,6 +163,31 @@ var KTAnnualDueReport = (function () {
             _resetSelect2("#other_class_filter", "All Classes");
             _applyOtherFilters();
         });
+
+        // ─── Student Due Link — open invoices modal ───
+        $(document).on("click", ".student-due-link", function (e) {
+            e.preventDefault();
+            var $el = $(this);
+
+            var params = {
+                type:      $el.data("type"),
+                month_num: $el.data("month-num"),
+                class_id:  $el.data("class-id"),
+                batch_id:  $el.data("batch-id"),
+                year:      $("#year_select").val(),
+                branch_id: $("#branch_id").val()
+            };
+
+            // Build modal title parts
+            var titleParts = [_esc($el.data("month")), _esc($el.data("class")), _esc($el.data("batch"))];
+
+            if (params.type === "other") {
+                params.invoice_type_id = $el.data("invoice-type-id");
+                titleParts = [_esc($el.data("month")), _esc($el.data("invoice-type")), _esc($el.data("class")), _esc($el.data("batch"))];
+            }
+
+            _loadInvoicesModal(params, titleParts);
+        });
     };
 
     var _resetSelect2 = function (selector, placeholder) {
@@ -172,7 +216,6 @@ var KTAnnualDueReport = (function () {
         _loader.classList.remove("d-none");
         _reportContainer.classList.add("d-none");
         _emptyState.classList.add("d-none");
-        _exportBtn.classList.add("d-none");
 
         var btn = document.getElementById("generate_report_btn");
         btn.setAttribute("data-kt-indicator", "on");
@@ -226,7 +269,6 @@ var KTAnnualDueReport = (function () {
                 }
 
                 _reportContainer.classList.remove("d-none");
-                _exportBtn.classList.remove("d-none");
             },
             error: function (xhr) {
                 var msg = "An error occurred while loading the report.";
@@ -339,7 +381,7 @@ var KTAnnualDueReport = (function () {
             var rowTotal = cd.total || 0;
 
             html += '<tr>';
-            html += '<td class="ps-4 fw-semibold text-gray-800">' + cls + '</td>';
+            html += '<td class="ps-4 fw-semibold text-gray-800">' + _esc(cls) + '</td>';
 
             for (var m = 0; m < 12; m++) {
                 var amt = cd.months[MONTH_NAMES[m]] || 0;
@@ -453,10 +495,23 @@ var KTAnnualDueReport = (function () {
 
             html += '<tr>';
             html += '<td class="text-center text-gray-500 fw-semibold">' + (i + 1) + '</td>';
-            html += '<td><span class="badge badge-light-primary fw-semibold">' + r.month + '</span></td>';
-            html += '<td class="fw-semibold text-gray-800">' + r.class + '</td>';
-            html += '<td class="text-gray-700">' + r.batch + '</td>';
-            html += '<td class="text-center"><span class="badge badge-light-info">' + r.student_count + ' students</span></td>';
+            html += '<td><span class="badge badge-light-primary fw-semibold">' + _esc(r.month) + '</span></td>';
+            html += '<td class="fw-semibold text-gray-800">' + _esc(r.class) + '</td>';
+            html += '<td class="text-gray-700">' + _esc(r.batch) + '</td>';
+
+            // Clickable student count badge
+            html += '<td class="text-center">';
+            html += '<a href="javascript:void(0);" class="badge badge-light-info student-due-link"';
+            html += ' data-type="tuition"';
+            html += ' data-month-num="' + r.month_num + '"';
+            html += ' data-month="' + _esc(r.month) + '"';
+            html += ' data-class-id="' + r.class_id + '"';
+            html += ' data-class="' + _esc(r.class) + '"';
+            html += ' data-batch-id="' + r.batch_id + '"';
+            html += ' data-batch="' + _esc(r.batch) + '"';
+            html += '>' + r.student_count + ' students</a>';
+            html += '</td>';
+
             html += '<td class="text-end fw-bold text-danger">' + _fmtRaw(r.due_amount) + '</td>';
             html += '</tr>';
         });
@@ -526,8 +581,8 @@ var KTAnnualDueReport = (function () {
 
             html += '<tr>';
             html += '<td class="ps-4 fw-semibold text-gray-800">';
-            html += '  <span class="badge badge-light-warning me-2">' + typeName.charAt(0) + '</span>';
-            html += typeName;
+            html += '  <span class="badge badge-light-warning me-2">' + _esc(typeName.charAt(0)) + '</span>';
+            html += _esc(typeName);
             html += '</td>';
 
             for (var m = 0; m < 12; m++) {
@@ -655,11 +710,26 @@ var KTAnnualDueReport = (function () {
 
             html += '<tr>';
             html += '<td class="text-center text-gray-500 fw-semibold">' + (i + 1) + '</td>';
-            html += '<td><span class="badge badge-light-primary fw-semibold">' + r.month + '</span></td>';
-            html += '<td><span class="badge badge-light-warning fw-semibold">' + r.invoice_type + '</span></td>';
-            html += '<td class="fw-semibold text-gray-800">' + r.class + '</td>';
-            html += '<td class="text-gray-700">' + r.batch + '</td>';
-            html += '<td class="text-center"><span class="badge badge-light-info">' + r.student_count + ' students</span></td>';
+            html += '<td><span class="badge badge-light-primary fw-semibold">' + _esc(r.month) + '</span></td>';
+            html += '<td><span class="badge badge-light-warning fw-semibold">' + _esc(r.invoice_type) + '</span></td>';
+            html += '<td class="fw-semibold text-gray-800">' + _esc(r.class) + '</td>';
+            html += '<td class="text-gray-700">' + _esc(r.batch) + '</td>';
+
+            // Clickable student count badge
+            html += '<td class="text-center">';
+            html += '<a href="javascript:void(0);" class="badge badge-light-info student-due-link"';
+            html += ' data-type="other"';
+            html += ' data-month-num="' + r.month_num + '"';
+            html += ' data-month="' + _esc(r.month) + '"';
+            html += ' data-class-id="' + r.class_id + '"';
+            html += ' data-class="' + _esc(r.class) + '"';
+            html += ' data-batch-id="' + r.batch_id + '"';
+            html += ' data-batch="' + _esc(r.batch) + '"';
+            html += ' data-invoice-type-id="' + r.invoice_type_id + '"';
+            html += ' data-invoice-type="' + _esc(r.invoice_type) + '"';
+            html += '>' + r.student_count + ' students</a>';
+            html += '</td>';
+
             html += '<td class="text-end fw-bold text-warning">' + _fmtRaw(r.due_amount) + '</td>';
             html += '</tr>';
         });
@@ -690,6 +760,146 @@ var KTAnnualDueReport = (function () {
                 _renderOtherDetailed();
             });
         });
+    };
+
+    // ═══════════════════════════════════════════
+    //  INVOICES MODAL (Student Due Click)
+    // ═══════════════════════════════════════════
+
+    /**
+     * Load invoices for a specific group and show the modal.
+     *
+     * @param {Object} params  - AJAX query params (type, year, branch_id, month_num, class_id, batch_id, invoice_type_id)
+     * @param {Array}  titleParts - Array of strings for the modal subtitle badges
+     */
+    var _loadInvoicesModal = function (params, titleParts) {
+        // Set modal title
+        var typeLabel = params.type === "tuition" ? "Tuition Fee" : "Other Fee";
+        _invoicesModalTitle.innerHTML = '<i class="ki-outline ki-document fs-3 text-primary me-2"></i> Due Invoices — ' + _esc(typeLabel);
+
+        // Build subtitle badges
+        var subtitleHtml = '<div class="modal-subtitle">';
+        titleParts.forEach(function (part) {
+            subtitleHtml += '<span class="badge badge-light-primary">' + part + '</span>';
+        });
+        subtitleHtml += '</div>';
+
+        // Show loader, clear body
+        _invoicesModalBody.innerHTML = subtitleHtml;
+        _invoicesModalLoader.classList.remove("d-none");
+
+        // Show the modal
+        $(_invoicesModal).modal("show");
+
+        $.ajax({
+            url: invoicesDataUrl,
+            type: "GET",
+            data: params,
+            headers: { "X-Requested-With": "XMLHttpRequest" },
+            success: function (res) {
+                if (res.success) {
+                    _renderInvoicesModal(res, subtitleHtml);
+                } else {
+                    _invoicesModalBody.innerHTML = subtitleHtml
+                        + '<div class="text-center py-8 text-danger fw-semibold">'
+                        + '<i class="ki-outline ki-information-3 fs-2x text-danger mb-3 d-block"></i>'
+                        + (res.message || "Failed to load invoices.")
+                        + '</div>';
+                }
+            },
+            error: function (xhr) {
+                var msg = "An error occurred while loading invoices.";
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    msg = xhr.responseJSON.message;
+                }
+                _invoicesModalBody.innerHTML = subtitleHtml
+                    + '<div class="text-center py-8 text-danger fw-semibold">'
+                    + '<i class="ki-outline ki-information-3 fs-2x text-danger mb-3 d-block"></i>'
+                    + _esc(msg)
+                    + '</div>';
+            },
+            complete: function () {
+                _invoicesModalLoader.classList.add("d-none");
+            }
+        });
+    };
+
+    /**
+     * Render the invoices table inside the modal.
+     *
+     * @param {Object} res           - AJAX response { data, total_due, total_invoices }
+     * @param {String} subtitleHtml  - Pre-built subtitle badges HTML
+     */
+    var _renderInvoicesModal = function (res, subtitleHtml) {
+        var invoices = res.data;
+
+        if (!invoices || invoices.length === 0) {
+            _invoicesModalBody.innerHTML = subtitleHtml
+                + '<div class="text-center py-8 text-gray-500">'
+                + '<i class="ki-outline ki-information-3 fs-2x text-gray-400 mb-3 d-block"></i>'
+                + 'No invoices found for the selected criteria.'
+                + '</div>';
+            return;
+        }
+
+        var html = subtitleHtml;
+        html += '<div class="table-responsive">';
+        html += '<table class="table table-row-bordered table-row-gray-200 align-middle gs-3 gy-3 modal-table">';
+
+        // Header
+        html += '<thead>';
+        html += '<tr class="fw-bold text-gray-800 bg-light">';
+        html += '<th class="min-w-40px text-center ps-3 rounded-start">SL</th>';
+        html += '<th class="min-w-160px">Invoice Number</th>';
+        html += '<th class="min-w-200px">Student</th>';
+        html += '<th class="min-w-120px text-end pe-3 rounded-end">Amount Due</th>';
+        html += '</tr>';
+        html += '</thead>';
+
+        // Body
+        html += '<tbody>';
+        invoices.forEach(function (inv) {
+            html += '<tr>';
+            html += '<td class="text-center text-gray-500 fw-semibold ps-3">' + inv.sl + '</td>';
+
+            // Invoice number — link to invoices.show
+            html += '<td>';
+            html += '<a href="' + invoiceShowBaseUrl + '/' + inv.id + '" class="text-primary fw-semibold" target="_blank">';
+            html += '<i class="ki-outline ki-document fs-6 me-1"></i>';
+            html += _esc(inv.invoice_number);
+            html += '</a>';
+            html += '</td>';
+
+            // Student name — link to students.show
+            html += '<td>';
+            html += '<a href="' + studentShowBaseUrl + '/' + inv.student_id + '" class="text-gray-900 fw-semibold" target="_blank">';
+            html += _esc(inv.student_name);
+            if (inv.student_uid) {
+                html += ' <span class="text-gray-500 fs-8">(' + _esc(inv.student_uid) + ')</span>';
+            }
+            html += '</a>';
+            html += '</td>';
+
+            // Amount due
+            html += '<td class="text-end fw-bold text-danger pe-3">' + _fmtRaw(inv.amount_due) + '</td>';
+            html += '</tr>';
+        });
+        html += '</tbody>';
+
+        // Footer — Total Due row
+        html += '<tfoot>';
+        html += '<tr class="footer-dark">';
+        html += '<td class="ps-3 rounded-start" colspan="3">';
+        html += 'Total (' + res.total_invoices + ' invoice' + (res.total_invoices > 1 ? 's' : '') + ')';
+        html += '</td>';
+        html += '<td class="text-end pe-3 rounded-end footer-grand-total">' + _fmtRaw(res.total_due) + '</td>';
+        html += '</tr>';
+        html += '</tfoot>';
+
+        html += '</table>';
+        html += '</div>';
+
+        _invoicesModalBody.innerHTML = html;
     };
 
     // ═══════════════════════════════════════════

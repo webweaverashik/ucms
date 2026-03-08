@@ -41,66 +41,6 @@
                     Annual Due Report
                 </h3>
             </div>
-            <div class="card-toolbar">
-                {{-- Export Dropdown (hidden until data loads) --}}
-                <div id="export_btn" class="d-none">
-                    <button type="button" class="btn btn-light-success btn-sm"
-                        data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
-                        <i class="ki-outline ki-file-down fs-4 me-1"></i> Export to Excel
-                    </button>
-                    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-semibold w-250px py-3"
-                        data-kt-menu="true">
-                        <div class="menu-item px-3">
-                            <div class="menu-content text-muted pb-2 px-3 fs-7 text-uppercase fw-bold">
-                                Export Options
-                            </div>
-                        </div>
-                        <div class="separator mb-2"></div>
-                        <div class="menu-item px-3">
-                            <a href="javascript:void(0);" class="menu-link px-3"
-                                onclick="KTAnnualDueReport.exportExcel('all');">
-                                <i class="ki-outline ki-file fs-5 me-2"></i> Export All Data
-                            </a>
-                        </div>
-                        <div class="separator my-1"></div>
-                        <div class="menu-item px-3">
-                            <div class="menu-content text-muted pb-1 px-3 fs-8 text-uppercase fw-bold">
-                                Tuition Fee
-                            </div>
-                        </div>
-                        <div class="menu-item px-3">
-                            <a href="javascript:void(0);" class="menu-link px-3"
-                                onclick="KTAnnualDueReport.exportExcel('tuition_summary');">
-                                <i class="ki-outline ki-chart fs-5 me-2"></i> Tuition Summary
-                            </a>
-                        </div>
-                        <div class="menu-item px-3">
-                            <a href="javascript:void(0);" class="menu-link px-3"
-                                onclick="KTAnnualDueReport.exportExcel('tuition_detailed');">
-                                <i class="ki-outline ki-notepad fs-5 me-2"></i> Tuition Detailed
-                            </a>
-                        </div>
-                        <div class="separator my-1"></div>
-                        <div class="menu-item px-3">
-                            <div class="menu-content text-muted pb-1 px-3 fs-8 text-uppercase fw-bold">
-                                Other Fees
-                            </div>
-                        </div>
-                        <div class="menu-item px-3">
-                            <a href="javascript:void(0);" class="menu-link px-3"
-                                onclick="KTAnnualDueReport.exportExcel('other_summary');">
-                                <i class="ki-outline ki-chart fs-5 me-2"></i> Other Fees Summary
-                            </a>
-                        </div>
-                        <div class="menu-item px-3">
-                            <a href="javascript:void(0);" class="menu-link px-3"
-                                onclick="KTAnnualDueReport.exportExcel('other_detailed');">
-                                <i class="ki-outline ki-notepad fs-5 me-2"></i> Other Fees Detailed
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
         <!--end::Card Header-->
 
@@ -216,6 +156,17 @@
 
                     <!--begin::Tuition Summary Tab-->
                     <div class="tab-pane fade show active" id="tuition_summary_tab" role="tabpanel">
+                        {{-- Table heading row with export button --}}
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <h5 class="fw-bold m-0">
+                                <i class="ki-outline ki-chart-simple fs-4 text-primary me-2"></i>
+                                Tuition Fee Summary — Class × Month
+                            </h5>
+                            <button type="button" class="btn btn-light-success btn-sm"
+                                onclick="KTAnnualDueReport.exportExcel('tuition_summary');">
+                                <i class="ki-outline ki-file-down fs-4 me-1"></i> Export to Excel
+                            </button>
+                        </div>
                         <div id="tuition_summary_container">
                             {{-- Rendered by JS --}}
                         </div>
@@ -224,6 +175,18 @@
 
                     <!--begin::Tuition Detailed Tab-->
                     <div class="tab-pane fade" id="tuition_detailed_tab" role="tabpanel">
+                        {{-- Table heading row with export button --}}
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <h5 class="fw-bold m-0">
+                                <i class="ki-outline ki-notepad fs-4 text-primary me-2"></i>
+                                Tuition Fee Detailed Breakdown
+                            </h5>
+                            <button type="button" class="btn btn-light-success btn-sm"
+                                onclick="KTAnnualDueReport.exportExcel('tuition_detailed');">
+                                <i class="ki-outline ki-file-down fs-4 me-1"></i> Export to Excel
+                            </button>
+                        </div>
+
                         {{-- Tuition Detailed Filters --}}
                         <div class="row g-3 mb-5" id="tuition_filters_row">
                             <div class="col-lg-4 col-md-6">
@@ -267,22 +230,34 @@
                     <!--begin::Other Fees Tab-->
                     <div class="tab-pane fade" id="other_fees_tab" role="tabpanel">
 
-                        {{-- Other Fees Summary --}}
-                        <h5 class="fw-bold mb-4">
-                            <i class="ki-outline ki-chart-simple fs-4 text-warning me-2"></i>
-                            Invoice Type Summary
-                        </h5>
+                        {{-- Other Fees Summary with export --}}
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <h5 class="fw-bold m-0">
+                                <i class="ki-outline ki-chart-simple fs-4 text-warning me-2"></i>
+                                Invoice Type Summary
+                            </h5>
+                            <button type="button" class="btn btn-light-success btn-sm"
+                                onclick="KTAnnualDueReport.exportExcel('other_summary');">
+                                <i class="ki-outline ki-file-down fs-4 me-1"></i> Export to Excel
+                            </button>
+                        </div>
                         <div id="other_summary_container" class="mb-8">
                             {{-- Rendered by JS --}}
                         </div>
 
                         <div class="separator separator-dashed mb-8"></div>
 
-                        {{-- Other Fees Detailed --}}
-                        <h5 class="fw-bold mb-4">
-                            <i class="ki-outline ki-notepad fs-4 text-warning me-2"></i>
-                            Invoice Type Detailed Breakdown
-                        </h5>
+                        {{-- Other Fees Detailed with export --}}
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <h5 class="fw-bold m-0">
+                                <i class="ki-outline ki-notepad fs-4 text-warning me-2"></i>
+                                Invoice Type Detailed Breakdown
+                            </h5>
+                            <button type="button" class="btn btn-light-success btn-sm"
+                                onclick="KTAnnualDueReport.exportExcel('other_detailed');">
+                                <i class="ki-outline ki-file-down fs-4 me-1"></i> Export to Excel
+                            </button>
+                        </div>
 
                         {{-- Other Detailed Filters --}}
                         <div class="row g-3 mb-5" id="other_filters_row">
@@ -352,6 +327,51 @@
         <!--end::Card Body-->
     </div>
     <!--end::Card-->
+
+    <!--begin::Invoices Modal-->
+    <div class="modal fade" id="kt_modal_invoices" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <!--begin::Modal Header-->
+                <div class="modal-header py-4">
+                    <h3 class="modal-title fw-bold fs-5" id="invoices_modal_title">
+                        <i class="ki-outline ki-document fs-3 text-primary me-2"></i>
+                        Due Invoices
+                    </h3>
+                    <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal" aria-label="Close">
+                        <i class="ki-outline ki-cross fs-1"></i>
+                    </div>
+                </div>
+                <!--end::Modal Header-->
+
+                <!--begin::Modal Body-->
+                <div class="modal-body py-4">
+                    <!--begin::Modal Loader-->
+                    <div id="invoices_modal_loader" class="text-center py-10 d-none">
+                        <div class="spinner-border text-primary" role="status" style="width: 2.5rem; height: 2.5rem;">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-muted fw-semibold fs-7">Loading invoices...</p>
+                    </div>
+                    <!--end::Modal Loader-->
+
+                    <!--begin::Modal Content-->
+                    <div id="invoices_modal_body">
+                        {{-- Rendered by JS --}}
+                    </div>
+                    <!--end::Modal Content-->
+                </div>
+                <!--end::Modal Body-->
+
+                <!--begin::Modal Footer-->
+                <div class="modal-footer py-3">
+                    <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Close</button>
+                </div>
+                <!--end::Modal Footer-->
+            </div>
+        </div>
+    </div>
+    <!--end::Invoices Modal-->
 @endsection
 
 @push('vendor-js')
@@ -360,7 +380,10 @@
 
 @push('page-js')
     <script>
-        var reportDataUrl = "{{ route('reports.annual-due.data') }}";
+        var reportDataUrl     = "{{ route('reports.annual-due.data') }}";
+        var invoicesDataUrl   = "{{ route('reports.annual-due.invoices') }}";
+        var invoiceShowBaseUrl = "{{ url('invoices') }}";
+        var studentShowBaseUrl = "{{ url('students') }}";
     </script>
     <script src="{{ asset('js/reports/annual-due/index.js') }}"></script>
     <script>

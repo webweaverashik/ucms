@@ -100,10 +100,13 @@ table tfoot tr.footer-dark td.footer-grand-total span {
     font-size: 0.85rem;
 }
 
-/* ── Export Dropdown ── */
+/* ── Table Section Header ── */
 
-#export_btn .menu {
-    min-width: 250px;
+.table-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
 }
 
 /* ── Other Fees Tab — Warning accented cells ── */
@@ -120,4 +123,71 @@ table tfoot tr.footer-dark td.footer-grand-total span {
 
 #other_fees_badge:empty {
     display: none;
+}
+
+/* ── Clickable Student Badge (due link) ── */
+
+a.student-due-link {
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none !important;
+}
+
+a.student-due-link:hover {
+    filter: brightness(0.85);
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+/* ── Modal Table Styles ── */
+
+#kt_modal_invoices .modal-table th,
+#kt_modal_invoices .modal-table td {
+    font-size: 0.92rem;
+    padding: 0.55rem 0.7rem !important;
+    vertical-align: middle;
+}
+
+#kt_modal_invoices .modal-table thead th {
+    font-size: 0.88rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+#kt_modal_invoices .modal-table a {
+    text-decoration: none;
+}
+
+#kt_modal_invoices .modal-table a:hover {
+    text-decoration: underline;
+}
+
+/* Modal footer dark row */
+#kt_modal_invoices table tfoot tr.footer-dark td {
+    background-color: #1e1e2d !important;
+    color: #ffffff !important;
+    border-color: #2d2d3f !important;
+    font-weight: 700 !important;
+    font-size: 0.95rem !important;
+}
+
+#kt_modal_invoices table tfoot tr.footer-dark td.footer-grand-total {
+    background-color: #ffc107 !important;
+    color: #1e1e2d !important;
+    font-weight: 800 !important;
+}
+
+/* ── Modal subtitle (context info) ── */
+
+.modal-subtitle {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 0.75rem;
+}
+
+.modal-subtitle .badge {
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 0.35rem 0.65rem;
 }

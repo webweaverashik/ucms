@@ -474,6 +474,7 @@ class ReportController extends Controller
                 'class'         => $className,
                 'class_id'      => (int) $classId,
                 'batch'         => $batchName,
+                'batch_id'      => (int) $batchId,
                 'student_count' => $studentCnt,
                 'due_amount'    => $dueAmount,
             ];
@@ -553,13 +554,16 @@ class ReportController extends Controller
             $studentCnt = $invoices->pluck('student_id')->unique()->count();
 
             $otherDetailed[] = [
-                'month'         => $monthNames[$monthNum],
-                'month_num'     => $monthNum,
-                'invoice_type'  => $typeName,
-                'class'         => $className,
-                'batch'         => $batchName,
-                'student_count' => $studentCnt,
-                'due_amount'    => $dueAmount,
+                'month'           => $monthNames[$monthNum],
+                'month_num'       => $monthNum,
+                'invoice_type'    => $typeName,
+                'invoice_type_id' => (int) $typeId,
+                'class'           => $className,
+                'class_id'        => (int) $classId,
+                'batch'           => $batchName,
+                'batch_id'        => (int) $batchId,
+                'student_count'   => $studentCnt,
+                'due_amount'      => $dueAmount,
             ];
 
             if (! isset($otherSummary[$typeName])) {
@@ -623,6 +627,92 @@ class ReportController extends Controller
             'branch_name'   => $branch->branch_name ?? '',
             'branch_prefix' => $branch->branch_prefix ?? '',
             'year'          => $year,
+        ]);
+    }
+
+    /**
+     * Annual Due Report – Invoice Details (AJAX)
+     *
+     * Returns individual invoices for a specific group
+     * (month + class + batch for tuition, or month + invoice_type + class + batch for other fees)
+     *
+     * Used by the modal when clicking on the student count badge.
+     */
+    public function annualDueInvoices(Request $request): JsonResponse
+    {
+        // Only admin can access
+        if (! auth()->user()->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'type'            => 'required|in:tuition,other',
+            'year'            => 'required|integer|min:2020|max:2099',
+            'branch_id'       => 'required|integer|exists:branches,id',
+            'month_num'       => 'required|integer|min:1|max:12',
+            'class_id'        => 'required|integer',
+            'batch_id'        => 'required|integer',
+            'invoice_type_id' => 'nullable|integer|exists:payment_invoice_types,id',
+        ]);
+
+        $year     = (int) $request->year;
+        $branchId = (int) $request->branch_id;
+        $classId  = (int) $request->class_id;
+        $batchId  = (int) $request->batch_id;
+        $monthNum = (int) $request->month_num;
+
+        $tuitionTypeId = PaymentInvoiceType::where('type_name', 'Tuition Fee')->value('id');
+
+        // Get student IDs matching branch + class + batch (includes soft-deleted — no whereNull on deleted_at)
+        $studentIds = DB::table('students')
+            ->where('branch_id', $branchId)
+            ->where('class_id', $classId)
+            ->where('batch_id', $batchId)
+            ->pluck('id');
+
+        $query = PaymentInvoice::where('status', '!=', 'paid')
+            ->whereIn('student_id', $studentIds)
+            ->with(['student' => fn ($q) => $q->withTrashed()->select('id', 'name', 'student_unique_id')])
+            ->select('id', 'invoice_number', 'student_id', 'amount_due', 'invoice_type_id');
+
+        if ($request->type === 'tuition') {
+            // Tuition Fee: match by month_year column
+            $monthYear = str_pad($monthNum, 2, '0', STR_PAD_LEFT) . '_' . $year;
+
+            $query->where('invoice_type_id', $tuitionTypeId)
+                  ->where('month_year', $monthYear);
+        } else {
+            // Other Fees: match by created_at year + month
+            if ($tuitionTypeId) {
+                $query->where('invoice_type_id', '!=', $tuitionTypeId);
+            }
+
+            $query->whereYear('created_at', $year)
+                  ->whereMonth('created_at', $monthNum);
+
+            // Optionally filter by specific invoice type
+            if ($request->filled('invoice_type_id')) {
+                $query->where('invoice_type_id', $request->invoice_type_id);
+            }
+        }
+
+        $invoices = $query->orderBy('id')->get();
+
+        return response()->json([
+            'success'        => true,
+            'data'           => $invoices->map(function ($inv, $idx) {
+                return [
+                    'sl'             => $idx + 1,
+                    'id'             => $inv->id,
+                    'invoice_number' => $inv->invoice_number,
+                    'student_id'     => $inv->student_id,
+                    'student_name'   => $inv->student->name ?? 'N/A',
+                    'student_uid'    => $inv->student->student_unique_id ?? '',
+                    'amount_due'     => (int) $inv->amount_due,
+                ];
+            })->values(),
+            'total_due'      => (int) $invoices->sum('amount_due'),
+            'total_invoices' => $invoices->count(),
         ]);
     }
 }
