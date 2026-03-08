@@ -447,6 +447,16 @@ class ReportController extends Controller
         $tuitionGrandTotal    = $tuitionInvoices->sum('amount_due');
         $tuitionTotalInvoices = $tuitionInvoices->count();
 
+        // ── Pre-populate tuition summary with ALL active classes (+ any inactive that have dues) ──
+        // Fetch all active classes ordered by ID
+        $allActiveClasses = ClassName::active()->orderBy('id')->select('id', 'name')->get();
+
+        // Pre-initialize tuition summary with all active classes having 0 for every month
+        $tuitionSummary = [];
+        foreach ($allActiveClasses as $cls) {
+            $tuitionSummary[$cls->name] = ['class_id' => $cls->id, 'months' => array_fill(1, 12, 0)];
+        }
+
         // Group by month + class + batch
         $tuitionGrouped = $tuitionInvoices->groupBy(function ($inv) {
             $parts = explode('_', $inv->month_year);
@@ -456,7 +466,6 @@ class ReportController extends Controller
         });
 
         $tuitionDetailed = [];
-        $tuitionSummary  = []; // className => [1 => amount, …, 12 => amount]
 
         foreach ($tuitionGrouped as $key => $invoices) {
             [$monthNum, $classId, $batchId] = explode('|', $key);
@@ -479,6 +488,7 @@ class ReportController extends Controller
                 'due_amount'    => $dueAmount,
             ];
 
+            // If this class wasn't in allActiveClasses (inactive but has dues), add it
             if (! isset($tuitionSummary[$className])) {
                 $tuitionSummary[$className] = ['class_id' => (int) $classId, 'months' => array_fill(1, 12, 0)];
             }
