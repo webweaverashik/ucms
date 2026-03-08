@@ -307,7 +307,8 @@
                                     <!--begin:Menu item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
-                                        <a class="menu-link" id="sheet_payments_link" href="{{ route('sheet-payments.index') }}">
+                                        <a class="menu-link" id="sheet_payments_link"
+                                            href="{{ route('sheet-payments.index') }}">
                                             <span class="menu-bullet">
                                                 <span class="bullet bullet-dot">
                                                 </span>
@@ -494,23 +495,8 @@
 
                             <!--begin:Menu sub-->
                             <div class="menu-sub menu-sub-accordion">
-                                <!--begin:SMS Campaign item-->
-                                <div class="menu-item">
-                                    <!--begin:Menu link-->
-                                    <a class="menu-link" id="attendance_report_link"
-                                        href="{{ route('reports.attendance.index') }}">
-                                        <span class="menu-bullet">
-                                            <span class="bullet bullet-dot">
-                                            </span>
-                                        </span>
-                                        <span class="menu-title">Attendance Reports</span>
-                                    </a>
-                                    <!--end:Menu link-->
-                                </div>
-                                <!--end:SMS Campaign item-->
-
+                                <!--begin:Finance Report item-->
                                 @if (!auth()->user()->isAccountant())
-                                    <!--begin:Finance Report item-->
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <a class="menu-link" id="finance_report_link"
@@ -523,8 +509,25 @@
                                         </a>
                                         <!--end:Menu link-->
                                     </div>
-                                    <!--end:Finance Report item-->
                                 @endif
+                                <!--end:Finance Report item-->
+
+                                <!--begin:Annual Due item-->
+                                @if (auth()->user()->isAdmin())
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <a class="menu-link" id="annual_due_link"
+                                            href="{{ route('reports.annual-due.index') }}">
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot">
+                                                </span>
+                                            </span>
+                                            <span class="menu-title">Annual Due</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                @endif
+                                <!--end:Annual Due item-->
 
                                 <!--begin:Cost Records item-->
                                 <div class="menu-item">
@@ -541,10 +544,22 @@
                                 </div>
                                 <!--end:Cost Records item-->
 
+                                <div class="menu-item">
+                                    <!--begin:Menu link-->
+                                    <a class="menu-link" id="attendance_report_link"
+                                        href="{{ route('reports.attendance.index') }}">
+                                        <span class="menu-bullet">
+                                            <span class="bullet bullet-dot">
+                                            </span>
+                                        </span>
+                                        <span class="menu-title">Attendance Reports</span>
+                                    </a>
+                                    <!--end:Menu link-->
+                                </div>
 
                                 @if (auth()->user()->isAdmin())
                                     <!--begin:Activity Logs item-->
-                                    <div class="menu-item">
+                                    {{-- <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <a class="menu-link" id="activity_logs_link" href="#">
                                             <span class="menu-bullet">
@@ -554,7 +569,7 @@
                                             <span class="menu-title">Activity</span>
                                         </a>
                                         <!--end:Menu link-->
-                                    </div>
+                                    </div> --}}
                                     <!--end:Activity Logs item-->
                                 @endif
                             </div>

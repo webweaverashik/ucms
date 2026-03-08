@@ -1,0 +1,123 @@
+/* ============================================
+   Annual Due Report – Custom Styles
+   ============================================ */
+
+/* ── Summary Table ── */
+
+.summary-table th,
+.summary-table td {
+    font-size: 0.95rem;
+    white-space: nowrap;
+    padding: 0.65rem 0.75rem !important;
+}
+
+.summary-table tfoot td {
+    font-size: 1rem;
+    padding: 0.75rem !important;
+}
+
+.summary-table thead th {
+    vertical-align: middle;
+    font-size: 0.95rem;
+}
+
+/* ── Detailed Table ── */
+
+.detailed-table th,
+.detailed-table td {
+    font-size: 0.95rem;
+    padding: 0.6rem 0.75rem !important;
+}
+
+.detailed-table tfoot td {
+    font-size: 1rem;
+    padding: 0.75rem !important;
+}
+
+/* ── Dark Footer Row — ensure text is visible ── */
+
+table tfoot tr.footer-dark td {
+    background-color: #1e1e2d !important;
+    color: #ffffff !important;
+    border-color: #2d2d3f !important;
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+}
+
+table tfoot tr.footer-dark td span,
+table tfoot tr.footer-dark td a {
+    color: #ffffff !important;
+}
+
+/* Grand total cell in footer */
+table tfoot tr.footer-dark td.footer-grand-total {
+    background-color: #ffc107 !important;
+    color: #1e1e2d !important;
+    font-weight: 800 !important;
+    font-size: 1.05rem !important;
+}
+
+table tfoot tr.footer-dark td.footer-grand-total span {
+    color: #1e1e2d !important;
+}
+
+/* ── Sortable Headers ── */
+
+.sortable-header {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.15s ease;
+}
+
+.sortable-header:hover {
+    background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* ── Stats Cards Hover ── */
+
+.stat-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ── Table Scrollable Container ── */
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ── Badge Adjustments ── */
+
+.badge.badge-light-primary,
+.badge.badge-light-info,
+.badge.badge-light-warning {
+    white-space: nowrap;
+    font-size: 0.85rem;
+}
+
+/* ── Export Dropdown ── */
+
+#export_btn .menu {
+    min-width: 250px;
+}
+
+/* ── Other Fees Tab — Warning accented cells ── */
+
+#other_fees_tab .text-warning.fw-semibold {
+    color: #f59e0b !important;
+}
+
+#other_fees_tab .bg-light-warning {
+    background-color: #fff8eb !important;
+}
+
+/* ── Tab badge ── */
+
+#other_fees_badge:empty {
+    display: none;
+}

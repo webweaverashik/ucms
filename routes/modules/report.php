@@ -25,6 +25,9 @@ Route::prefix('reports')
         Route::post('finance', [ReportController::class, 'financeReportGenerate'])->name('finance.generate');
         Route::get('finance/costs', [ReportController::class, 'getReportCosts'])->name('finance.costs');
 
+        Route::get('finance/annual-due', [ReportController::class, 'annualDueReportIndex'])->name('annual-due.index');
+        Route::get('finance/annual-due/data', [ReportController::class, 'annualDueReportData'])->name('annual-due.data');
+
         // Cost Records (separate page)
         Route::get('cost-records', [ReportController::class, 'costRecordsIndex'])->name('cost-records.index');
     });

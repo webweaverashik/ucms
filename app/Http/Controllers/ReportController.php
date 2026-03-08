@@ -6,6 +6,8 @@ use App\Models\Academic\Batch;
 use App\Models\Academic\ClassName;
 use App\Models\Branch;
 use App\Models\Cost\Cost;
+use App\Models\Payment\PaymentInvoice;
+use App\Models\Payment\PaymentInvoiceType;
 use App\Models\Payment\PaymentTransaction;
 use App\Models\Student\StudentAttendance;
 use Carbon\Carbon;
@@ -98,13 +100,12 @@ class ReportController extends Controller
         $supportsGroup = $classModel && in_array($classModel->class_numeral, self::GROUP_REQUIRED_CLASSES);
 
         // Check if "All Groups" is selected (no specific group filter)
-        $isAllGroups = $supportsGroup && !$request->filled('academic_group');
+        $isAllGroups = $supportsGroup && ! $request->filled('academic_group');
 
         // --- 2. Build the Query ---
         $attendances = StudentAttendance::with([
             'student' => function ($q) use ($request, $supportsGroup) {
                 $q->select('id', 'name', 'student_unique_id', 'academic_group', 'class_id');
-
                 // Filter by academic group if provided and class supports it
                 if ($supportsGroup && $request->filled('academic_group')) {
                     $q->where('academic_group', $request->academic_group);
@@ -167,23 +168,6 @@ class ReportController extends Controller
             ->get();
 
         return view('reports.finance.index', compact('branches', 'isAdmin'));
-    }
-
-    /**
-     * Cost Records page
-     */
-    public function costRecordsIndex()
-    {
-        $user = Auth::user();
-        $isAdmin = $user->isAdmin();
-
-        $branches = Branch::when(! $isAdmin, function ($q) use ($user) {
-            $q->where('id', $user->branch_id);
-        })
-            ->select('id', 'branch_name', 'branch_prefix')
-            ->get();
-
-        return view('reports.cost-records.index', compact('branches', 'isAdmin'));
     }
 
     /**
@@ -307,6 +291,24 @@ class ReportController extends Controller
     }
 
     /**
+     * Cost Records page
+     */
+    public function costRecordsIndex()
+    {
+        $user = Auth::user();
+
+        $isAdmin = $user->isAdmin();
+
+        $branches = Branch::when(! $isAdmin, function ($q) use ($user) {
+            $q->where('id', $user->branch_id);
+        })
+            ->select('id', 'branch_name', 'branch_prefix')
+            ->get();
+
+        return view('reports.cost-records.index', compact('branches', 'isAdmin'));
+    }
+
+    /**
      * Load cost list (AJAX)
      */
     public function getReportCosts(Request $request): JsonResponse
@@ -356,6 +358,271 @@ class ReportController extends Controller
         return response()->json([
             'success' => true,
             'data' => $costs,
+        ]);
+    }
+
+    /**
+     * Annual Due Report page
+     */
+    public function annualDueReportIndex()
+    {
+        if (! auth()->user()->isAdmin()) {
+            return redirect()->back()->with('error', 'Unauthorized access to the page.');
+        }
+
+        $branches = Branch::select('id', 'branch_name', 'branch_prefix')->get();
+
+        return view('reports.annual-due.index', compact('branches'));
+    }
+
+    /**
+     * Annual Due Report – AJAX Data
+     *
+     * Returns two separate datasets:
+     *
+     * 1. TUITION FEE dues  → uses `month_year` column (format: MM_YYYY)
+     *    Grouped by month_year + class + batch
+     *
+     * 2. OTHER FEE dues    → uses `created_at` to determine the month
+     *    (month_year is NULL for non-Tuition invoices)
+     *    Grouped by created_at month + invoice_type + class + batch
+     *
+     * Base query (matches raw SQL):
+     *   SELECT SUM(amount_due) FROM payment_invoices
+     *   WHERE status != 'paid' AND deleted_at IS NULL
+     *   AND student_id IN (SELECT id FROM students WHERE branch_id = ?);
+     */
+    public function annualDueReportData(Request $request): JsonResponse
+    {
+        // Only admin can access
+        if (! auth()->user()->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'year'      => 'required|integer|min:2020|max:2099',
+            'branch_id' => 'required|integer|exists:branches,id',
+        ]);
+
+        $year     = (int) $request->year;
+        $branchId = (int) $request->branch_id;
+        $branch   = Branch::find($branchId);
+
+        $monthNames = [
+            1 => 'January',  2 => 'February', 3 => 'March',
+            4 => 'April',    5 => 'May',      6 => 'June',
+            7 => 'July',     8 => 'August',   9 => 'September',
+            10 => 'October', 11 => 'November', 12 => 'December',
+        ];
+
+        // Build all possible month_year values for the selected year (01_2025 … 12_2025)
+        $monthYearValues = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $monthYearValues[] = str_pad($m, 2, '0', STR_PAD_LEFT) . '_' . $year;
+        }
+
+        // Student IDs subquery — includes soft-deleted students (matches raw SQL)
+        $studentIdsSubquery = function ($query) use ($branchId) {
+            $query->select('id')->from('students')->where('branch_id', $branchId);
+        };
+
+        // Get Tuition Fee type ID
+        $tuitionTypeId = PaymentInvoiceType::where('type_name', 'Tuition Fee')->value('id');
+
+        // ════════════════════════════════════════════════════════════
+        //  SECTION 1: TUITION FEE DUES (month_year column)
+        // ════════════════════════════════════════════════════════════
+
+        $tuitionInvoices = PaymentInvoice::where('status', '!=', 'paid')
+            ->whereIn('student_id', $studentIdsSubquery)
+            ->when($tuitionTypeId, fn ($q) => $q->where('invoice_type_id', $tuitionTypeId))
+            ->whereIn('month_year', $monthYearValues)
+            ->with([
+                'student'       => fn ($q) => $q->withTrashed()->select('id', 'name', 'class_id', 'batch_id'),
+                'student.class' => fn ($q) => $q->withTrashed()->select('id', 'name'),
+                'student.batch' => fn ($q) => $q->select('id', 'name'),
+            ])
+            ->get();
+
+        $tuitionGrandTotal    = $tuitionInvoices->sum('amount_due');
+        $tuitionTotalInvoices = $tuitionInvoices->count();
+
+        // Group by month + class + batch
+        $tuitionGrouped = $tuitionInvoices->groupBy(function ($inv) {
+            $parts = explode('_', $inv->month_year);
+            return (int) $parts[0]
+                . '|' . ($inv->student->class_id ?? 0)
+                . '|' . ($inv->student->batch_id ?? 0);
+        });
+
+        $tuitionDetailed = [];
+        $tuitionSummary  = []; // className => [1 => amount, …, 12 => amount]
+
+        foreach ($tuitionGrouped as $key => $invoices) {
+            [$monthNum, $classId, $batchId] = explode('|', $key);
+            $monthNum = (int) $monthNum;
+
+            $first      = $invoices->first();
+            $className  = $first->student->class->name ?? 'Unknown';
+            $batchName  = $first->student->batch->name ?? 'Unknown';
+            $dueAmount  = (int) $invoices->sum('amount_due');
+            $studentCnt = $invoices->pluck('student_id')->unique()->count();
+
+            $tuitionDetailed[] = [
+                'month'         => $monthNames[$monthNum],
+                'month_num'     => $monthNum,
+                'class'         => $className,
+                'class_id'      => (int) $classId,
+                'batch'         => $batchName,
+                'student_count' => $studentCnt,
+                'due_amount'    => $dueAmount,
+            ];
+
+            if (! isset($tuitionSummary[$className])) {
+                $tuitionSummary[$className] = ['class_id' => (int) $classId, 'months' => array_fill(1, 12, 0)];
+            }
+            $tuitionSummary[$className]['months'][$monthNum] += $dueAmount;
+        }
+
+        // Sort detailed by month → class → batch
+        usort($tuitionDetailed, fn ($a, $b) =>
+            $a['month_num'] <=> $b['month_num']
+                ?: strcmp($a['class'], $b['class'])
+                ?: strcmp($a['batch'], $b['batch'])
+        );
+
+        // Format tuition summary
+        $fmtTuitionSummary = [];
+        // Sort by class_id
+        uasort($tuitionSummary, fn ($a, $b) => $a['class_id'] <=> $b['class_id']);
+
+        foreach ($tuitionSummary as $className => $data) {
+            $monthData = [];
+            foreach ($data['months'] as $m => $amt) {
+                $monthData[$monthNames[$m]] = $amt;
+            }
+            $fmtTuitionSummary[$className] = [
+                'class_id' => $data['class_id'],
+                'months'   => $monthData,
+                'total'    => array_sum($data['months']),
+            ];
+        }
+
+        // ════════════════════════════════════════════════════════════
+        //  SECTION 2: OTHER INVOICE TYPE DUES (created_at month)
+        // ════════════════════════════════════════════════════════════
+
+        $otherQuery = PaymentInvoice::where('status', '!=', 'paid')
+            ->whereIn('student_id', $studentIdsSubquery)
+            ->whereYear('created_at', $year)
+            ->with([
+                'student'       => fn ($q) => $q->withTrashed()->select('id', 'name', 'class_id', 'batch_id'),
+                'student.class' => fn ($q) => $q->withTrashed()->select('id', 'name'),
+                'student.batch' => fn ($q) => $q->select('id', 'name'),
+                'invoiceType:id,type_name',
+            ]);
+
+        if ($tuitionTypeId) {
+            $otherQuery->where('invoice_type_id', '!=', $tuitionTypeId);
+        }
+
+        $otherInvoices      = $otherQuery->get();
+        $otherGrandTotal    = $otherInvoices->sum('amount_due');
+        $otherTotalInvoices = $otherInvoices->count();
+
+        // Group by month(created_at) + invoice_type + class + batch
+        $otherGrouped = $otherInvoices->groupBy(function ($inv) {
+            return $inv->created_at->month
+                . '|' . $inv->invoice_type_id
+                . '|' . ($inv->student->class_id ?? 0)
+                . '|' . ($inv->student->batch_id ?? 0);
+        });
+
+        $otherDetailed = [];
+        $otherSummary  = []; // typeName => [1 => amount, …, 12 => amount]
+
+        foreach ($otherGrouped as $key => $invoices) {
+            [$monthNum, $typeId, $classId, $batchId] = explode('|', $key);
+            $monthNum = (int) $monthNum;
+
+            $first      = $invoices->first();
+            $typeName   = $first->invoiceType->type_name ?? 'Unknown';
+            $className  = $first->student->class->name ?? 'Unknown';
+            $batchName  = $first->student->batch->name ?? 'Unknown';
+            $dueAmount  = (int) $invoices->sum('amount_due');
+            $studentCnt = $invoices->pluck('student_id')->unique()->count();
+
+            $otherDetailed[] = [
+                'month'         => $monthNames[$monthNum],
+                'month_num'     => $monthNum,
+                'invoice_type'  => $typeName,
+                'class'         => $className,
+                'batch'         => $batchName,
+                'student_count' => $studentCnt,
+                'due_amount'    => $dueAmount,
+            ];
+
+            if (! isset($otherSummary[$typeName])) {
+                $otherSummary[$typeName] = array_fill(1, 12, 0);
+            }
+            $otherSummary[$typeName][$monthNum] += $dueAmount;
+        }
+
+        // Sort other detailed by month → invoice_type → class
+        usort($otherDetailed, fn ($a, $b) =>
+            $a['month_num'] <=> $b['month_num']
+                ?: strcmp($a['invoice_type'], $b['invoice_type'])
+                ?: strcmp($a['class'], $b['class'])
+        );
+
+        // Format other summary
+        $fmtOtherSummary = [];
+        ksort($otherSummary);
+
+        foreach ($otherSummary as $typeName => $months) {
+            $monthData = [];
+            foreach ($months as $m => $amt) {
+                $monthData[$monthNames[$m]] = $amt;
+            }
+            $fmtOtherSummary[$typeName] = [
+                'months' => $monthData,
+                'total'  => array_sum($months),
+            ];
+        }
+
+        // ════════════════════════════════════════════════════════════
+        //  RESPONSE
+        // ════════════════════════════════════════════════════════════
+
+        return response()->json([
+            'success' => true,
+
+            // Tuition Fee section
+            'tuition' => [
+                'detailed'       => $tuitionDetailed,
+                'summary'        => $fmtTuitionSummary,
+                'grand_total'    => $tuitionGrandTotal,
+                'total_invoices' => $tuitionTotalInvoices,
+                'total_classes'  => count($fmtTuitionSummary),
+            ],
+
+            // Other Fee Types section
+            'other' => [
+                'detailed'       => $otherDetailed,
+                'summary'        => $fmtOtherSummary,
+                'grand_total'    => $otherGrandTotal,
+                'total_invoices' => $otherTotalInvoices,
+                'total_types'    => count($fmtOtherSummary),
+            ],
+
+            // Combined totals
+            'grand_total'    => $tuitionGrandTotal + $otherGrandTotal,
+            'total_invoices' => $tuitionTotalInvoices + $otherTotalInvoices,
+
+            // Branch / Year info
+            'branch_name'   => $branch->branch_name ?? '',
+            'branch_prefix' => $branch->branch_prefix ?? '',
+            'year'          => $year,
         ]);
     }
 }
