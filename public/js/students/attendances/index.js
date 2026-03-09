@@ -508,7 +508,7 @@ var KTStudentAttendance = (function () {
                 batchBadgeHtml +
                 '</div>' +
                 '<span class="text-muted fw-semibold fs-7">ID: ' + escapeHtml(student.student_unique_id) + '</span>' +
-                (homeMobile ? '<a href="tel:' + escapeHtml(homeMobile) + '" class="text-muted text-hover-primary fw-semibold fs-7"><i class="ki-outline ki-phone fs-7 me-1"></i>' + escapeHtml(homeMobile) + '</a>' : '') +
+                (homeMobile ? '<span class="text-muted fw-semibold fs-7"><i class="ki-outline ki-phone fs-7 me-1"></i>' + escapeHtml(homeMobile) + '</span>' : '') +
                 '</div>' +
                 '</div>' +
                 '</td>' +
@@ -594,7 +594,7 @@ var KTStudentAttendance = (function () {
                 batchBadgeHtml +
                 '</div>' +
                 '<div class="text-muted fs-8">ID: ' + escapeHtml(student.student_unique_id) + '</div>' +
-                (homeMobile ? '<div class="text-muted fs-8 mt-1"><i class="ki-outline ki-phone fs-8 me-1"></i><a href="tel:' + escapeHtml(homeMobile) + '" class="text-primary text-hover-dark">' + escapeHtml(homeMobile) + '</a></div>' : '') +
+                (homeMobile ? '<div class="text-muted fs-8 mt-1"><i class="ki-outline ki-phone fs-8 me-1"></i>' + escapeHtml(homeMobile) + '</div>' : '') +
                 '</div>' +
                 '</div>' +
                 '<span class="badge badge-light-secondary fs-8">#' + (index + 1) + '</span>' +
