@@ -171,6 +171,8 @@
                             data-kt-scroll-dependencies="#kt_modal_transaction_header"
                             data-kt-scroll-wrappers="#kt_modal_add_invoice_scroll" data-kt-scroll-offset="300px">
                             <div class="row">
+
+                                <!--begin::Student Select-->
                                 <div class="fv-row mb-7 col-12">
                                     <label class="required fw-semibold fs-6 mb-2">Select Student</label>
                                     <div class="input-group input-group-solid flex-nowrap">
@@ -185,7 +187,8 @@
                                                 <option></option>
                                                 @foreach ($students as $student)
                                                     <option value="{{ $student->id }}">{{ $student->name }}
-                                                        ({{ $student->student_unique_id }}) -
+                                                        ({{ $student->student_unique_id }})
+                                                        -
                                                         {{ ucfirst($student->payments->payment_style) }} -
                                                         1/{{ $student->payments->due_date }}
                                                     </option>
@@ -194,6 +197,9 @@
                                         </div>
                                     </div>
                                 </div>
+                                <!--end::Student Select-->
+
+                                <!--begin::Invoice Type-->
                                 <div class="fv-row mb-7 col-12">
                                     <label class="required fw-semibold fs-6 mb-2">Invoice Type</label>
                                     <div class="input-group input-group-solid flex-nowrap">
@@ -204,8 +210,8 @@
                                             <select name="invoice_type"
                                                 class="form-select form-select-solid rounded-start-0 border-start"
                                                 data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
-                                                data-placeholder="Select a invoice type" data-hide-search="false"
-                                                required disabled>
+                                                data-placeholder="Select a invoice type" data-hide-search="false" required
+                                                disabled>
                                                 <option></option>
                                                 @foreach ($invoice_types->where('type_name', '!=', 'Special Class Fee') as $type)
                                                     <option value="{{ $type->id }}"
@@ -216,36 +222,10 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="fv-row mb-7 col-6" id="month_year_type_id">
-                                    <label class="required fw-semibold fs-6 mb-2">Billing Type</label>
-                                    <div class="row">
-                                        <div class="col-lg-6">
-                                            <input type="radio" class="btn-check" name="month_year_type"
-                                                checked="checked" value="new_invoice" id="new_invoice_input" />
-                                            <label
-                                                class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
-                                                for="new_invoice_input">
-                                                <i class="ki-outline ki-abstract fs-2x me-5"></i>
-                                                <span class="d-block fw-semibold text-start">
-                                                    <span class="text-gray-900 fw-bold d-block fs-6">New</span>
-                                                </span>
-                                            </label>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <input type="radio" class="btn-check" name="month_year_type"
-                                                value="old_invoice" id="old_invoice_input" />
-                                            <label
-                                                class="btn btn-outline btn-outline-dashed btn-active-light-primary p-3 d-flex align-items-center"
-                                                for="old_invoice_input">
-                                                <i class="ki-outline ki-abstract-20 fs-2x me-5"></i>
-                                                <span class="d-block fw-semibold text-start">
-                                                    <span class="text-gray-900 fw-bold d-block fs-6">Old</span>
-                                                </span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="fv-row mb-7 col-6" id="month_year_id">
+                                <!--end::Invoice Type-->
+
+                                <!--begin::Billing Month (hidden by default, shown only for Tuition Fee)-->
+                                <div class="fv-row mb-7 col-12" id="month_year_id" style="display: none;">
                                     <label class="required fw-semibold fs-6 mb-2">Billing Month</label>
                                     <div class="input-group input-group-solid flex-nowrap">
                                         <span class="input-group-text">
@@ -255,13 +235,16 @@
                                             <select name="invoice_month_year"
                                                 class="form-select form-select-solid rounded-start-0 border-start"
                                                 data-control="select2" data-dropdown-parent="#kt_modal_create_invoice"
-                                                data-placeholder="Select billing month" data-hide-search="true"
-                                                disabled required>
+                                                data-placeholder="Select billing month" data-hide-search="true" disabled
+                                                required>
                                                 <option></option>
                                             </select>
                                         </div>
                                     </div>
                                 </div>
+                                <!--end::Billing Month-->
+
+                                <!--begin::Amount-->
                                 <div class="fv-row mb-7 col-12">
                                     <label class="required fw-semibold fs-6 mb-2">Amount</label>
                                     <div class="input-group input-group-solid flex-nowrap">
@@ -275,13 +258,14 @@
                                         </div>
                                     </div>
                                 </div>
+                                <!--end::Amount-->
+
                             </div>
                         </div>
                         <div class="text-center pt-10">
                             <button type="reset" class="btn btn-light me-3"
                                 data-kt-add-invoice-modal-action="cancel">Discard</button>
-                            <button type="button" class="btn btn-primary"
-                                data-kt-add-invoice-modal-action="submit">
+                            <button type="button" class="btn btn-primary" data-kt-add-invoice-modal-action="submit">
                                 <span class="indicator-label">Submit</span>
                                 <span class="indicator-progress">Please wait...
                                     <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
@@ -301,8 +285,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h2 class="fw-bold" id="kt_modal_edit_invoice_title">Update Invoice</h2>
-                    <div class="btn btn-icon btn-sm btn-active-icon-primary"
-                        data-kt-edit-invoice-modal-action="close">
+                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-edit-invoice-modal-action="close">
                         <i class="ki-outline ki-cross fs-1"></i>
                     </div>
                 </div>
@@ -314,8 +297,7 @@
                             data-kt-scroll-wrappers="#kt_modal_edit_invoice_scroll" data-kt-scroll-offset="300px">
                             <div class="fv-row mb-7">
                                 <label class="fw-semibold fs-6 mb-2">Corresponding Student</label>
-                                <div class="form-control form-control-solid bg-light-secondary"
-                                    id="edit_student_display">
+                                <div class="form-control form-control-solid bg-light-secondary" id="edit_student_display">
                                     <span class="text-muted">Loading...</span>
                                 </div>
                             </div>
@@ -350,8 +332,7 @@
                         <div class="text-center pt-10">
                             <button type="reset" class="btn btn-light me-3"
                                 data-kt-edit-invoice-modal-action="cancel">Discard</button>
-                            <button type="button" class="btn btn-primary"
-                                data-kt-edit-invoice-modal-action="submit">
+                            <button type="button" class="btn btn-primary" data-kt-edit-invoice-modal-action="submit">
                                 <span class="indicator-label">Update</span>
                                 <span class="indicator-progress">Please wait...
                                     <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
@@ -371,8 +352,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h2 class="fw-bold" id="kt_modal_add_comment_title">Add Comment</h2>
-                    <div class="btn btn-icon btn-sm btn-active-icon-primary"
-                        data-kt-add-comment-modal-action="close">
+                    <div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-add-comment-modal-action="close">
                         <i class="ki-outline ki-cross fs-1"></i>
                     </div>
                 </div>
@@ -409,8 +389,7 @@
                         <div class="text-center pt-10">
                             <button type="reset" class="btn btn-light me-3"
                                 data-kt-add-comment-modal-action="cancel">Discard</button>
-                            <button type="button" class="btn btn-primary"
-                                data-kt-add-comment-modal-action="submit">
+                            <button type="button" class="btn btn-primary" data-kt-add-comment-modal-action="submit">
                                 <span class="indicator-label">Add Comment</span>
                                 <span class="indicator-progress">Please wait...
                                     <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>

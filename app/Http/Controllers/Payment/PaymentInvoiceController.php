@@ -137,7 +137,7 @@ class PaymentInvoiceController extends Controller
 
         // Get invoice types
         $invoice_types = PaymentInvoiceType::select('id', 'type_name')
-            ->orderBy('type_name')
+            ->oldest()
             ->get();
 
         // Get classnames for filter dropdown

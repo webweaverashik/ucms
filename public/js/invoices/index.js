@@ -1220,11 +1220,11 @@ var KTExportManager = function () {
         // Get search value from DataTable
         var dt = type === 'due' ? InvoiceManager.tables.due[tableId] : InvoiceManager.tables.paid[tableId];
         var searchValue = '';
-        
+
         if (dt) {
             searchValue = dt.search();
         }
-        
+
         // Fallback: get search value from the search input directly
         if (!searchValue || searchValue.trim() === '') {
             var searchInputClass = type === 'due' ? '.due-invoice-search' : '.paid-invoice-search';
@@ -1519,13 +1519,12 @@ var KTExportManager = function () {
 var KTCreateInvoiceModal = function () {
     var element, form, modal, submitButton, validator;
     var studentSelect, invoiceTypeSelect, monthYearSelect, invoiceAmountInput;
-    var monthYearTypeRadios, monthYearTypeWrapper, monthYearWrapper;
+    var monthYearWrapper;
 
     var invoiceData = {
         tuitionFee: null,
         paymentStyle: null,
-        lastInvoiceMonth: null,
-        oldestInvoiceMonth: null
+        months: []
     };
 
     var getSelectedTypeName = function () {
@@ -1533,73 +1532,57 @@ var KTCreateInvoiceModal = function () {
         return selectedOption ? (selectedOption.getAttribute('data-type-name') || selectedOption.text.trim()) : '';
     };
 
-    var formatMonthYear = function (month, year) {
-        var date = new Date(year, month - 1, 1);
-        return date.toLocaleString('default', { month: 'long' }) + ' ' + year;
-    };
-
-    var setMonthYearOption = function (value, text) {
+    /**
+     * Populate the billing month <select> with all months returned by the API.
+     * Months that already have an invoice are marked disabled.
+     */
+    var populateMonthSelect = function (months) {
+        // Clear existing options — keep the empty placeholder
         monthYearSelect.innerHTML = '<option value=""></option>';
-        if (value && text) {
-            var option = document.createElement('option');
-            option.value = value;
-            option.textContent = text;
-            monthYearSelect.appendChild(option);
-            $(monthYearSelect).trigger('change');
+
+        if (months && months.length > 0) {
+            months.forEach(function (month) {
+                var option = document.createElement('option');
+                option.value = month.value;
+                option.textContent = month.label;
+                if (month.disabled) {
+                    option.disabled = true;
+                }
+                monthYearSelect.appendChild(option);
+            });
         }
+
+        // Let Select2 pick up the DOM changes
+        $(monthYearSelect).trigger('change');
     };
 
-    var calculateNewInvoiceMonth = function () {
-        var month, year;
-        if (invoiceData.lastInvoiceMonth) {
-            var parts = invoiceData.lastInvoiceMonth.split('_').map(Number);
-            month = parts[0] + 1;
-            year = parts[1];
-            if (month > 12) { month = 1; year++; }
-        } else {
-            var currentDate = new Date();
-            if (invoiceData.paymentStyle === 'due') {
-                month = currentDate.getMonth();
-                year = currentDate.getFullYear();
-                if (month === 0) { month = 12; year--; }
-            } else {
-                month = currentDate.getMonth() + 1;
-                year = currentDate.getFullYear();
-            }
-        }
-        var monthStr = String(month).padStart(2, '0');
-        return { value: monthStr + '_' + year, text: formatMonthYear(month, year) };
+    /**
+     * Show the billing month wrapper (only for Tuition Fee).
+     */
+    var showMonthYear = function () {
+        monthYearWrapper.style.display = '';
+        monthYearSelect.required = true;
     };
 
-    var calculateOldInvoiceMonth = function () {
-        var month, year;
-        if (invoiceData.oldestInvoiceMonth) {
-            var parts = invoiceData.oldestInvoiceMonth.split('_').map(Number);
-            month = parts[0] - 1;
-            year = parts[1];
-            if (month < 1) { month = 12; year--; }
-        } else {
-            var currentDate = new Date();
-            if (invoiceData.paymentStyle === 'due') {
-                month = currentDate.getMonth() - 1;
-                year = currentDate.getFullYear();
-                if (month < 0) { month = 11; year--; }
-            } else {
-                month = currentDate.getMonth();
-                year = currentDate.getFullYear();
-                if (month === 0) { month = 12; year--; }
-            }
-        }
-        var monthStr = String(month).padStart(2, '0');
-        return { value: monthStr + '_' + year, text: formatMonthYear(month, year) };
+    /**
+     * Hide the billing month wrapper (for all non-Tuition Fee types).
+     */
+    var hideMonthYear = function () {
+        monthYearWrapper.style.display = 'none';
+        monthYearSelect.required = false;
+        // Clear selection when hidden
+        $(monthYearSelect).val(null).trigger('change');
     };
 
+    // ─── Student Change ────────────────────────────────────────────────
     var handleStudentChange = function () {
         $(studentSelect).on('change', function () {
             var studentId = this.value;
+
             if (studentId) {
                 invoiceTypeSelect.disabled = false;
-                monthYearTypeRadios.forEach(function (radio) { radio.disabled = false; });
+
+                // Show loading state
                 monthYearSelect.innerHTML = '<option value="">Loading...</option>';
                 monthYearSelect.disabled = true;
                 invoiceAmountInput.value = '';
@@ -1608,82 +1591,80 @@ var KTCreateInvoiceModal = function () {
                 $.get('/students/' + studentId + '/invoice-months-data', function (data) {
                     invoiceData.tuitionFee = data.tuition_fee;
                     invoiceData.paymentStyle = data.payment_style;
-                    invoiceData.lastInvoiceMonth = data.last_invoice_month;
-                    invoiceData.oldestInvoiceMonth = data.oldest_invoice_month;
+                    invoiceData.months = data.months || [];
 
-                    var newMonth = calculateNewInvoiceMonth();
-                    setMonthYearOption(newMonth.value, newMonth.text);
+                    // Populate the billing month dropdown
+                    populateMonthSelect(invoiceData.months);
                     monthYearSelect.disabled = false;
 
+                    // If Tuition Fee is already selected, show billing month and auto-fill
                     var selectedTypeName = getSelectedTypeName();
-                    if (selectedTypeName === 'Tuition Fee' && monthYearSelect.value) {
-                        invoiceAmountInput.value = invoiceData.tuitionFee || '';
-                        invoiceAmountInput.disabled = false;
+                    if (selectedTypeName === 'Tuition Fee') {
+                        showMonthYear();
+                        if (monthYearSelect.value) {
+                            invoiceAmountInput.value = invoiceData.tuitionFee || '';
+                            invoiceAmountInput.disabled = false;
+                        }
+                    } else {
+                        hideMonthYear();
                     }
                 }).fail(function () {
                     monthYearSelect.innerHTML = '<option value="">Error loading months</option>';
                     toastr.error('Failed to load invoice data');
                 });
             } else {
+                // Reset everything when student is cleared
                 invoiceTypeSelect.disabled = true;
                 monthYearSelect.disabled = true;
                 monthYearSelect.innerHTML = '<option value=""></option>';
                 invoiceAmountInput.value = '';
                 invoiceAmountInput.disabled = true;
-                monthYearTypeRadios.forEach(function (radio) { radio.disabled = true; });
+
+                hideMonthYear();
+
                 $(invoiceTypeSelect).val(null).trigger('change');
                 $(monthYearSelect).trigger('change');
             }
         });
     };
 
-    var handleMonthYearTypeChange = function () {
-        monthYearTypeRadios.forEach(function (radio) {
-            radio.addEventListener('change', function () {
-                if (!studentSelect.value) return;
-
-                var monthData = this.value === 'new_invoice'
-                    ? calculateNewInvoiceMonth()
-                    : calculateOldInvoiceMonth();
-
-                setMonthYearOption(monthData.value, monthData.text);
-
-                var selectedTypeName = getSelectedTypeName();
-                if (monthYearSelect.value && selectedTypeName === 'Tuition Fee') {
-                    invoiceAmountInput.value = invoiceData.tuitionFee || '';
-                    invoiceAmountInput.disabled = false;
-                } else {
-                    invoiceAmountInput.value = '';
-                    invoiceAmountInput.disabled = true;
-                }
-            });
-        });
-    };
-
+    // ─── Billing Month Change ──────────────────────────────────────────
     var handleMonthYearChange = function () {
         $(monthYearSelect).on('change', function () {
             var selectedTypeName = getSelectedTypeName();
-            if (this.value) {
+
+            if (selectedTypeName === 'Tuition Fee' && this.value) {
                 invoiceAmountInput.disabled = false;
-                if (selectedTypeName === 'Tuition Fee') {
-                    invoiceAmountInput.value = invoiceData.tuitionFee || '';
-                }
-            } else {
+                invoiceAmountInput.value = invoiceData.tuitionFee || '';
+            } else if (selectedTypeName === 'Tuition Fee' && !this.value) {
                 invoiceAmountInput.disabled = true;
+                invoiceAmountInput.value = '';
             }
         });
     };
 
+    // ─── Invoice Type Change ───────────────────────────────────────────
     var handleInvoiceTypeChange = function () {
         $(invoiceTypeSelect).on('change', function () {
             var selectedTypeName = getSelectedTypeName();
             var studentId = studentSelect.value;
 
-            if (selectedTypeName === 'Sheet Fee') {
-                monthYearTypeWrapper.style.display = 'none';
-                monthYearWrapper.style.display = 'none';
-                monthYearSelect.required = false;
-                monthYearTypeRadios.forEach(function (radio) { radio.disabled = true; });
+            if (selectedTypeName === 'Tuition Fee') {
+                // Tuition Fee — show billing month, auto-fill amount
+                showMonthYear();
+                monthYearSelect.disabled = !studentId;
+
+                invoiceAmountInput.disabled = !monthYearSelect.value;
+                if (monthYearSelect.value) {
+                    invoiceAmountInput.value = invoiceData.tuitionFee || '';
+                } else {
+                    invoiceAmountInput.value = '';
+                }
+
+            } else if (selectedTypeName === 'Sheet Fee') {
+                // Sheet Fee — hide billing month, fetch sheet fee amount
+                hideMonthYear();
+
                 invoiceAmountInput.disabled = true;
                 invoiceAmountInput.value = '';
 
@@ -1703,28 +1684,28 @@ var KTCreateInvoiceModal = function () {
                         toastr.error('Failed to fetch sheet fee.');
                     });
                 }
-            } else if (selectedTypeName !== 'Tuition Fee') {
-                monthYearTypeWrapper.style.display = 'none';
-                monthYearWrapper.style.display = 'none';
-                monthYearSelect.required = false;
-                monthYearTypeRadios.forEach(function (radio) { radio.disabled = true; });
+
+            } else if (selectedTypeName) {
+                // Other types — hide billing month, enable amount input
+                hideMonthYear();
+
                 invoiceAmountInput.disabled = false;
                 invoiceAmountInput.value = '';
+
             } else {
-                monthYearTypeWrapper.style.display = '';
-                monthYearWrapper.style.display = '';
-                monthYearSelect.required = true;
-                monthYearTypeRadios.forEach(function (radio) { radio.disabled = false; });
-                invoiceAmountInput.disabled = !monthYearSelect.value;
-                if (monthYearSelect.value) {
-                    invoiceAmountInput.value = invoiceData.tuitionFee || '';
-                }
+                // Nothing selected — hide billing month, disable amount
+                hideMonthYear();
+
+                invoiceAmountInput.disabled = true;
+                invoiceAmountInput.value = '';
             }
         });
     };
 
+    // ─── Reset ─────────────────────────────────────────────────────────
     var resetForm = function () {
         form.reset();
+
         $(studentSelect).val(null).trigger('change');
         $(invoiceTypeSelect).val(null).trigger('change');
         $(monthYearSelect).empty().append('<option value=""></option>').trigger('change');
@@ -1733,22 +1714,20 @@ var KTCreateInvoiceModal = function () {
         monthYearSelect.disabled = true;
         invoiceAmountInput.value = '';
         invoiceAmountInput.disabled = true;
-        monthYearTypeWrapper.style.display = '';
-        monthYearWrapper.style.display = '';
-        monthYearSelect.required = true;
-        monthYearTypeRadios.forEach(function (radio) { radio.disabled = true; });
-        document.getElementById('new_invoice_input').checked = true;
+
+        // Always hide billing month on reset
+        hideMonthYear();
 
         invoiceData = {
             tuitionFee: null,
             paymentStyle: null,
-            lastInvoiceMonth: null,
-            oldestInvoiceMonth: null
+            months: []
         };
 
         if (validator) validator.resetForm();
     };
 
+    // ─── Modal Close ───────────────────────────────────────────────────
     var handleModalClose = function () {
         var cancelButton = element.querySelector('[data-kt-add-invoice-modal-action="cancel"]');
         var closeButton = element.querySelector('[data-kt-add-invoice-modal-action="close"]');
@@ -1770,6 +1749,7 @@ var KTCreateInvoiceModal = function () {
         });
     };
 
+    // ─── Validation ────────────────────────────────────────────────────
     var initValidation = function () {
         validator = FormValidation.formValidation(form, {
             fields: {
@@ -1801,6 +1781,7 @@ var KTCreateInvoiceModal = function () {
         });
     };
 
+    // ─── Submit ────────────────────────────────────────────────────────
     var handleFormSubmit = function () {
         submitButton = element.querySelector('[data-kt-add-invoice-modal-action="submit"]');
 
@@ -1854,7 +1835,9 @@ var KTCreateInvoiceModal = function () {
                             error: function (xhr) {
                                 submitButton.removeAttribute('data-kt-indicator');
                                 submitButton.disabled = false;
+
                                 var message = 'Something went wrong. Please try again.';
+
                                 if (xhr.responseJSON && xhr.responseJSON.message) {
                                     message = xhr.responseJSON.message;
                                 }
@@ -1865,6 +1848,7 @@ var KTCreateInvoiceModal = function () {
                                     });
                                     message = errors.join('<br>');
                                 }
+
                                 Swal.fire({
                                     html: message,
                                     icon: 'error',
@@ -1900,14 +1884,11 @@ var KTCreateInvoiceModal = function () {
             invoiceTypeSelect = element.querySelector('select[name="invoice_type"]');
             monthYearSelect = element.querySelector('select[name="invoice_month_year"]');
             invoiceAmountInput = element.querySelector('input[name="invoice_amount"]');
-            monthYearTypeRadios = element.querySelectorAll('input[name="month_year_type"]');
-            monthYearTypeWrapper = document.getElementById('month_year_type_id');
             monthYearWrapper = document.getElementById('month_year_id');
 
-            monthYearTypeRadios.forEach(function (radio) { radio.disabled = true; });
+            // Billing month is hidden by default (CSS: display:none in blade)
 
             handleStudentChange();
-            handleMonthYearTypeChange();
             handleMonthYearChange();
             handleInvoiceTypeChange();
             handleModalClose();

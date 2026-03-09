@@ -598,25 +598,64 @@ class StudentController extends Controller
     }
 
     /**
-     * Get the invoice month year for a student.
+     * Get the invoice months data for a student.
+     * Returns all months from student creation to next month (advance),
+     * with existing invoice months marked as disabled.
      */
     public function getInvoiceMonthsData(Student $student)
     {
         $student->load('payments');
 
-        $tuitionInvoices = $student->paymentInvoices()->whereHas('invoiceType', function ($q) {
-            $q->where('type_name', 'Tuition Fee');
-        });
+        // Get all existing tuition fee invoice month_year values for this student
+        $existingMonths = $student->paymentInvoices()
+            ->whereHas('invoiceType', function ($q) {
+                $q->where('type_name', 'Tuition Fee');
+            })
+            ->pluck('month_year')
+            ->toArray();
 
-        $lastInvoice = (clone $tuitionInvoices)->orderByRaw("CAST(SUBSTRING_INDEX(month_year, '_', -1) AS UNSIGNED) DESC, CAST(SUBSTRING_INDEX(month_year, '_', 1) AS UNSIGNED) DESC")->first();
+        // Start from student creation month
+        $startDate = $student->created_at->copy()->startOfMonth();
 
-        $oldestInvoice = (clone $tuitionInvoices)->orderByRaw("CAST(SUBSTRING_INDEX(month_year, '_', -1) AS UNSIGNED) ASC, CAST(SUBSTRING_INDEX(month_year, '_', 1) AS UNSIGNED) ASC")->first();
+        // End at next month from current (advance month)
+        $endDate = now()->addMonth()->startOfMonth();
+
+        // Generate all months from endDate down to startDate (newest first)
+        $months            = [];
+        $currentDate       = $endDate->copy();
+        $currentMonthStart = now()->startOfMonth();
+
+        while ($currentDate->gte($startDate)) {
+            $monthNum = str_pad($currentDate->month, 2, '0', STR_PAD_LEFT);
+            $year     = $currentDate->year;
+            $value    = $monthNum . '_' . $year;
+            $label    = $currentDate->format('F Y');
+
+            $isExisting = in_array($value, $existingMonths);
+
+            // Mark months beyond current month as advance
+            if ($currentDate->gt($currentMonthStart)) {
+                $label .= ' (Advance)';
+            }
+
+            // Indicate existing invoices on disabled options
+            if ($isExisting) {
+                $label .= ' — Invoiced';
+            }
+
+            $months[] = [
+                'value'    => $value,
+                'label'    => $label,
+                'disabled' => $isExisting,
+            ];
+
+            $currentDate->subMonth();
+        }
 
         return response()->json([
-            'last_invoice_month'   => optional($lastInvoice)->month_year,
-            'oldest_invoice_month' => optional($oldestInvoice)->month_year,
-            'tuition_fee'          => optional($student->payments)->tuition_fee,
-            'payment_style'        => optional($student->payments)->payment_style,
+            'months'        => $months,
+            'tuition_fee'   => optional($student->payments)->tuition_fee,
+            'payment_style' => optional($student->payments)->payment_style,
         ]);
     }
 
