@@ -158,7 +158,7 @@
                                         </span>
                                     </label>
                                     <div class="form-text text-muted mt-2">
-                                        View only deleted transactions
+                                        View only deleted invoices
                                     </div>
                                 </div>
                                 <!--end::Show Deleted Toggle-->

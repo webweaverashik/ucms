@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Academic\Batch;
@@ -50,7 +51,7 @@ class ReportController extends Controller
             ->get();
 
         // Pass academic groups and group-required class numerals to view
-        $academicGroups       = self::ACADEMIC_GROUPS;
+        $academicGroups = self::ACADEMIC_GROUPS;
         $groupRequiredClasses = self::GROUP_REQUIRED_CLASSES;
 
         return view('reports.attendance.index', compact(
@@ -70,10 +71,10 @@ class ReportController extends Controller
         // --- 1. Validate and Parse Input ---
         // Validate required inputs
         $request->validate([
-            'date_range'     => 'required|string',
-            'branch_id'      => 'required|integer|exists:branches,id',
-            'class_id'       => 'required|integer|exists:class_names,id',
-            'batch_id'       => 'required|integer|exists:batches,id',
+            'date_range' => 'required|string',
+            'branch_id' => 'required|integer|exists:branches,id',
+            'class_id' => 'required|integer|exists:class_names,id',
+            'batch_id' => 'required|integer|exists:batches,id',
             'academic_group' => 'nullable|in:Science,Commerce,Arts',
         ]);
 
@@ -85,17 +86,17 @@ class ReportController extends Controller
             return response()->json(
                 [
                     'message' => 'Invalid date range format. Expected "start_date - end_date".',
-                    'data'    => [],
+                    'data' => [],
                 ],
                 400,
             );
         }
 
         $startDate = Carbon::parse(trim($dateRange[0]))->startOfDay();
-        $endDate   = Carbon::parse(trim($dateRange[1]))->endOfDay();
+        $endDate = Carbon::parse(trim($dateRange[1]))->endOfDay();
 
         // Get the class to check if it requires academic group
-        $classModel    = ClassName::find($request->class_id);
+        $classModel = ClassName::find($request->class_id);
         $supportsGroup = $classModel && in_array($classModel->class_numeral, self::GROUP_REQUIRED_CLASSES);
 
         // Check if "All Groups" is selected (no specific group filter)
@@ -103,23 +104,23 @@ class ReportController extends Controller
 
         // --- 2. Build the Query ---
         $attendances = StudentAttendance::with([
-            'student'   => function ($q) use ($request, $supportsGroup) {
+            'student' => function ($q) use ($request, $supportsGroup) {
                 $q->select('id', 'name', 'student_unique_id', 'academic_group', 'class_id');
                 // Filter by academic group if provided and class supports it
                 if ($supportsGroup && $request->filled('academic_group')) {
                     $q->where('academic_group', $request->academic_group);
                 }
             },
-            'batch'     => function ($q) {
+            'batch' => function ($q) {
                 $q->select('id', 'name', 'branch_id');
             },
-            'branch'    => function ($q) {
+            'branch' => function ($q) {
                 $q->select('id', 'branch_name');
             },
             'classname' => function ($q) {
                 $q->select('id', 'name', 'class_numeral');
             },
-            'recorder'  => function ($q) {
+            'recorder' => function ($q) {
                 $q->select('id', 'name');
             },
         ])
@@ -139,11 +140,11 @@ class ReportController extends Controller
 
         // --- 3. Return as JSON ---
         return response()->json([
-            'message'        => 'Attendance data retrieved successfully.',
-            'data'           => $attendances,
+            'message' => 'Attendance data retrieved successfully.',
+            'data' => $attendances,
             'supports_group' => $supportsGroup,
-            'is_all_groups'  => $isAllGroups,
-            'date_range'     => $request->date_range,
+            'is_all_groups' => $isAllGroups,
+            'date_range' => $request->date_range,
         ]);
     }
 
@@ -176,13 +177,13 @@ class ReportController extends Controller
     {
         $request->validate([
             'date_range' => 'required|string',
-            'branch_id'  => 'nullable|integer|exists:branches,id',
+            'branch_id' => 'nullable|integer|exists:branches,id',
         ]);
 
         try {
             [$start, $end] = explode(' - ', $request->date_range);
-            $startDate     = Carbon::createFromFormat('d-m-Y', trim($start))->startOfDay();
-            $endDate       = Carbon::createFromFormat('d-m-Y', trim($end))->endOfDay();
+            $startDate = Carbon::createFromFormat('d-m-Y', trim($start))->startOfDay();
+            $endDate = Carbon::createFromFormat('d-m-Y', trim($end))->endOfDay();
         } catch (\Exception $e) {
             return response()->json(
                 [
@@ -193,7 +194,7 @@ class ReportController extends Controller
             );
         }
 
-        $user     = Auth::user();
+        $user = Auth::user();
         $branchId = $user->branch_id ?: $request->branch_id;
 
         // Get transactions with relationships
@@ -217,12 +218,12 @@ class ReportController extends Controller
             ->select('id', 'name', 'is_active')
             ->get();
 
-        $classes     = $classesData->pluck('name', 'id');
+        $classes = $classesData->pluck('name', 'id');
         $classesInfo = $classesData
             ->map(
                 fn($class) => [
-                    'id'        => $class->id,
-                    'name'      => $class->name,
+                    'id' => $class->id,
+                    'name' => $class->name,
                     'is_active' => $class->is_active,
                 ],
             )
@@ -237,7 +238,7 @@ class ReportController extends Controller
         $transactionsByDate = $transactions->groupBy(fn($t) => $t->created_at->format('d-m-Y'));
 
         // Get dates with data
-        $dates  = collect();
+        $dates = collect();
         $cursor = $startDate->copy();
         while ($cursor <= $endDate) {
             $d = $cursor->format('d-m-Y');
@@ -247,8 +248,8 @@ class ReportController extends Controller
             $cursor->addDay();
         }
 
-        $report          = [];
-        $costReport      = [];
+        $report = [];
+        $costReport = [];
         $collectorReport = [];
 
         // Initialize class totals
@@ -262,9 +263,9 @@ class ReportController extends Controller
 
             // Class-wise revenue
             foreach ($classes as $id => $name) {
-                $amount                = (float) $dailyTx->where('student.class_id', $id)->sum('amount_paid');
-                $report[$date][$name]  = $amount;
-                $classTotals[$name]   += $amount;
+                $amount = (float) $dailyTx->where('student.class_id', $id)->sum('amount_paid');
+                $report[$date][$name] = $amount;
+                $classTotals[$name] += $amount;
             }
 
             // Collector-wise collection
@@ -273,18 +274,18 @@ class ReportController extends Controller
             }
 
             // Cost total from entries
-            $cost              = $costs->get($date);
+            $cost = $costs->get($date);
             $costReport[$date] = $cost ? (float) $cost->totalAmount() : 0;
         }
 
         return response()->json([
-            'success'         => true,
-            'report'          => $report,
-            'costs'           => $costReport,
-            'classes'         => $classes->values(),
-            'classesInfo'     => $classesInfo,
-            'classTotals'     => $classTotals,
-            'collectors'      => $collectors,
+            'success' => true,
+            'report' => $report,
+            'costs' => $costReport,
+            'classes' => $classes->values(),
+            'classesInfo' => $classesInfo,
+            'classTotals' => $classTotals,
+            'collectors' => $collectors,
             'collectorReport' => $collectorReport,
         ]);
     }
@@ -314,8 +315,8 @@ class ReportController extends Controller
     {
         $request->validate([
             'start_date' => 'nullable|date_format:d-m-Y',
-            'end_date'   => 'nullable|date_format:d-m-Y',
-            'branch_id'  => 'nullable|exists:branches,id',
+            'end_date' => 'nullable|date_format:d-m-Y',
+            'branch_id' => 'nullable|exists:branches,id',
         ]);
 
         $user = Auth::user();
@@ -356,7 +357,7 @@ class ReportController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $costs,
+            'data' => $costs,
         ]);
     }
 
@@ -408,9 +409,9 @@ class ReportController extends Controller
         $branch   = Branch::find($branchId);
 
         $monthNames = [
-            1  => 'January', 2  => 'February', 3  => 'March',
-            4  => 'April', 5    => 'May', 6       => 'June',
-            7  => 'July', 8     => 'August', 9    => 'September',
+            1 => 'January',  2 => 'February', 3 => 'March',
+            4 => 'April',    5 => 'May',      6 => 'June',
+            7 => 'July',     8 => 'August',   9 => 'September',
             10 => 'October', 11 => 'November', 12 => 'December',
         ];
 
@@ -432,23 +433,24 @@ class ReportController extends Controller
         //  SECTION 1: TUITION FEE DUES (month_year column)
         // ════════════════════════════════════════════════════════════
 
-        // Query ALL tuition invoices (both paid and unpaid) to get collectable amounts
-        $allTuitionInvoices = PaymentInvoice::whereIn('student_id', $studentIdsSubquery)
-            ->when($tuitionTypeId, fn($q) => $q->where('invoice_type_id', $tuitionTypeId))
+        // Query ONLY UNPAID tuition invoices (status != 'paid')
+        // Both "Total Payable" and "Due" come from the same unpaid invoices
+        // - Total Payable = sum of total_amount (what should be collected)
+        // - Due = sum of amount_due (what's still owed after partial payments)
+        $tuitionInvoices = PaymentInvoice::where('status', '!=', 'paid')
+            ->whereIn('student_id', $studentIdsSubquery)
+            ->when($tuitionTypeId, fn ($q) => $q->where('invoice_type_id', $tuitionTypeId))
             ->whereIn('month_year', $monthYearValues)
             ->with([
-                'student'       => fn($q)       => $q->withTrashed()->select('id', 'name', 'class_id', 'batch_id'),
-                'student.class' => fn($q) => $q->withTrashed()->select('id', 'name'),
-                'student.batch' => fn($q) => $q->select('id', 'name'),
+                'student'       => fn ($q) => $q->withTrashed()->select('id', 'name', 'class_id', 'batch_id'),
+                'student.class' => fn ($q) => $q->withTrashed()->select('id', 'name'),
+                'student.batch' => fn ($q) => $q->select('id', 'name'),
             ])
             ->get();
 
-        // Filter unpaid invoices for due calculation
-        $tuitionInvoices = $allTuitionInvoices->filter(fn($inv) => $inv->status !== 'paid');
-
         $tuitionGrandTotal       = $tuitionInvoices->sum('amount_due');
         $tuitionTotalInvoices    = $tuitionInvoices->count();
-        $tuitionCollectableTotal = $allTuitionInvoices->sum('total_amount');
+        $tuitionCollectableTotal = $tuitionInvoices->sum('total_amount');
 
         // ── Pre-populate tuition summary with ALL active classes ──
         $allActiveClasses = ClassName::active()->orderBy('id')->select('id', 'name')->get();
@@ -463,17 +465,18 @@ class ReportController extends Controller
             $tuitionSummary[$cls->name] = ['class_id' => $cls->id, 'months' => $months];
         }
 
-        // Track monthly totals for collectable
+        // Track monthly totals for collectable and due
         $tuitionMonthlyCollectable = array_fill(1, 12, 0);
+        $tuitionMonthlyDue = array_fill(1, 12, 0);
 
-        // Process ALL invoices for collectable
-        foreach ($allTuitionInvoices as $inv) {
-            $parts     = explode('_', $inv->month_year);
-            $monthNum  = (int) $parts[0];
+        // Process UNPAID invoices only (both collectable and due come from the same set)
+        foreach ($tuitionInvoices as $inv) {
+            $parts = explode('_', $inv->month_year);
+            $monthNum = (int) $parts[0];
             $className = $inv->student->class->name ?? 'Unknown';
-            $classId   = $inv->student->class_id ?? 0;
+            $classId = $inv->student->class_id ?? 0;
 
-            // Ensure class exists in summary (for inactive classes)
+            // Ensure class exists in summary (for inactive classes with dues)
             if (! isset($tuitionSummary[$className])) {
                 $months = [];
                 for ($m = 1; $m <= 12; $m++) {
@@ -482,14 +485,13 @@ class ReportController extends Controller
                 $tuitionSummary[$className] = ['class_id' => (int) $classId, 'months' => $months];
             }
 
-            // Add to collectable (all invoices)
+            // Add to collectable (total_amount of unpaid invoices)
             $tuitionSummary[$className]['months'][$monthNum]['collectable'] += $inv->total_amount;
-            $tuitionMonthlyCollectable[$monthNum]                           += $inv->total_amount;
+            $tuitionMonthlyCollectable[$monthNum] += $inv->total_amount;
 
-            // Add to due only if unpaid
-            if ($inv->status !== 'paid') {
-                $tuitionSummary[$className]['months'][$monthNum]['due'] += $inv->amount_due;
-            }
+            // Add to due (amount_due of unpaid invoices)
+            $tuitionSummary[$className]['months'][$monthNum]['due'] += $inv->amount_due;
+            $tuitionMonthlyDue[$monthNum] += $inv->amount_due;
         }
 
         // Group UNPAID invoices by month + class + batch for detailed view
@@ -504,7 +506,7 @@ class ReportController extends Controller
 
         foreach ($tuitionGrouped as $key => $invoices) {
             [$monthNum, $classId, $batchId] = explode('|', $key);
-            $monthNum                       = (int) $monthNum;
+            $monthNum = (int) $monthNum;
 
             $first      = $invoices->first();
             $className  = $first->student->class->name ?? 'Unknown';
@@ -525,7 +527,7 @@ class ReportController extends Controller
         }
 
         // Sort detailed by month → class → batch
-        usort($tuitionDetailed, fn($a, $b) =>
+        usort($tuitionDetailed, fn ($a, $b) =>
             $a['month_num'] <=> $b['month_num']
                 ?: strcmp($a['class'], $b['class'])
                 ?: strcmp($a['batch'], $b['batch'])
@@ -533,34 +535,38 @@ class ReportController extends Controller
 
         // Format tuition summary with collectable and due
         $fmtTuitionSummary = [];
-        uasort($tuitionSummary, fn($a, $b) => $a['class_id'] <=> $b['class_id']);
+        uasort($tuitionSummary, fn ($a, $b) => $a['class_id'] <=> $b['class_id']);
 
         foreach ($tuitionSummary as $className => $data) {
-            $monthData        = [];
+            $monthData = [];
             $totalCollectable = 0;
-            $totalDue         = 0;
+            $totalDue = 0;
 
             foreach ($data['months'] as $m => $amounts) {
-                $monthData[$monthNames[$m]]  = [
+                $monthData[$monthNames[$m]] = [
                     'collectable' => $amounts['collectable'],
                     'due'         => $amounts['due'],
                 ];
                 $totalCollectable += $amounts['collectable'];
-                $totalDue         += $amounts['due'];
+                $totalDue += $amounts['due'];
             }
 
             $fmtTuitionSummary[$className] = [
-                'class_id'          => $data['class_id'],
-                'months'            => $monthData,
+                'class_id'         => $data['class_id'],
+                'months'           => $monthData,
                 'total_collectable' => $totalCollectable,
-                'total_due'         => $totalDue,
+                'total_due'        => $totalDue,
             ];
         }
 
-        // Format monthly collectable totals
+        // Format monthly collectable and due totals
         $fmtMonthlyCollectable = [];
+        $fmtMonthlyDue = [];
         foreach ($tuitionMonthlyCollectable as $m => $amt) {
             $fmtMonthlyCollectable[$monthNames[$m]] = $amt;
+        }
+        foreach ($tuitionMonthlyDue as $m => $amt) {
+            $fmtMonthlyDue[$monthNames[$m]] = $amt;
         }
 
         // ════════════════════════════════════════════════════════════
@@ -571,9 +577,9 @@ class ReportController extends Controller
             ->whereIn('student_id', $studentIdsSubquery)
             ->whereYear('created_at', $year)
             ->with([
-                'student'       => fn($q)       => $q->withTrashed()->select('id', 'name', 'class_id', 'batch_id'),
-                'student.class' => fn($q) => $q->withTrashed()->select('id', 'name'),
-                'student.batch' => fn($q) => $q->select('id', 'name'),
+                'student'       => fn ($q) => $q->withTrashed()->select('id', 'name', 'class_id', 'batch_id'),
+                'student.class' => fn ($q) => $q->withTrashed()->select('id', 'name'),
+                'student.batch' => fn ($q) => $q->select('id', 'name'),
                 'invoiceType:id,type_name',
             ]);
 
@@ -588,7 +594,7 @@ class ReportController extends Controller
         // Group by month(created_at) + invoice_type + class + batch
         $otherGrouped = $otherInvoices->groupBy(function ($inv) {
             return $inv->created_at->month
-            . '|' . $inv->invoice_type_id
+                . '|' . $inv->invoice_type_id
                 . '|' . ($inv->student->class_id ?? 0)
                 . '|' . ($inv->student->batch_id ?? 0);
         });
@@ -598,7 +604,7 @@ class ReportController extends Controller
 
         foreach ($otherGrouped as $key => $invoices) {
             [$monthNum, $typeId, $classId, $batchId] = explode('|', $key);
-            $monthNum                                = (int) $monthNum;
+            $monthNum = (int) $monthNum;
 
             $first      = $invoices->first();
             $typeName   = $first->invoiceType->type_name ?? 'Unknown';
@@ -627,7 +633,7 @@ class ReportController extends Controller
         }
 
         // Sort other detailed by month → invoice_type → class
-        usort($otherDetailed, fn($a, $b) =>
+        usort($otherDetailed, fn ($a, $b) =>
             $a['month_num'] <=> $b['month_num']
                 ?: strcmp($a['invoice_type'], $b['invoice_type'])
                 ?: strcmp($a['class'], $b['class'])
@@ -653,13 +659,14 @@ class ReportController extends Controller
         // ════════════════════════════════════════════════════════════
 
         return response()->json([
-            'success'        => true,
+            'success' => true,
 
             // Tuition Fee section
-            'tuition'        => [
+            'tuition' => [
                 'detailed'            => $tuitionDetailed,
                 'summary'             => $fmtTuitionSummary,
                 'monthly_collectable' => $fmtMonthlyCollectable,
+                'monthly_due'         => $fmtMonthlyDue,
                 'grand_total'         => $tuitionGrandTotal,
                 'collectable_total'   => $tuitionCollectableTotal,
                 'total_invoices'      => $tuitionTotalInvoices,
@@ -667,7 +674,7 @@ class ReportController extends Controller
             ],
 
             // Other Fee Types section
-            'other'          => [
+            'other' => [
                 'detailed'       => $otherDetailed,
                 'summary'        => $fmtOtherSummary,
                 'grand_total'    => $otherGrandTotal,
@@ -680,9 +687,9 @@ class ReportController extends Controller
             'total_invoices' => $tuitionTotalInvoices + $otherTotalInvoices,
 
             // Branch / Year info
-            'branch_name'    => $branch->branch_name ?? '',
-            'branch_prefix'  => $branch->branch_prefix ?? '',
-            'year'           => $year,
+            'branch_name'   => $branch->branch_name ?? '',
+            'branch_prefix' => $branch->branch_prefix ?? '',
+            'year'          => $year,
         ]);
     }
 
@@ -728,7 +735,7 @@ class ReportController extends Controller
 
         $query = PaymentInvoice::where('status', '!=', 'paid')
             ->whereIn('student_id', $studentIds)
-            ->with(['student' => fn($q) => $q->withTrashed()->select('id', 'name', 'student_unique_id')])
+            ->with(['student' => fn ($q) => $q->withTrashed()->select('id', 'name', 'student_unique_id')])
             ->select('id', 'invoice_number', 'student_id', 'amount_due', 'invoice_type_id');
 
         if ($request->type === 'tuition') {
@@ -736,7 +743,7 @@ class ReportController extends Controller
             $monthYear = str_pad($monthNum, 2, '0', STR_PAD_LEFT) . '_' . $year;
 
             $query->where('invoice_type_id', $tuitionTypeId)
-                ->where('month_year', $monthYear);
+                  ->where('month_year', $monthYear);
         } else {
             // Other Fees: match by created_at year + month
             if ($tuitionTypeId) {
@@ -744,7 +751,7 @@ class ReportController extends Controller
             }
 
             $query->whereYear('created_at', $year)
-                ->whereMonth('created_at', $monthNum);
+                  ->whereMonth('created_at', $monthNum);
 
             // Optionally filter by specific invoice type
             if ($request->filled('invoice_type_id')) {
