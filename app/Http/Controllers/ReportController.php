@@ -436,11 +436,9 @@ class ReportController extends Controller
         //  SECTION 1: TUITION FEE DUES (month_year column)
         // ════════════════════════════════════════════════════════════
 
-        // Query tuition invoices with OUTSTANDING BALANCE only (amount_due > 0)
-        // This excludes fully paid invoices to avoid confusion
-        // - Total Payable = sum of total_amount (original amounts of unpaid/partially paid invoices)
-        // - Due = sum of amount_due (remaining balance)
-        // - Both columns use the SAME set of invoices (verifiable via modal)
+        // Query ALL tuition invoices (all statuses: due, partially_paid, paid)
+        // - Total Payable = sum of total_amount of ALL invoices
+        // - Due = sum of amount_due of ALL invoices (paid invoices have amount_due=0)
         // - Soft-deleted invoices auto-excluded (SoftDeletes trait)
         // - Soft-deleted students excluded via whereNull('deleted_at') in subquery
         $tuitionInvoices = PaymentInvoice::whereIn('student_id', $studentIdsSubquery)
@@ -474,8 +472,9 @@ class ReportController extends Controller
         $tuitionMonthlyCollectable = array_fill(1, 12, 0);
         $tuitionMonthlyDue = array_fill(1, 12, 0);
 
-        // Process invoices with outstanding balance (amount_due > 0)
-        // Both Total Payable and Due use the same set of invoices
+        // Process ALL tuition invoices (including paid ones)
+        // Total Payable = sum(total_amount) of ALL invoices
+        // Due = sum(amount_due) of ALL invoices (paid have 0)
         foreach ($tuitionInvoices as $inv) {
             $parts = explode('_', $inv->month_year);
             $monthNum = (int) $parts[0];
@@ -491,11 +490,11 @@ class ReportController extends Controller
                 $tuitionSummary[$className] = ['class_id' => (int) $classId, 'months' => $months];
             }
 
-            // Add to collectable (total_amount of ALL invoices)
+            // Total Payable: sum of total_amount (ALL invoices including paid)
             $tuitionSummary[$className]['months'][$monthNum]['collectable'] += $inv->total_amount;
             $tuitionMonthlyCollectable[$monthNum] += $inv->total_amount;
 
-            // Add to due (amount_due - paid invoices have 0, partially_paid have remaining, due have full)
+            // Due: sum of amount_due (paid=0, partially_paid=remaining, due=full)
             $tuitionSummary[$className]['months'][$monthNum]['due'] += $inv->amount_due;
             $tuitionMonthlyDue[$monthNum] += $inv->amount_due;
         }
