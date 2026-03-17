@@ -355,58 +355,83 @@ var KTAnnualDueReport = (function () {
 
         if (classNames.length === 0) {
             _tuitionSumContainer.innerHTML =
-                '<div class="text-center py-10 text-gray-500">No tuition fee dues found.</div>';
+                '<div class="text-center py-10 text-gray-500">No tuition fee data found.</div>';
             return;
         }
 
         var html = '<div class="table-responsive">';
-        html += '<table class="table table-bordered table-row-bordered table-row-gray-200 align-middle gs-3 gy-3 summary-table">';
+        html += '<table class="table table-bordered table-row-bordered table-row-gray-200 align-middle gs-2 gy-2 summary-table">';
 
-        // Header
-        html += '<thead><tr class="fw-bold text-gray-800 bg-light">';
-        html += '<th class="min-w-150px ps-4 rounded-start">Class</th>';
+        // ═══ HEADER ROW 1: Month names with colspan=2 ═══
+        html += '<thead>';
+        html += '<tr class="fw-bold text-gray-800 bg-light">';
+        html += '<th class="class-col ps-4 rounded-start text-center align-middle" rowspan="2">Class</th>';
         for (var i = 0; i < 12; i++) {
-            html += '<th class="min-w-110px text-center">' + MONTH_SHORT[i] + '</th>';
+            html += '<th class="month-col text-center" colspan="2">' + MONTH_NAMES[i] + '</th>';
         }
-        html += '<th class="min-w-130px text-center rounded-end bg-light-warning fw-bolder">Total</th>';
-        html += '</tr></thead>';
+        html += '<th class="total-col text-center bg-light-warning fw-bolder rounded-end" colspan="2">Total</th>';
+        html += '</tr>';
 
-        // Body
+        // ═══ HEADER ROW 2: Total Payable / Due sub-columns ═══
+        html += '<tr class="fw-semibold text-gray-600 bg-light-secondary fs-8">';
+        for (var i = 0; i < 12; i++) {
+            html += '<th class="sub-col text-center px-2">Total<br>Payable</th>';
+            html += '<th class="sub-col text-center px-2">Due</th>';
+        }
+        html += '<th class="sub-col text-center bg-light-warning px-2">Total<br>Payable</th>';
+        html += '<th class="sub-col text-center bg-light-warning px-2">Due</th>';
+        html += '</tr>';
+        html += '</thead>';
+
+        // ═══ BODY ═══
         html += '<tbody>';
-        var monthTotals = new Array(12).fill(0);
-        var grandTotal = 0;
+        var monthCollectableTotals = new Array(12).fill(0);
+        var monthDueTotals = new Array(12).fill(0);
+        var grandCollectable = 0;
+        var grandDue = 0;
 
         classNames.forEach(function (cls) {
             var cd = summary[cls];
-            var rowTotal = cd.total || 0;
+            var rowCollectable = cd.total_collectable || 0;
+            var rowDue = cd.total_due || 0;
 
             html += '<tr>';
-            html += '<td class="ps-4 fw-semibold text-gray-800">' + _esc(cls) + '</td>';
+            html += '<td class="class-col ps-4 fw-semibold text-gray-800">' + _esc(cls) + '</td>';
 
             for (var m = 0; m < 12; m++) {
-                var amt = cd.months[MONTH_NAMES[m]] || 0;
-                monthTotals[m] += amt;
+                var monthData = cd.months[MONTH_NAMES[m]] || { collectable: 0, due: 0 };
+                var collectable = monthData.collectable || 0;
+                var due = monthData.due || 0;
 
-                html += amt > 0
-                    ? '<td class="text-center"><span class="text-danger fw-semibold">' + _fmtRaw(amt) + '</span></td>'
-                    : '<td class="text-center text-gray-400">—</td>';
+                monthCollectableTotals[m] += collectable;
+                monthDueTotals[m] += due;
+
+                // Collectable column
+                html += '<td class="text-center cell-collectable">' + (collectable > 0 ? _fmtRaw(collectable) : '—') + '</td>';
+                // Due column
+                html += '<td class="text-center cell-due">' + (due > 0 ? _fmtRaw(due) : '—') + '</td>';
             }
 
-            grandTotal += rowTotal;
-            html += '<td class="text-center fw-bold text-danger bg-light-warning">' + _fmtRaw(rowTotal) + '</td>';
+            grandCollectable += rowCollectable;
+            grandDue += rowDue;
+
+            // Total Collectable
+            html += '<td class="text-center bg-light-warning cell-collectable fw-bold">' + _fmtRaw(rowCollectable) + '</td>';
+            // Total Due
+            html += '<td class="text-center bg-light-warning cell-due fw-bold">' + _fmtRaw(rowDue) + '</td>';
             html += '</tr>';
         });
         html += '</tbody>';
 
-        // Footer
+        // ═══ FOOTER ═══
         html += '<tfoot><tr class="footer-dark">';
-        html += '<td class="ps-4 rounded-start">Monthly Total</td>';
+        html += '<td class="class-col ps-4 rounded-start fw-bold">Monthly Total</td>';
         for (var m = 0; m < 12; m++) {
-            html += monthTotals[m] > 0
-                ? '<td class="text-center">' + _fmtRaw(monthTotals[m]) + '</td>'
-                : '<td class="text-center">—</td>';
+            html += '<td class="text-center cell-collectable-footer">' + (monthCollectableTotals[m] > 0 ? _fmtRaw(monthCollectableTotals[m]) : '—') + '</td>';
+            html += '<td class="text-center cell-due-footer">' + (monthDueTotals[m] > 0 ? _fmtRaw(monthDueTotals[m]) : '—') + '</td>';
         }
-        html += '<td class="text-center rounded-end footer-grand-total">' + _fmtRaw(grandTotal) + '</td>';
+        html += '<td class="text-center footer-grand-total cell-collectable-footer">' + _fmtRaw(grandCollectable) + '</td>';
+        html += '<td class="text-center rounded-end footer-grand-total cell-due-footer">' + _fmtRaw(grandDue) + '</td>';
         html += '</tr></tfoot>';
 
         html += '</table></div>';
@@ -559,15 +584,15 @@ var KTAnnualDueReport = (function () {
         }
 
         var html = '<div class="table-responsive">';
-        html += '<table class="table table-bordered table-row-bordered table-row-gray-200 align-middle gs-3 gy-3 summary-table">';
+        html += '<table class="table table-bordered table-row-bordered table-row-gray-200 align-middle gs-3 gy-3 summary-table other-summary-table">';
 
         // Header
         html += '<thead><tr class="fw-bold text-gray-800 bg-light">';
-        html += '<th class="min-w-170px ps-4 rounded-start">Invoice Type</th>';
+        html += '<th class="type-col ps-4 rounded-start">Invoice Type</th>';
         for (var i = 0; i < 12; i++) {
-            html += '<th class="min-w-110px text-center">' + MONTH_SHORT[i] + '</th>';
+            html += '<th class="other-month-col text-center">' + MONTH_NAMES[i] + '</th>';
         }
-        html += '<th class="min-w-130px text-center rounded-end bg-light-warning fw-bolder">Total</th>';
+        html += '<th class="other-total-col text-center rounded-end bg-light-warning fw-bolder">Total</th>';
         html += '</tr></thead>';
 
         // Body
@@ -580,7 +605,7 @@ var KTAnnualDueReport = (function () {
             var rowTotal = td.total || 0;
 
             html += '<tr>';
-            html += '<td class="ps-4 fw-semibold text-gray-800">';
+            html += '<td class="type-col ps-4 fw-semibold text-gray-800">';
             html += '  <span class="badge badge-light-warning me-2">' + _esc(typeName.charAt(0)) + '</span>';
             html += _esc(typeName);
             html += '</td>';
@@ -602,13 +627,13 @@ var KTAnnualDueReport = (function () {
 
         // Footer
         html += '<tfoot><tr class="footer-dark">';
-        html += '<td class="ps-4 rounded-start">Monthly Total</td>';
+        html += '<td class="type-col ps-4 rounded-start">Monthly Total</td>';
         for (var m = 0; m < 12; m++) {
             html += monthTotals[m] > 0
-                ? '<td class="text-center">' + _fmtRaw(monthTotals[m]) + '</td>'
-                : '<td class="text-center">—</td>';
+                ? '<td class="other-month-col text-center">' + _fmtRaw(monthTotals[m]) + '</td>'
+                : '<td class="other-month-col text-center">—</td>';
         }
-        html += '<td class="text-center rounded-end footer-grand-total">' + _fmtRaw(grandTotal) + '</td>';
+        html += '<td class="other-total-col text-center rounded-end footer-grand-total">' + _fmtRaw(grandTotal) + '</td>';
         html += '</tr></tfoot>';
 
         html += '</table></div>';
@@ -920,42 +945,52 @@ var KTAnnualDueReport = (function () {
         var wb = XLSX.utils.book_new();
         var fileName = "Annual_Due_Report_" + d.branch_prefix + "_" + d.year;
 
-        // ── Tuition Summary Sheet ──
+        // ── Tuition Summary Sheet (with Collectable and Due) ──
         if (mode === "all" || mode === "tuition_summary") {
             var ts = [];
             ts.push(["Annual Due Report — Tuition Fee Summary"]);
             ts.push(["Branch: " + d.branch_name + " (" + d.branch_prefix + ")", "", "Year: " + d.year]);
             ts.push([]);
 
-            var hdr = ["Class"];
-            MONTH_SHORT.forEach(function (m) { hdr.push(m); });
-            hdr.push("Total");
-            ts.push(hdr);
+            // Header row with two sub-columns per month
+            var hdr1 = ["Class"];
+            MONTH_NAMES.forEach(function (m) { hdr1.push(m + " (Total Payable)", m + " (Due)"); });
+            hdr1.push("Total Payable", "Total Due");
+            ts.push(hdr1);
 
-            var mT = new Array(12).fill(0);
-            var gT = 0;
+            var mCollectable = new Array(12).fill(0);
+            var mDue = new Array(12).fill(0);
+            var gCollectable = 0;
+            var gDue = 0;
 
             Object.keys(d.tuition.summary).forEach(function (cls) {
                 var cd = d.tuition.summary[cls];
                 var row = [cls];
                 for (var m = 0; m < 12; m++) {
-                    var amt = cd.months[MONTH_NAMES[m]] || 0;
-                    row.push(amt || "");
-                    mT[m] += amt;
+                    var monthData = cd.months[MONTH_NAMES[m]] || { collectable: 0, due: 0 };
+                    var collectable = monthData.collectable || 0;
+                    var due = monthData.due || 0;
+                    row.push(collectable || "", due || "");
+                    mCollectable[m] += collectable;
+                    mDue[m] += due;
                 }
-                row.push(cd.total || 0);
-                gT += cd.total || 0;
+                row.push(cd.total_collectable || 0, cd.total_due || 0);
+                gCollectable += cd.total_collectable || 0;
+                gDue += cd.total_due || 0;
                 ts.push(row);
             });
 
             var tRow = ["Total"];
-            mT.forEach(function (t) { tRow.push(t || ""); });
-            tRow.push(gT);
+            for (var i = 0; i < 12; i++) {
+                tRow.push(mCollectable[i] || "", mDue[i] || "");
+            }
+            tRow.push(gCollectable, gDue);
             ts.push(tRow);
 
             var ws1 = XLSX.utils.aoa_to_sheet(ts);
             ws1["!cols"] = [{ wch: 22 }];
-            for (var c = 0; c < 13; c++) ws1["!cols"].push({ wch: 14 });
+            // 24 columns for months (2 per month) + 2 for totals
+            for (var c = 0; c < 26; c++) ws1["!cols"].push({ wch: 14 });
             XLSX.utils.book_append_sheet(wb, ws1, "Tuition Summary");
         }
 
@@ -989,7 +1024,7 @@ var KTAnnualDueReport = (function () {
             os.push([]);
 
             var oHdr = ["Invoice Type"];
-            MONTH_SHORT.forEach(function (m) { oHdr.push(m); });
+            MONTH_NAMES.forEach(function (m) { oHdr.push(m); });
             oHdr.push("Total");
             os.push(oHdr);
 

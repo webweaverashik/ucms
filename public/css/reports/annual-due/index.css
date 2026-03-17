@@ -4,21 +4,121 @@
 
 /* ── Summary Table ── */
 
+.summary-table {
+    table-layout: fixed;
+    width: 100%;
+}
+
 .summary-table th,
 .summary-table td {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     white-space: nowrap;
-    padding: 0.65rem 0.75rem !important;
+    padding: 0.5rem 0.5rem !important;
+}
+
+/* Month header columns - equal width (colspan=2 header) */
+.summary-table thead tr:first-child th.month-col {
+    min-width: 180px;
+    width: 180px;
+}
+
+/* Individual sub-columns under each month (Total Payable / Due) */
+.summary-table thead tr.bg-light-secondary th.sub-col {
+    min-width: 90px;
+    width: 90px;
+}
+
+/* Class name column */
+.summary-table th.class-col,
+.summary-table td.class-col {
+    min-width: 150px;
+    width: 150px;
+}
+
+/* Total column (colspan=2) */
+.summary-table thead tr:first-child th.total-col {
+    min-width: 180px;
+    width: 180px;
+}
+
+/* ── Other Fees Summary Table — Equal Width Columns ── */
+
+.other-summary-table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+/* Invoice type column */
+.other-summary-table th.type-col,
+.other-summary-table td.type-col {
+    min-width: 170px;
+    width: 170px;
+}
+
+/* Month columns for Other Fees (single column per month) */
+.other-summary-table th.other-month-col,
+.other-summary-table td.other-month-col {
+    min-width: 110px;
+    width: 110px;
+}
+
+/* Total column for Other Fees */
+.other-summary-table th.other-total-col,
+.other-summary-table td.other-total-col {
+    min-width: 130px;
+    width: 130px;
 }
 
 .summary-table tfoot td {
-    font-size: 1rem;
-    padding: 0.75rem !important;
+    font-size: 0.95rem;
+    padding: 0.6rem 0.5rem !important;
 }
 
 .summary-table thead th {
     vertical-align: middle;
-    font-size: 0.95rem;
+    font-size: 0.88rem;
+}
+
+/* ── Total Payable / Due Column Cells ── */
+
+.summary-table td.cell-collectable {
+    color: inherit;
+    font-weight: 500;
+}
+
+.summary-table td.cell-due {
+    color: #f1416c;
+    font-weight: 600;
+}
+
+/* Sub-header row for Total Payable/Due labels */
+.summary-table thead tr.bg-light-secondary th {
+    padding: 0.35rem 0.4rem !important;
+    font-size: 0.72rem !important;
+    border-top: none !important;
+    line-height: 1.2;
+}
+
+/* Footer row cells */
+.summary-table tfoot td.cell-collectable-footer {
+    color: #b5b5c3 !important;
+    font-weight: 600;
+}
+
+.summary-table tfoot td.cell-due-footer {
+    color: #ffffff !important;
+    font-weight: 700;
+}
+
+/* Grand total columns in footer */
+.summary-table tfoot td.footer-grand-total.cell-collectable-footer {
+    color: #1e1e2d !important;
+    font-weight: 700;
+}
+
+.summary-table tfoot td.footer-grand-total.cell-due-footer {
+    color: #d9214e !important;
+    font-weight: 800;
 }
 
 /* ── Detailed Table ── */
