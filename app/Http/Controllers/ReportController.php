@@ -443,8 +443,7 @@ class ReportController extends Controller
         // - Both columns use the SAME set of invoices (verifiable via modal)
         // - Soft-deleted invoices auto-excluded (SoftDeletes trait)
         // - Soft-deleted students excluded via whereNull('deleted_at') in subquery
-        $tuitionInvoices = PaymentInvoice::where('amount_due', '>', 0)
-            ->whereIn('student_id', $studentIdsSubquery)
+        $tuitionInvoices = PaymentInvoice::whereIn('student_id', $studentIdsSubquery)
             ->when($tuitionTypeId, fn ($q) => $q->where('invoice_type_id', $tuitionTypeId))
             ->whereIn('month_year', $monthYearValues)
             ->with([
