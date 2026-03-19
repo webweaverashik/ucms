@@ -298,6 +298,10 @@ class ReportController extends Controller
         $user    = Auth::user();
         $isAdmin = $user->isAdmin();
 
+        if (! $user->isAdmin()) {
+            return redirect()->back()->with('error', 'Unauthorized access to this page.');
+        }
+
         $branches = Branch::when(! $isAdmin, function ($q) use ($user) {
             $q->where('id', $user->branch_id);
         })

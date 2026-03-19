@@ -530,18 +530,20 @@
                                 <!--end:Annual Due item-->
 
                                 <!--begin:Cost Records item-->
-                                <div class="menu-item">
-                                    <!--begin:Menu link-->
-                                    <a class="menu-link" id="cost_records_link"
-                                        href="{{ route('reports.cost-records.index') }}">
-                                        <span class="menu-bullet">
-                                            <span class="bullet bullet-dot">
+                                @if (auth()->user()->isAdmin())
+                                    <div class="menu-item">
+                                        <!--begin:Menu link-->
+                                        <a class="menu-link" id="cost_records_link"
+                                            href="{{ route('reports.cost-records.index') }}">
+                                            <span class="menu-bullet">
+                                                <span class="bullet bullet-dot">
+                                                </span>
                                             </span>
-                                        </span>
-                                        <span class="menu-title">Cost Records</span>
-                                    </a>
-                                    <!--end:Menu link-->
-                                </div>
+                                            <span class="menu-title">Cost Records</span>
+                                        </a>
+                                        <!--end:Menu link-->
+                                    </div>
+                                @endif
                                 <!--end:Cost Records item-->
 
                                 <div class="menu-item">
