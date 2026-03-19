@@ -173,16 +173,16 @@
                                             class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table"
                                             data-branch-id="{{ $branch->id }}">
                                             <thead>
-                                                <tr class="fw-bold fs-7 text-uppercase gs-0">
-                                                    <th class="w-50px">SL</th>
-                                                    <th class="w-100px">Date</th>
-                                                    <th>Cost Entries</th>
-                                                    <th class="w-120px text-end">Total (Tk)</th>
-                                                    <th class="w-120px">Created By</th>
-                                                    <th class="not-export text-end w-100px">Actions</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="text-gray-600 fw-semibold"></tbody>
+                                            <tr class="fw-bold fs-7 text-uppercase gs-0">
+                                                <th class="w-50px">SL</th>
+                                                <th class="w-100px">Date</th>
+                                                <th>Cost Entries</th>
+                                                <th class="w-120px text-end">Total (Tk)</th>
+                                                <th class="w-120px">Created By</th>
+                                                <th class="not-export text-end w-100px">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="text-gray-600 fw-semibold"></tbody>
                                         </table>
                                     </div>
                                 </div>
@@ -267,42 +267,42 @@
             <!--begin::Summary Content-->
             <div id="summary_content" class="d-none">
                 <!--begin::Stats Cards-->
-                <div class="row g-5 mb-5 summary-stats-row">
-                    <div class="col-lg-4 col-md-4">
-                        <div class="card stat-card bg-light-primary">
-                            <div class="card-body d-flex align-items-center">
-                                <div class="stat-icon bg-primary me-4">
-                                    <i class="ki-outline ki-wallet fs-2x text-white"></i>
+                <div class="row g-4 mb-5">
+                    <div class="col-xl-4 col-md-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body py-4 px-5 d-flex align-items-center">
+                                <div class="stat-icon-sm bg-primary rounded-circle me-3">
+                                    <i class="ki-outline ki-wallet fs-3 text-white"></i>
                                 </div>
                                 <div>
-                                    <div class="stat-value" id="stat_total_cost">৳0</div>
-                                    <div class="stat-label">Total Cost</div>
+                                    <div class="fs-4 fw-bold text-gray-800" id="stat_total_cost">৳0</div>
+                                    <div class="fs-7 text-muted">Total Cost</div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-md-4">
-                        <div class="card stat-card bg-light-success">
-                            <div class="card-body d-flex align-items-center">
-                                <div class="stat-icon bg-success me-4">
-                                    <i class="ki-outline ki-notepad fs-2x text-white"></i>
+                    <div class="col-xl-4 col-md-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body py-4 px-5 d-flex align-items-center">
+                                <div class="stat-icon-sm bg-success rounded-circle me-3">
+                                    <i class="ki-outline ki-notepad fs-3 text-white"></i>
                                 </div>
                                 <div>
-                                    <div class="stat-value" id="stat_total_entries">0</div>
-                                    <div class="stat-label">Total Entries</div>
+                                    <div class="fs-4 fw-bold text-gray-800" id="stat_total_entries">0</div>
+                                    <div class="fs-7 text-muted">Total Entries</div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-md-4">
-                        <div class="card stat-card bg-light-info">
-                            <div class="card-body d-flex align-items-center">
-                                <div class="stat-icon bg-info me-4">
-                                    <i class="ki-outline ki-chart-line fs-2x text-white"></i>
+                    <div class="col-xl-4 col-md-4">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body py-4 px-5 d-flex align-items-center">
+                                <div class="stat-icon-sm bg-info rounded-circle me-3">
+                                    <i class="ki-outline ki-chart-line fs-3 text-white"></i>
                                 </div>
                                 <div>
-                                    <div class="stat-value" id="stat_daily_average">৳0</div>
-                                    <div class="stat-label">Daily Average</div>
+                                    <div class="fs-4 fw-bold text-gray-800" id="stat_daily_average">৳0</div>
+                                    <div class="fs-7 text-muted">Daily Average</div>
                                 </div>
                             </div>
                         </div>
@@ -365,14 +365,6 @@
                                             </tr>
                                         </thead>
                                         <tbody id="summary_table_body"></tbody>
-                                        <tfoot>
-                                            <tr id="summary_total_row">
-                                                <td class="fw-bold">Total</td>
-                                                <td class="text-center fw-bold">0</td>
-                                                <td class="text-end fw-bold">৳0</td>
-                                                <td></td>
-                                            </tr>
-                                        </tfoot>
                                     </table>
                                 </div>
                             </div>

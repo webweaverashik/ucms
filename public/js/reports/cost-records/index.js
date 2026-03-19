@@ -1018,14 +1018,6 @@ var KTCostRecords = (function () {
                 }
             },
             {
-                data: 'entries_count',
-                className: 'text-center',
-                orderable: false,
-                render: function (data) {
-                    return `<span class="badge badge-light-primary fw-bold">${data || 0}</span>`;
-                }
-            },
-            {
                 data: 'total_amount',
                 className: 'text-end',
                 orderable: false,
