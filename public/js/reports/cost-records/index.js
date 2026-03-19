@@ -1555,7 +1555,14 @@ var KTCostRecords = (function () {
             endDate = parts[1].trim();
         }
 
-        const branchId = elements.summaryBranchFilter ? $(elements.summaryBranchFilter).val() : '';
+        // Get branch ID - ensure it's a valid value or null
+        let branchId = elements.summaryBranchFilter ? $(elements.summaryBranchFilter).val() : null;
+        if (branchId === '' || branchId === 'null' || branchId === 'undefined') {
+            branchId = null;
+        }
+
+        // Log for debugging
+        console.log('Generating summary with:', { startDate, endDate, branchId });
 
         if (!startDate || !endDate) {
             toastr.error('Please select a date range');
@@ -1564,11 +1571,15 @@ var KTCostRecords = (function () {
 
         setButtonLoading(elements.generateSummaryBtn, true);
 
-        const params = new URLSearchParams({
-            start_date: startDate,
-            end_date: endDate,
-            branch_id: branchId || ''
-        });
+        // Build params - only include branch_id if it has a valid value
+        const params = new URLSearchParams();
+        params.append('start_date', startDate);
+        params.append('end_date', endDate);
+        if (branchId !== null && branchId !== '') {
+            params.append('branch_id', branchId);
+        }
+
+        console.log('Request params:', params.toString());
 
         fetch(`${config.routes.costSummary}?${params.toString()}`, {
             method: 'GET',
@@ -1744,13 +1755,21 @@ var KTCostRecords = (function () {
         summaryChart.render();
     };
 
+    const getSummaryBranchName = function () {
+        // Use branch name from summaryData if available, otherwise fall back
+        if (summaryData && summaryData.branch_name) {
+            return summaryData.branch_name.replace(/\s+/g, '_');
+        }
+        return 'All_Branches';
+    };
+
     const exportChartToPng = function () {
         if (!summaryChart) {
             toastr.error('No chart to export. Please generate summary first.');
             return;
         }
 
-        const branchName = getBranchNameForFile();
+        const branchName = getSummaryBranchName();
         const timestamp = getTimestamp();
 
         summaryChart.dataURI().then(({ imgURI }) => {
@@ -1802,7 +1821,7 @@ var KTCostRecords = (function () {
             { wch: 12 }
         ];
 
-        const branchName = getBranchNameForFile();
+        const branchName = getSummaryBranchName();
         const timestamp = getTimestamp();
         XLSX.writeFile(wb, `Cost_Summary_${branchName}_${timestamp}.xlsx`);
         toastr.success('Summary exported to Excel!');
@@ -1865,7 +1884,7 @@ var KTCostRecords = (function () {
             footStyles: { fillColor: [230, 230, 230], fontStyle: 'bold' }
         });
 
-        const branchName = getBranchNameForFile();
+        const branchName = getSummaryBranchName();
         const timestamp = getTimestamp();
         doc.save(`Cost_Summary_${branchName}_${timestamp}.pdf`);
         toastr.success('Summary exported to PDF!');
