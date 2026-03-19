@@ -321,20 +321,17 @@ class ReportController extends Controller
     }
 
     /**
-     * Get cost records data (AJAX)
+     * Get cost records data for DataTable (AJAX)
      */
     public function getCostRecordsData(Request $request): JsonResponse
     {
         try {
-            $user    = Auth::user();
-            $isAdmin = $user->isAdmin();
+            $user = Auth::user();
 
-            // Get branch_id - sanitize input
-            $branchIdInput = $request->input('branch_id');
-            $branchId      = ($branchIdInput === '' || $branchIdInput === null || $branchIdInput === 'null') ? null : (int) $branchIdInput;
-
-            // Non-admin can only see their own branch
-            if (! $isAdmin) {
+            // Determine branch filter
+            if ($user->isAdmin()) {
+                $branchId = $request->input('branch_id');
+            } else {
                 $branchId = $user->branch_id;
             }
 
@@ -349,64 +346,144 @@ class ReportController extends Controller
                 $query->where('branch_id', $branchId);
             }
 
-            // Date range filter
-            $startDate = $request->input('start_date');
-            $endDate   = $request->input('end_date');
-
-            if ($startDate && $endDate) {
+            // Apply date range filter
+            if ($request->filled('start_date') && $request->filled('end_date')) {
                 try {
-                    $start = Carbon::createFromFormat('d-m-Y', $startDate)->startOfDay();
-                    $end   = Carbon::createFromFormat('d-m-Y', $endDate)->endOfDay();
-                    $query->whereBetween('cost_date', [$start, $end]);
+                    $startDate = Carbon::createFromFormat('d-m-Y', $request->start_date)->startOfDay();
+                    $endDate   = Carbon::createFromFormat('d-m-Y', $request->end_date)->endOfDay();
+                    $query->whereBetween('cost_date', [$startDate, $endDate]);
                 } catch (\Exception $e) {
-                    Log::warning('Invalid date format in cost records filter', [
-                        'start_date' => $startDate,
-                        'end_date'   => $endDate,
+                    Log::warning('Invalid date format in getCostRecordsData', [
+                        'start_date' => $request->start_date,
+                        'end_date'   => $request->end_date,
                     ]);
                 }
             }
 
-            // Cost type filter
-            $costTypeIds = $request->input('cost_type_ids');
-            if ($costTypeIds) {
-                $typeIdsArray = is_array($costTypeIds) ? $costTypeIds : explode(',', $costTypeIds);
-                $typeIdsArray = array_filter(array_map('intval', $typeIdsArray));
-
-                if (! empty($typeIdsArray)) {
-                    $query->whereHas('entries', function ($q) use ($typeIdsArray) {
-                        $q->whereIn('cost_type_id', $typeIdsArray);
+            // Apply cost type filter
+            if ($request->filled('cost_type_ids')) {
+                $costTypeIds = array_filter(explode(',', $request->cost_type_ids));
+                if (! empty($costTypeIds)) {
+                    $query->whereHas('entries', function ($q) use ($costTypeIds) {
+                        $q->whereIn('cost_type_id', $costTypeIds);
                     });
                 }
             }
 
-            // Search filter
-            $searchValue = $request->input('search_value');
-            if ($searchValue) {
-                $query->where(function ($q) use ($searchValue) {
-                    $q->whereHas('createdBy', function ($q2) use ($searchValue) {
-                        $q2->where('name', 'like', "%{$searchValue}%");
+            // Apply search filter
+            if ($request->filled('search_value')) {
+                $searchTerm = $request->search_value;
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->whereHas('createdBy', function ($subQ) use ($searchTerm) {
+                        $subQ->where('name', 'like', "%{$searchTerm}%");
                     })
-                        ->orWhereHas('entries.costType', function ($q2) use ($searchValue) {
-                            $q2->where('name', 'like', "%{$searchValue}%");
+                        ->orWhereHas('entries.costType', function ($subQ) use ($searchTerm) {
+                            $subQ->where('name', 'like', "%{$searchTerm}%");
                         })
-                        ->orWhereHas('entries', function ($q2) use ($searchValue) {
-                            $q2->where('description', 'like', "%{$searchValue}%");
+                        ->orWhereHas('entries', function ($subQ) use ($searchTerm) {
+                            $subQ->where('description', 'like', "%{$searchTerm}%");
                         });
                 });
             }
 
-            // Order by date descending (backend sorting)
+            // Backend sorting - newest first
             $costs = $query->orderBy('cost_date', 'desc')
                 ->orderBy('id', 'desc')
                 ->get();
 
-            // Add total_amount and entries_count to each cost
+            // Add computed attributes
             $costs->each(function ($cost) {
                 $cost->total_amount  = $cost->totalAmount();
                 $cost->entries_count = $cost->entries->count();
             });
 
-            // Get branch name for export filename
+            return response()->json([
+                'success' => true,
+                'data'    => $costs,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error in getCostRecordsData: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'data'    => [],
+                'message' => 'Failed to load cost records',
+            ], 500);
+        }
+    }
+
+    /**
+     * Export cost records
+     */
+    public function exportCostRecords(Request $request): JsonResponse
+    {
+        try {
+            $user = Auth::user();
+
+            // Determine branch filter
+            if ($user->isAdmin()) {
+                $branchId = $request->input('branch_id');
+            } else {
+                $branchId = $user->branch_id;
+            }
+
+            $query = Cost::with([
+                'branch:id,branch_name,branch_prefix',
+                'createdBy:id,name',
+                'entries.costType:id,name',
+            ]);
+
+            // Apply branch filter
+            if ($branchId) {
+                $query->where('branch_id', $branchId);
+            }
+
+            // Apply date range filter
+            if ($request->filled('start_date') && $request->filled('end_date')) {
+                try {
+                    $startDate = Carbon::createFromFormat('d-m-Y', $request->start_date)->startOfDay();
+                    $endDate   = Carbon::createFromFormat('d-m-Y', $request->end_date)->endOfDay();
+                    $query->whereBetween('cost_date', [$startDate, $endDate]);
+                } catch (\Exception $e) {
+                    // Ignore invalid date format
+                }
+            }
+
+            // Apply cost type filter
+            if ($request->filled('cost_type_ids')) {
+                $costTypeIds = array_filter(explode(',', $request->cost_type_ids));
+                if (! empty($costTypeIds)) {
+                    $query->whereHas('entries', function ($q) use ($costTypeIds) {
+                        $q->whereIn('cost_type_id', $costTypeIds);
+                    });
+                }
+            }
+
+            // Apply search filter
+            if ($request->filled('search_value')) {
+                $searchTerm = $request->search_value;
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->whereHas('createdBy', function ($subQ) use ($searchTerm) {
+                        $subQ->where('name', 'like', "%{$searchTerm}%");
+                    })
+                        ->orWhereHas('entries.costType', function ($subQ) use ($searchTerm) {
+                            $subQ->where('name', 'like', "%{$searchTerm}%");
+                        });
+                });
+            }
+
+            $costs = $query->orderBy('cost_date', 'desc')
+                ->orderBy('id', 'desc')
+                ->get();
+
+            // Add computed attributes
+            $costs->each(function ($cost) {
+                $cost->total_amount = $cost->totalAmount();
+            });
+
+            // Get branch name for file
             $branchName = 'All_Branches';
             if ($branchId) {
                 $branch = Branch::find($branchId);
@@ -421,129 +498,7 @@ class ReportController extends Controller
                 'branch_name' => $branchName,
             ]);
         } catch (\Exception $e) {
-            Log::error('Error loading cost records: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'data'    => [],
-                'message' => 'Failed to load cost records',
-            ], 500);
-        }
-    }
-
-    /**
-     * Export cost records data
-     */
-    public function exportCostRecords(Request $request): JsonResponse
-    {
-        try {
-            $user    = Auth::user();
-            $isAdmin = $user->isAdmin();
-
-            // Get branch_id - sanitize input
-            $branchIdInput = $request->input('branch_id');
-            $branchId      = ($branchIdInput === '' || $branchIdInput === null || $branchIdInput === 'null') ? null : (int) $branchIdInput;
-
-            if (! $isAdmin) {
-                $branchId = $user->branch_id;
-            }
-
-            $query = Cost::with([
-                'branch:id,branch_name,branch_prefix',
-                'createdBy:id,name',
-                'entries.costType:id,name',
-            ]);
-
-            if ($branchId) {
-                $query->where('branch_id', $branchId);
-            }
-
-            // Date range filter
-            $startDate = $request->input('start_date');
-            $endDate   = $request->input('end_date');
-
-            if ($startDate && $endDate) {
-                try {
-                    $start = Carbon::createFromFormat('d-m-Y', $startDate)->startOfDay();
-                    $end   = Carbon::createFromFormat('d-m-Y', $endDate)->endOfDay();
-                    $query->whereBetween('cost_date', [$start, $end]);
-                } catch (\Exception $e) {
-                    // Ignore invalid date format
-                }
-            }
-
-            // Cost type filter
-            $costTypeIds = $request->input('cost_type_ids');
-            if ($costTypeIds) {
-                $typeIdsArray = is_array($costTypeIds) ? $costTypeIds : explode(',', $costTypeIds);
-                $typeIdsArray = array_filter(array_map('intval', $typeIdsArray));
-
-                if (! empty($typeIdsArray)) {
-                    $query->whereHas('entries', function ($q) use ($typeIdsArray) {
-                        $q->whereIn('cost_type_id', $typeIdsArray);
-                    });
-                }
-            }
-
-            // Search filter
-            $searchValue = $request->input('search_value');
-            if ($searchValue) {
-                $query->where(function ($q) use ($searchValue) {
-                    $q->whereHas('createdBy', function ($q2) use ($searchValue) {
-                        $q2->where('name', 'like', "%{$searchValue}%");
-                    })
-                        ->orWhereHas('entries.costType', function ($q2) use ($searchValue) {
-                            $q2->where('name', 'like', "%{$searchValue}%");
-                        });
-                });
-            }
-
-            $costs = $query->orderBy('cost_date', 'desc')
-                ->orderBy('id', 'desc')
-                ->get();
-
-            $exportData = [];
-            $sl         = 0;
-
-            foreach ($costs as $cost) {
-                $sl++;
-
-                $entriesText = $cost->entries->map(function ($entry) {
-                    $name = $entry->costType->name ?? 'Unknown';
-                    if (strtolower($name) === 'others' && $entry->description) {
-                        $name = "Others: {$entry->description}";
-                    }
-                    return "{$name}: {$entry->amount}";
-                })->implode(', ');
-
-                $exportData[] = [
-                    'sl'     => $sl,
-                    'date'   => $cost->cost_date->format('d-m-Y'),
-                    'branch' => $cost->branch ? "{$cost->branch->branch_name} ({$cost->branch->branch_prefix})" : '-',
-                    'entries' => $entriesText,
-                    'total_amount' => $cost->totalAmount(),
-                    'created_by' => $cost->createdBy->name ?? '-',
-                ];
-            }
-
-            // Get branch name for export filename
-            $branchName = 'All_Branches';
-            if ($branchId) {
-                $branch = Branch::find($branchId);
-                if ($branch) {
-                    $branchName = str_replace(' ', '_', $branch->branch_name);
-                }
-            }
-
-            return response()->json([
-                'success'     => true,
-                'data'        => $exportData,
-                'branch_name' => $branchName,
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error exporting cost records: ' . $e->getMessage());
+            Log::error('Error in exportCostRecords: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,
@@ -554,86 +509,91 @@ class ReportController extends Controller
     }
 
     /**
-     * Get cost summary (AJAX)
+     * Get cost summary for a date range
      */
     public function getCostSummary(Request $request): JsonResponse
     {
         try {
-            // Sanitize branch_id BEFORE validation
-            $branchIdInput = $request->input('branch_id');
-            $branchIdClean = null;
+            // Log incoming request
+            Log::info('getCostSummary called', [
+                'all_params'    => $request->all(),
+                'branch_id_raw' => $request->input('branch_id'),
+                'start_date'    => $request->input('start_date'),
+                'end_date'      => $request->input('end_date'),
+            ]);
 
-            if ($branchIdInput !== '' && $branchIdInput !== null && $branchIdInput !== 'null' && $branchIdInput !== 'undefined') {
-                $branchIdClean = (int) $branchIdInput;
-                if ($branchIdClean <= 0) {
-                    $branchIdClean = null;
-                }
-            }
-
-            // Replace the branch_id in the request with sanitized value
-            $request->merge(['branch_id' => $branchIdClean]);
-
+            // Validate required fields
             $request->validate([
                 'start_date' => 'required|date_format:d-m-Y',
                 'end_date'   => 'required|date_format:d-m-Y',
-                'branch_id'  => 'nullable|integer|exists:branches,id',
             ]);
 
-            $user    = Auth::user();
-            $isAdmin = $user->isAdmin();
+            $user = Auth::user();
 
-            $startDate = Carbon::createFromFormat('d-m-Y', $request->start_date)->startOfDay();
-            $endDate   = Carbon::createFromFormat('d-m-Y', $request->end_date)->endOfDay();
+            // Handle branch_id - can be empty, null, or a valid ID
+            $branchId      = null;
+            $branchIdInput = $request->input('branch_id');
 
-            // Determine branch filter
-            $branchId = $branchIdClean;
-            if (! $isAdmin) {
+            Log::info('Branch ID processing', [
+                'input' => $branchIdInput,
+                'type'  => gettype($branchIdInput),
+            ]);
+
+            // Only set branchId if it's a valid positive integer
+            if ($branchIdInput !== null && $branchIdInput !== '' && $branchIdInput !== 'null' && $branchIdInput !== 'undefined') {
+                $parsed = intval($branchIdInput);
+                if ($parsed > 0) {
+                    // Verify the branch exists
+                    $branchExists = Branch::where('id', $parsed)->exists();
+                    if ($branchExists) {
+                        $branchId = $parsed;
+                    }
+                }
+            }
+
+            // Non-admin users can only see their own branch
+            if (! $user->isAdmin()) {
                 $branchId = $user->branch_id;
             }
 
-            // Log for debugging
-            Log::info('Cost Summary Request', [
-                'branch_id_input' => $branchIdInput,
-                'branch_id_clean' => $branchIdClean,
-                'branch_id_final' => $branchId,
-                'start_date'      => $startDate->toDateString(),
-                'end_date'        => $endDate->toDateString(),
-                'is_admin'        => $isAdmin,
-            ]);
+            Log::info('Final branch_id', ['branch_id' => $branchId]);
+
+            // Parse dates
+            $startDate = Carbon::createFromFormat('d-m-Y', $request->start_date)->startOfDay();
+            $endDate   = Carbon::createFromFormat('d-m-Y', $request->end_date)->endOfDay();
 
             // Build query
-            $query = Cost::with(['entries.costType'])
+            $query = Cost::with(['entries.costType:id,name,description'])
                 ->whereBetween('cost_date', [$startDate, $endDate]);
 
-            // Apply branch filter
+            // Apply branch filter only if branchId is set
             if ($branchId !== null) {
                 $query->where('branch_id', $branchId);
+                Log::info('Applied branch filter', ['branch_id' => $branchId]);
+            } else {
+                Log::info('No branch filter applied - showing all branches');
             }
 
             $costs = $query->get();
 
-            // Log count for debugging
-            Log::info('Cost Summary Query Result', [
-                'costs_count' => $costs->count(),
-                'branch_id'   => $branchId,
+            Log::info('Query results', [
+                'cost_count' => $costs->count(),
+                'sql'        => $query->toSql(),
             ]);
 
-            // Calculate summary by cost type
+            // Calculate summary by cost type (grouping "Others" together)
             $costTypeSummary = [];
             $totalCost       = 0;
             $totalEntries    = 0;
             $uniqueDates     = [];
 
             foreach ($costs as $cost) {
-                $dateKey = $cost->cost_date->format('Y-m-d');
-                if (! in_array($dateKey, $uniqueDates)) {
-                    $uniqueDates[] = $dateKey;
-                }
+                $uniqueDates[$cost->cost_date->format('Y-m-d')] = true;
 
                 foreach ($cost->entries as $entry) {
                     $typeId   = $entry->cost_type_id;
-                    $typeName = $entry->costType->name ?? 'Unknown';
-                    $typeDesc = $entry->costType->description ?? '';
+                    $typeName = $entry->costType?->name ?? 'Unknown';
+                    $typeDesc = $entry->costType?->description ?? '';
 
                     // Group all "Others" entries under a single "Others" category
                     $isOthers = strtolower($typeName) === 'others';
@@ -643,7 +603,7 @@ class ReportController extends Controller
                         $costTypeSummary[$key] = [
                             'cost_type_id'          => $isOthers ? 'others' : $typeId,
                             'cost_type_name'        => $typeName,
-                            'cost_type_description' => $isOthers ? 'Miscellaneous costs with custom descriptions' : $typeDesc,
+                            'cost_type_description' => $typeDesc,
                             'total_amount'          => 0,
                             'entry_count'           => 0,
                         ];
@@ -674,6 +634,14 @@ class ReportController extends Controller
                 }
             }
 
+            Log::info('Summary generated', [
+                'total_cost'    => $totalCost,
+                'total_entries' => $totalEntries,
+                'unique_days'   => $uniqueDays,
+                'summary_count' => count($summary),
+                'branch_name'   => $branchName,
+            ]);
+
             return response()->json([
                 'success' => true,
                 'data'    => [
@@ -691,7 +659,7 @@ class ReportController extends Controller
                 ],
             ]);
         } catch (\Exception $e) {
-            Log::error('Error generating cost summary: ' . $e->getMessage(), [
+            Log::error('Error in getCostSummary: ' . $e->getMessage(), [
                 'trace'   => $e->getTraceAsString(),
                 'request' => $request->all(),
             ]);
@@ -716,37 +684,35 @@ class ReportController extends Controller
     public function exportCostSummary(Request $request): JsonResponse
     {
         try {
-            // Sanitize branch_id
-            $branchIdInput = $request->input('branch_id');
-            $branchIdClean = null;
-
-            if ($branchIdInput !== '' && $branchIdInput !== null && $branchIdInput !== 'null' && $branchIdInput !== 'undefined') {
-                $branchIdClean = (int) $branchIdInput;
-                if ($branchIdClean <= 0) {
-                    $branchIdClean = null;
-                }
-            }
-
-            $request->merge(['branch_id' => $branchIdClean]);
-
             $request->validate([
                 'start_date' => 'required|date_format:d-m-Y',
                 'end_date'   => 'required|date_format:d-m-Y',
-                'branch_id'  => 'nullable|integer|exists:branches,id',
             ]);
 
-            $user    = Auth::user();
-            $isAdmin = $user->isAdmin();
+            $user = Auth::user();
+
+            // Handle branch_id
+            $branchId      = null;
+            $branchIdInput = $request->input('branch_id');
+
+            if ($branchIdInput !== null && $branchIdInput !== '' && $branchIdInput !== 'null' && $branchIdInput !== 'undefined') {
+                $parsed = intval($branchIdInput);
+                if ($parsed > 0) {
+                    $branchExists = Branch::where('id', $parsed)->exists();
+                    if ($branchExists) {
+                        $branchId = $parsed;
+                    }
+                }
+            }
+
+            if (! $user->isAdmin()) {
+                $branchId = $user->branch_id;
+            }
 
             $startDate = Carbon::createFromFormat('d-m-Y', $request->start_date)->startOfDay();
             $endDate   = Carbon::createFromFormat('d-m-Y', $request->end_date)->endOfDay();
 
-            $branchId = $branchIdClean;
-            if (! $isAdmin) {
-                $branchId = $user->branch_id;
-            }
-
-            $query = Cost::with(['entries.costType'])
+            $query = Cost::with(['entries.costType:id,name,description'])
                 ->whereBetween('cost_date', [$startDate, $endDate]);
 
             if ($branchId !== null) {
@@ -763,8 +729,8 @@ class ReportController extends Controller
             foreach ($costs as $cost) {
                 foreach ($cost->entries as $entry) {
                     $typeId   = $entry->cost_type_id;
-                    $typeName = $entry->costType->name ?? 'Unknown';
-                    $typeDesc = $entry->costType->description ?? '';
+                    $typeName = $entry->costType?->name ?? 'Unknown';
+                    $typeDesc = $entry->costType?->description ?? '';
 
                     $isOthers = strtolower($typeName) === 'others';
                     $key      = $isOthers ? 'others' : $typeId;
@@ -773,7 +739,7 @@ class ReportController extends Controller
                         $costTypeSummary[$key] = [
                             'cost_type_id'          => $isOthers ? 'others' : $typeId,
                             'cost_type_name'        => $typeName,
-                            'cost_type_description' => $isOthers ? 'Miscellaneous costs with custom descriptions' : $typeDesc,
+                            'cost_type_description' => $typeDesc,
                             'total_amount'          => 0,
                             'entry_count'           => 0,
                         ];
@@ -790,29 +756,33 @@ class ReportController extends Controller
                 return $b['total_amount'] - $a['total_amount'];
             });
 
-            $branchName = 'All_Branches';
+            $branchName = 'All Branches';
             if ($branchId !== null) {
                 $branch = Branch::find($branchId);
                 if ($branch) {
-                    $branchName = str_replace(' ', '_', $branch->branch_name);
+                    $branchName = $branch->branch_name;
                 }
             }
 
             return response()->json([
-                'success'     => true,
-                'data'        => [
+                'success' => true,
+                'data'    => [
                     'summary'       => array_values($costTypeSummary),
                     'total_cost'    => (int) $totalCost,
                     'total_entries' => (int) $totalEntries,
+                    'date_range'    => [
+                        'start' => $request->start_date,
+                        'end'   => $request->end_date,
+                    ],
+                    'branch_name'   => $branchName,
                 ],
-                'branch_name' => $branchName,
             ]);
         } catch (\Exception $e) {
-            Log::error('Error exporting cost summary: ' . $e->getMessage());
+            Log::error('Error in exportCostSummary: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'data'    => ['summary' => []],
+                'data'    => [],
                 'message' => 'Failed to export cost summary',
             ], 500);
         }
