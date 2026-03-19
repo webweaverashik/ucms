@@ -936,7 +936,7 @@ class PaymentInvoiceController extends Controller
             ->pluck('month_year')
             ->filter(fn($month) => preg_match('/^\d{2}_\d{4}$/', $month) && Carbon::hasFormat($month, 'm_Y'))
             ->unique()
-            ->sortBy(fn($month) => Carbon::createFromFormat('m_Y', $month))
+            ->sortByDesc(fn($month) => Carbon::createFromFormat('m_Y', $month))
             ->values();
     }
 

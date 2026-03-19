@@ -4,220 +4,268 @@
  */
 
 /* ============================================
+   MAIN TABS
+   ============================================ */
+#main_tabs {
+    border-bottom: 2px solid var(--bs-gray-200);
+}
+
+#main_tabs .nav-link {
+    padding: 0.85rem 1.5rem;
+    font-weight: 500;
+    color: var(--bs-gray-600);
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s ease;
+}
+
+#main_tabs .nav-link:hover {
+    color: var(--bs-primary);
+    border-bottom-color: var(--bs-primary-light);
+}
+
+#main_tabs .nav-link.active {
+    color: var(--bs-primary);
+    border-bottom-color: var(--bs-primary);
+    background: transparent;
+}
+
+/* ============================================
    BRANCH TABS
    ============================================ */
 #branch_tabs {
-      border-bottom: 2px solid var(--bs-gray-200);
+    border-bottom: 2px solid var(--bs-gray-200);
 }
 
 #branch_tabs .nav-link {
-      padding: 0.75rem 1.25rem;
-      font-weight: 500;
-      color: var(--bs-gray-600);
-      border: none;
-      border-bottom: 2px solid transparent;
-      margin-bottom: -2px;
-      transition: all 0.2s ease;
+    padding: 0.75rem 1.25rem;
+    font-weight: 500;
+    color: var(--bs-gray-600);
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s ease;
 }
 
 #branch_tabs .nav-link:hover {
-      color: var(--bs-primary);
-      border-bottom-color: var(--bs-primary-light);
+    color: var(--bs-primary);
+    border-bottom-color: var(--bs-primary-light);
 }
 
 #branch_tabs .nav-link.active {
-      color: var(--bs-primary);
-      border-bottom-color: var(--bs-primary);
-      background: transparent;
+    color: var(--bs-primary);
+    border-bottom-color: var(--bs-primary);
+    background: transparent;
 }
 
 #branch_tabs .nav-link .badge {
-      font-size: 10px;
-      padding: 0.25rem 0.5rem;
+    font-size: 10px;
+    padding: 0.25rem 0.5rem;
+}
+
+/* ============================================
+   SEARCH INPUT
+   ============================================ */
+[data-cost-table-filter="search"] {
+    transition: all 0.2s ease;
+}
+
+[data-cost-table-filter="search"]:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.25rem rgba(0, 158, 247, 0.15);
+}
+
+/* ============================================
+   FILTER MENU
+   ============================================ */
+#filter_menu {
+    box-shadow: 0 0 50px 0 rgba(82, 63, 105, 0.15);
+    border-radius: 0.475rem;
 }
 
 /* ============================================
    TAGIFY STYLES
    ============================================ */
 .tagify {
-      --tag-bg: var(--bs-primary);
-      --tag-text-color: #fff;
-      --tag-hover: var(--bs-primary);
-      --tag-remove-btn-color: #fff;
-      border: 1px solid var(--bs-gray-300);
-      border-radius: 0.475rem;
-      min-height: 44px;
-      padding: 5px;
+    --tag-bg: var(--bs-primary);
+    --tag-text-color: #fff;
+    --tag-hover: var(--bs-primary);
+    --tag-remove-btn-color: #fff;
+    border: 1px solid var(--bs-gray-300);
+    border-radius: 0.475rem;
+    min-height: 44px;
+    padding: 5px;
 }
 
 .tagify--focus {
-      border-color: var(--bs-primary);
-      box-shadow: 0 0 0 0.25rem rgba(0, 158, 247, 0.25);
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.25rem rgba(0, 158, 247, 0.25);
 }
 
 .tagify__tag {
-      border-radius: 0.375rem;
-      margin: 3px;
+    border-radius: 0.375rem;
+    margin: 3px;
 }
 
 .tagify__tag>div {
-      padding: 0.35em 0.5em;
+    padding: 0.35em 0.5em;
 }
 
 .tagify__dropdown {
-      border-radius: 0.475rem;
-      border: 1px solid var(--bs-gray-300);
-      box-shadow: 0 0 50px 0 rgba(82, 63, 105, 0.15);
-      z-index: 1060;
+    border-radius: 0.475rem;
+    border: 1px solid var(--bs-gray-300);
+    box-shadow: 0 0 50px 0 rgba(82, 63, 105, 0.15);
+    z-index: 1060;
 }
 
 .tagify__dropdown__item {
-      padding: 0.5rem 0.75rem;
-      margin: 0;
+    padding: 0.5rem 0.75rem;
+    margin: 0;
 }
 
 .tagify__dropdown__item--active {
-      background: var(--bs-primary);
-      color: #fff;
+    background: var(--bs-primary);
+    color: #fff;
 }
 
 /* ============================================
    COST ENTRY ROWS - ADD MODAL
    ============================================ */
 .cost-entry-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 15px;
-      background: var(--bs-gray-100);
-      border-radius: 0.475rem;
-      margin-bottom: 8px;
-      animation: slideIn 0.2s ease-out;
-      border: 1px solid var(--bs-gray-200);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 15px;
+    background: var(--bs-gray-100);
+    border-radius: 0.475rem;
+    margin-bottom: 8px;
+    animation: slideIn 0.2s ease-out;
+    border: 1px solid var(--bs-gray-200);
 }
 
 @keyframes slideIn {
-      from {
-            opacity: 0;
-            transform: translateY(-10px);
-      }
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
 
-      to {
-            opacity: 1;
-            transform: translateY(0);
-      }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .cost-entry-row .cost-type-name {
-      flex: 1;
-      font-weight: 500;
-      color: var(--bs-gray-800);
+    flex: 1;
+    font-weight: 500;
+    color: var(--bs-gray-800);
 }
 
 .cost-entry-row .cost-type-badge {
-      background: var(--bs-primary);
-      color: #fff;
-      padding: 5px 12px;
-      border-radius: 0.375rem;
-      font-size: 12px;
-      font-weight: 600;
-      white-space: nowrap;
+    background: var(--bs-primary);
+    color: #fff;
+    padding: 5px 12px;
+    border-radius: 0.375rem;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
 }
 
 .cost-entry-row .amount-input {
-      width: 160px;
+    width: 160px;
 }
 
 /* ============================================
    OTHER COST ROWS
    ============================================ */
 .other-cost-row {
-      animation: slideIn 0.2s ease-out;
+    animation: slideIn 0.2s ease-out;
 }
 
 .other-cost-row .other-description {
-      min-width: 200px;
+    min-width: 200px;
 }
 
 /* ============================================
    TOTAL SECTION
    ============================================ */
 .cost-total-section {
-      background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 100%);
-      color: #fff;
-      padding: 15px 20px;
-      border-radius: 0.475rem;
-      margin-top: 15px;
+    background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 100%);
+    color: #fff;
+    padding: 15px 20px;
+    border-radius: 0.475rem;
+    margin-top: 15px;
 }
 
 .cost-total-section .total-label {
-      font-size: 14px;
-      opacity: 0.9;
+    font-size: 14px;
+    opacity: 0.9;
 }
 
 .cost-total-section .total-amount {
-      font-size: 24px;
-      font-weight: 700;
+    font-size: 24px;
+    font-weight: 700;
 }
 
 /* ============================================
    ENTRY BADGES IN DATATABLE
    ============================================ */
 .entry-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--bs-light);
-      border: 1px solid var(--bs-gray-300);
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      margin: 3px;
-      transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bs-light);
+    border: 1px solid var(--bs-gray-300);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    margin: 3px;
+    transition: all 0.2s;
 }
 
 .entry-badge:hover {
-      background: var(--bs-gray-200);
-      border-color: var(--bs-gray-400);
+    background: var(--bs-gray-200);
+    border-color: var(--bs-gray-400);
 }
 
 .entry-badge .type-name {
-      color: var(--bs-gray-700);
-      font-weight: 500;
-      max-width: 200px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    color: var(--bs-gray-700);
+    font-weight: 500;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .entry-badge .type-amount {
-      color: var(--bs-primary);
-      font-weight: 600;
+    color: var(--bs-primary);
+    font-weight: 600;
 }
 
 /* ============================================
    EDIT MODAL ENTRY ROWS
    ============================================ */
 .edit-entry-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 15px;
-      background: var(--bs-gray-100);
-      border-radius: 0.475rem;
-      margin-bottom: 8px;
-      border: 1px solid var(--bs-gray-200);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 15px;
+    background: var(--bs-gray-100);
+    border-radius: 0.475rem;
+    margin-bottom: 8px;
+    border: 1px solid var(--bs-gray-200);
 }
 
 .edit-entry-row .entry-type-name {
-      flex: 1;
-      font-weight: 500;
-      color: var(--bs-gray-800);
-      font-size: 14px;
+    flex: 1;
+    font-weight: 500;
+    color: var(--bs-gray-800);
+    font-size: 14px;
 }
 
 .edit-entry-row .entry-amount-input {
-      width: 140px;
+    width: 140px;
 }
 
 /* ============================================
@@ -225,12 +273,66 @@
    ============================================ */
 .costs-datatable tbody tr:hover,
 #costs_datatable tbody tr:hover {
-      background-color: var(--bs-gray-100);
+    background-color: var(--bs-gray-100);
 }
 
 .costs-datatable .entry-badge,
 #costs_datatable .entry-badge {
-      margin: 2px;
+    margin: 2px;
+}
+
+/* ============================================
+   SUMMARY SECTION
+   ============================================ */
+#cost_summary_pane .card-flush {
+    box-shadow: 0 0 20px 0 rgba(76, 87, 125, 0.02);
+}
+
+#summary_table thead th {
+    background: var(--bs-gray-100);
+    border-bottom: 2px solid var(--bs-gray-200);
+}
+
+#summary_table tfoot tr {
+    border-top: 2px solid var(--bs-gray-300);
+}
+
+/* ============================================
+   SUMMARY CARDS
+   ============================================ */
+.card-flush.bg-light-primary {
+    border: 1px solid var(--bs-primary-light);
+}
+
+.card-flush.bg-light-success {
+    border: 1px solid var(--bs-success-light);
+}
+
+.card-flush.bg-light-info {
+    border: 1px solid var(--bs-info-light);
+}
+
+/* ============================================
+   CHART CONTAINER
+   ============================================ */
+#summary_chart {
+    min-height: 350px;
+}
+
+/* ============================================
+   EXPORT BUTTONS
+   ============================================ */
+#export_menu {
+    box-shadow: 0 0 50px 0 rgba(82, 63, 105, 0.15);
+}
+
+#export_menu .menu-link {
+    transition: all 0.2s ease;
+}
+
+#export_menu .menu-link:hover {
+    background: var(--bs-light-primary);
+    color: var(--bs-primary);
 }
 
 /* ============================================
@@ -238,79 +340,148 @@
    ============================================ */
 #cost_modal .modal-body,
 #edit_cost_modal .modal-body {
-      overflow-y: auto;
-      max-height: 70vh;
+    overflow-y: auto;
+    max-height: 70vh;
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+#summary_empty_state {
+    background: var(--bs-gray-100);
+    border-radius: 0.475rem;
+    margin: 20px 0;
+}
+
+/* ============================================
+   TOOLBAR TRANSITIONS
+   ============================================ */
+#cost_records_toolbar,
+#cost_summary_toolbar {
+    transition: opacity 0.2s ease;
 }
 
 /* ============================================
    MOBILE RESPONSIVE
    ============================================ */
 @media (max-width: 768px) {
-      #branch_tabs {
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-      }
+    #main_tabs .nav-link {
+        padding: 0.6rem 1rem;
+        font-size: 13px;
+    }
 
-      #branch_tabs .nav-item {
-            flex-shrink: 0;
-      }
+    #branch_tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
 
-      #branch_tabs .nav-link {
-            padding: 0.5rem 1rem;
-            font-size: 13px;
-      }
+    #branch_tabs .nav-item {
+        flex-shrink: 0;
+    }
 
-      #cost_modal .modal-body,
-      #edit_cost_modal .modal-body {
-            max-height: 60vh;
-      }
+    #branch_tabs .nav-link {
+        padding: 0.5rem 1rem;
+        font-size: 13px;
+    }
 
-      .cost-entry-row {
-            flex-wrap: wrap;
-      }
+    #cost_modal .modal-body,
+    #edit_cost_modal .modal-body {
+        max-height: 60vh;
+    }
 
-      .cost-entry-row .amount-input {
-            width: 100%;
-            margin-top: 8px;
-      }
+    .cost-entry-row {
+        flex-wrap: wrap;
+    }
 
-      .edit-entry-row {
-            flex-wrap: wrap;
-      }
+    .cost-entry-row .amount-input {
+        width: 100%;
+        margin-top: 8px;
+    }
 
-      .edit-entry-row .entry-amount-input {
-            width: 100%;
-            margin-top: 8px;
-      }
+    .edit-entry-row {
+        flex-wrap: wrap;
+    }
 
-      .entry-badge {
-            padding: 4px 8px;
-            font-size: 11px;
-      }
+    .edit-entry-row .entry-amount-input {
+        width: 100%;
+        margin-top: 8px;
+    }
 
-      .entry-badge .type-name {
-            max-width: 120px;
-      }
+    .entry-badge {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
 
-      .other-cost-row .d-flex {
-            flex-wrap: wrap;
-      }
+    .entry-badge .type-name {
+        max-width: 120px;
+    }
 
-      .other-cost-row .other-description {
-            min-width: 100%;
-            margin-bottom: 0.5rem;
-      }
+    .other-cost-row .d-flex {
+        flex-wrap: wrap;
+    }
+
+    .other-cost-row .other-description {
+        min-width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Summary responsive */
+    #cost_summary_pane .row.g-5 {
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+    }
+
+    #summary_chart {
+        min-height: 280px;
+    }
 }
 
 @media (max-width: 576px) {
-      .card-toolbar {
-            flex-wrap: wrap;
-            gap: 0.5rem !important;
-      }
+    .card-toolbar {
+        flex-wrap: wrap;
+        gap: 0.5rem !important;
+    }
 
-      .card-toolbar .btn {
-            flex: 1;
-            min-width: 120px;
-      }
+    .card-toolbar .btn {
+        flex: 1;
+        min-width: 100px;
+    }
+
+    .card-title {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    [data-cost-table-filter="search"] {
+        width: 100% !important;
+    }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+@media print {
+
+    .card-toolbar,
+    .card-header,
+    .modal,
+    #branch_tabs,
+    #main_tabs {
+        display: none !important;
+    }
+
+    .card {
+        box-shadow: none !important;
+        border: none !important;
+    }
+
+    .card-body {
+        padding: 0 !important;
+    }
+
+    .entry-badge {
+        border: 1px solid #000 !important;
+        background: transparent !important;
+    }
 }
