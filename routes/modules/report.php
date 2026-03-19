@@ -20,17 +20,22 @@ Route::get('reports/attendance/data', [ReportController::class, 'attendanceRepor
 // Finance Reports
 Route::prefix('reports')
     ->name('reports.')
+    ->middleware(['auth'])
     ->group(function () {
+
+        // Finance Reports
         Route::get('finance', [ReportController::class, 'financeReportIndex'])->name('finance.index');
         Route::post('finance', [ReportController::class, 'financeReportGenerate'])->name('finance.generate');
         Route::get('finance/costs', [ReportController::class, 'getReportCosts'])->name('finance.costs');
+
+        // Annual Due Reports
         Route::get('finance/annual-due', [ReportController::class, 'annualDueReportIndex'])->name('annual-due.index');
         Route::get('finance/annual-due/data', [ReportController::class, 'annualDueReportData'])->name('annual-due.data');
         Route::get('finance/annual-due/invoices', [ReportController::class, 'annualDueInvoices'])->name('annual-due.invoices');
 
-        // Cost Records (separate page with AJAX)
+        // Cost Records (separate page with DataTable + Summary)
         Route::get('cost-records', [ReportController::class, 'costRecordsIndex'])->name('cost-records.index');
-        Route::get('cost-records/data', [ReportController::class, 'getReportCostsData'])->name('cost-records.data');
+        Route::get('cost-records/data', [ReportController::class, 'getCostRecordsData'])->name('cost-records.data');
         Route::get('cost-records/export', [ReportController::class, 'exportCostRecords'])->name('cost-records.export');
 
         // Cost Summary

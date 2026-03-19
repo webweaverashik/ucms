@@ -2,10 +2,9 @@
 
 /**
  * UCMS Cost Records Module
- * Cost Management with DataTable, Summary & Charts
- * Metronic 8 + Bootstrap 5 + DataTables + Tagify + ApexCharts
+ * Cost Management with DataTable
+ * Metronic 8 + Bootstrap 5 + DataTables + Tagify
  */
-
 var KTCostRecords = (function () {
     // ============================================
     // STATE & CONFIGURATION
@@ -16,7 +15,6 @@ var KTCostRecords = (function () {
     let editCostModal = null;
     let deleteModal = null;
     let summaryChart = null;
-
     let availableCostTypes = [];
     let selectedCostEntries = {};
     let otherCostEntries = [];
@@ -25,9 +23,9 @@ var KTCostRecords = (function () {
 
     // Filter state
     let currentSearchValue = '';
-    let currentDateRange = { start: null, end: null };
-    let currentBranchFilter = '';
-    let searchDebounceTimer = null;
+    let currentStartDate = '';
+    let currentEndDate = '';
+    let currentCostTypeIds = [];
 
     const config = window.CostRecordsConfig || {};
     const csrfToken = config.csrfToken || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -38,9 +36,6 @@ var KTCostRecords = (function () {
     const elements = {};
 
     const initElements = function () {
-        elements.searchInput = document.querySelector('[data-cost-table-filter="search"]');
-        elements.filterDateRange = document.getElementById('filter_date_range');
-        elements.filterBranchSelect = document.getElementById('filter_branch_select');
         elements.addCostBtn = document.getElementById('add_cost_btn');
         elements.costForm = document.getElementById('cost_form');
         elements.saveCostBtn = document.getElementById('save_cost_btn');
@@ -50,21 +45,38 @@ var KTCostRecords = (function () {
         elements.otherCostsContainer = document.getElementById('other_costs_container');
         elements.addOtherCostBtn = document.getElementById('add_other_cost_btn');
 
+        // Search
+        elements.searchInput = document.querySelector('[data-cost-table-filter="search"]');
+
+        // Filter elements
+        elements.filterBtn = document.getElementById('filter_btn');
+        elements.filterMenu = document.getElementById('filter_menu');
+        elements.filterApplyBtn = document.getElementById('filter_apply_btn');
+        elements.filterResetBtn = document.getElementById('filter_reset_btn');
+        elements.filterDateRange = document.getElementById('filter_date_range');
+        elements.filterCostTypes = document.getElementById('filter_cost_types');
+        elements.activeFiltersContainer = document.getElementById('active_filters_container');
+        elements.clearAllFiltersBtn = document.getElementById('clear_all_filters_btn');
+
+        // Export elements
+        elements.exportBtn = document.getElementById('export_btn');
+        elements.exportMenu = document.getElementById('export_menu');
+
         // Summary elements
         elements.summaryDateRange = document.getElementById('summary_date_range');
-        elements.summaryBranchSelect = document.getElementById('summary_branch_select');
+        elements.summaryBranchFilter = document.getElementById('summary_branch_filter');
         elements.generateSummaryBtn = document.getElementById('generate_summary_btn');
-        elements.summaryContent = document.getElementById('summary_content');
-        elements.summaryEmptyState = document.getElementById('summary_empty_state');
         elements.summaryTableBody = document.getElementById('summary_table_body');
-        elements.summaryChart = document.getElementById('summary_chart');
-        elements.exportSummaryExcelBtn = document.getElementById('export_summary_excel_btn');
-        elements.exportSummaryPdfBtn = document.getElementById('export_summary_pdf_btn');
+        elements.summaryChartContainer = document.getElementById('summary_chart');
+        elements.summaryContent = document.getElementById('summary_content');
+        elements.exportSummaryExcel = document.getElementById('export_summary_excel');
+        elements.exportSummaryPdf = document.getElementById('export_summary_pdf');
+        elements.exportChartPng = document.getElementById('export_chart_png');
 
-        // Toolbars
-        elements.costRecordsToolbar = document.getElementById('cost_records_toolbar');
-        elements.costSummaryToolbar = document.getElementById('cost_summary_toolbar');
-        elements.searchWrapper = document.getElementById('search_wrapper');
+        // Stats elements
+        elements.statTotalCost = document.getElementById('stat_total_cost');
+        elements.statTotalEntries = document.getElementById('stat_total_entries');
+        elements.statDailyAverage = document.getElementById('stat_daily_average');
 
         if (config.isAdmin) {
             elements.editCostForm = document.getElementById('edit_cost_form');
@@ -77,8 +89,8 @@ var KTCostRecords = (function () {
     // UTILITY FUNCTIONS
     // ============================================
     const formatCurrency = function (amount, forPdf = false) {
-        const formattedAmount = parseInt(amount).toLocaleString('en-BD');
-        return forPdf ? 'Tk ' + formattedAmount : '৳' + formattedAmount;
+        const prefix = forPdf ? 'Tk ' : '৳';
+        return prefix + parseInt(amount || 0).toLocaleString('en-BD');
     };
 
     const formatDate = function (dateStr) {
@@ -88,6 +100,24 @@ var KTCostRecords = (function () {
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
         return `${day}-${month}-${year}`;
+    };
+
+    const getTimestamp = function () {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}_${hours}${minutes}`;
+    };
+
+    const getBranchNameForFile = function () {
+        if (config.hasBranchTabs && activeBranchId) {
+            const branch = config.branches.find(b => b.id == activeBranchId);
+            return branch ? branch.prefix : 'All';
+        }
+        return config.branches && config.branches.length === 1 ? config.branches[0].prefix : 'All';
     };
 
     const setButtonLoading = function (btn, loading) {
@@ -109,6 +139,42 @@ var KTCostRecords = (function () {
     };
 
     // ============================================
+    // MENU POSITIONING
+    // ============================================
+    const positionMenu = function (btn, menu) {
+        if (!btn || !menu) return;
+
+        const rect = btn.getBoundingClientRect();
+        const menuWidth = menu.offsetWidth || 300;
+        const menuHeight = menu.offsetHeight || 400;
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        // Calculate left position
+        let left = rect.left;
+        if (left + menuWidth > viewportWidth - 10) {
+            left = rect.right - menuWidth;
+        }
+        if (left < 10) left = 10;
+
+        // Calculate top position
+        let top = rect.bottom + 5;
+        if (top + menuHeight > viewportHeight - 10) {
+            top = rect.top - menuHeight - 5;
+            if (top < 10) top = 10;
+        }
+
+        menu.style.position = 'fixed';
+        menu.style.top = top + 'px';
+        menu.style.left = left + 'px';
+    };
+
+    const closeAllMenus = function () {
+        if (elements.filterMenu) elements.filterMenu.classList.remove('show');
+        if (elements.exportMenu) elements.exportMenu.classList.remove('show');
+    };
+
+    // ============================================
     // MODALS INITIALIZATION
     // ============================================
     const initModals = function () {
@@ -118,66 +184,9 @@ var KTCostRecords = (function () {
         if (config.isAdmin) {
             const editCostEl = document.getElementById('edit_cost_modal');
             const deleteEl = document.getElementById('delete_cost_modal');
+
             if (editCostEl) editCostModal = new bootstrap.Modal(editCostEl);
             if (deleteEl) deleteModal = new bootstrap.Modal(deleteEl);
-        }
-    };
-
-    // ============================================
-    // DATE RANGE PICKERS
-    // ============================================
-    const initDateRangePickers = function () {
-        // Filter date range picker
-        if (elements.filterDateRange) {
-            $(elements.filterDateRange).daterangepicker({
-                autoUpdateInput: false,
-                maxDate: moment(),
-                locale: {
-                    format: 'DD-MM-YYYY',
-                    cancelLabel: 'Clear'
-                },
-                ranges: {
-                    'Today': [moment(), moment()],
-                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-                    'This Month': [moment().startOf('month'), moment()],
-                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-                }
-            });
-
-            $(elements.filterDateRange).on('apply.daterangepicker', function (ev, picker) {
-                $(this).val(picker.startDate.format('DD-MM-YYYY') + ' - ' + picker.endDate.format('DD-MM-YYYY'));
-            });
-
-            $(elements.filterDateRange).on('cancel.daterangepicker', function () {
-                $(this).val('');
-            });
-        }
-
-        // Summary date range picker with current month pre-selected
-        if (elements.summaryDateRange) {
-            const startOfMonth = moment().startOf('month');
-            const today = moment();
-
-            $(elements.summaryDateRange).daterangepicker({
-                startDate: startOfMonth,
-                endDate: today,
-                maxDate: moment(),
-                locale: {
-                    format: 'DD-MM-YYYY'
-                },
-                ranges: {
-                    'This Month': [moment().startOf('month'), moment()],
-                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
-                    'Last 3 Months': [moment().subtract(3, 'months').startOf('month'), moment()],
-                    'Last 6 Months': [moment().subtract(6, 'months').startOf('month'), moment()],
-                    'This Year': [moment().startOf('year'), moment()]
-                }
-            });
-
-            // Set initial value
-            elements.summaryDateRange.value = startOfMonth.format('DD-MM-YYYY') + ' - ' + today.format('DD-MM-YYYY');
         }
     };
 
@@ -185,13 +194,6 @@ var KTCostRecords = (function () {
     // COST TYPES LOADING
     // ============================================
     const loadCostTypes = function (callback) {
-        // Use preloaded cost types if available
-        if (config.costTypes && config.costTypes.length > 0) {
-            availableCostTypes = config.costTypes;
-            if (callback) callback();
-            return;
-        }
-
         fetch(config.routes.costTypes, {
             method: 'GET',
             headers: {
@@ -224,10 +226,12 @@ var KTCostRecords = (function () {
             costTypesTagify = null;
         }
 
-        // Filter out "Others" type from tagify - handled separately
         const whitelist = availableCostTypes
             .filter(ct => ct.name.toLowerCase() !== 'others')
-            .map(ct => ({ value: ct.name, id: ct.id }));
+            .map(ct => ({
+                value: ct.name,
+                id: ct.id
+            }));
 
         costTypesTagify = new Tagify(input, {
             whitelist: whitelist,
@@ -269,6 +273,7 @@ var KTCostRecords = (function () {
     // COST ENTRIES MANAGEMENT
     // ============================================
     const renderEmptyEntriesList = function () {
+        if (!elements.costEntriesList) return;
         elements.costEntriesList.innerHTML = `
             <div class="text-center text-muted py-5">
                 <i class="ki-outline ki-information fs-3x text-gray-400 mb-3"></i>
@@ -301,7 +306,7 @@ var KTCostRecords = (function () {
             <div class="input-group input-group-solid amount-input">
                 <span class="input-group-text">৳</span>
                 <input type="number" class="form-control form-control-solid entry-amount-input"
-                    data-cost-type-id="${costTypeIdStr}" min="1" step="1" placeholder="0">
+                       data-cost-type-id="${costTypeIdStr}" min="1" step="1" placeholder="0">
             </div>`;
 
         elements.costEntriesList.appendChild(row);
@@ -356,16 +361,16 @@ var KTCostRecords = (function () {
         row.innerHTML = `
             <div class="d-flex gap-2 align-items-center mb-2">
                 <input type="text" class="form-control form-control-solid other-description flex-grow-1"
-                    placeholder="Description (required)" value="${escapeHtml(description)}"
-                    data-row-id="${otherCostCounter}" required>
+                       placeholder="Description (required)" value="${escapeHtml(description)}"
+                       data-row-id="${otherCostCounter}" required>
                 <div class="input-group input-group-solid" style="width: 160px;">
                     <span class="input-group-text">৳</span>
                     <input type="number" class="form-control form-control-solid other-amount"
-                        min="1" step="1" placeholder="0" value="${amount}"
-                        data-row-id="${otherCostCounter}" required>
+                           min="1" step="1" placeholder="0" value="${amount}"
+                           data-row-id="${otherCostCounter}" required>
                 </div>
                 <button type="button" class="btn btn-icon btn-sm btn-light-danger remove-other-cost"
-                    data-row-id="${otherCostCounter}">
+                        data-row-id="${otherCostCounter}">
                     <i class="ki-outline ki-trash fs-6"></i>
                 </button>
             </div>`;
@@ -378,13 +383,11 @@ var KTCostRecords = (function () {
 
         descInput.addEventListener('input', function () {
             updateOtherCostEntry(this.dataset.rowId);
-            validateOtherCostRow(this.dataset.rowId);
             updateCostTotal();
         });
 
         amountInput.addEventListener('input', function () {
             updateOtherCostEntry(this.dataset.rowId);
-            validateOtherCostRow(this.dataset.rowId);
             updateCostTotal();
         });
 
@@ -400,42 +403,6 @@ var KTCostRecords = (function () {
 
         elements.costTotalSection?.classList.remove('d-none');
         setTimeout(() => descInput?.focus(), 100);
-    };
-
-    const validateOtherCostRow = function (rowId) {
-        const row = document.getElementById(`other_cost_row_${rowId}`);
-        if (!row) return true;
-
-        const descInput = row.querySelector('.other-description');
-        const amountInput = row.querySelector('.other-amount');
-        const description = descInput.value.trim();
-        const amount = parseInt(amountInput.value) || 0;
-
-        let isValid = true;
-
-        descInput.classList.remove('is-invalid');
-        amountInput.classList.remove('is-invalid');
-
-        if (description && amount <= 0) {
-            amountInput.classList.add('is-invalid');
-            isValid = false;
-        }
-        if (!description && amount > 0) {
-            descInput.classList.add('is-invalid');
-            isValid = false;
-        }
-
-        return isValid;
-    };
-
-    const validateAllOtherCostRows = function () {
-        let allValid = true;
-        otherCostEntries.forEach(entry => {
-            if (!validateOtherCostRow(entry.rowId)) {
-                allValid = false;
-            }
-        });
-        return allValid;
     };
 
     const updateOtherCostEntry = function (rowId) {
@@ -514,7 +481,9 @@ var KTCostRecords = (function () {
     // ============================================
     // SEARCH HANDLER
     // ============================================
-    const handleSearch = function () {
+    let searchDebounceTimer = null;
+
+    const initSearch = function () {
         if (!elements.searchInput) return;
 
         elements.searchInput.addEventListener('keyup', function (e) {
@@ -528,133 +497,572 @@ var KTCostRecords = (function () {
     };
 
     // ============================================
-    // FILTER HANDLER
+    // FILTER HANDLERS
     // ============================================
-    const handleFilter = function () {
-        const filterButton = document.querySelector('[data-cost-table-filter="filter"]');
-        const resetButton = document.querySelector('[data-cost-table-filter="reset"]');
+    const initFilterHandlers = function () {
+        // Filter button click
+        if (elements.filterBtn && elements.filterMenu) {
+            elements.filterBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
 
-        if (filterButton) {
-            filterButton.addEventListener('click', function () {
-                // Get date range
-                const dateRangeVal = elements.filterDateRange?.value || '';
-                if (dateRangeVal) {
-                    const parts = dateRangeVal.split(' - ');
-                    if (parts.length === 2) {
-                        currentDateRange.start = parts[0];
-                        currentDateRange.end = parts[1];
+                // Close export menu
+                if (elements.exportMenu) {
+                    elements.exportMenu.classList.remove('show');
+                }
+
+                // Toggle filter menu
+                const isOpen = elements.filterMenu.classList.contains('show');
+                if (isOpen) {
+                    elements.filterMenu.classList.remove('show');
+                } else {
+                    elements.filterMenu.classList.add('show');
+                    positionMenu(elements.filterBtn, elements.filterMenu);
+                }
+            });
+
+            // Prevent menu close when clicking inside
+            elements.filterMenu.addEventListener('click', function (e) {
+                e.stopPropagation();
+            });
+        }
+
+        // Apply button
+        if (elements.filterApplyBtn) {
+            elements.filterApplyBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                applyFilters();
+                elements.filterMenu.classList.remove('show');
+            });
+        }
+
+        // Reset button
+        if (elements.filterResetBtn) {
+            elements.filterResetBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                resetFilters();
+                elements.filterMenu.classList.remove('show');
+            });
+        }
+
+        // Clear all filters button
+        if (elements.clearAllFiltersBtn) {
+            elements.clearAllFiltersBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                resetFilters();
+            });
+        }
+
+        // Initialize date range picker
+        initFilterDateRangePicker();
+
+        // Initialize cost types Select2
+        initFilterCostTypesSelect();
+
+        // Document click to close menus
+        document.addEventListener('click', function (e) {
+            const isInsideFilter = elements.filterMenu && elements.filterMenu.contains(e.target);
+            const isFilterBtn = elements.filterBtn && elements.filterBtn.contains(e.target);
+            const isInsideExport = elements.exportMenu && elements.exportMenu.contains(e.target);
+            const isExportBtn = elements.exportBtn && elements.exportBtn.contains(e.target);
+            const isSelect2 = e.target.closest('.select2-container, .select2-dropdown');
+            const isDatepicker = e.target.closest('.daterangepicker');
+
+            if (!isInsideFilter && !isFilterBtn && !isSelect2 && !isDatepicker) {
+                if (elements.filterMenu) elements.filterMenu.classList.remove('show');
+            }
+
+            if (!isInsideExport && !isExportBtn) {
+                if (elements.exportMenu) elements.exportMenu.classList.remove('show');
+            }
+        });
+
+        // Reposition on scroll
+        window.addEventListener('scroll', function () {
+            if (elements.filterMenu && elements.filterMenu.classList.contains('show')) {
+                positionMenu(elements.filterBtn, elements.filterMenu);
+            }
+            if (elements.exportMenu && elements.exportMenu.classList.contains('show')) {
+                positionMenu(elements.exportBtn, elements.exportMenu);
+            }
+        }, { passive: true });
+
+        // Close on resize
+        window.addEventListener('resize', function () {
+            closeAllMenus();
+        });
+    };
+
+    const initFilterDateRangePicker = function () {
+        if (!elements.filterDateRange) return;
+
+        $(elements.filterDateRange).daterangepicker({
+            autoUpdateInput: false,
+            locale: {
+                format: 'DD-MM-YYYY',
+                cancelLabel: 'Clear'
+            },
+            ranges: {
+                'Today': [moment(), moment()],
+                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            },
+            opens: 'left',
+            drops: 'down',
+            parentEl: 'body'
+        });
+
+        $(elements.filterDateRange).on('apply.daterangepicker', function (ev, picker) {
+            $(this).val(picker.startDate.format('DD-MM-YYYY') + ' - ' + picker.endDate.format('DD-MM-YYYY'));
+        });
+
+        $(elements.filterDateRange).on('cancel.daterangepicker', function () {
+            $(this).val('');
+        });
+    };
+
+    const initFilterCostTypesSelect = function () {
+        if (!elements.filterCostTypes) return;
+
+        $(elements.filterCostTypes).select2({
+            placeholder: 'All cost types',
+            allowClear: true,
+            multiple: true,
+            width: '100%',
+            dropdownParent: $('body')
+        });
+    };
+
+    const applyFilters = function () {
+        // Get date range
+        const dateRangeVal = elements.filterDateRange ? elements.filterDateRange.value : '';
+        if (dateRangeVal && dateRangeVal.includes(' - ')) {
+            const parts = dateRangeVal.split(' - ');
+            currentStartDate = parts[0].trim();
+            currentEndDate = parts[1].trim();
+        } else {
+            currentStartDate = '';
+            currentEndDate = '';
+        }
+
+        // Get cost types
+        currentCostTypeIds = elements.filterCostTypes ? $(elements.filterCostTypes).val() || [] : [];
+
+        // Update active filters display
+        updateActiveFiltersDisplay();
+
+        // Reload table
+        reloadActiveBranchTable();
+    };
+
+    const resetFilters = function () {
+        // Clear date range
+        if (elements.filterDateRange) {
+            $(elements.filterDateRange).val('');
+        }
+
+        // Clear cost types
+        if (elements.filterCostTypes) {
+            $(elements.filterCostTypes).val(null).trigger('change');
+        }
+
+        // Reset state
+        currentStartDate = '';
+        currentEndDate = '';
+        currentCostTypeIds = [];
+
+        // Update display
+        updateActiveFiltersDisplay();
+
+        // Reload table
+        reloadActiveBranchTable();
+    };
+
+    const updateActiveFiltersDisplay = function () {
+        if (!elements.activeFiltersContainer) return;
+
+        const filters = [];
+
+        if (currentStartDate && currentEndDate) {
+            filters.push({
+                type: 'date',
+                label: `Date: ${currentStartDate} - ${currentEndDate}`
+            });
+        }
+
+        if (currentCostTypeIds && currentCostTypeIds.length > 0) {
+            const typeNames = [];
+            currentCostTypeIds.forEach(id => {
+                const type = config.costTypes.find(t => t.id == id);
+                if (type) typeNames.push(type.name);
+            });
+            if (typeNames.length > 0) {
+                filters.push({
+                    type: 'cost_types',
+                    label: `Types: ${typeNames.join(', ')}`
+                });
+            }
+        }
+
+        if (filters.length === 0) {
+            elements.activeFiltersContainer.classList.add('d-none');
+            elements.activeFiltersContainer.innerHTML = '';
+            return;
+        }
+
+        let html = '<div class="d-flex flex-wrap align-items-center gap-2">';
+        html += '<span class="text-muted fs-7">Active Filters:</span>';
+
+        filters.forEach(filter => {
+            html += `<span class="badge badge-light-primary fs-7 d-flex align-items-center gap-1">
+                ${escapeHtml(filter.label)}
+                <button type="button" class="btn btn-icon btn-sm btn-active-light-primary p-0 ms-1" 
+                        data-remove-filter="${filter.type}" style="width: 16px; height: 16px;">
+                    <i class="ki-outline ki-cross fs-7"></i>
+                </button>
+            </span>`;
+        });
+
+        html += `<a href="#" id="clear_all_filters_link" class="text-primary fs-7 ms-2">Clear All</a>`;
+        html += '</div>';
+
+        elements.activeFiltersContainer.innerHTML = html;
+        elements.activeFiltersContainer.classList.remove('d-none');
+
+        // Bind remove filter buttons
+        elements.activeFiltersContainer.querySelectorAll('[data-remove-filter]').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const filterType = this.dataset.removeFilter;
+                removeFilter(filterType);
+            });
+        });
+
+        // Bind clear all link
+        const clearAllLink = document.getElementById('clear_all_filters_link');
+        if (clearAllLink) {
+            clearAllLink.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                resetFilters();
+            });
+        }
+    };
+
+    const removeFilter = function (filterType) {
+        if (filterType === 'date') {
+            currentStartDate = '';
+            currentEndDate = '';
+            if (elements.filterDateRange) $(elements.filterDateRange).val('');
+        } else if (filterType === 'cost_types') {
+            currentCostTypeIds = [];
+            if (elements.filterCostTypes) $(elements.filterCostTypes).val(null).trigger('change');
+        }
+
+        updateActiveFiltersDisplay();
+        reloadActiveBranchTable();
+    };
+
+    // ============================================
+    // EXPORT HANDLERS
+    // ============================================
+    const initExportHandlers = function () {
+        if (elements.exportBtn && elements.exportMenu) {
+            elements.exportBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                // Close filter menu
+                if (elements.filterMenu) {
+                    elements.filterMenu.classList.remove('show');
+                }
+
+                // Toggle export menu
+                const isOpen = elements.exportMenu.classList.contains('show');
+                if (isOpen) {
+                    elements.exportMenu.classList.remove('show');
+                } else {
+                    elements.exportMenu.classList.add('show');
+                    positionMenu(elements.exportBtn, elements.exportMenu);
+                }
+            });
+
+            // Export type clicks
+            elements.exportMenu.querySelectorAll('[data-export-type]').forEach(item => {
+                item.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const exportType = this.dataset.exportType;
+                    handleExport(exportType);
+                    elements.exportMenu.classList.remove('show');
+                });
+            });
+        }
+    };
+
+    const handleExport = function (type) {
+        const branchId = config.hasBranchTabs ? activeBranchId : (config.branches[0]?.id || '');
+
+        const params = new URLSearchParams({
+            branch_id: branchId,
+            search_value: currentSearchValue,
+            start_date: currentStartDate,
+            end_date: currentEndDate,
+            cost_type_ids: currentCostTypeIds.join(',')
+        });
+
+        fetch(`${config.routes.exportCosts}?${params.toString()}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            }
+        })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success && res.data) {
+                    const branchName = res.branch_name || getBranchNameForFile();
+                    const timestamp = getTimestamp();
+
+                    switch (type) {
+                        case 'copy':
+                            copyToClipboard(res.data);
+                            break;
+                        case 'excel':
+                            exportToExcel(res.data, branchName, timestamp);
+                            break;
+                        case 'csv':
+                            exportToCsv(res.data, branchName, timestamp);
+                            break;
+                        case 'pdf':
+                            exportToPdf(res.data, branchName, timestamp);
+                            break;
                     }
                 } else {
-                    currentDateRange.start = null;
-                    currentDateRange.end = null;
+                    toastr.error(res.message || 'Failed to export data');
                 }
-
-                // Get branch filter
-                currentBranchFilter = elements.filterBranchSelect?.value || '';
-
-                reloadCostsDataTable();
+            })
+            .catch(err => {
+                console.error('Export error:', err);
+                toastr.error('Failed to export data');
             });
-        }
+    };
 
-        if (resetButton) {
-            resetButton.addEventListener('click', function () {
-                if (elements.filterDateRange) {
-                    $(elements.filterDateRange).val('');
-                }
-                if (elements.filterBranchSelect) {
-                    $(elements.filterBranchSelect).val(null).trigger('change');
-                }
+    const copyToClipboard = function (data) {
+        const headers = ['SL', 'Date', 'Cost Entries', 'Total (Tk)', 'Created By'];
+        let text = headers.join('\t') + '\n';
 
-                currentDateRange = { start: null, end: null };
-                currentBranchFilter = '';
+        data.forEach((row, index) => {
+            const entries = row.entries || [];
+            const entriesStr = entries.map(e => `${e.cost_type_name}: ${e.amount}`).join(', ');
+            text += [
+                index + 1,
+                row.cost_date,
+                entriesStr,
+                row.total_amount,
+                row.created_by
+            ].join('\t') + '\n';
+        });
 
-                reloadCostsDataTable();
-            });
-        }
+        navigator.clipboard.writeText(text)
+            .then(() => toastr.success('Data copied to clipboard!'))
+            .catch(() => toastr.error('Failed to copy data'));
+    };
+
+    const exportToExcel = function (data, branchName, timestamp) {
+        const headers = ['SL', 'Date', 'Cost Entries', 'Total (Tk)', 'Created By'];
+        const wsData = [headers];
+
+        data.forEach((row, index) => {
+            const entries = row.entries || [];
+            const entriesStr = entries.map(e => `${e.cost_type_name}: ${e.amount}`).join(', ');
+            wsData.push([
+                index + 1,
+                row.cost_date,
+                entriesStr,
+                row.total_amount,
+                row.created_by
+            ]);
+        });
+
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Cost Records');
+
+        ws['!cols'] = [
+            { wch: 5 },
+            { wch: 12 },
+            { wch: 50 },
+            { wch: 15 },
+            { wch: 20 }
+        ];
+
+        XLSX.writeFile(wb, `Cost_Records_${branchName}_${timestamp}.xlsx`);
+        toastr.success('Excel file downloaded!');
+    };
+
+    const exportToCsv = function (data, branchName, timestamp) {
+        const headers = ['SL', 'Date', 'Cost Entries', 'Total (Tk)', 'Created By'];
+        const wsData = [headers];
+
+        data.forEach((row, index) => {
+            const entries = row.entries || [];
+            const entriesStr = entries.map(e => `${e.cost_type_name}: ${e.amount}`).join(', ');
+            wsData.push([
+                index + 1,
+                row.cost_date,
+                entriesStr,
+                row.total_amount,
+                row.created_by
+            ]);
+        });
+
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        const csv = XLSX.utils.sheet_to_csv(ws);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `Cost_Records_${branchName}_${timestamp}.csv`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+        toastr.success('CSV file downloaded!');
+    };
+
+    const exportToPdf = function (data, branchName, timestamp) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'mm', 'a4');
+
+        const headers = [['SL', 'Date', 'Cost Entries', 'Total (Tk)', 'Created By']];
+        const rows = data.map((row, index) => {
+            const entries = row.entries || [];
+            const entriesStr = entries.map(e => `${e.cost_type_name}: Tk ${e.amount}`).join(', ');
+            return [
+                index + 1,
+                row.cost_date,
+                entriesStr,
+                'Tk ' + parseInt(row.total_amount || 0).toLocaleString(),
+                row.created_by
+            ];
+        });
+
+        doc.setFontSize(16);
+        doc.text(`Cost Records - ${branchName}`, 14, 15);
+        doc.setFontSize(10);
+        doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 22);
+
+        doc.autoTable({
+            head: headers,
+            body: rows,
+            startY: 28,
+            styles: { fontSize: 8, cellPadding: 2 },
+            headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+            alternateRowStyles: { fillColor: [245, 245, 245] },
+            columnStyles: {
+                0: { cellWidth: 10 },
+                1: { cellWidth: 25 },
+                2: { cellWidth: 120 },
+                3: { cellWidth: 25 },
+                4: { cellWidth: 30 }
+            }
+        });
+
+        doc.save(`Cost_Records_${branchName}_${timestamp}.pdf`);
+        toastr.success('PDF file downloaded!');
     };
 
     // ============================================
     // COSTS DATATABLE
     // ============================================
-    const getDataTableColumns = function (showBranchColumn, showActions) {
+    const getDataTableColumns = function (showActions) {
         const columns = [
             {
+                data: null,
+                className: 'text-center',
+                orderable: false,
+                render: function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            {
                 data: 'cost_date',
-                className: 'ps-4',
-                render: data => `<span class="fw-semibold text-gray-800">${formatDate(data)}</span>`
-            }
-        ];
+                orderable: false,
+                render: function (data) {
+                    return `<span class="fw-semibold text-gray-800">${formatDate(data)}</span>`;
+                }
+            },
+            {
+                data: 'entries',
+                orderable: false,
+                render: function (data) {
+                    if (!data || data.length === 0) return '<span class="text-muted">No entries</span>';
 
-        if (showBranchColumn) {
-            columns.push({
-                data: 'branch',
-                render: data => data
-                    ? `<span class="badge badge-light-primary">${escapeHtml(data.branch_name)} (${escapeHtml(data.branch_prefix)})</span>`
-                    : '-'
-            });
-        }
+                    return data.map(entry => {
+                        const typeName = entry.cost_type?.name || 'Unknown';
+                        const isOthers = typeName.toLowerCase() === 'others';
+                        const displayName = isOthers && entry.description
+                            ? `Others: ${escapeHtml(entry.description)}`
+                            : escapeHtml(typeName);
 
-        columns.push({
-            data: 'entries',
-            render: function (data) {
-                if (!data || data.length === 0) return '<span class="text-muted">No entries</span>';
-
-                return data.map(entry => {
-                    const typeName = entry.cost_type?.name || 'Unknown';
-                    const isOthers = typeName.toLowerCase() === 'others';
-                    const displayName = isOthers && entry.description
-                        ? `Others: ${escapeHtml(entry.description)}`
-                        : escapeHtml(typeName);
-
-                    return `
-                        <span class="entry-badge">
+                        return `<span class="entry-badge">
                             <span class="type-name">${displayName}</span>
                             <span class="type-amount">${formatCurrency(entry.amount)}</span>
                         </span>`;
-                }).join('');
+                    }).join('');
+                }
+            },
+            {
+                data: 'entries_count',
+                className: 'text-center',
+                orderable: false,
+                render: function (data) {
+                    return `<span class="badge badge-light-primary fw-bold">${data || 0}</span>`;
+                }
+            },
+            {
+                data: 'total_amount',
+                className: 'text-end',
+                orderable: false,
+                render: function (data) {
+                    return `<span class="fw-bold text-primary fs-6">${formatCurrency(data)}</span>`;
+                }
+            },
+            {
+                data: 'created_by',
+                orderable: false,
+                render: function (data) {
+                    return data ? `<span class="text-gray-600">${escapeHtml(data.name)}</span>` : '-';
+                }
             }
-        });
-
-        columns.push({
-            data: 'total_amount',
-            className: 'text-end',
-            render: data => `<span class="fw-bold text-primary fs-5">${formatCurrency(data)}</span>`
-        });
-
-        columns.push({
-            data: 'created_by',
-            render: data => data ? `<span class="text-gray-600">${escapeHtml(data.name)}</span>` : '-'
-        });
+        ];
 
         if (showActions) {
             columns.push({
                 data: null,
-                className: 'text-center pe-4',
+                className: 'text-end',
                 orderable: false,
-                render: (data, type, row) => `
-                    <div class="d-flex justify-content-center gap-1">
-                        <button type="button" class="btn btn-icon btn-sm btn-light-primary"
-                            onclick="KTCostRecords.openEditCostModal(${row.id})" title="Edit">
+                render: function (data, type, row) {
+                    return `<div class="d-flex justify-content-end gap-1">
+                        <button type="button" class="btn btn-icon btn-sm btn-light-primary" 
+                                onclick="KTCostRecords.openEditCostModal(${row.id})" title="Edit">
                             <i class="ki-outline ki-pencil fs-6"></i>
                         </button>
-                        <button type="button" class="btn btn-icon btn-sm btn-light-danger"
-                            onclick="KTCostRecords.openDeleteModal(${row.id})" title="Delete">
+                        <button type="button" class="btn btn-icon btn-sm btn-light-danger" 
+                                onclick="KTCostRecords.openDeleteModal(${row.id})" title="Delete">
                             <i class="ki-outline ki-trash fs-6"></i>
                         </button>
-                    </div>`
+                    </div>`;
+                }
             });
         }
 
         return columns;
-    };
-
-    const getAjaxData = function (branchId) {
-        return function (d) {
-            d.branch_id = branchId || currentBranchFilter || '';
-            d.search_value = currentSearchValue;
-            d.start_date = currentDateRange.start || '';
-            d.end_date = currentDateRange.end || '';
-        };
     };
 
     const initCostsDataTable = function () {
@@ -671,7 +1079,6 @@ var KTCostRecords = (function () {
                 tab.addEventListener('shown.bs.tab', function () {
                     const branchId = this.dataset.branchId;
                     activeBranchId = branchId;
-
                     if (costsDataTables[branchId]) {
                         costsDataTables[branchId].ajax.reload(null, false);
                         costsDataTables[branchId].columns.adjust();
@@ -690,24 +1097,36 @@ var KTCostRecords = (function () {
         costsDataTables[branchId] = $(table).DataTable({
             processing: true,
             serverSide: false,
+            ordering: false,
             ajax: {
                 url: config.routes.costsData,
                 type: 'GET',
-                data: getAjaxData(branchId),
+                data: function (d) {
+                    d.branch_id = branchId;
+                    d.search_value = currentSearchValue;
+                    d.start_date = currentStartDate;
+                    d.end_date = currentEndDate;
+                    d.cost_type_ids = currentCostTypeIds.join(',');
+                },
                 headers: { 'X-CSRF-TOKEN': csrfToken },
                 dataSrc: function (json) {
                     updateBranchCount(branchId, json.data?.length || 0);
                     return json.success ? json.data : [];
+                },
+                error: function (xhr, error, thrown) {
+                    console.error('DataTable Ajax Error:', error, thrown);
+                    toastr.error('Failed to load cost records');
                 }
             },
-            columns: getDataTableColumns(false, true),
-            order: [[0, 'desc']],
+            columns: getDataTableColumns(true),
             pageLength: 10,
             language: {
-                emptyTable: "No cost records found for this branch",
-                processing: '<div class="d-flex justify-content-center"><span class="spinner-border spinner-border-sm" role="status"></span><span class="ms-2">Loading...</span></div>'
+                emptyTable: "No cost records found",
+                processing: '<div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div>'
             },
-            drawCallback: () => KTMenu.init()
+            drawCallback: function () {
+                if (typeof KTMenu !== 'undefined') KTMenu.init();
+            }
         });
     };
 
@@ -715,43 +1134,51 @@ var KTCostRecords = (function () {
         const table = document.getElementById('costs_datatable');
         if (!table) return;
 
-        const showBranch = config.isAdmin;
         const showActions = config.isAdmin;
 
         costsDataTables['single'] = $(table).DataTable({
             processing: true,
             serverSide: false,
+            ordering: false,
             ajax: {
                 url: config.routes.costsData,
                 type: 'GET',
-                data: getAjaxData(null),
+                data: function (d) {
+                    d.search_value = currentSearchValue;
+                    d.start_date = currentStartDate;
+                    d.end_date = currentEndDate;
+                    d.cost_type_ids = currentCostTypeIds.join(',');
+                },
                 headers: { 'X-CSRF-TOKEN': csrfToken },
                 dataSrc: function (json) {
                     return json.success ? json.data : [];
+                },
+                error: function (xhr, error, thrown) {
+                    console.error('DataTable Ajax Error:', error, thrown);
+                    toastr.error('Failed to load cost records');
                 }
             },
-            columns: getDataTableColumns(showBranch, showActions),
-            order: [[0, 'desc']],
+            columns: getDataTableColumns(showActions),
             pageLength: 10,
             language: {
                 emptyTable: "No cost records found",
-                processing: '<div class="d-flex justify-content-center"><span class="spinner-border spinner-border-sm" role="status"></span><span class="ms-2">Loading...</span></div>'
+                processing: '<div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div>'
             },
-            drawCallback: () => KTMenu.init()
+            drawCallback: function () {
+                if (typeof KTMenu !== 'undefined') KTMenu.init();
+            }
         });
     };
 
     const updateBranchCount = function (branchId, count) {
         const badge = document.querySelector(`.branch-count[data-branch-id="${branchId}"]`);
-        if (badge) {
-            badge.textContent = count;
-        }
+        if (badge) badge.textContent = count;
     };
 
     const reloadCostsDataTable = function () {
         if (config.hasBranchTabs) {
             Object.values(costsDataTables).forEach(dt => {
-                dt.ajax.reload(null, false);
+                if (dt && dt.ajax) dt.ajax.reload(null, false);
             });
         } else if (costsDataTables['single']) {
             costsDataTables['single'].ajax.reload(null, false);
@@ -767,197 +1194,6 @@ var KTCostRecords = (function () {
     };
 
     // ============================================
-    // EXPORT HANDLERS
-    // ============================================
-    const fetchExportData = function () {
-        return new Promise((resolve, reject) => {
-            const params = new URLSearchParams({
-                branch_id: activeBranchId || currentBranchFilter || '',
-                search_value: currentSearchValue,
-                start_date: currentDateRange.start || '',
-                end_date: currentDateRange.end || ''
-            });
-
-            fetch(`${config.routes.costsExport}?${params.toString()}`, {
-                method: 'GET',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json'
-                }
-            })
-                .then(response => {
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    return response.json();
-                })
-                .then(data => resolve(data.data))
-                .catch(error => reject(error));
-        });
-    };
-
-    const copyToClipboard = function (data) {
-        let headers = ['SL', 'Date', 'Branch', 'Cost Entries', 'Total Amount', 'Created By'];
-        let text = headers.join('\t') + '\n';
-
-        data.forEach((row, index) => {
-            text += [
-                index + 1,
-                row.cost_date,
-                row.branch_name,
-                row.entries_text,
-                row.total_amount,
-                row.created_by
-            ].join('\t') + '\n';
-        });
-
-        navigator.clipboard.writeText(text)
-            .then(() => toastr.success('Data copied to clipboard!'))
-            .catch(() => {
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                toastr.success('Data copied to clipboard!');
-            });
-    };
-
-    const exportToExcel = function (data) {
-        const headers = ['SL', 'Date', 'Branch', 'Cost Entries', 'Total Amount (Tk)', 'Created By'];
-        const wsData = [headers];
-
-        data.forEach((row, index) => {
-            wsData.push([
-                index + 1,
-                row.cost_date,
-                row.branch_name,
-                row.entries_text,
-                row.total_amount_raw,
-                row.created_by
-            ]);
-        });
-
-        const ws = XLSX.utils.aoa_to_sheet(wsData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Cost Records');
-
-        ws['!cols'] = [
-            { wch: 5 }, { wch: 12 }, { wch: 20 }, { wch: 50 }, { wch: 15 }, { wch: 20 }
-        ];
-
-        const fileName = `Cost_Records_${new Date().toISOString().slice(0, 10)}.xlsx`;
-        XLSX.writeFile(wb, fileName);
-        toastr.success('Excel file downloaded successfully!');
-    };
-
-    const exportToCSV = function (data) {
-        const headers = ['SL', 'Date', 'Branch', 'Cost Entries', 'Total Amount (Tk)', 'Created By'];
-        const wsData = [headers];
-
-        data.forEach((row, index) => {
-            wsData.push([
-                index + 1,
-                row.cost_date,
-                row.branch_name,
-                row.entries_text,
-                row.total_amount_raw,
-                row.created_by
-            ]);
-        });
-
-        const ws = XLSX.utils.aoa_to_sheet(wsData);
-        const csv = XLSX.utils.sheet_to_csv(ws);
-
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const fileName = `Cost_Records_${new Date().toISOString().slice(0, 10)}.csv`;
-        link.href = URL.createObjectURL(blob);
-        link.download = fileName;
-        link.click();
-        URL.revokeObjectURL(link.href);
-        toastr.success('CSV file downloaded successfully!');
-    };
-
-    const exportToPDF = function (data) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('l', 'mm', 'a4');
-
-        const headers = [['SL', 'Date', 'Branch', 'Cost Entries', 'Total (Tk)', 'Created By']];
-        const rows = data.map((row, index) => [
-            index + 1,
-            row.cost_date,
-            row.branch_name,
-            row.entries_text,
-            row.total_amount_raw,
-            row.created_by
-        ]);
-
-        doc.setFontSize(16);
-        doc.text('Cost Records Report', 14, 15);
-
-        doc.setFontSize(10);
-        doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 22);
-
-        doc.autoTable({
-            head: headers,
-            body: rows,
-            startY: 28,
-            styles: { fontSize: 8, cellPadding: 2 },
-            headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' },
-            alternateRowStyles: { fillColor: [245, 245, 245] },
-            columnStyles: {
-                0: { cellWidth: 10 },
-                1: { cellWidth: 25 },
-                2: { cellWidth: 35 },
-                3: { cellWidth: 80 },
-                4: { cellWidth: 25 },
-                5: { cellWidth: 30 }
-            },
-            margin: { top: 28 }
-        });
-
-        const fileName = `Cost_Records_${new Date().toISOString().slice(0, 10)}.pdf`;
-        doc.save(fileName);
-        toastr.success('PDF file downloaded successfully!');
-    };
-
-    const handleExport = function () {
-        document.querySelectorAll('[data-cost-export]').forEach(btn => {
-            btn.addEventListener('click', function (e) {
-                e.preventDefault();
-                const exportType = this.dataset.costExport;
-
-                fetchExportData()
-                    .then(data => {
-                        if (!data || data.length === 0) {
-                            toastr.warning('No data to export');
-                            return;
-                        }
-
-                        switch (exportType) {
-                            case 'copy':
-                                copyToClipboard(data);
-                                break;
-                            case 'excel':
-                                exportToExcel(data);
-                                break;
-                            case 'csv':
-                                exportToCSV(data);
-                                break;
-                            case 'pdf':
-                                exportToPDF(data);
-                                break;
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Export error:', err);
-                        toastr.error('Failed to export data');
-                    });
-            });
-        });
-    };
-
-    // ============================================
     // ADD COST MODAL
     // ============================================
     const openAddCostModal = function () {
@@ -966,7 +1202,7 @@ var KTCostRecords = (function () {
         if (!config.isAdmin && branchId) {
             checkTodayCostExists(branchId, (exists) => {
                 if (exists) {
-                    toastr.warning('Cost record already exists for today. Please edit the existing record.');
+                    toastr.warning("Cost record already exists for today. Please edit the existing record.");
                     return;
                 }
                 showCostModal();
@@ -980,6 +1216,7 @@ var KTCostRecords = (function () {
         document.getElementById('cost_modal_title').textContent = "Add Today's Cost";
         elements.costForm?.reset();
         resetTagify();
+
         document.getElementById('cost_date').value = config.todayDate;
 
         if (config.isAdmin) {
@@ -1016,16 +1253,7 @@ var KTCostRecords = (function () {
                 amount: e.amount
             }));
 
-        if (!validateAllOtherCostRows()) {
-            toastr.error('Please fill in both description and amount for all Other Costs entries');
-            return;
-        }
-
-        const validOtherEntries = otherCostEntries.filter(e => {
-            const hasDescription = e.description && e.description.trim() !== '';
-            const hasAmount = e.amount > 0;
-            return hasDescription && hasAmount;
-        });
+        const validOtherEntries = otherCostEntries.filter(e => e.description && e.amount > 0);
 
         if (othersCostType) {
             validOtherEntries.forEach(e => {
@@ -1035,19 +1263,10 @@ var KTCostRecords = (function () {
                     description: e.description.trim()
                 });
             });
-        } else if (validOtherEntries.length > 0) {
-            toastr.error('Others cost type not found. Please contact administrator.');
-            return;
         }
 
         if (entries.length === 0) {
             toastr.error('Please add at least one cost entry with amount');
-            return;
-        }
-
-        const invalidEntries = entries.filter(e => e.amount < 1);
-        if (invalidEntries.length > 0) {
-            toastr.error('Amount must be at least 1 for each entry');
             return;
         }
 
@@ -1108,9 +1327,8 @@ var KTCostRecords = (function () {
                     const cost = res.data;
                     document.getElementById('edit_cost_id').value = cost.id;
                     document.getElementById('edit_cost_date').textContent = formatDate(cost.cost_date);
-                    document.getElementById('edit_cost_branch').textContent = cost.branch
-                        ? `${cost.branch.branch_name} (${cost.branch.branch_prefix})`
-                        : '-';
+                    document.getElementById('edit_cost_branch').textContent =
+                        cost.branch ? `${cost.branch.branch_name} (${cost.branch.branch_prefix})` : '-';
 
                     renderEditEntries(cost.entries);
                     updateEditTotal();
@@ -1144,10 +1362,9 @@ var KTCostRecords = (function () {
                 <div class="input-group input-group-solid entry-amount-input">
                     <span class="input-group-text">৳</span>
                     <input type="number" class="form-control form-control-solid edit-entry-amount"
-                        data-entry-id="${entry.id}" value="${entry.amount}" min="1" step="1"
-                        oninput="KTCostRecords.updateEditTotal()">
+                           data-entry-id="${entry.id}" value="${entry.amount}" min="1" step="1"
+                           oninput="KTCostRecords.updateEditTotal()">
                 </div>`;
-
             entriesList.appendChild(row);
         });
     };
@@ -1264,27 +1481,101 @@ var KTCostRecords = (function () {
     // ============================================
     // COST SUMMARY
     // ============================================
+    const initSummary = function () {
+        initSummaryDateRangePicker();
+        initSummaryBranchSelect();
+
+        if (elements.generateSummaryBtn) {
+            elements.generateSummaryBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                generateSummary();
+            });
+        }
+
+        if (elements.exportSummaryExcel) {
+            elements.exportSummaryExcel.addEventListener('click', function (e) {
+                e.preventDefault();
+                exportSummaryToExcel();
+            });
+        }
+
+        if (elements.exportSummaryPdf) {
+            elements.exportSummaryPdf.addEventListener('click', function (e) {
+                e.preventDefault();
+                exportSummaryToPdf();
+            });
+        }
+
+        if (elements.exportChartPng) {
+            elements.exportChartPng.addEventListener('click', function (e) {
+                e.preventDefault();
+                exportChartToPng();
+            });
+        }
+    };
+
+    const initSummaryDateRangePicker = function () {
+        if (!elements.summaryDateRange) return;
+
+        const start = moment().startOf('month');
+        const end = moment();
+
+        $(elements.summaryDateRange).daterangepicker({
+            startDate: start,
+            endDate: end,
+            locale: {
+                format: 'DD-MM-YYYY'
+            },
+            ranges: {
+                'Today': [moment(), moment()],
+                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            },
+            opens: 'left'
+        });
+
+        elements.summaryDateRange.value = start.format('DD-MM-YYYY') + ' - ' + end.format('DD-MM-YYYY');
+    };
+
+    const initSummaryBranchSelect = function () {
+        if (!elements.summaryBranchFilter) return;
+
+        $(elements.summaryBranchFilter).select2({
+            placeholder: 'All Branches',
+            allowClear: true,
+            width: '100%'
+        });
+    };
+
+    let summaryData = null;
+
     const generateSummary = function () {
-        const dateRangeVal = elements.summaryDateRange?.value || '';
-        if (!dateRangeVal) {
+        const dateRangeVal = elements.summaryDateRange ? elements.summaryDateRange.value : '';
+        let startDate = '';
+        let endDate = '';
+
+        if (dateRangeVal && dateRangeVal.includes(' - ')) {
+            const parts = dateRangeVal.split(' - ');
+            startDate = parts[0].trim();
+            endDate = parts[1].trim();
+        }
+
+        const branchId = elements.summaryBranchFilter ? $(elements.summaryBranchFilter).val() : '';
+
+        if (!startDate || !endDate) {
             toastr.error('Please select a date range');
             return;
         }
 
-        const parts = dateRangeVal.split(' - ');
-        if (parts.length !== 2) {
-            toastr.error('Invalid date range format');
-            return;
-        }
-
-        const branchId = elements.summaryBranchSelect?.value || '';
-
         setButtonLoading(elements.generateSummaryBtn, true);
 
         const params = new URLSearchParams({
-            start_date: parts[0],
-            end_date: parts[1],
-            branch_id: branchId
+            start_date: startDate,
+            end_date: endDate,
+            branch_id: branchId || ''
         });
 
         fetch(`${config.routes.costSummary}?${params.toString()}`, {
@@ -1298,55 +1589,104 @@ var KTCostRecords = (function () {
             .then(res => {
                 setButtonLoading(elements.generateSummaryBtn, false);
 
-                if (res.success) {
-                    displaySummary(res.data);
+                if (res.success && res.data) {
+                    summaryData = res.data;
+                    renderSummaryStats(res.data);
+                    renderSummaryTable(res.data.summary || []);
+                    renderSummaryChart(res.data.summary || []);
+                    elements.summaryContent?.classList.remove('d-none');
                 } else {
                     toastr.error(res.message || 'Failed to generate summary');
                 }
             })
             .catch(err => {
                 setButtonLoading(elements.generateSummaryBtn, false);
-                toastr.error('Failed to generate summary');
                 console.error('Summary error:', err);
+                toastr.error('Failed to generate summary');
             });
     };
 
-    const displaySummary = function (data) {
-        elements.summaryEmptyState?.classList.add('d-none');
-        elements.summaryContent?.classList.remove('d-none');
-
-        // Update cards
-        document.getElementById('summary_total_cost').textContent = formatCurrency(data.total_cost);
-        document.getElementById('summary_total_days').textContent = data.total_days;
-        document.getElementById('summary_daily_avg').textContent = formatCurrency(data.daily_average);
-
-        // Update table
-        elements.summaryTableBody.innerHTML = '';
-
-        data.breakdown.forEach(item => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>
-                    <span class="fw-semibold text-gray-800">${escapeHtml(item.name)}</span>
-                </td>
-                <td class="text-end">
-                    <span class="fw-bold text-primary">${formatCurrency(item.amount)}</span>
-                </td>
-                <td class="text-end">
-                    <span class="badge badge-light-success">${item.percentage}%</span>
-                </td>`;
-            elements.summaryTableBody.appendChild(row);
-        });
-
-        document.getElementById('summary_table_total').textContent = formatCurrency(data.total_cost);
-
-        // Render chart
-        renderSummaryChart(data.breakdown);
+    const renderSummaryStats = function (data) {
+        if (elements.statTotalCost) {
+            elements.statTotalCost.textContent = formatCurrency(data.total_cost || 0);
+        }
+        if (elements.statTotalEntries) {
+            elements.statTotalEntries.textContent = (data.total_entries || 0).toLocaleString();
+        }
+        if (elements.statDailyAverage) {
+            elements.statDailyAverage.textContent = formatCurrency(data.daily_average || 0);
+        }
     };
 
-    const renderSummaryChart = function (breakdown) {
-        const categories = breakdown.map(item => item.name);
-        const amounts = breakdown.map(item => item.amount);
+    const renderSummaryTable = function (summary) {
+        if (!elements.summaryTableBody) return;
+
+        if (!summary || summary.length === 0) {
+            elements.summaryTableBody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-5">No cost data found for the selected period</td>
+                </tr>`;
+            return;
+        }
+
+        // Calculate total from summary items
+        let grandTotal = 0;
+        let totalEntries = 0;
+        summary.forEach(item => {
+            grandTotal += parseInt(item.total_amount) || 0;
+            totalEntries += parseInt(item.entry_count) || 0;
+        });
+
+        let html = '';
+        summary.forEach((item, index) => {
+            const percentage = grandTotal > 0 ? ((item.total_amount / grandTotal) * 100).toFixed(1) : 0;
+            const description = item.cost_type_description || '';
+
+            html += `
+                <tr>
+                    <td>
+                        <span class="fw-semibold text-gray-800">${escapeHtml(item.cost_type_name)}</span>
+                        ${description ? `<br><span class="text-muted fs-7">${escapeHtml(description)}</span>` : ''}
+                    </td>
+                    <td class="text-center">
+                        <span class="badge badge-light-primary fw-bold">${item.entry_count}</span>
+                    </td>
+                    <td class="text-end">
+                        <span class="fw-bold text-gray-800">${formatCurrency(item.total_amount)}</span>
+                    </td>
+                    <td class="text-end">
+                        <span class="badge badge-light-info">${percentage}%</span>
+                    </td>
+                </tr>`;
+        });
+
+        // Add total row
+        html += `
+            <tr class="fw-bold bg-light">
+                <td>Total</td>
+                <td class="text-center">${totalEntries}</td>
+                <td class="text-end text-primary fs-5">${formatCurrency(grandTotal)}</td>
+                <td class="text-end">100%</td>
+            </tr>`;
+
+        elements.summaryTableBody.innerHTML = html;
+    };
+
+    const renderSummaryChart = function (summary) {
+        if (!elements.summaryChartContainer) return;
+
+        if (summaryChart) {
+            summaryChart.destroy();
+            summaryChart = null;
+        }
+
+        if (!summary || summary.length === 0) {
+            elements.summaryChartContainer.innerHTML = '<div class="text-center text-muted py-10">No data to display</div>';
+            return;
+        }
+
+        const categories = summary.map(item => item.cost_type_name);
+        const amounts = summary.map(item => parseInt(item.total_amount) || 0);
 
         const options = {
             series: [{
@@ -1390,7 +1730,7 @@ var KTCostRecords = (function () {
                 },
                 labels: {
                     formatter: function (val) {
-                        return 'Tk ' + val.toLocaleString('en-BD');
+                        return 'Tk ' + val.toLocaleString();
                     }
                 }
             },
@@ -1400,143 +1740,143 @@ var KTCostRecords = (function () {
             tooltip: {
                 y: {
                     formatter: function (val) {
-                        return '৳' + val.toLocaleString('en-BD');
+                        return 'Tk ' + val.toLocaleString();
                     }
                 }
             },
             colors: ['#009EF7']
         };
 
-        if (summaryChart) {
-            summaryChart.destroy();
-        }
-
-        summaryChart = new ApexCharts(elements.summaryChart, options);
+        elements.summaryChartContainer.innerHTML = '';
+        summaryChart = new ApexCharts(elements.summaryChartContainer, options);
         summaryChart.render();
     };
 
-    // ============================================
-    // SUMMARY EXPORT
-    // ============================================
-    const exportSummaryToExcel = function () {
-        const tableBody = document.getElementById('summary_table_body');
-        if (!tableBody || tableBody.children.length === 0) {
-            toastr.warning('No summary data to export');
+    const exportChartToPng = function () {
+        if (!summaryChart) {
+            toastr.error('No chart to export. Please generate summary first.');
             return;
         }
 
-        const headers = ['Cost Type', 'Amount (Tk)', 'Percentage'];
+        const branchName = getBranchNameForFile();
+        const timestamp = getTimestamp();
+
+        summaryChart.dataURI().then(({ imgURI }) => {
+            const link = document.createElement('a');
+            link.href = imgURI;
+            link.download = `Cost_Summary_Chart_${branchName}_${timestamp}.png`;
+            link.click();
+            toastr.success('Chart exported as PNG!');
+        });
+    };
+
+    const exportSummaryToExcel = function () {
+        if (!summaryData || !summaryData.summary || summaryData.summary.length === 0) {
+            toastr.error('No summary data to export. Please generate summary first.');
+            return;
+        }
+
+        const headers = ['Cost Type', 'Description', 'Entries', 'Total Amount (Tk)', 'Percentage'];
         const wsData = [headers];
 
-        Array.from(tableBody.children).forEach(row => {
-            const cells = row.querySelectorAll('td');
+        let grandTotal = 0;
+        summaryData.summary.forEach(item => {
+            grandTotal += parseInt(item.total_amount) || 0;
+        });
+
+        summaryData.summary.forEach(item => {
+            const percentage = grandTotal > 0 ? ((item.total_amount / grandTotal) * 100).toFixed(1) : 0;
             wsData.push([
-                cells[0]?.textContent?.trim() || '',
-                cells[1]?.textContent?.trim().replace(/[৳,]/g, '') || '',
-                cells[2]?.textContent?.trim() || ''
+                item.cost_type_name,
+                item.cost_type_description || '',
+                item.entry_count,
+                item.total_amount,
+                percentage + '%'
             ]);
         });
 
         // Add total row
-        const totalEl = document.getElementById('summary_table_total');
-        wsData.push(['Total', totalEl?.textContent?.trim().replace(/[৳,]/g, '') || '', '100%']);
+        wsData.push(['Total', '', summaryData.total_entries, summaryData.total_cost, '100%']);
 
         const ws = XLSX.utils.aoa_to_sheet(wsData);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Cost Summary');
 
-        ws['!cols'] = [{ wch: 25 }, { wch: 15 }, { wch: 12 }];
+        ws['!cols'] = [
+            { wch: 20 },
+            { wch: 30 },
+            { wch: 10 },
+            { wch: 18 },
+            { wch: 12 }
+        ];
 
-        const fileName = `Cost_Summary_${new Date().toISOString().slice(0, 10)}.xlsx`;
-        XLSX.writeFile(wb, fileName);
+        const branchName = getBranchNameForFile();
+        const timestamp = getTimestamp();
+        XLSX.writeFile(wb, `Cost_Summary_${branchName}_${timestamp}.xlsx`);
         toastr.success('Summary exported to Excel!');
     };
 
     const exportSummaryToPdf = function () {
-        const tableBody = document.getElementById('summary_table_body');
-        if (!tableBody || tableBody.children.length === 0) {
-            toastr.warning('No summary data to export');
+        if (!summaryData || !summaryData.summary || summaryData.summary.length === 0) {
+            toastr.error('No summary data to export. Please generate summary first.');
             return;
         }
 
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
 
-        // Title
-        doc.setFontSize(18);
-        doc.text('Cost Summary Report', 14, 20);
+        let grandTotal = 0;
+        summaryData.summary.forEach(item => {
+            grandTotal += parseInt(item.total_amount) || 0;
+        });
 
-        // Date range
-        const dateRange = elements.summaryDateRange?.value || '';
-        doc.setFontSize(10);
-        doc.text(`Date Range: ${dateRange}`, 14, 28);
-        doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 34);
-
-        // Summary cards
-        const totalCost = document.getElementById('summary_total_cost')?.textContent?.replace('৳', 'Tk ') || 'Tk 0';
-        const totalDays = document.getElementById('summary_total_days')?.textContent || '0';
-        const dailyAvg = document.getElementById('summary_daily_avg')?.textContent?.replace('৳', 'Tk ') || 'Tk 0';
-
-        doc.setFontSize(11);
-        doc.text(`Total Cost: ${totalCost}`, 14, 44);
-        doc.text(`Total Days: ${totalDays}`, 80, 44);
-        doc.text(`Daily Average: ${dailyAvg}`, 140, 44);
-
-        // Table headers
-        const headers = [['Cost Type', 'Amount (Tk)', 'Percentage']];
-        const rows = [];
-
-        Array.from(tableBody.children).forEach(row => {
-            const cells = row.querySelectorAll('td');
-            rows.push([
-                cells[0]?.textContent?.trim() || '',
-                cells[1]?.textContent?.trim().replace('৳', 'Tk ') || '',
-                cells[2]?.textContent?.trim() || ''
-            ]);
+        const headers = [['Cost Type', 'Entries', 'Total (Tk)', '%']];
+        const rows = summaryData.summary.map(item => {
+            const percentage = grandTotal > 0 ? ((item.total_amount / grandTotal) * 100).toFixed(1) : 0;
+            return [
+                item.cost_type_name,
+                item.entry_count,
+                'Tk ' + parseInt(item.total_amount || 0).toLocaleString(),
+                percentage + '%'
+            ];
         });
 
         // Add total row
-        const totalEl = document.getElementById('summary_table_total');
-        rows.push(['Total', totalEl?.textContent?.trim().replace('৳', 'Tk ') || '', '100%']);
+        rows.push(['Total', summaryData.total_entries, 'Tk ' + parseInt(summaryData.total_cost || 0).toLocaleString(), '100%']);
+
+        doc.setFontSize(16);
+        doc.text('Cost Summary Report', 14, 15);
+
+        doc.setFontSize(10);
+        const dateRange = elements.summaryDateRange ? elements.summaryDateRange.value : '';
+        doc.text(`Period: ${dateRange}`, 14, 22);
+        doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 28);
+
+        // Stats
+        doc.text(`Total Cost: Tk ${parseInt(summaryData.total_cost || 0).toLocaleString()}`, 14, 36);
+        doc.text(`Total Entries: ${summaryData.total_entries || 0}`, 80, 36);
+        doc.text(`Daily Average: Tk ${parseInt(summaryData.daily_average || 0).toLocaleString()}`, 140, 36);
 
         doc.autoTable({
             head: headers,
             body: rows,
-            startY: 52,
-            styles: { fontSize: 10, cellPadding: 3 },
-            headStyles: { fillColor: [0, 158, 247], textColor: 255, fontStyle: 'bold' },
+            startY: 44,
+            styles: { fontSize: 9, cellPadding: 3 },
+            headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' },
             alternateRowStyles: { fillColor: [245, 245, 245] },
+            columnStyles: {
+                0: { cellWidth: 60 },
+                1: { cellWidth: 25, halign: 'center' },
+                2: { cellWidth: 40, halign: 'right' },
+                3: { cellWidth: 25, halign: 'center' }
+            },
             footStyles: { fillColor: [230, 230, 230], fontStyle: 'bold' }
         });
 
-        const fileName = `Cost_Summary_${new Date().toISOString().slice(0, 10)}.pdf`;
-        doc.save(fileName);
+        const branchName = getBranchNameForFile();
+        const timestamp = getTimestamp();
+        doc.save(`Cost_Summary_${branchName}_${timestamp}.pdf`);
         toastr.success('Summary exported to PDF!');
-    };
-
-    // ============================================
-    // TAB SWITCHING
-    // ============================================
-    const handleTabSwitch = function () {
-        const mainTabs = document.querySelectorAll('#main_tabs a[data-bs-toggle="tab"]');
-
-        mainTabs.forEach(tab => {
-            tab.addEventListener('shown.bs.tab', function (e) {
-                const targetId = e.target.getAttribute('href');
-
-                if (targetId === '#cost_records_pane') {
-                    // Show records toolbar, hide summary toolbar
-                    elements.costRecordsToolbar?.classList.remove('d-none');
-                    elements.costSummaryToolbar?.classList.add('d-none');
-                    elements.searchWrapper?.classList.remove('d-none');
-                } else if (targetId === '#cost_summary_pane') {
-                    // Hide records toolbar, show summary toolbar
-                    elements.costRecordsToolbar?.classList.add('d-none');
-                    elements.costSummaryToolbar?.classList.remove('d-none');
-                    elements.searchWrapper?.classList.add('d-none');
-                }
-            });
-        });
     };
 
     // ============================================
@@ -1554,18 +1894,13 @@ var KTCostRecords = (function () {
             addOtherCostRow();
         });
 
-        // Summary events
-        elements.generateSummaryBtn?.addEventListener('click', generateSummary);
-        elements.exportSummaryExcelBtn?.addEventListener('click', exportSummaryToExcel);
-        elements.exportSummaryPdfBtn?.addEventListener('click', exportSummaryToPdf);
-
         if (config.isAdmin) {
             $('#cost_branch_id').on('change', function () {
                 const branchId = $(this).val();
                 if (branchId) {
                     checkTodayCostExists(branchId, (exists) => {
                         if (exists) {
-                            toastr.warning('Cost record already exists for today for this branch.');
+                            toastr.warning("Cost record already exists for today for this branch.");
                             $(this).val(null).trigger('change.select2');
                         }
                     });
@@ -1587,17 +1922,13 @@ var KTCostRecords = (function () {
     const init = function () {
         initElements();
         initModals();
-        initDateRangePickers();
         initCostsDataTable();
-        handleSearch();
-        handleFilter();
-        handleExport();
-        handleTabSwitch();
+        initSearch();
+        initFilterHandlers();
+        initExportHandlers();
+        initSummary();
         initEvents();
         loadCostTypes();
-
-        // Re-init KTMenu for dynamic elements
-        KTMenu.init();
     };
 
     // ============================================

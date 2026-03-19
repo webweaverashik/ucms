@@ -4,41 +4,46 @@
  */
 
 /* ============================================
-   MAIN TABS
+   MAIN TABS (Outside Cards)
    ============================================ */
-#main_tabs {
-    border-bottom: 2px solid var(--bs-gray-200);
+#main_cost_tabs {
+    margin-bottom: 1.5rem;
 }
 
-#main_tabs .nav-link {
-    padding: 0.85rem 1.5rem;
-    font-weight: 500;
+#main_cost_tabs .nav-link {
+    padding: 0.875rem 1.5rem;
+    font-weight: 600;
+    font-size: 1rem;
     color: var(--bs-gray-600);
     border: none;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -2px;
+    border-bottom: 3px solid transparent;
+    background: transparent;
     transition: all 0.2s ease;
 }
 
-#main_tabs .nav-link:hover {
+#main_cost_tabs .nav-link:hover {
     color: var(--bs-primary);
     border-bottom-color: var(--bs-primary-light);
 }
 
-#main_tabs .nav-link.active {
+#main_cost_tabs .nav-link.active {
     color: var(--bs-primary);
     border-bottom-color: var(--bs-primary);
     background: transparent;
 }
 
+#main_cost_tabs .nav-link i {
+    margin-right: 0.5rem;
+}
+
 /* ============================================
    BRANCH TABS
    ============================================ */
-#branch_tabs {
+.branch-tabs {
     border-bottom: 2px solid var(--bs-gray-200);
 }
 
-#branch_tabs .nav-link {
+.branch-tabs .nav-link {
     padding: 0.75rem 1.25rem;
     font-weight: 500;
     color: var(--bs-gray-600);
@@ -48,40 +53,113 @@
     transition: all 0.2s ease;
 }
 
-#branch_tabs .nav-link:hover {
+.branch-tabs .nav-link:hover {
     color: var(--bs-primary);
     border-bottom-color: var(--bs-primary-light);
 }
 
-#branch_tabs .nav-link.active {
+.branch-tabs .nav-link.active {
     color: var(--bs-primary);
     border-bottom-color: var(--bs-primary);
     background: transparent;
 }
 
-#branch_tabs .nav-link .badge {
+.branch-tabs .nav-link .badge {
     font-size: 10px;
     padding: 0.25rem 0.5rem;
 }
 
 /* ============================================
-   SEARCH INPUT
+   FILTER & EXPORT MENUS
    ============================================ */
-[data-cost-table-filter="search"] {
+.filter-menu,
+.export-menu {
+    display: none;
+    position: fixed;
+    background: #fff;
+    border-radius: 0.475rem;
+    box-shadow: 0 0 50px 0 rgba(82, 63, 105, 0.15);
+    border: 1px solid var(--bs-gray-200);
+    min-width: 300px;
+    z-index: 1056;
+}
+
+.filter-menu.show,
+.export-menu.show {
+    display: block;
+}
+
+.export-menu {
+    min-width: 200px;
+}
+
+.filter-menu .menu-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--bs-gray-200);
+}
+
+.filter-menu .menu-header .fs-5 {
+    margin: 0;
+}
+
+.filter-menu .menu-body {
+    padding: 1.25rem;
+}
+
+.filter-menu .menu-footer {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--bs-gray-200);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.export-menu .menu-item {
+    padding: 0;
+}
+
+.export-menu .menu-link {
+    display: block;
+    padding: 0.65rem 1rem;
+    color: var(--bs-gray-700);
     transition: all 0.2s ease;
 }
 
-[data-cost-table-filter="search"]:focus {
-    border-color: var(--bs-primary);
-    box-shadow: 0 0 0 0.25rem rgba(0, 158, 247, 0.15);
+.export-menu .menu-link:hover {
+    background: var(--bs-gray-100);
+    color: var(--bs-primary);
 }
 
 /* ============================================
-   FILTER MENU
+   DATE RANGE PICKER Z-INDEX FIX
    ============================================ */
-#filter_menu {
-    box-shadow: 0 0 50px 0 rgba(82, 63, 105, 0.15);
-    border-radius: 0.475rem;
+.daterangepicker {
+    z-index: 1070 !important;
+}
+
+/* Select2 dropdown z-index */
+.select2-container--open .select2-dropdown {
+    z-index: 1070 !important;
+}
+
+/* ============================================
+   ACTIVE FILTERS
+   ============================================ */
+.active-filters-container {
+    padding: 0.75rem 0;
+}
+
+.active-filters-container .badge {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 0.5rem 0.75rem;
+}
+
+.active-filters-container .badge .btn-close {
+    width: 0.5rem;
+    height: 0.5rem;
+    padding: 0.25rem;
+    margin-left: 0.5rem;
 }
 
 /* ============================================
@@ -269,70 +347,107 @@
 }
 
 /* ============================================
-   DATATABLE ENHANCEMENTS
+   UCMS TABLE STYLES
    ============================================ */
-.costs-datatable tbody tr:hover,
-#costs_datatable tbody tr:hover {
-    background-color: var(--bs-gray-100);
+.ucms-table {
+    width: 100% !important;
 }
 
-.costs-datatable .entry-badge,
-#costs_datatable .entry-badge {
+.ucms-table thead tr {
+    border-bottom: 1px solid var(--bs-gray-200);
+}
+
+.ucms-table tbody tr {
+    border-bottom: 1px solid var(--bs-gray-200);
+}
+
+.ucms-table tbody tr:hover {
+    background-color: var(--bs-gray-50);
+}
+
+.ucms-table .entry-badge {
     margin: 2px;
 }
 
 /* ============================================
-   SUMMARY SECTION
+   SUMMARY STATS CARDS
    ============================================ */
-#cost_summary_pane .card-flush {
-    box-shadow: 0 0 20px 0 rgba(76, 87, 125, 0.02);
+.summary-stats-row {
+    margin-bottom: 1.5rem;
 }
 
-#summary_table thead th {
+.stat-card {
+    border-radius: 0.625rem;
+    padding: 1.5rem;
+    height: 100%;
+}
+
+.stat-card .stat-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.475rem;
+}
+
+.stat-card .stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--bs-gray-900);
+    margin-bottom: 0.25rem;
+}
+
+.stat-card .stat-label {
+    font-size: 0.875rem;
+    color: var(--bs-gray-500);
+    font-weight: 500;
+}
+
+/* ============================================
+   SUMMARY TABLE
+   ============================================ */
+.summary-table {
+    margin-bottom: 0;
+}
+
+.summary-table thead th {
     background: var(--bs-gray-100);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    padding: 0.75rem 1rem;
     border-bottom: 2px solid var(--bs-gray-200);
 }
 
-#summary_table tfoot tr {
-    border-top: 2px solid var(--bs-gray-300);
+.summary-table tbody td {
+    padding: 0.75rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--bs-gray-200);
+}
+
+.summary-table tbody tr:hover {
+    background: var(--bs-gray-50);
+}
+
+.summary-table .type-desc {
+    display: block;
+    font-size: 11px;
+    color: var(--bs-gray-500);
+    margin-top: 2px;
+}
+
+.summary-table tfoot td {
+    background: var(--bs-gray-100);
+    font-weight: 700;
+    padding: 0.75rem 1rem;
 }
 
 /* ============================================
-   SUMMARY CARDS
-   ============================================ */
-.card-flush.bg-light-primary {
-    border: 1px solid var(--bs-primary-light);
-}
-
-.card-flush.bg-light-success {
-    border: 1px solid var(--bs-success-light);
-}
-
-.card-flush.bg-light-info {
-    border: 1px solid var(--bs-info-light);
-}
-
-/* ============================================
-   CHART CONTAINER
+   CHART CARD
    ============================================ */
 #summary_chart {
     min-height: 350px;
-}
-
-/* ============================================
-   EXPORT BUTTONS
-   ============================================ */
-#export_menu {
-    box-shadow: 0 0 50px 0 rgba(82, 63, 105, 0.15);
-}
-
-#export_menu .menu-link {
-    transition: all 0.2s ease;
-}
-
-#export_menu .menu-link:hover {
-    background: var(--bs-light-primary);
-    color: var(--bs-primary);
 }
 
 /* ============================================
@@ -345,42 +460,31 @@
 }
 
 /* ============================================
-   EMPTY STATE
-   ============================================ */
-#summary_empty_state {
-    background: var(--bs-gray-100);
-    border-radius: 0.475rem;
-    margin: 20px 0;
-}
-
-/* ============================================
-   TOOLBAR TRANSITIONS
-   ============================================ */
-#cost_records_toolbar,
-#cost_summary_toolbar {
-    transition: opacity 0.2s ease;
-}
-
-/* ============================================
    MOBILE RESPONSIVE
    ============================================ */
+@media (max-width: 991.98px) {
+    .summary-stats-row .col-lg-4 {
+        margin-bottom: 1rem;
+    }
+}
+
 @media (max-width: 768px) {
-    #main_tabs .nav-link {
-        padding: 0.6rem 1rem;
-        font-size: 13px;
+    #main_cost_tabs .nav-link {
+        padding: 0.65rem 1rem;
+        font-size: 0.9rem;
     }
 
-    #branch_tabs {
+    .branch-tabs {
         flex-wrap: nowrap;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
 
-    #branch_tabs .nav-item {
+    .branch-tabs .nav-item {
         flex-shrink: 0;
     }
 
-    #branch_tabs .nav-link {
+    .branch-tabs .nav-link {
         padding: 0.5rem 1rem;
         font-size: 13px;
     }
@@ -426,14 +530,18 @@
         margin-bottom: 0.5rem;
     }
 
-    /* Summary responsive */
-    #cost_summary_pane .row.g-5 {
-        margin-left: -0.5rem;
-        margin-right: -0.5rem;
+    .stat-card {
+        padding: 1rem;
     }
 
-    #summary_chart {
-        min-height: 280px;
+    .stat-card .stat-value {
+        font-size: 1.5rem;
+    }
+
+    .filter-menu,
+    .export-menu {
+        min-width: 280px;
+        max-width: calc(100vw - 20px);
     }
 }
 
@@ -448,13 +556,19 @@
         min-width: 100px;
     }
 
-    .card-title {
-        width: 100%;
-        margin-bottom: 0.5rem;
+    #main_cost_tabs {
+        flex-direction: column;
     }
 
-    [data-cost-table-filter="search"] {
-        width: 100% !important;
+    #main_cost_tabs .nav-link {
+        border-bottom: none;
+        border-left: 3px solid transparent;
+        margin-bottom: 0;
+    }
+
+    #main_cost_tabs .nav-link.active {
+        border-bottom: none;
+        border-left-color: var(--bs-primary);
     }
 }
 
@@ -464,24 +578,25 @@
 @media print {
 
     .card-toolbar,
-    .card-header,
-    .modal,
-    #branch_tabs,
-    #main_tabs {
+    .filter-menu,
+    .export-menu,
+    .not-export,
+    #main_cost_tabs,
+    .branch-tabs {
         display: none !important;
     }
 
     .card {
-        box-shadow: none !important;
         border: none !important;
+        box-shadow: none !important;
     }
 
-    .card-body {
-        padding: 0 !important;
+    .ucms-table {
+        font-size: 10px;
     }
 
     .entry-badge {
-        border: 1px solid #000 !important;
-        background: transparent !important;
+        border: 1px solid #ccc;
+        background: #f5f5f5;
     }
 }
