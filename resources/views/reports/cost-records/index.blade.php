@@ -177,9 +177,9 @@
                                                 <th class="w-50px">SL</th>
                                                 <th class="w-150px">Date</th>
                                                 <th>Cost Entries</th>
-                                                <th class="w-120px text-end">Total (Tk)</th>
+                                                <th class="w-120px">Total (Tk)</th>
                                                 <th class="w-120px">Created By</th>
-                                                <th class="not-export text-end w-100px">Actions</th>
+                                                <th class="not-export w-100px">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody class="text-gray-600 fw-semibold"></tbody>

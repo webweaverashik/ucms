@@ -782,7 +782,7 @@ var KTCostRecords = (function () {
             },
             {
                 data: 'total_amount',
-                className: 'text-end w-120px',
+                className: 'w-120px',
                 orderable: false,
                 render: data => `<span class="fw-bold text-primary fs-5">${formatCurrency(data)}</span>`
             },
@@ -797,10 +797,10 @@ var KTCostRecords = (function () {
         if (showActions) {
             columns.push({
                 data: null,
-                className: 'text-end pe-4 w-100px not-export',
+                className: 'pe-4 w-100px not-export',
                 orderable: false,
                 render: (data, type, row) => `
-                    <div class="d-flex justify-content-end gap-1">
+                    <div class="d-flex justify-content-center gap-1">
                         <button type="button" class="btn btn-icon btn-sm btn-light-primary" 
                                 onclick="KTCostRecords.openEditCostModal(${row.id})" title="Edit">
                             <i class="ki-outline ki-pencil fs-6"></i>
