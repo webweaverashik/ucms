@@ -175,7 +175,7 @@
                                             <thead>
                                             <tr class="fw-bold fs-7 text-uppercase gs-0">
                                                 <th class="w-50px">SL</th>
-                                                <th class="w-100px">Date</th>
+                                                <th class="w-150px">Date</th>
                                                 <th>Cost Entries</th>
                                                 <th class="w-120px text-end">Total (Tk)</th>
                                                 <th class="w-120px">Created By</th>
