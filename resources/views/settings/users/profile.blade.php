@@ -2,84 +2,7 @@
 
 @push('page-css')
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
-    <style>
-        /* ================= PROFILE CARD MOBILE RESPONSIVENESS ================= */
-        /* Stats cards - ensure consistent sizing */
-        @media (max-width: 575.98px) {
-            .fs-md-2 {
-                font-size: 1.1rem !important;
-            }
-
-            .fs-md-6 {
-                font-size: 0.85rem !important;
-            }
-        }
-
-        @media (min-width: 576px) {
-            .fs-md-2 {
-                font-size: 1.5rem !important;
-            }
-
-            .fs-md-6 {
-                font-size: 1rem !important;
-            }
-        }
-
-        /* Email text break on mobile */
-        @media (max-width: 575.98px) {
-            .text-break {
-                word-break: break-all;
-            }
-        }
-
-        /* Card header flex layout */
-        @media (max-width: 767.98px) {
-            .card-header.flex-column {
-                align-items: stretch !important;
-            }
-
-            .w-md-auto {
-                width: 100% !important;
-            }
-
-            .w-md-300px {
-                width: 100% !important;
-            }
-
-            .w-md-200px {
-                width: 100% !important;
-            }
-        }
-
-        @media (min-width: 768px) {
-            .w-md-auto {
-                width: auto !important;
-            }
-
-            .w-md-300px {
-                width: 300px !important;
-            }
-
-            .w-md-200px {
-                width: 200px !important;
-            }
-
-            .card-header.flex-md-row {
-                flex-direction: row !important;
-            }
-        }
-
-        /* DataTables responsive improvements */
-        @media (max-width: 767.98px) {
-
-            #kt_wallet_logs_table,
-            #kt_login_activities_table {
-                display: block;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-        }
-    </style>
+    <link href="{{ asset('css/settings/users/profile.css') }}" rel="stylesheet" type="text/css" />
 @endpush
 
 @section('title', 'My Profile')
@@ -349,6 +272,13 @@
                             </div>
                             <!--end::Menu-->
                             <!--end::Filter-->
+
+                            @can('cost-records.create')
+                                <!--begin::Add Student-->
+                                <a href="#" class="btn btn-primary" id="add_cost_btn">
+                                    <i class="ki-outline ki-plus fs-2"></i>Add Cost</a>
+                                <!--end::Add Student-->
+                            @endcan
                         </div>
                         <!--end::Toolbar-->
                     </div>
@@ -746,6 +676,119 @@
             </div>
         </div>
     @endif
+
+    <!--begin::Add Cost Modal-->
+    <div class="modal fade" id="cost_modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered mw-700px">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="cost_modal_title" class="modal-title fw-bold">Add Today's Cost</h3>
+                    <button type="button" class="btn btn-icon btn-sm btn-active-light-primary" data-bs-dismiss="modal">
+                        <i class="ki-outline ki-cross fs-1"></i>
+                    </button>
+                </div>
+                <form id="cost_form">
+                    <div class="modal-body py-10 px-lg-12" style="max-height: 70vh; overflow-y: auto;">
+                        <!--begin::Branch Selection-->
+                        <div class="fv-row mb-7">
+                            <label class="required fw-semibold fs-6 mb-2">Branch</label>
+                            @if ($isAdmin)
+                                <select id="cost_branch_id" name="branch_id" class="form-select form-select-solid"
+                                    data-control="select2" data-placeholder="Select branch"
+                                    data-dropdown-parent="#cost_modal" data-hide-search="true">
+                                    <option value="">-- Select Branch --</option>
+                                    @foreach ($branches as $branch)
+                                        <option value="{{ $branch->id }}">
+                                            {{ $branch->branch_name }} ({{ $branch->branch_prefix }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @else
+                                <input type="text" class="form-control form-control-solid bg-secondary"
+                                    value="{{ $branches->first()->branch_name ?? '' }} ({{ $branches->first()->branch_prefix ?? '' }})"
+                                    readonly disabled>
+                                <input type="hidden" id="cost_branch_id" name="branch_id"
+                                    value="{{ $branches->first()->id ?? '' }}">
+                            @endif
+                        </div>
+                        <!--end::Branch Selection-->
+
+                        <!--begin::Date-->
+                        <div class="fv-row mb-7">
+                            <label class="required fw-semibold fs-6 mb-2">Date</label>
+                            <input type="text" id="cost_date" name="cost_date"
+                                class="form-control form-control-solid bg-secondary" value="{{ now()->format('d-m-Y') }}"
+                                readonly>
+                            <div class="form-text text-muted">
+                                <i class="ki-outline ki-information-3 fs-7 me-1"></i>
+                                Cost can only be added for today's date
+                            </div>
+                        </div>
+                        <!--end::Date-->
+
+                        <!--begin::Cost Types Tagify-->
+                        <div class="fv-row mb-7">
+                            <label class="required fw-semibold fs-6 mb-2">Cost Types</label>
+                            <input type="text" id="cost_types_tagify" class="form-control form-control-solid"
+                                placeholder="Select cost types...">
+                            <div class="form-text text-muted">Select one or more cost types</div>
+                        </div>
+                        <!--end::Cost Types Tagify-->
+
+                        <!--begin::Cost Entries Container-->
+                        <div id="cost_entries_container" class="mb-5">
+                            <label class="fw-semibold fs-6 mb-3">Cost Entries</label>
+                            <div id="cost_entries_list">
+                                <div class="text-center text-muted py-5">
+                                    <i class="ki-outline ki-information fs-3x text-gray-400 mb-3"></i>
+                                    <p class="mb-0">Select cost types above to add entries</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!--end::Cost Entries Container-->
+
+                        <!--begin::Other Costs Section-->
+                        <div class="fv-row mb-5">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <label class="fw-semibold fs-6">Other Costs</label>
+                                <button type="button" class="btn btn-sm btn-light-primary" id="add_other_cost_btn">
+                                    <i class="ki-outline ki-plus fs-6"></i> Add Other
+                                </button>
+                            </div>
+                            <div id="other_costs_container"></div>
+                            <div class="form-text text-muted">
+                                <i class="ki-outline ki-information-3 fs-7 me-1"></i>
+                                Add custom cost types not in the predefined list
+                            </div>
+                        </div>
+                        <!--end::Other Costs Section-->
+
+                        <!--begin::Total-->
+                        <div id="cost_total_section" class="cost-total-section d-none">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="total-label">Total Cost</span>
+                                <span id="cost_total_amount" class="total-amount">৳0</span>
+                            </div>
+                        </div>
+                        <!--end::Total-->
+                    </div>
+                    <div class="modal-footer flex-center">
+                        <button type="button" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="save_cost_btn">
+                            <span class="indicator-label">
+                                <i class="ki-outline ki-check fs-4 me-1"></i> Save Cost
+                            </span>
+                            <span class="indicator-progress">
+                                Please wait...
+                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!--end::Add Cost Modal-->
 @endsection
 
 @push('vendor-js')
@@ -767,6 +810,29 @@
             walletLogsUrl: "{{ route('users.profile.wallet-logs') }}",
             loginActivitiesUrl: "{{ route('users.profile.login-activities') }}",
             isAdmin: {{ auth()->user()->isAdmin() ? 'true' : 'false' }}
+        };
+
+        window.CostRecordsConfig = {
+            isAdmin: @json($isAdmin),
+            userBranchId: @json(auth()->user()->branch_id),
+            todayDate: "{{ now()->format('d-m-Y') }}",
+            hasBranchTabs: @json($isAdmin && $branches->count() > 1),
+            branches: @json($branches->map(fn($b) => ['id' => $b->id, 'name' => $b->branch_name, 'prefix' => $b->branch_prefix])),
+            costTypes: @json($costTypes->map(fn($ct) => ['id' => $ct->id, 'name' => $ct->name, 'description' => $ct->description])),
+            routes: {
+                costsData: "{{ route('reports.cost-records.data') }}",
+                exportCosts: "{{ route('reports.cost-records.export') }}",
+                costTypes: "{{ route('costs.types') }}",
+                storeCost: "{{ route('costs.store') }}",
+                checkTodayCost: "{{ route('costs.check-today') }}",
+                costSummary: "{{ route('reports.cost-summary') }}",
+                @if ($isAdmin)
+                    showCost: "{{ route('costs.show', ':id') }}",
+                    updateCost: "{{ route('costs.update', ':id') }}",
+                    deleteCost: "{{ route('costs.destroy', ':id') }}"
+                @endif
+            },
+            csrfToken: "{{ csrf_token() }}"
         };
     </script>
     <script src="{{ asset('js/settings/users/profile.js') }}"></script>

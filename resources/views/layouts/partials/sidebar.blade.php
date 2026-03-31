@@ -530,7 +530,7 @@
                                 <!--end:Annual Due item-->
 
                                 <!--begin:Cost Records item-->
-                                @if (auth()->user()->isAdmin())
+                                @can('cost-records.view')
                                     <div class="menu-item">
                                         <!--begin:Menu link-->
                                         <a class="menu-link" id="cost_records_link"
@@ -543,7 +543,7 @@
                                         </a>
                                         <!--end:Menu link-->
                                     </div>
-                                @endif
+                                @endcan
                                 <!--end:Cost Records item-->
 
                                 <div class="menu-item">

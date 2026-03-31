@@ -125,6 +125,12 @@ class RolePermissionSeeder extends Seeder
 
             // 📊 reports
             'reports.view',
+
+            // 📋 Cost Records
+            'cost-records.view',
+            'cost-records.create',
+            'cost-records.edit',
+            'cost-records.delete',
         ];
 
         // Create all permissions
@@ -204,6 +210,9 @@ class RolePermissionSeeder extends Seeder
             'sms.campaign.edit',
             'sms.logs.view',
 
+
+            // 📋 Cost Records
+            'cost-records.create',
         ]);
 
         $accountant = Role::where('name', 'accountant')->first();
@@ -263,6 +272,8 @@ class RolePermissionSeeder extends Seeder
             'sms.campaign.create',
             'sms.campaign.edit',
             'sms.logs.view',
+
+            // 📋 Cost Records
         ]);
     }
 }

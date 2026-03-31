@@ -1,0 +1,202 @@
+/* ================= PROFILE CARD MOBILE RESPONSIVENESS ================= */
+/* Stats cards - ensure consistent sizing */
+@media (max-width: 575.98px) {
+      .fs-md-2 {
+            font-size: 1.1rem !important;
+      }
+
+      .fs-md-6 {
+            font-size: 0.85rem !important;
+      }
+}
+
+@media (min-width: 576px) {
+      .fs-md-2 {
+            font-size: 1.5rem !important;
+      }
+
+      .fs-md-6 {
+            font-size: 1rem !important;
+      }
+}
+
+/* Email text break on mobile */
+@media (max-width: 575.98px) {
+      .text-break {
+            word-break: break-all;
+      }
+}
+
+/* Card header flex layout */
+@media (max-width: 767.98px) {
+      .card-header.flex-column {
+            align-items: stretch !important;
+      }
+
+      .w-md-auto {
+            width: 100% !important;
+      }
+
+      .w-md-300px {
+            width: 100% !important;
+      }
+
+      .w-md-200px {
+            width: 100% !important;
+      }
+}
+
+@media (min-width: 768px) {
+      .w-md-auto {
+            width: auto !important;
+      }
+
+      .w-md-300px {
+            width: 300px !important;
+      }
+
+      .w-md-200px {
+            width: 200px !important;
+      }
+
+      .card-header.flex-md-row {
+            flex-direction: row !important;
+      }
+}
+
+/* DataTables responsive improvements */
+@media (max-width: 767.98px) {
+
+      #kt_wallet_logs_table,
+      #kt_login_activities_table {
+            display: block;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+      }
+}
+
+/* ----------------- Cost Records specific styles ----------------- */
+
+/* ============================================
+   TAGIFY STYLES
+   ============================================ */
+.tagify {
+      --tag-bg: var(--bs-primary);
+      --tag-text-color: #fff;
+      --tag-hover: var(--bs-primary);
+      --tag-remove-btn-color: #fff;
+      border: 1px solid var(--bs-gray-300);
+      border-radius: 0.475rem;
+      min-height: 44px;
+      padding: 5px;
+}
+
+.tagify--focus {
+      border-color: var(--bs-primary);
+      box-shadow: 0 0 0 0.25rem rgba(0, 158, 247, 0.25);
+}
+
+.tagify__tag {
+      border-radius: 0.375rem;
+      margin: 3px;
+}
+
+.tagify__tag>div {
+      padding: 0.35em 0.5em;
+}
+
+.tagify__dropdown {
+      border-radius: 0.475rem;
+      border: 1px solid var(--bs-gray-300);
+      box-shadow: 0 0 50px 0 rgba(82, 63, 105, 0.15);
+      z-index: 1060;
+}
+
+.tagify__dropdown__item {
+      padding: 0.5rem 0.75rem;
+      margin: 0;
+}
+
+.tagify__dropdown__item--active {
+      background: var(--bs-primary);
+      color: #fff;
+}
+
+/* ============================================
+   COST ENTRY ROWS - ADD MODAL
+   ============================================ */
+.cost-entry-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 15px;
+      background: var(--bs-gray-100);
+      border-radius: 0.475rem;
+      margin-bottom: 8px;
+      animation: slideIn 0.2s ease-out;
+      border: 1px solid var(--bs-gray-200);
+}
+
+@keyframes slideIn {
+      from {
+            opacity: 0;
+            transform: translateY(-10px);
+      }
+
+      to {
+            opacity: 1;
+            transform: translateY(0);
+      }
+}
+
+.cost-entry-row .cost-type-name {
+      flex: 1;
+      font-weight: 500;
+      color: var(--bs-gray-800);
+}
+
+.cost-entry-row .cost-type-badge {
+      background: var(--bs-primary);
+      color: #fff;
+      padding: 5px 12px;
+      border-radius: 0.375rem;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+}
+
+.cost-entry-row .amount-input {
+      width: 160px;
+}
+
+/* ============================================
+   OTHER COST ROWS
+   ============================================ */
+.other-cost-row {
+      animation: slideIn 0.2s ease-out;
+}
+
+.other-cost-row .other-description {
+      min-width: 200px;
+}
+
+/* ============================================
+   TOTAL SECTION
+   ============================================ */
+.cost-total-section {
+      background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 100%);
+      color: #fff;
+      padding: 15px 20px;
+      border-radius: 0.475rem;
+      margin-top: 15px;
+}
+
+.cost-total-section .total-label {
+      font-size: 14px;
+      opacity: 0.9;
+}
+
+.cost-total-section .total-amount {
+      font-size: 24px;
+      font-weight: 700;
+}
