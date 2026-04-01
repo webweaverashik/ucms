@@ -114,7 +114,7 @@ const AccountantDashboard = (function () {
                   updateElement('statDueInvoices', d.invoices.due_count.toLocaleString());
 
                   // Financial stats
-                  updateElement('statDueAmount', formatCurrency(d.invoices.due_amount));
+                  updateElement('statDueAmount', formatCurrency(d.invoices.due_amount) + ' due');
                   updateElement('statDueCount', `${d.invoices.due_count} invoices`);
                   updateElement('statTodayCollection', formatCurrency(d.collections.today));
                   updateElement('statMonthCollection', formatCurrency(d.collections.month));

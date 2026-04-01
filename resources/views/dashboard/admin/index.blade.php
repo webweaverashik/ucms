@@ -112,7 +112,7 @@
                                 <div class="stat-value text-gray-900" id="statDueInvoices">
                                     <span class="loading-skeleton d-inline-block" style="width: 60px; height: 28px;"></span>
                                 </div>
-                                <div class="fs-8 text-danger fw-semibold" id="statDueAmount"></div>
+                                <div class="fs-7 text-danger fw-semibold" id="statDueAmount"></div>
                             </div>
                         </div>
                     </div>

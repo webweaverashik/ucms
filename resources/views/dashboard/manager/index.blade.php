@@ -30,7 +30,7 @@
     <div class="d-flex flex-column flex-column-fluid">
 
         {{-- Financial Stats Row --}}
-        <div class="row g-5 mb-5 d-none">
+        {{-- <div class="row g-5 mb-5">
             <div class="col-xl-3 col-md-6">
                 <div class="card dashboard-card h-100 bg-success shadow-sm">
                     <div class="card-body">
@@ -96,7 +96,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         {{-- Student Stats Row --}}
         <div class="row g-5 mb-5">
@@ -124,7 +124,9 @@
                         </div>
                         <div>
                             <div class="stat-label">Active Students</div>
-                            <div class="stat-value text-gray-900" id="statActiveStudents">-</div>
+                            <div class="stat-value text-gray-900" id="statActiveStudents">
+                                <span class="loading-skeleton d-inline-block" style="width: 100px; height: 36px;"></span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -138,7 +140,9 @@
                         </div>
                         <div>
                             <div class="stat-label">Pending Approval</div>
-                            <div class="stat-value text-gray-900" id="statPendingStudents">-</div>
+                            <div class="stat-value text-gray-900" id="statPendingStudents"><span
+                                    class="loading-skeleton d-inline-block" style="width: 100px; height: 36px;"></span>
+                            </div>
                         </div>
                     </div>
                 </a>
@@ -153,7 +157,13 @@
                             </div>
                             <div>
                                 <div class="stat-label">Due Invoices</div>
-                                <div class="stat-value text-gray-900" id="statDueInvoices">-</div>
+                                <div class="stat-value text-gray-900" id="statDueInvoices"><span
+                                        class="loading-skeleton d-inline-block" style="width: 100px; height: 36px;"></span>
+                                </div>
+                                <div class="fs-7 text-danger fw-semibold" id="statDueAmount">
+                                    <span class="loading-skeleton d-inline-block"
+                                        style="width: 100px; height: 36px;"></span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -172,16 +182,16 @@
                         </h3>
                         <div class="card-toolbar">
                             <div class="d-flex align-items-center">
-                                <button type="button" class="btn btn-icon btn-sm btn-light-primary me-2"
-                                    id="prevDateBtn" title="Previous Day">
+                                <button type="button" class="btn btn-icon btn-sm btn-light-primary me-2" id="prevDateBtn"
+                                    title="Previous Day">
                                     <i class="bi bi-chevron-left fs-6"></i>
                                 </button>
                                 <div class="position-relative">
                                     <input type="text" class="form-control form-control-sm text-center fw-semibold"
                                         id="collectionDatePicker" style="width: 130px;" readonly>
                                 </div>
-                                <button type="button" class="btn btn-icon btn-sm btn-light-primary ms-2"
-                                    id="nextDateBtn" title="Next Day">
+                                <button type="button" class="btn btn-icon btn-sm btn-light-primary ms-2" id="nextDateBtn"
+                                    title="Next Day">
                                     <i class="bi bi-chevron-right fs-6"></i>
                                 </button>
                             </div>
