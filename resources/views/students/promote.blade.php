@@ -32,7 +32,7 @@
                     @else
                         <div class="w-200px">
                             <label class="form-label fw-bold required">Source Branch</label>
-                            <select id="source_branch" class="form-select form-select-solid" data-control="select2">
+                            <select id="source_branch" class="form-select form-select-solid" data-control="select2" data-placeholder="Select Branch" data-hide-search="true">
                                 <option value="">Select Branch</option>
                                 @foreach($branches as $branch)
                                     <option value="{{ $branch->id }}">{{ $branch->branch_name }}</option>
