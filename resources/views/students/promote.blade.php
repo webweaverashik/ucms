@@ -127,7 +127,7 @@
                     </div>
                     <div class="col-md-6 fv-row">
                         <label class="required fs-6 fw-semibold mb-2">Target Batch</label>
-                        <select name="target_batch_id" id="target_batch" class="form-select form-select-solid" data-control="select2" data-placeholder="Select Batch">
+                        <select name="target_batch_id" id="target_batch" class="form-select form-select-solid" data-control="select2" data-placeholder="Select Batch" data-hide-search="true">
                             <option></option>
                             @if(!auth()->user()->isAdmin())
                                 @foreach($managerBatches as $batch)
