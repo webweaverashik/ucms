@@ -52,7 +52,7 @@
                     </div>
                     <div class="w-200px d-none" id="academic_group_container">
                         <label class="form-label fw-bold">Academic Group</label>
-                        <select id="source_group" class="form-select form-select-solid" data-control="select2" data-placeholder="All Groups" disabled>
+                        <select id="source_group" class="form-select form-select-solid" data-control="select2" data-allow-clear="true" data-hide-search="true" data-placeholder="All Groups" disabled>
                             <option value="">All Groups</option>
                             <option value="Science">Science</option>
                             <option value="Commerce">Commerce</option>
@@ -61,7 +61,7 @@
                     </div>
                     <div class="w-200px">
                         <label class="form-label fw-bold">Source Batch</label>
-                        <select id="source_batch" class="form-select form-select-solid" data-control="select2" data-placeholder="All Batches" @if(auth()->user()->isAdmin()) disabled @endif>
+                        <select id="source_batch" class="form-select form-select-solid" data-control="select2" data-allow-clear="true" data-hide-search="true" data-placeholder="All Batches" @if(auth()->user()->isAdmin()) disabled @endif>
                             <option value="">All Batches</option>
                             @if(!auth()->user()->isAdmin())
                                 @foreach($managerBatches as $batch)
