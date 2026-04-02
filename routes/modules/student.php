@@ -71,7 +71,11 @@ Route::post('student/statement/download', [PdfController::class, 'downloadStatem
 // =========================================================================
 // Student Promote
 // =========================================================================
-Route::get('students/promote', [StudentPromoteController::class, 'index'])->name('students.promote');
+Route::prefix('students/promote')->name('students.promote.')->group(function () {
+    Route::get('/', [StudentPromoteController::class, 'index'])->name('index');
+    Route::post('/get-students', [StudentPromoteController::class, 'getStudents'])->name('getStudents');
+    Route::post('/process', [StudentPromoteController::class, 'promote'])->name('process');
+});
 
 // =========================================================================
 // Student Transfer
@@ -106,9 +110,9 @@ Route::prefix('admin')->group(function () {
 // Resource Controllers
 // =========================================================================
 Route::resources([
-    'students' => StudentController::class,
+    'students'  => StudentController::class,
     'guardians' => GuardianController::class,
-    'siblings' => SiblingController::class,
+    'siblings'  => SiblingController::class,
 ]);
 
 // =========================================================================
