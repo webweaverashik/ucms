@@ -16,7 +16,7 @@ class StudentPromoteController extends Controller
     public function index()
     {
         if (! auth()->user()->can('students.promote')) {
-            abort(403, 'No permission to promote students.');
+            return back()->with('warning', 'No permission to promote students.');
         }
 
         $user     = auth()->user();

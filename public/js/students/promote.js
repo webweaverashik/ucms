@@ -40,7 +40,7 @@ var KTStudentsPromote = function () {
         $('#source_branch').on('change', function () {
             var branchId = $(this).val();
             var batchSelect = $('#source_batch');
-
+            
             if (branchId) {
                 batchSelect.prop('disabled', false);
                 loadBatches('source_branch', 'source_batch', false);
@@ -48,14 +48,14 @@ var KTStudentsPromote = function () {
                 batchSelect.prop('disabled', true).empty().append('<option value="">All Batches</option>');
             }
             batchSelect.trigger('change.select2');
-
+            
             // Also update target batches since branch is the same
             loadBatches('source_branch', 'target_batch', true);
         });
 
         // For Managers: If branch is pre-selected and batches are NOT already loaded, fetch them
         // Note: We preloaded them in Blade, so this is a fallback
-        setTimeout(function () {
+        setTimeout(function() {
             if ($('#source_branch').val() && $('#source_batch option').length <= 1) {
                 loadBatches('source_branch', 'source_batch', false);
                 loadBatches('source_branch', 'target_batch', true);
@@ -83,7 +83,7 @@ var KTStudentsPromote = function () {
 
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="7" class="text-center py-20">
+                    <td colspan="8" class="text-center py-20">
                         <div class="d-flex flex-column align-items-center">
                             <span class="spinner-border border-2 w-40px h-40px text-primary mb-4" role="status"></span>
                             <span class="text-gray-600 fw-semibold">Loading students...</span>
@@ -107,7 +107,7 @@ var KTStudentsPromote = function () {
                     renderStudentList(data);
                 },
                 error: function () {
-                    tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-10">Failed to load students.</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="8" class="text-center text-danger py-10">Failed to load students.</td></tr>';
                 }
             });
         });
@@ -116,12 +116,12 @@ var KTStudentsPromote = function () {
     var renderStudentList = function (students) {
         tableBody.innerHTML = '';
         if (!students || students.length === 0) {
-            tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-10">No students found.</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-10">No students found.</td></tr>';
             targetCard.classList.add('d-none');
             return;
         }
 
-        students.forEach(function (s) {
+        students.forEach(function (s, index) {
             var badgeClass = s.status === 'active' ? 'badge-light-success' : 'badge-light-danger';
             var row = `
                 <tr>
@@ -130,6 +130,7 @@ var KTStudentsPromote = function () {
                             <input class="form-check-input student-checkbox" type="checkbox" value="${s.id}" />
                         </div>
                     </td>
+                    <td>${index + 1}</td>
                     <td><span class="text-gray-800 fw-bold">${s.unique_id}</span></td>
                     <td><a href="/students/${s.id}" target="_blank" class="text-gray-800 text-hover-primary">${s.name}</a></td>
                     <td><a href="/classnames/${s.class_id}" target="_blank" class="text-gray-800 text-hover-primary">${s.class}</a></td>
@@ -149,7 +150,7 @@ var KTStudentsPromote = function () {
             var targetClassSelect = $('#target_class');
             var groupContainer = $('#academic_group_container');
             var groupSelect = $('#source_group');
-
+            
             // Academic Group visibility for 09-12
             if (sourceNumeral >= 9 && sourceNumeral <= 12) {
                 groupContainer.removeClass('d-none');
@@ -167,7 +168,7 @@ var KTStudentsPromote = function () {
                     $(this).prop('disabled', false);
                 }
             });
-
+            
             // Clear target class if it's now disabled
             if (targetClassSelect.find(':selected').prop('disabled')) {
                 targetClassSelect.val('').trigger('change.select2');

@@ -81,14 +81,15 @@
 
         <div class="card-body py-4">
             <div class="table-responsive">
-                <table class="table align-middle table-row-dashed fs-6 gy-5" id="students_table">
+                <table class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table" id="students_table">
                     <thead>
-                        <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
-                            <th class="w-10px pe-2">
-                                <div class="form-check form-check-sm form-check-custom form-check-solid me-3">
+                        <tr class="text-muted fw-bold fs-7 text-uppercase gs-0">
+                            <th class="w-10px">
+                                <div class="form-check form-check-sm form-check-custom form-check-solid">
                                     <input class="form-check-input" type="checkbox" id="check_all" />
                                 </div>
                             </th>
+                            <th class="w-25px">#</th>
                             <th>Student ID</th>
                             <th>Student Name</th>
                             <th>Current Class</th>
@@ -99,7 +100,7 @@
                     </thead>
                     <tbody class="text-gray-600 fw-semibold" id="student_list_body">
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-10">Select filters and click Load Students</td>
+                            <td colspan="8" class="text-center text-muted py-10">Select filters and click Load Students</td>
                         </tr>
                     </tbody>
                 </table>
