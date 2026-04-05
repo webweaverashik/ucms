@@ -22,6 +22,7 @@ var KTCostRecords = (function () {
     let otherCostCounter = 0;
     let activeBranchId = null;
     let searchDebounceTimer = null;
+    let costRecordsDataTable = null;
 
     // Filter state
     let currentSearchValue = '';
@@ -1660,6 +1661,9 @@ var KTCostRecords = (function () {
 
     const handleCostRecordsModal = function () {
 
+        let costRecordsDataTable = null;
+
+        // Click handler (delegated for dynamic content)
         $(document).on('click', '.cost-records-btn', function () {
 
             const costTypeId = $(this).data('cost-type-id');
@@ -1669,15 +1673,23 @@ var KTCostRecords = (function () {
             $('#costModalTitle').text(costTypeName);
 
             // Reset UI
-            $('#costRecordsTableBody').html('');
-            $('#costRecordsTotal').text('0');
             $('#costRecordsLoader').removeClass('d-none');
+            $('#costRecordsTotal').text('৳0');
+
+            // Destroy previous table if exists
+            if (costRecordsDataTable) {
+                costRecordsDataTable.destroy();
+                $('#costRecordsTableBody').empty();
+                costRecordsDataTable = null;
+            }
 
             // Show modal
             const modal = new bootstrap.Modal(document.getElementById('costRecordsModal'));
             modal.show();
 
-            // Get summary filters
+            // =========================
+            // Get Filters (from summary)
+            // =========================
             let startDate = null, endDate = null, branchId = null;
 
             if (elements.summaryDateRange && elements.summaryDateRange.value.includes(' - ')) {
@@ -1690,9 +1702,11 @@ var KTCostRecords = (function () {
                 branchId = $(elements.summaryBranchFilter).val();
             }
 
-            // AJAX
+            // =========================
+            // AJAX CALL
+            // =========================
             $.ajax({
-                url: config.routes.costRecords, // <-- ADD THIS ROUTE IN CONFIG
+                url: config.routes.costRecords,
                 type: "GET",
                 data: {
                     cost_type_id: costTypeId,
@@ -1702,27 +1716,42 @@ var KTCostRecords = (function () {
                 },
                 success: function (res) {
 
-                    let rows = '';
-                    let total = 0;
+                    $('#costRecordsLoader').addClass('d-none');
 
-                    res.data.forEach(function (item, index) {
-                        total += parseInt(item.amount) || 0;
-
-                        rows += `
-                            <tr>
-                                <td>${index + 1}</td>
-                                <td>${item.date}</td>
-                                <td>${item.is_others ? (item.description ?? '') : ''}</td>
-                                <td class="text-end">${formatCurrency(item.amount)}</td>
-                                <td>${item.added_by}</td>
-                            </tr>
-                        `;
+                    // Init DataTable
+                    costRecordsDataTable = $('#costRecordsTable').DataTable({
+                        data: res.data,
+                        pageLength: 10,
+                        lengthMenu: [10, 25, 50],
+                        ordering: false,
+                        searching: false,
+                        info: true,
+                        destroy: true, // safety
+                        columns: [
+                            { data: 'sl', className: 'text-center' },
+                            { data: 'date' },
+                            {
+                                data: 'description',
+                                render: function (data, type, row) {
+                                    return row.is_others ? (data ?? '') : '';
+                                }
+                            },
+                            {
+                                data: 'amount',
+                                className: 'text-end fw-semibold',
+                                render: function (data) {
+                                    return formatCurrency(data);
+                                }
+                            },
+                            { data: 'added_by' }
+                        ],
+                        drawCallback: function () {
+                            KTMenu && KTMenu.init();
+                        }
                     });
 
-                    $('#costRecordsTableBody').html(rows);
-                    $('#costRecordsTotal').text(formatCurrency(total));
-
-                    $('#costRecordsLoader').addClass('d-none');
+                    // Set total
+                    $('#costRecordsTotal').text(formatCurrency(res.total));
                 },
                 error: function () {
                     $('#costRecordsLoader').addClass('d-none');
@@ -1730,6 +1759,17 @@ var KTCostRecords = (function () {
                 }
             });
 
+        });
+
+        // =========================
+        // Cleanup on modal close
+        // =========================
+        $('#costRecordsModal').on('hidden.bs.modal', function () {
+            if (costRecordsDataTable) {
+                costRecordsDataTable.destroy();
+                $('#costRecordsTableBody').empty();
+                costRecordsDataTable = null;
+            }
         });
     };
 
