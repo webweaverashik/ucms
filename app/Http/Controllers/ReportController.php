@@ -5,6 +5,7 @@ use App\Models\Academic\Batch;
 use App\Models\Academic\ClassName;
 use App\Models\Branch;
 use App\Models\Cost\Cost;
+use App\Models\Cost\CostEntry;
 use App\Models\Cost\CostType;
 use App\Models\Payment\PaymentInvoice;
 use App\Models\Payment\PaymentInvoiceType;
@@ -807,6 +808,79 @@ class ReportController extends Controller
                 'message' => 'Failed to export cost summary: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Cost Records – Get records for a specific cost type (AJAX) - modal data
+     */
+    public function getCostRecords(Request $request)
+    {
+        $costTypeId = $request->cost_type_id;
+
+        // 🔥 Handle "others" string fallback
+        if (! is_numeric($costTypeId)) {
+            if (strtolower($costTypeId) === 'others') {
+                $costTypeId = 9; // hardcoded safe fallback
+            }
+        }
+
+        // Base query (IMPORTANT: eager loading to avoid N+1)
+        $query = CostEntry::with([
+            'cost.createdBy',
+            'costType',
+        ])
+            ->where('cost_type_id', $costTypeId);
+
+        // =========================
+        // Date Filter (from summary)
+        // =========================
+        if ($request->start_date && $request->end_date) {
+            $startDate = Carbon::createFromFormat('d-m-Y', $request->start_date)->startOfDay();
+            $endDate   = Carbon::createFromFormat('d-m-Y', $request->end_date)->endOfDay();
+
+            $query->whereHas('cost', function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('cost_date', [$startDate, $endDate]);
+            });
+        }
+
+        // =========================
+        // Branch Filter
+        // =========================
+        if ($request->filled('branch_id')) {
+            $query->whereHas('cost', function ($q) use ($request) {
+                $q->where('branch_id', $request->branch_id);
+            });
+        }
+
+        // =========================
+        // Fetch Data (sorted by date desc)
+        // =========================
+        $records = $query
+            ->join('costs', 'costs.id', '=', 'cost_entries.cost_id')
+            ->orderByDesc('costs.cost_date')
+            ->select('cost_entries.*') // important to avoid column collision
+            ->get();
+
+        // =========================
+        // Format Response
+        // =========================
+        $data = $records->values()->map(function ($item, $index) {
+            $isOthers = optional($item->costType)->name === 'Others';
+
+            return [
+                'sl'          => $index + 1,
+                'date'        => optional($item->cost->cost_date)->format('d M Y'),
+                'description' => $item->description,
+                'amount'      => $item->amount,
+                'added_by'    => optional($item->cost->createdBy)->name ?? 'N/A',
+                'is_others'   => $isOthers, // ✅ ADD THIS
+            ];
+        });
+
+        return response()->json([
+            'data'  => $data,
+            'total' => $records->sum('amount'),
+        ]);
     }
 
     /**

@@ -62,8 +62,7 @@
                         <div class="d-flex align-items-center position-relative my-1">
                             <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
                             <input type="text" data-cost-table-filter="search"
-                                class="form-control form-control-solid w-250px ps-12"
-                                placeholder="Search in cost records">
+                                class="form-control form-control-solid w-250px ps-12" placeholder="Search in cost records">
                         </div>
                         <!--end::Search-->
                     </div>
@@ -118,7 +117,8 @@
                     </div>
                     <div class="menu-footer">
                         <button type="button" class="btn btn-sm btn-light fw-semibold" id="filter_reset_btn">Reset</button>
-                        <button type="button" class="btn btn-sm btn-primary fw-semibold" id="filter_apply_btn">Apply</button>
+                        <button type="button" class="btn btn-sm btn-primary fw-semibold"
+                            id="filter_apply_btn">Apply</button>
                     </div>
                 </div>
                 <!--end::Filter Menu-->
@@ -173,16 +173,16 @@
                                             class="table table-hover align-middle table-row-dashed fs-6 gy-5 ucms-table"
                                             data-branch-id="{{ $branch->id }}">
                                             <thead>
-                                            <tr class="fw-bold fs-7 text-uppercase gs-0">
-                                                <th class="w-50px">SL</th>
-                                                <th class="w-150px">Date</th>
-                                                <th>Cost Entries</th>
-                                                <th class="w-120px">Total (Tk)</th>
-                                                <th class="w-120px">Created By</th>
-                                                <th class="not-export w-100px">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="text-gray-600 fw-semibold"></tbody>
+                                                <tr class="fw-bold fs-7 text-uppercase gs-0">
+                                                    <th class="w-50px">SL</th>
+                                                    <th class="w-150px">Date</th>
+                                                    <th>Cost Entries</th>
+                                                    <th class="w-120px">Total (Tk)</th>
+                                                    <th class="w-120px">Created By</th>
+                                                    <th class="not-export w-100px">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="text-gray-600 fw-semibold"></tbody>
                                         </table>
                                     </div>
                                 </div>
@@ -321,8 +321,8 @@
                                     <span class="text-muted fw-semibold fs-7">Cost breakdown by type</span>
                                 </h3>
                                 <div class="card-toolbar">
-                                    <button type="button" class="btn btn-sm btn-icon btn-light-primary" id="export_chart_png"
-                                        title="Export as PNG">
+                                    <button type="button" class="btn btn-sm btn-icon btn-light-primary"
+                                        id="export_chart_png" title="Export as PNG">
                                         <i class="ki-outline ki-picture fs-4"></i>
                                     </button>
                                 </div>
@@ -343,12 +343,12 @@
                                     <span class="text-muted fw-semibold fs-7">Detailed summary by cost type</span>
                                 </h3>
                                 <div class="card-toolbar gap-2">
-                                    <button type="button" class="btn btn-sm btn-icon btn-light-success" id="export_summary_excel"
-                                        title="Export Excel">
+                                    <button type="button" class="btn btn-sm btn-icon btn-light-success"
+                                        id="export_summary_excel" title="Export Excel">
                                         <i class="ki-outline ki-file-down fs-4"></i>
                                     </button>
-                                    <button type="button" class="btn btn-sm btn-icon btn-light-danger" id="export_summary_pdf"
-                                        title="Export PDF">
+                                    <button type="button" class="btn btn-sm btn-icon btn-light-danger"
+                                        id="export_summary_pdf" title="Export PDF">
                                         <i class="ki-outline ki-document fs-4"></i>
                                     </button>
                                 </div>
@@ -420,8 +420,8 @@
                         <div class="fv-row mb-7">
                             <label class="required fw-semibold fs-6 mb-2">Date</label>
                             <input type="text" id="cost_date" name="cost_date"
-                                class="form-control form-control-solid bg-secondary"
-                                value="{{ now()->format('d-m-Y') }}" readonly>
+                                class="form-control form-control-solid bg-secondary" value="{{ now()->format('d-m-Y') }}"
+                                readonly>
                             <div class="form-text text-muted">
                                 <i class="ki-outline ki-information-3 fs-7 me-1"></i>
                                 Cost can only be added for today's date
@@ -500,7 +500,8 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h3 class="modal-title fw-bold">Edit Cost Amounts</h3>
-                        <button type="button" class="btn btn-icon btn-sm btn-active-light-primary" data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-icon btn-sm btn-active-light-primary"
+                            data-bs-dismiss="modal">
                             <i class="ki-outline ki-cross fs-1"></i>
                         </button>
                     </div>
@@ -555,7 +556,8 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h3 class="modal-title fw-bold">Delete Cost Record</h3>
-                        <button type="button" class="btn btn-icon btn-sm btn-active-light-primary" data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-icon btn-sm btn-active-light-primary"
+                            data-bs-dismiss="modal">
                             <i class="ki-outline ki-cross fs-1"></i>
                         </button>
                     </div>
@@ -588,6 +590,48 @@
         </div>
         <!--end::Delete Cost Modal-->
     @endif
+
+    <!-- Cost Records Modal -->
+    <div class="modal fade" id="costRecordsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="costModalTitle">Cost Type</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div id="costRecordsLoader" class="text-center d-none">
+                        <div class="spinner-border text-primary"></div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>SL</th>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Added By</th>
+                                </tr>
+                            </thead>
+                            <tbody id="costRecordsTableBody"></tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3" class="text-end">Total</th>
+                                    <th id="costRecordsTotal">0</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('vendor-js')
@@ -615,11 +659,14 @@
                 storeCost: "{{ route('costs.store') }}",
                 checkTodayCost: "{{ route('costs.check-today') }}",
                 costSummary: "{{ route('reports.cost-summary') }}",
+                costRecords: "{{ route('reports.cost-records.details') }}",
+
                 @if ($isAdmin)
                     showCost: "{{ route('costs.show', ':id') }}",
                     updateCost: "{{ route('costs.update', ':id') }}",
                     deleteCost: "{{ route('costs.destroy', ':id') }}"
                 @endif
+                
             },
             csrfToken: "{{ csrf_token() }}"
         };

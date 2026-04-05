@@ -1632,7 +1632,12 @@ var KTCostRecords = (function () {
                         ${description ? `<div class="text-muted fs-7">${escapeHtml(description)}</div>` : ''}
                     </td>
                     <td class="text-center">
-                        <span class="badge badge-light-primary">${item.entry_count}</span>
+                        <a href="javascript:void(0)" 
+                        class="badge badge-light-primary cost-records-btn"
+                        data-cost-type-id="${item.cost_type_id}"
+                        data-cost-type-name="${escapeHtml(item.cost_type_name)}">
+                            ${item.entry_count}
+                        </a>
                     </td>
                     <td class="text-end fw-semibold">${formatCurrency(item.total_amount)}</td>
                     <td class="text-end">
@@ -1651,6 +1656,81 @@ var KTCostRecords = (function () {
             </tr>`;
 
         elements.summaryTableBody.innerHTML = html;
+    };
+
+    const handleCostRecordsModal = function () {
+
+        $(document).on('click', '.cost-records-btn', function () {
+
+            const costTypeId = $(this).data('cost-type-id');
+            const costTypeName = $(this).data('cost-type-name');
+
+            // Set modal title
+            $('#costModalTitle').text(costTypeName);
+
+            // Reset UI
+            $('#costRecordsTableBody').html('');
+            $('#costRecordsTotal').text('0');
+            $('#costRecordsLoader').removeClass('d-none');
+
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('costRecordsModal'));
+            modal.show();
+
+            // Get summary filters
+            let startDate = null, endDate = null, branchId = null;
+
+            if (elements.summaryDateRange && elements.summaryDateRange.value.includes(' - ')) {
+                const parts = elements.summaryDateRange.value.split(' - ');
+                startDate = parts[0].trim();
+                endDate = parts[1].trim();
+            }
+
+            if (elements.summaryBranchFilter) {
+                branchId = $(elements.summaryBranchFilter).val();
+            }
+
+            // AJAX
+            $.ajax({
+                url: config.routes.costRecords, // <-- ADD THIS ROUTE IN CONFIG
+                type: "GET",
+                data: {
+                    cost_type_id: costTypeId,
+                    start_date: startDate,
+                    end_date: endDate,
+                    branch_id: branchId
+                },
+                success: function (res) {
+
+                    let rows = '';
+                    let total = 0;
+
+                    res.data.forEach(function (item, index) {
+                        total += parseInt(item.amount) || 0;
+
+                        rows += `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${item.date}</td>
+                                <td>${item.is_others ? (item.description ?? '') : ''}</td>
+                                <td class="text-end">${formatCurrency(item.amount)}</td>
+                                <td>${item.added_by}</td>
+                            </tr>
+                        `;
+                    });
+
+                    $('#costRecordsTableBody').html(rows);
+                    $('#costRecordsTotal').text(formatCurrency(total));
+
+                    $('#costRecordsLoader').addClass('d-none');
+                },
+                error: function () {
+                    $('#costRecordsLoader').addClass('d-none');
+                    toastr.error('Failed to load cost records');
+                }
+            });
+
+        });
     };
 
     const renderSummaryChart = function (summary) {
@@ -1850,6 +1930,8 @@ var KTCostRecords = (function () {
 
         // Search
         initSearch();
+
+        handleCostRecordsModal();
 
         // Filter apply/reset
         if (elements.filterApplyBtn) {

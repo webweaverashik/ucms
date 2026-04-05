@@ -41,4 +41,7 @@ Route::prefix('reports')
         // Cost Summary
         Route::get('cost-summary', [ReportController::class, 'getCostSummary'])->name('cost-summary');
         Route::get('cost-summary/export', [ReportController::class, 'exportCostSummary'])->name('cost-summary.export');
+
+        Route::get('cost-records/details', [ReportController::class, 'getCostRecords'])->name('cost-records.details');
     });
+        
