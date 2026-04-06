@@ -607,7 +607,7 @@
                     </div>
 
                     <div class="table-responsive">
-                        <table class="table table-bordered table-sm align-middle" id="costRecordsTable">
+                        <table class="table table-bordered table-sm align-middle ucms-table" id="costRecordsTable">
                             <thead class="table-light">
                                 <tr>
                                     <th>SL</th>
