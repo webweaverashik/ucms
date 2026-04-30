@@ -246,7 +246,8 @@
                             <td class="text-gray-500">Created By:</td>
                             <td class="text-gray-800">
                                 @if ($invoice->created_by && $invoice->createdBy)
-                                    <a href="{{ route('settlements.show', $invoice->created_by) }}" target="_blank" class="text-gray-800 text-hover-primary">
+                                    <a href="{{ route('settlements.show', $invoice->created_by) }}" target="_blank"
+                                        class="text-gray-800 text-hover-primary">
                                         {{ $invoice->createdBy->name }}
                                     </a>
                                 @else
@@ -420,7 +421,7 @@
                                         @endcan
 
                                         @can('transactions.delete')
-                                            @if ($transaction->created_at->greaterThan(now()->subDay()))
+                                            @if ($transaction->created_at->greaterThan(now()->subDay()) && $transaction->payment_type !== 'discounted')
                                                 <a href="#" title="Delete Transaction"
                                                     class="btn btn-icon text-hover-danger w-30px h-30px delete-txn"
                                                     data-txn-id="{{ $transaction->id }}" data-is-approved="1">
@@ -617,18 +618,20 @@
                                     data-total-amount="{{ $invoice->total_amount }}" required />
                             </div>
                             <!--end::Name Input group-->
-                            <!--begin::Name Input group-->
+                            <!--begin::Remarks Input group-->
                             <div class="fv-row">
                                 <!--begin::Label-->
-                                <label class="fw-semibold fs-6 mb-2">Remarks <span
-                                        class="text-muted">(optional)</span></label>
+                                <label class="fw-semibold fs-6 mb-2" id="transaction_remarks_label">
+                                    Remarks <span class="text-muted" id="transaction_remarks_optional">(optional)</span>
+                                </label>
                                 <!--end::Label-->
                                 <!--begin::Input-->
-                                <input type="text" name="transaction_remarks" min="0"
+                                <input type="text" name="transaction_remarks" id="transaction_remarks_input"
                                     class="form-control form-control-solid mb-3 mb-lg-0" placeholder="Add some remarks" />
+                                <div class="invalid-feedback">Remarks is required for discounted payment.</div>
                                 <!--end::Input-->
                             </div>
-                            <!--end::Name Input group-->
+                            <!--end::Remarks Input group-->
                         </div>
                         <!--end::Scroll-->
                         <!--begin::Actions-->

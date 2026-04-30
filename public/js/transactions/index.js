@@ -898,27 +898,22 @@ var KTAllTransactionsList = (function () {
 var KTAddTransaction = (function () {
       // Shared variables
       const element = document.getElementById("kt_modal_add_transaction");
-
       // Early return if element doesn't exist
       if (!element) {
             return {
                   init: function () { },
             };
       }
-
       const form = element.querySelector("#kt_modal_add_transaction_form");
       const modal = bootstrap.Modal.getOrCreateInstance(element);
       const branchSelect = document.getElementById("transaction_branch_select");
       const studentSelect = document.getElementById("transaction_student_select");
       const invoiceSelect = document.getElementById("student_due_invoice_select");
       const amountInput = document.getElementById("transaction_amount_input");
-
       // Store invoices data
       let invoices = [];
-
       // Track if selected invoice is partially paid
       let isPartiallyPaidInvoice = false;
-
       // Format "07_2025" to "July 2025"
       var formatMonthYear = function (raw) {
             if (!raw) return "";
@@ -943,30 +938,27 @@ var KTAddTransaction = (function () {
             }
             return raw;
       };
-
+      // Get remarks input helper
+      var getRemarksInput = function () {
+            return form ? form.querySelector('input[name="transaction_remarks"]') : null;
+      };
       // Handle branch select (for admin)
       var handleBranchSelect = function () {
             if (!branchSelect) return;
-
             $(branchSelect).on("change", function () {
                   const branchId = $(this).val();
                   const $studentSelect = $(studentSelect);
-
                   // Clear student select
                   $studentSelect
                         .empty()
                         .append('<option value="">Select a student</option>');
-
                   // Clear invoice select
                   $(invoiceSelect)
                         .empty()
                         .append('<option value="">Select Due Invoice</option>');
-
                   // Reset amount input
                   $(amountInput).val("").prop("disabled", true);
-
                   if (!branchId) return;
-
                   // Populate students for selected branch
                   if (
                         typeof studentsByBranch !== "undefined" &&
@@ -980,24 +972,20 @@ var KTAddTransaction = (function () {
                   }
             });
       };
-
       // Fetch invoices on student select
       var handleStudentSelect = function () {
             $(studentSelect).on("change", function () {
                   const studentId = $(this).val();
                   if (!studentId) return;
-
                   $.ajax({
                         url: `/students/${studentId}/due-invoices`,
                         method: "GET",
                         success: function (response) {
                               invoices = response;
                               const $invoiceSelect = $(invoiceSelect);
-
                               $invoiceSelect
                                     .empty()
                                     .append(`<option value="">Select Due Invoice</option>`);
-
                               if (response.length === 0) {
                                     $invoiceSelect.append(
                                           `<option disabled>No due invoices found</option>`
@@ -1011,7 +999,6 @@ var KTAddTransaction = (function () {
                                           const label = invoice.month_year
                                                 ? formatMonthYear(invoice.month_year)
                                                 : invoice.invoice_type || "Unknown";
-
                                           $invoiceSelect.append(
                                                 `<option value="${invoice.id}">
                                     ${invoice.invoice_number} (${label}) - Total: ৳${total}, Due: ৳${due}
@@ -1019,7 +1006,6 @@ var KTAddTransaction = (function () {
                                           );
                                     });
                               }
-
                               $(amountInput).val("").prop("disabled", true).removeClass("is-invalid");
                               $("#transaction_amount_error").remove();
                               $('input[name="transaction_type"]').prop("disabled", false);
@@ -1030,13 +1016,11 @@ var KTAddTransaction = (function () {
                   });
             });
       };
-
       // Populate amount and adjust payment options when invoice selected
       var handleInvoiceSelect = function () {
             $(invoiceSelect).on("change", function () {
                   const selectedId = $(this).val();
                   const invoice = invoices.find((inv) => inv.id == selectedId);
-
                   if (invoice) {
                         const $amountInput = $(amountInput);
                         $amountInput
@@ -1044,14 +1028,12 @@ var KTAddTransaction = (function () {
                               .prop("disabled", false)
                               .data("max", invoice.amount_due)
                               .attr("min", 1);
-
                         const $fullPaymentOption = $(
                               'input[name="transaction_type"][value="full"]'
                         );
                         const $partialPaymentOption = $(
                               'input[name="transaction_type"][value="partial"]'
                         );
-
                         if (invoice.amount_due < invoice.total_amount) {
                               // Invoice is partially paid
                               isPartiallyPaidInvoice = true;
@@ -1069,7 +1051,6 @@ var KTAddTransaction = (function () {
                   }
             });
       };
-
       // Toggle input behavior for payment type
       var handlePaymentTypeChange = function () {
             $('input[name="transaction_type"]').on("change", function () {
@@ -1077,49 +1058,109 @@ var KTAddTransaction = (function () {
                   const $amountInput = $(amountInput);
                   const selectedId = $(invoiceSelect).val();
                   const invoice = invoices.find((inv) => inv.id == selectedId);
-
-                  if (invoice) {
-                        if (paymentType === "partial") {
-                              $amountInput.val("");
-                        } else if (paymentType === "discounted") {
-                              $amountInput.val("");
-                        } else {
-                              $amountInput.val(invoice.amount_due);
+                  const remarksInput = getRemarksInput();
+                  if (paymentType === "discounted") {
+                        // Discounted: min 0, clear amount
+                        $amountInput.attr("min", 0);
+                        if (invoice) $amountInput.val("");
+                        // Update remarks label to required
+                        updateRemarksLabel(true);
+                  } else {
+                        // Full / Partial: min 1
+                        $amountInput.attr("min", 1);
+                        if (invoice) {
+                              $amountInput.val(paymentType === "partial" ? "" : invoice.amount_due);
+                        }
+                        // Update remarks label back to optional
+                        updateRemarksLabel(false);
+                        // Clear any existing remarks validation state
+                        if (remarksInput) {
+                              $(remarksInput).removeClass("is-invalid");
+                              $("#transaction_remarks_error").remove();
                         }
                   }
             });
       };
-
+      // Update remarks label between required and optional
+      var updateRemarksLabel = function (isRequired) {
+            const label = form ? form.querySelector('label[for="transaction_remarks_input"]') : null;
+            const optionalSpan = form ? form.querySelector('#transaction_remarks_optional') : null;
+            if (isRequired) {
+                  if (optionalSpan) optionalSpan.style.display = 'none';
+                  // Add required asterisk if not already present
+                  if (label && !label.classList.contains('required')) {
+                        label.classList.add('required');
+                  }
+            } else {
+                  if (optionalSpan) optionalSpan.style.display = '';
+                  if (label) label.classList.remove('required');
+            }
+      };
+      // Validate remarks for discounted payment
+      var validateRemarks = function (showError) {
+            const paymentType = $('input[name="transaction_type"]:checked').val();
+            const remarksInput = getRemarksInput();
+            if (!remarksInput) return true;
+            if (paymentType !== 'discounted') {
+                  $(remarksInput).removeClass('is-invalid');
+                  $("#transaction_remarks_error").remove();
+                  return true;
+            }
+            const value = remarksInput.value.trim();
+            if (value.length === 0) {
+                  if (showError) {
+                        $(remarksInput).addClass('is-invalid');
+                        if (!document.getElementById('transaction_remarks_error')) {
+                              $(remarksInput).after(
+                                    '<div class="invalid-feedback" id="transaction_remarks_error">Remarks is required for discounted payment.</div>'
+                              );
+                        }
+                  }
+                  return false;
+            }
+            $(remarksInput).removeClass('is-invalid');
+            $("#transaction_remarks_error").remove();
+            return true;
+      };
       // Validate amount input
       var handleAmountValidation = function () {
             $(amountInput).on("input", function () {
                   const amount = parseFloat($(this).val());
                   const maxAmount = parseFloat($(this).data("max"));
                   const paymentType = $('input[name="transaction_type"]:checked').val();
-
                   // Remove previous error state
                   $(this).removeClass("is-invalid");
                   $("#transaction_amount_error").remove();
-
                   // Validate the amount
                   let isValid = true;
                   let errorMessage = "";
-
                   if (isNaN(amount)) {
                         isValid = false;
                         errorMessage = "Please enter a valid number";
+                  } else if (paymentType === "discounted") {
+                        // Discounted: minimum 0, must be less than due amount
+                        if (amount < 0) {
+                              isValid = false;
+                              errorMessage = "Amount cannot be negative";
+                        } else if (!isPartiallyPaidInvoice && amount >= maxAmount) {
+                              isValid = false;
+                              errorMessage = `For discounted payment, amount must be less than the due amount of ৳${maxAmount}`;
+                        } else if (isPartiallyPaidInvoice && amount >= maxAmount) {
+                              isValid = false;
+                              errorMessage = `For discounted payment, amount must be less than the due amount of ৳${maxAmount}`;
+                        }
                   } else if (amount < 1) {
                         isValid = false;
                         errorMessage = "Amount must be at least ৳1";
                   } else if (
-                        (paymentType === "partial" || paymentType === "discounted") &&
+                        paymentType === "partial" &&
                         !isPartiallyPaidInvoice &&
                         amount >= maxAmount
                   ) {
                         isValid = false;
-                        errorMessage = `For ${paymentType} payment, amount must be less than the due amount of ৳${maxAmount}`;
+                        errorMessage = `For partial payment, amount must be less than the due amount of ৳${maxAmount}`;
                   } else if (
-                        (paymentType === "partial" || paymentType === "discounted") &&
+                        paymentType === "partial" &&
                         isPartiallyPaidInvoice &&
                         amount > maxAmount
                   ) {
@@ -1129,7 +1170,6 @@ var KTAddTransaction = (function () {
                         isValid = false;
                         errorMessage = `For full payment, amount must be exactly ৳${maxAmount}`;
                   }
-
                   if (!isValid) {
                         $(this).addClass("is-invalid");
                         $(this).after(
@@ -1140,30 +1180,43 @@ var KTAddTransaction = (function () {
                   }
             });
       };
-
+      // Handle remarks live validation (clear error as user types)
+      var handleRemarksValidation = function () {
+            const remarksInput = getRemarksInput();
+            if (!remarksInput) return;
+            $(remarksInput).on('input', function () {
+                  const paymentType = $('input[name="transaction_type"]:checked').val();
+                  if (paymentType === 'discounted' && this.value.trim().length > 0) {
+                        $(this).removeClass('is-invalid');
+                        $("#transaction_remarks_error").remove();
+                  }
+            });
+      };
       // Form submission via AJAX
       var handleFormSubmit = function () {
             $(form).on("submit", function (e) {
                   e.preventDefault();
-
                   const amount = parseFloat($(amountInput).val());
                   const maxAmount = parseFloat($(amountInput).data("max"));
                   const paymentType = $('input[name="transaction_type"]:checked').val();
-
+                  // Amount validation
                   let isValid = true;
-
                   if (isNaN(amount)) {
                         isValid = false;
+                  } else if (paymentType === "discounted") {
+                        if (amount < 0 || amount >= maxAmount) {
+                              isValid = false;
+                        }
                   } else if (amount < 1) {
                         isValid = false;
                   } else if (
-                        (paymentType === "partial" || paymentType === "discounted") &&
+                        paymentType === "partial" &&
                         !isPartiallyPaidInvoice &&
                         amount >= maxAmount
                   ) {
                         isValid = false;
                   } else if (
-                        (paymentType === "partial" || paymentType === "discounted") &&
+                        paymentType === "partial" &&
                         isPartiallyPaidInvoice &&
                         amount > maxAmount
                   ) {
@@ -1171,22 +1224,23 @@ var KTAddTransaction = (function () {
                   } else if (paymentType === "full" && amount != maxAmount) {
                         isValid = false;
                   }
-
                   if (!isValid || $(amountInput).hasClass("is-invalid")) {
                         toastr.warning("Please enter a valid amount.");
                         return false;
                   }
-
+                  // Remarks validation for discounted
+                  if (!validateRemarks(true)) {
+                        toastr.warning("Remarks is required for discounted payment.");
+                        return false;
+                  }
                   // Get submit button and show loading state
                   const submitBtn = form.querySelector(
                         '[data-kt-add-transaction-modal-action="submit"]'
                   );
                   submitBtn.setAttribute("data-kt-indicator", "on");
                   submitBtn.disabled = true;
-
                   // Prepare form data
                   const formData = new FormData(form);
-
                   // Submit via AJAX
                   fetch(form.action, {
                         method: "POST",
@@ -1210,11 +1264,9 @@ var KTAddTransaction = (function () {
                                     toastr.success(
                                           data.message || "Transaction recorded successfully."
                                     );
-
                                     const transactionData = data.transaction;
                                     resetForm();
                                     modal.hide();
-
                                     if (transactionData && transactionData.is_approved) {
                                           Swal.fire({
                                                 title: "Transaction Successful!",
@@ -1254,30 +1306,25 @@ var KTAddTransaction = (function () {
                         })
                         .catch((error) => {
                               console.error("Transaction Error:", error);
-
                               let errorMessage = "An error occurred. Please try again.";
                               if (error.message) {
                                     errorMessage = error.message;
                               } else if (error.errors) {
                                     errorMessage = Object.values(error.errors).flat().join("\n");
                               }
-
                               toastr.error(errorMessage);
                               submitBtn.removeAttribute("data-kt-indicator");
                               submitBtn.disabled = false;
                         });
-
                   return false;
             });
       };
-
       // Download statement and then refresh table (no page reload)
       var downloadStatementAndRefresh = function (studentId, year, invoiceId) {
             const formData = new FormData();
             formData.append("student_id", studentId);
             formData.append("statement_year", year);
             formData.append("invoice_id", invoiceId);
-
             fetch(routeDownloadStatement, {
                   method: "POST",
                   headers: {
@@ -1297,7 +1344,6 @@ var KTAddTransaction = (function () {
                               "_blank",
                               "width=900,height=700,scrollbars=yes,resizable=yes"
                         );
-
                         if (printWindow) {
                               printWindow.document.open();
                               printWindow.document.write(html);
@@ -1310,7 +1356,6 @@ var KTAddTransaction = (function () {
                                     icon: "warning",
                               });
                         }
-
                         KTAllTransactionsList.refreshTable();
                   })
                   .catch((error) => {
@@ -1319,36 +1364,36 @@ var KTAddTransaction = (function () {
                         KTAllTransactionsList.refreshTable();
                   });
       };
-
       // Reset form and close modal
       var resetForm = function () {
             if (form) form.reset();
-
             if (branchSelect && $(branchSelect).data("select2")) {
                   $(branchSelect).val(null).trigger("change");
             }
-
             if (studentSelect && $(studentSelect).data("select2")) {
                   $(studentSelect).val(null).trigger("change");
             }
-
             if (invoiceSelect && $(invoiceSelect).data("select2")) {
                   $(invoiceSelect).val(null).trigger("change");
             }
-
             if (amountInput) {
                   amountInput.value = "";
                   amountInput.disabled = true;
             }
-
             $(amountInput).removeClass("is-invalid");
             $("#transaction_amount_error").remove();
-
+            // Clear remarks validation state
+            const remarksInput = getRemarksInput();
+            if (remarksInput) {
+                  $(remarksInput).removeClass("is-invalid");
+            }
+            $("#transaction_remarks_error").remove();
+            // Reset remarks label back to optional
+            updateRemarksLabel(false);
             // Reset invoices array and flags
             invoices = [];
             isPartiallyPaidInvoice = false;
       };
-
       // Handle modal close actions
       var handleCloseModal = function () {
             const cancelButton = element.querySelector(
@@ -1361,7 +1406,6 @@ var KTAddTransaction = (function () {
                         modal.hide();
                   });
             }
-
             const closeButton = element.querySelector(
                   '[data-kt-add-transaction-modal-action="close"]'
             );
@@ -1373,7 +1417,6 @@ var KTAddTransaction = (function () {
                   });
             }
       };
-
       return {
             init: function () {
                   handleBranchSelect();
@@ -1381,6 +1424,7 @@ var KTAddTransaction = (function () {
                   handleInvoiceSelect();
                   handlePaymentTypeChange();
                   handleAmountValidation();
+                  handleRemarksValidation();
                   handleFormSubmit();
                   handleCloseModal();
             },
