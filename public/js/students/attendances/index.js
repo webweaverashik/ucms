@@ -4,21 +4,24 @@
  * KTStudentAttendance
  * Metronic 8 Style Module for Student Attendance Management
  * Mobile-Friendly Version with Academic Group Support
- *
+ * 
  * @package App/Student/Attendance
  */
-
 var KTStudentAttendance = (function () {
     // ============================================
     // Private Variables
     // ============================================
-
     var config = window.AttendanceConfig || {};
     var routes = config.routes || {};
     var csrfToken = config.csrfToken || document.querySelector('meta[name="csrf-token"]')?.content;
     var isAdmin = config.isAdmin ?? true;
     var userBranchId = config.userBranchId;
     var groupRequiredClasses = config.groupRequiredClasses || ['09', '10', '11', '12'];
+
+    // Data State
+    var currentStudents = [];
+    var currentSort = { field: 'name', order: 'asc' };
+    var lastRenderConfig = { isAllGroups: false, isAllBatches: false };
 
     // DOM Elements
     var form;
@@ -36,6 +39,7 @@ var KTStudentAttendance = (function () {
     var resetButton;
     var studentCountEl;
     var academicGroupWrapper;
+    var sortButtonsContainer;
 
     // ============================================
     // Private Functions
@@ -46,7 +50,6 @@ var KTStudentAttendance = (function () {
      */
     var makeRequest = function (url, options) {
         options = options || {};
-
         var defaultOptions = {
             method: 'GET',
             headers: {
@@ -81,7 +84,6 @@ var KTStudentAttendance = (function () {
      */
     var showAlert = function (type, title, text, options) {
         options = options || {};
-
         if (typeof Swal !== 'undefined') {
             return Swal.fire(Object.assign({
                 icon: type,
@@ -104,14 +106,11 @@ var KTStudentAttendance = (function () {
      */
     var reinitSelect2 = function (element) {
         if (!element) return;
-
         if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
             var $el = jQuery(element);
-
             if ($el.data('select2')) {
                 $el.select2('destroy');
             }
-
             $el.select2({
                 placeholder: element.dataset.placeholder || 'Select an option',
                 allowClear: true,
@@ -125,7 +124,6 @@ var KTStudentAttendance = (function () {
      */
     var toggleElement = function (element, show) {
         if (!element) return;
-
         if (show) {
             element.classList.remove('d-none');
         } else {
@@ -138,7 +136,6 @@ var KTStudentAttendance = (function () {
      */
     var setButtonLoading = function (button, loading, originalHtml) {
         if (!button) return;
-
         if (loading) {
             button.disabled = true;
             button.setAttribute('data-kt-indicator', 'on');
@@ -198,18 +195,14 @@ var KTStudentAttendance = (function () {
 
         if (classNumeral && classRequiresGroup(classNumeral)) {
             toggleElement(academicGroupWrapper, true);
-            // Reinitialize Select2 when shown
             reinitSelect2(academicGroupSelect);
         } else {
             toggleElement(academicGroupWrapper, false);
-            // Clear selection when hidden
             if (academicGroupSelect) {
                 academicGroupSelect.value = '';
                 reinitSelect2(academicGroupSelect);
             }
         }
-
-        // Clear student list when class changes
         clearStudentList();
     };
 
@@ -221,7 +214,6 @@ var KTStudentAttendance = (function () {
      * Load Batches via AJAX based on Branch
      */
     var loadBatches = function (branchId) {
-        // Reset batch dropdown
         batchSelect.innerHTML = '<option value="">Loading...</option>';
         batchSelect.disabled = true;
         toggleElement(batchLoader, true);
@@ -238,9 +230,7 @@ var KTStudentAttendance = (function () {
 
         return makeRequest(url)
             .then(function (response) {
-                // First option is "All Batches" (optional selection)
                 batchSelect.innerHTML = '<option value="">All Batches</option>';
-
                 if (response.batches && response.batches.length > 0) {
                     response.batches.forEach(function (batch) {
                         var option = document.createElement('option');
@@ -264,7 +254,7 @@ var KTStudentAttendance = (function () {
     };
 
     // ============================================
-    // Student Operations
+    // Student Operations & Sorting
     // ============================================
 
     /**
@@ -277,14 +267,11 @@ var KTStudentAttendance = (function () {
         var attendanceDate = document.getElementById('attendance_date').value;
         var academicGroup = getSelectedAcademicGroup();
 
-        // Validation - Only branch and class are required
-        // Batch and Academic group are optional - if not selected, all students will be loaded
         if (!branchId || !classId) {
             showAlert('warning', 'Validation Error', 'Please select Branch and Class.');
             return;
         }
 
-        // Show loader, hide content
         toggleElement(studentListLoader, true);
         studentListContainer.innerHTML = '';
         toggleElement(saveSection, false);
@@ -297,15 +284,8 @@ var KTStudentAttendance = (function () {
             attendance_date: attendanceDate
         };
 
-        // Add batch_id if a specific batch is selected (optional filter)
-        if (batchId) {
-            payload.batch_id = batchId;
-        }
-
-        // Add academic group if applicable
-        if (academicGroup) {
-            payload.academic_group = academicGroup;
-        }
+        if (batchId) payload.batch_id = batchId;
+        if (academicGroup) payload.academic_group = academicGroup;
 
         makeRequest(routes.getStudents, {
             method: 'POST',
@@ -314,24 +294,31 @@ var KTStudentAttendance = (function () {
             .then(function (response) {
                 toggleElement(studentListLoader, false);
 
-                // Handle Off Day Warning
                 if (response.is_off_day) {
                     renderOffDayWarning(response.off_day_name);
                 }
 
-                // Handle Student List
                 if (response.count > 0) {
-                    // Pass is_all_groups and is_all_batches flags to render function
-                    renderStudentTable(response.students, response.is_all_groups || false, response.is_all_batches || false);
+                    // Update state
+                    currentStudents = response.students;
+                    lastRenderConfig = {
+                        isAllGroups: response.is_all_groups || false,
+                        isAllBatches: response.is_all_batches || false
+                    };
+
+                    // Reset Sort State to default (Name Asc)
+                    currentSort = { field: 'name', order: 'asc' };
+                    updateSortButtonsUI();
+
+                    renderStudentTable(currentStudents, lastRenderConfig.isAllGroups, lastRenderConfig.isAllBatches);
+
                     toggleElement(bulkButtons, true);
                     toggleElement(saveSection, true);
                     studentCountEl.textContent = response.count;
-
-                    // Reset bulk action radios
                     resetBulkActionButtons();
                 } else {
-                    studentListContainer.innerHTML =
-                        '<div class="alert alert-info d-flex align-items-center">' +
+                    currentStudents = [];
+                    studentListContainer.innerHTML = '<div class="alert alert-info d-flex align-items-center">' +
                         '<i class="ki-outline ki-information fs-2 text-info me-3"></i>' +
                         '<span>No students found for this criteria.</span>' +
                         '</div>';
@@ -345,13 +332,67 @@ var KTStudentAttendance = (function () {
     };
 
     /**
+     * Sort Students based on field
+     */
+    var sortStudents = function (field) {
+        if (!currentStudents || currentStudents.length === 0) return;
+
+        // Toggle order if same field, else default to asc
+        if (currentSort.field === field) {
+            currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
+        } else {
+            currentSort.field = field;
+            currentSort.order = 'asc';
+        }
+
+        // Apply sorting
+        currentStudents.sort(function (a, b) {
+            var valA = (a[field] || '').toString().toLowerCase();
+            var valB = (b[field] || '').toString().toLowerCase();
+
+            if (valA < valB) return currentSort.order === 'asc' ? -1 : 1;
+            if (valA > valB) return currentSort.order === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        // Update UI
+        updateSortButtonsUI();
+        renderStudentTable(currentStudents, lastRenderConfig.isAllGroups, lastRenderConfig.isAllBatches);
+    };
+
+    /**
+     * Update Sorting Buttons UI
+     */
+    var updateSortButtonsUI = function () {
+        if (!sortButtonsContainer) return;
+
+        sortButtonsContainer.querySelectorAll('.sort-btn').forEach(function (btn) {
+            var field = btn.dataset.sortField;
+            var icon = btn.querySelector('i');
+
+            if (field === currentSort.field) {
+                btn.classList.add('active');
+                icon.classList.remove('d-none');
+
+                if (currentSort.order === 'desc') {
+                    btn.classList.add('desc');
+                } else {
+                    btn.classList.remove('desc');
+                }
+            } else {
+                btn.classList.remove('active', 'desc');
+                icon.classList.add('d-none');
+            }
+        });
+    };
+
+    /**
      * Reset bulk action buttons
      */
     var resetBulkActionButtons = function () {
         document.querySelectorAll('input[name="mark_all"]').forEach(function (radio) {
             radio.checked = false;
         });
-        // Also remove active classes from labels
         document.querySelectorAll('.quick-action-btn').forEach(function (btn) {
             btn.classList.remove('active');
         });
@@ -361,8 +402,7 @@ var KTStudentAttendance = (function () {
      * Render Off Day Warning
      */
     var renderOffDayWarning = function (dayName) {
-        offDayWarning.innerHTML =
-            '<div class="alert alert-dismissible alert-warning d-flex align-items-center p-4 p-md-5 mb-4 mb-md-5 border border-warning border-dashed fade-in">' +
+        offDayWarning.innerHTML = '<div class="alert alert-dismissible alert-warning d-flex align-items-center p-4 p-md-5 mb-4 mb-md-5 border border-warning border-dashed fade-in">' +
             '<i class="ki-outline ki-information-5 fs-2hx text-warning me-3 me-md-4"></i>' +
             '<div class="d-flex flex-column">' +
             '<h4 class="mb-1 text-warning fs-6 fs-md-5">Off Day Warning</h4>' +
@@ -382,72 +422,31 @@ var KTStudentAttendance = (function () {
      */
     var getGroupBadge = function (groupName) {
         if (!groupName) return '';
-
         var badgeClass = 'badge-light-secondary';
         var shortName = groupName;
 
         switch (groupName.toLowerCase()) {
-            case 'science':
-                badgeClass = 'badge-info';
-                shortName = 'Science';
-                break;
-            case 'commerce':
-                badgeClass = 'badge-success';
-                shortName = 'Commerce';
-                break;
-            case 'arts':
-                badgeClass = 'badge-warning';
-                shortName = 'Arts';
-                break;
+            case 'science': badgeClass = 'badge-info'; break;
+            case 'commerce': badgeClass = 'badge-success'; break;
+            case 'arts': badgeClass = 'badge-warning'; break;
         }
-
         return '<span class="badge ' + badgeClass + ' fs-9 ms-2">' + escapeHtml(shortName) + '</span>';
     };
 
     /**
-     * Batch color palette - Custom pill badge colors (distinct from Bootstrap defaults used by groups)
-     * Groups use: badge-light-success (green), badge-light-info (cyan), badge-light-warning (yellow)
-     * Batches use custom pill colors defined below
+     * Batch Color Palette
      */
-    var batchColorPalette = [
-        'badge-pill-teal',       // Teal
-        'badge-pill-lime',       // Lime
-        'badge-pill-amber',      // Amber
-        'badge-pill-cyan',       // Cyan
-        'badge-pill-slate',       // Slate
-        'badge-pill-purple',     // Purple
-        'badge-pill-orange',     // Orange
-        'badge-pill-pink',       // Pink
-        'badge-pill-rose',       // Rose
-        'badge-pill-indigo',     // Indigo
-    ];
-
-    /**
-     * Cache for batch color assignments
-     */
+    var batchColorPalette = ['badge-pill-teal', 'badge-pill-lime', 'badge-pill-amber', 'badge-pill-cyan', 'badge-pill-slate', 'badge-pill-purple', 'badge-pill-orange', 'badge-pill-pink', 'badge-pill-rose', 'badge-pill-indigo'];
     var batchColorCache = {};
 
-    /**
-     * Get consistent color for a batch based on batch ID
-     */
     var getBatchColorClass = function (batchId) {
         if (!batchId) return batchColorPalette[0];
-
-        // Check cache first for consistent colors
-        if (batchColorCache[batchId]) {
-            return batchColorCache[batchId];
-        }
-
-        // Assign color based on batch ID (mod palette length)
+        if (batchColorCache[batchId]) return batchColorCache[batchId];
         var colorIndex = parseInt(batchId) % batchColorPalette.length;
         batchColorCache[batchId] = batchColorPalette[colorIndex];
-
         return batchColorCache[batchId];
     };
 
-    /**
-     * Get batch badge HTML with dynamic color based on batch ID
-     */
     var getBatchBadge = function (batchId, batchName) {
         if (!batchName) return '';
         var colorClass = getBatchColorClass(batchId);
@@ -477,7 +476,6 @@ var KTStudentAttendance = (function () {
             var presentChecked = student.status === 'present' ? 'checked' : '';
             var lateChecked = student.status === 'late' ? 'checked' : '';
             var absentChecked = student.status === 'absent' ? 'checked' : '';
-
             var initials = student.name.charAt(0).toUpperCase();
             var remarks = escapeHtml(student.remarks || '');
             var updatedAt = student.updated_at || '-';
@@ -488,10 +486,7 @@ var KTStudentAttendance = (function () {
             var batchId = student.batch_id || '';
             var batchName = student.batch_name || '';
 
-            // Build group badge HTML (only show when isAllGroups is true)
             var groupBadgeHtml = isAllGroups ? getGroupBadge(academicGroup) : '';
-
-            // Build batch badge HTML (only show when isAllBatches is true)
             var batchBadgeHtml = isAllBatches ? getBatchBadge(batchId, batchName) : '';
 
             desktopHtml += '<tr data-student-id="' + student.id + '" data-batch-id="' + batchId + '" class="attendance-row" data-has-attendance="' + (hasAttendance ? 'true' : 'false') + '">' +
@@ -504,8 +499,7 @@ var KTStudentAttendance = (function () {
                 '<div class="d-flex flex-column">' +
                 '<div class="d-flex align-items-center flex-wrap">' +
                 '<a href="' + getStudentProfileUrl(student.id) + '" target="_blank" class="text-gray-800 text-hover-primary fw-bold fs-6">' + escapeHtml(student.name) + '</a>' +
-                groupBadgeHtml +
-                batchBadgeHtml +
+                groupBadgeHtml + batchBadgeHtml +
                 '</div>' +
                 '<span class="text-muted fw-semibold fs-7">ID: ' + escapeHtml(student.student_unique_id) + '</span>' +
                 (homeMobile ? '<span class="text-muted fw-semibold fs-7"><i class="ki-outline ki-phone fs-7 me-1"></i>' + escapeHtml(homeMobile) + '</span>' : '') +
@@ -537,15 +531,12 @@ var KTStudentAttendance = (function () {
                 '</td>' +
                 '<td class="text-center">' +
                 '<span class="updated-at-display badge badge-light-primary fs-8">' +
-                '<i class="ki-outline ki-time fs-8 me-1"></i>' + escapeHtml(updatedAt) +
-                '</span>' +
+                '<i class="ki-outline ki-time fs-8 me-1"></i>' + escapeHtml(updatedAt) + '</span>' +
                 '</td>' +
                 '<td class="pe-4">' +
                 '<div class="attendance-taker-display d-flex align-items-center">' +
                 '<div class="symbol symbol-25px me-2">' +
-                '<span class="symbol-label bg-light-info text-info fs-9 fw-bold">' +
-                (attendanceTaker !== '-' ? escapeHtml(attendanceTaker.charAt(0).toUpperCase()) : '-') +
-                '</span>' +
+                '<span class="symbol-label bg-light-info text-info fs-9 fw-bold">' + (attendanceTaker !== '-' ? escapeHtml(attendanceTaker.charAt(0).toUpperCase()) : '-') + '</span>' +
                 '</div>' +
                 '<span class="text-gray-700 fs-8 fw-semibold attendance-taker-name">' + escapeHtml(attendanceTaker) + '</span>' +
                 '</div>' +
@@ -557,12 +548,10 @@ var KTStudentAttendance = (function () {
 
         // Mobile Card View
         var mobileHtml = '<div class="d-lg-none fade-in" id="attendance_cards">';
-
         students.forEach(function (student, index) {
             var presentChecked = student.status === 'present' ? 'checked' : '';
             var lateChecked = student.status === 'late' ? 'checked' : '';
             var absentChecked = student.status === 'absent' ? 'checked' : '';
-
             var initials = student.name.charAt(0).toUpperCase();
             var remarks = escapeHtml(student.remarks || '');
             var updatedAt = student.updated_at || '-';
@@ -573,15 +562,11 @@ var KTStudentAttendance = (function () {
             var batchId = student.batch_id || '';
             var batchName = student.batch_name || '';
 
-            // Build group badge HTML (only show when isAllGroups is true)
             var groupBadgeHtml = isAllGroups ? getGroupBadge(academicGroup) : '';
-
-            // Build batch badge HTML (only show when isAllBatches is true)
             var batchBadgeHtml = isAllBatches ? getBatchBadge(batchId, batchName) : '';
 
             mobileHtml += '<div class="card card-bordered mb-3 attendance-card ' + (hasAttendance ? 'has-attendance' : '') + '" data-student-id="' + student.id + '" data-batch-id="' + batchId + '" data-has-attendance="' + (hasAttendance ? 'true' : 'false') + '">' +
                 '<div class="card-body p-4">' +
-                // Header with student info
                 '<div class="d-flex align-items-start justify-content-between mb-3">' +
                 '<div class="d-flex align-items-center">' +
                 '<div class="symbol symbol-40px me-3">' +
@@ -590,8 +575,7 @@ var KTStudentAttendance = (function () {
                 '<div>' +
                 '<div class="d-flex align-items-center flex-wrap">' +
                 '<a href="' + getStudentProfileUrl(student.id) + '" target="_blank" class="fw-bold text-gray-800 text-hover-primary fs-6">' + escapeHtml(student.name) + '</a>' +
-                groupBadgeHtml +
-                batchBadgeHtml +
+                groupBadgeHtml + batchBadgeHtml +
                 '</div>' +
                 '<div class="text-muted fs-8">ID: ' + escapeHtml(student.student_unique_id) + '</div>' +
                 (homeMobile ? '<div class="text-muted fs-8 mt-1"><i class="ki-outline ki-phone fs-8 me-1"></i>' + escapeHtml(homeMobile) + '</div>' : '') +
@@ -599,8 +583,6 @@ var KTStudentAttendance = (function () {
                 '</div>' +
                 '<span class="badge badge-light-secondary fs-8">#' + (index + 1) + '</span>' +
                 '</div>' +
-
-                // Status buttons (larger for mobile touch)
                 '<div class="d-flex gap-2 mb-3">' +
                 '<label class="status-option-mobile present-option flex-fill">' +
                 '<input class="status-radio" type="radio" value="present" name="status_mobile_' + student.id + '" ' + presentChecked + '>' +
@@ -615,13 +597,9 @@ var KTStudentAttendance = (function () {
                 '<span class="status-label"><i class="ki-outline ki-cross-circle fs-6"></i> Absent</span>' +
                 '</label>' +
                 '</div>' +
-
-                // Remarks input
                 '<div class="mb-2">' +
                 '<input type="text" class="form-control form-control-solid form-control-sm remarks-input" placeholder="Add remarks (optional)" value="' + remarks + '">' +
                 '</div>' +
-
-                // Footer info
                 '<div class="d-flex justify-content-between align-items-center text-muted fs-9">' +
                 '<span><i class="ki-outline ki-time fs-9 me-1"></i>Updated: ' + escapeHtml(updatedAt) + '</span>' +
                 '<span><i class="ki-outline ki-user fs-9 me-1"></i>' + escapeHtml(attendanceTaker) + '</span>' +
@@ -629,77 +607,26 @@ var KTStudentAttendance = (function () {
                 '</div>' +
                 '</div>';
         });
-
         mobileHtml += '</div>';
 
         studentListContainer.innerHTML = desktopHtml + mobileHtml;
     };
 
     /**
-     * Refresh student list after save to get accurate timestamps
-     */
-    var refreshStudentList = function () {
-        var branchId = branchSelect.value;
-        var classId = classSelect.value;
-        var batchId = batchSelect.value;
-        var attendanceDate = document.getElementById('attendance_date').value;
-        var academicGroup = getSelectedAcademicGroup();
-
-        var payload = {
-            branch_id: branchId,
-            class_id: classId,
-            attendance_date: attendanceDate
-        };
-
-        // Add batch_id if a specific batch is selected (optional filter)
-        if (batchId) {
-            payload.batch_id = batchId;
-        }
-
-        if (academicGroup) {
-            payload.academic_group = academicGroup;
-        }
-
-        return makeRequest(routes.getStudents, {
-            method: 'POST',
-            body: payload
-        })
-            .then(function (response) {
-                if (response.count > 0) {
-                    // Pass is_all_groups and is_all_batches flags to render function
-                    renderStudentTable(response.students, response.is_all_groups || false, response.is_all_batches || false);
-                    studentCountEl.textContent = response.count;
-                    // Reset bulk action buttons after refresh
-                    resetBulkActionButtons();
-                }
-            })
-            .catch(function (error) {
-                console.error('Error refreshing student list:', error);
-            });
-    };
-
-    /**
      * Collect attendance data from the visible view
-     * This function reads the CURRENT state of radio buttons, not cached values
-     * Also includes batch_id for each student (needed when "All Batches" is selected)
      */
     var collectAttendanceData = function () {
         var attendanceData = [];
         var hasValidationError = false;
-
-        // Determine which view is currently visible
-        var isDesktop = window.innerWidth >= 992; // lg breakpoint
+        var isDesktop = window.innerWidth >= 992;
 
         if (isDesktop) {
-            // Collect from desktop table
             var desktopTable = document.getElementById('attendance_table');
             if (desktopTable) {
                 var rows = desktopTable.querySelectorAll('tbody tr.attendance-row');
                 rows.forEach(function (row) {
                     var studentId = row.getAttribute('data-student-id');
                     var batchId = row.getAttribute('data-batch-id');
-
-                    // Find the CURRENTLY checked radio for this student
                     var checkedRadio = row.querySelector('input.status-radio:checked');
                     var remarksInput = row.querySelector('.remarks-input');
 
@@ -708,29 +635,19 @@ var KTStudentAttendance = (function () {
                         row.classList.add('bg-light-danger');
                     } else {
                         row.classList.remove('bg-light-danger');
-                        var attendanceItem = {
-                            student_id: studentId,
-                            status: checkedRadio.value,
-                            remarks: remarksInput ? remarksInput.value : ''
-                        };
-                        // Include batch_id for each student (needed for "All Batches" mode)
-                        if (batchId) {
-                            attendanceItem.batch_id = batchId;
-                        }
-                        attendanceData.push(attendanceItem);
+                        var item = { student_id: studentId, status: checkedRadio.value, remarks: remarksInput ? remarksInput.value : '' };
+                        if (batchId) item.batch_id = batchId;
+                        attendanceData.push(item);
                     }
                 });
             }
         } else {
-            // Collect from mobile cards
             var mobileCards = document.getElementById('attendance_cards');
             if (mobileCards) {
                 var cards = mobileCards.querySelectorAll('.attendance-card');
                 cards.forEach(function (card) {
                     var studentId = card.getAttribute('data-student-id');
                     var batchId = card.getAttribute('data-batch-id');
-
-                    // Find the CURRENTLY checked radio for this student
                     var checkedRadio = card.querySelector('input.status-radio:checked');
                     var remarksInput = card.querySelector('.remarks-input');
 
@@ -739,25 +656,14 @@ var KTStudentAttendance = (function () {
                         card.classList.add('border-danger');
                     } else {
                         card.classList.remove('border-danger');
-                        var attendanceItem = {
-                            student_id: studentId,
-                            status: checkedRadio.value,
-                            remarks: remarksInput ? remarksInput.value : ''
-                        };
-                        // Include batch_id for each student (needed for "All Batches" mode)
-                        if (batchId) {
-                            attendanceItem.batch_id = batchId;
-                        }
-                        attendanceData.push(attendanceItem);
+                        var item = { student_id: studentId, status: checkedRadio.value, remarks: remarksInput ? remarksInput.value : '' };
+                        if (batchId) item.batch_id = batchId;
+                        attendanceData.push(item);
                     }
                 });
             }
         }
-
-        return {
-            data: attendanceData,
-            hasError: hasValidationError
-        };
+        return { data: attendanceData, hasError: hasValidationError };
     };
 
     /**
@@ -767,16 +673,15 @@ var KTStudentAttendance = (function () {
         var result = collectAttendanceData();
 
         if (result.hasError) {
-            showAlert('error', 'Incomplete Attendance', 'Please select a status (Present, Late, or Absent) for all students highlighted in red.');
+            showAlert('error', 'Incomplete Attendance', 'Please select a status for all students highlighted in red.');
             return;
         }
 
         if (result.data.length === 0) {
-            showAlert('warning', 'No Data', 'No attendance data to save. Please load students first.');
+            showAlert('warning', 'No Data', 'No attendance data to save.');
             return;
         }
 
-        // Prepare payload
         var payload = {
             attendance_date: document.getElementById('attendance_date').value,
             branch_id: branchSelect.value,
@@ -784,14 +689,9 @@ var KTStudentAttendance = (function () {
             attendances: result.data
         };
 
-        // Add batch_id only if a specific batch is selected
-        // Otherwise, each attendance record will have its own batch_id
         var batchId = batchSelect.value;
-        if (batchId) {
-            payload.batch_id = batchId;
-        }
+        if (batchId) payload.batch_id = batchId;
 
-        // Set loading state
         var originalHtml = saveButton.innerHTML;
         setButtonLoading(saveButton, true, originalHtml);
 
@@ -800,17 +700,15 @@ var KTStudentAttendance = (function () {
             body: payload
         })
             .then(function (response) {
-                showAlert('success', 'Saved!', response.message || 'Attendance saved successfully!', {
-                    timer: 2000,
-                    showConfirmButton: false
-                });
+                showAlert('success', 'Saved!', response.message || 'Attendance saved successfully!', { timer: 2000, showConfirmButton: false });
 
-                // Refresh student list to get accurate individual timestamps
-                refreshStudentList();
+                // After save, we fetch again to get accurate server timestamps,
+                // but we could also just refresh the local UI if we wanted.
+                fetchStudents();
             })
             .catch(function (error) {
                 console.error('Error saving attendance:', error);
-                showAlert('error', 'Error', error.message || 'An error occurred while saving attendance.');
+                showAlert('error', 'Error', error.message || 'An error occurred.');
             })
             .finally(function () {
                 setButtonLoading(saveButton, false, originalHtml);
@@ -821,68 +719,49 @@ var KTStudentAttendance = (function () {
      * Reset Form
      */
     var resetForm = function () {
-        // Reset dropdowns
         if (isAdmin) {
             branchSelect.value = '';
             reinitSelect2(branchSelect);
         }
-
         classSelect.value = '';
         batchSelect.innerHTML = '<option value="">Select branch first</option>';
-
         reinitSelect2(classSelect);
         reinitSelect2(batchSelect);
 
-        // Hide and reset academic group dropdown
         toggleElement(academicGroupWrapper, false);
         if (academicGroupSelect) {
             academicGroupSelect.value = '';
             reinitSelect2(academicGroupSelect);
         }
 
-        // Clear containers
         studentListContainer.innerHTML = '';
         offDayWarning.innerHTML = '';
         toggleElement(saveSection, false);
         toggleElement(bulkButtons, false);
-
-        // Reset bulk action radios
         resetBulkActionButtons();
+        currentStudents = [];
     };
 
     /**
-     * Handle Bulk Action - Mark all students with specified status
-     * This directly manipulates the radio button checked state
+     * Handle Bulk Action
      */
     var handleBulkAction = function (status) {
-        // Determine which view is currently visible
-        var isDesktop = window.innerWidth >= 992; // lg breakpoint
-
+        var isDesktop = window.innerWidth >= 992;
         if (isDesktop) {
-            // Update desktop table radios
             var desktopTable = document.getElementById('attendance_table');
             if (desktopTable) {
-                var rows = desktopTable.querySelectorAll('tbody tr.attendance-row');
-                rows.forEach(function (row) {
-                    var targetRadio = row.querySelector('input.status-radio[value="' + status + '"]');
-                    if (targetRadio) {
-                        targetRadio.checked = true;
-                    }
-                    // Clear error highlighting
+                desktopTable.querySelectorAll('tbody tr.attendance-row').forEach(function (row) {
+                    var radio = row.querySelector('input.status-radio[value="' + status + '"]');
+                    if (radio) radio.checked = true;
                     row.classList.remove('bg-light-danger');
                 });
             }
         } else {
-            // Update mobile card radios
             var mobileCards = document.getElementById('attendance_cards');
             if (mobileCards) {
-                var cards = mobileCards.querySelectorAll('.attendance-card');
-                cards.forEach(function (card) {
-                    var targetRadio = card.querySelector('input.status-radio[value="' + status + '"]');
-                    if (targetRadio) {
-                        targetRadio.checked = true;
-                    }
-                    // Clear error highlighting
+                mobileCards.querySelectorAll('.attendance-card').forEach(function (card) {
+                    var radio = card.querySelector('input.status-radio[value="' + status + '"]');
+                    if (radio) radio.checked = true;
                     card.classList.remove('border-danger');
                 });
             }
@@ -897,76 +776,51 @@ var KTStudentAttendance = (function () {
         toggleElement(saveSection, false);
         toggleElement(bulkButtons, false);
         offDayWarning.innerHTML = '';
+        currentStudents = [];
     };
 
     // ============================================
     // Event Handlers
     // ============================================
 
-    /**
-     * Handle Branch Change
-     */
     var handleBranchChange = function () {
-        var branchId = branchSelect.value;
-        loadBatches(branchId);
+        loadBatches(branchSelect.value);
         clearStudentList();
     };
 
-    /**
-     * Handle Class Change
-     */
     var handleClassChange = function () {
         handleAcademicGroupVisibility();
     };
 
-    /**
-     * Handle Form Submit
-     */
     var handleFormSubmit = function (e) {
         e.preventDefault();
         fetchStudents();
     };
 
-    /**
-     * Handle Bulk Action Click - Event delegation on the container
-     */
     var handleBulkActionClick = function (e) {
-        // Find the clicked quick-action-btn label
         var label = e.target.closest('.quick-action-btn');
         if (!label) return;
-
-        // Prevent default to avoid double-firing
         e.preventDefault();
-
-        // Get the radio input inside the label
         var radio = label.querySelector('input[type="radio"]');
         if (!radio) return;
-
-        // Get the status value
         var status = radio.value;
-
-        // Check the radio manually
         radio.checked = true;
-
-        // Remove active class from all quick action buttons
-        document.querySelectorAll('.quick-action-btn').forEach(function (btn) {
-            btn.classList.remove('active');
-        });
-
-        // Add active class to the clicked button
+        document.querySelectorAll('.quick-action-btn').forEach(function (btn) { btn.classList.remove('active'); });
         label.classList.add('active');
-
-        // Apply the bulk action to all student attendance radios
         handleBulkAction(status);
+    };
+
+    var handleSortClick = function (e) {
+        var btn = e.target.closest('.sort-btn');
+        if (!btn) return;
+        var field = btn.dataset.sortField;
+        sortStudents(field);
     };
 
     // ============================================
     // Initialization
     // ============================================
 
-    /**
-     * Initialize DOM Elements
-     */
     var initElements = function () {
         form = document.getElementById('student_list_filter_form');
         branchSelect = document.getElementById('branch_id');
@@ -983,101 +837,41 @@ var KTStudentAttendance = (function () {
         studentCountEl = document.getElementById('student_count');
         academicGroupWrapper = document.getElementById('academic_group_wrapper');
         academicGroupSelect = document.getElementById('academic_group');
+        sortButtonsContainer = document.getElementById('sort_buttons_container');
     };
 
-    /**
-     * Initialize Event Listeners
-     */
     var initEventListeners = function () {
-        // Branch change - Load batches via AJAX
         if (branchSelect) {
-            // For Select2
             if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
                 jQuery(branchSelect).on('select2:select select2:clear', handleBranchChange);
             }
-            // Native fallback
             branchSelect.addEventListener('change', handleBranchChange);
         }
-
-        // Class change - Handle academic group visibility
         if (classSelect) {
-            // For Select2
             if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
                 jQuery(classSelect).on('select2:select select2:clear', handleClassChange);
             }
-            // Native fallback
             classSelect.addEventListener('change', handleClassChange);
         }
-
-        // Form submit
-        if (form) {
-            form.addEventListener('submit', handleFormSubmit);
-        }
-
-        // Reset button
-        if (resetButton) {
-            resetButton.addEventListener('click', resetForm);
-        }
-
-        // Bulk action buttons - Use click delegation on the container
-        if (bulkButtons) {
-            bulkButtons.addEventListener('click', handleBulkActionClick);
-        }
-
-        // Save attendance button
-        if (saveButton) {
-            saveButton.addEventListener('click', saveAttendance);
-        }
+        if (form) form.addEventListener('submit', handleFormSubmit);
+        if (resetButton) resetButton.addEventListener('click', resetForm);
+        if (bulkButtons) bulkButtons.addEventListener('click', handleBulkActionClick);
+        if (saveButton) saveButton.addEventListener('click', saveAttendance);
+        if (sortButtonsContainer) sortButtonsContainer.addEventListener('click', handleSortClick);
     };
 
-    /**
-     * Initialize Module
-     */
     var init = function () {
         initElements();
         initEventListeners();
-
-        // For non-admin users, auto-load batches for their branch
         if (!isAdmin && userBranchId) {
             loadBatches(userBranchId);
         }
     };
 
-    // ============================================
-    // Public Methods
-    // ============================================
-
     return {
-        // Public initialization
-        init: function () {
-            init();
-        },
-
-        // Public method to reload batches
-        reloadBatches: function (branchId) {
-            return loadBatches(branchId);
-        },
-
-        // Public method to fetch students
-        loadStudents: function () {
-            fetchStudents();
-        },
-
-        // Public method to reset form
-        reset: function () {
-            resetForm();
-        },
-
-        // Public method to apply bulk action
-        markAll: function (status) {
-            handleBulkAction(status);
-        }
+        init: function () { init(); }
     };
 }());
-
-// ============================================
-// DOM Ready Initialization
-// ============================================
 
 KTUtil.onDOMContentLoaded(function () {
     KTStudentAttendance.init();

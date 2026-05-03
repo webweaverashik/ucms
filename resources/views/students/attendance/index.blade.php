@@ -143,29 +143,47 @@
             {{-- Off Day Warning Container --}}
             <div id="off_day_warning"></div>
 
-            {{-- Bulk Action Buttons --}}
+            {{-- Bulk Action & Sorting Buttons --}}
             <div class="d-flex align-items-center flex-wrap gap-2 gap-md-3 mb-4 mb-md-5 p-3 p-md-4 bg-light rounded border border-dashed border-gray-300 d-none"
                 id="bulk_buttons">
-                <span class="fw-bold text-gray-700 me-2 w-100 w-sm-auto mb-2 mb-sm-0">
-                    <i class="ki-outline ki-abstract-26 fs-4 me-1"></i>
-                    Quick Actions:
-                </span>
-                <div class="d-flex gap-2 flex-wrap">
-                    <label class="quick-action-btn present-btn">
-                        <input type="radio" name="mark_all" id="mark_all_present" value="present">
-                        <i class="ki-outline ki-check-circle fs-5"></i>
-                        <span>All Present</span>
-                    </label>
-                    <label class="quick-action-btn late-btn">
-                        <input type="radio" name="mark_all" id="mark_all_late" value="late">
-                        <i class="ki-outline ki-time fs-5"></i>
-                        <span>All Late</span>
-                    </label>
-                    <label class="quick-action-btn absent-btn">
-                        <input type="radio" name="mark_all" id="mark_all_absent" value="absent">
-                        <i class="ki-outline ki-cross-circle fs-5"></i>
-                        <span>All Absent</span>
-                    </label>
+                {{-- Quick Actions --}}
+                <div class="d-flex align-items-center flex-wrap gap-2">
+                    <span class="fw-bold text-gray-700 me-2">
+                        <i class="ki-outline ki-abstract-26 fs-4 me-1"></i> Quick Actions:
+                    </span>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <label class="quick-action-btn present-btn">
+                            <input type="radio" name="mark_all" id="mark_all_present" value="present">
+                            <i class="ki-outline ki-check-circle fs-5"></i> <span>All Present</span>
+                        </label>
+                        <label class="quick-action-btn late-btn">
+                            <input type="radio" name="mark_all" id="mark_all_late" value="late">
+                            <i class="ki-outline ki-time fs-5"></i> <span>All Late</span>
+                        </label>
+                        <label class="quick-action-btn absent-btn">
+                            <input type="radio" name="mark_all" id="mark_all_absent" value="absent">
+                            <i class="ki-outline ki-cross-circle fs-5"></i> <span>All Absent</span>
+                        </label>
+                    </div>
+                </div>
+
+                <span class="h-20px border-gray-300 border-start mx-2 d-none d-md-block"></span>
+
+                {{-- Sorting --}}
+                <div class="d-flex align-items-center flex-wrap gap-2">
+                    <span class="fw-bold text-gray-700 me-2">
+                        <i class="ki-outline ki-sort fs-4 me-1"></i> Sort By:
+                    </span>
+                    <div class="d-flex gap-2" id="sort_buttons_container">
+                        <button type="button" class="btn btn-sm btn-light-primary btn-active-primary sort-btn"
+                            data-sort-field="name" id="sort_by_name">
+                            Name <i class="ki-outline ki-arrow-up fs-9 ms-1 d-none"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-light-primary btn-active-primary sort-btn"
+                            data-sort-field="student_unique_id" id="sort_by_id">
+                            Student ID <i class="ki-outline ki-arrow-up fs-9 ms-1 d-none"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -182,8 +200,7 @@
                     </span>
                 </div>
                 <button class="btn btn-primary w-100 w-md-auto" id="save_attendance_button">
-                    <i class="ki-outline ki-check-circle fs-3 me-1"></i>
-                    Save Attendance
+                    <i class="ki-outline ki-check-circle fs-3 me-1"></i> Save Attendance
                 </button>
             </div>
         </div>

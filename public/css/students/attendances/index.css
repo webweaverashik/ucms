@@ -4,10 +4,7 @@
  * Mobile-Friendly Version with Academic Group Support
  */
 
-/* ============================================
-   Animations
-   ============================================ */
-
+/* ============================================ Animations ============================================ */
 .fade-in {
     animation: fadeIn 0.3s ease-in;
 }
@@ -24,10 +21,7 @@
     }
 }
 
-/* ============================================
-   Academic Group Dropdown Styling
-   ============================================ */
-
+/* ============================================ Academic Group Dropdown Styling ============================================ */
 /* Group dropdown icon colors based on selection */
 #academic_group_wrapper .input-group-text {
     transition: all 0.2s ease;
@@ -46,10 +40,7 @@
     color: #50cd89;
 }
 
-/* ============================================
-   Attendance Row States
-   ============================================ */
-
+/* ============================================ Attendance Row States ============================================ */
 .attendance-row.bg-light-danger {
     background-color: #fff5f8 !important;
 }
@@ -62,10 +53,7 @@
     background-color: #f9f9f9;
 }
 
-/* ============================================
-   Student Profile Link Styles
-   ============================================ */
-
+/* ============================================ Student Profile Link Styles ============================================ */
 /* Symbol/Avatar hover effect */
 a.symbol-label {
     text-decoration: none;
@@ -106,10 +94,7 @@ a.text-primary.text-hover-dark:hover {
     color: #181c32 !important;
 }
 
-/* ============================================
-   Quick Action Buttons (Bulk Actions)
-   ============================================ */
-
+/* ============================================ Quick Action Buttons (Bulk Actions) ============================================ */
 .quick-action-btn {
     display: inline-flex;
     align-items: center;
@@ -205,10 +190,26 @@ a.text-primary.text-hover-dark:hover {
     color: #fff;
 }
 
-/* ============================================
-   Status Options (Per-Student Radio Buttons) - Desktop
-   ============================================ */
+/* ============================================ Sort Button Styles ============================================ */
+.sort-btn.active {
+    background-color: var(--bs-primary) !important;
+    color: #fff !important;
+}
 
+.sort-btn.active i {
+    color: #fff !important;
+    display: inline-block !important;
+}
+
+.sort-btn i {
+    transition: transform 0.2s ease;
+}
+
+.sort-btn.desc i {
+    transform: rotate(180deg);
+}
+
+/* ============================================ Status Options (Per-Student Radio Buttons) - Desktop ============================================ */
 .status-option {
     display: inline-flex;
     align-items: center;
@@ -312,11 +313,7 @@ a.text-primary.text-hover-dark:hover {
     border-color: #fff;
 }
 
-/* ============================================
-   Status Options - Mobile (Larger Touch Targets)
-   Plain by default, colored only when selected
-   ============================================ */
-
+/* ============================================ Status Options - Mobile (Larger Touch Targets) Plain by default, colored only when selected ============================================ */
 .status-option-mobile {
     display: flex;
     align-items: center;
@@ -421,10 +418,7 @@ a.text-primary.text-hover-dark:hover {
     color: #fff;
 }
 
-/* ============================================
-   Mobile Attendance Cards
-   ============================================ */
-
+/* ============================================ Mobile Attendance Cards ============================================ */
 .attendance-card {
     border-radius: 0.75rem;
     transition: all 0.2s ease;
@@ -445,10 +439,7 @@ a.text-primary.text-hover-dark:hover {
     background-color: #fff5f8 !important;
 }
 
-/* ============================================
-   Updated At & Attendance Taker Display
-   ============================================ */
-
+/* ============================================ Updated At & Attendance Taker Display ============================================ */
 .updated-at-display {
     display: inline-flex;
     align-items: center;
@@ -475,10 +466,7 @@ a.text-primary.text-hover-dark:hover {
     white-space: nowrap;
 }
 
-/* ============================================
-   Table Responsive Improvements
-   ============================================ */
-
+/* ============================================ Table Responsive Improvements ============================================ */
 #attendance_table {
     min-width: 850px;
 }
@@ -505,10 +493,7 @@ a.text-primary.text-hover-dark:hover {
     opacity: 0.6;
 }
 
-/* ============================================
-   Badge Variations for Status
-   ============================================ */
-
+/* ============================================ Badge Variations for Status ============================================ */
 .badge-attendance-present {
     background-color: #e8fff3;
     color: #50cd89;
@@ -524,11 +509,7 @@ a.text-primary.text-hover-dark:hover {
     color: #f1416c;
 }
 
-/* ============================================
-   Custom Pill Badge Colors for Batches
-   (Solid vibrant backgrounds with matching light text)
-   ============================================ */
-
+/* ============================================ Custom Pill Badge Colors for Batches (Solid vibrant backgrounds with matching light text) ============================================ */
 /* Purple Pill Badge */
 .badge-pill-purple {
     background-color: #8b5cf6;
@@ -609,10 +590,7 @@ a.text-primary.text-hover-dark:hover {
     font-weight: 600;
 }
 
-/* ============================================
-   Loading State Animations
-   ============================================ */
-
+/* ============================================ Loading State Animations ============================================ */
 @keyframes pulse {
 
     0%,
@@ -629,10 +607,7 @@ a.text-primary.text-hover-dark:hover {
     animation: pulse 1.5s ease-in-out infinite;
 }
 
-/* ============================================
-   Save Section Styling
-   ============================================ */
-
+/* ============================================ Save Section Styling ============================================ */
 #save_attendance_section {
     border: 1px dashed #7239ea;
     transition: all 0.2s ease;
@@ -643,10 +618,7 @@ a.text-primary.text-hover-dark:hover {
     box-shadow: 0 3px 12px rgba(114, 57, 234, 0.15);
 }
 
-/* ============================================
-   Empty State
-   ============================================ */
-
+/* ============================================ Empty State ============================================ */
 .empty-state {
     text-align: center;
     padding: 3rem 1rem;
@@ -668,10 +640,7 @@ a.text-primary.text-hover-dark:hover {
     font-size: 0.9rem;
 }
 
-/* ============================================
-   Responsive Adjustments
-   ============================================ */
-
+/* ============================================ Responsive Adjustments ============================================ */
 /* Tablets and Small Laptops */
 @media (max-width: 1200px) {
     .status-option {
@@ -721,10 +690,7 @@ a.text-primary.text-hover-dark:hover {
     }
 }
 
-/* ============================================
-   Mobile Form Layout Fixes
-   ============================================ */
-
+/* ============================================ Mobile Form Layout Fixes ============================================ */
 /* Small tablets and large phones */
 @media (max-width: 767.98px) {
 
@@ -853,10 +819,7 @@ a.text-primary.text-hover-dark:hover {
     }
 }
 
-/* ============================================
-   Touch Device Optimizations
-   ============================================ */
-
+/* ============================================ Touch Device Optimizations ============================================ */
 @media (hover: none) and (pointer: coarse) {
     .status-option-mobile {
         min-height: 48px;
@@ -876,20 +839,14 @@ a.text-primary.text-hover-dark:hover {
     }
 }
 
-/* ============================================
-   Safe Area (iPhone X and newer)
-   ============================================ */
-
+/* ============================================ Safe Area (iPhone X and newer) ============================================ */
 @supports (padding: max(0px)) {
     #save_attendance_section {
         padding-bottom: max(1rem, env(safe-area-inset-bottom)) !important;
     }
 }
 
-/* ============================================
-   Print Styles
-   ============================================ */
-
+/* ============================================ Print Styles ============================================ */
 @media print {
 
     .quick-action-btn,
