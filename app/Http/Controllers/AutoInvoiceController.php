@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Models\Branch;
 use App\Models\Payment\PaymentInvoice;
 use App\Models\Payment\PaymentInvoiceType;
+use App\Models\Sheet\SheetPayment;
 use App\Models\Student\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -19,7 +20,6 @@ class AutoInvoiceController extends Controller
     public function index()
     {
         $this->authorizeAdmin();
-
         $branches = Branch::get();
         return view('settings.auto-invoice.index', compact('branches'));
     }
@@ -50,10 +50,103 @@ class AutoInvoiceController extends Controller
         );
     }
 
-    /* ==========================================================
-     | Core Logic (Reusable)
-     |==========================================================*/
+    /* -----------------------------
+     | Generate Sheet Fee Invoices
+     |-----------------------------*/
+    public function generateSheet(Request $request)
+    {
+        $this->authorizeAdmin();
 
+        try {
+            DB::beginTransaction();
+
+            $branchId    = $request->input('branch_id');
+            $invoiceType = PaymentInvoiceType::where('type_name', 'Sheet Fee')->first();
+
+            if (! $invoiceType) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sheet Fee invoice type not found.',
+                ], 422);
+            }
+
+            // Active students → active classes that have a sheet assigned
+            $students = Student::active()
+                ->with(['branch', 'class.sheet'])
+                ->whereHas('class', fn($q) => $q->active()->whereHas('sheet'))
+                ->when($branchId, fn($q) => $q->where('branch_id', $branchId))
+                ->get();
+
+            $result = [
+                'generated' => 0,
+                'existing'  => 0,
+                'no_sheet'  => 0,
+            ];
+
+            foreach ($students as $student) {
+                $sheet = $student->class?->sheet;
+
+                // Skip if no sheet or zero price
+                if (! $sheet || $sheet->price <= 0) {
+                    $result['no_sheet']++;
+                    continue;
+                }
+
+                // Check for existing SheetPayment — include soft-deleted records
+                $alreadyHasInvoice = SheetPayment::where('student_id', $student->id)
+                    ->where('sheet_id', $sheet->id)
+                    ->exists();
+
+                if ($alreadyHasInvoice) {
+                    $result['existing']++;
+                    continue;
+                }
+
+                // Generate invoice number (reuses existing sequential logic)
+                $invoiceNumber = $this->generateInvoiceNumber($student, now());
+
+                $invoice = PaymentInvoice::create([
+                    'invoice_number'  => $invoiceNumber,
+                    'student_id'      => $student->id,
+                    'total_amount'    => $sheet->price,
+                    'amount_due'      => $sheet->price,
+                    'month_year'      => now()->format('m_Y'),
+                    'invoice_type_id' => $invoiceType->id,
+                    'created_by'      => Auth::id(),
+                ]);
+
+                SheetPayment::create([
+                    'sheet_id'   => $sheet->id,
+                    'invoice_id' => $invoice->id,
+                    'student_id' => $student->id,
+                ]);
+
+                $result['generated']++;
+            }
+
+            DB::commit();
+            $this->clearInvoiceCache();
+
+            return response()->json([
+                'success' => true,
+                'message' => $this->buildSheetResultMessage($result),
+                'result'  => $result,
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Auto Sheet Invoice Generation Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while generating sheet fee invoices. Please try again.',
+            ], 500);
+        }
+    }
+
+    /* ==========================================================
+     | Core Logic (Reusable) — Tuition Fee (Current / Due)
+     |==========================================================*/
     private function generateInvoices(
         string $paymentStyle,
         Carbon $billingMonth,
@@ -67,8 +160,7 @@ class AutoInvoiceController extends Controller
 
             $monthYear   = $billingMonth->format('m_Y');
             $invoiceType = $this->getInvoiceType();
-
-            $students = $this->getEligibleStudents($paymentStyle, $branchId);
+            $students    = $this->getEligibleStudents($paymentStyle, $branchId);
 
             $result = $this->generateInvoicesForStudents(
                 students: $students,
@@ -84,6 +176,7 @@ class AutoInvoiceController extends Controller
                 'success',
                 $this->buildResultMessage($successLabel, $result)
             );
+
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("Auto Invoice Generation Error ({$successLabel}): " . $e->getMessage());
@@ -98,7 +191,6 @@ class AutoInvoiceController extends Controller
     /* ==========================================================
      | Helpers
      |==========================================================*/
-
     private function getEligibleStudents(string $paymentStyle, ?int $branchId)
     {
         return Student::active()
@@ -152,10 +244,7 @@ class AutoInvoiceController extends Controller
                 continue;
             }
 
-            $invoiceNumber = $this->generateInvoiceNumber(
-                $student,
-                $billingMonth
-            );
+            $invoiceNumber = $this->generateInvoiceNumber($student, $billingMonth);
 
             PaymentInvoice::create([
                 'invoice_number'  => $invoiceNumber,
@@ -178,7 +267,8 @@ class AutoInvoiceController extends Controller
         $prefix = strtoupper($student->branch->branch_prefix ?? 'DEF')
         . $month->format('ym') . '_';
 
-        $lastInvoice = PaymentInvoice::where('invoice_number', 'like', $prefix . '%')
+        $lastInvoice = PaymentInvoice::withTrashed() // ← include soft-deleted rows
+            ->where('invoice_number', 'like', $prefix . '%')
             ->orderByDesc('invoice_number')
             ->first();
 
@@ -192,13 +282,34 @@ class AutoInvoiceController extends Controller
     private function buildResultMessage(string $label, array $result): string
     {
         $message = "Generated {$result['generated']} {$label} invoice(s).";
-
         $skipped = [];
+
         if ($result['existing']) {
             $skipped[] = "{$result['existing']} existing invoice(s)";
         }
+
         if ($result['free']) {
             $skipped[] = "{$result['free']} FREE student(s)";
+        }
+
+        if ($skipped) {
+            $message .= ' Skipped: ' . implode(', ', $skipped) . '.';
+        }
+
+        return $message;
+    }
+
+    private function buildSheetResultMessage(array $result): string
+    {
+        $message = "Generated {$result['generated']} sheet fee invoice(s).";
+        $skipped = [];
+
+        if ($result['existing']) {
+            $skipped[] = "{$result['existing']} already invoiced student(s)";
+        }
+
+        if ($result['no_sheet']) {
+            $skipped[] = "{$result['no_sheet']} student(s) with no sheet or zero price";
         }
 
         if ($skipped) {

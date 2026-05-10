@@ -57,7 +57,7 @@ Route::resource('settings/users', UserController::class)->names('users');
 Route::get('settings/autoinvoice', [AutoInvoiceController::class, 'index'])->name('auto.invoice.index');
 Route::get('settings/autoinvoice/current', [AutoInvoiceController::class, 'generateCurrent'])->name('auto.invoice.current');
 Route::get('settings/autoinvoice/due', [AutoInvoiceController::class, 'generateDue'])->name('auto.invoice.due');
-
+Route::post('settings/autoinvoice/sheet', [AutoInvoiceController::class, 'generateSheet'])->name('auto.invoice.sheet');
 
 // Backup Routes
 Route::prefix('settings')->group(function () {

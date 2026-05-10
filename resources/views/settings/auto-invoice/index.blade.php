@@ -18,6 +18,10 @@
             border-color: var(--bs-warning);
         }
 
+        .invoice-card.sheet-invoice:hover {
+            border-color: var(--bs-success);
+        }
+
         .icon-wrapper {
             width: 80px;
             height: 80px;
@@ -29,43 +33,28 @@
     </style>
 @endpush
 
-
 @extends('layouts.app')
-
 @section('title', 'Auto Invoice')
 
 @section('header-title')
     <div data-kt-swapper="true" data-kt-swapper-mode="{default: 'prepend', lg: 'prepend'}"
         data-kt-swapper-parent="{default: '#kt_app_content_container', lg: '#kt_app_header_wrapper'}"
         class="page-title d-flex align-items-center flex-wrap me-3 mb-5 mb-lg-0">
-        <!--begin::Title-->
         <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 align-items-center my-0">
             Auto-invoice Generation
         </h1>
-        <!--end::Title-->
-        <!--begin::Separator-->
         <span class="h-20px border-gray-300 border-start mx-4"></span>
-        <!--end::Separator-->
-        <!--begin::Breadcrumb-->
-        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 ">
-            <!--begin::Item-->
+        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
             <li class="breadcrumb-item text-muted">
                 <a href="#" class="text-muted text-hover-primary">Systems</a>
             </li>
-            <!--end::Item-->
-            <!--begin::Item-->
             <li class="breadcrumb-item">
                 <span class="bullet bg-gray-500 w-5px h-2px"></span>
             </li>
-            <!--end::Item-->
-            <!--begin::Item-->
             <li class="breadcrumb-item text-muted">Invoice Generation</li>
-            <!--end::Item-->
         </ul>
-        <!--end::Breadcrumb-->
     </div>
 @endsection
-
 
 @section('content')
     <!--begin::Success Alert-->
@@ -73,8 +62,7 @@
         <div
             class="alert alert-dismissible bg-light-success border border-success border-dashed d-flex flex-column flex-sm-row w-100 p-5 mb-10">
             <i class="ki-duotone ki-check-circle fs-2hx text-success me-4 mb-5 mb-sm-0">
-                <span class="path1"></span>
-                <span class="path2"></span>
+                <span class="path1"></span><span class="path2"></span>
             </i>
             <div class="d-flex flex-column pe-0 pe-sm-10">
                 <h5 class="mb-1 text-success">Invoice Generation Successful</h5>
@@ -94,9 +82,7 @@
         <div
             class="alert alert-dismissible bg-light-warning border border-warning border-dashed d-flex flex-column flex-sm-row w-100 p-5 mb-10">
             <i class="ki-duotone ki-information fs-2hx text-warning me-4 mb-5 mb-sm-0">
-                <span class="path1"></span>
-                <span class="path2"></span>
-                <span class="path3"></span>
+                <span class="path1"></span><span class="path2"></span><span class="path3"></span>
             </i>
             <div class="d-flex flex-column pe-0 pe-sm-10">
                 <h5 class="mb-1 text-warning">Warning</h5>
@@ -116,8 +102,7 @@
         <div
             class="alert alert-dismissible bg-light-danger border border-danger border-dashed d-flex flex-column flex-sm-row w-100 p-5 mb-10">
             <i class="ki-duotone ki-cross-circle fs-2hx text-danger me-4 mb-5 mb-sm-0">
-                <span class="path1"></span>
-                <span class="path2"></span>
+                <span class="path1"></span><span class="path2"></span>
             </i>
             <div class="d-flex flex-column pe-0 pe-sm-10">
                 <h5 class="mb-1 text-danger">Error</h5>
@@ -137,9 +122,7 @@
     <!--begin::Information Notice-->
     <div class="notice d-flex bg-light-primary rounded border-primary border border-dashed p-6 mb-6">
         <i class="ki-duotone ki-information-3 fs-2tx text-primary me-4">
-            <span class="path1"></span>
-            <span class="path2"></span>
-            <span class="path3"></span>
+            <span class="path1"></span><span class="path2"></span><span class="path3"></span>
         </i>
         <div class="d-flex flex-column flex-grow-1">
             <h4 class="text-gray-900 fw-bold mb-3">Important Information</h4>
@@ -152,6 +135,11 @@
                     <li class="mb-2">
                         <span class="badge badge-warning me-2">Due</span> For students with "due" payment style - bills for
                         <strong>{{ Carbon\Carbon::now()->subMonth()->format('F Y') }}</strong>
+                    </li>
+                    <li class="mb-2">
+                        <span class="badge badge-success me-2">Sheet</span> For active students whose class has an assigned
+                        sheet — billed once per year for
+                        <strong>{{ Carbon\Carbon::now()->format('Y') }}</strong>
                     </li>
                     <li class="mb-2">
                         <span class="badge badge-light-dark me-2">Branch</span> Select a specific branch or leave empty for
@@ -170,7 +158,6 @@
 
     <!--begin::Main Card-->
     <div class="card">
-        <!--begin::Card header-->
         <div class="card-header border-0 pt-6">
             <div class="card-title flex-column">
                 <h3 class="fw-bold mb-1">Invoice Generation</h3>
@@ -181,9 +168,6 @@
                 </div>
             </div>
         </div>
-        <!--end::Card header-->
-
-        <!--begin::Card body-->
         <div class="card-body py-6">
             <div class="row g-5">
                 <!--begin::Current Invoice-->
@@ -193,8 +177,7 @@
                             <div class="symbol symbol-50px me-4">
                                 <span class="symbol-label bg-primary">
                                     <i class="ki-duotone ki-file-added fs-2x text-white">
-                                        <span class="path1"></span>
-                                        <span class="path2"></span>
+                                        <span class="path1"></span><span class="path2"></span>
                                     </i>
                                 </span>
                             </div>
@@ -203,7 +186,6 @@
                                 <span class="text-gray-600 fs-7">{{ Carbon\Carbon::now()->format('F Y') }}</span>
                             </div>
                         </div>
-
                         <div class="mb-4">
                             <label class="form-label fw-semibold text-gray-700">Select Branch</label>
                             <select class="form-select form-select-solid" id="current_branch_select" data-control="select2"
@@ -214,7 +196,6 @@
                                 @endforeach
                             </select>
                         </div>
-
                         <a href="{{ route('auto.invoice.current') }}" class="btn btn-primary w-100"
                             id="btn_generate_current" data-base-url="{{ route('auto.invoice.current') }}">
                             <i class="ki-outline ki-update-file fs-4 me-2"></i>
@@ -235,9 +216,8 @@
                             <div class="symbol symbol-50px me-4">
                                 <span class="symbol-label bg-warning">
                                     <i class="ki-duotone ki-timer fs-2x text-white">
-                                        <span class="path1"></span>
-                                        <span class="path2"></span>
-                                        <span class="path3"></span>
+                                        <span class="path1"></span><span class="path2"></span><span
+                                            class="path3"></span>
                                     </i>
                                 </span>
                             </div>
@@ -247,7 +227,6 @@
                                     class="text-gray-600 fs-7">{{ Carbon\Carbon::now()->subMonth()->format('F Y') }}</span>
                             </div>
                         </div>
-
                         <div class="mb-4">
                             <label class="form-label fw-semibold text-gray-700">Select Branch</label>
                             <select class="form-select form-select-solid" id="due_branch_select" data-control="select2"
@@ -258,7 +237,6 @@
                                 @endforeach
                             </select>
                         </div>
-
                         <a href="{{ route('auto.invoice.due') }}" class="btn btn-warning w-100" id="btn_generate_due"
                             data-base-url="{{ route('auto.invoice.due') }}">
                             <i class="ki-outline ki-update-file fs-4 me-2"></i>
@@ -273,18 +251,71 @@
                 <!--end::Due Invoice-->
             </div>
         </div>
-        <!--end::Card body-->
     </div>
     <!--end::Main Card-->
-@endsection
 
+    <!--begin::Sheet Fee Card-->
+    <div class="card mt-6">
+        <div class="card-header border-0 pt-6">
+            <div class="card-title flex-column">
+                <h3 class="fw-bold mb-1">Sheet Fee Invoice Generation</h3>
+                <div class="fs-6 text-gray-500">
+                    Generate sheet fee invoices for active students whose class has an assigned sheet — billed once per
+                    year.
+                </div>
+            </div>
+        </div>
+        <div class="card-body py-6">
+            <div class="row g-5">
+                <!--begin::Sheet Invoice-->
+                <div class="col-md-6">
+                    <div class="invoice-card sheet-invoice bg-light-success rounded p-6 h-100">
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="symbol symbol-50px me-4">
+                                <span class="symbol-label bg-success">
+                                    <i class="ki-duotone ki-file-added fs-2x text-white">
+                                        <span class="path1"></span><span class="path2"></span>
+                                    </i>
+                                </span>
+                            </div>
+                            <div>
+                                <h4 class="fw-bold text-gray-900 mb-0">Current Year Sheet Fee Invoices</h4>
+                                <span class="text-gray-600 fs-7">{{ Carbon\Carbon::now()->format('Y') }}</span>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold text-gray-700">Select Branch</label>
+                            <select class="form-select form-select-solid" id="sheet_branch_select" data-control="select2"
+                                data-placeholder="All Branches" data-hide-search="true">
+                                <option value="">All Branches</option>
+                                @foreach ($branches as $branch)
+                                    <option value="{{ $branch->id }}">{{ $branch->branch_name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-success w-100" id="btn_generate_sheet"
+                            data-action-url="{{ route('auto.invoice.sheet') }}" data-csrf="{{ csrf_token() }}">
+                            <i class="ki-outline ki-update-file fs-4 me-2"></i>
+                            <span class="indicator-label">Generate Sheet Fee Invoices</span>
+                            <span class="indicator-progress">
+                                Please wait...
+                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+                <!--end::Sheet Invoice-->
+            </div>
+        </div>
+    </div>
+    <!--end::Sheet Fee Card-->
+@endsection
 
 @push('vendor-js')
 @endpush
 
 @push('page-js')
     <script src="{{ asset('js/settings/auto-invoice.js') }}"></script>
-
     <script>
         document.getElementById("settings_link").classList.add("active");
         document.getElementById("settings_auto_invoice_link").classList.add("active");
