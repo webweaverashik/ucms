@@ -59,6 +59,11 @@ Route::get('settings/autoinvoice/current', [AutoInvoiceController::class, 'gener
 Route::get('settings/autoinvoice/due', [AutoInvoiceController::class, 'generateDue'])->name('auto.invoice.due');
 Route::post('settings/autoinvoice/sheet', [AutoInvoiceController::class, 'generateSheet'])->name('auto.invoice.sheet');
 
+// Dry-run previews
+Route::post('settings/autoinvoice/current/preview', [AutoInvoiceController::class, 'previewCurrent'])->name('auto.invoice.current.preview');
+Route::post('settings/autoinvoice/due/preview', [AutoInvoiceController::class, 'previewDue'])->name('auto.invoice.due.preview');
+Route::post('settings/autoinvoice/sheet/preview', [AutoInvoiceController::class, 'previewSheet'])->name('auto.invoice.sheet.preview');
+
 // Backup Routes
 Route::prefix('settings')->group(function () {
     Route::get('backup', [BackupController::class, 'index'])->name('backup');
