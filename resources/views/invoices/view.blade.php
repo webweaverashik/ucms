@@ -97,6 +97,10 @@
                                     class="text-gray-800 ms-5">{{ $invoice->student->payments->tuition_fee }}
                                     ৳</span>
                             </div>
+                            <div class="d-flex flex-wrap fw-semibold mb-2 fs-5 text-gray-500">
+                                Payment Style: &nbsp;<span
+                                    class="text-gray-800 ms-5">{{ $invoice->student->payments->payment_style }}</span>
+                            </div>
                         </div>
                     </div>
                     <!--end::Details-->
