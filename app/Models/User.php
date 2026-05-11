@@ -139,10 +139,17 @@ class User extends Authenticatable
      */
     public function getTodayCollection(): float
     {
-        return (float) $this->walletLogs()
+        $collected = (float) $this->walletLogs()
             ->collections()
             ->today()
             ->sum('amount');
+
+        $adjusted = (float) $this->walletLogs()
+            ->where('type', UserWalletLog::TYPE_ADJUSTMENT)
+            ->today()
+            ->sum('amount');
+
+        return $collected + $adjusted;
     }
 
     /**
