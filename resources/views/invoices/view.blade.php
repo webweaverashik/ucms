@@ -75,7 +75,7 @@
                         </div>
                         <!--begin::Details-->
                         <div class="d-flex flex-column">
-                            <!--begin::Farm Name-->
+                            <!--begin::Student Name-->
                             <div class="d-flex align-items-center mb-1">
                                 <a href="{{ route('students.show', $invoice->student_id) }}" target="_blank"
                                     class="text-gray-800 text-hover-primary fs-2 fw-bold me-3">
@@ -83,23 +83,27 @@
                                     {{ $invoice->student->student_unique_id }}
                                 </a>
                             </div>
-                            <!--end::Farm Name-->
-                            <div class="d-flex flex-wrap fw-semibold mb-2 fs-5 text-gray-500">
+                            <!--end::Student Name-->
+                            <div class="d-flex flex-wrap fw-semibold mb-2 fs-6 text-gray-500">
                                 Class: &nbsp;<span class="text-gray-800 ms-17">
                                     <a href="{{ route('classnames.show', $invoice->student->class_id) }}" target="_blank"
                                         class="text-gray-800 text-hover-primary">{{ $invoice->student->class->name }}</a>
                             </div>
-                            <div class="d-flex flex-wrap fw-semibold mb-2 fs-5 text-gray-500">
+                            <div class="d-flex flex-wrap fw-semibold mb-2 fs-6 text-gray-500">
                                 Batch: &nbsp;<span class="text-gray-800 ms-19">{{ $invoice->student->batch->name }}</span>
                             </div>
-                            <div class="d-flex flex-wrap fw-semibold mb-2 fs-5 text-gray-500">
+                            <div class="d-flex flex-wrap fw-semibold mb-2 fs-6 text-gray-500">
                                 Tuition Fee: &nbsp;<span
                                     class="text-gray-800 ms-5">{{ $invoice->student->payments->tuition_fee }}
                                     ৳</span>
                             </div>
-                            <div class="d-flex flex-wrap fw-semibold mb-2 fs-5 text-gray-500">
+                            <div class="d-flex flex-wrap fw-semibold mb-2 fs-6 text-gray-500">
                                 Payment Style: &nbsp;<span
-                                    class="text-gray-800 ms-5">{{ $invoice->student->payments->payment_style }}</span>
+                                    class="text-gray-800 ms-5">{{ ucfirst($invoice->student->payments->payment_style) }}</span>
+                            </div>
+                            <div class="d-flex flex-wrap fw-semibold mb-2 fs-6 text-gray-500">
+                                Due Date: &nbsp;<span
+                                    class="text-gray-800 ms-5">1-{{ $invoice->student->payments->due_date }}</span>
                             </div>
                         </div>
                     </div>
@@ -148,6 +152,15 @@
                             <td
                                 class="@if ($invoice->amount_due > 0) text-danger animation-blink @else text-gray-800 @endif">
                                 {{ $invoice->amount_due }} ৳
+                            </td>
+                        </tr>
+                        <!--end::Row-->
+                        <!--begin::Row-->
+                        <tr class="">
+                            <td class="text-gray-500">Total Paid:</td>
+                            <td
+                                class="text-success">
+                                {{ $invoice->PaymentTransactions->sum('amount_paid') }} ৳
                             </td>
                         </tr>
                         <!--end::Row-->
