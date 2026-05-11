@@ -59,7 +59,7 @@ class DashboardController extends Controller
 
         // Total students must be in active classes and not pending (has activation)
         $totalStudents = (clone $query)
-            ->whereNotNull('student_activation_id')
+            // ->whereNotNull('student_activation_id') // Must have activation record
             ->whereHas('class', fn($q) => $q->active())
             ->count();
 
