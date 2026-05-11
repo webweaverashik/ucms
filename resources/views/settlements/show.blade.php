@@ -97,20 +97,20 @@
                                     <div class="d-flex align-items-center">
                                         <i class="ki-outline ki-arrow-up fs-3 text-success me-2"></i>
                                         <div class="fs-2 fw-bold text-success">
-                                            ৳{{ number_format($summary['total_collected'], 0) }}
+                                            ৳ {{ number_format($summary['total_collected'], 0) }}
                                         </div>
                                     </div>
-                                    <div class="fw-semibold fs-6 text-gray-500">Total Collected</div>
+                                    <div class="fw-semibold fs-6 text-gray-500">Lifetime Collection</div>
                                 </div>
 
                                 <div class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
                                     <div class="d-flex align-items-center">
                                         <i class="ki-outline ki-arrow-down fs-3 text-info me-2"></i>
                                         <div class="fs-2 fw-bold text-info">
-                                            ৳{{ number_format($summary['total_settled'], 0) }}
+                                            ৳ {{ number_format($summary['total_settled'], 0) }}
                                         </div>
                                     </div>
-                                    <div class="fw-semibold fs-6 text-gray-500">Total Settled</div>
+                                    <div class="fw-semibold fs-6 text-gray-500">Lifetime Settlement</div>
                                 </div>
 
                                 <div class="border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
@@ -118,7 +118,7 @@
                                         <i class="ki-outline ki-wallet fs-3 text-warning me-2"></i>
                                         <div class="fs-2 fw-bold text-warning" id="current_balance_display"
                                             data-wallet-balance="{{ $summary['current_balance'] }}">
-                                            ৳{{ number_format($summary['current_balance'], 0) }}
+                                            ৳ {{ number_format($summary['current_balance'], 0) }}
                                         </div>
                                     </div>
                                     <div class="fw-semibold fs-6 text-gray-500">Current Balance</div>
@@ -146,7 +146,7 @@
                 <div class="card-header pt-5">
                     <div class="card-title d-flex flex-column">
                         <span
-                            class="fs-2hx fw-bold text-success me-2 lh-1 ls-n2">৳{{ number_format($summary['today_collected'], 0) }}</span>
+                            class="fs-2hx fw-bold text-success me-2 lh-1 ls-n2">৳ {{ number_format($summary['today_collected'], 0) }}</span>
                         <span class="text-gray-500 pt-1 fw-semibold fs-6">Today's Collection</span>
                     </div>
                 </div>
@@ -158,7 +158,7 @@
                 <div class="card-header pt-5">
                     <div class="card-title d-flex flex-column">
                         <span
-                            class="fs-2hx fw-bold text-info me-2 lh-1 ls-n2">৳{{ number_format($summary['today_settled'], 0) }}</span>
+                            class="fs-2hx fw-bold text-info me-2 lh-1 ls-n2">৳ {{ number_format($summary['today_settled'], 0) }}</span>
                         <span class="text-gray-500 pt-1 fw-semibold fs-6">Today's Settlement</span>
                     </div>
                 </div>
