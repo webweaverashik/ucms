@@ -322,7 +322,7 @@ var AutoInvoice = function () {
                 skipLabels: {
                     inactive_student:    'Inactive students',
                     inactive_class:      'In inactive class',
-                    wrong_payment_style: 'Non-current payment style',
+                    wrong_payment_style: 'Due payment style',
                     no_payment_profile:  'No payment profile',
                     free:                'FREE (zero tuition fee)',
                     already_invoiced:    'Already invoiced this month',
