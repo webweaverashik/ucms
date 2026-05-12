@@ -33,6 +33,14 @@
         $canDeleteInvoice = auth()->user()->can('invoices.delete');
         $canViewInvoice = auth()->user()->can('invoices.view');
         $isUserAdmin = auth()->user()->isAdmin();
+
+        $badgeColors = [
+            'badge-light-primary',
+            'badge-light-success',
+            'badge-light-warning',
+            'badge-light-danger',
+            'badge-light-info',
+        ];
     @endphp
 
     <!--begin:::Tabs-->
@@ -56,16 +64,6 @@
         @endcan
     </ul>
     <!--end:::Tabs-->
-
-    @php
-        $badgeColors = [
-            'badge-light-primary',
-            'badge-light-success',
-            'badge-light-warning',
-            'badge-light-danger',
-            'badge-light-info',
-        ];
-    @endphp
 
     <!--begin:::Tab content-->
     <div class="tab-content" id="myTabContent">

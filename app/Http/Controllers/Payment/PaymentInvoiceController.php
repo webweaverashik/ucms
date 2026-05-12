@@ -126,7 +126,7 @@ class PaymentInvoiceController extends Controller
                 ->count();
         }
 
-        // Get students for modal
+        // Get active students for modal
         $students = Student::active()
             ->with(['studentActivation:id,active_status', 'payments:id,student_id,payment_style,due_date,tuition_fee'])
             ->when($branchId != 0, fn($q) => $q->where('branch_id', $branchId))
