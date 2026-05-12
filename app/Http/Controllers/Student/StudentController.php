@@ -615,7 +615,7 @@ class StudentController extends Controller
             ->toArray();
 
         // Start from student creation month
-        $startDate = $student->created_at->copy()->startOfMonth();
+        $startDate = $student->created_at->copy()->startOfMonth()->subMonth();
 
         // End at next month from current (advance month)
         $endDate = now()->addMonth()->startOfMonth();
