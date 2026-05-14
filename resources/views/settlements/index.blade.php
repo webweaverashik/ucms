@@ -156,8 +156,8 @@
                                     <th class="w-50px">#</th>
                                     <th class="min-w-150px">User</th>
                                     <th class="min-w-80px">Role</th>
-                                    <th class="min-w-100px">Total Collected</th>
-                                    <th class="min-w-100px">Total Settled</th>
+                                    <th class="min-w-100px">Lifetime Collected</th>
+                                    <th class="min-w-100px">Lifetime Settled</th>
                                     <th class="min-w-100px">Current Balance</th>
                                     <th class="text-end min-w-100px">Actions</th>
                                 </tr>
