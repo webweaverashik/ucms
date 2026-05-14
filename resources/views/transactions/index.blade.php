@@ -156,25 +156,25 @@
                                 <!--begin::Preset Quick Buttons-->
                                 <div class="d-flex flex-wrap gap-2 mb-3" id="date_preset_buttons">
                                     <button type="button"
-                                        class="btn btn-sm btn-light btn-active-light-primary date-preset-btn"
+                                        class="btn btn-sm btn-light btn-active-primary date-preset-btn"
                                         data-preset="today">Today</button>
                                     <button type="button"
-                                        class="btn btn-sm btn-light btn-active-light-primary date-preset-btn"
+                                        class="btn btn-sm btn-light btn-active-primary date-preset-btn"
                                         data-preset="yesterday">Yesterday</button>
                                     <button type="button"
-                                        class="btn btn-sm btn-light btn-active-light-primary date-preset-btn"
+                                        class="btn btn-sm btn-light btn-active-primary date-preset-btn"
                                         data-preset="last7">Last 7 Days</button>
                                     <button type="button"
-                                        class="btn btn-sm btn-light btn-active-light-primary date-preset-btn"
+                                        class="btn btn-sm btn-light btn-active-primary date-preset-btn"
                                         data-preset="last30">Last 30 Days</button>
                                     <button type="button"
-                                        class="btn btn-sm btn-light btn-active-light-primary date-preset-btn"
+                                        class="btn btn-sm btn-light btn-active-primary date-preset-btn"
                                         data-preset="thismonth">This Month</button>
                                     <button type="button"
-                                        class="btn btn-sm btn-light btn-active-light-primary date-preset-btn"
+                                        class="btn btn-sm btn-light btn-active-primary date-preset-btn"
                                         data-preset="lastmonth">Last Month</button>
                                     <button type="button"
-                                        class="btn btn-sm btn-light btn-active-light-primary date-preset-btn"
+                                        class="btn btn-sm btn-light btn-active-primary date-preset-btn"
                                         data-preset="custom">Custom Range</button>
                                 </div>
                                 <!--end::Preset Quick Buttons-->
