@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Payment;
 
 use App\Http\Controllers\Controller;
@@ -24,31 +23,27 @@ class PaymentTransactionController extends Controller
             return redirect()->back()->with('warning', 'No permission to view transactions.');
         }
 
-        $user = auth()->user();
+        $user     = auth()->user();
         $branchId = $user->branch_id;
-        $isAdmin = $user->hasRole('admin');
+        $isAdmin  = $user->hasRole('admin');
 
-        // Get all branches for admin
-        $branches = Branch::all();
-
-        // Get transaction counts for tabs (lightweight query)
+        $branches          = Branch::all();
         $transactionCounts = [];
+
         if ($isAdmin) {
             foreach ($branches as $branch) {
                 $transactionCounts[$branch->id] = PaymentTransaction::whereHas('student', function ($query) use ($branch) {
                     $query->where('branch_id', $branch->id);
                 })->count();
             }
-        }
 
-        if ($isAdmin) {
-            // Get students for all branches for the modal
-            $students = Student::active()->select('id', 'name', 'student_unique_id', 'branch_id')->orderBy('student_unique_id')->get();
+            $students = Student::active()
+                ->select('id', 'name', 'student_unique_id', 'branch_id')
+                ->orderBy('student_unique_id')
+                ->get();
 
-            // Group students by branch for the modal
             $studentsByBranch = $students->groupBy('branch_id');
         } else {
-            // Simplified students query for non-admin
             $students = Student::active()
                 ->when($branchId != 0, function ($query) use ($branchId) {
                     $query->where('branch_id', $branchId);
@@ -56,14 +51,17 @@ class PaymentTransactionController extends Controller
                 ->select('id', 'name', 'student_unique_id', 'branch_id')
                 ->orderBy('student_unique_id')
                 ->get();
+
             $studentsByBranch = [];
         }
 
-        return view('transactions.index', compact('transactionCounts', 'students', 'studentsByBranch', 'branches', 'isAdmin', 'branchId'));
+        return view('transactions.index', compact(
+            'transactionCounts', 'students', 'studentsByBranch', 'branches', 'isAdmin', 'branchId'
+        ));
     }
 
     /**
-     * Get transactions data for AJAX DataTable
+     * Get transactions data for AJAX DataTable.
      */
     public function getData(Request $request)
     {
@@ -71,30 +69,24 @@ class PaymentTransactionController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $user = auth()->user();
+        $user         = auth()->user();
         $userBranchId = $user->branch_id;
-        $isAdmin = $user->hasRole('admin');
+        $isAdmin      = $user->hasRole('admin');
+        $branchId     = $request->get('branch_id');
+        $showDeleted  = $request->get('show_deleted') === 'true' || $request->get('show_deleted') === '1';
 
-        // Get branch filter from request
-        $branchId = $request->get('branch_id');
-        
-        // Check if showing deleted transactions
-        $showDeleted = $request->get('show_deleted') === 'true' || $request->get('show_deleted') === '1';
-
-        // Base query - include trashed if showing deleted
         $query = PaymentTransaction::with([
             'paymentInvoice:id,invoice_number,created_at',
             'createdBy:id,name',
             'student:id,name,student_unique_id,branch_id',
             'student.branch:id,branch_name',
         ]);
-        
-        // Apply deleted filter
+
         if ($showDeleted) {
             $query->onlyTrashed();
         }
 
-        // Apply branch filter
+        // Branch filter
         if ($isAdmin && $branchId) {
             $query->whereHas('student', function ($q) use ($branchId) {
                 $q->where('branch_id', $branchId);
@@ -105,7 +97,20 @@ class PaymentTransactionController extends Controller
             });
         }
 
-        // Get total count before filtering
+        // Date range filter
+        $dateFrom = $request->get('date_from');
+        $dateTo   = $request->get('date_to');
+        if ($dateFrom && $dateTo) {
+            $query->whereBetween('created_at', [
+                $dateFrom . ' 00:00:00',
+                $dateTo . ' 23:59:59',
+            ]);
+        } elseif ($dateFrom) {
+            $query->whereDate('created_at', '>=', $dateFrom);
+        } elseif ($dateTo) {
+            $query->whereDate('created_at', '<=', $dateTo);
+        }
+
         $totalRecords = $query->count();
 
         // Search filter
@@ -132,8 +137,8 @@ class PaymentTransactionController extends Controller
         $paymentTypeFilter = $request->get('payment_type_filter');
         if (! empty($paymentTypeFilter)) {
             $typeMap = [
-                'T_partial' => 'partial',
-                'T_full_paid' => 'full',
+                'T_partial'    => 'partial',
+                'T_full_paid'  => 'full',
                 'T_discounted' => 'discounted',
             ];
             if (isset($typeMap[$paymentTypeFilter])) {
@@ -141,14 +146,13 @@ class PaymentTransactionController extends Controller
             }
         }
 
-        // Get filtered count
         $filteredRecords = $query->count();
 
         // Sorting
         $orderColumnIndex = $request->get('order')[0]['column'] ?? 0;
-        $orderDirection = $request->get('order')[0]['dir'] ?? 'desc';
-        $columns = ['id', 'payment_invoice_id', 'voucher_no', 'amount_paid', 'payment_type', 'payment_type', 'student_id', 'created_at', 'created_by'];
-        $orderColumn = $columns[$orderColumnIndex] ?? 'id';
+        $orderDirection   = $request->get('order')[0]['dir'] ?? 'desc';
+        $columns          = ['id', 'payment_invoice_id', 'voucher_no', 'amount_paid', 'payment_type', 'payment_type', 'student_id', 'created_at', 'created_by'];
+        $orderColumn      = $columns[$orderColumnIndex] ?? 'id';
 
         if ($orderColumn === 'id') {
             $query->orderBy('id', 'desc');
@@ -157,117 +161,118 @@ class PaymentTransactionController extends Controller
         }
 
         // Pagination
-        $start = $request->get('start', 0);
-        $length = $request->get('length', 10);
+        $start        = $request->get('start', 0);
+        $length       = $request->get('length', 10);
         $transactions = $query->skip($start)->take($length)->get();
 
-        // Format data for DataTable
-        $data = [];
+        $data    = [];
         $counter = $start + 1;
 
         foreach ($transactions as $transaction) {
+            // Null-safe guards — a deleted transaction may have a null-loaded relation
+            $invoice = $transaction->paymentInvoice;
+            $student = $transaction->student;
+
+            if (! $invoice || ! $student) {
+                // Skip malformed/orphaned rows silently rather than crashing
+                $counter++;
+                continue;
+            }
+
             $paymentTypeBadge = match ($transaction->payment_type) {
-                'partial' => '<span class="badge badge-warning rounded-pill">Partial</span>',
-                'full' => '<span class="badge badge-success rounded-pill">Full Paid</span>',
+                'partial'    => '<span class="badge badge-warning rounded-pill">Partial</span>',
+                'full'       => '<span class="badge badge-success rounded-pill">Full Paid</span>',
                 'discounted' => '<span class="badge badge-info rounded-pill">Discounted</span>',
-                default => ''
+                default      => '',
             };
 
-            $paymentTypeFilter = match ($transaction->payment_type) {
-                'partial' => 'T_partial',
-                'full' => 'T_full_paid',
+            $paymentTypeFilterVal = match ($transaction->payment_type) {
+                'partial'    => 'T_partial',
+                'full'       => 'T_full_paid',
                 'discounted' => 'T_discounted',
-                default => ''
+                default      => '',
             };
 
-            // Check if transaction is deleted (trashed)
-            $isDeleted = $transaction->trashed();
-            
-            // Check if transaction is deletable:
-            // - Unapproved transactions: can be deleted anytime
-            // - Approved transactions: only within 24 hours
+            $isDeleted       = $transaction->trashed();
             $isWithin24Hours = $transaction->created_at->gt(now()->subHours(24));
-            $isDeletable = !$isDeleted && (!$transaction->is_approved || $isWithin24Hours);
+            $isDeletable     = ! $isDeleted && (! $transaction->is_approved || $isWithin24Hours);
 
-            // Build actions HTML
             $actions = $this->buildActionsHtml($transaction, $request, $isDeletable, $isDeleted);
 
             $data[] = [
-                'DT_RowId' => 'row_' . $transaction->id,
-                'DT_RowClass' => $isDeleted ? 'bg-light-danger' : '',
-                'sl' => $counter++,
-                'invoice_no' => '<a href="' . route('invoices.show', $transaction->paymentInvoice->id) . '" class="text-gray-800 text-hover-primary">' . $transaction->paymentInvoice->invoice_number . '</a>',
-                'invoice_no_raw' => $transaction->paymentInvoice->invoice_number,
-                'voucher_no' => $transaction->voucher_no . ($isDeleted ? ' <span class="badge badge-danger rounded-pill ms-1">Deleted</span>' : ''),
-                'voucher_no_raw' => $transaction->voucher_no,
-                'amount_paid' => $transaction->amount_paid,
-                'payment_type_filter' => $paymentTypeFilter,
-                'payment_type' => $paymentTypeBadge,
-                'payment_type_raw' => ucfirst($transaction->payment_type),
-                'student' => '<a href="' . route('students.show', $transaction->student->id) . '" class="text-gray-800 text-hover-primary">' . $transaction->student->name . ', ' . $transaction->student->student_unique_id . '</a>',
-                'student_raw' => $transaction->student->name . ', ' . $transaction->student->student_unique_id,
-                'branch' => $transaction->student->branch->branch_name ?? '',
-                'payment_date' => $transaction->created_at->format('h:i:s A, d-M-Y'),
-                'payment_date_raw' => $transaction->created_at->format('Y-m-d H:i:s'),
-                'deleted_at' => $isDeleted ? $transaction->deleted_at->format('h:i:s A, d-M-Y') : null,
-                'received_by' => $transaction->createdBy->name ?? 'System',
-                'actions' => $actions,
-                'is_approved' => $transaction->is_approved,
-                'is_deletable' => $isDeletable,
-                'is_deleted' => $isDeleted,
-                'student_id' => $transaction->student_id,
-                'invoice_year' => $transaction->paymentInvoice->created_at->format('Y'),
-                'transaction_id' => $transaction->id,
+                'DT_RowId'            => 'row_' . $transaction->id,
+                'DT_RowClass'         => $isDeleted ? 'bg-light-danger' : '',
+                'sl'                  => $counter++,
+                'invoice_no'          => '<a href="' . route('invoices.show', $invoice->id) . '" class="text-gray-800 text-hover-primary">' . e($invoice->invoice_number) . '</a>',
+                'invoice_no_raw'      => $invoice->invoice_number,
+                'voucher_no'          => e($transaction->voucher_no) . ($isDeleted ? ' <span class="badge badge-danger rounded-pill ms-1">Deleted</span>' : ''),
+                'voucher_no_raw'      => $transaction->voucher_no,
+                'amount_paid'         => $transaction->amount_paid,
+                'payment_type_filter' => $paymentTypeFilterVal,
+                'payment_type'        => $paymentTypeBadge,
+                'payment_type_raw'    => ucfirst($transaction->payment_type),
+                'student'             => '<a href="' . route('students.show', $student->id) . '" class="text-gray-800 text-hover-primary">' . e($student->name) . ', ' . e($student->student_unique_id) . '</a>',
+                'student_raw'         => $student->name . ', ' . $student->student_unique_id,
+                'branch'              => $student->branch->branch_name ?? '',
+                'payment_date'        => $transaction->created_at->format('h:i:s A, d-M-Y'),
+                'payment_date_raw'    => $transaction->created_at->format('Y-m-d H:i:s'),
+                'deleted_at'          => $isDeleted ? $transaction->deleted_at->format('h:i:s A, d-M-Y') : null,
+                'received_by'         => $transaction->createdBy->name ?? 'System',
+                'actions'             => $actions,
+                'is_approved'         => $transaction->is_approved,
+                'is_deletable'        => $isDeletable,
+                'is_deleted'          => $isDeleted,
+                'student_id'          => $transaction->student_id,
+                'invoice_year'        => $invoice->created_at?->format('Y') ?? '',
+                'transaction_id'      => $transaction->id,
             ];
         }
 
         return response()->json([
-            'draw' => intval($request->get('draw')),
-            'recordsTotal' => $totalRecords,
+            'draw'            => intval($request->get('draw')),
+            'recordsTotal'    => $totalRecords,
             'recordsFiltered' => $filteredRecords,
-            'data' => $data,
+            'data'            => $data,
         ]);
     }
 
     /**
-     * Build actions HTML for a transaction
+     * Build actions HTML for a transaction.
      */
     private function buildActionsHtml($transaction, $request, $isDeletable = false, $isDeleted = false)
     {
-        $canApproveTxn = auth()->user()->can('transactions.approve');
-        $canDeleteTxn = auth()->user()->can('transactions.delete');
+        $canApproveTxn      = auth()->user()->can('transactions.approve');
+        $canDeleteTxn       = auth()->user()->can('transactions.delete');
         $canDownloadPayslip = auth()->user()->can('transactions.payslip.download');
 
         $actions = '';
-        
-        // If transaction is deleted, show only the deleted info
+
         if ($isDeleted) {
-            $deletedAt = $transaction->deleted_at ? $transaction->deleted_at->format('d M Y, h:i A') : 'Unknown';
-            $actions .= '<span class="text-muted small" data-bs-toggle="tooltip" title="Deleted at: ' . $deletedAt . '"><i class="bi bi-info-circle me-1"></i>Deleted</span>';
+            $deletedAt  = $transaction->deleted_at ? $transaction->deleted_at->format('d M Y, h:i A') : 'Unknown';
+            $actions   .= '<span class="text-muted small" data-bs-toggle="tooltip" title="Deleted at: ' . $deletedAt . '"><i class="bi bi-info-circle me-1"></i>Deleted</span>';
             return $actions;
         }
 
+        // Null-safe invoice reference
+        $invoice = $transaction->paymentInvoice;
+
         if ($transaction->is_approved === false) {
-            // Unapproved transaction
             if ($canApproveTxn) {
                 $actions .= '<a href="#" data-bs-toggle="tooltip" title="Approve Transaction" class="btn btn-icon text-hover-success w-30px h-30px approve-txn me-2" data-txn-id="' . $transaction->id . '"><i class="bi bi-check-circle fs-2"></i></a>';
             }
-            
-            // Delete button for unapproved transactions within 24 hours
+
             if ($canDeleteTxn && $isDeletable) {
                 $actions .= '<a href="#" data-bs-toggle="tooltip" title="Delete Transaction" class="btn btn-icon text-hover-danger w-30px h-30px delete-txn" data-txn-id="' . $transaction->id . '" data-is-approved="0"><i class="ki-outline ki-trash fs-2"></i></a>';
             }
-            
+
             if (! $canApproveTxn && ! ($canDeleteTxn && $isDeletable)) {
                 $actions .= '<span class="badge rounded-pill text-bg-secondary">Pending Approval</span>';
             }
         } else {
-            // Approved transaction
-            if ($canDownloadPayslip) {
-                $actions .= '<a href="#" data-bs-toggle="tooltip" title="Download Statement" class="btn btn-icon text-hover-primary w-30px h-30px download-statement me-2" data-student-id="' . $transaction->student_id . '" data-year="' . $transaction->paymentInvoice->created_at->format('Y') . '" data-invoice-id="' . $transaction->paymentInvoice->id . '"><i class="bi bi-download fs-2"></i></a>';
+            if ($canDownloadPayslip && $invoice) {
+                $actions .= '<a href="#" data-bs-toggle="tooltip" title="Download Statement" class="btn btn-icon text-hover-primary w-30px h-30px download-statement me-2" data-student-id="' . $transaction->student_id . '" data-year="' . ($invoice->created_at?->format('Y') ?? '') . '" data-invoice-id="' . $invoice->id . '"><i class="bi bi-download fs-2"></i></a>';
             }
-            
-            // Delete button for approved transactions within 24 hours
+
             if ($canDeleteTxn && $isDeletable) {
                 $actions .= '<a href="#" data-bs-toggle="tooltip" title="Delete Transaction (Reverse Collection)" class="btn btn-icon text-hover-danger w-30px h-30px delete-txn" data-txn-id="' . $transaction->id . '" data-is-approved="1"><i class="ki-outline ki-trash fs-2"></i></a>';
             }
@@ -277,7 +282,7 @@ class PaymentTransactionController extends Controller
     }
 
     /**
-     * Get all transactions for export (without pagination)
+     * Get all transactions for export (without pagination).
      */
     public function getExportData(Request $request)
     {
@@ -285,14 +290,11 @@ class PaymentTransactionController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $user = auth()->user();
+        $user         = auth()->user();
         $userBranchId = $user->branch_id;
-        $isAdmin = $user->hasRole('admin');
-
-        $branchId = $request->get('branch_id');
-        
-        // Check if showing deleted transactions
-        $showDeleted = $request->get('show_deleted') === 'true' || $request->get('show_deleted') === '1';
+        $isAdmin      = $user->hasRole('admin');
+        $branchId     = $request->get('branch_id');
+        $showDeleted  = $request->get('show_deleted') === 'true' || $request->get('show_deleted') === '1';
 
         $query = PaymentTransaction::with([
             'paymentInvoice:id,invoice_number,created_at',
@@ -300,13 +302,11 @@ class PaymentTransactionController extends Controller
             'student:id,name,student_unique_id,branch_id',
             'student.branch:id,branch_name',
         ]);
-        
-        // Apply deleted filter
+
         if ($showDeleted) {
             $query->onlyTrashed();
         }
 
-        // Apply branch filter
         if ($isAdmin && $branchId) {
             $query->whereHas('student', function ($q) use ($branchId) {
                 $q->where('branch_id', $branchId);
@@ -315,6 +315,20 @@ class PaymentTransactionController extends Controller
             $query->whereHas('student', function ($q) use ($userBranchId) {
                 $q->where('branch_id', $userBranchId);
             });
+        }
+
+        // Date range filter
+        $dateFrom = $request->get('date_from');
+        $dateTo   = $request->get('date_to');
+        if ($dateFrom && $dateTo) {
+            $query->whereBetween('created_at', [
+                $dateFrom . ' 00:00:00',
+                $dateTo . ' 23:59:59',
+            ]);
+        } elseif ($dateFrom) {
+            $query->whereDate('created_at', '>=', $dateFrom);
+        } elseif ($dateTo) {
+            $query->whereDate('created_at', '<=', $dateTo);
         }
 
         // Search filter
@@ -341,8 +355,8 @@ class PaymentTransactionController extends Controller
         $paymentTypeFilter = $request->get('payment_type_filter');
         if (! empty($paymentTypeFilter)) {
             $typeMap = [
-                'T_partial' => 'partial',
-                'T_full_paid' => 'full',
+                'T_partial'    => 'partial',
+                'T_full_paid'  => 'full',
                 'T_discounted' => 'discounted',
             ];
             if (isset($typeMap[$paymentTypeFilter])) {
@@ -352,31 +366,37 @@ class PaymentTransactionController extends Controller
 
         $transactions = $query->orderBy('id', 'desc')->get();
 
-        $data = [];
+        $data    = [];
         $counter = 1;
 
         foreach ($transactions as $transaction) {
+            $invoice = $transaction->paymentInvoice;
+            $student = $transaction->student;
+
+            if (! $invoice || ! $student) {
+                continue;
+            }
+
             $row = [
-                'sl' => $counter++,
-                'invoice_no' => $transaction->paymentInvoice->invoice_number,
-                'voucher_no' => $transaction->voucher_no,
-                'amount_paid' => $transaction->amount_paid,
+                'sl'           => $counter++,
+                'invoice_no'   => $invoice->invoice_number,
+                'voucher_no'   => $transaction->voucher_no,
+                'amount_paid'  => $transaction->amount_paid,
                 'payment_type' => ucfirst($transaction->payment_type),
-                'student' => $transaction->student->name . ', ' . $transaction->student->student_unique_id,
+                'student'      => $student->name . ', ' . $student->student_unique_id,
                 'payment_date' => $transaction->created_at->format('h:i:s A, d-M-Y'),
-                'received_by' => $transaction->createdBy->name ?? 'System',
+                'received_by'  => $transaction->createdBy->name ?? 'System',
             ];
-            
-            // Add deleted_at column for deleted transactions export
+
             if ($showDeleted) {
                 $row['deleted_at'] = $transaction->deleted_at ? $transaction->deleted_at->format('h:i:s A, d-M-Y') : '';
             }
-            
+
             $data[] = $row;
         }
 
         return response()->json([
-            'data' => $data,
+            'data'         => $data,
             'show_deleted' => $showDeleted,
         ]);
     }
@@ -390,8 +410,6 @@ class PaymentTransactionController extends Controller
             'transaction_student' => 'required|exists:students,id',
             'transaction_invoice' => 'required|exists:payment_invoices,id',
             'transaction_type'    => 'required|in:full,partial,discounted',
-            // Discounted allows 0; full and partial require at least 1.
-            // We use min:0 here and enforce the type-specific floor in business logic below.
             'transaction_amount'  => 'required|numeric|min:0',
             'transaction_remarks' => [
                 $request->input('transaction_type') === 'discounted' ? 'required' : 'nullable',
@@ -399,23 +417,22 @@ class PaymentTransactionController extends Controller
                 'max:1000',
             ],
         ]);
- 
+
         $transactionData = null;
- 
+
         DB::transaction(function () use ($validated, &$transactionData) {
             $invoice = PaymentInvoice::with(['invoiceType', 'student.class.sheet'])
                 ->where('id', $validated['transaction_invoice'])
                 ->where('student_id', $validated['transaction_student'])
                 ->lockForUpdate()
                 ->firstOrFail();
- 
+
             $maxAmount   = $invoice->amount_due;
             $paymentType = $validated['transaction_type'];
             $amount      = $validated['transaction_amount'];
- 
+
             /* ---------------- Amount validation ---------------- */
             if ($paymentType === 'discounted') {
-                // Discounted: amount must be >= 0 and < amount_due
                 if ($amount < 0) {
                     throw new \Exception("Amount cannot be negative.");
                 }
@@ -423,7 +440,6 @@ class PaymentTransactionController extends Controller
                     throw new \Exception("Discounted payment must be less than due (৳{$maxAmount}).");
                 }
             } elseif ($invoice->status === 'partially_paid') {
-                // Partially paid invoice (non-discounted): amount must be >= 1 and <= amount_due
                 if ($amount < 1) {
                     throw new \Exception("Amount must be at least ৳1.");
                 }
@@ -431,7 +447,6 @@ class PaymentTransactionController extends Controller
                     throw new \Exception("Amount must be ≤ due amount (৳{$maxAmount}).");
                 }
             } else {
-                // Full or partial on a fresh invoice
                 if ($amount < 1) {
                     throw new \Exception("Amount must be at least ৳1.");
                 }
@@ -442,27 +457,27 @@ class PaymentTransactionController extends Controller
                     throw new \Exception("Partial payment must be less than due (৳{$maxAmount}).");
                 }
             }
- 
+
             /* ---------------- Voucher number ---------------- */
             $transactionCount = PaymentTransaction::where('payment_invoice_id', $invoice->id)->withTrashed()->count();
             $voucherNo        = 'TXN_' . $invoice->invoice_number . '_' . str_pad($transactionCount + 1, 2, '0', STR_PAD_LEFT);
- 
+
             $newAmountDue = $invoice->amount_due - $amount;
- 
+
             /* ---------------- Create transaction ---------------- */
             $transaction = PaymentTransaction::create([
-                'student_id'       => $invoice->student_id,
-                'student_classname' => $invoice->student->class->name . ' (' . $invoice->student->class->class_numeral . ')',
+                'student_id'         => $invoice->student_id,
+                'student_classname'  => $invoice->student->class->name . ' (' . $invoice->student->class->class_numeral . ')',
                 'payment_invoice_id' => $invoice->id,
-                'amount_paid'      => $amount,
-                'remaining_amount' => $newAmountDue,
-                'payment_type'     => $paymentType,
-                'voucher_no'       => $voucherNo,
-                'created_by'       => auth()->id(),
-                'remarks'          => $validated['transaction_remarks'],
-                'is_approved'      => $paymentType !== 'discounted',
+                'amount_paid'        => $amount,
+                'remaining_amount'   => $newAmountDue,
+                'payment_type'       => $paymentType,
+                'voucher_no'         => $voucherNo,
+                'created_by'         => auth()->id(),
+                'remarks'            => $validated['transaction_remarks'],
+                'is_approved'        => $paymentType !== 'discounted',
             ]);
- 
+
             /* ---------------- Update invoice ---------------- */
             if ($paymentType !== 'discounted') {
                 $invoice->update([
@@ -470,10 +485,9 @@ class PaymentTransactionController extends Controller
                     'status'     => $newAmountDue <= 0 ? 'paid' : 'partially_paid',
                 ]);
             }
- 
+
             /* =====================================================
              * SHEET PAYMENT AUTO INSERT
-             * Sheet resolved via: student → class → sheet
              * ===================================================== */
             if ($invoice->invoiceType?->type_name === 'Sheet Fee') {
                 $sheet = $invoice->student->class?->sheet;
@@ -485,7 +499,7 @@ class PaymentTransactionController extends Controller
                     ]);
                 }
             }
- 
+
             /* ---------------- Auto SMS ---------------- */
             $mobile = $transaction->student->mobileNumbers->where('number_type', 'sms')->first()?->mobile_number;
             if ($mobile) {
@@ -498,8 +512,7 @@ class PaymentTransactionController extends Controller
                     'payment_time'     => $transaction->created_at->format('d M Y, h:i A'),
                 ]);
             }
- 
-            // Store transaction data for response
+
             $transactionData = [
                 'id'          => $transaction->id,
                 'student_id'  => $transaction->student_id,
@@ -509,8 +522,8 @@ class PaymentTransactionController extends Controller
                 'year'        => $invoice->created_at->format('Y'),
                 'is_approved' => $transaction->is_approved,
             ];
- 
-            /* ---------------- Update wallet (skip for discounted - added on approval) ---------------- */
+
+            /* ---------------- Update wallet (skip for discounted – added on approval) ---------------- */
             if ($paymentType !== 'discounted') {
                 $walletService = new WalletService();
                 $walletService->recordCollection(
@@ -521,10 +534,9 @@ class PaymentTransactionController extends Controller
                 );
             }
         });
- 
+
         clearServerCache();
- 
-        // Return JSON for AJAX requests
+
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'success'     => true,
@@ -532,7 +544,7 @@ class PaymentTransactionController extends Controller
                 'transaction' => $transactionData,
             ]);
         }
- 
+
         return redirect()->back()->with('success', 'Transaction recorded successfully.');
     }
 
@@ -544,16 +556,14 @@ class PaymentTransactionController extends Controller
         if (! auth()->user()->can('transactions.delete')) {
             return response()->json([
                 'success' => false,
-                'message' => 'You do not have permission to delete transactions.'
+                'message' => 'You do not have permission to delete transactions.',
             ], 403);
         }
 
-        // For approved transactions, check if within 24 hours
-        // Unapproved transactions can be deleted anytime
         if ($transaction->is_approved && $transaction->created_at->lt(now()->subHours(24))) {
             return response()->json([
                 'success' => false,
-                'message' => 'Cannot delete approved transactions older than 24 hours.'
+                'message' => 'Cannot delete approved transactions older than 24 hours.',
             ], 422);
         }
 
@@ -561,53 +571,42 @@ class PaymentTransactionController extends Controller
             DB::transaction(function () use ($transaction) {
                 $invoice = $transaction->paymentInvoice;
                 $student = $transaction->student;
-                
-                // If the transaction was approved, reverse the wallet collection
+
                 if ($transaction->is_approved) {
-                    // Find the original wallet log for this transaction
-                    $originalWalletLog = $transaction->walletLog;
-                    
-                    // Build the deletion description
-                    $originalDescription = $originalWalletLog 
-                        ? $originalWalletLog->description 
+                    $originalWalletLog   = $transaction->walletLog;
+                    $originalDescription = $originalWalletLog
+                        ? $originalWalletLog->description
                         : "Collection from Student #{$student->student_unique_id} for Invoice #{$invoice->invoice_number} (Voucher #{$transaction->voucher_no})";
-                    
+
                     $deletionDescription = "Deleted: {$originalDescription}";
-                    
-                    // Get the user who created the transaction (to reverse their balance)
-                    $transactionCreator = $transaction->createdBy;
-                    
+                    $transactionCreator  = $transaction->createdBy;
+
                     if ($transactionCreator) {
-                        // Create adjustment to decrease balance (reverse the collection)
                         $walletService = new WalletService();
                         $walletService->recordAdjustment(
                             user: $transactionCreator,
-                            amount: -$transaction->amount_paid, // Negative to decrease balance
+                            amount: -$transaction->amount_paid,
                             reason: $deletionDescription
                         );
-                        
-                        // Also decrease total_collected on the user
+
                         $transactionCreator->decrement('total_collected', $transaction->amount_paid);
                     }
-                    
-                    // Revert invoice amounts
+
                     $newAmountDue = $invoice->amount_due + $transaction->amount_paid;
-                    
-                    // Determine new status based on enum: ['due', 'partially_paid', 'paid']
-                    $newStatus = 'due'; // Default when full amount is due
+                    $newStatus    = 'due';
+
                     if ($newAmountDue <= 0) {
                         $newStatus = 'paid';
                     } elseif ($newAmountDue < $invoice->total_amount) {
                         $newStatus = 'partially_paid';
                     }
-                    
+
                     $invoice->update([
                         'amount_due' => $newAmountDue,
-                        'status' => $newStatus,
+                        'status'     => $newStatus,
                     ]);
                 }
-                
-                // Soft delete the transaction
+
                 $transaction->delete();
             });
 
@@ -615,19 +614,18 @@ class PaymentTransactionController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Transaction deleted successfully and wallet adjusted.'
+                'message' => 'Transaction deleted successfully and wallet adjusted.',
             ]);
-            
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to delete transaction: ' . $e->getMessage()
+                'message' => 'Failed to delete transaction: ' . $e->getMessage(),
             ], 500);
         }
     }
 
     /**
-     * Approve a discounted transaction
+     * Approve a discounted transaction.
      */
     public function approve(string $id)
     {
@@ -636,7 +634,6 @@ class PaymentTransactionController extends Controller
         $transaction->update(['is_approved' => true]);
         $transaction->paymentInvoice->update(['amount_due' => 0, 'status' => 'paid']);
 
-        /* ---------------- Update wallet on approval (credited to transaction creator) ---------------- */
         $walletService = new WalletService();
         $walletService->recordCollection(
             user: $transaction->createdBy,
