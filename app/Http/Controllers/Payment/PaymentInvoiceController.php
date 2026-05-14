@@ -221,7 +221,7 @@ class PaymentInvoiceController extends Controller
             ->pluck('month_year')
             ->filter(fn($month) => preg_match('/^\d{2}_\d{4}$/', $month))
             ->unique()
-            ->sortBy(fn($month) => Carbon::createFromFormat('m_Y', $month))
+            ->sortByDesc(fn($month) => Carbon::createFromFormat('m_Y', $month))
             ->values();
 
         $paidMonths = PaymentInvoice::where('status', 'paid')
@@ -230,7 +230,7 @@ class PaymentInvoiceController extends Controller
             ->pluck('month_year')
             ->filter(fn($month) => preg_match('/^\d{2}_\d{4}$/', $month))
             ->unique()
-            ->sortBy(fn($month) => Carbon::createFromFormat('m_Y', $month))
+            ->sortByDesc(fn($month) => Carbon::createFromFormat('m_Y', $month))
             ->values();
 
         return response()->json([
