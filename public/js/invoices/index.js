@@ -1096,6 +1096,10 @@ var KTPaidInvoicesList = function () {
 
             var monthSelect = document.querySelector('.filter-billing-month-paid[data-table-id="' + tableId + '"]');
             if (monthSelect && data.paidMonths) {
+                // Destroy existing Select2 instance before reinitializing
+                if ($(monthSelect).hasClass('select2-hidden-accessible')) {
+                    $(monthSelect).select2('destroy');
+                }
                 monthSelect.innerHTML = '<option></option>';
                 data.paidMonths.forEach(function (month) {
                     monthSelect.innerHTML += '<option value="' + month.value + '">' + month.label + '</option>';
