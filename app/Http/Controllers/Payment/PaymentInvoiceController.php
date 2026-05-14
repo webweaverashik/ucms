@@ -228,6 +228,7 @@ class PaymentInvoiceController extends Controller
             ->whereHas('student', $studentQuery)
             ->whereNotNull('month_year')
             ->pluck('month_year')
+            ->map(fn($month) => trim($month)) //newly added
             ->filter(fn($month) => preg_match('/^\d{2}_\d{4}$/', $month))
             ->unique()
             ->sortByDesc(fn($month) => Carbon::createFromFormat('m_Y', $month))
