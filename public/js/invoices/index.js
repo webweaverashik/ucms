@@ -1069,45 +1069,35 @@ var KTPaidInvoicesList = function () {
 
     var loadFilterOptions = function (branchId, tableId) {
         $.get(routeFilterOptions, { branch_id: branchId }, function (data) {
-            // Populate class filter
+
             var classSelect = document.querySelector('.filter-class-name-paid[data-table-id="' + tableId + '"]');
             if (classSelect) {
+                if ($(classSelect).hasClass('select2-hidden-accessible')) $(classSelect).select2('destroy');
                 classSelect.innerHTML = '<option></option>';
                 classNames.forEach(function (cls) {
                     classSelect.innerHTML += '<option value="' + cls.id + '">' + cls.name + '</option>';
                 });
-                $(classSelect).select2({
-                    placeholder: 'Select class',
-                    allowClear: true
-                });
+                $(classSelect).select2({ placeholder: 'Select class', allowClear: true });
             }
 
             var typeSelect = document.querySelector('.filter-invoice-type-paid[data-table-id="' + tableId + '"]');
             if (typeSelect) {
+                if ($(typeSelect).hasClass('select2-hidden-accessible')) $(typeSelect).select2('destroy');
                 typeSelect.innerHTML = '<option></option>';
                 invoiceTypes.forEach(function (type) {
                     typeSelect.innerHTML += '<option value="ucms_' + type.type_name + '">' + type.type_name + '</option>';
                 });
-                $(typeSelect).select2({
-                    placeholder: 'Select option',
-                    allowClear: true
-                });
+                $(typeSelect).select2({ placeholder: 'Select option', allowClear: true });
             }
 
             var monthSelect = document.querySelector('.filter-billing-month-paid[data-table-id="' + tableId + '"]');
             if (monthSelect && data.paidMonths) {
-                // Destroy existing Select2 instance before reinitializing
-                if ($(monthSelect).hasClass('select2-hidden-accessible')) {
-                    $(monthSelect).select2('destroy');
-                }
+                if ($(monthSelect).hasClass('select2-hidden-accessible')) $(monthSelect).select2('destroy');
                 monthSelect.innerHTML = '<option></option>';
                 data.paidMonths.forEach(function (month) {
                     monthSelect.innerHTML += '<option value="' + month.value + '">' + month.label + '</option>';
                 });
-                $(monthSelect).select2({
-                    placeholder: 'Select option',
-                    allowClear: true
-                });
+                $(monthSelect).select2({ placeholder: 'Select option', allowClear: true });
             }
         });
     };
