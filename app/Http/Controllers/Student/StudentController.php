@@ -372,6 +372,7 @@ class StudentController extends Controller
                 'start'       => $attendance->attendance_date->format('Y-m-d'),
                 'description' => $attendance->remarks ?? '',
                 'color'       => $color,
+                'time'        => $attendance->created_at->format('h:i A'),
             ];
         });
 

@@ -1505,50 +1505,62 @@
 
                 <!--begin:::Attendance Tab pane-->
                 <div class="tab-pane fade" id="kt_student_view_attendance_tab" role="tabpanel">
-                    <div class="card pt-4 mb-6 mb-xl-9">
+
+                    {{-- ─── Card 1 : Attendance History (Calendar) ─── --}}
+                    <div class="card pt-4 mb-6 mb-xl-9" id="kt_attendance_history_card">
                         <div class="card-header border-0">
                             <div class="card-title">
                                 <h2>Attendance History</h2>
                             </div>
-                            <!--Legend Toolbar-->
+                            {{-- Legend + Export Toolbar --}}
                             <div class="card-toolbar">
-                                <div class="d-flex flex-wrap gap-2">
-                                    <div class="d-flex align-items-center">
-                                        <span class="w-10px h-10px rounded-circle me-1"
-                                            style="background: #50cd89"></span> Present
+                                <div class="d-flex flex-wrap align-items-center gap-3">
+                                    {{-- Legend dots --}}
+                                    <div class="d-flex align-items-center fs-7 fw-semibold text-gray-600">
+                                        <span class="w-10px h-10px rounded-circle me-1 d-inline-block"
+                                            style="background:#50cd89"></span> Present
                                     </div>
-                                    <div class="d-flex align-items-center">
-                                        <span class="w-10px h-10px rounded-circle me-1"
-                                            style="background: #f1416c"></span> Absent
+                                    <div class="d-flex align-items-center fs-7 fw-semibold text-gray-600">
+                                        <span class="w-10px h-10px rounded-circle me-1 d-inline-block"
+                                            style="background:#f1416c"></span> Absent
                                     </div>
-                                    <div class="d-flex align-items-center">
-                                        <span class="w-10px h-10px rounded-circle me-1"
-                                            style="background: #ffc700"></span> Late
+                                    <div class="d-flex align-items-center fs-7 fw-semibold text-gray-600">
+                                        <span class="w-10px h-10px rounded-circle me-1 d-inline-block"
+                                            style="background:#ffc700"></span> Late
                                     </div>
+                                    {{-- Vertical divider --}}
+                                    <div class="h-20px border-start border-gray-300 mx-1"></div>
+                                    {{-- Export button --}}
+                                    <button type="button" id="kt_attendance_export_btn"
+                                        class="btn btn-sm btn-light-primary">
+                                        <i class="ki-outline ki-picture fs-4 me-1"></i>Export Image
+                                    </button>
                                 </div>
                             </div>
                         </div>
                         <div class="card-body pt-0 pb-5">
-                            <!-- IMPORTANT: We inject the PHP array as JSON here -->
+                            {{-- Inject PHP events array as JSON --}}
                             <div id="kt_attendance_calendar" data-events="{{ json_encode($attendance_events) }}"></div>
                         </div>
                     </div>
-                    <div class="card pt-4 mb-6 mb-xl-9">
+
+                    {{-- ─── Card 2 : Overview Pie Chart ─── --}}
+                    <div class="card pt-4 mb-6 mb-xl-9" id="kt_attendance_overview_card">
                         <div class="card-header border-0">
                             <div class="card-title">
-                                <h2>Overview ({{ date('F Y') }})</h2>
+                                {{-- id is required so JS can update the month name on navigation --}}
+                                <h2 id="kt_attendance_overview_title">Overview ({{ date('F Y') }})</h2>
                             </div>
                         </div>
                         <div class="card-body pt-0 pb-5">
-                            <!-- Chart Container -->
-                            <!-- We keep the data-events here to read from JS -->
                             <div id="kt_attendance_pie_chart_wrapper"
                                 data-events="{{ json_encode($attendance_events) }}"
-                                style="height: 400px; display: flex; justify-content: center;">
+                                style="height:420px; display:flex; justify-content:center; align-items:center;">
                                 <canvas id="kt_attendance_pie_chart"></canvas>
                             </div>
                         </div>
                     </div>
+
                 </div>
                 <!--end:::Attendance Tab pane-->
 
@@ -2016,6 +2028,7 @@
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
     <script src="{{ asset('assets/plugins/custom/fullcalendar/fullcalendar.bundle.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 @endpush
 
 @push('page-js')
