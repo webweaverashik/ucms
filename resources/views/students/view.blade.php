@@ -1512,10 +1512,8 @@
                             <div class="card-title">
                                 <h2>Attendance History</h2>
                             </div>
-                            {{-- Legend + Export Toolbar --}}
                             <div class="card-toolbar">
                                 <div class="d-flex flex-wrap align-items-center gap-3">
-                                    {{-- Legend dots --}}
                                     <div class="d-flex align-items-center fs-7 fw-semibold text-gray-600">
                                         <span class="w-10px h-10px rounded-circle me-1 d-inline-block"
                                             style="background:#50cd89"></span> Present
@@ -1528,9 +1526,7 @@
                                         <span class="w-10px h-10px rounded-circle me-1 d-inline-block"
                                             style="background:#ffc700"></span> Late
                                     </div>
-                                    {{-- Vertical divider --}}
                                     <div class="h-20px border-start border-gray-300 mx-1"></div>
-                                    {{-- Export button --}}
                                     <button type="button" id="kt_attendance_export_btn"
                                         class="btn btn-sm btn-light-primary">
                                         <i class="ki-outline ki-picture fs-4 me-1"></i>Export Image
@@ -1539,8 +1535,10 @@
                             </div>
                         </div>
                         <div class="card-body pt-0 pb-5">
-                            {{-- Inject PHP events array as JSON --}}
-                            <div id="kt_attendance_calendar" data-events="{{ json_encode($attendance_events) }}"></div>
+                            <div id="kt_attendance_calendar" data-events="{{ json_encode($attendance_events) }}"
+                                data-student-name="{{ $student->name }}"
+                                data-student-id="{{ $student->student_unique_id }}">
+                            </div>
                         </div>
                     </div>
 
@@ -1548,15 +1546,89 @@
                     <div class="card pt-4 mb-6 mb-xl-9" id="kt_attendance_overview_card">
                         <div class="card-header border-0">
                             <div class="card-title">
-                                {{-- id is required so JS can update the month name on navigation --}}
-                                <h2 id="kt_attendance_overview_title">Overview ({{ date('F Y') }})</h2>
+                                <h2 id="kt_attendance_overview_title">Overview</h2>
+                            </div>
+                            <div class="card-toolbar">
+                                <div class="d-flex align-items-center gap-2">
+                                    <button type="button" id="kt_overview_prev_month"
+                                        class="btn btn-sm btn-icon btn-light">
+                                        <i class="ki-outline ki-arrow-left fs-3"></i>
+                                    </button>
+                                    <span id="kt_overview_month_label"
+                                        class="fw-bold fs-6 text-gray-700 min-w-100px text-center"></span>
+                                    <button type="button" id="kt_overview_next_month"
+                                        class="btn btn-sm btn-icon btn-light">
+                                        <i class="ki-outline ki-arrow-right fs-3"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <div class="card-body pt-0 pb-5">
+                        <div class="card-body pt-0 pb-8">
                             <div id="kt_attendance_pie_chart_wrapper"
-                                data-events="{{ json_encode($attendance_events) }}"
-                                style="height:420px; display:flex; justify-content:center; align-items:center;">
-                                <canvas id="kt_attendance_pie_chart"></canvas>
+                                data-events="{{ json_encode($attendance_events) }}">
+
+                                {{-- Chart + Stats side by side --}}
+                                <div class="d-flex flex-column flex-md-row align-items-center gap-8">
+
+                                    {{-- Pie Chart --}}
+                                    <div style="position:relative; width:280px; height:280px; flex-shrink:0;">
+                                        <canvas id="kt_attendance_pie_chart"></canvas>
+                                    </div>
+
+                                    {{-- Stats Cards --}}
+                                    <div class="d-flex flex-column gap-4 flex-grow-1 w-100">
+
+                                        <div class="d-flex align-items-center bg-light-success rounded p-4">
+                                            <span class="w-14px h-14px rounded-circle me-4 d-inline-block flex-shrink-0"
+                                                style="background:#50cd89;"></span>
+                                            <div class="d-flex flex-column flex-grow-1">
+                                                <span class="text-gray-700 fw-semibold fs-6">Present</span>
+                                                <span class="text-gray-500 fs-7">Days attended</span>
+                                            </div>
+                                            <span id="kt_stat_present" class="fw-bold fs-2 text-success">0</span>
+                                        </div>
+
+                                        <div class="d-flex align-items-center bg-light-danger rounded p-4">
+                                            <span class="w-14px h-14px rounded-circle me-4 d-inline-block flex-shrink-0"
+                                                style="background:#f1416c;"></span>
+                                            <div class="d-flex flex-column flex-grow-1">
+                                                <span class="text-gray-700 fw-semibold fs-6">Absent</span>
+                                                <span class="text-gray-500 fs-7">Days missed</span>
+                                            </div>
+                                            <span id="kt_stat_absent" class="fw-bold fs-2 text-danger">0</span>
+                                        </div>
+
+                                        <div class="d-flex align-items-center bg-light-warning rounded p-4">
+                                            <span class="w-14px h-14px rounded-circle me-4 d-inline-block flex-shrink-0"
+                                                style="background:#ffc700;"></span>
+                                            <div class="d-flex flex-column flex-grow-1">
+                                                <span class="text-gray-700 fw-semibold fs-6">Late</span>
+                                                <span class="text-gray-500 fs-7">Days late</span>
+                                            </div>
+                                            <span id="kt_stat_late" class="fw-bold fs-2 text-warning">0</span>
+                                        </div>
+
+                                        {{-- Attendance Rate --}}
+                                        <div class="border border-dashed border-gray-300 rounded p-4 mt-2">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span class="fw-bold fs-6 text-gray-700">Attendance Rate</span>
+                                                <span id="kt_stat_rate" class="fw-bold fs-4 text-primary">0%</span>
+                                            </div>
+                                            <div class="progress h-8px bg-light-primary">
+                                                <div id="kt_stat_rate_bar" class="progress-bar bg-primary rounded"
+                                                    role="progressbar" style="width: 0%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- Empty state (hidden by default) --}}
+                                <div id="kt_pie_empty_msg"
+                                    class="d-none flex-column align-items-center justify-content-center py-10 text-center">
+                                    <i class="ki-outline ki-calendar-remove fs-3x text-gray-300 mb-3"></i>
+                                    <span class="fs-6 text-gray-400">No attendance data for this month</span>
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -2028,7 +2100,8 @@
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
     <script src="{{ asset('assets/plugins/custom/fullcalendar/fullcalendar.bundle.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
 @endpush
 
 @push('page-js')

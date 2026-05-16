@@ -63,24 +63,24 @@ var KTStudentsActions = function () {
             if (!toggleButton) return;
             e.preventDefault();
 
-            var studentId       = toggleButton.getAttribute('data-student-id');
-            var studentName     = toggleButton.getAttribute('data-student-name');
+            var studentId = toggleButton.getAttribute('data-student-id');
+            var studentName = toggleButton.getAttribute('data-student-name');
             var studentUniqueId = toggleButton.getAttribute('data-student-unique-id');
-            var activeStatus    = toggleButton.getAttribute('data-active-status');
+            var activeStatus = toggleButton.getAttribute('data-active-status');
 
-            document.getElementById('student_id').value        = studentId;
+            document.getElementById('student_id').value = studentId;
             document.getElementById('activation_status').value = (activeStatus === 'active') ? 'inactive' : 'active';
 
-            var modalTitle    = document.getElementById('toggle-activation-modal-title');
-            var reasonLabel   = document.getElementById('reason_label');
+            var modalTitle = document.getElementById('toggle-activation-modal-title');
+            var reasonLabel = document.getElementById('reason_label');
             var reasonTextarea = document.querySelector('#kt_toggle_activation_student_modal textarea[name="reason"]');
 
             if (activeStatus === 'active') {
-                modalTitle.textContent  = 'Deactivate Student - ' + studentName + ' (' + studentUniqueId + ')';
+                modalTitle.textContent = 'Deactivate Student - ' + studentName + ' (' + studentUniqueId + ')';
                 reasonLabel.textContent = 'Deactivation Reason';
                 if (reasonTextarea) reasonTextarea.placeholder = 'Write the reason for deactivating this student';
             } else {
-                modalTitle.textContent  = 'Activate Student - ' + studentName + ' (' + studentUniqueId + ')';
+                modalTitle.textContent = 'Activate Student - ' + studentName + ' (' + studentUniqueId + ')';
                 reasonLabel.textContent = 'Activation Reason';
                 if (reasonTextarea) reasonTextarea.placeholder = 'Write the reason for activating this student';
             }
@@ -95,9 +95,9 @@ var KTStudentsActions = function () {
         toggleForm.addEventListener('submit', function (e) {
             e.preventDefault();
 
-            var submitBtn       = toggleForm.querySelector('button[type="submit"]');
+            var submitBtn = toggleForm.querySelector('button[type="submit"]');
             var originalBtnText = submitBtn.innerHTML;
-            var reasonField     = toggleForm.querySelector('textarea[name="reason"]');
+            var reasonField = toggleForm.querySelector('textarea[name="reason"]');
 
             if (!reasonField.value.trim()) {
                 Swal.fire({
@@ -110,10 +110,10 @@ var KTStudentsActions = function () {
                 return;
             }
 
-            submitBtn.disabled  = true;
+            submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
 
-            var formData  = new FormData(toggleForm);
+            var formData = new FormData(toggleForm);
             var csrfToken = document.querySelector('meta[name="csrf-token"]');
             if (!csrfToken) { submitBtn.disabled = false; submitBtn.innerHTML = originalBtnText; return; }
 
@@ -127,14 +127,14 @@ var KTStudentsActions = function () {
             })
                 .then(r => r.json().then(d => ({ status: r.status, data: d })))
                 .then(function (result) {
-                    submitBtn.disabled  = false;
+                    submitBtn.disabled = false;
                     submitBtn.innerHTML = originalBtnText;
                     var response = result.data;
 
                     if (response.success) {
                         if (toggleActivationModal) toggleActivationModal.hide();
                         toggleForm.reset();
-                        var newStatus  = document.getElementById('activation_status').value;
+                        var newStatus = document.getElementById('activation_status').value;
                         var actionText = newStatus === 'active' ? 'activated' : 'deactivated';
                         Swal.fire({
                             icon: 'success', title: 'Success!',
@@ -153,7 +153,7 @@ var KTStudentsActions = function () {
                     }
                 })
                 .catch(function () {
-                    submitBtn.disabled  = false;
+                    submitBtn.disabled = false;
                     submitBtn.innerHTML = originalBtnText;
                     Swal.fire({
                         icon: 'error', title: 'Error!', text: 'An unexpected error occurred.',
@@ -169,7 +169,7 @@ var KTStudentsActions = function () {
         if (!modalElement) return;
 
         var cancelButton = modalElement.querySelector('button[type="reset"]');
-        var toggleForm   = modalElement.querySelector('form');
+        var toggleForm = modalElement.querySelector('form');
 
         if (cancelButton) {
             cancelButton.addEventListener('click', function (e) {
@@ -217,7 +217,7 @@ var KTStudentsInvoicesView = function () {
             e.preventDefault();
 
             const invoiceId = target.getAttribute('data-invoice-id');
-            const url       = routeDeleteInvoice.replace(':id', invoiceId);
+            const url = routeDeleteInvoice.replace(':id', invoiceId);
 
             Swal.fire({
                 title: "Are you sure to delete this invoice?",
@@ -269,7 +269,7 @@ var KTEditInvoiceModal = function () {
     var formatMonthYear = function (monthYear) {
         if (!monthYear) return '';
         const [month, year] = monthYear.split('_');
-        const names = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        const names = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         return `${names[parseInt(month) - 1]} ${year}`;
     };
 
@@ -289,7 +289,7 @@ var KTEditInvoiceModal = function () {
                 .then(r => { if (!r.ok) throw new Error('Network error'); return r.json(); })
                 .then(data => {
                     if (!data.success || !data.data) throw new Error(data.message || 'Invalid response');
-                    const invoice         = data.data;
+                    const invoice = data.data;
                     const invoiceTypeName = invoice.invoice_type_name || '';
 
                     const titleEl = document.getElementById('kt_modal_edit_invoice_title');
@@ -315,7 +315,7 @@ var KTEditInvoiceModal = function () {
 
     var handleModalClose = function () {
         const cancelButton = element.querySelector('[data-kt-edit-invoice-modal-action="cancel"]');
-        const closeButton  = element.querySelector('[data-kt-edit-invoice-modal-action="close"]');
+        const closeButton = element.querySelector('[data-kt-edit-invoice-modal-action="close"]');
 
         [cancelButton, closeButton].forEach(btn => {
             if (btn) btn.addEventListener('click', e => {
@@ -337,13 +337,13 @@ var KTEditInvoiceModal = function () {
             fields: {
                 'invoice_amount_edit': {
                     validators: {
-                        notEmpty:    { message: 'Amount is required' },
+                        notEmpty: { message: 'Amount is required' },
                         greaterThan: { min: 50, message: 'Amount must be at least 50' }
                     }
                 }
             },
             plugins: {
-                trigger:   new FormValidation.plugins.Trigger(),
+                trigger: new FormValidation.plugins.Trigger(),
                 bootstrap: new FormValidation.plugins.Bootstrap5({ rowSelector: '.fv-row', eleInvalidClass: '', eleValidClass: '' })
             }
         });
@@ -398,7 +398,7 @@ var KTEditInvoiceModal = function () {
         init: function () {
             element = document.getElementById('kt_modal_edit_invoice');
             if (!element) return;
-            form  = element.querySelector('#kt_modal_edit_invoice_form');
+            form = element.querySelector('#kt_modal_edit_invoice_form');
             modal = bootstrap.Modal.getOrCreateInstance(element);
             handleEditClick(); handleModalClose(); initValidation(); handleFormSubmit();
         }
@@ -426,9 +426,9 @@ var KTStudentsTransactionsView = function () {
             if (!deleteBtn) return;
             e.preventDefault();
 
-            let txnId      = deleteBtn.getAttribute("data-txn-id");
+            let txnId = deleteBtn.getAttribute("data-txn-id");
             let isApproved = deleteBtn.getAttribute("data-is-approved") === "1";
-            let url        = routeDeleteTxn.replace(":id", txnId);
+            let url = routeDeleteTxn.replace(":id", txnId);
 
             Swal.fire({
                 title: isApproved ? "Delete Successful Transaction?" : "Are you sure you want to delete?",
@@ -505,7 +505,7 @@ var KTStudentsTransactionsView = function () {
             e.preventDefault();
 
             const studentId = btn.getAttribute('data-student-id');
-            const year      = btn.getAttribute('data-year');
+            const year = btn.getAttribute('data-year');
             const invoiceId = btn.getAttribute('data-invoice-id');
 
             if (!studentId || !year) { Swal.fire({ title: 'Error!', text: 'Missing data.', icon: 'error' }); return; }
@@ -567,10 +567,10 @@ var KTStudentsSheetsView = function () {
     };
 
     var handleFilter = function () {
-        const filterForm   = document.querySelector('[data-kt-notes-distribution-table-filter="form"]');
+        const filterForm = document.querySelector('[data-kt-notes-distribution-table-filter="form"]');
         const filterButton = filterForm.querySelector('[data-kt-notes-distribution-table-filter="filter"]');
-        const resetButton  = filterForm.querySelector('[data-kt-notes-distribution-table-filter="reset"]');
-        const selects      = filterForm.querySelectorAll('select');
+        const resetButton = filterForm.querySelector('[data-kt-notes-distribution-table-filter="reset"]');
+        const selects = filterForm.querySelectorAll('select');
 
         filterButton.addEventListener('click', function () {
             datatable.search(Array.from(selects).filter(s => s.value).map(s => s.value).join(' ')).draw();
@@ -607,8 +607,8 @@ var KTStudentsActivity = function () {
 
     return {
         init: function () {
-            makeTable('kt_students_acitivation_table',             [2]);
-            makeTable('kt_students_class_change_history_table',    [1, 2]);
+            makeTable('kt_students_acitivation_table', [2]);
+            makeTable('kt_students_class_change_history_table', [1, 2]);
             makeTable('kt_students_secondary_class_history_table', [1, 2]);
         }
     };
@@ -619,189 +619,208 @@ var KTStudentsActivity = function () {
 // KTStudentViewAttendance — Calendar · Pie Chart · Export
 // =========================================================================
 var KTStudentViewAttendance = function () {
-
-    // ── Module state ──────────────────────────────────────────────────────
-    var calendar      = null;
-    var pieChart      = null;
+    var calendar;
+    var calendarEl;
+    var pieChartInstance = null;
     var allEventsData = [];
-    var emptyStateEl  = null;   // lazily created empty-state overlay
+    var currentOverviewMonth; // { year, month } — 0-based month
 
-    // ── Date helpers ──────────────────────────────────────────────────────
+    // ── Helpers ──────────────────────────────────────────────────────────────
 
-    /** Parse "YYYY-MM-DD" as LOCAL midnight (avoids UTC rollback). */
-    var parseLocal = function (dateStr) {
-        var p = dateStr.split('-');
-        return new Date(+p[0], +p[1] - 1, +p[2]);
+    var MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'];
+
+    var getMonthName = function (year, month) {
+        return MONTH_NAMES[month] + ' ' + year;
     };
 
-    /** Tally Present/Absent/Late for a given month. */
-    var calcStats = function (month, year) {
-        var s = { present: 0, absent: 0, late: 0 };
-        allEventsData.forEach(function (ev) {
-            var d = parseLocal(ev.start);
-            if (d.getMonth() === month && d.getFullYear() === year) {
-                var t = ev.title.toLowerCase();
-                if      (t === 'present') s.present++;
-                else if (t === 'absent')  s.absent++;
-                else if (t === 'late')    s.late++;
+    var pad = function (n) { return n.toString().padStart(2, '0'); };
+
+    var getStatsForMonth = function (year, month) {
+        var stats = { present: 0, absent: 0, late: 0 };
+        allEventsData.forEach(function (event) {
+            var d = new Date(event.start);
+            if (d.getFullYear() === year && d.getMonth() === month) {
+                var s = event.title.toLowerCase();
+                if (s === 'present') stats.present++;
+                else if (s === 'absent') stats.absent++;
+                else if (s === 'late') stats.late++;
+                // any other status is ignored
             }
         });
-        return s;
+        return stats;
     };
 
-    // ── Pie-chart visibility ──────────────────────────────────────────────
+    // ── Overview Card ─────────────────────────────────────────────────────────
 
-    /**
-     * Show the canvas (hasData = true) or swap it for a friendly empty state.
-     * The empty-state div is created lazily and reused.
-     */
-    var setPieVisibility = function (hasData) {
-        var canvas  = document.getElementById('kt_attendance_pie_chart');
-        var wrapper = document.getElementById('kt_attendance_pie_chart_wrapper');
-        if (!canvas || !wrapper) return;
+    var updateOverview = function (year, month) {
+        currentOverviewMonth = { year: year, month: month };
 
-        if (!emptyStateEl) {
-            emptyStateEl = document.createElement('div');
-            emptyStateEl.id        = 'kt_pie_empty_state';
-            emptyStateEl.className = 'd-none flex-column align-items-center justify-content-center w-100';
-            emptyStateEl.style.cssText = 'min-height:240px;';
-            emptyStateEl.innerHTML =
-                '<div class="mb-4">'
-                +   '<i class="ki-outline ki-chart-pie-3 fs-3x text-gray-300"></i>'
-                + '</div>'
-                + '<h5 class="text-gray-500 fw-semibold mb-1">No Attendance Records</h5>'
-                + '<p class="text-gray-400 fs-6 mb-0">No data available for the selected month.</p>';
-            wrapper.appendChild(emptyStateEl);
-        }
-
-        if (hasData) {
-            canvas.classList.remove('d-none');
-            emptyStateEl.classList.remove('d-flex');
-            emptyStateEl.classList.add('d-none');
-        } else {
-            canvas.classList.add('d-none');
-            emptyStateEl.classList.remove('d-none');
-            emptyStateEl.classList.add('d-flex');
-        }
-    };
-
-    // ── Pie-chart sync ────────────────────────────────────────────────────
-
-    /**
-     * Re-populate the pie chart (or show empty state) for the given month/year.
-     * Also updates the "Overview (Month Year)" heading.
-     */
-    var syncPie = function (month, year) {
-        // Always update the title first
+        var label = getMonthName(year, month);
         var titleEl = document.getElementById('kt_attendance_overview_title');
-        if (titleEl) {
-            titleEl.textContent = 'Overview ('
-                + new Date(year, month, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' })
-                + ')';
-        }
+        var labelEl = document.getElementById('kt_overview_month_label');
+        if (titleEl) titleEl.textContent = 'Overview (' + label + ')';
+        if (labelEl) labelEl.textContent = label;
 
-        if (!pieChart) return;
-
-        var stats = calcStats(month, year);
+        var stats = getStatsForMonth(year, month);
         var total = stats.present + stats.absent + stats.late;
+        var rate = total > 0 ? Math.round((stats.present / total) * 100) : 0;
+
+        var setEl = function (id, val) {
+            var el = document.getElementById(id);
+            if (el) el.textContent = val;
+        };
+        setEl('kt_stat_present', stats.present);
+        setEl('kt_stat_absent', stats.absent);
+        setEl('kt_stat_late', stats.late);
+        setEl('kt_stat_rate', rate + '%');
+
+        var bar = document.getElementById('kt_stat_rate_bar');
+        if (bar) bar.style.width = rate + '%';
+
+        // ── Pie Chart ──
+        var canvas = document.getElementById('kt_attendance_pie_chart');
+        var emptyMsg = document.getElementById('kt_pie_empty_msg');
+        if (!canvas) return;
+
+        if (pieChartInstance) {
+            pieChartInstance.destroy();
+            pieChartInstance = null;
+        }
 
         if (total === 0) {
-            setPieVisibility(false);
+            canvas.style.display = 'none';
+            if (emptyMsg) {
+                emptyMsg.classList.remove('d-none');
+                emptyMsg.classList.add('d-flex');
+            }
             return;
         }
 
-        setPieVisibility(true);
-        pieChart.data.datasets[0].data = [stats.present, stats.absent, stats.late];
-        pieChart.update('active');
+        // Has data — show canvas, hide empty msg
+        canvas.style.display = '';
+        if (emptyMsg) {
+            emptyMsg.classList.add('d-none');
+            emptyMsg.classList.remove('d-flex');
+        }
+
+        var ctx = canvas.getContext('2d');
+        pieChartInstance = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Present', 'Absent', 'Late'],
+                datasets: [{
+                    data: [stats.present, stats.absent, stats.late],
+                    backgroundColor: ['#50cd89', '#f1416c', '#ffc700'],
+                    borderWidth: 0,
+                    hoverOffset: 6
+                }]
+            },
+            plugins: [ChartDataLabels],
+            options: {
+                responsive: false,
+                maintainAspectRatio: false,
+                layout: { padding: 10 },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return context.label + ': ' + context.raw + ' days';
+                            }
+                        }
+                    },
+                    datalabels: {
+                        color: '#ffffff',
+                        font: { weight: 'bold', size: 13 },
+                        formatter: function (value, context) {
+                            if (value === 0) return null;
+                            var dataset = context.chart.data.datasets[0].data;
+                            var sum = dataset.reduce(function (a, b) { return a + b; }, 0);
+                            return Math.round((value / sum) * 100) + '%';
+                        }
+                    }
+                }
+            }
+        });
     };
 
-    // ── Calendar ──────────────────────────────────────────────────────────
+    // ── Calendar ──────────────────────────────────────────────────────────────
 
     var initCalendar = function () {
-        var calEl = document.getElementById('kt_attendance_calendar');
-        if (!calEl) return;
+        calendarEl = document.getElementById('kt_attendance_calendar');
+        if (!calendarEl) return;
 
-        allEventsData = JSON.parse(calEl.getAttribute('data-events'));
+        allEventsData = JSON.parse(calendarEl.getAttribute('data-events') || '[]');
 
-        calendar = new FullCalendar.Calendar(calEl, {
-
+        calendar = new FullCalendar.Calendar(calendarEl, {
             headerToolbar: {
-                left:   'prev,next today',
+                left: 'prev,next today',
                 center: 'title',
-                right:  'dayGridMonth,listMonth'
+                right: 'dayGridMonth,listMonth'
             },
             views: {
                 listMonth: {
-                    buttonText:        'List',
-                    displayEventTime:  false,
-                    listDayFormat:     false,
+                    buttonText: 'List',
+                    displayEventTime: false,
+                    listDayFormat: false,
                     listDaySideFormat: false
+                },
+                dayGridMonth: {
+                    showNonCurrentDates: false   // hide adjacent-month dates
                 }
             },
-            initialView:   'dayGridMonth',
-            height:        'auto',
+            fixedWeekCount: false,              // no trailing empty rows
+            initialView: 'dayGridMonth',
+            height: 'auto',
             contentHeight: 650,
-            aspectRatio:   3,
-            initialDate:   new Date(),
-            navLinks:      true,
-            editable:      false,
-            dayMaxEvents:  true,
-            events:        allEventsData,
+            aspectRatio: 3,
+            initialDate: new Date(),
+            navLinks: true,
+            editable: false,
+            dayMaxEvents: true,
+            events: allEventsData,
 
-            // ── Sync pie every time the visible range changes ────────────
-            datesSet: function (info) {
-                var cs = info.view.currentStart;     // canonical period start (e.g. Nov 1)
-                syncPie(cs.getMonth(), cs.getFullYear());
-            },
-
-            // ── Tooltip on hover ─────────────────────────────────────────
             eventDidMount: function (info) {
                 var remarks = info.event.extendedProps.description;
                 if (remarks) {
                     new bootstrap.Tooltip(info.el, {
-                        title: remarks, placement: 'top', trigger: 'hover', container: 'body'
+                        title: remarks,
+                        placement: 'top',
+                        trigger: 'hover',
+                        container: 'body'
                     });
                 }
             },
 
-            // ── Custom render ────────────────────────────────────────────
+            // Keep overview card in sync when calendar month changes
+            datesSet: function (info) {
+                var d = info.view.currentStart;
+                updateOverview(d.getFullYear(), d.getMonth());
+            },
+
             eventContent: function (arg) {
-
-                // LIST VIEW: date · time · status badge · remark
                 if (arg.view.type === 'listMonth') {
-                    var d       = arg.event.start;
-                    var dateStr = String(d.getDate()).padStart(2, '0')
-                                + '-' + d.toLocaleString('en-US', { month: 'short' })
-                                + '-' + d.getFullYear();
-
-                    var time    = arg.event.extendedProps.time        || '';
+                    var d = arg.event.start;
+                    var fmt = pad(d.getDate()) + '-'
+                        + d.toLocaleString('en-US', { month: 'short' }) + '-'
+                        + d.getFullYear();
+                    var time = arg.event.extendedProps.time || '';
                     var remarks = arg.event.extendedProps.description || '';
-                    var bg      = arg.event.backgroundColor;
-
-                    var timeHtml = time
-                        ? '<span class="d-inline-flex align-items-center text-gray-500 fs-7 me-4">'
-                          + '<i class="ki-outline ki-time fs-7 me-1 text-gray-400"></i>' + time + '</span>'
-                        : '';
-
-                    var remarkHtml = remarks
-                        ? '<span class="d-inline-flex align-items-center text-muted fs-7 ms-3 fst-italic">'
-                          + '<i class="ki-outline ki-message-text-2 fs-7 me-1"></i>' + remarks + '</span>'
-                        : '';
 
                     return {
-                        html: '<div class="d-flex align-items-center flex-wrap py-1 gap-2">'
-                            + '<span class="fw-bold text-gray-800 fs-6" style="min-width:110px">' + dateStr + '</span>'
-                            + timeHtml
-                            + '<span class="badge rounded-pill" style="background:' + bg + ';color:#fff">'
-                            + arg.event.title + '</span>'
-                            + remarkHtml
+                        html: '<div class="d-flex align-items-center flex-wrap gap-3 py-1">'
+                            + '<span class="min-w-100px fw-bold text-gray-800 fs-6">' + fmt + '</span>'
+                            + '<span class="badge" style="background-color:' + arg.event.backgroundColor
+                            + ';color:white;font-size:0.9rem;">' + arg.event.title + '</span>'
+                            + (time ? '<span class="text-gray-500 fs-7 ms-2"><i class="ki-outline ki-time fs-7 me-1"></i>' + time + '</span>' : '')
+                            + (remarks ? '<span class="text-gray-500 fs-7 ms-2"><i class="ki-outline ki-message-text-2 fs-7 me-1"></i>' + remarks + '</span>' : '')
                             + '</div>'
                     };
                 }
-
-                // GRID VIEW: default coloured dot
                 return {
-                    html: '<div style="color:#fff;padding:1px 2px">' + arg.event.title + '</div>'
+                    html: '<div class="fc-content" style="color:white;padding:1px 2px;">'
+                        + arg.event.title + '</div>'
                 };
             }
         });
@@ -809,425 +828,153 @@ var KTStudentViewAttendance = function () {
         calendar.render();
     };
 
-    // ── Pie chart ─────────────────────────────────────────────────────────
+    // ── Export — captures both cards into one PNG ─────────────────────────────
 
-    var initPieChart = function () {
-        var wrapper = document.getElementById('kt_attendance_pie_chart_wrapper');
-        var canvas  = document.getElementById('kt_attendance_pie_chart');
-        if (!wrapper || !canvas) return;
+    var initExport = function () {
+        var btn = document.getElementById('kt_attendance_export_btn');
+        if (!btn) return;
 
-        var now   = new Date();
-        var stats = calcStats(now.getMonth(), now.getFullYear());
-        var total = stats.present + stats.absent + stats.late;
-
-        // Show empty state immediately if no records this month
-        if (total === 0) {
-            setPieVisibility(false);
-        }
-
-        var ctx = canvas.getContext('2d');
-
-        pieChart = new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: ['Present', 'Absent', 'Late'],
-                datasets: [{
-                    data:            [stats.present, stats.absent, stats.late],
-                    backgroundColor: ['#50cd89', '#f1416c', '#ffc700'],
-                    borderWidth:     0,
-                    hoverOffset:     8
-                }]
-            },
-            plugins: [ChartDataLabels],
-            options: {
-                responsive:          true,
-                maintainAspectRatio: false,
-                animation: { animateRotate: true, duration: 600 },
-                plugins: {
-                    // Legend: label + count + %
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            usePointStyle: true,
-                            padding:       24,
-                            font:          { size: 13 },
-                            generateLabels: function (chart) {
-                                var ds    = chart.data.datasets[0];
-                                var total = ds.data.reduce((a, b) => a + b, 0);
-                                return chart.data.labels.map(function (label, i) {
-                                    var val = ds.data[i];
-                                    var pct = total > 0 ? Math.round((val / total) * 100) : 0;
-                                    return {
-                                        text:        label + ' \u2014 ' + val + ' days (' + pct + '%)',
-                                        fillStyle:   ds.backgroundColor[i],
-                                        strokeStyle: ds.backgroundColor[i],
-                                        pointStyle:  'circle',
-                                        index:       i
-                                    };
-                                });
-                            }
-                        }
-                    },
-                    // Tooltip: count + %
-                    tooltip: {
-                        callbacks: {
-                            label: function (ctx) {
-                                var val   = ctx.raw || 0;
-                                var total = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                                var pct   = total > 0 ? Math.round((val / total) * 100) : 0;
-                                return ' ' + ctx.label + ': ' + val + ' days (' + pct + '%)';
-                            }
-                        }
-                    },
-                    // On-slice: count on line 1, % on line 2
-                    datalabels: {
-                        color:  '#ffffff',
-                        anchor: 'center',
-                        align:  'center',
-                        font:   { weight: 'bold', size: 13 },
-                        formatter: function (value, context) {
-                            if (!value) return null;
-                            var total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                            if (!total) return null;
-                            return [String(value), '(' + Math.round((value / total) * 100) + '%)'];
-                        }
-                    }
-                }
+        btn.addEventListener('click', function () {
+            if (typeof html2canvas === 'undefined') {
+                alert('html2canvas is not loaded. Add it to your vendor-js stack.');
+                return;
             }
-        });
 
-        // Sync visibility once after chart is created
-        if (total === 0) setPieVisibility(false);
-    };
+            // Immediately update button UI so browser repaints before heavy work
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2 align-middle" role="status" aria-hidden="true"></span>Exporting…';
 
-    // ── Export ────────────────────────────────────────────────────────────
-    //
-    // Strategy: build a canvas image ENTIRELY from our in-memory data.
-    // No DOM capture → no layout re-render → no browser hang.
-    // The only async step is loading the Chart.js base64 image, which
-    // resolves almost instantly since it's already in memory.
-    // ─────────────────────────────────────────────────────────────────────
+            // Defer the heavy html2canvas work so the button repaint flushes first
+            setTimeout(function () {
 
-    /** Draw one stat card (Present / Absent / Late box). */
-    var drawStatCard = function (ctx, x, y, w, h, label, value, pct, accent) {
-        // Card background
-        ctx.fillStyle = '#ffffff';
-        _roundRect(ctx, x, y, w, h, 8);
-        ctx.fill();
+                // Meta
+                var studentName = (calendarEl && calendarEl.getAttribute('data-student-name')) || 'Student';
+                var studentId = (calendarEl && calendarEl.getAttribute('data-student-id')) || '';
+                var monthLabel = calendar ? getMonthName(
+                    calendar.getDate().getFullYear(),
+                    calendar.getDate().getMonth()
+                ) : '';
 
-        // Left accent stripe
-        ctx.fillStyle = accent;
-        _roundRect(ctx, x, y, 5, h, 3);
-        ctx.fill();
+                // File name: StudentName_ID_Attendance_YYYYMMDD_HHMMSS.png
+                var now = new Date();
+                var ts = now.getFullYear()
+                    + pad(now.getMonth() + 1)
+                    + pad(now.getDate())
+                    + '_' + pad(now.getHours())
+                    + pad(now.getMinutes())
+                    + pad(now.getSeconds());
+                var fileName = studentName.replace(/\s+/g, '_')
+                    + (studentId ? '_' + studentId : '')
+                    + '_Attendance_' + ts + '.png';
 
-        // Value
-        ctx.fillStyle  = '#181c32';
-        ctx.font       = 'bold 28px -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif';
-        ctx.textAlign  = 'left';
-        ctx.fillText(String(value), x + 18, y + 40);
+                // Build a temporary off-screen wrapper that holds both cards
+                var historyCard = document.getElementById('kt_attendance_history_card');
+                var overviewCard = document.getElementById('kt_attendance_overview_card');
 
-        // Label
-        ctx.fillStyle = '#5e6278';
-        ctx.font      = '12px -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif';
-        ctx.fillText(label, x + 18, y + 58);
+                var wrapper = document.createElement('div');
+                wrapper.style.cssText = [
+                    'position:absolute',
+                    'left:-9999px',
+                    'top:0',
+                    'width:' + historyCard.offsetWidth + 'px',
+                    'background:#ffffff',
+                    'padding:0',
+                    'font-family:inherit'
+                ].join(';');
 
-        // Percentage (right-aligned)
-        ctx.fillStyle = accent;
-        ctx.font      = 'bold 12px -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif';
-        ctx.textAlign = 'right';
-        ctx.fillText(pct + '%', x + w - 14, y + 40);
-        ctx.textAlign = 'left';
-    };
+                // ── Header banner ──
+                var banner = document.createElement('div');
+                banner.style.cssText = 'padding:16px 24px 12px;background:#f9f9f9;border-bottom:1px solid #e4e6ef;';
+                banner.innerHTML = '<div style="font-size:1.15rem;font-weight:700;color:#181c32;line-height:1.3;">'
+                    + studentName
+                    + (studentId ? ' <span style="color:#7e8299;font-size:0.9rem;font-weight:600;">(' + studentId + ')</span>' : '')
+                    + '</div>'
+                    + '<div style="font-size:0.82rem;color:#7e8299;margin-top:3px;">Attendance Report — ' + monthLabel + '</div>';
+                wrapper.appendChild(banner);
 
-    /** Minimal rounded-rect path helper. */
-    var _roundRect = function (ctx, x, y, w, h, r) {
-        ctx.beginPath();
-        ctx.moveTo(x + r, y);
-        ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-        ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-        ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-        ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
-        ctx.closePath();
-    };
+                // ── Clone helper ──
+                var cloneCard = function (sourceCard) {
+                    var clone = sourceCard.cloneNode(true);
+                    var toolbar = clone.querySelector('.card-toolbar');
+                    if (toolbar) toolbar.remove();
+                    clone.style.marginBottom = '0';
+                    clone.style.borderRadius = '0';
+                    clone.style.boxShadow = 'none';
+                    return clone;
+                };
 
-    /**
-     * Build and return a Promise<HTMLCanvasElement> without touching the DOM.
-     * Everything is drawn synchronously except for the pie-chart image load
-     * (which resolves in one microtask since the data URL is already in RAM).
-     */
-    var buildExportCanvas = function (month, year, monthLabel) {
-        return new Promise(function (resolve) {
+                // ── Snapshot pie chart pixels into cloned canvas ──
+                var overviewClone = cloneCard(overviewCard);
+                var clonedCanvas = overviewClone.querySelector('#kt_attendance_pie_chart');
+                if (clonedCanvas && pieChartInstance) {
+                    var sourceCanvas = document.getElementById('kt_attendance_pie_chart');
+                    clonedCanvas.width = sourceCanvas.width;
+                    clonedCanvas.height = sourceCanvas.height;
+                    clonedCanvas.style.width = sourceCanvas.style.width || sourceCanvas.offsetWidth + 'px';
+                    clonedCanvas.style.height = sourceCanvas.style.height || sourceCanvas.offsetHeight + 'px';
+                    clonedCanvas.getContext('2d').drawImage(sourceCanvas, 0, 0);
+                }
 
-            var stats  = calcStats(month, year);
-            var total  = stats.present + stats.absent + stats.late;
+                wrapper.appendChild(cloneCard(historyCard));
+                wrapper.appendChild(overviewClone);
+                document.body.appendChild(wrapper);
 
-            // Events for this month, sorted oldest-first
-            var rows = allEventsData
-                .filter(function (ev) {
-                    var d = parseLocal(ev.start);
-                    return d.getMonth() === month && d.getFullYear() === year;
-                })
-                .sort((a, b) => a.start.localeCompare(b.start));
+                html2canvas(wrapper, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    logging: false
+                }).then(function (canvasEl) {
+                    document.body.removeChild(wrapper);
 
-            // ── Layout constants (logical pixels; we scale ×2 for retina) ──
-            var DPR        = 2;
-            var W          = 860;
-            var PAD        = 28;
-            var ACCENT_H   = 4;
-            var HEADER_H   = 82;     // title + subtitle + separator
-            var STATS_H    = 88;     // 3 stat cards
-            var GAP        = 16;
-            var CHART_H    = 260;    // pie chart or "no data" placeholder
-            var ROW_H      = 28;
-            var LIST_HDR_H = 34;
-            var LIST_H     = LIST_HDR_H + Math.max(rows.length, 1) * ROW_H + 8;
-            var FOOTER_H   = 44;
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="ki-outline ki-picture fs-4 me-1"></i>Export Image';
 
-            var H = ACCENT_H + PAD + HEADER_H + GAP + STATS_H + GAP
-                  + Math.max(CHART_H, LIST_H) + GAP + FOOTER_H + PAD;
+                    var link = document.createElement('a');
+                    link.href = canvasEl.toDataURL('image/png');
+                    link.download = fileName;
+                    link.click();
+                }).catch(function (err) {
+                    document.body.removeChild(wrapper);
 
-            // ── Canvas ───────────────────────────────────────────────────
-            var canvas   = document.createElement('canvas');
-            canvas.width  = W * DPR;
-            canvas.height = H * DPR;
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="ki-outline ki-picture fs-4 me-1"></i>Export Image';
 
-            var ctx = canvas.getContext('2d');
-            ctx.scale(DPR, DPR);
-
-            // ── Palette ──────────────────────────────────────────────────
-            var C = {
-                bg:      '#f5f8fa',
-                white:   '#ffffff',
-                accent:  '#009ef7',
-                present: '#50cd89',
-                absent:  '#f1416c',
-                late:    '#ffc700',
-                dark:    '#181c32',
-                mid:     '#5e6278',
-                light:   '#a1a5b7',
-                border:  '#e4e6ef'
-            };
-
-            // ── Background ───────────────────────────────────────────────
-            ctx.fillStyle = C.bg;
-            ctx.fillRect(0, 0, W, H);
-
-            // ── Top accent bar ───────────────────────────────────────────
-            ctx.fillStyle = C.accent;
-            ctx.fillRect(0, 0, W, ACCENT_H);
-
-            // ── Header ───────────────────────────────────────────────────
-            var hY = ACCENT_H + PAD;
-
-            ctx.fillStyle = C.dark;
-            ctx.font      = 'bold 20px -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif';
-            ctx.fillText('Attendance Report', PAD, hY + 22);
-
-            ctx.fillStyle = C.mid;
-            ctx.font      = '13px -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif';
-            ctx.fillText(monthLabel, PAD, hY + 44);
-
-            // Timestamp (right-aligned)
-            var ts = 'Generated ' + new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-            ctx.textAlign  = 'right';
-            ctx.fillStyle  = C.light;
-            ctx.font       = '11px -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif';
-            ctx.fillText(ts, W - PAD, hY + 22);
-            ctx.textAlign  = 'left';
-
-            // Separator
-            ctx.strokeStyle = C.border;
-            ctx.lineWidth   = 1;
-            ctx.beginPath();
-            ctx.moveTo(PAD, hY + 58);
-            ctx.lineTo(W - PAD, hY + 58);
-            ctx.stroke();
-
-            // ── Stat cards ───────────────────────────────────────────────
-            var sY       = hY + HEADER_H;
-            var cardW    = Math.floor((W - PAD * 2 - 16) / 3);
-            var cardData = [
-                { label: 'Present', value: stats.present, color: C.present },
-                { label: 'Absent',  value: stats.absent,  color: C.absent  },
-                { label: 'Late',    value: stats.late,     color: C.late    }
-            ];
-            cardData.forEach(function (card, i) {
-                var pct = total > 0 ? Math.round((card.value / total) * 100) : 0;
-                drawStatCard(ctx, PAD + i * (cardW + 8), sY, cardW, 72, card.label, card.value, pct, card.color);
-            });
-
-            // ── Content area ─────────────────────────────────────────────
-            var contentY = sY + STATS_H + GAP;
-            var halfW    = Math.floor((W - PAD * 2 - 16) / 2);
-
-            // Right panel: attendance list ─────────────────────────────────
-            var listX = PAD + halfW + 16;
-            var listW = halfW;
-
-            // List header row
-            ctx.fillStyle = '#eff2f5';
-            _roundRect(ctx, listX, contentY, listW, LIST_HDR_H, 6);
-            ctx.fill();
-
-            ctx.fillStyle = C.mid;
-            ctx.font      = 'bold 10px -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif';
-            ctx.fillText('DATE',   listX + 10,               contentY + 22);
-            ctx.fillText('STATUS', listX + listW * 0.46,     contentY + 22);
-            ctx.fillText('TIME',   listX + listW * 0.74,     contentY + 22);
-
-            if (rows.length === 0) {
-                // Empty list state
-                ctx.fillStyle = C.light;
-                ctx.font      = '12px -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('No records this month', listX + listW / 2, contentY + LIST_HDR_H + 34);
-                ctx.textAlign = 'left';
-            } else {
-                rows.forEach(function (ev, idx) {
-                    var rY = contentY + LIST_HDR_H + idx * ROW_H;
-
-                    // Alternate row background
-                    if (idx % 2 === 0) {
-                        ctx.fillStyle = C.white;
-                        ctx.fillRect(listX, rY, listW, ROW_H);
-                    }
-
-                    // Date
-                    var d       = parseLocal(ev.start);
-                    var dateStr = String(d.getDate()).padStart(2, '0')
-                                + '-' + d.toLocaleString('en-US', { month: 'short' })
-                                + '-' + d.getFullYear();
-                    ctx.fillStyle = C.dark;
-                    ctx.font      = '11px -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif';
-                    ctx.fillText(dateStr, listX + 10, rY + ROW_H * 0.65);
-
-                    // Status dot
-                    ctx.beginPath();
-                    ctx.arc(listX + listW * 0.46 - 1, rY + ROW_H * 0.48, 4, 0, Math.PI * 2);
-                    ctx.fillStyle = ev.color || C.present;
-                    ctx.fill();
-
-                    // Status text
-                    ctx.fillStyle = C.mid;
-                    ctx.font      = '11px -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif';
-                    ctx.fillText(ev.title, listX + listW * 0.46 + 8, rY + ROW_H * 0.65);
-
-                    // Time
-                    if (ev.time) {
-                        ctx.fillStyle = C.light;
-                        ctx.font      = '10px -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif';
-                        ctx.fillText(ev.time, listX + listW * 0.74, rY + ROW_H * 0.65);
-                    }
+                    console.error('Attendance export error:', err);
                 });
 
-                // List bottom border
-                var listBottom = contentY + LIST_HDR_H + rows.length * ROW_H;
-                ctx.strokeStyle = C.border;
-                ctx.lineWidth   = 1;
-                ctx.beginPath();
-                ctx.moveTo(listX, listBottom); ctx.lineTo(listX + listW, listBottom);
-                ctx.stroke();
-            }
-
-            // ── Footer ───────────────────────────────────────────────────
-            var drawFooter = function () {
-                ctx.fillStyle = C.light;
-                ctx.font      = '10px -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('Exported from Student Management System', W / 2, H - PAD + 14);
-                ctx.textAlign = 'left';
-            };
-
-            // ── Left panel: pie chart or "no data" text ───────────────────
-            if (total > 0 && pieChart) {
-                var pieImg = new Image();
-                pieImg.onload = function () {
-                    // Centre the pie chart image within the left half
-                    var sz   = Math.min(halfW - 10, CHART_H);
-                    var imgX = PAD + Math.floor((halfW - sz) / 2);
-                    var imgY = contentY + Math.floor((Math.max(CHART_H, LIST_H) - sz) / 2);
-                    ctx.drawImage(pieImg, imgX, imgY, sz, sz);
-                    drawFooter();
-                    resolve(canvas);
-                };
-                pieImg.onerror = function () { drawFooter(); resolve(canvas); };
-                // toBase64Image() is synchronous; onload fires in next microtask
-                pieImg.src = pieChart.toBase64Image();
-            } else {
-                // No-data placeholder on the left
-                ctx.fillStyle = '#eff2f5';
-                _roundRect(ctx, PAD, contentY, halfW, CHART_H, 8);
-                ctx.fill();
-
-                ctx.fillStyle = C.light;
-                ctx.font      = '13px -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText('No attendance data', PAD + halfW / 2, contentY + CHART_H / 2 - 8);
-                ctx.fillText('for this month',     PAD + halfW / 2, contentY + CHART_H / 2 + 12);
-                ctx.textAlign = 'left';
-                drawFooter();
-                resolve(canvas);
-            }
+            }, 50); // 50ms is enough for the browser to flush the repaint
         });
     };
 
-    // ── Export button handler ─────────────────────────────────────────────
+    // ── Overview month navigation ─────────────────────────────────────────────
 
-    var handleExport = function () {
-        var exportBtn = document.getElementById('kt_attendance_export_btn');
-        if (!exportBtn) return;
+    var initOverviewNav = function () {
+        var prevBtn = document.getElementById('kt_overview_prev_month');
+        var nextBtn = document.getElementById('kt_overview_next_month');
 
-        exportBtn.addEventListener('click', function () {
-            var originalHTML = exportBtn.innerHTML;
-            exportBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Preparing…';
-            exportBtn.disabled  = true;
-
-            // Read current calendar month from the pie-chart title (already updated)
-            var titleEl    = document.getElementById('kt_attendance_overview_title');
-            var monthLabel = titleEl
-                ? titleEl.textContent.replace('Overview (', '').replace(')', '').trim()
-                : new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
-
-            // Derive month/year integers from the calendar's current view
-            var currentStart = calendar ? calendar.view.currentStart : new Date();
-            var month        = currentStart.getMonth();
-            var year         = currentStart.getFullYear();
-
-            // Build filename slug from the month label
-            var slug = monthLabel.replace(/\s+/g, '_').toLowerCase();
-
-            // Yield to browser to repaint the button, then build canvas
-            requestAnimationFrame(function () {
-                setTimeout(function () {
-                    buildExportCanvas(month, year, monthLabel)
-                        .then(function (canvas) {
-                            var link      = document.createElement('a');
-                            link.download = 'attendance_' + slug + '.png';
-                            link.href     = canvas.toDataURL('image/png', 1.0);
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                        })
-                        .catch(function (err) {
-                            console.error('Export error:', err);
-                            Swal.fire({
-                                title: 'Export Failed',
-                                text: 'Could not generate the attendance image. Please try again.',
-                                icon: 'error',
-                                buttonsStyling: false, confirmButtonText: 'OK',
-                                customClass: { confirmButton: 'btn btn-primary' }
-                            });
-                        })
-                        .finally(function () {
-                            exportBtn.innerHTML = originalHTML;
-                            exportBtn.disabled  = false;
-                        });
-                }, 60);   // small delay lets the spinner render
+        if (prevBtn) {
+            prevBtn.addEventListener('click', function () {
+                var m = currentOverviewMonth.month - 1;
+                var y = currentOverviewMonth.year;
+                if (m < 0) { m = 11; y--; }
+                if (calendar) calendar.gotoDate(new Date(y, m, 1));
+                // datesSet fires automatically and calls updateOverview
             });
-        });
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function () {
+                var m = currentOverviewMonth.month + 1;
+                var y = currentOverviewMonth.year;
+                if (m > 11) { m = 0; y++; }
+                if (calendar) calendar.gotoDate(new Date(y, m, 1));
+            });
+        }
     };
 
-    // ── Tab-switch: fix calendar size ─────────────────────────────────────
+    // ── Tab switch — resize calendar ──────────────────────────────────────────
 
     var handleTabSwitch = function () {
         var tabLink = document.querySelector('a[href="#kt_student_view_attendance_tab"]')
@@ -1239,13 +986,11 @@ var KTStudentViewAttendance = function () {
         }
     };
 
-    // ── Public ────────────────────────────────────────────────────────────
-
     return {
         init: function () {
-            initCalendar();
-            initPieChart();
-            handleExport();
+            initCalendar();      // triggers datesSet → updateOverview for current month
+            initExport();
+            initOverviewNav();
             handleTabSwitch();
         }
     };
