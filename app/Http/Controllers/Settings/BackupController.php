@@ -36,6 +36,22 @@ class BackupController extends Controller
         return view('settings.misc.backup', compact('backups', 'totalSize', 'lastBackup'));
     }
 
+    public function getBackupFiles(Request $request)
+    {
+        if (! auth()->user()->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+        }
+
+        $backups = $this->getBackups();
+
+        return response()->json([
+            'success'     => true,
+            'backups'     => $backups,
+            'total_size'  => $this->getTotalSize($backups),
+            'last_backup' => $this->getLastBackup($backups),
+        ]);
+    }
+
     public function create(Request $request)
     {
         $backupType     = $request->input('backup_type', 'database');
@@ -43,7 +59,7 @@ class BackupController extends Controller
         $errors         = [];
 
         try {
-            // Run cleanup first (delete backups older than 7 days)
+            // Run cleanup first (Spatie DB cleanup + custom file cleanup via Artisan command)
             $this->cleanupOldBackups();
 
             // Create database backup
@@ -96,6 +112,7 @@ class BackupController extends Controller
             }
 
             return back()->with('success', 'Backup created successfully!');
+
         } catch (\Exception $e) {
             if ($request->ajax()) {
                 return response()->json([
@@ -132,7 +149,6 @@ class BackupController extends Controller
         $res = $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
 
         if ($res !== true) {
-            // Error codes: https://www.php.net/manual/en/ziparchive.open.php
             throw new \Exception("Cannot create zip file at $zipPath. Error code: $res");
         }
 
@@ -232,12 +248,7 @@ class BackupController extends Controller
     public function download(Request $request, $filename)
     {
         $type = $request->query('type', 'database');
-
-        if ($type === 'files') {
-            $path = $this->filesPath . $filename;
-        } else {
-            $path = $this->path . $filename;
-        }
+        $path = $type === 'files' ? $this->filesPath . $filename : $this->path . $filename;
 
         if (! $this->isValidFilename($filename) || ! Storage::disk($this->disk)->exists($path)) {
             abort(404);
@@ -249,12 +260,7 @@ class BackupController extends Controller
     public function destroy(Request $request, $filename)
     {
         $type = $request->query('type', 'database');
-
-        if ($type === 'files') {
-            $path = $this->filesPath . $filename;
-        } else {
-            $path = $this->path . $filename;
-        }
+        $path = $type === 'files' ? $this->filesPath . $filename : $this->path . $filename;
 
         if (! $this->isValidFilename($filename) || ! Storage::disk($this->disk)->exists($path)) {
             if ($request->ajax()) {
@@ -268,7 +274,6 @@ class BackupController extends Controller
         }
 
         Storage::disk($this->disk)->delete($path);
-
         $backups = $this->getBackups();
 
         if ($request->ajax()) {
@@ -286,9 +291,7 @@ class BackupController extends Controller
 
     protected function getLatestBackup(string $type): ?array
     {
-        $backups = $this->getBackups();
-
-        foreach ($backups as $backup) {
+        foreach ($this->getBackups() as $backup) {
             if ($backup['type'] === $type) {
                 return $backup;
             }
@@ -304,49 +307,47 @@ class BackupController extends Controller
 
         // Get database backups
         if (Storage::disk($this->disk)->exists($this->path)) {
-            $dbFiles = Storage::disk($this->disk)->files($this->path);
-
-            foreach ($dbFiles as $file) {
-                if (str_ends_with($file, '.zip')) {
-                    $timestamp = Storage::disk($this->disk)->lastModified($file);
-                    $filename  = basename($file);
-
-                    $allBackups[] = [
-                        'filename'       => $filename,
-                        'type'           => 'database',
-                        'type_label'     => 'Database',
-                        'type_badge'     => 'badge-light-primary',
-                        'size'           => Storage::disk($this->disk)->size($file),
-                        'size_formatted' => $this->formatBytes(Storage::disk($this->disk)->size($file)),
-                        'date'           => $timestamp,
-                        'date_formatted' => Carbon::createFromTimestamp($timestamp, $timezone)->format('M d, Y h:i A'),
-                        'download_url'   => route('backup.download', ['filename' => $filename, 'type' => 'database']),
-                    ];
+            foreach (Storage::disk($this->disk)->files($this->path) as $file) {
+                if (! str_ends_with($file, '.zip')) {
+                    continue;
                 }
+
+                $timestamp    = Storage::disk($this->disk)->lastModified($file);
+                $filename     = basename($file);
+                $allBackups[] = [
+                    'filename'       => $filename,
+                    'type'           => 'database',
+                    'type_label'     => 'Database',
+                    'type_badge'     => 'badge-light-primary',
+                    'size'           => Storage::disk($this->disk)->size($file),
+                    'size_formatted' => $this->formatBytes(Storage::disk($this->disk)->size($file)),
+                    'date'           => $timestamp,
+                    'date_formatted' => Carbon::createFromTimestamp($timestamp, $timezone)->format('M d, Y h:i A'),
+                    'download_url'   => route('backup.download', ['filename' => $filename, 'type' => 'database']),
+                ];
             }
         }
 
         // Get files backups
         if (Storage::disk($this->disk)->exists($this->filesPath)) {
-            $filesBackups = Storage::disk($this->disk)->files($this->filesPath);
-
-            foreach ($filesBackups as $file) {
-                if (str_ends_with($file, '.zip')) {
-                    $timestamp = Storage::disk($this->disk)->lastModified($file);
-                    $filename  = basename($file);
-
-                    $allBackups[] = [
-                        'filename'       => $filename,
-                        'type'           => 'files',
-                        'type_label'     => 'Files',
-                        'type_badge'     => 'badge-light-success',
-                        'size'           => Storage::disk($this->disk)->size($file),
-                        'size_formatted' => $this->formatBytes(Storage::disk($this->disk)->size($file)),
-                        'date'           => $timestamp,
-                        'date_formatted' => Carbon::createFromTimestamp($timestamp, $timezone)->format('M d, Y h:i A'),
-                        'download_url'   => route('backup.download', ['filename' => $filename, 'type' => 'files']),
-                    ];
+            foreach (Storage::disk($this->disk)->files($this->filesPath) as $file) {
+                if (! str_ends_with($file, '.zip')) {
+                    continue;
                 }
+
+                $timestamp    = Storage::disk($this->disk)->lastModified($file);
+                $filename     = basename($file);
+                $allBackups[] = [
+                    'filename'       => $filename,
+                    'type'           => 'files',
+                    'type_label'     => 'Files',
+                    'type_badge'     => 'badge-light-success',
+                    'size'           => Storage::disk($this->disk)->size($file),
+                    'size_formatted' => $this->formatBytes(Storage::disk($this->disk)->size($file)),
+                    'date'           => $timestamp,
+                    'date_formatted' => Carbon::createFromTimestamp($timestamp, $timezone)->format('M d, Y h:i A'),
+                    'download_url'   => route('backup.download', ['filename' => $filename, 'type' => 'files']),
+                ];
             }
         }
 
@@ -358,9 +359,7 @@ class BackupController extends Controller
 
     protected function getTotalSize(array $backups): string
     {
-        $totalBytes = collect($backups)->sum('size');
-
-        return $this->formatBytes($totalBytes);
+        return $this->formatBytes(collect($backups)->sum('size'));
     }
 
     protected function getLastBackup(array $backups): string
@@ -374,7 +373,6 @@ class BackupController extends Controller
 
     protected function notifyBackupManagers(string $backupType, array $createdBackups): void
     {
-        // Skip if no backups were created
         if (empty($createdBackups)) {
             return;
         }
@@ -382,7 +380,6 @@ class BackupController extends Controller
         try {
             $users = User::role('admin')->where('is_active', true)->get();
 
-            // Skip if no admin users found
             if ($users->isEmpty()) {
                 \Log::info('No active admin users found to notify about backup.');
                 return;
@@ -401,11 +398,10 @@ class BackupController extends Controller
 
             $backupDetails = '';
             foreach ($createdBackups as $type => $backup) {
-                $backupDetails .= "\n- " . ucfirst($type) . ": " . $backup['filename'];
+                $backupDetails .= "\n- " . ucfirst($type) . ': ' . $backup['filename'];
             }
 
             foreach ($users as $user) {
-                // Skip invalid or example emails
                 if (! $this->isValidEmail($user->email)) {
                     \Log::info("Skipping backup notification for invalid email: {$user->email}");
                     continue;
@@ -422,80 +418,54 @@ class BackupController extends Controller
                                 ->subject("[{$appName}] {$typeLabel} Backup Created Successfully");
                         }
                     );
-
                     \Log::info("Backup notification sent to {$user->email}");
                 } catch (\Exception $e) {
                     \Log::warning("Failed to send backup notification to {$user->email}: " . $e->getMessage());
                 }
             }
         } catch (\Exception $e) {
-            // Log the error but don't fail the backup process
-            \Log::warning("Backup notification process failed: " . $e->getMessage());
+            \Log::warning('Backup notification process failed: ' . $e->getMessage());
         }
     }
 
+    /**
+     * Run cleanup for both Spatie-managed DB backups and custom file backups.
+     * Each concern is handled by its own dedicated Artisan command.
+     */
     protected function cleanupOldBackups(): void
     {
-        // 1. Clean up Spatie managed backups (Database)
+        // 1. Clean up Spatie managed database backups
         try {
             Artisan::call('backup:clean');
+            \Log::info('Spatie backup:clean completed.');
         } catch (\Exception $e) {
             \Log::warning('Spatie backup cleanup failed: ' . $e->getMessage());
         }
 
-        // 2. Clean up custom File backups
+        // 2. Clean up custom file backups via dedicated command (keeps 7 days)
         try {
-            // Keep files for 7 days
-            $days      = 7;
-            $threshold = Carbon::now()->subDays($days)->timestamp;
-
-            if (Storage::disk($this->disk)->exists($this->filesPath)) {
-                $files = Storage::disk($this->disk)->files($this->filesPath);
-
-                foreach ($files as $file) {
-                    if (str_ends_with($file, '.zip')) {
-                        $lastModified = Storage::disk($this->disk)->lastModified($file);
-
-                        if ($lastModified < $threshold) {
-                            Storage::disk($this->disk)->delete($file);
-                            \Log::info("Deleted old backup file: {$file}");
-                        }
-                    }
-                }
-            }
+            Artisan::call('backup:clean-files', ['--days' => 7]);
+            \Log::info('Custom file backup cleanup completed: ' . Artisan::output());
         } catch (\Exception $e) {
             \Log::warning('Custom files backup cleanup failed: ' . $e->getMessage());
         }
     }
 
-    /**
-     * Validate email address and check for common invalid/example domains
-     */
     protected function isValidEmail(?string $email): bool
     {
         if (empty($email)) {
             return false;
         }
 
-        // Check basic email format
         if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return false;
         }
 
-        // List of invalid/example domains to skip
         $invalidDomains = [
-            'example.com',
-            'example.org',
-            'example.net',
-            'test.com',
-            'test.org',
-            'localhost',
-            'localhost.localdomain',
-            'invalid.com',
-            'fake.com',
-            'sample.com',
-            'demo.com',
-            'mailinator.com',
+            'example.com', 'example.org', 'example.net',
+            'test.com', 'test.org', 'localhost',
+            'localhost.localdomain', 'invalid.com',
+            'fake.com', 'sample.com', 'demo.com', 'mailinator.com',
         ];
 
         $domain = strtolower(substr(strrchr($email, '@'), 1));
@@ -511,9 +481,9 @@ class BackupController extends Controller
             return number_format($bytes / 1048576, 2) . ' MB';
         } elseif ($bytes >= 1024) {
             return number_format($bytes / 1024, 2) . ' KB';
-        } else {
-            return $bytes . ' B';
         }
+
+        return $bytes . ' B';
     }
 
     protected function isValidFilename($filename): bool
