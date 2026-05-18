@@ -15,12 +15,12 @@ Schedule::command('sms:send-birthday-wish')->dailyAt('10:00');
 Schedule::command('sms:send-due-invoice-reminder')->dailyAt('10:00');
 
 // Run cleanup for old database backups at 00:30 (Spatie managed)
-Schedule::command('backup:clean')->daily()->at('00:30');
+Schedule::command('backup:clean')->daily()->at('23:49');
 
 // Run cleanup for old custom file backups at 00:45 (keep 7 days)
 Schedule::command('backup:clean-files --days=7')
     ->daily()
-    ->at('00:45')
+    ->at('23:48')
     ->appendOutputTo(storage_path('logs/backup-files-cleanup.log'));
 
 // Run daily database backup at 01:00
