@@ -21,7 +21,7 @@
     </style>
 @endpush
 @extends('layouts.app')
-@section('title', 'View Invoice')
+@section('title', 'View Invoice' . ' - ' . $invoice->invoice_number)
 @section('header-title')
     <div data-kt-swapper="true" data-kt-swapper-mode="{default: 'prepend', lg: 'prepend'}"
         data-kt-swapper-parent="{default: '#kt_app_content_container', lg: '#kt_app_header_wrapper'}"
