@@ -526,10 +526,10 @@ class StudentController extends Controller
             $this->studentService->updateStudentSubjects($student, $validated['subjects']);
 
             // Update guardians
-            $this->updateGuardians($student, $validated);
+            $this->updateGuardians($student, $validated, auth()->id());
 
             // Update siblings
-            $this->updateSiblings($student, $validated);
+            $this->updateSiblings($student, $validated, auth()->id());
 
             // Update mobile numbers
             $this->updateMobileNumbers($student, $validated);
@@ -589,6 +589,11 @@ class StudentController extends Controller
             }
 
             // Active student - SOFT DELETE
+            $student->guardians()->update(['deleted_by' => $deletedBy]);
+            $student->siblings()->update(['deleted_by' => $deletedBy]);
+            $student->guardians()->delete();
+            $student->siblings()->delete();
+
             $student->update(['deleted_by' => $deletedBy]);
             $student->delete();
         });
@@ -864,7 +869,7 @@ class StudentController extends Controller
     /**
      * Update guardians
      */
-    private function updateGuardians(Student $student, array $validated): void
+    private function updateGuardians(Student $student, array $validated, int $deletedBy): void
     {
         foreach ([1, 2] as $i) {
             $guardianId = $validated["guardian_{$i}_id"] ?? null;
@@ -876,7 +881,10 @@ class StudentController extends Controller
             $allFieldsEmpty = ! $name && ! $mobile && ! $gender && ! $relation;
 
             if (! $allFieldsEmpty && $relation) {
-                $exists = $student->guardians()->where('relationship', $relation)->when($guardianId, fn($q) => $q->where('id', '!=', $guardianId))->exists();
+                $exists = $student->guardians()
+                    ->where('relationship', $relation)
+                    ->when($guardianId, fn($q) => $q->where('id', '!=', $guardianId))
+                    ->exists();
 
                 if ($exists) {
                     throw ValidationException::withMessages([
@@ -886,6 +894,7 @@ class StudentController extends Controller
             }
 
             if ($guardianId && ! $allFieldsEmpty) {
+                // Update existing guardian
                 $guardian = Guardian::find($guardianId);
                 if ($guardian) {
                     $guardian->update([
@@ -896,8 +905,14 @@ class StudentController extends Controller
                     ]);
                 }
             } elseif ($guardianId && $allFieldsEmpty) {
-                Guardian::find($guardianId)?->delete();
+                // Soft delete with deleted_by stamped
+                $guardian = Guardian::find($guardianId);
+                if ($guardian) {
+                    $guardian->update(['deleted_by' => $deletedBy]);
+                    $guardian->delete();
+                }
             } elseif (! $guardianId && ! $allFieldsEmpty) {
+                // Create new guardian
                 $student->guardians()->create([
                     'name'          => $name,
                     'mobile_number' => $mobile,
@@ -911,7 +926,7 @@ class StudentController extends Controller
     /**
      * Update siblings
      */
-    private function updateSiblings(Student $student, array $validated): void
+    private function updateSiblings(Student $student, array $validated, int $deletedBy): void
     {
         foreach ([1, 2] as $i) {
             $siblingId   = $validated["sibling_{$i}_id"] ?? null;
@@ -924,6 +939,7 @@ class StudentController extends Controller
             $allFieldsEmpty = ! $name && ! $year && ! $class && ! $institution && ! $relation;
 
             if ($siblingId && ! $allFieldsEmpty) {
+                // Update existing sibling
                 $sibling = Sibling::find($siblingId);
                 if ($sibling) {
                     $sibling->update([
@@ -935,8 +951,14 @@ class StudentController extends Controller
                     ]);
                 }
             } elseif ($siblingId && $allFieldsEmpty) {
-                Sibling::find($siblingId)?->delete();
+                // Soft delete with deleted_by stamped
+                $sibling = Sibling::find($siblingId);
+                if ($sibling) {
+                    $sibling->update(['deleted_by' => $deletedBy]);
+                    $sibling->delete();
+                }
             } elseif (! $siblingId && ! $allFieldsEmpty) {
+                // Create new sibling
                 $student->siblings()->create([
                     'name'             => $name,
                     'year'             => $year,
