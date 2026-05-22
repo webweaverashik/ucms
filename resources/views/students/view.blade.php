@@ -1765,7 +1765,7 @@
                             <div class="card-header border-0 pt-6 flex-wrap">
                                 <!--begin::Card title-->
                                 <div class="card-title flex-column">
-                                    <h2><i class="ki-outline ki-notepad-edit fs-2 text-warning me-2"></i>Student Profiling Edit History (Admin Only)</h2>
+                                    <h2><i class="ki-outline ki-notepad-edit fs-2 text-warning me-2"></i>Student Profiling Edit History</h2>
                                 </div>
                                 <!--end::Card title-->
                                 <!--begin::Card toolbar-->
@@ -1845,7 +1845,16 @@
                                                         <span class="text-muted fs-7"><em>None</em></span>
                                                     @endif
                                                 </td>
-                                                <td>{{ $log->updatedBy->name ?? 'System' }}</td>
+                                                <td>
+                                                    @if ($log->updatedBy)
+                                                        <a href="{{ route('settlements.show', $log->updatedBy->id) }}" target="_blank"
+                                                            class="text-gray-800 text-hover-primary">
+                                                            {{ $log->updatedBy->name }}
+                                                        </a>
+                                                    @else
+                                                        System
+                                                    @endif
+                                                </td>
                                                 <td>
                                                     {{ $log->created_at->format('d-M-Y h:i A') }}
                                                     <span class="text-muted fs-8">({{ $log->created_at->diffForHumans() }})</span>
