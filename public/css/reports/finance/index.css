@@ -273,6 +273,7 @@ td.finance-table-footer-profit-negative {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -296,6 +297,21 @@ td.finance-table-footer-profit-negative {
 .collector-summary-card .card-body {
     position: relative;
     z-index: 1;
+}
+
+/* Collector card link wrapper */
+#collector_summary_cards a {
+    cursor: pointer;
+}
+
+#collector_summary_cards a:hover .collector-summary-card {
+    transform: translateY(-5px);
+    box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.12);
+}
+
+/* Prevent double-hover since the card already has :hover */
+#collector_summary_cards a .collector-summary-card {
+    transition: all 0.3s ease;
 }
 
 /* Collector Card Gradient Backgrounds */
@@ -519,6 +535,7 @@ td.finance-table-footer-profit-negative {
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);

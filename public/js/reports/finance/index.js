@@ -265,24 +265,29 @@ var KTFinanceReport = (function () {
             const gradientClass = getGradientClass(index);
             const rank = index + 1;
 
+            const settlementUrl = `${config.routes.settlementBase}/${collector.id}`;
+
             cardsHtml += `
-            <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6">
-                <div class="card collector-summary-card ${gradientClass} h-100">
-                    <span class="collector-rank">#${rank}</span>
-                    <div class="card-body d-flex align-items-center gap-3 py-4">
-                        <div class="collector-icon-wrapper">
-                            <i class="ki-outline ki-profile-user collector-icon"></i>
-                        </div>
-                        <div class="collector-info">
-                            <div class="collector-name" title="${collector.name}">${collector.name}</div>
-                            <div class="collector-amount">${formatCurrency(collector.total)}</div>
-                            <div class="collector-meta">
-                                <span class="collector-percentage">${percentage}% of total</span>
+                <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6">
+                    <a href="${settlementUrl}" target="_blank" rel="noopener noreferrer" class="text-decoration-none d-block h-100">
+                        <div class="card collector-summary-card ${gradientClass} h-100">
+                            <span class="collector-rank">#${rank}</span>
+                            <div class="card-body d-flex align-items-center gap-3 py-4">
+                                <div class="collector-icon-wrapper">
+                                    <i class="ki-outline ki-profile-user collector-icon"></i>
+                                </div>
+                                <div class="collector-info">
+                                    <div class="collector-name" title="${collector.name}">${collector.name}</div>
+                                    <div class="collector-amount">${formatCurrency(collector.total)}</div>
+                                    <div class="collector-meta">
+                                        <span class="collector-percentage">${percentage}% of total</span>
+                                        <span class="collector-percentage"><i class="ki-outline ki-arrow-up-right fs-8"></i> View</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>`;
+                    </a>
+                </div>`;
         });
 
         // Render cards
@@ -298,7 +303,12 @@ var KTFinanceReport = (function () {
         if (!elements.chartCanvas) return;
         if (financeChart) financeChart.destroy();
 
-        const labels = Object.keys(data.report).sort();
+        const labels = Object.keys(data.report).sort((a, b) => {
+            const [ad, am, ay] = a.split('-').map(Number);
+            const [bd, bm, by] = b.split('-').map(Number);
+            return new Date(ay, am - 1, ad) - new Date(by, bm - 1, bd);
+        });
+
         const revenue = labels.map(d => Object.values(data.report[d]).reduce((a, b) => a + parseInt(b), 0));
         const costs = labels.map(d => parseInt(data.costs[d] || 0));
 
@@ -348,7 +358,12 @@ var KTFinanceReport = (function () {
     };
 
     const renderReportTable = function (data) {
-        const dates = Object.keys(data.report).sort().reverse();
+        const dates = Object.keys(data.report).sort((a, b) => {
+            const [ad, am, ay] = a.split('-').map(Number);
+            const [bd, bm, by] = b.split('-').map(Number);
+            return new Date(by, bm - 1, bd) - new Date(ay, am - 1, ad); // reversed: newest first
+        });
+
         const classes = data.classes;
         const classesInfo = data.classesInfo || [];
         const collectors = data.collectors || {};
@@ -492,7 +507,12 @@ var KTFinanceReport = (function () {
             return;
         }
 
-        const dates = Object.keys(reportData.report).sort();
+        const dates = Object.keys(reportData.report).sort((a, b) => {
+            const [ad, am, ay] = a.split('-').map(Number);
+            const [bd, bm, by] = b.split('-').map(Number);
+            return new Date(ay, am - 1, ad) - new Date(by, bm - 1, bd);
+        });
+
         const classes = reportData.classes;
         const collectors = reportData.collectors || {};
         const collectorIds = Object.keys(collectors);

@@ -225,6 +225,7 @@
             todayDate: "{{ now()->format('d-m-Y') }}",
             routes: {
                 generate: "{{ route('reports.finance.generate') }}",
+                settlementBase: "{{ url('settlements') }}",
             },
             csrfToken: "{{ csrf_token() }}"
         };
