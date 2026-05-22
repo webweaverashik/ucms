@@ -1781,27 +1781,27 @@
                                     
                                     <!--begin::Filter-->
                                     <div class="w-175px my-1">
-                                        <select data-kt-student-change-logs-table-filter="field" class="form-select form-select-solid" data-control="select2" data-placeholder="All Fields" data-hide-search="true" data-allow-clear="true">
+                                        <select data-kt-student-change-logs-table-filter="field" class="form-select form-select-solid" data-control="select2" data-placeholder="All Fields" data-hide-search="false" data-allow-clear="true">
                                             <option value="all">All Fields</option>
-                                            <option value="Name">Name</option>
-                                            <option value="Date of Birth">Date of Birth</option>
-                                            <option value="Gender">Gender</option>
-                                            <option value="Branch">Branch</option>
-                                            <option value="Class">Class</option>
                                             <option value="Academic Group">Academic Group</option>
                                             <option value="Batch">Batch</option>
-                                            <option value="Institution">Institution</option>
-                                            <option value="Religion">Religion</option>
                                             <option value="Blood Group">Blood Group</option>
-                                            <option value="Home Address">Home Address</option>
+                                            <option value="Branch">Branch</option>
+                                            <option value="Class">Class</option>
+                                            <option value="Date of Birth">Date of Birth</option>
                                             <option value="Email">Email</option>
-                                            <option value="Remarks">Remarks</option>
-                                            <option value="Payment Style">Payment Style</option>
-                                            <option value="Payment Due Date">Payment Due Date</option>
-                                            <option value="Tuition Fee">Tuition Fee</option>
+                                            <option value="Gender">Gender</option>
                                             <option value="Guardian">Guardian Info</option>
-                                            <option value="Sibling">Sibling Info</option>
+                                            <option value="Home Address">Home Address</option>
+                                            <option value="Institution">Institution</option>
                                             <option value="Phone">Mobile Number Info</option>
+                                            <option value="Name">Name</option>
+                                            <option value="Payment Due Date">Payment Due Date</option>
+                                            <option value="Payment Style">Payment Style</option>
+                                            <option value="Religion">Religion</option>
+                                            <option value="Remarks">Remarks</option>
+                                            <option value="Sibling">Sibling Info</option>
+                                            <option value="Tuition Fee">Tuition Fee</option>
                                         </select>
                                     </div>
                                     <!--end::Filter-->
@@ -1830,17 +1830,17 @@
                                         @foreach ($student->changeLogs as $log)
                                             <tr>
                                                 <td>{{ $loop->iteration }}</td>
-                                                <td><span class="badge badge-light-dark fw-bold">{{ $log->field_name }}</span></td>
+                                                <td><span class="text-gray-800 fw-semibold">{{ $log->field_name }}</span></td>
                                                 <td>
                                                     @if($log->old_value !== null && $log->old_value !== '')
-                                                        <span class="text-danger bg-light-danger px-2 py-1 rounded fs-7">{{ $log->old_value }}</span>
+                                                        <span class="text-danger fs-7 fw-medium">{{ $log->old_value }}</span>
                                                     @else
                                                         <span class="text-muted fs-7"><em>None</em></span>
                                                     @endif
                                                 </td>
                                                 <td>
                                                     @if($log->new_value !== null && $log->new_value !== '')
-                                                        <span class="text-success bg-light-success px-2 py-1 rounded fs-7" style="color: #47be7d !important; background-color: #e8fff3 !important;">{{ $log->new_value }}</span>
+                                                        <span class="text-success fs-7 fw-medium" style="color: #47be7d !important;">{{ $log->new_value }}</span>
                                                     @else
                                                         <span class="text-muted fs-7"><em>None</em></span>
                                                     @endif
