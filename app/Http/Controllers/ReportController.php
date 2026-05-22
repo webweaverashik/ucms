@@ -974,7 +974,7 @@ class ReportController extends Controller
             ->get();
 
         $tuitionGrandTotal       = $tuitionInvoices->sum('amount_due');
-        $tuitionTotalInvoices    = $tuitionInvoices->count();
+        $tuitionTotalInvoices    = $tuitionInvoices->where('amount_due', '>', 0)->count();
         $tuitionCollectableTotal = $tuitionInvoices->sum('total_amount');
 
         // ── Pre-populate tuition summary with ALL active classes ──
