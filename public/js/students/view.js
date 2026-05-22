@@ -616,6 +616,53 @@ var KTStudentsActivity = function () {
 
 
 // =========================================================================
+// KTStudentsChangeLogsView — Change Logs DataTable + Search + Filter
+// =========================================================================
+var KTStudentsChangeLogsView = function () {
+    var table, datatable;
+
+    var initDatatable = function () {
+        datatable = $(table).DataTable({
+            info: true, order: [], lengthMenu: [10, 25, 50, 100], pageLength: 10,
+            lengthChange: true, autoWidth: false,
+            columnDefs: [{ orderable: false, targets: [2, 3] }]
+        });
+    };
+
+    var handleSearch = function () {
+        const filterSearch = document.querySelector('[data-kt-student-change-logs-table-filter="search"]');
+        if (filterSearch) {
+            filterSearch.addEventListener('keyup', e => datatable.search(e.target.value).draw());
+        }
+    };
+
+    var handleFilter = function () {
+        const select = document.querySelector('[data-kt-student-change-logs-table-filter="field"]');
+        if (select) {
+            $(select).on('change', function () {
+                let val = $(this).val();
+                if (!val || val === "all") {
+                    datatable.column(1).search('').draw();
+                } else if (val === "Guardian" || val === "Sibling" || val === "Phone") {
+                    datatable.column(1).search('^' + val, true, false).draw();
+                } else {
+                    datatable.column(1).search('^' + val + '$', true, false).draw();
+                }
+            });
+        }
+    };
+
+    return {
+        init: function () {
+            table = document.getElementById('kt_students_change_logs_table');
+            if (!table) return;
+            initDatatable(); handleSearch(); handleFilter();
+        }
+    };
+}();
+
+
+// =========================================================================
 // KTStudentViewAttendance — Calendar · Pie Chart · Export
 // =========================================================================
 var KTStudentViewAttendance = function () {
@@ -623,9 +670,7 @@ var KTStudentViewAttendance = function () {
     var calendarEl;
     var pieChartInstance = null;
     var allEventsData = [];
-    var currentOverviewMonth; // { year, month } — 0-based month
-
-    // ── Helpers ──────────────────────────────────────────────────────────────
+    var currentOverviewMonth;
 
     var MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'];
@@ -645,13 +690,10 @@ var KTStudentViewAttendance = function () {
                 if (s === 'present') stats.present++;
                 else if (s === 'absent') stats.absent++;
                 else if (s === 'late') stats.late++;
-                // any other status is ignored
             }
         });
         return stats;
     };
-
-    // ── Overview Card ─────────────────────────────────────────────────────────
 
     var updateOverview = function (year, month) {
         currentOverviewMonth = { year: year, month: month };
@@ -678,7 +720,6 @@ var KTStudentViewAttendance = function () {
         var bar = document.getElementById('kt_stat_rate_bar');
         if (bar) bar.style.width = rate + '%';
 
-        // ── Pie Chart ──
         var canvas = document.getElementById('kt_attendance_pie_chart');
         var emptyMsg = document.getElementById('kt_pie_empty_msg');
         if (!canvas) return;
@@ -697,7 +738,6 @@ var KTStudentViewAttendance = function () {
             return;
         }
 
-        // Has data — show canvas, hide empty msg
         canvas.style.display = '';
         if (emptyMsg) {
             emptyMsg.classList.add('d-none');
@@ -745,8 +785,6 @@ var KTStudentViewAttendance = function () {
         });
     };
 
-    // ── Calendar ──────────────────────────────────────────────────────────────
-
     var initCalendar = function () {
         calendarEl = document.getElementById('kt_attendance_calendar');
         if (!calendarEl) return;
@@ -767,10 +805,10 @@ var KTStudentViewAttendance = function () {
                     listDaySideFormat: false
                 },
                 dayGridMonth: {
-                    showNonCurrentDates: false   // hide adjacent-month dates
+                    showNonCurrentDates: false
                 }
             },
-            fixedWeekCount: false,              // no trailing empty rows
+            fixedWeekCount: false,
             initialView: 'dayGridMonth',
             height: 'auto',
             contentHeight: 650,
@@ -793,7 +831,6 @@ var KTStudentViewAttendance = function () {
                 }
             },
 
-            // Keep overview card in sync when calendar month changes
             datesSet: function (info) {
                 var d = info.view.currentStart;
                 updateOverview(d.getFullYear(), d.getMonth());
@@ -828,8 +865,6 @@ var KTStudentViewAttendance = function () {
         calendar.render();
     };
 
-    // ── Export — captures both cards into one PNG ─────────────────────────────
-
     var initExport = function () {
         var btn = document.getElementById('kt_attendance_export_btn');
         if (!btn) return;
@@ -840,14 +875,10 @@ var KTStudentViewAttendance = function () {
                 return;
             }
 
-            // Immediately update button UI so browser repaints before heavy work
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2 align-middle" role="status" aria-hidden="true"></span>Exporting…';
 
-            // Defer the heavy html2canvas work so the button repaint flushes first
             setTimeout(function () {
-
-                // Meta
                 var studentName = (calendarEl && calendarEl.getAttribute('data-student-name')) || 'Student';
                 var studentId = (calendarEl && calendarEl.getAttribute('data-student-id')) || '';
                 var monthLabel = calendar ? getMonthName(
@@ -855,7 +886,6 @@ var KTStudentViewAttendance = function () {
                     calendar.getDate().getMonth()
                 ) : '';
 
-                // File name: StudentName_ID_Attendance_YYYYMMDD_HHMMSS.png
                 var now = new Date();
                 var ts = now.getFullYear()
                     + pad(now.getMonth() + 1)
@@ -867,7 +897,6 @@ var KTStudentViewAttendance = function () {
                     + (studentId ? '_' + studentId : '')
                     + '_Attendance_' + ts + '.png';
 
-                // Build a temporary off-screen wrapper that holds both cards
                 var historyCard = document.getElementById('kt_attendance_history_card');
                 var overviewCard = document.getElementById('kt_attendance_overview_card');
 
@@ -882,7 +911,6 @@ var KTStudentViewAttendance = function () {
                     'font-family:inherit'
                 ].join(';');
 
-                // ── Header banner ──
                 var banner = document.createElement('div');
                 banner.style.cssText = 'padding:16px 24px 12px;background:#f9f9f9;border-bottom:1px solid #e4e6ef;';
                 banner.innerHTML = '<div style="font-size:1.15rem;font-weight:700;color:#181c32;line-height:1.3;">'
@@ -892,7 +920,6 @@ var KTStudentViewAttendance = function () {
                     + '<div style="font-size:0.82rem;color:#7e8299;margin-top:3px;">Attendance Report — ' + monthLabel + '</div>';
                 wrapper.appendChild(banner);
 
-                // ── Clone helper ──
                 var cloneCard = function (sourceCard) {
                     var clone = sourceCard.cloneNode(true);
                     var toolbar = clone.querySelector('.card-toolbar');
@@ -903,7 +930,6 @@ var KTStudentViewAttendance = function () {
                     return clone;
                 };
 
-                // ── Snapshot pie chart pixels into cloned canvas ──
                 var overviewClone = cloneCard(overviewCard);
                 var clonedCanvas = overviewClone.querySelector('#kt_attendance_pie_chart');
                 if (clonedCanvas && pieChartInstance) {
@@ -944,11 +970,9 @@ var KTStudentViewAttendance = function () {
                     console.error('Attendance export error:', err);
                 });
 
-            }, 50); // 50ms is enough for the browser to flush the repaint
+            }, 50);
         });
     };
-
-    // ── Overview month navigation ─────────────────────────────────────────────
 
     var initOverviewNav = function () {
         var prevBtn = document.getElementById('kt_overview_prev_month');
@@ -960,7 +984,6 @@ var KTStudentViewAttendance = function () {
                 var y = currentOverviewMonth.year;
                 if (m < 0) { m = 11; y--; }
                 if (calendar) calendar.gotoDate(new Date(y, m, 1));
-                // datesSet fires automatically and calls updateOverview
             });
         }
 
@@ -974,8 +997,6 @@ var KTStudentViewAttendance = function () {
         }
     };
 
-    // ── Tab switch — resize calendar ──────────────────────────────────────────
-
     var handleTabSwitch = function () {
         var tabLink = document.querySelector('a[href="#kt_student_view_attendance_tab"]')
             || document.querySelector('button[data-bs-target="#kt_student_view_attendance_tab"]');
@@ -988,7 +1009,7 @@ var KTStudentViewAttendance = function () {
 
     return {
         init: function () {
-            initCalendar();      // triggers datesSet → updateOverview for current month
+            initCalendar();
             initExport();
             initOverviewNav();
             handleTabSwitch();
@@ -1007,5 +1028,6 @@ KTUtil.onDOMContentLoaded(function () {
     KTStudentsTransactionsView.init();
     KTStudentsSheetsView.init();
     KTStudentsActivity.init();
+    KTStudentsChangeLogsView.init();
     KTStudentViewAttendance.init();
 });

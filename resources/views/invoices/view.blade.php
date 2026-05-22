@@ -158,8 +158,7 @@
                         <!--begin::Row-->
                         <tr class="">
                             <td class="text-gray-500">Total Paid:</td>
-                            <td
-                                class="text-success">
+                            <td class="text-success">
                                 {{ $invoice->PaymentTransactions->sum('amount_paid') }} ৳
                             </td>
                         </tr>
@@ -438,7 +437,15 @@
                                         @endcan
 
                                         @can('transactions.delete')
-                                            @if ($transaction->created_at->greaterThan(now()->subDay()) && $transaction->payment_type !== 'discounted')
+                                            {{--
+                                                Show delete for approved transactions that are:
+                                                - created within the last 24 hours, AND
+                                                - not a discounted transaction with amount_paid == 0
+                                                (discounted with amount > 0 IS deletable)
+                                            --}}
+                                            @if (
+                                                $transaction->created_at->greaterThan(now()->subDay()) &&
+                                                    !($transaction->payment_type === 'discounted' && (float) $transaction->amount_paid == 0))
                                                 <a href="#" title="Delete Transaction"
                                                     class="btn btn-icon text-hover-danger w-30px h-30px delete-txn"
                                                     data-txn-id="{{ $transaction->id }}" data-is-approved="1">

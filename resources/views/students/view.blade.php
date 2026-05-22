@@ -663,7 +663,7 @@
                                 <!--begin::Col-->
                                 <div class="col-lg-8 d-flex align-items-center">
                                     <span
-                                        class="fw-bold fs-6 text-gray-800 me-2">{{ $student->mobileNumbers->where('number_type', 'home')->pluck('mobile_number')->implode('') }}</span>
+                                        class="fw-bold fs-6 text-gray-850 me-2">{{ $student->mobileNumbers->where('number_type', 'home')->pluck('mobile_number')->implode('') }}</span>
                                 </div>
                                 <!--end::Col-->
                             </div>
@@ -882,7 +882,7 @@
                                             <div class="row">
                                                 @foreach ($compulsoryGeneral as $subjectTaken)
                                                     <div class="col-md-3 mb-3">
-                                                        <h6 class="text-gray-600">
+                                                        <h6 class="text-gray-650 text-gray-800">
                                                             <i class="bi bi-check2-circle fs-3 text-success"></i>
                                                             {{ $subjectTaken->subject->name ?? 'N/A' }}
                                                         </h6>
@@ -902,7 +902,7 @@
                                             <div class="row">
                                                 @foreach ($groupSubjects as $subjectTaken)
                                                     <div class="col-md-3 mb-3">
-                                                        <h6 class="text-gray-600">
+                                                        <h6 class="text-gray-750 text-gray-800">
                                                             <i class="bi bi-check2-circle fs-3 text-primary"></i>
                                                             {{ $subjectTaken->subject->name ?? 'N/A' }}
                                                         </h6>
@@ -922,7 +922,7 @@
                                             <div class="row">
                                                 @foreach ($fourthSubject as $subjectTaken)
                                                     <div class="col-md-3 mb-3">
-                                                        <h6 class="text-gray-600">
+                                                        <h6 class="text-gray-750 text-gray-800">
                                                             <i class="bi bi-check2-circle fs-3 text-info"></i>
                                                             {{ $subjectTaken->subject->name ?? 'N/A' }}
                                                         </h6>
@@ -988,11 +988,6 @@
                                         </thead>
                                         <tbody class="fs-6 fw-semibold text-gray-600">
                                             @foreach ($student->secondaryClasses as $enrollment)
-                                                {{-- 
-                                                $enrollment is a StudentSecondaryClass model instance
-                                                Access: $enrollment->secondaryClass (SecondaryClass model)
-                                                Access: $enrollment->secondaryClass->class (ClassName model)
-                                            --}}
                                                 <tr>
                                                     <td>
                                                         <div class="d-flex align-items-center">
@@ -1135,19 +1130,6 @@
                             <!--end::Title-->
                             <!--begin::Toolbar-->
                             <div class="card-toolbar flex-shrink-0" style="white-space: nowrap;">
-                                {{-- <form class="form d-flex align-items-center gap-2 flex-nowrap" id="statement_form">
-                                    @csrf
-                                    <input type="hidden" name="student_id" value="{{ $student->id }}">
-                                    <label class="required fw-semibold fs-6 mb-0 me-2">Download statements</label>
-                                    <select class="form-select form-select-sm w-150px" name="statement_year"
-                                        data-control="select2" data-hide-search="true" required>
-                                        <option value="">Select a year</option>
-                                        @for ($year = now()->year; $year >= 2025; $year--)
-                                            <option value="{{ $year }}">{{ $year }}</option>
-                                        @endfor
-                                    </select>
-                                    <button type="submit" class="btn btn-sm btn-primary">Download</button>
-                                </form> --}}
                             </div>
                             <!--end::Toolbar-->
                         </div>
@@ -1181,8 +1163,7 @@
                                                     @if (!empty($invoice->month_year) && preg_match('/^(\d{2})_(\d{4})$/', $invoice->month_year, $matches))
                                                         {{ \Carbon\Carbon::create($matches[2], $matches[1], 1)->format('F Y') }}
                                                     @elseif(empty($invoice->month_year) && $invoice->invoiceType?->type_name == 'Special Class Fee')
-                                                        <span class="badge badge-primary rounded-pill">One
-                                                            Time</span></span>
+                                                        <span class="badge badge-primary rounded-pill">One Time</span>
                                                     @else
                                                         -
                                                     @endif
@@ -1243,7 +1224,7 @@
                                                         @can('invoices.edit')
                                                             <a href="#" title="Edit invoice"
                                                                 data-invoice-id="{{ $invoice->id }}" data-bs-toggle="modal"
-                                                                data-bs-target="#kt_modal_edit_invoice" title="Edit Invoice"
+                                                                data-bs-target="#kt_modal_edit_invoice"
                                                                 class="btn btn-icon text-hover-primary w-30px h-30px">
                                                                 <i class="ki-outline ki-pencil fs-2"></i>
                                                             </a>
@@ -1323,10 +1304,8 @@
                                                                 <i class="ki-outline ki-trash fs-2"></i>
                                                             </a>
                                                         @endcan
-                                                        {{-- Showing a placeholder text for other users --}}
                                                         @cannot('transactions.approve')
-                                                            <span class="badge rounded-pill text-bg-secondary">Pending
-                                                                Approval</span>
+                                                            <span class="badge rounded-pill text-bg-secondary">Pending Approval</span>
                                                         @endcannot
                                                     @else
                                                         @can('transactions.payslip.download')
@@ -1779,22 +1758,55 @@
                     @endif
                     <!--end::Card - Class Change History-->
 
-                    <!--begin::Card - Secondary Class History-->
-                    {{-- @if ($student->secondaryClassHistories->count() > 0)
+                    <!--begin::Card - Student Detail Updates (Admin Only)-->
+                    @if (auth()->check() && auth()->user()->isAdmin())
                         <div class="card pt-4 mb-6 mb-xl-9">
                             <!--begin::Card header-->
-                            <div class="card-header border-0">
+                            <div class="card-header border-0 pt-6 flex-wrap">
                                 <!--begin::Card title-->
-                                <div class="card-title">
-                                    <h2><i class="ki-outline ki-abstract-26 fs-2 text-info me-2"></i>Special Class History
-                                    </h2>
+                                <div class="card-title flex-column">
+                                    <h2><i class="ki-outline ki-notepad-edit fs-2 text-warning me-2"></i>Student Profiling Edit History (Admin Only)</h2>
                                 </div>
                                 <!--end::Card title-->
                                 <!--begin::Card toolbar-->
-                                <div class="card-toolbar">
-                                    <span
-                                        class="badge badge-light-info fs-7">{{ $student->secondaryClassHistories->count() }}
-                                        Records</span>
+                                <div class="card-toolbar flex-row-fluid justify-content-end gap-3 min-w-300px mt-4 mt-sm-0">
+                                    <!--begin::Search-->
+                                    <div class="d-flex align-items-center position-relative my-1">
+                                        <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
+                                        <input type="text" data-kt-student-change-logs-table-filter="search"
+                                            class="form-control form-control-solid w-200px ps-12"
+                                            placeholder="Search history...">
+                                    </div>
+                                    <!--end::Search-->
+                                    
+                                    <!--begin::Filter-->
+                                    <div class="w-175px my-1">
+                                        <select data-kt-student-change-logs-table-filter="field" class="form-select form-select-solid" data-control="select2" data-placeholder="All Fields" data-hide-search="true" data-allow-clear="true">
+                                            <option value="all">All Fields</option>
+                                            <option value="Name">Name</option>
+                                            <option value="Date of Birth">Date of Birth</option>
+                                            <option value="Gender">Gender</option>
+                                            <option value="Branch">Branch</option>
+                                            <option value="Class">Class</option>
+                                            <option value="Academic Group">Academic Group</option>
+                                            <option value="Batch">Batch</option>
+                                            <option value="Institution">Institution</option>
+                                            <option value="Religion">Religion</option>
+                                            <option value="Blood Group">Blood Group</option>
+                                            <option value="Home Address">Home Address</option>
+                                            <option value="Email">Email</option>
+                                            <option value="Remarks">Remarks</option>
+                                            <option value="Payment Style">Payment Style</option>
+                                            <option value="Payment Due Date">Payment Due Date</option>
+                                            <option value="Tuition Fee">Tuition Fee</option>
+                                            <option value="Guardian">Guardian Info</option>
+                                            <option value="Sibling">Sibling Info</option>
+                                            <option value="Phone">Mobile Number Info</option>
+                                        </select>
+                                    </div>
+                                    <!--end::Filter-->
+                                    
+                                    <span class="badge badge-light-warning fs-7 my-1">{{ $student->changeLogs->count() }} Updates</span>
                                 </div>
                                 <!--end::Card toolbar-->
                             </div>
@@ -1803,59 +1815,40 @@
                             <div class="card-body pt-0 pb-5">
                                 <!--begin::Table-->
                                 <table class="table align-middle table-row-dashed table-hover fs-6 gy-5 ucms-table"
-                                    id="kt_students_secondary_class_history_table">
+                                    id="kt_students_change_logs_table">
                                     <thead>
                                         <tr class="fw-bold fs-7 text-uppercase gs-0">
                                             <th class="w-20px">#</th>
-                                            <th class="min-w-200px">Special Class</th>
-                                            <th class="min-w-100px">Action</th>
-                                            <th class="min-w-100px">By</th>
-                                            <th class="min-w-125px">Date</th>
+                                            <th class="min-w-150px">Field Changed</th>
+                                            <th class="min-w-150px">Previous Value</th>
+                                            <th class="min-w-150px">New Value</th>
+                                            <th class="min-w-100px">Updated By</th>
+                                            <th class="min-w-125px">Date & Time</th>
                                         </tr>
                                     </thead>
                                     <tbody class="fs-6 fw-semibold text-gray-600">
-                                        @foreach ($student->secondaryClassHistories->sortByDesc('created_at') as $history)
+                                        @foreach ($student->changeLogs as $log)
                                             <tr>
-                                                <td >{{ $loop->index + 1 }}</td>
+                                                <td>{{ $loop->iteration }}</td>
+                                                <td><span class="badge badge-light-dark fw-bold">{{ $log->field_name }}</span></td>
                                                 <td>
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="symbol symbol-35px symbol-circle bg-light-info me-3">
-                                                            <span class="symbol-label">
-                                                                <i class="ki-outline ki-teacher fs-4 text-info"></i>
-                                                            </span>
-                                                        </div>
-                                                        <div class="d-flex flex-column">
-                                                            <span class="text-gray-800 fw-bold">
-                                                                {{ optional($history->secondaryClass)->name ?? 'Deleted Class' }}
-                                                            </span>
-                                                            @if ($history->secondaryClass && $history->secondaryClass->class)
-                                                                <span
-                                                                    class="text-gray-500 fs-7">{{ $history->secondaryClass->class->name }}</span>
-                                                            @endif
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    @if ($history->action === 'enrolled')
-                                                        <span class="badge badge-success rounded-pill">
-                                                            <i class="bi bi-plus-circle me-1"></i> Enrolled
-                                                        </span>
-                                                    @elseif($history->action === 'dropped')
-                                                        <span class="badge badge-danger rounded-pill">
-                                                            <i class="bi bi-dash-circle me-1"></i> Dropped
-                                                        </span>
+                                                    @if($log->old_value !== null && $log->old_value !== '')
+                                                        <span class="text-danger bg-light-danger px-2 py-1 rounded fs-7">{{ $log->old_value }}</span>
                                                     @else
-                                                        <span
-                                                            class="badge badge-secondary rounded-pill">{{ ucfirst($history->action) }}</span>
+                                                        <span class="text-muted fs-7"><em>None</em></span>
                                                     @endif
                                                 </td>
-                                                <td>{{ optional($history->createdBy)->name ?? 'System' }}</td>
                                                 <td>
-                                                    {{ $history->created_at->format('d-M-Y') }}
-                                                    <span class="ms-1" data-bs-toggle="tooltip"
-                                                        title="{{ $history->created_at->format('h:i:s A, d-M-Y') }}">
-                                                        <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
-                                                    </span>
+                                                    @if($log->new_value !== null && $log->new_value !== '')
+                                                        <span class="text-success bg-light-success px-2 py-1 rounded fs-7" style="color: #47be7d !important; background-color: #e8fff3 !important;">{{ $log->new_value }}</span>
+                                                    @else
+                                                        <span class="text-muted fs-7"><em>None</em></span>
+                                                    @endif
+                                                </td>
+                                                <td>{{ $log->updatedBy->name ?? 'System' }}</td>
+                                                <td>
+                                                    {{ $log->created_at->format('d-M-Y h:i A') }}
+                                                    <span class="text-muted fs-8">({{ $log->created_at->diffForHumans() }})</span>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -1865,8 +1858,9 @@
                             </div>
                             <!--end::Card body-->
                         </div>
-                    @endif --}}
-                    <!--end::Card - Secondary Class History-->
+                    @endif
+                    <!--end::Card - Student Detail Updates-->
+
                 </div>
                 <!--end:::Activity Tab pane-->
             </div>
@@ -2100,8 +2094,7 @@
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
     <script src="{{ asset('assets/plugins/custom/fullcalendar/fullcalendar.bundle.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-        <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 @endpush
 
 @push('page-js')

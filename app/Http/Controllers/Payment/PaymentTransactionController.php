@@ -253,6 +253,10 @@ class PaymentTransactionController extends Controller
             return $actions;
         }
 
+        // Discounted transactions with amount_paid == 0 must never show a delete button.
+        $isDiscountedZeroAmount = $transaction->payment_type === 'discounted'
+        && (float) $transaction->amount_paid == 0;
+
         // Null-safe invoice reference
         $invoice = $transaction->paymentInvoice;
 
@@ -261,11 +265,11 @@ class PaymentTransactionController extends Controller
                 $actions .= '<a href="#" data-bs-toggle="tooltip" title="Approve Transaction" class="btn btn-icon text-hover-success w-30px h-30px approve-txn me-2" data-txn-id="' . $transaction->id . '"><i class="bi bi-check-circle fs-2"></i></a>';
             }
 
-            if ($canDeleteTxn && $isDeletable) {
+            if ($canDeleteTxn && $isDeletable && ! $isDiscountedZeroAmount) {
                 $actions .= '<a href="#" data-bs-toggle="tooltip" title="Delete Transaction" class="btn btn-icon text-hover-danger w-30px h-30px delete-txn" data-txn-id="' . $transaction->id . '" data-is-approved="0"><i class="ki-outline ki-trash fs-2"></i></a>';
             }
 
-            if (! $canApproveTxn && ! ($canDeleteTxn && $isDeletable)) {
+            if (! $canApproveTxn && ! ($canDeleteTxn && $isDeletable && ! $isDiscountedZeroAmount)) {
                 $actions .= '<span class="badge rounded-pill text-bg-secondary">Pending Approval</span>';
             }
         } else {
@@ -273,7 +277,7 @@ class PaymentTransactionController extends Controller
                 $actions .= '<a href="#" data-bs-toggle="tooltip" title="Download Statement" class="btn btn-icon text-hover-primary w-30px h-30px download-statement me-2" data-student-id="' . $transaction->student_id . '" data-year="' . ($invoice->created_at?->format('Y') ?? '') . '" data-invoice-id="' . $invoice->id . '"><i class="bi bi-download fs-2"></i></a>';
             }
 
-            if ($canDeleteTxn && $isDeletable) {
+            if ($canDeleteTxn && $isDeletable && ! $isDiscountedZeroAmount) {
                 $actions .= '<a href="#" data-bs-toggle="tooltip" title="Delete Transaction (Reverse Collection)" class="btn btn-icon text-hover-danger w-30px h-30px delete-txn" data-txn-id="' . $transaction->id . '" data-is-approved="1"><i class="ki-outline ki-trash fs-2"></i></a>';
             }
         }
@@ -592,9 +596,20 @@ class PaymentTransactionController extends Controller
                         $transactionCreator->decrement('total_collected', $transaction->amount_paid);
                     }
 
-                    $newAmountDue = $invoice->amount_due + $transaction->amount_paid;
-                    $newStatus    = 'due';
+                /*
+                 * Recalculate amount_due from the ground up:
+                 * sum only the approved transactions that will still exist after this one is soft-deleted.
+                 *
+                 * This correctly handles discounted transactions, where approval sets amount_due = 0 regardless of the actual amount_paid, so simply adding amount_paid back would give the wrong result.
+                 */
+                    $sumOfRemainingApproved = $invoice->paymentTransactions()
+                        ->where('id', '!=', $transaction->id)
+                        ->where('is_approved', true)
+                        ->sum('amount_paid');
 
+                    $newAmountDue = max($invoice->total_amount - $sumOfRemainingApproved, 0);
+
+                    $newStatus = 'due';
                     if ($newAmountDue <= 0) {
                         $newStatus = 'paid';
                     } elseif ($newAmountDue < $invoice->total_amount) {

@@ -1,23 +1,24 @@
 <?php
 namespace App\Models\Student;
 
-use App\Models\User;
-use App\Models\Branch;
 use App\Models\Academic\Batch;
-use App\Models\Payment\Payment;
 use App\Models\Academic\ClassName;
-use App\Models\Sheet\SheetPayment;
 use App\Models\Academic\Institution;
 use App\Models\Academic\SubjectTaken;
-use App\Models\Sheet\SheetTopicTaken;
+use App\Models\Branch;
+use App\Models\LoginActivity;
+use App\Models\Payment\Payment;
 use App\Models\Payment\PaymentInvoice;
-use Illuminate\Database\Eloquent\Model;
-use App\Models\Student\StudentAttendance;
-use Illuminate\Database\Eloquent\Builder;
 use App\Models\Payment\PaymentTransaction;
 use App\Models\Payment\SecondaryClassPayment;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Sheet\SheetPayment;
+use App\Models\Sheet\SheetTopicTaken;
+use App\Models\Student\StudentAttendance;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Student extends Model
 {
@@ -30,6 +31,37 @@ class Student extends Model
     protected $casts = [
         'date_of_birth' => 'date',
     ];
+
+    protected static bool $observersRegistered = false;
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted()
+    {
+        if (!static::$observersRegistered) {
+            static::observe(\App\Observers\StudentObserver::class);
+
+            if (class_exists(\App\Models\Payment\Payment::class)) {
+                \App\Models\Payment\Payment::observe(\App\Observers\PaymentObserver::class);
+            }
+
+            if (class_exists(\App\Models\Student\Guardian::class)) {
+                \App\Models\Student\Guardian::observe(\App\Observers\StudentObserver::class);
+            }
+
+            if (class_exists(\App\Models\Student\Sibling::class)) {
+                \App\Models\Student\Sibling::observe(\App\Observers\StudentObserver::class);
+            }
+
+            if (class_exists(\App\Models\Student\MobileNumber::class)) {
+                \App\Models\Student\MobileNumber::observe(\App\Observers\StudentObserver::class);
+            }
+
+            
+            static::$observersRegistered = true;
+        }
+    }
 
     /* --------------------------------
      | Query Scopes (Canonical Rules)
@@ -115,6 +147,12 @@ class Student extends Model
     public function classChangeHistories()
     {
         return $this->hasMany(StudentClassChangeHistory::class, 'student_id')->latest();
+    }
+
+    // Student edit/change logs history (Detailed Field Level profiling audits)
+    public function changeLogs()
+    {
+        return $this->hasMany(StudentChangeLog::class, 'student_id')->latest();
     }
 
     // Current secondary classes

@@ -33,17 +33,6 @@ class StudentController extends Controller
         $this->studentService = $studentService;
     }
 
-    /*
-    app/
-    ├── Services/
-    │   └── StudentService.php              # Shared business logic
-    ├── Http/Controllers/Student/
-    │   ├── StudentController.php           # Basic CRUD operations (slimmed down)
-    │   ├── StudentDataController.php       # Active students AJAX data endpoints
-    │   ├── PendingStudentController.php    # Pending students endpoints
-    │   └── AlumniStudentController.php     # Alumni students endpoints
-    */
-
     /**
      * Display a listing of the resource.
      */
@@ -312,7 +301,7 @@ class StudentController extends Controller
      */
     public function show(string $id)
     {
-        $student = Student::with([
+        $relations = [
             'attendances',
             'class:id,name,class_numeral,is_active',
             'branch:id,branch_name,branch_prefix',
@@ -348,7 +337,13 @@ class StudentController extends Controller
             },
             'secondaryClassHistories.secondaryClass.class:id,name,class_numeral',
             'secondaryClassHistories.createdBy:id,name',
-        ])->find($id);
+        ];
+
+        if (auth()->check() && auth()->user()->isAdmin()) {
+            $relations[] = 'changeLogs.updatedBy:id,name';
+        }
+
+        $student = Student::with($relations)->find($id);
 
         if (! $student) {
             return redirect()->route('students.index')->with('warning', 'Student not found or deleted.');
@@ -498,7 +493,7 @@ class StudentController extends Controller
         ]);
 
         return DB::transaction(function () use ($validated, $student, $isAccountant) {
-            $student->update([
+            $updateData = [
                 'name'          => $validated['student_name'],
                 'date_of_birth' => ! empty($validated['birth_date']) ? Carbon::createFromFormat('d-m-Y', $validated['birth_date']) : null,
                 'gender'        => $validated['student_gender'],
@@ -507,7 +502,7 @@ class StudentController extends Controller
                 'home_address'  => $validated['student_home_address'] ?? null,
                 'email'         => $validated['student_email'] ?? null,
                 'remarks'       => $validated['student_remarks'] ?? null,
-            ]);
+            ];
 
             // Handle avatar update
             if (isset($validated['avatar'])) {
@@ -519,8 +514,18 @@ class StudentController extends Controller
                     mkdir($photoPath, 0777, true);
                 }
                 $file->move($photoPath, $filename);
-                $student->update(['photo_url' => 'uploads/students/' . $filename]);
+                $updateData['photo_url'] = 'uploads/students/' . $filename;
             }
+
+            // Accountant cannot update academic and payment info
+            if (! $isAccountant) {
+                $updateData['class_id']       = $validated['student_class'];
+                $updateData['academic_group'] = $validated['student_academic_group'] ?? 'General';
+                $updateData['batch_id']       = $validated['student_batch'];
+                $updateData['institution_id'] = $validated['student_institution'];
+            }
+
+            $student->update($updateData);
 
             // Update subjects
             $this->studentService->updateStudentSubjects($student, $validated['subjects']);
@@ -536,18 +541,20 @@ class StudentController extends Controller
 
             // Accountant cannot update academic and payment info
             if (! $isAccountant) {
-                $student->update([
-                    'class_id'       => $validated['student_class'],
-                    'academic_group' => $validated['student_academic_group'] ?? 'General',
-                    'batch_id'       => $validated['student_batch'],
-                    'institution_id' => $validated['student_institution'],
-                ]);
-
-                $student->payments()->update([
-                    'payment_style' => $validated['payment_style'],
-                    'due_date'      => $validated['payment_due_date'],
-                    'tuition_fee'   => $validated['student_tuition_fee'],
-                ]);
+                $payment = $student->payments;
+                if ($payment) {
+                    $payment->update([
+                        'payment_style' => $validated['payment_style'],
+                        'due_date'      => $validated['payment_due_date'],
+                        'tuition_fee'   => $validated['student_tuition_fee'],
+                    ]);
+                } else {
+                    $student->payments()->create([
+                        'payment_style' => $validated['payment_style'],
+                        'due_date'      => $validated['payment_due_date'],
+                        'tuition_fee'   => $validated['student_tuition_fee'],
+                    ]);
+                }
             }
 
             clearServerCache();
