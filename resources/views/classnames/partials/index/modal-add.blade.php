@@ -1,6 +1,6 @@
 @php
     $currentYearPrefix = (int) date('y'); // Get current year's last 2 digits (e.g., 25 for 2025)
-    $startYearPrefix = 25;
+    $startYearPrefix = $currentYearPrefix - 1;
 @endphp
 
 <div class="modal fade" id="kt_modal_add_class" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"

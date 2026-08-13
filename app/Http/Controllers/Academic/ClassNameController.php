@@ -127,7 +127,8 @@ class ClassNameController extends Controller
         // Must match the dropdown range in modal-add.blade.php / modal-edit.blade.php,
         // which offers up to ($currentYearPrefix + 1) so next session's class can be pre-created.
         $currentYearPrefix = (int) date('y');
-        $validYearPrefixes = array_map(fn($i) => str_pad($i, 2, '0', STR_PAD_LEFT), range(25, $currentYearPrefix + 1));
+        $validYearPrefixes = array_map(fn($i) => str_pad($i, 2, '0', STR_PAD_LEFT), range($currentYearPrefix - 1, $currentYearPrefix + 1));
+        
 
         $validationRules = [
             'class_name_add'    => 'required|string|max:255',
@@ -889,7 +890,7 @@ class ClassNameController extends Controller
         // Must match the dropdown range in modal-add.blade.php / modal-edit.blade.php,
         // which offers up to ($currentYearPrefix + 1) so next session's class can be pre-created.
         $currentYearPrefix = (int) date('y');
-        $validYearPrefixes = array_map(fn($i) => str_pad($i, 2, '0', STR_PAD_LEFT), range(25, $currentYearPrefix + 1));
+        $validYearPrefixes = array_map(fn($i) => str_pad($i, 2, '0', STR_PAD_LEFT), range($currentYearPrefix - 1, $currentYearPrefix + 1));
 
         $validationRules = [
             'class_name_edit'  => 'required|string|max:255',

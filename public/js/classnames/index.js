@@ -682,6 +682,14 @@ var KTEditClassName = (function () {
             yearPrefixCol.classList.remove("d-none");
             if (yearPrefixHelp) yearPrefixHelp.classList.remove("d-none");
             if (yearPrefixValue) {
+                // If this class's prefix has aged out of the rolling dropdown range,
+                // add it back so the select is not left blank on edit.
+                var hasOption = Array.from(yearPrefixSelect.options).some(function (opt) {
+                    return opt.value === yearPrefixValue;
+                });
+                if (!hasOption) {
+                    yearPrefixSelect.add(new Option(yearPrefixValue, yearPrefixValue, false, false));
+                }
                 $(yearPrefixSelect).val(yearPrefixValue).trigger("change");
             }
         } else {
