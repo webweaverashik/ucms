@@ -682,14 +682,30 @@ var KTEditClassName = (function () {
             yearPrefixCol.classList.remove("d-none");
             if (yearPrefixHelp) yearPrefixHelp.classList.remove("d-none");
             if (yearPrefixValue) {
-                // If this class's prefix has aged out of the rolling dropdown range,
-                // add it back so the select is not left blank on edit.
-                var hasOption = Array.from(yearPrefixSelect.options).some(function (opt) {
-                    return opt.value === yearPrefixValue;
-                });
-                if (!hasOption) {
-                    yearPrefixSelect.add(new Option(yearPrefixValue, yearPrefixValue, false, false));
+                // An older class may carry a prefix below the rolling range rendered by
+                // Blade. Extend the list downward so it stays visible and selectable —
+                // e.g. a 2024 class (24) gets 24, 25, 26, 27 offered.
+                var renderedValues = Array.from(yearPrefixSelect.options)
+                    .map(function (opt) { return parseInt(opt.value, 10); })
+                    .filter(function (val) { return !isNaN(val); });
+
+                var legacyPrefix = parseInt(yearPrefixValue, 10);
+
+                if (!isNaN(legacyPrefix) && renderedValues.length) {
+                    var lowestRendered = Math.min.apply(null, renderedValues);
+
+                    for (var i = lowestRendered - 1; i >= legacyPrefix; i--) {
+                        var extraOption = new Option(
+                            String(i).padStart(2, "0"),
+                            String(i).padStart(2, "0"),
+                            false,
+                            false
+                        );
+                        extraOption.setAttribute("data-legacy-prefix", "1");
+                        yearPrefixSelect.add(extraOption);
+                    }
                 }
+
                 $(yearPrefixSelect).val(yearPrefixValue).trigger("change");
             }
         } else {
@@ -731,6 +747,14 @@ var KTEditClassName = (function () {
             var numeralSelect = form.querySelector("select[name='class_numeral_edit']");
             if (numeralSelect) {
                 $(numeralSelect).prop("disabled", true).trigger("change");
+            }
+
+            // Reset year prefix select: drop any options injected for an older class
+            var yearPrefixSelect = form.querySelector("select[name='year_prefix_edit']");
+            if (yearPrefixSelect) {
+                yearPrefixSelect.querySelectorAll("option[data-legacy-prefix]").forEach(function (opt) {
+                    opt.remove();
+                });
             }
 
             // Reset notices

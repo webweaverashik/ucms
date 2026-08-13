@@ -123,12 +123,10 @@ class ClassNameController extends Controller
         $classNumeral       = $request->input('class_numeral_add');
         $requiresYearPrefix = in_array($classNumeral, ['10', '11', '12']);
 
-        // Calculate valid year prefix range (25 to next year's last 2 digits).
-        // Must match the dropdown range in modal-add.blade.php / modal-edit.blade.php,
-        // which offers up to ($currentYearPrefix + 1) so next session's class can be pre-created.
+        // Calculate valid year prefix range — rolling window: last year → next year.
+        // Must match the dropdown range in modal-add.blade.php / modal-edit.blade.php.
         $currentYearPrefix = (int) date('y');
         $validYearPrefixes = array_map(fn($i) => str_pad($i, 2, '0', STR_PAD_LEFT), range($currentYearPrefix - 1, $currentYearPrefix + 1));
-        
 
         $validationRules = [
             'class_name_add'    => 'required|string|max:255',
@@ -886,11 +884,18 @@ class ClassNameController extends Controller
 
         $requiresYearPrefix = in_array($effectiveNumeral, ['10', '11', '12']);
 
-        // Calculate valid year prefix range (25 to next year's last 2 digits).
-        // Must match the dropdown range in modal-add.blade.php / modal-edit.blade.php,
-        // which offers up to ($currentYearPrefix + 1) so next session's class can be pre-created.
+        // Calculate valid year prefix range — rolling window: last year → next year.
+        // Must match the dropdown range in modal-add.blade.php / modal-edit.blade.php.
         $currentYearPrefix = (int) date('y');
-        $validYearPrefixes = array_map(fn($i) => str_pad($i, 2, '0', STR_PAD_LEFT), range($currentYearPrefix - 1, $currentYearPrefix + 1));
+        $rangeStart        = $currentYearPrefix - 1;
+
+        // An older class keeps its own prefix selectable: extend the range down to it,
+        // so e.g. a 2024 class (24) offers 24, 25, 26, 27 in 2026.
+        if (! empty($class->year_prefix)) {
+            $rangeStart = min($rangeStart, (int) $class->year_prefix);
+        }
+
+        $validYearPrefixes = array_map(fn($i) => str_pad($i, 2, '0', STR_PAD_LEFT), range($rangeStart, $currentYearPrefix + 1));
 
         $validationRules = [
             'class_name_edit'  => 'required|string|max:255',

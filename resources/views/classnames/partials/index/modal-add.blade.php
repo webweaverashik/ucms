@@ -1,6 +1,6 @@
 @php
-    $currentYearPrefix = (int) date('y'); // Get current year's last 2 digits (e.g., 25 for 2025)
-    $startYearPrefix = $currentYearPrefix - 1;
+    $currentYearPrefix = (int) date('y'); // Get current year's last 2 digits (e.g., 26 for 2026)
+    $startYearPrefix = $currentYearPrefix - 1; // Rolling window: last year → next year
 @endphp
 
 <div class="modal fade" id="kt_modal_add_class" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
@@ -38,10 +38,10 @@
                             <div class="col-12" id="class_numeral_add_col">
                                 <div class="fv-row">
                                     <label class="required fw-semibold fs-6 mb-2">Class Numeral</label>
-                                    <select name="class_numeral_add" id="class_numeral_add_select" 
-                                        class="form-select form-select-solid"
-                                        data-control="select2" data-hide-search="true"
-                                        data-dropdown-parent="#kt_modal_add_class" data-placeholder="Select numeral" required>
+                                    <select name="class_numeral_add" id="class_numeral_add_select"
+                                        class="form-select form-select-solid" data-control="select2"
+                                        data-hide-search="true" data-dropdown-parent="#kt_modal_add_class"
+                                        data-placeholder="Select numeral" required>
                                         <option></option>
                                         @for ($i = 12; $i >= 4; $i--)
                                             <option value="{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}">
@@ -58,9 +58,9 @@
                                 <div class="fv-row">
                                     <label class="required fw-semibold fs-6 mb-2">Year Prefix</label>
                                     <select name="year_prefix_add" id="year_prefix_add_select"
-                                        class="form-select form-select-solid"
-                                        data-control="select2" data-hide-search="true"
-                                        data-dropdown-parent="#kt_modal_add_class" data-placeholder="Select">
+                                        class="form-select form-select-solid" data-control="select2"
+                                        data-hide-search="true" data-dropdown-parent="#kt_modal_add_class"
+                                        data-placeholder="Select">
                                         <option></option>
                                         @for ($i = $currentYearPrefix + 1; $i >= $startYearPrefix; $i--)
                                             <option value="{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}">
@@ -78,7 +78,8 @@
                         <div class="fv-row mb-7 d-none" id="year_prefix_add_help">
                             <div class="form-text text-muted fs-8 mt-n5">
                                 <i class="ki-outline ki-information-2 fs-7 me-1"></i>
-                                Student ID format: <code>&lt;year_prefix&gt;&lt;class_numeral&gt;&lt;sequence&gt;</code> e.g., <code>261001</code>
+                                Student ID format: <code>&lt;year_prefix&gt;&lt;class_numeral&gt;&lt;sequence&gt;</code>
+                                e.g., <code>261001</code>
                             </div>
                         </div>
                         <!--end::Year Prefix Help Text-->
