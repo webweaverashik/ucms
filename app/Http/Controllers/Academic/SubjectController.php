@@ -35,12 +35,22 @@ class SubjectController extends Controller
             'subject_class' => 'required|exists:class_names,id',
             'subject_name'  => 'required|string|max:255',
             'subject_group' => 'required|string|in:General,Science,Commerce,Arts',
+            'subject_type'  => 'nullable|string|in:compulsory,optional',
         ]);
+
+        // "Optional" only ever makes sense for a Science/Commerce/Arts group —
+        // getSubjects()/getTakenSubjects() never look up optional subjects under
+        // the General group, so force General subjects to compulsory regardless
+        // of what was submitted.
+        $subjectType = $validated['subject_group'] === 'General'
+            ? 'compulsory'
+            : ($validated['subject_type'] ?? 'compulsory');
 
         Subject::create([
             'class_id'       => $validated['subject_class'],
             'name'           => $validated['subject_name'],
             'academic_group' => $validated['subject_group'],
+            'subject_type'   => $subjectType,
         ]);
 
         return response()->json(['success' => true]);

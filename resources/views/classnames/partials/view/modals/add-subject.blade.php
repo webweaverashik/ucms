@@ -44,7 +44,7 @@
                         <!--begin::Group Input-->
                         <div class="fv-row mb-7">
                             <label class="required fw-semibold fs-6 mb-2">Academic Group</label>
-                            <select name="subject_group" class="form-select form-select-solid"
+                            <select name="subject_group" id="add_subject_group" class="form-select form-select-solid"
                                 data-dropdown-parent="#kt_modal_add_subject" data-control="select2"
                                 data-hide-search="true" data-placeholder="Select group" required>
                                 <option></option>
@@ -56,6 +56,23 @@
                             </select>
                         </div>
                         <!--end::Group Input-->
+                        @if ((int) $classname->class_numeral >= 9)
+                            <!--begin::Subject Type Input-->
+                            <div class="fv-row mb-7" id="add_subject_type_wrapper" style="display:none;">
+                                <label class="fw-semibold fs-6 mb-2">Subject Type</label>
+                                <input type="hidden" name="subject_type" value="compulsory" />
+                                <div class="form-check form-check-custom form-check-solid">
+                                    <input class="form-check-input" type="checkbox" name="subject_type" value="optional"
+                                        id="subject_type_optional" />
+                                    <label class="form-check-label" for="subject_type_optional">
+                                        This is an optional subject
+                                    </label>
+                                </div>
+                                <div class="form-text">Leave unchecked for compulsory subjects. Only applies to
+                                    Science/Commerce/Arts groups.</div>
+                            </div>
+                            <!--end::Subject Type Input-->
+                        @endif
                     </div>
                     <!--end::Scroll-->
                     <!--begin::Actions-->
