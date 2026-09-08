@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Academic\Batch;
@@ -42,7 +43,7 @@ class ReportController extends Controller
             ->select('id', 'branch_name', 'branch_prefix')
             ->get();
 
-        $classnames = ClassName::select('id', 'name', 'class_numeral')->get();
+        $classnames = ClassName::active()->select('id', 'name', 'class_numeral')->get();
 
         $batches = Batch::with('branch:id,branch_name')
             ->when($branchId != 0, function ($query) use ($branchId) {
@@ -52,7 +53,7 @@ class ReportController extends Controller
             ->get();
 
         // Pass academic groups and group-required class numerals to view
-        $academicGroups       = self::ACADEMIC_GROUPS;
+        $academicGroups = self::ACADEMIC_GROUPS;
         $groupRequiredClasses = self::GROUP_REQUIRED_CLASSES;
 
         return view('reports.attendance.index', compact(
@@ -72,10 +73,10 @@ class ReportController extends Controller
         // --- 1. Validate and Parse Input ---
         // Validate required inputs
         $request->validate([
-            'date_range'     => 'required|string',
-            'branch_id'      => 'required|integer|exists:branches,id',
-            'class_id'       => 'required|integer|exists:class_names,id',
-            'batch_id'       => 'required|integer|exists:batches,id',
+            'date_range' => 'required|string',
+            'branch_id' => 'required|integer|exists:branches,id',
+            'class_id' => 'required|integer|exists:class_names,id',
+            'batch_id' => 'required|integer|exists:batches,id',
             'academic_group' => 'nullable|in:Science,Commerce,Arts',
         ]);
 
@@ -87,17 +88,17 @@ class ReportController extends Controller
             return response()->json(
                 [
                     'message' => 'Invalid date range format. Expected "start_date - end_date".',
-                    'data'    => [],
+                    'data' => [],
                 ],
                 400,
             );
         }
 
         $startDate = Carbon::parse(trim($dateRange[0]))->startOfDay();
-        $endDate   = Carbon::parse(trim($dateRange[1]))->endOfDay();
+        $endDate = Carbon::parse(trim($dateRange[1]))->endOfDay();
 
         // Get the class to check if it requires academic group
-        $classModel    = ClassName::find($request->class_id);
+        $classModel = ClassName::find($request->class_id);
         $supportsGroup = $classModel && in_array($classModel->class_numeral, self::GROUP_REQUIRED_CLASSES);
 
         // Check if "All Groups" is selected (no specific group filter)
@@ -105,23 +106,23 @@ class ReportController extends Controller
 
         // --- 2. Build the Query ---
         $attendances = StudentAttendance::with([
-            'student'   => function ($q) use ($request, $supportsGroup) {
+            'student' => function ($q) use ($request, $supportsGroup) {
                 $q->select('id', 'name', 'student_unique_id', 'academic_group', 'class_id');
                 // Filter by academic group if provided and class supports it
                 if ($supportsGroup && $request->filled('academic_group')) {
                     $q->where('academic_group', $request->academic_group);
                 }
             },
-            'batch'     => function ($q) {
+            'batch' => function ($q) {
                 $q->select('id', 'name', 'branch_id');
             },
-            'branch'    => function ($q) {
+            'branch' => function ($q) {
                 $q->select('id', 'branch_name');
             },
             'classname' => function ($q) {
                 $q->select('id', 'name', 'class_numeral');
             },
-            'recorder'  => function ($q) {
+            'recorder' => function ($q) {
                 $q->select('id', 'name');
             },
         ])
@@ -141,11 +142,11 @@ class ReportController extends Controller
 
         // --- 3. Return as JSON ---
         return response()->json([
-            'message'        => 'Attendance data retrieved successfully.',
-            'data'           => $attendances,
+            'message' => 'Attendance data retrieved successfully.',
+            'data' => $attendances,
             'supports_group' => $supportsGroup,
-            'is_all_groups'  => $isAllGroups,
-            'date_range'     => $request->date_range,
+            'is_all_groups' => $isAllGroups,
+            'date_range' => $request->date_range,
         ]);
     }
 
@@ -178,13 +179,13 @@ class ReportController extends Controller
     {
         $request->validate([
             'date_range' => 'required|string',
-            'branch_id'  => 'nullable|integer|exists:branches,id',
+            'branch_id' => 'nullable|integer|exists:branches,id',
         ]);
 
         try {
             [$start, $end] = explode(' - ', $request->date_range);
-            $startDate     = Carbon::createFromFormat('d-m-Y', trim($start))->startOfDay();
-            $endDate       = Carbon::createFromFormat('d-m-Y', trim($end))->endOfDay();
+            $startDate = Carbon::createFromFormat('d-m-Y', trim($start))->startOfDay();
+            $endDate = Carbon::createFromFormat('d-m-Y', trim($end))->endOfDay();
         } catch (\Exception $e) {
             return response()->json(
                 [
@@ -195,7 +196,7 @@ class ReportController extends Controller
             );
         }
 
-        $user     = Auth::user();
+        $user = Auth::user();
         $branchId = $user->branch_id ?: $request->branch_id;
 
         // Get transactions with relationships
@@ -203,7 +204,7 @@ class ReportController extends Controller
             ->whereBetween(DB::raw('DATE(created_at)'), [$startDate->toDateString(), $endDate->toDateString()])
             ->where('is_approved', true)
             ->when($branchId, function ($q) use ($branchId) {
-                $q->whereHas('student.branch', fn($b) => $b->where('id', $branchId));
+                $q->whereHas('student.branch', fn ($b) => $b->where('id', $branchId));
             })
             ->get();
 
@@ -219,27 +220,27 @@ class ReportController extends Controller
             ->select('id', 'name', 'is_active')
             ->get();
 
-        $classes     = $classesData->pluck('name', 'id');
+        $classes = $classesData->pluck('name', 'id');
         $classesInfo = $classesData
             ->map(
-                fn($class) => [
-                    'id'        => $class->id,
-                    'name'      => $class->name,
+                fn ($class) => [
+                    'id' => $class->id,
+                    'name' => $class->name,
                     'is_active' => $class->is_active,
                 ],
             )
             ->values();
 
         // Get collectors
-        $collectors = $transactions->pluck('createdBy')->filter()->unique('id')->sortBy('name')->mapWithKeys(fn($user) => [$user->id => $user->name]);
+        $collectors = $transactions->pluck('createdBy')->filter()->unique('id')->sortBy('name')->mapWithKeys(fn ($user) => [$user->id => $user->name]);
 
         // Get costs with entries
-        $costs = Cost::with('entries')->betweenDates($startDate->toDateString(), $endDate->toDateString())->forBranch($branchId)->get()->keyBy(fn($c) => $c->cost_date->format('d-m-Y'));
+        $costs = Cost::with('entries')->betweenDates($startDate->toDateString(), $endDate->toDateString())->forBranch($branchId)->get()->keyBy(fn ($c) => $c->cost_date->format('d-m-Y'));
 
-        $transactionsByDate = $transactions->groupBy(fn($t) => $t->created_at->format('d-m-Y'));
+        $transactionsByDate = $transactions->groupBy(fn ($t) => $t->created_at->format('d-m-Y'));
 
         // Get dates with data
-        $dates  = collect();
+        $dates = collect();
         $cursor = $startDate->copy();
         while ($cursor <= $endDate) {
             $d = $cursor->format('d-m-Y');
@@ -249,8 +250,8 @@ class ReportController extends Controller
             $cursor->addDay();
         }
 
-        $report          = [];
-        $costReport      = [];
+        $report = [];
+        $costReport = [];
         $collectorReport = [];
 
         // Initialize class totals
@@ -264,9 +265,9 @@ class ReportController extends Controller
 
             // Class-wise revenue
             foreach ($classes as $id => $name) {
-                $amount                = (float) $dailyTx->where('student.class_id', $id)->sum('amount_paid');
-                $report[$date][$name]  = $amount;
-                $classTotals[$name]   += $amount;
+                $amount = (float) $dailyTx->where('student.class_id', $id)->sum('amount_paid');
+                $report[$date][$name] = $amount;
+                $classTotals[$name] += $amount;
             }
 
             // Collector-wise collection
@@ -275,18 +276,18 @@ class ReportController extends Controller
             }
 
             // Cost total from entries
-            $cost              = $costs->get($date);
+            $cost = $costs->get($date);
             $costReport[$date] = $cost ? (float) $cost->totalAmount() : 0;
         }
 
         return response()->json([
-            'success'         => true,
-            'report'          => $report,
-            'costs'           => $costReport,
-            'classes'         => $classes->values(),
-            'classesInfo'     => $classesInfo,
-            'classTotals'     => $classTotals,
-            'collectors'      => $collectors,
+            'success' => true,
+            'report' => $report,
+            'costs' => $costReport,
+            'classes' => $classes->values(),
+            'classesInfo' => $classesInfo,
+            'classTotals' => $classTotals,
+            'collectors' => $collectors,
             'collectorReport' => $collectorReport,
         ]);
     }
@@ -296,7 +297,7 @@ class ReportController extends Controller
      */
     public function costRecordsIndex()
     {
-        $user    = Auth::user();
+        $user = Auth::user();
         $isAdmin = $user->isAdmin();
 
         if (! $user->isAdmin()) {
@@ -330,7 +331,7 @@ class ReportController extends Controller
     public function getCostRecordsData(Request $request): JsonResponse
     {
         try {
-            $user    = Auth::user();
+            $user = Auth::user();
             $isAdmin = $user->isAdmin();
 
             // Get branch ID
@@ -355,7 +356,7 @@ class ReportController extends Controller
             if ($request->filled('start_date') && $request->filled('end_date')) {
                 try {
                     $startDate = Carbon::createFromFormat('d-m-Y', $request->start_date)->startOfDay();
-                    $endDate   = Carbon::createFromFormat('d-m-Y', $request->end_date)->endOfDay();
+                    $endDate = Carbon::createFromFormat('d-m-Y', $request->end_date)->endOfDay();
                     $query->whereBetween('cost_date', [$startDate, $endDate]);
                 } catch (\Exception $e) {
                     // Invalid date format, skip filter
@@ -365,7 +366,7 @@ class ReportController extends Controller
             // Apply cost type filter
             if ($request->filled('cost_type_ids')) {
                 $costTypeIds = explode(',', $request->cost_type_ids);
-                $costTypeIds = array_filter($costTypeIds, fn($id) => is_numeric($id));
+                $costTypeIds = array_filter($costTypeIds, fn ($id) => is_numeric($id));
                 if (! empty($costTypeIds)) {
                     $query->whereHas('entries', function ($q) use ($costTypeIds) {
                         $q->whereIn('cost_type_id', $costTypeIds);
@@ -396,7 +397,7 @@ class ReportController extends Controller
 
             // Transform data
             $costs->each(function ($cost) {
-                $cost->total_amount  = $cost->totalAmount();
+                $cost->total_amount = $cost->totalAmount();
                 $cost->entries_count = $cost->entries->count();
             });
 
@@ -410,15 +411,15 @@ class ReportController extends Controller
             }
 
             return response()->json([
-                'success'     => true,
-                'data'        => $costs,
+                'success' => true,
+                'data' => $costs,
                 'branch_name' => $branchName,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'data'    => [],
-                'message' => 'Failed to load cost records: ' . $e->getMessage(),
+                'data' => [],
+                'message' => 'Failed to load cost records: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -429,7 +430,7 @@ class ReportController extends Controller
     public function exportCostRecords(Request $request): JsonResponse
     {
         try {
-            $user    = Auth::user();
+            $user = Auth::user();
             $isAdmin = $user->isAdmin();
 
             // Get branch ID
@@ -452,13 +453,13 @@ class ReportController extends Controller
 
             // Apply date range filter
             $startDateStr = null;
-            $endDateStr   = null;
+            $endDateStr = null;
             if ($request->filled('start_date') && $request->filled('end_date')) {
                 try {
-                    $startDate    = Carbon::createFromFormat('d-m-Y', $request->start_date);
-                    $endDate      = Carbon::createFromFormat('d-m-Y', $request->end_date);
+                    $startDate = Carbon::createFromFormat('d-m-Y', $request->start_date);
+                    $endDate = Carbon::createFromFormat('d-m-Y', $request->end_date);
                     $startDateStr = $startDate->format('d-m-Y');
-                    $endDateStr   = $endDate->format('d-m-Y');
+                    $endDateStr = $endDate->format('d-m-Y');
                     $query->whereBetween('cost_date', [$startDate->startOfDay(), $endDate->endOfDay()]);
                 } catch (\Exception $e) {
                     // Invalid date format, skip filter
@@ -468,7 +469,7 @@ class ReportController extends Controller
             // Apply cost type filter
             if ($request->filled('cost_type_ids')) {
                 $costTypeIds = explode(',', $request->cost_type_ids);
-                $costTypeIds = array_filter($costTypeIds, fn($id) => is_numeric($id));
+                $costTypeIds = array_filter($costTypeIds, fn ($id) => is_numeric($id));
                 if (! empty($costTypeIds)) {
                     $query->whereHas('entries', function ($q) use ($costTypeIds) {
                         $q->whereIn('cost_type_id', $costTypeIds);
@@ -508,7 +509,7 @@ class ReportController extends Controller
 
             // Transform for export
             $exportData = [];
-            $sl         = 0;
+            $sl = 0;
             foreach ($costs as $cost) {
                 $sl++;
 
@@ -516,7 +517,7 @@ class ReportController extends Controller
                 $entriesArr = [];
                 foreach ($cost->entries as $entry) {
                     $typeName = $entry->costType->name ?? 'Unknown';
-                    $amount   = number_format($entry->amount);
+                    $amount = number_format($entry->amount);
 
                     // Check if it's "Others" type with description
                     if (strtolower($typeName) === 'others' && $entry->description) {
@@ -528,11 +529,11 @@ class ReportController extends Controller
                 $entriesStr = implode(', ', $entriesArr);
 
                 $exportData[] = [
-                    'sl'           => $sl,
-                    'date'         => $cost->cost_date->format('d-m-Y'),
+                    'sl' => $sl,
+                    'date' => $cost->cost_date->format('d-m-Y'),
                     'cost_entries' => $entriesStr,
                     'total_amount' => $cost->totalAmount(),
-                    'created_by'   => $cost->createdBy->name ?? '-',
+                    'created_by' => $cost->createdBy->name ?? '-',
                 ];
             }
 
@@ -541,21 +542,21 @@ class ReportController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data'    => $exportData,
-                'meta'    => [
-                    'title'       => 'Cost Records Report',
+                'data' => $exportData,
+                'meta' => [
+                    'title' => 'Cost Records Report',
                     'branch_name' => $branchName,
-                    'date_range'  => $startDateStr && $endDateStr ? "{$startDateStr} to {$endDateStr}" : 'All Time',
-                    'export_time'   => now()->format('d-m-Y h:i A'),
+                    'date_range' => $startDateStr && $endDateStr ? "{$startDateStr} to {$endDateStr}" : 'All Time',
+                    'export_time' => now()->format('d-m-Y h:i A'),
                     'total_records' => count($exportData),
-                    'grand_total'   => $grandTotal,
+                    'grand_total' => $grandTotal,
                 ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'data'    => [],
-                'message' => 'Failed to export cost records: ' . $e->getMessage(),
+                'data' => [],
+                'message' => 'Failed to export cost records: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -582,11 +583,11 @@ class ReportController extends Controller
 
             $request->validate([
                 'start_date' => 'required|date_format:d-m-Y',
-                'end_date'   => 'required|date_format:d-m-Y',
-                'branch_id'  => 'nullable|integer|exists:branches,id',
+                'end_date' => 'required|date_format:d-m-Y',
+                'branch_id' => 'nullable|integer|exists:branches,id',
             ]);
 
-            $user    = Auth::user();
+            $user = Auth::user();
             $isAdmin = $user->isAdmin();
 
             // Use sanitized branch ID
@@ -598,7 +599,7 @@ class ReportController extends Controller
             }
 
             $startDate = Carbon::createFromFormat('d-m-Y', $request->start_date)->startOfDay();
-            $endDate   = Carbon::createFromFormat('d-m-Y', $request->end_date)->endOfDay();
+            $endDate = Carbon::createFromFormat('d-m-Y', $request->end_date)->endOfDay();
 
             // Build query
             $query = Cost::with(['entries.costType'])
@@ -613,33 +614,33 @@ class ReportController extends Controller
 
             // Aggregate by cost type - group all "Others" entries together
             $costTypeSummary = [];
-            $totalCost       = 0;
-            $totalEntries    = 0;
-            $uniqueDates     = [];
+            $totalCost = 0;
+            $totalEntries = 0;
+            $uniqueDates = [];
 
             foreach ($costs as $cost) {
                 $uniqueDates[$cost->cost_date->format('Y-m-d')] = true;
 
                 foreach ($cost->entries as $entry) {
-                    $typeId   = $entry->cost_type_id;
+                    $typeId = $entry->cost_type_id;
                     $typeName = $entry->costType->name ?? 'Unknown';
                     $typeDesc = $entry->costType->description ?? '';
-                    $amount   = (int) $entry->amount;
+                    $amount = (int) $entry->amount;
 
                     $totalCost += $amount;
                     $totalEntries++;
 
                     // Group all "Others" entries under a single "Others" category
                     $isOthers = strtolower($typeName) === 'others';
-                    $key      = $isOthers ? 'others' : $typeId;
+                    $key = $isOthers ? 'others' : $typeId;
 
                     if (! isset($costTypeSummary[$key])) {
                         $costTypeSummary[$key] = [
-                            'cost_type_id'          => $isOthers ? 'others' : $typeId,
-                            'cost_type_name'        => $typeName,
+                            'cost_type_id' => $isOthers ? 'others' : $typeId,
+                            'cost_type_name' => $typeName,
                             'cost_type_description' => $typeDesc,
-                            'total_amount'          => 0,
-                            'entry_count'           => 0,
+                            'total_amount' => 0,
+                            'entry_count' => 0,
                         ];
                     }
 
@@ -649,10 +650,10 @@ class ReportController extends Controller
             }
 
             // Sort by total amount descending
-            usort($costTypeSummary, fn($a, $b) => $b['total_amount'] - $a['total_amount']);
+            usort($costTypeSummary, fn ($a, $b) => $b['total_amount'] - $a['total_amount']);
 
             // Calculate unique days and daily average
-            $uniqueDays   = count($uniqueDates);
+            $uniqueDays = count($uniqueDates);
             $dailyAverage = $uniqueDays > 0 ? (int) round($totalCost / $uniqueDays) : 0;
 
             // Get branch name
@@ -666,30 +667,30 @@ class ReportController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data'    => [
-                    'summary'       => array_values($costTypeSummary),
-                    'total_cost'    => (int) $totalCost,
+                'data' => [
+                    'summary' => array_values($costTypeSummary),
+                    'total_cost' => (int) $totalCost,
                     'total_entries' => (int) $totalEntries,
-                    'unique_days'   => (int) $uniqueDays,
+                    'unique_days' => (int) $uniqueDays,
                     'daily_average' => (int) $dailyAverage,
-                    'date_range'    => [
+                    'date_range' => [
                         'start' => $startDate->format('d-m-Y'),
-                        'end'   => $endDate->format('d-m-Y'),
+                        'end' => $endDate->format('d-m-Y'),
                     ],
-                    'branch_name'   => $branchName,
+                    'branch_name' => $branchName,
                 ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'data'    => [
-                    'summary'       => [],
-                    'total_cost'    => 0,
+                'data' => [
+                    'summary' => [],
+                    'total_cost' => 0,
                     'total_entries' => 0,
-                    'unique_days'   => 0,
+                    'unique_days' => 0,
                     'daily_average' => 0,
                 ],
-                'message' => 'Failed to generate cost summary: ' . $e->getMessage(),
+                'message' => 'Failed to generate cost summary: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -715,11 +716,11 @@ class ReportController extends Controller
 
             $request->validate([
                 'start_date' => 'required|date_format:d-m-Y',
-                'end_date'   => 'required|date_format:d-m-Y',
-                'branch_id'  => 'nullable|integer|exists:branches,id',
+                'end_date' => 'required|date_format:d-m-Y',
+                'branch_id' => 'nullable|integer|exists:branches,id',
             ]);
 
-            $user    = Auth::user();
+            $user = Auth::user();
             $isAdmin = $user->isAdmin();
 
             $branchId = $branchIdClean;
@@ -729,7 +730,7 @@ class ReportController extends Controller
             }
 
             $startDate = Carbon::createFromFormat('d-m-Y', $request->start_date)->startOfDay();
-            $endDate   = Carbon::createFromFormat('d-m-Y', $request->end_date)->endOfDay();
+            $endDate = Carbon::createFromFormat('d-m-Y', $request->end_date)->endOfDay();
 
             $query = Cost::with(['entries.costType'])
                 ->whereBetween('cost_date', [$startDate, $endDate]);
@@ -742,28 +743,28 @@ class ReportController extends Controller
 
             // Aggregate by cost type
             $costTypeSummary = [];
-            $totalCost       = 0;
-            $totalEntries    = 0;
+            $totalCost = 0;
+            $totalEntries = 0;
 
             foreach ($costs as $cost) {
                 foreach ($cost->entries as $entry) {
-                    $typeId   = $entry->cost_type_id;
+                    $typeId = $entry->cost_type_id;
                     $typeName = $entry->costType->name ?? 'Unknown';
                     $typeDesc = $entry->costType->description ?? '';
-                    $amount   = (int) $entry->amount;
+                    $amount = (int) $entry->amount;
 
                     $totalCost += $amount;
                     $totalEntries++;
 
                     $isOthers = strtolower($typeName) === 'others';
-                    $key      = $isOthers ? 'others' : $typeId;
+                    $key = $isOthers ? 'others' : $typeId;
 
                     if (! isset($costTypeSummary[$key])) {
                         $costTypeSummary[$key] = [
-                            'cost_type_name'        => $typeName,
+                            'cost_type_name' => $typeName,
                             'cost_type_description' => $typeDesc,
-                            'total_amount'          => 0,
-                            'entry_count'           => 0,
+                            'total_amount' => 0,
+                            'entry_count' => 0,
                         ];
                     }
 
@@ -773,7 +774,7 @@ class ReportController extends Controller
             }
 
             // Sort by total amount descending
-            usort($costTypeSummary, fn($a, $b) => $b['total_amount'] - $a['total_amount']);
+            usort($costTypeSummary, fn ($a, $b) => $b['total_amount'] - $a['total_amount']);
 
             // Calculate percentages
             foreach ($costTypeSummary as &$item) {
@@ -791,21 +792,21 @@ class ReportController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data'    => array_values($costTypeSummary),
-                'meta'    => [
-                    'title'         => 'Cost Summary Report',
-                    'branch_name'   => $branchName,
-                    'date_range'    => $startDate->format('d-m-Y') . ' to ' . $endDate->format('d-m-Y'),
-                    'export_time'   => now()->format('d-m-Y h:i A'),
-                    'total_cost'    => $totalCost,
+                'data' => array_values($costTypeSummary),
+                'meta' => [
+                    'title' => 'Cost Summary Report',
+                    'branch_name' => $branchName,
+                    'date_range' => $startDate->format('d-m-Y').' to '.$endDate->format('d-m-Y'),
+                    'export_time' => now()->format('d-m-Y h:i A'),
+                    'total_cost' => $totalCost,
                     'total_entries' => $totalEntries,
                 ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'data'    => [],
-                'message' => 'Failed to export cost summary: ' . $e->getMessage(),
+                'data' => [],
+                'message' => 'Failed to export cost summary: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -836,7 +837,7 @@ class ReportController extends Controller
         // =========================
         if ($request->start_date && $request->end_date) {
             $startDate = Carbon::createFromFormat('d-m-Y', $request->start_date)->startOfDay();
-            $endDate   = Carbon::createFromFormat('d-m-Y', $request->end_date)->endOfDay();
+            $endDate = Carbon::createFromFormat('d-m-Y', $request->end_date)->endOfDay();
 
             $query->whereHas('cost', function ($q) use ($startDate, $endDate) {
                 $q->whereBetween('cost_date', [$startDate, $endDate]);
@@ -868,17 +869,17 @@ class ReportController extends Controller
             $isOthers = optional($item->costType)->name === 'Others';
 
             return [
-                'sl'          => $index + 1,
-                'date'        => optional($item->cost->cost_date)->format('d M Y'),
+                'sl' => $index + 1,
+                'date' => optional($item->cost->cost_date)->format('d M Y'),
                 'description' => $item->description,
-                'amount'      => $item->amount,
-                'added_by'    => optional($item->cost->createdBy)->name ?? 'N/A',
-                'is_others'   => $isOthers, // ✅ ADD THIS
+                'amount' => $item->amount,
+                'added_by' => optional($item->cost->createdBy)->name ?? 'N/A',
+                'is_others' => $isOthers, // ✅ ADD THIS
             ];
         });
 
         return response()->json([
-            'data'  => $data,
+            'data' => $data,
             'total' => $records->sum('amount'),
         ]);
     }
@@ -922,25 +923,25 @@ class ReportController extends Controller
         }
 
         $request->validate([
-            'year'      => 'required|integer|min:2020|max:2099',
+            'year' => 'required|integer|min:2020|max:2099',
             'branch_id' => 'required|integer|exists:branches,id',
         ]);
 
-        $year     = (int) $request->year;
+        $year = (int) $request->year;
         $branchId = (int) $request->branch_id;
-        $branch   = Branch::find($branchId);
+        $branch = Branch::find($branchId);
 
         $monthNames = [
-            1  => 'January', 2  => 'February', 3  => 'March',
-            4  => 'April', 5    => 'May', 6       => 'June',
-            7  => 'July', 8     => 'August', 9    => 'September',
+            1 => 'January', 2 => 'February', 3 => 'March',
+            4 => 'April', 5 => 'May', 6 => 'June',
+            7 => 'July', 8 => 'August', 9 => 'September',
             10 => 'October', 11 => 'November', 12 => 'December',
         ];
 
         // Build all possible month_year values for the selected year (01_2025 … 12_2025)
         $monthYearValues = [];
         for ($m = 1; $m <= 12; $m++) {
-            $monthYearValues[] = str_pad($m, 2, '0', STR_PAD_LEFT) . '_' . $year;
+            $monthYearValues[] = str_pad($m, 2, '0', STR_PAD_LEFT).'_'.$year;
         }
 
         // Student IDs subquery — EXCLUDE soft-deleted students
@@ -964,17 +965,17 @@ class ReportController extends Controller
         // - Soft-deleted invoices auto-excluded (SoftDeletes trait)
         // - Soft-deleted students excluded via whereNull('deleted_at') in subquery
         $tuitionInvoices = PaymentInvoice::whereIn('student_id', $studentIdsSubquery)
-            ->when($tuitionTypeId, fn($q) => $q->where('invoice_type_id', $tuitionTypeId))
+            ->when($tuitionTypeId, fn ($q) => $q->where('invoice_type_id', $tuitionTypeId))
             ->whereIn('month_year', $monthYearValues)
             ->with([
-                'student'       => fn($q)       => $q->select('id', 'name', 'class_id', 'batch_id'),
-                'student.class' => fn($q) => $q->withTrashed()->select('id', 'name'),
-                'student.batch' => fn($q) => $q->select('id', 'name'),
+                'student' => fn ($q) => $q->select('id', 'name', 'class_id', 'batch_id'),
+                'student.class' => fn ($q) => $q->withTrashed()->select('id', 'name'),
+                'student.batch' => fn ($q) => $q->select('id', 'name'),
             ])
             ->get();
 
-        $tuitionGrandTotal       = $tuitionInvoices->sum('amount_due');
-        $tuitionTotalInvoices    = $tuitionInvoices->where('amount_due', '>', 0)->count();
+        $tuitionGrandTotal = $tuitionInvoices->sum('amount_due');
+        $tuitionTotalInvoices = $tuitionInvoices->where('amount_due', '>', 0)->count();
         $tuitionCollectableTotal = $tuitionInvoices->sum('total_amount');
 
         // ── Pre-populate tuition summary with ALL active classes ──
@@ -992,16 +993,16 @@ class ReportController extends Controller
 
         // Track monthly totals for collectable and due
         $tuitionMonthlyCollectable = array_fill(1, 12, 0);
-        $tuitionMonthlyDue         = array_fill(1, 12, 0);
+        $tuitionMonthlyDue = array_fill(1, 12, 0);
 
         // Process ALL tuition invoices (including paid ones)
         // Total Payable = sum(total_amount) of ALL invoices
         // Due = sum(amount_due) of ALL invoices (paid have 0)
         foreach ($tuitionInvoices as $inv) {
-            $parts     = explode('_', $inv->month_year);
-            $monthNum  = (int) $parts[0];
+            $parts = explode('_', $inv->month_year);
+            $monthNum = (int) $parts[0];
             $className = $inv->student->class->name ?? 'Unknown';
-            $classId   = $inv->student->class_id ?? 0;
+            $classId = $inv->student->class_id ?? 0;
 
             // Ensure class exists in summary (for inactive classes with dues)
             if (! isset($tuitionSummary[$className])) {
@@ -1014,29 +1015,30 @@ class ReportController extends Controller
 
             // Total Payable: sum of total_amount (ALL invoices including paid)
             $tuitionSummary[$className]['months'][$monthNum]['collectable'] += $inv->total_amount;
-            $tuitionMonthlyCollectable[$monthNum]                           += $inv->total_amount;
+            $tuitionMonthlyCollectable[$monthNum] += $inv->total_amount;
 
             // Due: sum of amount_due (paid=0, partially_paid=remaining, due=full)
             $tuitionSummary[$className]['months'][$monthNum]['due'] += $inv->amount_due;
-            $tuitionMonthlyDue[$monthNum]                           += $inv->amount_due;
+            $tuitionMonthlyDue[$monthNum] += $inv->amount_due;
         }
 
         // Group ALL invoices by month + class + batch for detailed view
         // (but only include groups that have outstanding dues)
         $tuitionGrouped = $tuitionInvoices->groupBy(function ($inv) {
             $parts = explode('_', $inv->month_year);
+
             return (int) $parts[0]
-                . '|' . ($inv->student->class_id ?? 0)
-                . '|' . ($inv->student->batch_id ?? 0);
+                .'|'.($inv->student->class_id ?? 0)
+                .'|'.($inv->student->batch_id ?? 0);
         });
 
         $tuitionDetailed = [];
 
         foreach ($tuitionGrouped as $key => $invoices) {
             [$monthNum, $classId, $batchId] = explode('|', $key);
-            $monthNum                       = (int) $monthNum;
+            $monthNum = (int) $monthNum;
 
-            $first     = $invoices->first();
+            $first = $invoices->first();
             $className = $first->student->class->name ?? 'Unknown';
             $batchName = $first->student->batch->name ?? 'Unknown';
             $dueAmount = (int) $invoices->sum('amount_due');
@@ -1050,53 +1052,52 @@ class ReportController extends Controller
             $studentCnt = $invoices->where('amount_due', '>', 0)->pluck('student_id')->unique()->count();
 
             $tuitionDetailed[] = [
-                'month'         => $monthNames[$monthNum],
-                'month_num'     => $monthNum,
-                'class'         => $className,
-                'class_id'      => (int) $classId,
-                'batch'         => $batchName,
-                'batch_id'      => (int) $batchId,
+                'month' => $monthNames[$monthNum],
+                'month_num' => $monthNum,
+                'class' => $className,
+                'class_id' => (int) $classId,
+                'batch' => $batchName,
+                'batch_id' => (int) $batchId,
                 'student_count' => $studentCnt,
-                'due_amount'    => $dueAmount,
+                'due_amount' => $dueAmount,
             ];
         }
 
         // Sort detailed by month → class → batch
-        usort($tuitionDetailed, fn($a, $b) =>
-            $a['month_num'] <=> $b['month_num']
+        usort($tuitionDetailed, fn ($a, $b) => $a['month_num'] <=> $b['month_num']
                 ?: strcmp($a['class'], $b['class'])
                 ?: strcmp($a['batch'], $b['batch'])
         );
 
         // Format tuition summary with collectable and due
-        $fmtTuitionSummary  = [];
-        uasort($tuitionSummary, fn($a, $b) => $a['class_id'] <=> $b['class_id']);
+        $fmtTuitionSummary = [];
+        uasort($tuitionSummary, fn ($a, $b) => $a['class_id'] <=> $b['class_id']);
 
         foreach ($tuitionSummary as $className => $data) {
-            $monthData        = [];
+            $monthData = [];
             $totalCollectable = 0;
-            $totalDue         = 0;
+            $totalDue = 0;
 
             foreach ($data['months'] as $m => $amounts) {
-                $monthData[$monthNames[$m]]  = [
+                $monthData[$monthNames[$m]] = [
                     'collectable' => $amounts['collectable'],
-                    'due'         => $amounts['due'],
+                    'due' => $amounts['due'],
                 ];
                 $totalCollectable += $amounts['collectable'];
-                $totalDue         += $amounts['due'];
+                $totalDue += $amounts['due'];
             }
 
             $fmtTuitionSummary[$className] = [
-                'class_id'          => $data['class_id'],
-                'months'            => $monthData,
+                'class_id' => $data['class_id'],
+                'months' => $monthData,
                 'total_collectable' => $totalCollectable,
-                'total_due'         => $totalDue,
+                'total_due' => $totalDue,
             ];
         }
 
         // Format monthly collectable and due totals
         $fmtMonthlyCollectable = [];
-        $fmtMonthlyDue         = [];
+        $fmtMonthlyDue = [];
         foreach ($tuitionMonthlyCollectable as $m => $amt) {
             $fmtMonthlyCollectable[$monthNames[$m]] = $amt;
         }
@@ -1113,9 +1114,9 @@ class ReportController extends Controller
             ->whereIn('student_id', $studentIdsSubquery)
             ->whereYear('created_at', $year)
             ->with([
-                'student'       => fn($q)       => $q->withTrashed()->select('id', 'name', 'class_id', 'batch_id'),
-                'student.class' => fn($q) => $q->withTrashed()->select('id', 'name'),
-                'student.batch' => fn($q) => $q->select('id', 'name'),
+                'student' => fn ($q) => $q->withTrashed()->select('id', 'name', 'class_id', 'batch_id'),
+                'student.class' => fn ($q) => $q->withTrashed()->select('id', 'name'),
+                'student.batch' => fn ($q) => $q->select('id', 'name'),
                 'invoiceType:id,type_name',
             ]);
 
@@ -1123,27 +1124,27 @@ class ReportController extends Controller
             $otherQuery->where('invoice_type_id', '!=', $tuitionTypeId);
         }
 
-        $otherInvoices      = $otherQuery->get();
-        $otherGrandTotal    = $otherInvoices->sum('amount_due');
+        $otherInvoices = $otherQuery->get();
+        $otherGrandTotal = $otherInvoices->sum('amount_due');
         $otherTotalInvoices = $otherInvoices->count();
 
         // Group by month(created_at) + invoice_type + class + batch
         $otherGrouped = $otherInvoices->groupBy(function ($inv) {
             return $inv->created_at->month
-            . '|' . $inv->invoice_type_id
-                . '|' . ($inv->student->class_id ?? 0)
-                . '|' . ($inv->student->batch_id ?? 0);
+            .'|'.$inv->invoice_type_id
+                .'|'.($inv->student->class_id ?? 0)
+                .'|'.($inv->student->batch_id ?? 0);
         });
 
         $otherDetailed = [];
-        $otherSummary  = []; // typeName => [1 => amount, …, 12 => amount]
+        $otherSummary = []; // typeName => [1 => amount, …, 12 => amount]
 
         foreach ($otherGrouped as $key => $invoices) {
             [$monthNum, $typeId, $classId, $batchId] = explode('|', $key);
-            $monthNum                                = (int) $monthNum;
+            $monthNum = (int) $monthNum;
 
-            $first     = $invoices->first();
-            $typeName  = $first->invoiceType->type_name ?? 'Unknown';
+            $first = $invoices->first();
+            $typeName = $first->invoiceType->type_name ?? 'Unknown';
             $className = $first->student->class->name ?? 'Unknown';
             $batchName = $first->student->batch->name ?? 'Unknown';
             $dueAmount = (int) $invoices->sum('amount_due');
@@ -1156,16 +1157,16 @@ class ReportController extends Controller
             $studentCnt = $invoices->where('amount_due', '>', 0)->pluck('student_id')->unique()->count();
 
             $otherDetailed[] = [
-                'month'           => $monthNames[$monthNum],
-                'month_num'       => $monthNum,
-                'invoice_type'    => $typeName,
+                'month' => $monthNames[$monthNum],
+                'month_num' => $monthNum,
+                'invoice_type' => $typeName,
                 'invoice_type_id' => (int) $typeId,
-                'class'           => $className,
-                'class_id'        => (int) $classId,
-                'batch'           => $batchName,
-                'batch_id'        => (int) $batchId,
-                'student_count'   => $studentCnt,
-                'due_amount'      => $dueAmount,
+                'class' => $className,
+                'class_id' => (int) $classId,
+                'batch' => $batchName,
+                'batch_id' => (int) $batchId,
+                'student_count' => $studentCnt,
+                'due_amount' => $dueAmount,
             ];
 
             if (! isset($otherSummary[$typeName])) {
@@ -1175,8 +1176,7 @@ class ReportController extends Controller
         }
 
         // Sort other detailed by month → invoice_type → class
-        usort($otherDetailed, fn($a, $b) =>
-            $a['month_num'] <=> $b['month_num']
+        usort($otherDetailed, fn ($a, $b) => $a['month_num'] <=> $b['month_num']
                 ?: strcmp($a['invoice_type'], $b['invoice_type'])
                 ?: strcmp($a['class'], $b['class'])
         );
@@ -1192,7 +1192,7 @@ class ReportController extends Controller
             }
             $fmtOtherSummary[$typeName] = [
                 'months' => $monthData,
-                'total'  => array_sum($months),
+                'total' => array_sum($months),
             ];
         }
 
@@ -1201,37 +1201,37 @@ class ReportController extends Controller
         // ════════════════════════════════════════════════════════════
 
         return response()->json([
-            'success'        => true,
+            'success' => true,
 
             // Tuition Fee section
-            'tuition'        => [
-                'detailed'            => $tuitionDetailed,
-                'summary'             => $fmtTuitionSummary,
+            'tuition' => [
+                'detailed' => $tuitionDetailed,
+                'summary' => $fmtTuitionSummary,
                 'monthly_collectable' => $fmtMonthlyCollectable,
-                'monthly_due'         => $fmtMonthlyDue,
-                'grand_total'         => $tuitionGrandTotal,
-                'collectable_total'   => $tuitionCollectableTotal,
-                'total_invoices'      => $tuitionTotalInvoices,
-                'total_classes'       => count($fmtTuitionSummary),
+                'monthly_due' => $fmtMonthlyDue,
+                'grand_total' => $tuitionGrandTotal,
+                'collectable_total' => $tuitionCollectableTotal,
+                'total_invoices' => $tuitionTotalInvoices,
+                'total_classes' => count($fmtTuitionSummary),
             ],
 
             // Other Fee Types section
-            'other'          => [
-                'detailed'       => $otherDetailed,
-                'summary'        => $fmtOtherSummary,
-                'grand_total'    => $otherGrandTotal,
+            'other' => [
+                'detailed' => $otherDetailed,
+                'summary' => $fmtOtherSummary,
+                'grand_total' => $otherGrandTotal,
                 'total_invoices' => $otherTotalInvoices,
-                'total_types'    => count($fmtOtherSummary),
+                'total_types' => count($fmtOtherSummary),
             ],
 
             // Combined totals
-            'grand_total'    => $tuitionGrandTotal + $otherGrandTotal,
+            'grand_total' => $tuitionGrandTotal + $otherGrandTotal,
             'total_invoices' => $tuitionTotalInvoices + $otherTotalInvoices,
 
             // Branch / Year info
-            'branch_name'    => $branch->branch_name ?? '',
-            'branch_prefix'  => $branch->branch_prefix ?? '',
-            'year'           => $year,
+            'branch_name' => $branch->branch_name ?? '',
+            'branch_prefix' => $branch->branch_prefix ?? '',
+            'year' => $year,
         ]);
     }
 
@@ -1251,19 +1251,19 @@ class ReportController extends Controller
         }
 
         $request->validate([
-            'type'            => 'required|in:tuition,other',
-            'year'            => 'required|integer|min:2020|max:2099',
-            'branch_id'       => 'required|integer|exists:branches,id',
-            'month_num'       => 'required|integer|min:1|max:12',
-            'class_id'        => 'required|integer',
-            'batch_id'        => 'required|integer',
+            'type' => 'required|in:tuition,other',
+            'year' => 'required|integer|min:2020|max:2099',
+            'branch_id' => 'required|integer|exists:branches,id',
+            'month_num' => 'required|integer|min:1|max:12',
+            'class_id' => 'required|integer',
+            'batch_id' => 'required|integer',
             'invoice_type_id' => 'nullable|integer|exists:payment_invoice_types,id',
         ]);
 
-        $year     = (int) $request->year;
+        $year = (int) $request->year;
         $branchId = (int) $request->branch_id;
-        $classId  = (int) $request->class_id;
-        $batchId  = (int) $request->batch_id;
+        $classId = (int) $request->class_id;
+        $batchId = (int) $request->batch_id;
         $monthNum = (int) $request->month_num;
 
         $tuitionTypeId = PaymentInvoiceType::where('type_name', 'Tuition Fee')->value('id');
@@ -1280,12 +1280,12 @@ class ReportController extends Controller
         // Soft-deleted invoices are automatically excluded (PaymentInvoice uses SoftDeletes)
         $query = PaymentInvoice::where('amount_due', '>', 0)
             ->whereIn('student_id', $studentIds)
-            ->with(['student' => fn($q) => $q->select('id', 'name', 'student_unique_id')])
+            ->with(['student' => fn ($q) => $q->select('id', 'name', 'student_unique_id')])
             ->select('id', 'invoice_number', 'student_id', 'amount_due', 'invoice_type_id');
 
         if ($request->type === 'tuition') {
             // Tuition Fee: match by month_year column
-            $monthYear = str_pad($monthNum, 2, '0', STR_PAD_LEFT) . '_' . $year;
+            $monthYear = str_pad($monthNum, 2, '0', STR_PAD_LEFT).'_'.$year;
 
             $query->where('invoice_type_id', $tuitionTypeId)
                 ->where('month_year', $monthYear);
@@ -1307,19 +1307,19 @@ class ReportController extends Controller
         $invoices = $query->orderBy('id')->get();
 
         return response()->json([
-            'success'        => true,
-            'data'           => $invoices->map(function ($inv, $idx) {
+            'success' => true,
+            'data' => $invoices->map(function ($inv, $idx) {
                 return [
-                    'sl'             => $idx + 1,
-                    'id'             => $inv->id,
+                    'sl' => $idx + 1,
+                    'id' => $inv->id,
                     'invoice_number' => $inv->invoice_number,
-                    'student_id'     => $inv->student_id,
-                    'student_name'   => $inv->student->name ?? 'N/A',
-                    'student_uid'    => $inv->student->student_unique_id ?? '',
-                    'amount_due'     => (int) $inv->amount_due,
+                    'student_id' => $inv->student_id,
+                    'student_name' => $inv->student->name ?? 'N/A',
+                    'student_uid' => $inv->student->student_unique_id ?? '',
+                    'amount_due' => (int) $inv->amount_due,
                 ];
             })->values(),
-            'total_due'      => (int) $invoices->sum('amount_due'),
+            'total_due' => (int) $invoices->sum('amount_due'),
             'total_invoices' => $invoices->count(),
         ]);
     }
