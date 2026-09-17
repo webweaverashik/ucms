@@ -34,7 +34,7 @@ class StudentAttendanceController extends Controller
             ->select('id', 'branch_name', 'branch_prefix')
             ->get();
 
-        $classnames = ClassName::select('id', 'name', 'class_numeral')->get();
+        $classnames = ClassName::active()->select('id', 'name', 'class_numeral')->get();
 
         // Pass academic groups and group-required class numerals to view
         $academicGroups = self::ACADEMIC_GROUPS;
@@ -84,7 +84,7 @@ class StudentAttendanceController extends Controller
             return response()->json(
                 [
                     'batches' => [],
-                    'message' => 'Error loading batches: ' . $e->getMessage(),
+                    'message' => 'Error loading batches: '.$e->getMessage(),
                 ],
                 500,
             );
@@ -119,10 +119,10 @@ class StudentAttendanceController extends Controller
         $supportsGroup = $classModel && in_array($classModel->class_numeral, self::GROUP_REQUIRED_CLASSES);
 
         // Check if "All Groups" is selected (no specific group filter)
-        $isAllGroups = $supportsGroup && !$request->filled('academic_group');
+        $isAllGroups = $supportsGroup && ! $request->filled('academic_group');
 
         // Check if "All Batches" is selected (no specific batch filter)
-        $isAllBatches = !$request->filled('batch_id');
+        $isAllBatches = ! $request->filled('batch_id');
 
         // Build student query
         $studentsQuery = Student::active()
@@ -214,7 +214,7 @@ class StudentAttendanceController extends Controller
                 $batchId = $att['batch_id'] ?? $request->batch_id;
 
                 // If still no batch_id, get it from the student record
-                if (!$batchId) {
+                if (! $batchId) {
                     $student = Student::find($att['student_id']);
                     $batchId = $student ? $student->batch_id : null;
                 }
@@ -246,7 +246,7 @@ class StudentAttendanceController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return response()->json(['message' => 'Error saving data: ' . $e->getMessage(), 'status' => 'error'], 500);
+            return response()->json(['message' => 'Error saving data: '.$e->getMessage(), 'status' => 'error'], 500);
         }
     }
 }
