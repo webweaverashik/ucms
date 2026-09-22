@@ -998,16 +998,22 @@
                                                                 </span>
                                                             </div>
                                                             <div class="d-flex flex-column">
-                                                                <a class="text-gray-800 fw-bold text-hover-primary"
-                                                                    href="{{ route('classnames.secondary-classes.show', [
-                                                                        $enrollment->secondaryClass->class,
-                                                                        $enrollment->secondaryClass,
-                                                                    ]) }}">
-                                                                    {{ $enrollment->secondaryClass->name ?? 'Unknown Class' }}
-                                                                </a>
+                                                                @if ($enrollment->secondaryClass?->class)
+                                                                    <a class="text-gray-800 fw-bold text-hover-primary"
+                                                                        href="{{ route('classnames.secondary-classes.show', [
+                                                                            $enrollment->secondaryClass->class,
+                                                                            $enrollment->secondaryClass,
+                                                                        ]) }}">
+                                                                        {{ $enrollment->secondaryClass->name }}
+                                                                    </a>
+                                                                @else
+                                                                    <span class="text-gray-800 fw-bold">
+                                                                        {{ $enrollment->secondaryClass?->name ?? 'Unknown Class' }}
+                                                                    </span>
+                                                                @endif
 
                                                                 <span class="text-gray-500 fs-7">
-                                                                    {{ $enrollment->secondaryClass->class->name ?? 'N/A' }}
+                                                                    {{ $enrollment->secondaryClass?->class?->name ?? 'N/A' }}
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -1305,7 +1311,8 @@
                                                             </a>
                                                         @endcan
                                                         @cannot('transactions.approve')
-                                                            <span class="badge rounded-pill text-bg-secondary">Pending Approval</span>
+                                                            <span class="badge rounded-pill text-bg-secondary">Pending
+                                                                Approval</span>
                                                         @endcannot
                                                     @else
                                                         @can('transactions.payslip.download')
@@ -1765,11 +1772,13 @@
                             <div class="card-header border-0 pt-6 flex-wrap">
                                 <!--begin::Card title-->
                                 <div class="card-title flex-column">
-                                    <h2><i class="ki-outline ki-notepad-edit fs-2 text-warning me-2"></i>Student Profiling Edit History</h2>
+                                    <h2><i class="ki-outline ki-notepad-edit fs-2 text-warning me-2"></i>Student Profiling
+                                        Edit History</h2>
                                 </div>
                                 <!--end::Card title-->
                                 <!--begin::Card toolbar-->
-                                <div class="card-toolbar flex-row-fluid justify-content-end gap-3 min-w-300px mt-4 mt-sm-0">
+                                <div
+                                    class="card-toolbar flex-row-fluid justify-content-end gap-3 min-w-300px mt-4 mt-sm-0">
                                     <!--begin::Search-->
                                     <div class="d-flex align-items-center position-relative my-1">
                                         <i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
@@ -1778,10 +1787,13 @@
                                             placeholder="Search history...">
                                     </div>
                                     <!--end::Search-->
-                                    
+
                                     <!--begin::Filter-->
                                     <div class="w-175px my-1">
-                                        <select data-kt-student-change-logs-table-filter="field" class="form-select form-select-solid" data-control="select2" data-placeholder="All Fields" data-hide-search="false" data-allow-clear="true">
+                                        <select data-kt-student-change-logs-table-filter="field"
+                                            class="form-select form-select-solid" data-control="select2"
+                                            data-placeholder="All Fields" data-hide-search="false"
+                                            data-allow-clear="true">
                                             <option value="all">All Fields</option>
                                             <option value="Academic Group">Academic Group</option>
                                             <option value="Batch">Batch</option>
@@ -1805,8 +1817,9 @@
                                         </select>
                                     </div>
                                     <!--end::Filter-->
-                                    
-                                    <span class="badge badge-light-warning fs-7 my-1">{{ $student->changeLogs->count() }} Updates</span>
+
+                                    <span class="badge badge-light-warning fs-7 my-1">{{ $student->changeLogs->count() }}
+                                        Updates</span>
                                 </div>
                                 <!--end::Card toolbar-->
                             </div>
@@ -1830,25 +1843,28 @@
                                         @foreach ($student->changeLogs as $log)
                                             <tr>
                                                 <td>{{ $loop->iteration }}</td>
-                                                <td><span class="text-gray-800 fw-semibold">{{ $log->field_name }}</span></td>
+                                                <td><span class="text-gray-800 fw-semibold">{{ $log->field_name }}</span>
+                                                </td>
                                                 <td>
-                                                    @if($log->old_value !== null && $log->old_value !== '')
-                                                        <span class="text-danger fs-7 fw-medium">{{ $log->old_value }}</span>
+                                                    @if ($log->old_value !== null && $log->old_value !== '')
+                                                        <span
+                                                            class="text-danger fs-7 fw-medium">{{ $log->old_value }}</span>
                                                     @else
                                                         <span class="text-muted fs-7"><em>None</em></span>
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    @if($log->new_value !== null && $log->new_value !== '')
-                                                        <span class="text-success fs-7 fw-medium" style="color: #47be7d !important;">{{ $log->new_value }}</span>
+                                                    @if ($log->new_value !== null && $log->new_value !== '')
+                                                        <span class="text-success fs-7 fw-medium"
+                                                            style="color: #47be7d !important;">{{ $log->new_value }}</span>
                                                     @else
                                                         <span class="text-muted fs-7"><em>None</em></span>
                                                     @endif
                                                 </td>
                                                 <td>
                                                     @if ($log->updatedBy)
-                                                        <a href="{{ route('settlements.show', $log->updatedBy->id) }}" target="_blank"
-                                                            class="text-gray-800 text-hover-primary">
+                                                        <a href="{{ route('settlements.show', $log->updatedBy->id) }}"
+                                                            target="_blank" class="text-gray-800 text-hover-primary">
                                                             {{ $log->updatedBy->name }}
                                                         </a>
                                                     @else
@@ -1857,7 +1873,8 @@
                                                 </td>
                                                 <td>
                                                     {{ $log->created_at->format('d-M-Y h:i A') }}
-                                                    <span class="text-muted fs-8">({{ $log->created_at->diffForHumans() }})</span>
+                                                    <span
+                                                        class="text-muted fs-8">({{ $log->created_at->diffForHumans() }})</span>
                                                 </td>
                                             </tr>
                                         @endforeach
